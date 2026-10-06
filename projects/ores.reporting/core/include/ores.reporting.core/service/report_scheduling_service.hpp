@@ -40,10 +40,15 @@ namespace ores::reporting::service {
  * @brief Bridges the reporting service and the scheduler service.
  *
  * Handles two responsibilities:
- *  1. Startup reconciliation: ensures every active report definition has a
- *     corresponding scheduler job. Called once after the service starts.
+ *  1. Reconciliation: brings the scheduler's report jobs in line with the
+ *     definitions. Called once after the service starts and on every
+ *     definition change.
  *  2. On-demand scheduling: called by the schedule/unschedule NATS handlers
  *     to create or remove scheduler jobs for specific definitions.
+ *
+ * Scheduler jobs are the reporting service's own, so it puts and deletes them
+ * with its own client. Run grants are a person's consent, so it asks IAM for
+ * them with the client that relays the person's token.
  */
 class ORES_REPORTING_CORE_EXPORT report_scheduling_service {
 private:
@@ -58,13 +63,27 @@ private:
 public:
     using context = ores::database::context;
 
-    report_scheduling_service(context ctx, ores::nats::service::nats_client svc_nats);
+    /**
+     * @param svc_nats    The service's own client, for scheduler jobs.
+     * @param person_nats The client that relays the person's token, for run
+     *                    grants. Reconciliation acts for no person and omits it.
+     */
+    report_scheduling_service(
+        context ctx,
+        ores::nats::service::nats_client svc_nats,
+        std::optional<ores::nats::service::nats_client> person_nats = std::nullopt);
 
     /**
-     * @brief Ensures all report definitions have a scheduler job.
+     * @brief Brings the scheduler's report jobs in line with the definitions.
      *
-     * Loads all definitions where scheduler_job_id IS NULL across all tenants
-     * and creates a scheduler job for each one. Safe to call on every restart.
+     * A report job is kept only when a definition records both the job's id
+     * and the grant its runs act under. Any other report job is removed: it is
+     * either a schedule that did not finish, or a job whose runs no person
+     * consented to. A definition that holds a grant but has lost its job is
+     * put back, because the grant is the consent; a definition that records a
+     * job with no grant keeps no job and stops naming one. Reconciliation
+     * never creates a schedule, because a job no person asked for would fire
+     * runs no one consented to. Safe to call on every restart.
      */
     boost::asio::awaitable<void> reconcile();
 
@@ -115,7 +134,7 @@ private:
     /**
      * @brief Build a scheduler job change for a report definition.
      *
-     * Used by both schedule_one and the batch reconciliation path. The write
+     * Used by both schedule_one and the reconciliation restore path. The write
      * carries the job's own fields; the caller supplies the intent, because
      * the change reason differs between the two paths.
      *
@@ -125,6 +144,12 @@ private:
      */
     std::optional<ores::scheduler::messaging::job_definition_change>
     build_job_change(const domain::report_definition& def, const boost::uuids::uuid& job_id);
+
+    /**
+     * @brief Deletes a scheduler job with the service's own client.
+     */
+    std::expected<void, std::string> send_delete_request(const boost::uuids::uuid& job_id,
+                                                         const std::string& commentary);
 
     /**
      * @brief Asks IAM, on behalf of the person scheduling, for the grant the
@@ -140,6 +165,7 @@ private:
 
     context ctx_;
     ores::nats::service::nats_client svc_nats_;
+    std::optional<ores::nats::service::nats_client> person_nats_;
 };
 
 }

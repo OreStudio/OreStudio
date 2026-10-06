@@ -42,6 +42,7 @@
 #include <map>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <set>
 
 namespace ores::reporting::service {
 
@@ -101,10 +102,13 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
 
 } // anonymous namespace
 
-report_scheduling_service::report_scheduling_service(context ctx,
-                                                     ores::nats::service::nats_client svc_nats)
+report_scheduling_service::report_scheduling_service(
+    context ctx,
+    ores::nats::service::nats_client svc_nats,
+    std::optional<ores::nats::service::nats_client> person_nats)
     : ctx_(std::move(ctx))
-    , svc_nats_(std::move(svc_nats)) {}
+    , svc_nats_(std::move(svc_nats))
+    , person_nats_(std::move(person_nats)) {}
 
 std::optional<ores::scheduler::messaging::job_definition_change>
 report_scheduling_service::build_job_change(const domain::report_definition& def,
@@ -181,14 +185,52 @@ report_scheduling_service::send_schedule_request(const domain::report_definition
     return {};
 }
 
+std::expected<void, std::string>
+report_scheduling_service::send_delete_request(const boost::uuids::uuid& job_id,
+                                               const std::string& commentary) {
+    const auto job_id_str = boost::uuids::to_string(job_id);
+    const ores::scheduler::messaging::delete_job_definition_request req{
+        .removal = {.key = {.id = job_id}},
+        .intent = {.reason_code = std::string(ores::service::messaging::change_reasons::new_record),
+                   .commentary = commentary}};
+
+    const auto& codec = ores::nats::default_wire_codec();
+    try {
+        const auto reply_msg = svc_nats_.authenticated_request(
+            ores::scheduler::messaging::delete_job_definition_request::nats_subject,
+            codec.encode(req));
+        if (const auto it = reply_msg.headers.find(std::string(ores::nats::headers::x_error));
+            it != reply_msg.headers.end())
+            return std::unexpected("Scheduler refused to delete job " + job_id_str + ": " +
+                                   it->second);
+        auto resp = codec.decode<ores::scheduler::messaging::delete_job_definition_response>(
+            reply_msg.data);
+        if (!resp)
+            return std::unexpected("Scheduler returned unparseable response for job " +
+                                   job_id_str);
+        // A job that is already gone is the state the caller asked for, so a
+        // second delete of the same job converges instead of failing.
+        if (resp->result.outcome == ores::utility::domain::outcome::missing)
+            return {};
+        if (resp->result.outcome != ores::utility::domain::outcome::ok)
+            return std::unexpected("Scheduler failed to delete job " + job_id_str + ": " +
+                                   resp->result.message);
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string("Scheduler NATS call failed: ") + e.what());
+    }
+    return {};
+}
+
 std::expected<boost::uuids::uuid, std::string>
 report_scheduling_service::grant_runs(const domain::report_definition& def) {
+    if (!person_nats_)
+        return std::unexpected("Scheduling needs a person to consent to the runs.");
     ores::iam::messaging::create_run_grant_request req;
     req.resource = "reporting.report_definition/" + boost::uuids::to_string(def.id);
     req.role = std::string(run_role);
     req.audience = std::string(run_audience);
     try {
-        const auto granted = call(svc_nats_, req);
+        const auto granted = call(*person_nats_, req);
         if (!granted)
             return std::unexpected("IAM refused the run grant for definition " +
                                    boost::uuids::to_string(def.id) + ": " + granted.error());
@@ -200,11 +242,13 @@ report_scheduling_service::grant_runs(const domain::report_definition& def) {
 
 std::expected<void, std::string>
 report_scheduling_service::revoke_runs(const boost::uuids::uuid& grant_id) {
+    if (!person_nats_)
+        return std::unexpected("Revoking a run grant needs the person who acts.");
     ores::iam::messaging::revoke_run_grant_request req;
     req.grant_id = boost::uuids::to_string(grant_id);
     req.reason = "unscheduled";
     try {
-        if (const auto revoked = call(svc_nats_, req); !revoked)
+        if (const auto revoked = call(*person_nats_, req); !revoked)
             return std::unexpected(revoked.error());
         return {};
     } catch (const std::exception& e) {
@@ -225,34 +269,31 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
         return std::unexpected("Invalid cron expression for definition " +
                                boost::uuids::to_string(def.id));
 
+    const auto active_state =
+        find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
+    if (!active_state)
+        return std::unexpected("The active report definition state is not seeded.");
+
     // The grant comes first: a job with no consent behind it would fire runs
     // that cannot act in the definition's party.
     const auto grant_id = grant_runs(def);
     if (!grant_id)
         return std::unexpected(grant_id.error());
 
-    const auto job_id = gen_uuid();
-    auto send_result = send_schedule_request(def, job_id);
-    if (!send_result) {
+    const auto withdraw_grant = [&] {
         if (const auto revoked = revoke_runs(*grant_id); !revoked)
             BOOST_LOG_SEV(lg(), warn) << "Run grant " << *grant_id << " of definition " << def.id
                                       << " stays active after a failed schedule: "
                                       << revoked.error();
+    };
+
+    const auto job_id = gen_uuid();
+    auto send_result = send_schedule_request(def, job_id);
+    if (!send_result) {
+        withdraw_grant();
         return std::unexpected(send_result.error());
     }
 
-    // Resolve the "active" FSM state UUID once from the system context.
-    const auto active_state =
-        find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
-    if (!active_state) {
-        // The job is already in the scheduler, so the two are out of step from
-        // here. Say so rather than saving a null state and leaving only a
-        // warning: reconcile adopts the job by name on the next start.
-        return std::unexpected("The active report definition state is not seeded: the "
-                               "scheduler job exists but the definition cannot record it.");
-    }
-
-    // Update the definition with the new scheduler_job_id and active state.
     auto updated = def;
     updated.scheduler_job_id = job_id;
     updated.run_grant_id = *grant_id;
@@ -262,9 +303,18 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
     updated.change_reason_code = std::string(ores::service::messaging::change_reasons::update);
     updated.change_commentary = "Linked to scheduler job";
 
-    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
-    report_definition_service svc(tenant_ctx);
-    svc.save_definition(updated);
+    // A job the definition does not record would fire with no definition
+    // behind it, so a failed save takes the job and the grant back.
+    try {
+        const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
+        report_definition_service svc(tenant_ctx);
+        svc.save_definition(updated);
+    } catch (const std::exception& e) {
+        if (const auto deleted = send_delete_request(job_id, "Schedule not recorded"); !deleted)
+            BOOST_LOG_SEV(lg(), warn) << deleted.error();
+        withdraw_grant();
+        return std::unexpected(std::string("Could not record the schedule: ") + e.what());
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Scheduled definition " << def.id << " as job " << job_id;
     return true;
@@ -279,36 +329,11 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
         return false;
     }
 
-    const auto job_id_str = boost::uuids::to_string(*def.scheduler_job_id);
-    const ores::scheduler::messaging::delete_job_definition_request req{
-        .removal = {.key = {.id = *def.scheduler_job_id}},
-        .intent = {.reason_code = std::string(ores::service::messaging::change_reasons::new_record),
-                   .commentary = "Unscheduled by reporting service"}};
-
-    const auto& codec = ores::nats::default_wire_codec();
-    try {
-        const auto reply_msg = svc_nats_.authenticated_request(
-            ores::scheduler::messaging::delete_job_definition_request::nats_subject,
-            codec.encode(req));
-
-        auto resp = codec.decode<ores::scheduler::messaging::delete_job_definition_response>(
-            reply_msg.data);
-        if (!resp) {
-            const std::string err = "Scheduler returned unparseable response for job " + job_id_str;
-            BOOST_LOG_SEV(lg(), error) << err;
-            return std::unexpected(err);
-        }
-        if (resp->result.outcome != ores::utility::domain::outcome::ok) {
-            const std::string err =
-                "Scheduler failed to unschedule job " + job_id_str + ": " + resp->result.message;
-            BOOST_LOG_SEV(lg(), error) << err;
-            return std::unexpected(err);
-        }
-    } catch (const std::exception& e) {
-        const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to call scheduler to unschedule definition " << def.id << ": " << e.what();
-        return std::unexpected(err);
+    if (const auto deleted =
+            send_delete_request(*def.scheduler_job_id, "Unscheduled by reporting service");
+        !deleted) {
+        BOOST_LOG_SEV(lg(), error) << deleted.error();
+        return std::unexpected(deleted.error());
     }
 
     // Resolve the "suspended" FSM state UUID from the system context.
@@ -351,7 +376,6 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
 
 boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info) << "Starting scheduler reconciliation for report definitions.";
-
 
     // Step 1: ask the IAM service for all active tenants, paging until the
     // server-reported total is exhausted.
@@ -404,8 +428,13 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         co_return;
     }
 
-    // Step 2: for each tenant, query unscheduled definitions and schedule them.
-    int total_scheduled = 0;
+    // Step 2: read every definition and split the schedules that rest on a
+    // person's consent from the records left by the service-account scheduling
+    // this service used to do. A record with a job but no grant is cleared
+    // here, so the definition can be scheduled again by a person.
+    std::vector<domain::report_definition> consented;
+    std::set<boost::uuids::uuid> accounted_job_ids;
+    int total_cleared = 0;
     int total_failed = 0;
 
     for (const auto& tenant : tenants) {
@@ -424,128 +453,120 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         const auto tenant_ctx = ctx_.with_tenant(tenant_id, ctx_.service_account());
 
         repository::report_definition_repository repo;
-        std::vector<domain::report_definition> unscheduled;
+        std::vector<domain::report_definition> all;
         try {
-            auto all = repo.read_latest(tenant_ctx);
-            for (auto& d : all)
-                if (!d.scheduler_job_id)
-                    unscheduled.push_back(std::move(d));
+            all = repo.read_latest(tenant_ctx);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read unscheduled definitions for tenant "
+            BOOST_LOG_SEV(lg(), error) << "Failed to read definitions for tenant "
                                        << tenant_id_str << ": " << e.what();
+            ++total_failed;
             continue;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Found " << unscheduled.size()
-                                   << " unscheduled definition(s) for tenant: " << tenant_id_str;
-
-        if (unscheduled.empty())
-            continue;
-
-        // Schedule each definition with its own put request. The canonical
-        // put_many is all-or-nothing: the generated service stops at the first
-        // change it cannot prepare, so batching would let one bad row block
-        // every job for the tenant.
-        struct pending_entry {
-            boost::uuids::uuid job_id;
-            const domain::report_definition* def;
-        };
-        std::vector<pending_entry> pending;
-
-        // The scheduler may already hold a job for a definition whose id was
-        // never persisted here -- an earlier run created the job and then
-        // failed to record it. Matching on the name the job carries, rather
-        // than insisting on creating one, is what makes reconciliation converge
-        // on the state it finds instead of failing on the job-name index on
-        // every start.
-        std::map<std::string, boost::uuids::uuid> existing_jobs;
-        try {
-            ores::scheduler::messaging::list_job_definitions_request list_req;
-            list_req.limit = 1000;
-            const auto reply = svc_nats_.authenticated_request(
-                ores::scheduler::messaging::list_job_definitions_request::nats_subject,
-                ores::nats::default_wire_codec().encode(list_req));
-            if (auto parsed =
-                    ores::nats::default_wire_codec()
-                        .decode<ores::scheduler::messaging::list_job_definitions_response>(
-                            reply.data)) {
-                for (const auto& existing : parsed->definitions)
-                    existing_jobs.emplace(existing.job_name, existing.id);
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Scheduler holds " << existing_jobs.size() << " job(s) already";
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Could not read the scheduler's existing jobs: " << e.what();
-        }
-
-        for (const auto& def : unscheduled) {
-            if (const auto found = existing_job_for(existing_jobs, def.id)) {
-                BOOST_LOG_SEV(lg(), info) << "Adopting the scheduler's existing job " << *found
-                                          << " for definition " << def.id;
-                pending.push_back({*found, &def});
+        for (auto& def : all) {
+            if (!def.scheduler_job_id)
+                continue;
+            if (def.run_grant_id) {
+                accounted_job_ids.insert(*def.scheduler_job_id);
+                consented.push_back(std::move(def));
                 continue;
             }
-            const auto job_id = gen_uuid();
-            auto sent = send_schedule_request(def, job_id);
-            if (!sent) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Scheduler refused job for definition " << def.id << ": " << sent.error();
-                ++total_failed;
-                continue;
-            }
-            pending.push_back({job_id, &def});
-        }
 
-        if (pending.empty()) {
-            BOOST_LOG_SEV(lg(), debug)
-                << "No schedulable definitions for tenant: " << tenant_id_str;
-            continue;
-        }
-
-        BOOST_LOG_SEV(lg(), debug)
-            << "Scheduler accepted " << pending.size() << " job(s) for tenant: " << tenant_id_str;
-
-        // Resolve "active" state once per tenant batch (avoids repeated DB calls).
-        const auto active_state =
-            find_fsm_state_id(ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
-        if (!active_state) {
-            BOOST_LOG_SEV(lg(), error)
-                << "The active report definition state is not seeded; " << pending.size()
-                << " definition(s) cannot be linked to their jobs.";
-            total_failed += static_cast<int>(pending.size());
-            continue;
-        }
-
-        // Persist the scheduler_job_id on each definition the scheduler kept.
-        for (const auto& entry : pending) {
-            const auto job_id_str = boost::uuids::to_string(entry.job_id);
-
-            auto def_updated = *entry.def;
-            def_updated.scheduler_job_id = entry.job_id;
-            def_updated.fsm_state_id = *active_state;
-            def_updated.modified_by = ctx_.service_account();
-            def_updated.performed_by = ctx_.service_account();
-            def_updated.change_reason_code =
+            // No grant behind the job, so the runs cannot act in the party.
+            // Clearing the record is what lets the person schedule again.
+            auto updated = def;
+            updated.scheduler_job_id = std::nullopt;
+            updated.modified_by = ctx_.service_account();
+            updated.performed_by = ctx_.service_account();
+            updated.change_reason_code =
                 std::string(ores::service::messaging::change_reasons::update);
-            def_updated.change_commentary = "Linked to scheduler job by reconciliation";
-
+            updated.change_commentary = "Cleared a scheduler job with no run grant";
             try {
                 report_definition_service svc(tenant_ctx);
-                svc.save_definition(def_updated);
-                ++total_scheduled;
-                BOOST_LOG_SEV(lg(), debug) << "Persisted scheduler_job_id " << job_id_str
-                                           << " for definition: " << entry.def->id;
+                svc.save_definition(updated);
+                ++total_cleared;
+                BOOST_LOG_SEV(lg(), info) << "Cleared the ungranted schedule of definition "
+                                          << def.id;
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to persist scheduler_job_id for definition "
-                                           << entry.def->id << ": " << e.what();
                 ++total_failed;
+                BOOST_LOG_SEV(lg(), error) << "Could not clear the schedule of definition "
+                                           << def.id << ": " << e.what();
             }
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. Tenants processed: " << tenants.size()
-                              << ", scheduled: " << total_scheduled << ", failed: " << total_failed
+    // Step 3: the report jobs the scheduler holds, by name. Reading is all or
+    // nothing: if the list does not parse, the delete and restore steps below
+    // are skipped rather than acting on a job list this pass cannot see.
+    std::map<std::string, boost::uuids::uuid> report_jobs;
+    bool scheduler_read_ok = false;
+    try {
+        ores::scheduler::messaging::list_job_definitions_request list_req;
+        list_req.limit = 1000;
+        const auto reply = svc_nats_.authenticated_request(
+            ores::scheduler::messaging::list_job_definitions_request::nats_subject,
+            ores::nats::default_wire_codec().encode(list_req));
+        if (auto parsed =
+                ores::nats::default_wire_codec()
+                    .decode<ores::scheduler::messaging::list_job_definitions_response>(
+                        reply.data)) {
+            scheduler_read_ok = true;
+            for (const auto& existing : parsed->definitions)
+                if (is_report_definition_job_name(existing.job_name))
+                    report_jobs.emplace(existing.job_name, existing.id);
+            BOOST_LOG_SEV(lg(), debug)
+                << "Scheduler holds " << report_jobs.size() << " report job(s)";
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Could not read the scheduler's jobs: " << e.what();
+    }
+
+    // A name that holds an accounted job is a definition's live schedule. Any
+    // other report job is removed below, so it must not read as present when
+    // the jobs that do have consent are put back.
+    std::set<std::string> live_job_names;
+    for (const auto& [name, id] : report_jobs)
+        if (accounted_job_ids.contains(id))
+            live_job_names.insert(name);
+
+    int total_removed = 0;
+    int total_restored = 0;
+    if (scheduler_read_ok) {
+        // Step 4: remove every report job no consented definition accounts for.
+        for (const auto& job_id : unaccounted_report_jobs(report_jobs, accounted_job_ids)) {
+            if (const auto deleted = send_delete_request(job_id, "No run grant behind the job");
+                deleted) {
+                ++total_removed;
+                BOOST_LOG_SEV(lg(), info) << "Removed the unaccounted scheduler job " << job_id;
+            } else {
+                ++total_failed;
+                BOOST_LOG_SEV(lg(), error) << deleted.error();
+            }
+        }
+
+        // Step 5: a definition that holds a grant but whose job is gone is put
+        // back with the recorded id. The grant is the person's consent, so no
+        // person is needed for this.
+        for (const auto& def : consented) {
+            if (live_job_names.contains(scheduler_job_name(def.id)))
+                continue;
+            if (const auto sent = send_schedule_request(def, *def.scheduler_job_id); sent) {
+                ++total_restored;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Restored scheduler job " << *def.scheduler_job_id << " for definition "
+                    << def.id;
+            } else {
+                ++total_failed;
+                BOOST_LOG_SEV(lg(), error) << "Could not restore the job for definition " << def.id
+                                           << ": " << sent.error();
+            }
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. Tenants: " << tenants.size()
+                              << ", removed: " << total_removed
+                              << ", restored: " << total_restored
+                              << ", cleared: " << total_cleared << ", failed: " << total_failed
                               << ".";
     co_return;
 }

@@ -88,7 +88,7 @@ public:
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(req_ctx);
             auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
-            service::report_scheduling_service scheduler(ctx_, delegated);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
@@ -149,7 +149,7 @@ public:
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(req_ctx);
             auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
-            service::report_scheduling_service scheduler(ctx_, delegated);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
             const auto& actor = delegated_actor(req_ctx);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;

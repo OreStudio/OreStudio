@@ -105,7 +105,7 @@ person's screens need are held by the Member role every person account holds,
 and a job role adds what its job needs; see
 [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]].
 
-A read may be open for one of two reasons only:
+A read may be open for one of three reasons only:
 
 - *It is a self read.* The subject takes no account id, so the answer can hold
   only the caller's own rows. The account comes from the authenticated actor.
@@ -114,6 +114,10 @@ A read may be open for one of two reasons only:
   [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] describes. A
   read that a member needs because of the role they hold is not open: that role
   grants its =:read= code.
+- *It is read before a session exists.* The sign-in and sign-up pages read the
+  password and registration policies, a service reads the public key that
+  verifies tokens, and the setup screen reads whether the system is in
+  bootstrap mode. None of them has a session to present.
 
 So "every member needs it" is not a reason to open a read. Grant the code to
 every role that needs it. An open read answers people who hold no role at all,
@@ -142,6 +146,10 @@ is not in this table checks its read permission.
 | =inbox.v1.notifications.mine= | The notifications addressed to the caller | Self read |
 | =inbox.v1.notifications.unread-count= | How many of those are unread | Self read |
 | =iam.v1.account_contact_informations.mine= | The caller's own contact record | Self read; the profile reads it, and =list_by_account_id= needs =iam::account_contact_informations:read= |
+| =iam.v1.auth.password-policy= | The rules a password must meet | Read before a session exists |
+| =iam.v1.auth.registration-policy= | Whether and where a person may sign up | Read before a session exists |
+| =iam.v1.auth.public-key= | The key that verifies tokens | Read before a session exists |
+| =iam.v1.bootstrap.status= | Whether the system is in bootstrap mode | Read before a session exists |
 
 A row is added to this table in the same change that opens the read, with its
 reason. Removing a row closes the read.

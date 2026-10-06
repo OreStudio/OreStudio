@@ -1,35 +1,32 @@
 :PROPERTIES:
-:ID: 31A4DB2C-AE0C-488C-AE07-6203B0415E35
+:ID: 8A592FC9-501C-4FAF-BAAC-563FA22C18E6
 :END:
-#+title: Task: Guard the personal data in IAM
-#+description: Contact information, account parties and role requests check their read code, and a person still reads their own through a self read.
+#+title: Task: Guard or allow-list the hand-written reads
+#+description: Every hand-written read handler either checks its read code or serves a subject Authorised reads allow-lists, and the open reads check covers them.
 #+type: task
 #+level: s1
 #+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
 #+owner: marco
-#+branch: feature/generated-read-handlers-do-not-check-read-permissions
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment: eager_maxwell
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A member can no longer read another account's contact information, which
-account works in which party, or who asked for which role, through the
-entity's reads or through its history. A person still reads their own contact
-record, through a self read.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,14 +35,7 @@ record, through a self read.
 
 * Acceptance
 
-- =account_contact_informations=, =role_grant_requests= and
-  =role_grant_request_roles= check their read codes; the account party reads
-  check =iam::accounts:read=.
-- =iam.v1.account_contact_informations.mine= answers the caller's own record and
-  names no account; the profile route reads through it.
-- The history subject refuses a caller without the entity's read code.
-- Live: a Viewer is refused each of these reads and reads their own contact
-  record; a tenant administrator reads them all.
+-
 
 * Plan
 
@@ -68,19 +58,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-The profile page reads the caller's own contact record through
-=iam.v1.account_contact_informations.list_by_account_id=, passing the session's
-account id (=readContactInformation= in =wire-protocol/src/profile-operations.ts=).
-The server cannot tell that call from a read of a colleague's record, so
-guarding the read would break the profile. Add a self read,
-=iam.v1.account_contact_informations.mine=, beside the existing =update-self=,
-move the profile onto it, and only then guard the list. The self read is in
-the planned table of [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
-
-Permission wildcards are =*= and =component::*= only
-(=ores::security::authorization::grants=); there is no read-only wildcard such
-as =iam::*:read=.
 
 * Test Scenarios
 

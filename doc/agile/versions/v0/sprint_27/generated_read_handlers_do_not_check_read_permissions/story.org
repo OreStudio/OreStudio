@@ -103,9 +103,10 @@ most resources, so the permission exists and nothing checks it.
 |------+-------+-------+-----+-------------|
 | [[id:C8F06D29-CA09-43FF-A76D-3803FDB29BD0][State the read rule and the allow-list]] | DONE | 2026-10-06 | 2026-10-06 | Authorised reads states that a read checks its permission unless allow-listed, and lists every open read by subject with its reason. |
 | [[id:31A4DB2C-AE0C-488C-AE07-6203B0415E35][Guard the personal data in IAM]] | STARTED | 2026-10-06 | | Contact information, account parties and role requests check their read code, and a person still reads their own through a self read. |
-| [[id:816D9D8A-A4CA-45FE-8350-7DF3AE2C629A][Guard reads by default in codegen]] | BACKLOG | | | A generated read checks its resource's read code unless its model opts out by naming its allow-list entry; every component is regenerated. |
+| [[id:816D9D8A-A4CA-45FE-8350-7DF3AE2C629A][Guard reads by default in codegen]] | STARTED | 2026-10-06 | | A generated read checks its resource's read code unless its model opts out by naming its allow-list entry; every component is regenerated. |
 | [[id:ED8035BF-475C-4F8A-B899-5DB479E0B86A][Seed the read codes each role uses]] | BACKLOG | | | Each person role and service role holds the read codes its journeys and calls use, checked live as each role. |
 | [[id:AE9539E8-D985-4F7C-AB62-E08CF01C1EBA][Fail CI on an open read that is not allowed]] | BACKLOG | | | A check fails when a handler serves a read with no permission check and no allow-list entry. |
+| [[id:8A592FC9-501C-4FAF-BAAC-563FA22C18E6][Guard or allow-list the hand-written reads]] | BACKLOG | | | Every hand-written read handler either checks its read code or serves a subject Authorised reads allow-lists, and the open reads check covers them. |
 
 * Decisions
 

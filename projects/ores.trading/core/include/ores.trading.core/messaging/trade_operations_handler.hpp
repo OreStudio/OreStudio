@@ -125,6 +125,10 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::trades:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         export_portfolio_response resp;
         try {
             if (auto req = decode<export_portfolio_request>(msg)) {
@@ -158,6 +162,10 @@ public:
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::trades:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         export_trades_to_storage_response resp;

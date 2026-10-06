@@ -117,6 +117,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!ores::service::messaging::has_permission(req_ctx, "assets::images:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_image_upload_policy_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(image_operations_handler_lg(), warn)

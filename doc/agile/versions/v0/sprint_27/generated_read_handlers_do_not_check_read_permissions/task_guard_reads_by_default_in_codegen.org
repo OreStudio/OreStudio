@@ -7,26 +7,28 @@
 #+level: s1
 #+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generated-read-handlers-do-not-check-read-permissions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Codegen guards every generated read with its resource's read code. A model
+opens a read only by naming its subject in =:open_reads:=, and every component
+is regenerated.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,7 +37,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =protocol_operations= guards a read unless its subject is in the model's
+  =:open_reads:=; a subject that is not one of the resource's reads fails the
+  generation.
+- =:guard_reads:= is removed; the role and permission models open exactly the
+  allow-listed subjects.
+- Every component's handlers and history registrars are regenerated, and the
+  diff is the permission checks alone.
+- The codegen tests state the new rule, including a junction and a misspelt
+  open subject.
 
 * Plan
 

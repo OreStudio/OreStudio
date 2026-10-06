@@ -71,6 +71,10 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "dq::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         // Template data is system-level seed data; query under the system tenant.
         const auto sys_ctx =
             ores::database::service::tenant_context::with_system_tenant(*ctx_expected);

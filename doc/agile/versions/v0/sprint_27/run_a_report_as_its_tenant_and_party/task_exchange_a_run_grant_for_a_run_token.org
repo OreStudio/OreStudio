@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/exchange-a-run-grant-for-a-run-token
-#+pr:
+#+pr: 2702
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -148,7 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2702][#2702]] | [iam] Exchange a run grant for a run token |
 
 * Review
 

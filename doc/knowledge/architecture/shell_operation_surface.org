@@ -102,6 +102,8 @@ found no entry rather than that the data is missing.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], the window these verbs mirror.
 - [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]], the tree a folder token addresses.
 - The command group is

@@ -283,6 +283,8 @@ The table below uses the ORE quote-key taxonomy from
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE quote types this paper could populate.
 - [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]] — the natural arbitrage-removal companion to GMM generation.
 - [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — fast surrogate pricer for equity/FX option surfaces.

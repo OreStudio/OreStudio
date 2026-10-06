@@ -101,6 +101,8 @@ the curve is historical and why it is still offered.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]], which owns this row.
 - [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the two sets of child rows.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the foreign key behind =process_type=.

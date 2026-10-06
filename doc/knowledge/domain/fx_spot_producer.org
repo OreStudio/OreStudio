@@ -92,6 +92,8 @@ seed a running feed used.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], which this feed reads.
 - [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one child row per weighted Gaussian.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the process this feed steps.

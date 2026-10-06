@@ -114,6 +114,8 @@ relationship the schema does not carry.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the vocabulary the =producer_kind= column validates against.
 - [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], which decides whether a started feed creates a binding at all.
 - The model is =projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org=.

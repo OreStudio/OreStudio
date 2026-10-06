@@ -76,5 +76,7 @@ The feed binding.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface the controller stores.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], what reads the binding a start creates.

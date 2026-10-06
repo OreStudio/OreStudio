@@ -66,5 +66,7 @@ bootstrapper stamps it to IR_CURVE_BOOTSTRAP.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]], the curve specific view of provenance, which this note must not restate.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the tables a lineage row points at.

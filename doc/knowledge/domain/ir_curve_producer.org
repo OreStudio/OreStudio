@@ -102,6 +102,8 @@ points alongside it.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], which this feed reads.
 - [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], the ladder this feed resolves.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the engines the config may name.

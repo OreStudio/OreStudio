@@ -114,6 +114,8 @@ catalogued short-rate engines, and it has no caller in the tree. See
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], the hub that carries the mathematics of each process.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]], which explains why generation runs under P.
 - [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]], which is what makes a one-step-at-a-time loop sufficient.

@@ -101,6 +101,8 @@ to pre-fill a new row in the editor.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], the parent of both row sets.
 - [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the vocabulary the definitions belong to.
 - [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which consumes the resolved ladder.

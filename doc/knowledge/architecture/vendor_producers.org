@@ -125,6 +125,8 @@ tree has a publisher behind it.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface a vendor producer implements.
 - [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], the subject grammar a vendor producer publishes on.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the one tick payload every producer sends.

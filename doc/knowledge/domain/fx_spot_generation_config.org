@@ -97,6 +97,8 @@ differs.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]], which owns this row.
 - [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one row per weighted Gaussian.
 - [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]], which starts from this row.

@@ -81,6 +81,8 @@ and observed at once.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][The feed binding]], the row that carries the kind and hands it to the loop.
 - [[id:6FA21D8B-F95A-47BE-BD16-26048798A164][Derivation Kind]], the sibling axis of published against computed.
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]], the component the vocabulary lives in.

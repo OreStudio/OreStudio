@@ -75,6 +75,8 @@ work resolves one, so a container can hold a feed the tree does not show.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], which draws the tree and the editors behind it.
 - [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]], one of the two orthogonal axes on the collection.
 - [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], the other one.

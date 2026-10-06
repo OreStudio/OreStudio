@@ -65,5 +65,7 @@ producer registers under, and it is fixed for the producer's lifetime.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], where a tick these feeds publish is written.
 - [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]], the one owner of the running feeds.

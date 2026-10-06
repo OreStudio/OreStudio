@@ -135,6 +135,8 @@ now embedded in two documents instead of one.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the market data set a snapshot materialises values for.
 - [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — part of what a floating snapshot pins in place of a specific resolved value.

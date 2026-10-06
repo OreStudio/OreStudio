@@ -879,6 +879,8 @@ by this document.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — full 49-type ORE quote-key taxonomy; source for all quote-key notation in this document.
 - [[id:8AF6B7C5-4E09-4361-A00A-21C5A61B7F27][Intermediate analysis: technique-to-asset-class mapping]] — the analysis document this supersedes; contains the full coverage table, gap analysis with proper solutions, and the reasoning behind the generation stack order.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM P-measure technique (Kienitz 2024, SSRN 5050372).

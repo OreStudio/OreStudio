@@ -334,6 +334,8 @@ shape.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; introduces the set-theoretic framing this document assumes.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical-only projection of an identifier; the static/instance/dynamic three-level structure by which requirement sets are generated.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space of every valid identifier.

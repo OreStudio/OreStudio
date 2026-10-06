@@ -68,6 +68,8 @@ with different cadences does not carry the same dynamics.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the parent.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the mixture process from these rows.
 - [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]], which reads them at feed construction.

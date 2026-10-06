@@ -48,6 +48,8 @@ whether their data is ever stored, and not in who the data is meant for.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]], the other, orthogonal config axis.
 - [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], which turns the mode into the two prefixes.
 - [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]], which applies the mode when it binds a feed.

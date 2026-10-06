@@ -78,6 +78,8 @@ the mapping layer, not this table and not the create script.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], whose =process_type= is the foreign key into this table.
 - [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], which holds the value rows these definitions describe.
 - [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which takes the mapping path.

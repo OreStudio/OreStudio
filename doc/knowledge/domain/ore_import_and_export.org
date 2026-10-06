@@ -111,6 +111,8 @@ Both requests declare =requires_session = true=.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The producer kind]], the =VENDOR= stamp an imported series carries.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], the catalog the import writes into.
 - The import service is

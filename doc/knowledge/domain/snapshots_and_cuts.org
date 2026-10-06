@@ -96,6 +96,8 @@ word and nothing else.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]], the resolution-side snapshot this note is not about.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the two reads return rows from.
 - The handler is =curve_snapshot_handler= in

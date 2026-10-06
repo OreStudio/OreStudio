@@ -56,5 +56,7 @@ reader would find the three call sites by compiling rather than by reading.
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], the seam these edits sit around.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the path that stays unchanged.

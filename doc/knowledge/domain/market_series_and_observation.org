@@ -67,6 +67,8 @@ stated in [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]].
 
 * See also
 
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]], the extra row a derived observation carries.
 - [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]], where the stored URIs come from.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the writer of both tables.

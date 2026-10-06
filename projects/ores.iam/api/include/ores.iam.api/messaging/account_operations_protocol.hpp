@@ -476,6 +476,46 @@ struct get_my_account_contact_information_response {
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
 };
 
+/**
+ * @brief Reconciles the accounts a scope names with their pictures.
+ *
+ * The scope names the accounts dataset whose rows each carry the picture code
+ * an account wants. Every account the dataset names that carries no picture
+ * gets one: the image is ensured in the tenant and the account is updated.
+ * An account that already carries a picture is left alone, so a repeated call
+ * writes nothing.
+ *
+ * A trigger rather than a report: the provisioning step sends it, and an
+ * operator may re-run it from a client.
+ */
+struct attach_account_pictures_request {
+    using response_type = struct attach_account_pictures_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.attach-pictures";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The accounts dataset whose photo_key column names each picture.
+     */
+    std::string dataset_code;
+};
+
+struct attach_account_pictures_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The images attached, one per account that wanted one.
+     */
+    std::vector<std::string> image_ids;
+    /**
+     * @brief The accounts the images were attached to.
+     */
+    std::vector<std::string> account_ids;
+};
+
 }
 
 #endif

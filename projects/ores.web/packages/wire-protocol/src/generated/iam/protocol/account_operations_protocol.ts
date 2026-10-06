@@ -330,6 +330,37 @@ export interface GetMyAccountContactInformationResponse {
     account_contact_information: AccountContactInformation | null;
 }
 
+/**
+ * @brief Reconciles the accounts a scope names with their pictures.
+ *
+ * The scope names the accounts dataset whose rows each carry the picture code
+ * an account wants. Every account the dataset names that carries no picture
+ * gets one: the image is ensured in the tenant and the account is updated.
+ * An account that already carries a picture is left alone, so a repeated call
+ * writes nothing.
+ *
+ * A trigger rather than a report: the provisioning step sends it, and an
+ * operator may re-run it from a client.
+ */
+export interface AttachAccountPicturesRequest {
+    /**
+     * @brief The accounts dataset whose photo_key column names each picture.
+     */
+    dataset_code: string;
+}
+
+export interface AttachAccountPicturesResponse {
+    result: Result;
+    /**
+     * @brief The images attached, one per account that wanted one.
+     */
+    image_ids: string[];
+    /**
+     * @brief The accounts the images were attached to.
+     */
+    account_ids: string[];
+}
+
 export const subjects = {
     publish_accounts_from_dq_request: 'iam.v1.accounts.publish-from-dq',
     save_account_request: 'iam.v1.accounts.save',
@@ -347,6 +378,7 @@ export const subjects = {
     update_self_account_contact_information_request:
         'iam.v1.account_contact_informations.update-self',
     get_my_account_contact_information_request: 'iam.v1.account_contact_informations.mine',
+    attach_account_pictures_request: 'iam.v1.accounts.attach-pictures',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -369,4 +401,5 @@ export const requiresSession = {
     update_self_account_request: true,
     update_self_account_contact_information_request: true,
     get_my_account_contact_information_request: true,
+    attach_account_pictures_request: true,
 } as const;

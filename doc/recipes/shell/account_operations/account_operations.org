@@ -306,3 +306,24 @@ It is addressed at =iam.v1.account_contact_informations.mine=.
 account_operations get-my-account-contact-information
 #+end_src
 
+** =attach-account-pictures=
+:PROPERTIES:
+:ID: 8AA25319-A2C3-5767-8DCF-7B7303EE6D96
+:END:
+
+Sends =attach_account_pictures_request= and prints =attach_account_pictures_response=, so the shape is the protocol's and the meaning is the service's. It reads =dataset_code=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+account_operations attach-account-pictures <dataset_code>
+#+end_example
+
+It is addressed at =iam.v1.accounts.attach-pictures=.
+
+#+name: account_operations-attach-account-pictures
+#+begin_src ores-shell :tangle account_operations-attach-account-pictures.ores :exports none
+account_operations attach-account-pictures __none__
+#+end_src
+

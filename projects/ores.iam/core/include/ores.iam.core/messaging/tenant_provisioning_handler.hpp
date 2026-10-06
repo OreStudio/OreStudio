@@ -31,6 +31,7 @@
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/domain/role_codes.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
@@ -622,6 +623,61 @@ public:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: " << e.what();
             wf->fail(e.what());
+        }
+    }
+
+    /**
+     * @brief Serves iam.v1.accounts.attach-pictures.
+     *
+     * The reconcile the attach_photos step runs, reachable on its own so an
+     * operator can re-run it from a client and so a scope that is not a
+     * provisioning run can be reconciled too.
+     */
+    void attach_account_pictures(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        auto req = decode<ores::iam::messaging::attach_account_pictures_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        ores::iam::messaging::attach_account_pictures_response response;
+        try {
+            auto caller_ctx = *ctx_expected;
+            ores::iam::service::account_service accounts(caller_ctx);
+            const auto caller = accounts.get_account_by_username(caller_ctx.actor());
+            if (!caller) {
+                response.result.outcome = ores::utility::domain::outcome::invalid;
+                response.result.code = "caller_unknown";
+                response.result.message = "The caller holds no account to act as.";
+                reply(nats_, msg, response);
+                return;
+            }
+            const auto tenant_id = caller_ctx.tenant_id().to_string();
+            auto client = make_step_client(tenant_id,
+                                           caller->id,
+                                           caller->default_party_id.value_or(boost::uuids::uuid{}),
+                                           caller->username);
+            std::vector<std::string> images;
+            attach_staff_photos(client, caller_ctx, tenant_id, req->dataset_code, images);
+            response.image_ids = std::move(images);
+            response.result.outcome = ores::utility::domain::outcome::ok;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            response.result.outcome = ores::utility::domain::outcome::failed;
+            response.result.code = "internal_error";
+            response.result.message = e.what();
+            reply(nats_, msg, response);
         }
     }
 

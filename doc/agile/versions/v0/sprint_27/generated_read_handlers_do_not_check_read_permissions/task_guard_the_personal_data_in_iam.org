@@ -29,11 +29,11 @@ record, through a self read.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -106,3 +106,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Contact information and both role request tables guard their reads; the
+hand-written account party reads check =iam::accounts:read=, as their writes
+check =iam::accounts:update=. A person reads their own contact record through
+=iam.v1.account_contact_informations.mine=, which names no account, and the
+profile route moved onto it. The contact information codes are seeded; the
+handler checked them before, but nothing defined them.
+
+The history subject was a second way in: =<component>.v1.history.get= served
+every version of any entity after authenticating the caller. A history
+provider now registers its entity's read code and the dispatcher refuses a
+caller without it.
+
+A junction ignored =:guard_reads:=, because codegen did not pass the flag for
+junctions; fixed, with a test that fails without the fix.
+
+Live, on a fresh database: =ashley.moore= (Member and Viewer) reads her own
+contact record and is refused colleagues' contact information, account parties
+and role requests, and a colleague's contact history; =tenant_admin= reads
+them all (=evidence/reads_as_member.ores=, =reads_as_administrator.ores=,
+=history_reads.ores=).

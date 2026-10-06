@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -96,3 +96,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Member exists, with 48 explicit codes traced from what the member screens
+read, and a trigger gives it to every person account when its first version
+is written; a service account gets nothing, and Member taken away is not given
+back. Three database tests prove the three cases. All 59 person accounts in
+Acme hold it after a fresh provisioning (=evidence/who_holds_member.sql=).
+
+134 read codes are seeded that no seed defined, each beside its write code
+where it has one. The service roles are granted the reads they make on other
+components, traced from the protocol headers each component includes: IAM
+provisioning, the marketdata import, ORE, and reporting's template list.
+Provisioning a tenant ran all seven steps under the guards.
+
+Through the BFF, =ashley.moore= reads 51 of the 53 member routes
+(=evidence/member_screens.py=). The two that answer 403, her sessions and her
+picture, were guarded before this story and are captured as missing self
+reads.
+
+Support's description promises read access to everything, but it holds five
+codes and Member; widening it is a product decision and is left open.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=check_open_reads.py= fails when a generated read handler checks no
+permission and its subject is not allow-listed, when a generated history
+registrar passes no read code, and when the allow-list names a subject no
+protocol defines. It runs in the codegen drift workflow, which now also runs
+when Authorised reads changes. On its first run it found a hand-written read
+pasted into the composite instrument handler with no check, now guarded.
+Five tests cover it.

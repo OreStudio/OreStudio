@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -83,3 +83,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Twelve hand-written reads checked nothing; each now checks its resource's
+read code, and three resources had their codes seeded. =suggest-commands=
+answered anybody with an account's id and its tenant's hostname for any
+username in any tenant; it now needs a session and =iam::roles:assign=, and
+another tenant needs =iam::tenants:read=. The four reads made before a
+session exists are allow-listed, and the rule names that reason. A rescan
+finds no hand-written read without a check except the allow-listed ones, the
+history dispatcher and the access read whose service checks it.

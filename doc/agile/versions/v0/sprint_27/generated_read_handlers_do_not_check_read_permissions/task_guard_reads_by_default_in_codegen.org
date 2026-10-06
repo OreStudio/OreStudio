@@ -28,11 +28,11 @@ is regenerated.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -93,3 +93,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=protocol_operations= guards every read with its resource's read code. A
+model opens a read only by naming its subject in =:open_reads:=, and a subject
+that is not one of its reads fails the generation. =:guard_reads:= is gone
+from the seven models that set it; the role model opens =iam.v1.roles.list=
+and =iam.v1.roles.get=, and the permission model =iam.v1.permissions.list=.
+History registrars always pass the entity's read code.
+
+Every component's handlers and history registrars were regenerated; the diff
+is the permission checks alone (a script filtered every changed line against
+the check's shape). Codegen tests: 1161 passed, including an open read, a
+misspelt open subject and a junction.

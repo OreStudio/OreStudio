@@ -1,5 +1,9 @@
-#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/base_correlation_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/bma_basis_swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/bond_future_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/bond_yield_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/book_status_commands.hpp"
@@ -11,9 +15,19 @@
 #include "ores.shell/app/commands/refdata/calendar_date_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_event_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_exception_commands.hpp"
+#include "ores.shell/app/commands/refdata/calendar_name_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_rule_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/cap_floor_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/cds_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/cds_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/cds_volatility_term_commands.hpp"
+#include "ores.shell/app/commands/refdata/cms_spread_option_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_forward_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_future_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_price_segment_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_contact_information_commands.hpp"
@@ -22,6 +36,8 @@
 #include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/cross_currency_basis_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/cross_currency_fix_float_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/csa_commands.hpp"
 #include "ores.shell/app/commands/refdata/csa_eligible_currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_calendar_commands.hpp"
@@ -34,18 +50,45 @@
 #include "ores.shell/app/commands/refdata/currency_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_pair_convention_calendar_commands.hpp"
 #include "ores.shell/app/commands/refdata/currency_pair_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_bootstrap_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_configuration_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_configuration_section_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_correlation_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_definition_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_global_report_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_parametric_smile_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_parametric_smile_parameter_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_quote_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_report_configuration_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_role_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_section_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_security_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/curve_segment_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_curve_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_segment_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/curve_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/day_count_fraction_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/day_counter_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/default_curve_configuration_commands.hpp"
 #include "ores.shell/app/commands/refdata/deposit_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/derivation_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/diary_entry_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/equity_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/equity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/floating_index_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/fra_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/future_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_option_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/fx_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/ibor_index_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/inflation_cap_floor_volatility_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/inflation_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/inflation_seasonality_factor_commands.hpp"
+#include "ores.shell/app/commands/refdata/inflation_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/instrument_code_commands.hpp"
+#include "ores.shell/app/commands/refdata/intraday_power_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/intraday_power_load_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/ir_curve_bootstrap_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/ir_curve_bootstrap_pillar_commands.hpp"
 #include "ores.shell/app/commands/refdata/ledger_feed_type_commands.hpp"
@@ -70,13 +113,18 @@
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
 #include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_member_commands.hpp"
 #include "ores.shell/app/commands/refdata/series_subclass_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/swaption_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_basis_swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_basis_two_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_convention_resolution_commands.hpp"
@@ -84,13 +132,21 @@
 #include "ores.shell/app/commands/refdata/tenor_resolution_algorithm_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_schedule_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_unit_commands.hpp"
+#include "ores.shell/app/commands/refdata/yield_curve_config_commands.hpp"
+#include "ores.shell/app/commands/refdata/yield_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/zero_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/zero_inflation_index_convention_commands.hpp"
 
 namespace ores::shell::app::commands {
 
 void refdata_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session) {
     asset_class_code_commands::register_commands(root_menu, session);
+    average_ois_convention_commands::register_commands(root_menu, session);
+    base_correlation_config_commands::register_commands(root_menu, session);
+    bma_basis_swap_convention_commands::register_commands(root_menu, session);
+    bond_future_volatility_config_commands::register_commands(root_menu, session);
+    bond_yield_convention_commands::register_commands(root_menu, session);
     book_commands::register_commands(root_menu, session);
     book_purpose_type_commands::register_commands(root_menu, session);
     book_status_commands::register_commands(root_menu, session);
@@ -102,9 +158,19 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     calendar_date_commands::register_commands(root_menu, session);
     calendar_event_commands::register_commands(root_menu, session);
     calendar_exception_commands::register_commands(root_menu, session);
+    calendar_name_commands::register_commands(root_menu, session);
     calendar_rule_commands::register_commands(root_menu, session);
     calendar_type_commands::register_commands(root_menu, session);
+    cap_floor_volatility_config_commands::register_commands(root_menu, session);
     cds_convention_commands::register_commands(root_menu, session);
+    cds_volatility_config_commands::register_commands(root_menu, session);
+    cds_volatility_term_commands::register_commands(root_menu, session);
+    cms_spread_option_convention_commands::register_commands(root_menu, session);
+    commodity_curve_config_commands::register_commands(root_menu, session);
+    commodity_forward_convention_commands::register_commands(root_menu, session);
+    commodity_future_convention_commands::register_commands(root_menu, session);
+    commodity_price_segment_commands::register_commands(root_menu, session);
+    commodity_volatility_config_commands::register_commands(root_menu, session);
     contact_type_commands::register_commands(root_menu, session);
     counterparty_commands::register_commands(root_menu, session);
     counterparty_contact_information_commands::register_commands(root_menu, session);
@@ -113,6 +179,8 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     crm_driver_pair_commands::register_commands(root_menu, session);
     crm_enabled_derived_pair_commands::register_commands(root_menu, session);
     crm_topology_config_commands::register_commands(root_menu, session);
+    cross_currency_basis_convention_commands::register_commands(root_menu, session);
+    cross_currency_fix_float_convention_commands::register_commands(root_menu, session);
     csa_commands::register_commands(root_menu, session);
     csa_eligible_currency_commands::register_commands(root_menu, session);
     currency_calendar_commands::register_commands(root_menu, session);
@@ -125,18 +193,45 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     currency_pair_commands::register_commands(root_menu, session);
     currency_pair_convention_calendar_commands::register_commands(root_menu, session);
     currency_pair_convention_commands::register_commands(root_menu, session);
+    curve_bootstrap_config_commands::register_commands(root_menu, session);
+    curve_configuration_commands::register_commands(root_menu, session);
+    curve_configuration_section_commands::register_commands(root_menu, session);
+    curve_correlation_config_commands::register_commands(root_menu, session);
     curve_definition_commands::register_commands(root_menu, session);
+    curve_global_report_commands::register_commands(root_menu, session);
+    curve_parametric_smile_commands::register_commands(root_menu, session);
+    curve_parametric_smile_parameter_commands::register_commands(root_menu, session);
     curve_quote_commands::register_commands(root_menu, session);
+    curve_report_configuration_commands::register_commands(root_menu, session);
     curve_role_commands::register_commands(root_menu, session);
+    curve_section_commands::register_commands(root_menu, session);
+    curve_security_config_commands::register_commands(root_menu, session);
     curve_segment_commands::register_commands(root_menu, session);
+    curve_segment_curve_commands::register_commands(root_menu, session);
+    curve_segment_type_commands::register_commands(root_menu, session);
+    curve_volatility_config_commands::register_commands(root_menu, session);
     day_count_fraction_type_commands::register_commands(root_menu, session);
+    day_counter_commands::register_commands(root_menu, session);
+    default_curve_config_commands::register_commands(root_menu, session);
+    default_curve_configuration_commands::register_commands(root_menu, session);
     deposit_convention_commands::register_commands(root_menu, session);
     derivation_kind_commands::register_commands(root_menu, session);
     diary_entry_type_commands::register_commands(root_menu, session);
+    equity_curve_config_commands::register_commands(root_menu, session);
+    equity_volatility_config_commands::register_commands(root_menu, session);
     floating_index_type_commands::register_commands(root_menu, session);
     fra_convention_commands::register_commands(root_menu, session);
+    future_convention_commands::register_commands(root_menu, session);
+    fx_option_convention_commands::register_commands(root_menu, session);
+    fx_volatility_config_commands::register_commands(root_menu, session);
     ibor_index_convention_commands::register_commands(root_menu, session);
+    inflation_cap_floor_volatility_config_commands::register_commands(root_menu, session);
+    inflation_curve_config_commands::register_commands(root_menu, session);
+    inflation_seasonality_factor_commands::register_commands(root_menu, session);
+    inflation_swap_convention_commands::register_commands(root_menu, session);
     instrument_code_commands::register_commands(root_menu, session);
+    intraday_power_curve_config_commands::register_commands(root_menu, session);
+    intraday_power_load_convention_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_config_commands::register_commands(root_menu, session);
     ir_curve_bootstrap_pillar_commands::register_commands(root_menu, session);
     ledger_feed_type_commands::register_commands(root_menu, session);
@@ -160,14 +255,18 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     portfolio_commands::register_commands(root_menu, session);
     portfolio_right_commands::register_commands(root_menu, session);
     producer_kind_commands::register_commands(root_menu, session);
-    sandbox_commands::register_commands(root_menu, session);
-    sandbox_member_commands::register_commands(root_menu, session);
     purpose_type_commands::register_commands(root_menu, session);
     regulatory_book_type_commands::register_commands(root_menu, session);
     rounding_type_commands::register_commands(root_menu, session);
+    sandbox_commands::register_commands(root_menu, session);
+    sandbox_member_commands::register_commands(root_menu, session);
     series_subclass_code_commands::register_commands(root_menu, session);
     swap_convention_commands::register_commands(root_menu, session);
+    swap_index_convention_commands::register_commands(root_menu, session);
+    swaption_volatility_config_commands::register_commands(root_menu, session);
     tenor_anchor_commands::register_commands(root_menu, session);
+    tenor_basis_swap_convention_commands::register_commands(root_menu, session);
+    tenor_basis_two_swap_convention_commands::register_commands(root_menu, session);
     tenor_commands::register_commands(root_menu, session);
     tenor_convention_commands::register_commands(root_menu, session);
     tenor_convention_resolution_commands::register_commands(root_menu, session);
@@ -175,7 +274,10 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     tenor_resolution_algorithm_commands::register_commands(root_menu, session);
     tenor_schedule_commands::register_commands(root_menu, session);
     tenor_unit_commands::register_commands(root_menu, session);
+    yield_curve_config_commands::register_commands(root_menu, session);
+    yield_volatility_config_commands::register_commands(root_menu, session);
     zero_convention_commands::register_commands(root_menu, session);
+    zero_inflation_index_convention_commands::register_commands(root_menu, session);
 }
 
 }

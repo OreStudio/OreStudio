@@ -160,6 +160,58 @@
 #include "ores.refdata.core/messaging/deposit_convention_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/derivation_kind_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/derivation_kind_registrar.hpp"
+#include "ores.refdata.core/messaging/average_ois_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/base_correlation_config_registrar.hpp"
+#include "ores.refdata.core/messaging/bma_basis_swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/bond_future_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/bond_yield_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/cap_floor_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/cds_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/cds_volatility_term_registrar.hpp"
+#include "ores.refdata.core/messaging/cms_spread_option_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_forward_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_future_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_price_segment_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_basis_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/cross_currency_fix_float_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_bootstrap_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_configuration_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_configuration_section_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_correlation_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_definition_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_global_report_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_parametric_smile_parameter_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_parametric_smile_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_quote_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_report_configuration_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_section_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_security_config_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_curve_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_segment_type_registrar.hpp"
+#include "ores.refdata.core/messaging/curve_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/default_curve_configuration_registrar.hpp"
+#include "ores.refdata.core/messaging/equity_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/equity_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/future_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_option_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/fx_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_cap_floor_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_seasonality_factor_registrar.hpp"
+#include "ores.refdata.core/messaging/inflation_swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/intraday_power_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/intraday_power_load_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/swap_index_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/swaption_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_basis_swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_basis_two_swap_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/yield_curve_config_registrar.hpp"
+#include "ores.refdata.core/messaging/yield_volatility_config_registrar.hpp"
+#include "ores.refdata.core/messaging/zero_inflation_index_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/diary_entry_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_history_provider_registrar.hpp"
@@ -323,6 +375,58 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_rule_handlers(nats, ctx, verifier));
     append(register_derivation_kind_handlers(nats, ctx, verifier));
     append(register_producer_kind_handlers(nats, ctx, verifier));
+    append(register_average_ois_convention_handlers(nats, ctx, verifier));
+    append(register_base_correlation_config_handlers(nats, ctx, verifier));
+    append(register_bma_basis_swap_convention_handlers(nats, ctx, verifier));
+    append(register_bond_future_volatility_config_handlers(nats, ctx, verifier));
+    append(register_bond_yield_convention_handlers(nats, ctx, verifier));
+    append(register_cap_floor_volatility_config_handlers(nats, ctx, verifier));
+    append(register_cds_volatility_config_handlers(nats, ctx, verifier));
+    append(register_cds_volatility_term_handlers(nats, ctx, verifier));
+    append(register_cms_spread_option_convention_handlers(nats, ctx, verifier));
+    append(register_commodity_curve_config_handlers(nats, ctx, verifier));
+    append(register_commodity_forward_convention_handlers(nats, ctx, verifier));
+    append(register_commodity_future_convention_handlers(nats, ctx, verifier));
+    append(register_commodity_price_segment_handlers(nats, ctx, verifier));
+    append(register_commodity_volatility_config_handlers(nats, ctx, verifier));
+    append(register_cross_currency_basis_convention_handlers(nats, ctx, verifier));
+    append(register_cross_currency_fix_float_convention_handlers(nats, ctx, verifier));
+    append(register_curve_bootstrap_config_handlers(nats, ctx, verifier));
+    append(register_curve_configuration_handlers(nats, ctx, verifier));
+    append(register_curve_configuration_section_handlers(nats, ctx, verifier));
+    append(register_curve_correlation_config_handlers(nats, ctx, verifier));
+    append(register_curve_definition_handlers(nats, ctx, verifier));
+    append(register_curve_global_report_handlers(nats, ctx, verifier));
+    append(register_curve_parametric_smile_handlers(nats, ctx, verifier));
+    append(register_curve_parametric_smile_parameter_handlers(nats, ctx, verifier));
+    append(register_curve_quote_handlers(nats, ctx, verifier));
+    append(register_curve_report_configuration_handlers(nats, ctx, verifier));
+    append(register_curve_section_handlers(nats, ctx, verifier));
+    append(register_curve_security_config_handlers(nats, ctx, verifier));
+    append(register_curve_segment_curve_handlers(nats, ctx, verifier));
+    append(register_curve_segment_handlers(nats, ctx, verifier));
+    append(register_curve_segment_type_handlers(nats, ctx, verifier));
+    append(register_curve_volatility_config_handlers(nats, ctx, verifier));
+    append(register_default_curve_config_handlers(nats, ctx, verifier));
+    append(register_default_curve_configuration_handlers(nats, ctx, verifier));
+    append(register_equity_curve_config_handlers(nats, ctx, verifier));
+    append(register_equity_volatility_config_handlers(nats, ctx, verifier));
+    append(register_future_convention_handlers(nats, ctx, verifier));
+    append(register_fx_option_convention_handlers(nats, ctx, verifier));
+    append(register_fx_volatility_config_handlers(nats, ctx, verifier));
+    append(register_inflation_cap_floor_volatility_config_handlers(nats, ctx, verifier));
+    append(register_inflation_curve_config_handlers(nats, ctx, verifier));
+    append(register_inflation_seasonality_factor_handlers(nats, ctx, verifier));
+    append(register_inflation_swap_convention_handlers(nats, ctx, verifier));
+    append(register_intraday_power_curve_config_handlers(nats, ctx, verifier));
+    append(register_intraday_power_load_convention_handlers(nats, ctx, verifier));
+    append(register_swap_index_convention_handlers(nats, ctx, verifier));
+    append(register_swaption_volatility_config_handlers(nats, ctx, verifier));
+    append(register_tenor_basis_swap_convention_handlers(nats, ctx, verifier));
+    append(register_tenor_basis_two_swap_convention_handlers(nats, ctx, verifier));
+    append(register_yield_curve_config_handlers(nats, ctx, verifier));
+    append(register_yield_volatility_config_handlers(nats, ctx, verifier));
+    append(register_zero_inflation_index_convention_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
     // Asset classes (no codegen model; list-only).

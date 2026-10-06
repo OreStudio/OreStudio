@@ -31,7 +31,7 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Deeper analysis done on 2026-10-06, recorded below. Its recommendation is to let the curve journeys pick the representation. |
+| Now           | Deeper analysis and the curve data model done on 2026-10-06, recorded below. The model reuses the existing tables and adds none for the representation; the curve journeys decide whether a build header is earned. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
 | Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
 | Last touched  | 2026-10-06                               |
@@ -322,6 +322,147 @@ vocabulary question, because the actor classes in the journeys are
    as captures; neither waits on the representation decision.
 4. Keep the ORE handoff out of this story, as it already is; the lossless
    export is the second journey's consumer and its own story.
+
+* Curve data model, 2026-10-06
+
+A design pass against the existing tables and the
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria, at
+=d02032a18c=. It answers one question: which curve tables does the model need,
+and how do they join to the ones already there? The joins below were run
+against the recreated database.
+
+** The joins a curve needs already exist
+
+A curve is a =market_series= whose oresmd URI names it. Its points are
+=market_observation= rows of that series. Its inputs are per-point
+=observation_lineage= rows. Its recipe is the refdata config and its pillars.
+None of this needs a new key.
+
+| Hop | From | To | Key | Note |
+|-----+------+----+-----+------|
+| Recipe to curve | =ir_curve_bootstrap_configs.output_series_id= | =market_series.id= | soft, no FK | cross-component; verified, one row |
+| Curve to points | =market_series.id= | =market_observations.series_id= | hard FK | indexed; points are the curve |
+| Points to inputs | =(series_id, observation_datetime, oresmd_uri)= | =observation_lineage= same triple | soft, natural key | per-point recipe and sources |
+| Pillars to tenors | =ir_curve_bootstrap_pillars.end_tenor_code= | =refdata_tenors.code= | soft, no FK | verified for the seeded pillars |
+| Point to tenor | =market_observations.oresmd_uri= coordinate | =refdata_tenors.code= | by code, via the URI codec | the coordinate *is* the pillar's end tenor |
+
+The point-to-tenor hop is the one that has no column. That is deliberate: the
+component removed its decomposed key columns and made the URI the single
+identity, and the model says a reader that wants the key's parts reads them
+through =oresmd_uri_codec= rather than off a row
+(=ores.marketdata.market_series.org=). Adding a =tenor= column to
+=market_observation= would reverse that decision, and it would pollute a
+generic time-series table with one facet's coordinate. The relation is instead
+carried where it is authoritative: by the recipe's pillar, whose tenor must be
+validated (see below), with the point's coordinate equal to it by construction
+(=curve_republish_service.cpp= passes =point.point_id=, the end tenor, to
+=datum_at_point=).
+
+** The decision: the representation adds no table
+
+The facts a build needs are already stored, or are derivable:
+
+| Fact | Where it is today |
+|------+-------------------|
+| Which curve | =market_series.oresmd_uri= (=curve_id=) |
+| When the curve answers | =market_observations.observation_datetime= for its points |
+| When the build ran, and its versions | the observation rows' bitemporal =valid_from= |
+| Which recipe, and its version | =market_series.derivation_config_id/version=, and =observation_lineage= per point |
+| What it was built from | =observation_lineage.source_series_ids= and =source_as_of= |
+| Which values are quoted, interpolated or overridden | not stored; the =curve_point_provenance= proposal |
+
+A build is therefore the =(series, observation_datetime)= slice of a curve
+series' observations, and two builds are told apart by that slice, by the
+bitemporal version within a slice, and by the recipe version. No table is
+needed to represent that, and adding one would denormalise a fact the
+observation hypertable already holds: the table is append-only, partitioned
+on =observation_datetime=, carries no audit payload, and gives identity by
+key. That is the shape a data-oriented model wants for the points.
+
+** If a first-class build is needed, it is a cold header
+
+One consumer type would earn a table: a journey that treats a build as an
+object in its own right, with a state, a reviewer or a sign-off, rather than
+as a slice of a series. The prior Qt surface had exactly that shape, *Build &
+Diagnostics* then *Publish*, and the review/sign-off task is still a recorded
+intention. If that journey is agreed, the table is small and cold, and it
+joins without touching the points:
+
+#+begin_example
+ores_marketdata_curve_builds_tbl
+  id               uuid      -- surrogate key
+  tenant_id        uuid      -- row-level security
+  party_id         uuid      -- ownership, natural key part
+  version          integer   -- bitemporal version
+  valid_from       timestamptz
+  valid_to         timestamptz
+  series_id        uuid      -- FK -> ores_marketdata_market_series_tbl(id)
+  reference_date   timestamptz  -- the instant the curve answers at; the join key
+  build_kind       text      -- BOOTSTRAP | DERIVED | IMPORTED, validation fn
+  source_as_of     timestamptz  -- when the inputs were observed
+  -- the standard record provenance: modified_by, performed_by,
+  -- change_reason_code, change_commentary
+natural key:  (party_id, series_id, reference_date, build_kind)
+unique index: (tenant_id, party_id, series_id, reference_date, build_kind) current only
+index:        (tenant_id, party_id, series_id, reference_date desc)
+FK:           series_id -> market_series(id), list_by, order reference_date desc
+#+end_example
+
+Its one join is =market_observations.series_id = builds.series_id AND
+market_observations.observation_datetime = builds.reference_date=, which the
+existing =observations_series_datetime= index already serves. The recipe and
+the inputs stay where they are: =market_series.derivation_config_id= for the
+build, =observation_lineage= per point. The build table carries only what
+neither holds, and it stays off the hot path: the kernel reads the points, not
+the header.
+
+The recommendation is to *not* create it until that journey is agreed, and to
+write the journey first if it is. This is the one place the curve model may
+add a table, and the journeys decide it.
+
+** The data-oriented layout
+
+The three regimes get three shapes, and the storage shape is already the
+right one.
+
+- *Storage (Regime 2).* The points are rows, not a blob: identity by key
+  (=series_id=, =observation_datetime=, =oresmd_uri=), table-shaped children,
+  core state split from the cold =observation_lineage= annex, batched access
+  through one repository call. The one decision to keep is that a curve must
+  not be stored as a serialised snapshot on a single row: that would break
+  bitemporality, the as-of read and the eventing that every other series has.
+- *Kernel (Regime 1, the bootstrap and any valuation).* The existing
+  =read_as_of= returns an array of observation objects, each holding its value
+  as text and its coordinate inside a URI string. A kernel should not walk
+  that. Add one read that projects the same rows into arrays:
+
+  #+begin_example
+  struct curve {
+      boost::uuids::uuid series_id;
+      std::chrono::system_clock::time_point as_of;
+      std::vector<std::chrono::sys_days> pillar_dates;   // resolved tenors
+      std::vector<double>                discount_factors;
+  };
+  curve read_curve(context, series_id, as_of);           // one query, one parse
+  #+end_example
+
+  The value text is parsed once at the boundary, the tenors are resolved once,
+  and the kernel sees stride-1 spans. No per-point object, no variant, no
+  parse in the loop. =read_as_of= stays for the generic reader; =read_curve= is
+  the kernel projection of the same rows, not a second source of truth.
+- *Wire (Regime 3).* The curve read is one batched message carrying parallel
+  arrays, not one message per point, and the existing
+  =marketdata.v1.curve-snapshot.get= is reshaped to it rather than joined by a
+  second subject.
+
+** What to add, in order
+
+1. Validate the recipe's pillar tenor codes against =refdata_tenors= at save
+   time (capture =A6472918=). The point-to-tenor relation rests on it.
+2. Guard the curve-snapshot reads (capture =D9258D1F=).
+3. Add the =curve= value and =read_curve= projection, and reshape the
+   curve-snapshot wire message to batched arrays.
+4. Only then decide the =curve_builds= table, from the agreed journeys.
 
 * Acceptance
 

@@ -104,7 +104,7 @@ domain::bond_leg to_domain(const messaging::bond_leg_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_legs_response
 bond_leg_service::list_bond_legs(const messaging::list_bond_legs_request& request) {

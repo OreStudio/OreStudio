@@ -89,7 +89,7 @@ domain::monetary_nature to_domain(const messaging::monetary_nature_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_monetary_natures_response monetary_nature_service::list_monetary_natures(
     const messaging::list_monetary_natures_request& request) {

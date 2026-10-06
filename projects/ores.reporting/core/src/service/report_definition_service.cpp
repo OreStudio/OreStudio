@@ -98,7 +98,7 @@ domain::report_definition to_domain(const messaging::report_definition_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_definitions_response report_definition_service::list_report_definitions(
     const messaging::list_report_definitions_request& request) {

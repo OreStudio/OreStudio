@@ -56,4 +56,4 @@ register_ir_curve_template_entry_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::synthetic::service::messaging
+}

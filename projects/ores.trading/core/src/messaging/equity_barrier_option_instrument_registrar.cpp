@@ -31,7 +31,7 @@ namespace ores::trading::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.trading.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_equity_barrier_option_instrument_handlers(
     ores::nats::service::client& nats,
@@ -93,4 +93,4 @@ std::vector<ores::nats::service::subscription> register_equity_barrier_option_in
     return subs;
 }
 
-} // namespace ores::trading::messaging
+}

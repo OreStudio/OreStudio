@@ -94,7 +94,7 @@ domain::activity_type to_domain(const messaging::activity_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_activity_types_response
 activity_type_service::list_activity_types(const messaging::list_activity_types_request& request) {

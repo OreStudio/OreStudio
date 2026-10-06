@@ -84,7 +84,7 @@ domain::currency_country to_domain(const messaging::currency_country_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_currency_countries_response currency_country_service::list_currency_countries(
     const messaging::list_currency_countries_request& request) {

@@ -41,4 +41,4 @@ void register_origin_dimension_history_provider(
         });
 }
 
-} // namespace ores::dq::messaging
+}

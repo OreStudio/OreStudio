@@ -41,4 +41,4 @@ void register_notification_kind_history_provider(
         });
 }
 
-} // namespace ores::inbox::messaging
+}

@@ -37,6 +37,6 @@ register_ir_curve_generation_config_process_parameter_value_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::synthetic::service::messaging
+}
 
 #endif

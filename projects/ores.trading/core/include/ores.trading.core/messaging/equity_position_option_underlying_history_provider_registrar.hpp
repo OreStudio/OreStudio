@@ -32,6 +32,6 @@ namespace ores::trading::messaging {
 void register_equity_position_option_underlying_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::trading::messaging
+}
 
 #endif

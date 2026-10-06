@@ -97,7 +97,7 @@ domain::session to_domain(const messaging::session_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_sessions_response
 session_service::list_sessions(const messaging::list_sessions_request& request) {

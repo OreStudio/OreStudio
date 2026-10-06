@@ -35,4 +35,4 @@ void register_series_classification_rule_history_provider(
     (void)registry;
 }
 
-} // namespace ores::marketdata::messaging
+}

@@ -90,7 +90,7 @@ domain::parameter_value_domain to_domain(const messaging::parameter_value_domain
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_parameter_value_domains_response
 parameter_value_domain_service::list_parameter_value_domains(

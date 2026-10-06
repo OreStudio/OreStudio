@@ -88,7 +88,7 @@ domain::app_version_platform to_domain(const messaging::app_version_platform_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_app_version_platforms_response
 app_version_platform_service::list_app_version_platforms(

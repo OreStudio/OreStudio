@@ -55,4 +55,4 @@ register_seed_profile_parameter_event_mapping(ev::service::postgres_event_source
         });
 }
 
-} // namespace ores::iam::service::messaging
+}

@@ -91,7 +91,7 @@ domain::report_market_binding to_domain(const messaging::report_market_binding_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_market_bindings_response
 report_market_binding_service::list_report_market_bindings(

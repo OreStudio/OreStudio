@@ -95,7 +95,7 @@ to_domain(const messaging::zero_inflation_index_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_zero_inflation_index_conventions_response
 zero_inflation_index_convention_service::list_zero_inflation_index_conventions(

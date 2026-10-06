@@ -95,7 +95,7 @@ domain::stress_test_shift to_domain(const messaging::stress_test_shift_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_stress_test_shifts_response stress_test_shift_service::list_stress_test_shifts(
     const messaging::list_stress_test_shifts_request& request) {

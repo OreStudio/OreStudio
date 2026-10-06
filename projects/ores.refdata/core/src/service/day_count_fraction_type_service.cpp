@@ -90,7 +90,7 @@ domain::day_count_fraction_type to_domain(const messaging::day_count_fraction_ty
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_day_count_fraction_types_response
 day_count_fraction_type_service::list_day_count_fraction_types(

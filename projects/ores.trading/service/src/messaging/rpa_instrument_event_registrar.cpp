@@ -55,4 +55,4 @@ register_rpa_instrument_event_mapping(ev::service::postgres_event_source& event_
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

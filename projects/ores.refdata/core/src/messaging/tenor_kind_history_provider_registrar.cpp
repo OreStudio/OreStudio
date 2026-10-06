@@ -40,4 +40,4 @@ void register_tenor_kind_history_provider(ores::history::service::dispatch_regis
         });
 }
 
-} // namespace ores::refdata::messaging
+}

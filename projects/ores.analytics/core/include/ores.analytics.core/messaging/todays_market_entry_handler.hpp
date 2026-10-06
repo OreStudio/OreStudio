@@ -44,7 +44,7 @@ inline auto& todays_market_entry_handler_lg() {
         ores::logging::make_logger("ores.analytics.messaging.todays_market_entry_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -559,6 +559,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

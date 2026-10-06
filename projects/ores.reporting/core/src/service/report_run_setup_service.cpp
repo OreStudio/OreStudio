@@ -130,7 +130,7 @@ domain::report_run_setup to_domain(const messaging::report_run_setup_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_run_setups_response report_run_setup_service::list_report_run_setups(
     const messaging::list_report_run_setups_request& request) {

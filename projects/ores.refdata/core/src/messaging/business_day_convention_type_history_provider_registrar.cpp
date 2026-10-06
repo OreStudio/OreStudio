@@ -41,4 +41,4 @@ void register_business_day_convention_type_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

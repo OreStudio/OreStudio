@@ -89,7 +89,7 @@ domain::concurrency_policy to_domain(const messaging::concurrency_policy_write& 
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_concurrency_policies_response concurrency_policy_service::list_concurrency_policies(
     const messaging::list_concurrency_policies_request& request) {

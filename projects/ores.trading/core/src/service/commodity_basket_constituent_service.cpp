@@ -94,7 +94,7 @@ to_domain(const messaging::commodity_basket_constituent_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_commodity_basket_constituents_response
 commodity_basket_constituent_service::list_commodity_basket_constituents(

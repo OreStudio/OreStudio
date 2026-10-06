@@ -113,7 +113,7 @@ domain::bond_issue_leg_schedule to_domain(const messaging::bond_issue_leg_schedu
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_leg_schedules_response
 bond_issue_leg_schedule_service::list_bond_issue_leg_schedules(

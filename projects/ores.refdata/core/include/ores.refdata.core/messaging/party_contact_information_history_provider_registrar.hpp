@@ -32,6 +32,6 @@ namespace ores::refdata::messaging {
 void register_party_contact_information_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

@@ -61,7 +61,7 @@ std::vector<domain::netting_agreement> read_one(repository::netting_agreement_re
     return repo.read_latest(ctx, key.agreement_number);
 }
 
-} // namespace
+}
 
 messaging::list_netting_agreements_response netting_agreement_service::list_netting_agreements(
     const messaging::list_netting_agreements_request& request) {

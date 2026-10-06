@@ -90,7 +90,7 @@ domain::app_version to_domain(const messaging::app_version_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_app_versions_response
 app_version_service::list_app_versions(const messaging::list_app_versions_request& request) {

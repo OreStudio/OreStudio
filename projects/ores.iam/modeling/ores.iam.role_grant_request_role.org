@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: E07B21AB-F875-4549-BDFC-04EE98C246D0
+:END:
+#+title: ores.iam.role_grant_request_role
+#+description: Codegen junction model for role_grant_request_roles: the roles one iam.role_grant approval request asks for.
+#+type: ores.codegen.junction
+#+component: iam
+#+filetags: :model:junction:iam:
+#+name: role_grant_request_roles
+#+name_singular: role_grant_request_role
+#+name_title: Role Grant Request Role
+#+name_singular_words: role grant request role
+#+brief: One role a role grant request asks for.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+The roles an =iam.role_grant= approval request asks for, one row each. A row is
+identified by the request and the role. When the request is approved, IAM
+grants each role the account does not already hold, and records that it
+applied it.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        request_id
+:column_short:  request
+:column_title:  Request
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for reading the roles a request asks for
+:list_by:       true
+:END:
+
+The role grant request the role belongs to.
+
+References ores_iam_role_grant_requests_tbl.request_id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        role_id
+:column_short:  role
+:column_title:  Role
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for finding the requests that ask for a role
+:END:
+
+The role asked for.
+
+References ores_iam_roles_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Columns
+
+** applied_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When IAM applied the role after the request was approved, or null until it
+has. Applying is done once: a role the account already held is marked applied
+without a grant, and a role taken away after it was applied is not granted
+again, because the request is still approved but no longer unapplied.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_role_grant_request_roles_tbl
+:END:
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_iam_role_grant_requests_tbl
+:target_column: request_id
+:error_message: Invalid request_id: %. No role grant request found with this id.
+:END:
+
+The role grant request the role belongs to; must exist in
+ores_iam_role_grant_requests_tbl.
+
+** role_id
+:PROPERTIES:
+:table:         ores_iam_roles_tbl
+:error_message: Invalid role_id: %. No role found with this id.
+:END:
+
+The role asked for; must exist in ores_iam_roles_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: role_grant_request_role
+:name_short:          role_grant_request_roles
+:name_singular_words: role grant request role
+:name_words:          role grant request roles
+:order_column:        role_id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rgrr
+:END:
+
+** Table display
+
+| column     | header  |
+|------------+---------|
+| request_id | Request |
+| role_id    | Role    |
+| applied_at | Applied |
+| version    | Version |
+
+** Presentation
+:PROPERTIES:
+:collection_name: role_grant_request_roles
+:END:
+
+A row is identified by the pair it links, so the model declares no key field.
+
+* See also
+
+- [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] -- the request a role belongs to.
+- [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] -- the role asked for.

@@ -97,7 +97,7 @@ domain::average_ois_convention to_domain(const messaging::average_ois_convention
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_average_ois_conventions_response
 average_ois_convention_service::list_average_ois_conventions(

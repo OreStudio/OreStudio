@@ -55,4 +55,4 @@ register_book_purpose_type_event_mapping(ev::service::postgres_event_source& eve
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

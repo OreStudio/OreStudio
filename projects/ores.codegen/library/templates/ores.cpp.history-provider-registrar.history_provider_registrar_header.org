@@ -45,7 +45,7 @@ namespace ores::{{component}}::messaging {
 void register_{{entity_singular}}_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::{{component}}::messaging
+}
 
 #endif
 {{/domain_entity}}

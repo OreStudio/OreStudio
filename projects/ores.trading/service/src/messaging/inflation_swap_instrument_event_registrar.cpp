@@ -56,4 +56,4 @@ register_inflation_swap_instrument_event_mapping(ev::service::postgres_event_sou
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

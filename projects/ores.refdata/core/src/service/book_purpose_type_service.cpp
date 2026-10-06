@@ -89,7 +89,7 @@ domain::book_purpose_type to_domain(const messaging::book_purpose_type_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_book_purpose_types_response book_purpose_type_service::list_book_purpose_types(
     const messaging::list_book_purpose_types_request& request) {

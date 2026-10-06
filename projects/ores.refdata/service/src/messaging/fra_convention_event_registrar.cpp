@@ -55,4 +55,4 @@ register_fra_convention_event_mapping(ev::service::postgres_event_source& event_
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

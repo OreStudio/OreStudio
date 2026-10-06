@@ -61,7 +61,7 @@ std::vector<domain::counterparty_alias> read_one(repository::counterparty_alias_
     return repo.read_latest(ctx, key.id_value);
 }
 
-} // namespace
+}
 
 messaging::list_counterparty_aliases_response counterparty_alias_service::list_counterparty_aliases(
     const messaging::list_counterparty_aliases_request& request) {

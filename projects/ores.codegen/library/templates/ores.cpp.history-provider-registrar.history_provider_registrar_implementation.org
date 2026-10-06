@@ -86,7 +86,7 @@ void register_{{entity_singular}}_history_provider(
 {{/primary_key.is_compound}}
 }
 
-} // namespace ores::{{component}}::messaging
+}
 {{/domain_entity}}
 #+end_src
 

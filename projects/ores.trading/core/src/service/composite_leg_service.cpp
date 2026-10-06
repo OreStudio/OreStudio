@@ -89,7 +89,7 @@ domain::composite_leg to_domain(const messaging::composite_leg_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_composite_legs_response
 composite_leg_service::list_composite_legs(const messaging::list_composite_legs_request& request) {

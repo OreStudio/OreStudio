@@ -87,7 +87,7 @@ domain::notification_argument to_domain(const messaging::notification_argument_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notification_arguments_response
 notification_argument_service::list_notification_arguments(

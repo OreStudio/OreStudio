@@ -114,7 +114,7 @@ domain::bond_issue_leg_rate to_domain(const messaging::bond_issue_leg_rate_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_leg_rates_response
 bond_issue_leg_rate_service::list_bond_issue_leg_rates(

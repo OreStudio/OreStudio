@@ -56,4 +56,4 @@ register_csa_eligible_currency_event_mapping(ev::service::postgres_event_source&
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

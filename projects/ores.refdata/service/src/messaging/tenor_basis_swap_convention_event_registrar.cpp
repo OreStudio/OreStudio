@@ -57,4 +57,4 @@ register_tenor_basis_swap_convention_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

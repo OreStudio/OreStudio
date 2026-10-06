@@ -31,7 +31,7 @@ namespace ores::synthetic::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.synthetic.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_gmm_component_handlers(ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ register_gmm_component_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::synthetic::messaging
+}

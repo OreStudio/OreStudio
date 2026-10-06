@@ -7,14 +7,14 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:security:
 #+created: 2026-09-23
-#+updated: 2026-09-23
+#+updated: 2026-10-05
 
 These are the first-system-setup journeys: an empty database becomes a usable
 installation, a tenant is brought into service, and a party is added to a tenant
 with the accounts that work in it.
 
-They were designed and prototyped first, on throwaway branches, and those
-prototypes are the model the later journeys follow. Where a journey here has a
+They were designed and prototyped first, and those prototypes are the model
+the later journeys follow; they are merged into =main= as the record. Where a journey here has a
 prototype, the document links it.
 
 *The one group whose journeys carry state.* A setup journey runs work that takes

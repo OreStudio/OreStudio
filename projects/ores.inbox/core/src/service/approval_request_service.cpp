@@ -92,7 +92,7 @@ domain::approval_request to_domain(const messaging::approval_request_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_approval_requests_response approval_request_service::list_approval_requests(
     const messaging::list_approval_requests_request& request) {

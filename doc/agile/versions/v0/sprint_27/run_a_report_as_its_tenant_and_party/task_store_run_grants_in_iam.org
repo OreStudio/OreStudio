@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 0F9B325F-8812-423B-969C-B9A7C0E9D28B
+:END:
+#+title: Task: Store run grants in IAM
+#+description: The run grant entity, its create, revoke and get operations, the checks at create, and the permission codes and seeds.
+#+type: task
+#+level: s1
+#+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
+#+owner: marco
+#+branch: feature/store-run-grants-in-iam
+#+pr: 2675
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+IAM stores run grants: a person's consent that runs of one resource act in one
+tenant and one party with one role. Grants are read like any entity and written
+only through IAM's create and revoke operations, which make the checks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- =ores.iam.run_grant= exists as a codegen entity: tenant-scoped, party-isolated,
+  bitemporal, with the fields of
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]].
+- Its reads are on the wire, HTTP and the shell; it has no generic write verbs.
+- =iam.v1.run_grants.create= creates a grant on behalf of the person, refuses a
+  role the person does not fully hold in the party, and returns the active
+  grant for the same resource and grantor.
+- =iam.v1.run_grants.revoke= ends a grant and is idempotent.
+- Handler tests cover each check; the build and the test suite pass.
+
+* Plan
+
+1. Codegen: allow =:client_read_only:= on a domain entity, so the repository is
+   writable and the wire carries reads only. The junction loader already
+   computes =wire_write_enabled= from it; the domain entity loader rejects it
+   today because it does not read it. A generated =put= would let a caller
+   store a grant with none of the checks.
+2. Model =ores.iam.run_grant= on =ores.analytics.pricing_model_config=: the
+   UUID-identified lookup profile, =party_id=, and party isolation. Regenerate
+   every layer, seed =iam::run_grants:read=, build and test through compass.
+3. An operation model for create and revoke, with a hand-written handler that
+   checks the grantor and the role.
+4. A recipe, and the IAM page's record of what is built.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Run grant service tests | 8 passed | =compass test run -- -R iam= | fd84fb4b19 |
+| IAM test programs | 5 of 5 passed | =compass test run -- -R iam= | fd84fb4b19 |
+| Full test suite | 94 of 94 programs passed | =compass test run= | fd84fb4b19 |
+| Codegen suite | 1155 passed | =pytest projects/ores.codegen/tests= | fd84fb4b19 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2675][#2675]] | [iam,sql,shell,codegen] Store run grants in IAM |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #2675, Claude: an expired grant counts as active | run_grant_operations_service.cpp | Accept | A grant past not_after is not active, so a create renews it; max_runs is counted with the exchange in task 2. |
+| 2 | PR #2675, Claude: a create with a different role is silently ignored | run_grant_operations_service.cpp | Accept | A new consent replaces the active grant's role, audience and limits; an identical create returns it unchanged. |
+| 3 | PR #2675, Claude: concurrent creates race | run_grant_operations_service.cpp | Accept | The unique index on the natural key refuses the second insert; the loser re-reads and returns the winner's grant. |
+| 4 | PR #2675, Claude: read by the full key rather than the grantor's grants | run_grant_operations_service.cpp | Decline | A grantor has few grants, and the index closes the race. |
+| 5 | PR #2675, Claude: a context with no permission list may revoke | run_grant_operations_service.cpp | Accept | Deliberate for IAM's own context; a comment says so. |
+| 6 | PR #2675, Claude: missing tests | service_run_grant_operations_service_tests.cpp | Accept | Expiry renewal, role replacement, and a cross-party revoke; the last found that the generated save stamped the session's party, fixed by saving through the grant's party. |
+| 7 | PR #2675, Claude: org markup in a Python docstring | org_loader.py | Accept | Double backticks; the two loader cases it asked for were already tested. |
+
+* Result
+
+IAM stores run grants. =ores.iam.run_grant= is a tenant-scoped, party-isolated,
+bitemporal entity whose reads are generated on the wire, the shell and the
+TypeScript protocol, and whose writes are IAM's own operations. Codegen gained
+the shape that makes this possible: a domain entity may now declare
+=:client_read_only:= in its root flags, which keeps the repository writable for
+the service and removes the write verbs from the wire.
+
+=iam.v1.run_grants.create= refuses a session with no party or no permission
+list, and a role the person does not hold in full; it returns the active grant
+for the same resource, and re-activates a revoked one under the same id. A
+create for an active grant returns it unchanged, so changing its role is a
+revoke and a create. =iam.v1.run_grants.revoke= needs the grantor or the new
+permission =iam::run_grants:revoke=, and a repeated revoke changes nothing.
+
+The database was recreated for the new table, and the services were restarted.
+Tasks 2 and 3 wait for the partition token work in the worktree clever
+dijkstra, which adds the same claims, issue log and token cache.

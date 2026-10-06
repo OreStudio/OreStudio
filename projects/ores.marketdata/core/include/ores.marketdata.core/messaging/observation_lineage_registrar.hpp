@@ -39,6 +39,6 @@ std::vector<ores::nats::service::subscription> register_observation_lineage_hand
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::marketdata::messaging
+}
 
 #endif

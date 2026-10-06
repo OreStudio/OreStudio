@@ -89,7 +89,7 @@ domain::tenor_kind to_domain(const messaging::tenor_kind_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenor_kinds_response
 tenor_kind_service::list_tenor_kinds(const messaging::list_tenor_kinds_request& request) {

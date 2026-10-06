@@ -37,6 +37,6 @@ register_todays_market_collection_kind_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::analytics::service::messaging
+}
 
 #endif

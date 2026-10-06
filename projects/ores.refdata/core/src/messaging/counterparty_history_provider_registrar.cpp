@@ -40,4 +40,4 @@ void register_counterparty_history_provider(ores::history::service::dispatch_reg
         });
 }
 
-} // namespace ores::refdata::messaging
+}

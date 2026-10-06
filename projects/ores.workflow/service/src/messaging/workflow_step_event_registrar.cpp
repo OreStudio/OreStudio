@@ -55,4 +55,4 @@ register_workflow_step_event_mapping(ev::service::postgres_event_source& event_s
         });
 }
 
-} // namespace ores::workflow::service::messaging
+}

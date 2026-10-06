@@ -98,7 +98,7 @@ domain::party to_domain(const messaging::party_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_parties_response
 party_service::list_parties(const messaging::list_parties_request& request) {

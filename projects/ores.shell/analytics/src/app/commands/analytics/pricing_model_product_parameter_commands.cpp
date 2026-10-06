@@ -110,7 +110,7 @@ void apply_page(Request& req, const parsed_args& parsed) {
     req.order.descending = parsed.flag_set("desc");
 }
 
-} // namespace
+}
 
 void pricing_model_product_parameter_commands::register_commands(cli::Menu& root_menu,
                                                                  nats_client& session) {

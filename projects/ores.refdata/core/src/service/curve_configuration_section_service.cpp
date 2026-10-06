@@ -90,7 +90,7 @@ to_domain(const messaging::curve_configuration_section_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_configuration_sections_response
 curve_configuration_section_service::list_curve_configuration_sections(

@@ -121,7 +121,7 @@ bool parse_flag(const std::string& value, bool& out) {
 {{/shell_has_bool}}
 {{#shell_has_helpers}}
 
-} // namespace
+}
 {{/shell_has_helpers}}
 
 void {{entity_singular}}_operations_commands::register_commands(cli::Menu& root_menu,

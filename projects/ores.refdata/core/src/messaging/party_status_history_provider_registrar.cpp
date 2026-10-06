@@ -40,4 +40,4 @@ void register_party_status_history_provider(ores::history::service::dispatch_reg
         });
 }
 
-} // namespace ores::refdata::messaging
+}

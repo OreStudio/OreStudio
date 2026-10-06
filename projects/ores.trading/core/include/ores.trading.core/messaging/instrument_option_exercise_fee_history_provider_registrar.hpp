@@ -32,6 +32,6 @@ namespace ores::trading::messaging {
 void register_instrument_option_exercise_fee_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::trading::messaging
+}
 
 #endif

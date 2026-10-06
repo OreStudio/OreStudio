@@ -56,4 +56,4 @@ register_callable_swap_call_date_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

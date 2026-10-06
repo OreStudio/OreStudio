@@ -88,7 +88,7 @@ domain::batch to_domain(const messaging::batch_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_batches_response
 batch_service::list_batches(const messaging::list_batches_request& request) {

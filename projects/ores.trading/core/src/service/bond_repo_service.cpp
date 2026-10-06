@@ -89,7 +89,7 @@ domain::bond_repo to_domain(const messaging::bond_repo_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_repos_response
 bond_repo_service::list_bond_repos(const messaging::list_bond_repos_request& request) {

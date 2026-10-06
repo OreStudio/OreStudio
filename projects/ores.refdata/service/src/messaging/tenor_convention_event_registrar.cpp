@@ -55,4 +55,4 @@ register_tenor_convention_event_mapping(ev::service::postgres_event_source& even
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

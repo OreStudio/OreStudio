@@ -56,4 +56,4 @@ register_day_count_fraction_type_event_mapping(ev::service::postgres_event_sourc
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

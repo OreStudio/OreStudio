@@ -41,4 +41,4 @@ void register_portfolio_right_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

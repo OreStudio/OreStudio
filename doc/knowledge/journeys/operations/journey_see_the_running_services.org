@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads the services the installation runs: the expected roster, each instance's state and version, and when it last reported.
@@ -32,7 +32,8 @@ from the system tenant. The shell calls this context *system administration
 mode*: the session's tenant is the system tenant, so every request it sends is
 scoped to the deployment and not to a customer. A tenant administrator is
 signed in inside their own tenant, and the shell offers them no *Operations*
-area, so they cannot reach this screen.
+area, so they cannot reach this screen; neither can any other signed-in
+person, because the area rides the system-administration menu alone.
 
 The trigger is doubt about the installation: a screen stopped answering, a
 deployment just started, or a build was rolled out and somebody asks whether
@@ -96,13 +97,13 @@ screen is read-only: it creates nothing, changes nothing and destroys nothing.
 
 * Prototype
 
-Accepted by the user on 2026-10-04. The prototype is on a throwaway branch and
-is not merged; the branch is kept as the record. The built screen keeps its
+Accepted by the user on 2026-10-04. The prototype is merged into =main= and
+kept there as the record; the accepted commit names the state. The built screen keeps its
 shape: one row per expected instance, grouped under its service.
 
-- Branch :: =prototype/operations-journeys= (accepted at =285519db99=)
+- Accepted commit :: =285519db99=, the tip of =prototype/operations-journeys=, merged into =main=
 - Route :: =/prototype/services=
-- Source :: =projects/ores.web/packages/web/src/prototype/= on =prototype/operations-journeys= only; the path does not exist on =main=
+- Source :: =projects/ores.web/packages/web/src/prototype/= on =main=; the hub at =/prototype= lists every prototype route
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
 
 The prototype settled the roster. A stopped instance never leaves the list:

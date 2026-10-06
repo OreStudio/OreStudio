@@ -55,4 +55,4 @@ register_cds_volatility_term_event_mapping(ev::service::postgres_event_source& e
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

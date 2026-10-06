@@ -95,7 +95,7 @@ domain::workspace to_domain(const messaging::workspace_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_workspaces_response
 workspace_service::list_workspaces(const messaging::list_workspaces_request& request) {

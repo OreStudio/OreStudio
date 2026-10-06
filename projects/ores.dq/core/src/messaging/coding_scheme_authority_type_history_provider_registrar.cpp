@@ -41,4 +41,4 @@ void register_coding_scheme_authority_type_history_provider(
         });
 }
 
-} // namespace ores::dq::messaging
+}

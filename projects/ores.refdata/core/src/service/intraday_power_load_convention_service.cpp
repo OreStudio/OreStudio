@@ -91,7 +91,7 @@ to_domain(const messaging::intraday_power_load_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_intraday_power_load_conventions_response
 intraday_power_load_convention_service::list_intraday_power_load_conventions(

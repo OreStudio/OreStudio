@@ -88,7 +88,7 @@ domain::curve_section to_domain(const messaging::curve_section_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_sections_response
 curve_section_service::list_curve_sections(const messaging::list_curve_sections_request& request) {

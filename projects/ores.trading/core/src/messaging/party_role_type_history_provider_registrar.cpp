@@ -41,4 +41,4 @@ void register_party_role_type_history_provider(
         });
 }
 
-} // namespace ores::trading::messaging
+}

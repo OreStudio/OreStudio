@@ -87,7 +87,7 @@ domain::day_counter to_domain(const messaging::day_counter_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_day_counters_response
 day_counter_service::list_day_counters(const messaging::list_day_counters_request& request) {

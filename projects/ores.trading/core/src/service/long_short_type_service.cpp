@@ -87,7 +87,7 @@ domain::long_short_type to_domain(const messaging::long_short_type_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_long_short_types_response long_short_type_service::list_long_short_types(
     const messaging::list_long_short_types_request& request) {

@@ -87,7 +87,7 @@ domain::image_tag to_domain(const messaging::image_tag_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_image_tags_response
 image_tag_service::list_image_tags(const messaging::list_image_tags_request& request) {

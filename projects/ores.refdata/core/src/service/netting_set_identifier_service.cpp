@@ -92,7 +92,7 @@ domain::netting_set_identifier to_domain(const messaging::netting_set_identifier
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_netting_set_identifiers_response
 netting_set_identifier_service::list_netting_set_identifiers(

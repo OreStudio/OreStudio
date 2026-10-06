@@ -93,7 +93,7 @@ domain::change_reason to_domain(const messaging::change_reason_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_change_reasons_response
 change_reason_service::list_change_reasons(const messaging::list_change_reasons_request& request) {

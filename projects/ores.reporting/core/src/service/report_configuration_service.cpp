@@ -90,7 +90,7 @@ domain::report_configuration to_domain(const messaging::report_configuration_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_configurations_response
 report_configuration_service::list_report_configurations(

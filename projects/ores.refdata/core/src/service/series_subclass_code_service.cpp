@@ -90,7 +90,7 @@ domain::series_subclass_code to_domain(const messaging::series_subclass_code_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_series_subclass_codes_response
 series_subclass_code_service::list_series_subclass_codes(

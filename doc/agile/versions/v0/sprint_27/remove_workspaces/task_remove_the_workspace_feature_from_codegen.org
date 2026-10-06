@@ -1,41 +1,43 @@
 :PROPERTIES:
-:ID: 5FC28F73-62D7-4124-9EC8-55B51EC5C31A
+:ID: 2E4E86B0-D873-492A-8048-56DC1A396163
 :END:
-#+title: Task: Scaffold story: Remove workspaces from every component
-#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+title: Task: Remove the has_workspace_id feature from codegen
+#+description: Once no model sets has_workspace_id, delete the feature from the codegen meta-model, templates, loader, profiles, scaffolding and modeling docs.
 #+type: task
 #+level: s1
-#+filetags: :remove_workspaces:sprint_26:v0:
+#+filetags: :remove_workspaces:codegen:sprint_27:v0:
 #+owner: marco
-#+branch: feature/remove-workspaces
-#+pr: 2615
-#+blocked_on:
+#+branch:
+#+pr:
+#+blocked_on: 96B95473-3D50-4FF7-9584-FB65BB3C967A
 #+blocked_since:
-#+created: 2026-10-04
-#+updated: 2026-10-04
-#+environment: merry_newton
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The codegen meta-model has no has_workspace_id feature, so no new entity can ask for a workspace column.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-10-04                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
 
 * Acceptance
 
--
+- No template, loader, profile, scaffolding option or test names has_workspace_id; the feature document is deleted and the variability docs no longer list it.
+- Regeneration of every component under the drift gate is byte-identical.
+- The codegen tests pass.
 
 * Plan
 
@@ -74,22 +76,12 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2615][#2615]] | [agile] Scaffold the story to remove workspaces from every component |
+|    |       |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Story state STARTED disagrees with the sprint row and the Status. | story.org | Accept | BACKLOG. |
-| 2 | Out of scope is empty. | story.org | Accept | Trading and data migration listed. |
-| 3 | Nothing checks that no isolation still relies on workspaces. | task_implement_remove_workspaces.org | Accept | A note for the inventory task. |
-| 4 | Columns must go before the workspace functions. | task_implement_remove_workspaces.org | Accept | A note for the inventory task. |
-| 5 | The inventory gives no commands. | task_implement_remove_workspaces.org | Accept | A note: record them in Measurements. |
-| 6 | Removing ores.workspace waits on the trade shape story. | story.org | Accept | Waiting on set. |
+|   |                 |      |          |       |
 
 * Result
-
-The story is scaffolded with its goal, acceptance, the decision that
-workspaces are removed rather than reworked, a measured inventory of where
-they remain and a proposed task sequence. The first task, the inventory and
-sequencing, is in the backlog.

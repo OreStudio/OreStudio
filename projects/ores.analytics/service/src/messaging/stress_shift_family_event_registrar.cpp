@@ -56,4 +56,4 @@ register_stress_shift_family_event_mapping(ev::service::postgres_event_source& e
         });
 }
 
-} // namespace ores::analytics::service::messaging
+}

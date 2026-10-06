@@ -89,7 +89,7 @@ domain::configuration to_domain(const messaging::configuration_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_configurations_response
 configuration_service::list_configurations(const messaging::list_configurations_request& request) {

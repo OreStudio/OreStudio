@@ -93,7 +93,7 @@ domain::pricing_model_config to_domain(const messaging::pricing_model_config_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_pricing_model_configs_response
 pricing_model_config_service::list_pricing_model_configs(

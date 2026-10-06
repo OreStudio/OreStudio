@@ -99,7 +99,7 @@ domain::book to_domain(const messaging::book_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_books_response
 book_service::list_books(const messaging::list_books_request& request) {

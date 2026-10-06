@@ -35,4 +35,4 @@ void register_commodity_basket_constituent_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

@@ -55,4 +55,4 @@ register_deposit_convention_event_mapping(ev::service::postgres_event_source& ev
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

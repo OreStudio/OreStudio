@@ -26,7 +26,11 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import type { TenantDetailResponse } from '@ores/wire-protocol/browser';
 import { ApiFailure } from '../api/transport.js';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { TenantPage } from './TenantPage.js';
+
+const tenantParties = { key: 'tenant-parties', scope: 'acme_corporation' };
+const tenantPeople = { key: 'tenant-people', scope: 'acme_corporation' };
 
 /**
  * One tenant's screen, as a reader sees it.
@@ -87,15 +91,16 @@ function renderLoaded(detail: TenantDetailResponse): string {
 }
 
 describe('TenantPage', () => {
-    it('shows the details with their provenance', () => {
+    it('shows the details and the last-changed line under the standard header', () => {
         const html = renderLoaded(loaded);
 
         expect(html).toContain('Acme Corporation');
+        expect(html).toContain('acme_corporation · version 3');
         expect(html).toContain('acme.example.com');
         expect(html).toContain('Acme evaluation tenant');
-        expect(html).toContain('Provenance');
+        expect(html).toContain('Last changed');
+        expect(html).toContain('admin for ores.iam.service');
         expect(html).toContain('system.initial_load');
-        expect(html).toContain('ores.iam.service');
         expect(html).toContain('href="/tenants"');
     });
 
@@ -103,14 +108,16 @@ describe('TenantPage', () => {
      * The tenant's data is a tab like its details. Nothing offers to enter or
      * leave the tenant: the read inside it is the server's, for the tab.
      */
-    it('offers the overview, parties and people as tabs, and no way in or out', () => {
+    it('offers the details, parties and people as tabs, read only, and no way in or out', () => {
         const html = renderLoaded(loaded);
 
-        for (const tab of ['Overview', 'Parties', 'People']) {
+        for (const tab of ['Details', 'Parties', 'People']) {
             expect(html).toContain(`>${tab}</button>`);
         }
         expect(html).toContain('aria-selected="true"');
-        expect(html).toContain('View only');
+        expect(html).toContain('Read only');
+        expect(html).toContain('made by its own administrators');
+        expect(html).not.toContain('>Edit<');
         expect(html.toLowerCase()).not.toContain('act in');
         expect(html.toLowerCase()).not.toContain('leave');
     });
@@ -119,7 +126,7 @@ describe('TenantPage', () => {
      * The system tenant is the system administrator's own, so nothing on its
      * screen says another tenant's administrators make the changes.
      */
-    it('opens the system tenant with its tabs and without the view-only label', () => {
+    it('opens the system tenant with its tabs, without the note about its administrators', () => {
         const html = render(
             (client) =>
                 client.setQueryData(['tenant', 'system'], {
@@ -136,22 +143,22 @@ describe('TenantPage', () => {
         );
 
         expect(html).toContain('>People</button>');
-        expect(html).not.toContain('View only');
-        expect(html).not.toContain('Remove tenant');
+        expect(html).not.toContain('made by its own administrators');
+        expect(html).not.toContain('Delete');
     });
 
-    it('offers to remove the tenant from its own screen', () => {
+    it('offers to delete the tenant from its own screen', () => {
         const html = renderLoaded(loaded);
 
-        expect(html.match(/>Remove tenant</g)).toHaveLength(1);
+        expect(html.match(/>Delete</g)).toHaveLength(1);
     });
 
     it("lists the tenant's parties on the parties tab, each with the party it belongs to", () => {
         const html = render(
             (client) => {
                 client.setQueryData(['tenant', 'acme_corporation'], loaded);
-                client.setQueryData(['tenant-parties', 'acme_corporation', 0], {
-                    parties: [
+                client.setQueryData(pageKey(tenantParties, FIRST_PAGE), {
+                    rows: [
                         {
                             id: '77777777-7777-7777-7777-777777777777',
                             code: 'ACMCOR',
@@ -177,7 +184,7 @@ describe('TenantPage', () => {
                             flagImageId: null,
                         },
                     ],
-                    totalCount: 2,
+                    total: 2,
                 });
             },
             'acme_corporation',
@@ -186,8 +193,8 @@ describe('TenantPage', () => {
 
         expect(html).toContain('Acme Corporation HK Ltd');
         expect(html).toContain('Top of the group');
-        expect(html).toContain('>Acme Corporation Plc</td>');
-        expect(html).not.toContain('Provenance');
+        expect(html).toMatch(/>Acme Corporation Plc<\/td>/);
+        expect(html).not.toContain('Last changed');
         // The flag is read inside the tenant; a centre with no flag keeps its code.
         expect(html).toContain(
             'src="/api/tenants/acme_corporation/images/99999999-9999-9999-9999-999999999991"',
@@ -200,8 +207,8 @@ describe('TenantPage', () => {
         const html = render(
             (client) => {
                 client.setQueryData(['tenant', 'acme_corporation'], loaded);
-                client.setQueryData(['tenant-people', 'acme_corporation', 0], {
-                    accounts: [
+                client.setQueryData(pageKey(tenantPeople, FIRST_PAGE), {
+                    rows: [
                         {
                             version: 1,
                             id: '99999999-9999-9999-9999-999999999999',
@@ -229,7 +236,7 @@ describe('TenantPage', () => {
                             imageId: null,
                         },
                     ],
-                    totalCount: 2,
+                    total: 2,
                 });
             },
             'acme_corporation',
@@ -244,6 +251,7 @@ describe('TenantPage', () => {
         );
         expect(html.match(/<img/g)).toHaveLength(1);
         expect(html).toContain('>TR</span>');
+        expect(html).toContain('tabindex="0"');
     });
 
     /*
@@ -298,7 +306,7 @@ describe('TenantPage', () => {
         expect(html).toContain('The provisioning runs could not be read.');
     });
 
-    it('says no tenant has the code, and leads back to the roster', () => {
+    it('goes back to the tenant list when no tenant has the code', () => {
         const html = render((client) => {
             client
                 .getQueryCache()
@@ -312,8 +320,7 @@ describe('TenantPage', () => {
                 });
         }, 'nobody');
 
-        expect(html).toContain('No tenant has this code.');
-        expect(html).toContain('href="/tenants"');
-        expect(html).not.toContain('role="alert"');
+        // The redirect runs after the first render, so a static render draws neither an error nor a page.
+        expect(html).toBe('');
     });
 });

@@ -40,4 +40,4 @@ void register_seed_profile_history_provider(ores::history::service::dispatch_reg
         });
 }
 
-} // namespace ores::iam::messaging
+}

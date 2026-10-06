@@ -40,4 +40,4 @@ void register_curve_segment_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::refdata::messaging
+}

@@ -89,7 +89,7 @@ domain::code_domain to_domain(const messaging::code_domain_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_code_domains_response
 code_domain_service::list_code_domains(const messaging::list_code_domains_request& request) {

@@ -36,6 +36,6 @@ register_account_event_mapping(ores::eventing::service::postgres_event_source& e
                                ores::eventing::service::event_bus& event_bus,
                                ores::nats::service::client& nats);
 
-} // namespace ores::iam::service::messaging
+}
 
 #endif

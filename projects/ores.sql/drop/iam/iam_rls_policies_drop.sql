@@ -28,6 +28,7 @@ drop policy if exists account_contact_informations_tenant_isolation_policy on "o
 
 -- Account Parties
 drop policy if exists account_parties_tenant_isolation_policy on "ores_iam_account_parties_tbl";
+drop policy if exists role_grant_request_roles_tenant_isolation_policy on "ores_iam_role_grant_request_roles_tbl";
 
 -- Tenants
 drop policy if exists tenants_write_policy on "ores_iam_tenants_tbl";

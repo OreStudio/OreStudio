@@ -117,7 +117,7 @@ domain::curve_segment to_domain(const messaging::curve_segment_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_segments_response
 curve_segment_service::list_curve_segments(const messaging::list_curve_segments_request& request) {

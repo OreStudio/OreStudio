@@ -103,7 +103,7 @@ domain::bond_issue to_domain(const messaging::bond_issue_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issues_response
 bond_issue_service::list_bond_issues(const messaging::list_bond_issues_request& request) {

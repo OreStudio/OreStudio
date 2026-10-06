@@ -37,6 +37,6 @@ register_equity_asian_option_instrument_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::trading::service::messaging
+}
 
 #endif

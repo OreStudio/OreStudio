@@ -44,7 +44,7 @@ inline auto& seed_profile_step_handler_lg() {
         ores::logging::make_logger("ores.iam.messaging.seed_profile_step_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -516,6 +516,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::iam::messaging
+}
 
 #endif

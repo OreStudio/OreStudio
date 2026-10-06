@@ -32,6 +32,6 @@ namespace ores::marketdata::messaging {
 void register_observation_lineage_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::marketdata::messaging
+}
 
 #endif

@@ -22,8 +22,11 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.core/messaging/registrar.hpp"
+#include "ores.iam.core/service/role_grant_applier.hpp"
 #include "ores.iam.service/app/application_exception.hpp"
 #include "ores.iam.service/messaging/event_registrar.hpp"
+#include "ores.inbox.api/eventing/approval_request_event.hpp"
+#include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.service/service/signing_service_runner.hpp"
@@ -31,6 +34,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/throw_exception.hpp>
+#include <memory>
 
 namespace ores::iam::service::app {
 
@@ -74,7 +78,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
     auto event_subs =
         messaging::event_registrar::register_event_mappings(event_source, event_bus, nats);
+
+    // An approved role request is granted here, by IAM, which owns the roles.
+    // The inbox's request channel is only the nudge: each change runs the
+    // reconciliation, which grants every approved role not yet held, so a
+    // missed or repeated event changes nothing. A run at start catches what
+    // was approved while this service was down.
+    using approval_request_event = ores::inbox::messaging::approval_request_event;
+    auto role_grants = std::make_shared<ores::iam::service::role_grant_applier>(
+        make_context(cfg.database), &event_bus);
+    event_source.register_entity_event_mapping<approval_request_event>(
+        "ores_inbox_approval_requests");
+    auto role_grant_sub = event_bus.subscribe<approval_request_event>(
+        [role_grants](const approval_request_event&) { role_grants->apply(); });
     event_source.start();
+    role_grants->apply();
 
     co_await ores::service::service::run_signing(
         io_ctx,

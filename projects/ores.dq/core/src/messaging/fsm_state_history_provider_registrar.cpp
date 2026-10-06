@@ -40,4 +40,4 @@ void register_fsm_state_history_provider(ores::history::service::dispatch_regist
         });
 }
 
-} // namespace ores::dq::messaging
+}

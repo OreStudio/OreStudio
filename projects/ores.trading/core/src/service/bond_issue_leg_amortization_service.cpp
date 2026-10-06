@@ -101,7 +101,7 @@ to_domain(const messaging::bond_issue_leg_amortization_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_leg_amortizations_response
 bond_issue_leg_amortization_service::list_bond_issue_leg_amortizations(

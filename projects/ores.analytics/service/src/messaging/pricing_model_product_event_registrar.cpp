@@ -56,4 +56,4 @@ register_pricing_model_product_event_mapping(ev::service::postgres_event_source&
         });
 }
 
-} // namespace ores::analytics::service::messaging
+}

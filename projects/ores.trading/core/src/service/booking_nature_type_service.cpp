@@ -61,7 +61,7 @@ std::vector<domain::booking_nature_type> read_one(repository::booking_nature_typ
     return repo.read_latest(ctx, key.code);
 }
 
-} // namespace
+}
 
 messaging::list_booking_nature_types_response
 booking_nature_type_service::list_booking_nature_types(

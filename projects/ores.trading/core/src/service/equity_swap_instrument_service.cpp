@@ -98,7 +98,7 @@ domain::equity_swap_instrument to_domain(const messaging::equity_swap_instrument
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_swap_instruments_response
 equity_swap_instrument_service::list_equity_swap_instruments(

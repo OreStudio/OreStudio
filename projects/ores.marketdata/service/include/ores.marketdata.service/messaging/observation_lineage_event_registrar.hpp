@@ -36,6 +36,6 @@ namespace ores::marketdata::service::messaging {
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::marketdata::service::messaging
+}
 
 #endif

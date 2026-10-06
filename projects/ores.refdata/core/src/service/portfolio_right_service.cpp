@@ -90,7 +90,7 @@ domain::portfolio_right to_domain(const messaging::portfolio_right_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_portfolio_rights_response portfolio_right_service::list_portfolio_rights(
     const messaging::list_portfolio_rights_request& request) {

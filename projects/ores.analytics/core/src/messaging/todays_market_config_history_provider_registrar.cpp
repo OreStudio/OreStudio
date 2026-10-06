@@ -41,4 +41,4 @@ void register_todays_market_config_history_provider(
         });
 }
 
-} // namespace ores::analytics::messaging
+}

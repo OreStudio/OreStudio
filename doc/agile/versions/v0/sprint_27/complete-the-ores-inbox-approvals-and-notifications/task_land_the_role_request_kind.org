@@ -7,41 +7,59 @@
 #+level: s1
 #+filetags: :iam:approval:complete-the-ores-inbox-approvals-and-notifications:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/complete-the-ores-inbox-approvals-and-notifications
+#+pr: 2673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A member asks for a role and an administrator answers. The role request is the
+first approval kind: IAM records which roles a request asks for, raises it in
+the inbox as the person, and grants the roles once the request is approved.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
 
--
+- The role grant request and its roles are codegen models with keys and
+  foreign keys, the request keyed by the inbox request it details.
+- Asking refuses an unknown role, a role already held and a role already
+  waiting, and leaves no request behind when its record fails.
+- An approved request's roles are granted once, as the approver, with the
+  request as the grant's reason, including approvals made while IAM was down.
+- The whole flow runs live: a member asks, the administrator approves from the
+  queue, the role is granted, and both are told.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+| Fork | Chosen | Rejected, and why |
+|------+--------+-------------------|
+| How a request reaches the inbox | One IAM operation raises it with the person's token, then writes its detail, and withdraws it if the detail fails | The browser calling the inbox and IAM separately: two calls, and an orphan request when the second fails |
+| How an approval is applied | IAM reconciles approved, ungranted roles at start and on each request change | The inbox calling IAM: the record never writes another component's data; acting on the event alone: the event carries no tenant, and a missed one would lose a grant |
+| How IAM reads the inbox | Two security-definer functions owned by IAM | A select grant on the inbox's tables for IAM's role |
+
+- Model the two IAM tables with codegen; the request's key is the inbox
+  request's id.
+- Write the ask operation as an operation model with a hand-written handler.
+- Write the reconcile as a SQL function and a small applier the service runs.
+- Switch on shell commands for the role request and approval operations, so a
+  script drives the flow live.
 
 * Measurements
 
@@ -74,12 +92,47 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2673][#2673]] | [iam] Land the role request as the first approval kind |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+Round 1, from the =@claude= review of PR #2673.
+
+| # | Comment summary                                   | File                                         | Decision | Notes                                                                                                   |
+|---+---------------------------------------------------+----------------------------------------------+----------+---------------------------------------------------------------------------------------------------------|
+| 1 | A role taken away is granted again on reconcile   | iam_role_grant_request_functions_create.sql  | Accept   | Fixed in 9662d60710: =applied_at= on the request role; applied rows leave the answer. Test and live check. |
+| 2 | An approval with no readable approver fails always | iam_role_grant_request_functions_create.sql  | Accept   | Fixed in 9662d60710: the approver join needs an existing account, so the row is left out.                |
+| 3 | The check and the raise in ask are not atomic     | role_request_handler.hpp                     | Accept   | Documented as an accepted limit in the operations model; a duplicate approval grants nothing twice.     |
+| 4 | A failed withdraw can leave a nameless request    | role_request_handler.hpp                     | Accept   | Documented: logged at error, and an administrator refuses it from the queue.                            |
+| 5 | record() writes in two steps with no transaction  | role_request_handler.hpp                     | Decline  | The request is withdrawn on failure, so a leftover detail row names no waiting request and is harmless. |
+| 6 | apply() holds the mutex for the whole run         | role_grant_applier.cpp                       | Decline  | One IAM instance runs today. Two instances granting at once is not verified; left for scale-out.         |
+| 7 | array_literal is built from raw strings           | role_request_handler.hpp                     | Accept   | Fixed in 9662d60710: built from the parsed UUIDs.                                                        |
+| 8 | forward() failure text includes x_error           | role_request_handler.hpp                     | Decline  | Only logged, never returned to the caller.                                                              |
+| 9 | Rerun the live flow on a fresh database           | evidence/                                    | Accept   | Done in dd77ded3af on a fresh build, recreate and bootstrap.                                            |
 
 * Result
+
+A member asks for roles with =iam.v1.role-requests.ask=, and an approved
+request's roles are granted by IAM. Proved live on a freshly recreated and
+bootstrapped system with the scripts in =evidence/=: =ashley.moore= asked for
+Trading; asking again and asking for a role the account holds were refused as
+=already_asked= and =already_held=; =tenant_admin= read the request in the
+queue and approved it, and a second decision was refused; IAM granted Trading
+as =tenant_admin= with =access.role_change= and "Approved request <id>"; the
+administrator was told the request waited, and Ashley that it was approved;
+the reconciliation then had nothing left to grant.
+
+Two tests drive the reconciliation against the database: an approved role is
+granted once, and a role already held is not granted again. The live run found
+one defect, fixed: approvals in a test tenant that had since been removed
+would have failed every run, so the reconciliation reads only tenants that
+still exist and are not terminated.
+
+Review round 1 found that a role taken away after the grant would be granted
+again on the next reconcile. Each request role now records =applied_at=, and
+the reconciliation reads only rows not yet applied. A third test grants,
+takes the role away and reconciles, and nothing is granted again. The live
+flow was rerun on a fresh build: Trading was granted once and marked applied;
+the administrator then took it away with =authorization revoke-role=; IAM was
+restarted, its start-up reconcile read no rows, and Trading stayed removed.
+

@@ -31,7 +31,7 @@ namespace ores::refdata::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.refdata.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_calendar_event_handlers(ores::nats::service::client& nats,
@@ -90,4 +90,4 @@ register_calendar_event_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::refdata::messaging
+}

@@ -72,7 +72,7 @@ std::vector<std::string> split_list_token(const std::string& value) {
     return parts;
 }
 
-} // namespace
+}
 
 void authorization_operations_commands::register_commands(cli::Menu& root_menu,
                                                           nats_client& session) {

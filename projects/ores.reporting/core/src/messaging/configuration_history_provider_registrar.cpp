@@ -40,4 +40,4 @@ void register_configuration_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::reporting::messaging
+}

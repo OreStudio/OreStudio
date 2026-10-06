@@ -56,4 +56,4 @@ register_stress_test_scenario_event_mapping(ev::service::postgres_event_source& 
         });
 }
 
-} // namespace ores::analytics::service::messaging
+}

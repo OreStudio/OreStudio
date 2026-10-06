@@ -125,7 +125,7 @@ to_domain(const messaging::cap_floor_volatility_config_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cap_floor_volatility_configs_response
 cap_floor_volatility_config_service::list_cap_floor_volatility_configs(

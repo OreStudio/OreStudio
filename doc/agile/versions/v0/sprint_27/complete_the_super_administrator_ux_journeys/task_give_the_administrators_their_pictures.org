@@ -33,9 +33,9 @@ account is shown.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:3541A81F-81FD-4D1C-9802-B018EDD553A5][Complete the super administrator UX journeys]] |
-| Now          | Redesigned and delivered at 715cf89cf2; every gate is green at that commit, and PR #2671 carries the update and its review reply. |
-| Waiting on   | The operator's merge approval.         |
-| Next         | Merge, then close the story. The full build and ctest follow when the host build lock frees. |
+| Now          | Merged at 22a01d5bb9; the debug build ran exit 0 and ctest passed 40 of 94 tests, with 54 refused to start on the stale development database. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -122,7 +122,8 @@ task and name that file in the Command column.
 | Codegen suite | 1154 passed | =projects/ores.codegen/venv/bin/pytest projects/ores.codegen/tests -q= | 715cf89cf2 |
 | Payload integrity | flags 'ad' and both avatars decode byte-for-byte from their inserts (sha256 1914f0d7, 49e6e2da, a58f6a3e) | ad-hoc =base64.b64decode= against the source files | 715cf89cf2 |
 | Site check | See the PR body; run on the working tree carrying this task's doc edits | =./compass.sh site page= | 715cf89cf2 (doc edits then uncommitted) |
-| Full build and ctest | pending the host build lock | =./compass.sh build --preset linux-clang-debug-make= | 715cf89cf2 |
+| Debug build | exit 0, 100%, every target built | =./compass.sh build --preset linux-clang-debug-make= | 863158c45b |
+| ctest | 40 of 94 passed; 54 refused to start on the stale development database (fingerprint cbe0f2224158b690 expected, 7f079ef54352500a found) | =./compass.sh test run --preset linux-clang-debug-make= | 863158c45b |
 
 * Notes
 
@@ -196,7 +197,7 @@ Rows 3 to 6 answer the GitHub review posted on PR #2671. The live
 recreate proof it asks for stays with the operator, because the run
 deletes the development database. Row 7 records the redesign the
 operator directed after that review; the reply on the PR explains it.
-The build and ctest results land on the PR when the run finishes.
+The build and ctest results are recorded in Measurements.
 
 * Result
 
@@ -247,9 +248,14 @@ Every gate is green at =715cf89cf2= (see Measurements): populate
 references, handler permissions, pasted block symbols, CMake sources, the
 catalogue drift sweep and the 1154-test codegen suite, each exit 0. Both
 published payloads and the flags sample decode byte-for-byte from the
-generated SQL. The site check result lands in the PR body. The full build
-and ctest were still queued on the host build lock when this task closed;
-they run before the PR merges.
+generated SQL. The site check result is in the PR body. The build ran after
+the merge: =./compass.sh build --preset linux-clang-debug-make= completed
+exit 0 with every target built, and ctest passed 40 of 94 tests. The other
+54 refused to start because the development database does not match this
+build (fingerprint cbe0f2224158b690 expected, 7f079ef54352500a found; the
+database was built from 64db16211c-dirty). The fix is the destructive
+=compass services stop && compass db recreate -y -k=, which replaces the
+development database and stays with the operator.
 
 The live flow was not run. Proving the pictures land needs
 =compass build=, a service deploy and =compass db recreate=, which deletes

@@ -92,7 +92,7 @@ domain::rpa_instrument to_domain(const messaging::rpa_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_rpa_instruments_response rpa_instrument_service::list_rpa_instruments(
     const messaging::list_rpa_instruments_request& request) {

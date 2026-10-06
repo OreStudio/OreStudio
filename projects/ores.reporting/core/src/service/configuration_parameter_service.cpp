@@ -91,7 +91,7 @@ domain::configuration_parameter to_domain(const messaging::configuration_paramet
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_configuration_parameters_response
 configuration_parameter_service::list_configuration_parameters(

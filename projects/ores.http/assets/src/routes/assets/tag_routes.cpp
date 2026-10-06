@@ -147,7 +147,7 @@ void apply_page(Request& msg, const http_request& req) {
     msg.order.descending = req.get_query_param("desc") == "true";
 }
 
-} // namespace
+}
 
 boost::asio::awaitable<http_response> tag_routes::handle_list(const http_request& req,
                                                               nats_client& session) {

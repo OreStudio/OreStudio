@@ -41,4 +41,4 @@ void register_report_analytic_parameter_history_provider(
         });
 }
 
-} // namespace ores::reporting::messaging
+}

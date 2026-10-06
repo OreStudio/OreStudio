@@ -91,7 +91,7 @@ to_domain(const messaging::tenor_resolution_algorithm_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_tenor_resolution_algorithms_response
 tenor_resolution_algorithm_service::list_tenor_resolution_algorithms(

@@ -95,7 +95,7 @@ domain::fx_option_convention to_domain(const messaging::fx_option_convention_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fx_option_conventions_response
 fx_option_convention_service::list_fx_option_conventions(

@@ -94,7 +94,7 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_report_instances_response report_instance_service::list_report_instances(
     const messaging::list_report_instances_request& request) {

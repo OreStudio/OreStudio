@@ -41,4 +41,4 @@ void register_observation_lineage_history_provider(
         });
 }
 
-} // namespace ores::marketdata::messaging
+}

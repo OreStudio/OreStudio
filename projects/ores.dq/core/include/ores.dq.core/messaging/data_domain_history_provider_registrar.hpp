@@ -31,6 +31,6 @@ namespace ores::dq::messaging {
 
 void register_data_domain_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::dq::messaging
+}
 
 #endif

@@ -145,8 +145,14 @@ one path segment, as the pair code =EUR/USD= is.
 - A search box over the display field and the key. The search goes to the
   server through the list contract's filter, so it searches every record, not
   the page on the screen. A filter over the rows on one page is not a search.
-- Where a kind has a natural classification, such as a tier or a type, one
-  filter select beside the search.
+- Where a kind has a natural classification, such as a tier or a type, a
+  filter select beside the search. Where a kind hides some records by default,
+  such as test tenants, a toggle that shows them. A filter is a =ListFilter= of
+  the list's source; its value is held in the address as =f.<id>= and sent with
+  the page.
+- What the list says about the page sits above the table as a note: what the
+  server's answer adds, such as how many records a filter hides, and what the
+  screen knows before any read, such as why the list is read only.
 - Where the generated list contract has no filter for a field the search needs,
   the contract is extended. The screen never reads every row to filter them
   itself. See [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
@@ -543,7 +549,7 @@ and in its journey, never found later.
 
 | Kind | What differs |
 |------+--------------|
-| /Classification list/ | Short code lists with an order and a label; maintained from the classifications screen, whose rows follow this standard |
+| /Classification list/ | Short code lists with an order and a label; maintained from the classifications screen, whose rows follow this standard. A list is read whole once, then searched, ordered and paged in the browser, because it is short and reordered as a whole. Reorder is the list's own action: a mode with its own save |
 | /Link/ | No list or page of its own; maintained from a parent's links panel |
 | /Part/ | No list or page of its own; maintained from a parent's parts panel |
 | /Read-only/ | No Edit and no Delete; the reason shown on the Details tab |
@@ -569,15 +575,15 @@ component carries it today.
 | Record page reads one record | =RecordGate=, =useRecord=, =GET /api/refdata/:kind/key/:key= | Exists for kinds with a one-field key |
 | Record page header | =RecordHeader= | Exists |
 | Paged list | =Pager= in =ui/Pager.tsx= | Exists: First, Previous, Next, Last, page size and Load all |
-| List screen | =RecordList=, =useListState= | Exists: server paging, search and order held in the address, column menu, keyboard opening, the states |
-| Server paging, search and order | =listRecordPage=, the model's =:searchable:= and =:sortable:= columns | Exists for currencies, desk groups and currency pairs |
+| List screen | =RecordList=, =RecordTable=, =useListState= | Exists: server paging, search, filters and order held in the address, notes, column menu, keyboard opening, the states. =RecordTable= is the list without its header, for a tab that lists records the page only reads |
+| Server paging, search and order | =listRecordPage=, the model's =:searchable:= and =:sortable:= columns | Exists for currencies, desk groups, currency pairs and calendars |
 | Record pickers | =RecordPicker= | Searchable and flagged; Partial: its choices are its whole kind, read once and searched in the picker |
 | Flags | =useImageMap=, =useFlags=, =FlagOf=, =FlaggedCode=, =Flag= in =images/flags.tsx=; =GET /api/image-map= | Exists |
 | Image choice | =ImageChooser=, =ImageField= in =images/ImageChooser.tsx=; =GET /api/images= | Exists, searched on the server |
 | Change reasons | =useReason=, =reasonsFor=, =ReasonFields= | Exists, filtered by whether a field changed |
 | Unsaved changes | =useCloseGuard=, =LeavingFooter= | Exists |
-| Delete | =RemoveRecordDialog= | Exists; parts are deleted one after another |
-| Revert | =RevertDialog= | Exists |
+| Delete | =DeleteDialog=, =RemoveRecordDialog= | Exists; =DeleteDialog= takes the write, =RemoveRecordDialog= deletes a refdata record with it; parts are deleted one after another |
+| Revert | =RevertVersionDialog=, =RevertDialog= | Exists; =RevertVersionDialog= takes the write, =RevertDialog= reverts a refdata record with it |
 | History | =HistoryPanel= | Exists |
 | Links | =LinkPanel= | Exists |
 | Parts | =PartsPanel= in =refdata/records.tsx= | Exists, beside =LinkPanel= |
@@ -595,11 +601,13 @@ component carries it today.
 |--------+-------------------------------------|
 | Currencies, desk groups, currency pairs | Conform, except recency and the whole-kind pickers; a desk group reads its members from the whole junction, which has no read by group |
 | Holiday calendars | Conform, except recency and the whole-kind pickers; the business days follow the server's rebuild, which never rewrites a built day and does not read QuantLib holidays (both captured) |
-| Classifications | Reads every row of a list; a different list layout; no icons |
+| Classifications | Conform, under the classification list exception: a list is read whole once and paged in the browser |
 | People | Conforms: the shared list over the accounts, and a page per person with details, contact, roles and sign-ins as tabs; roles are read one person at a time, as the server has no joined read |
-| Tenants, parties | Page on the server through =Pager=, but with their own list and page layout |
+| Tenants | Conform, except that the server has no order for tenants and serves no tenant history, so the list does not sort and the page has no History tab; the tenant's parties and people are shared record tables in its tabs |
+| Parties | The list conforms; the server has no search or order for parties, and a party has no page of its own yet; the party journeys build it |
+| Roles | Their own list and page layout; the list reads every role, and the role page reads every account with its roles |
 
-The story [[id:9281449A-FD88-4BED-AD86-0EFC7B4C14D2][Standardise the record screens]] closes these
+The story [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] closes these
 differences.
 
 ** Building a record screen

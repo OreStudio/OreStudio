@@ -88,7 +88,7 @@ domain::treatment_dimension to_domain(const messaging::treatment_dimension_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_treatment_dimensions_response
 treatment_dimension_service::list_treatment_dimensions(

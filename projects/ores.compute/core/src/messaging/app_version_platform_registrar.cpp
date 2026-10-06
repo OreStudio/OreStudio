@@ -31,7 +31,7 @@ namespace ores::compute::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.compute.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_app_version_platform_handlers(
     ores::nats::service::client& nats,
@@ -77,4 +77,4 @@ std::vector<ores::nats::service::subscription> register_app_version_platform_han
     return subs;
 }
 
-} // namespace ores::compute::messaging
+}

@@ -53,4 +53,4 @@ register_price_type_event_mapping(ev::service::postgres_event_source& event_sour
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

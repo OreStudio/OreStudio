@@ -31,6 +31,6 @@ namespace ores::synthetic::messaging {
 
 void register_gmm_component_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

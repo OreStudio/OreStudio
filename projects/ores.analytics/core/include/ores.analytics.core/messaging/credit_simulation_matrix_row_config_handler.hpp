@@ -44,7 +44,7 @@ inline auto& credit_simulation_matrix_row_config_handler_lg() {
         "ores.analytics.messaging.credit_simulation_matrix_row_config_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -540,6 +540,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

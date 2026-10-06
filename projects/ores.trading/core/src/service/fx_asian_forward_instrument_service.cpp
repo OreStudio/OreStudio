@@ -101,7 +101,7 @@ to_domain(const messaging::fx_asian_forward_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fx_asian_forward_instruments_response
 fx_asian_forward_instrument_service::list_fx_asian_forward_instruments(

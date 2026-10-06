@@ -191,7 +191,7 @@ void apply_page(Request& msg, const http_request& req) {
 }
 {{/http_route.has_page}}
 
-} // namespace
+}
 {{#http_route.routes}}
 
 boost::asio::awaitable<http_response>

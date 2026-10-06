@@ -61,6 +61,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:assign', 'Assign roles to accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:revoke', 'Revoke roles from accounts');
 
+    -- Run grant permissions. Any person may create a grant for a role they
+    -- hold in full, and its grantor may revoke it; this permission lets an
+    -- administrator revoke any grant of the tenant.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:revoke', 'Revoke any run grant of the tenant');
+
     -- Permission catalogue permissions. The generated permission CRUD checks
     -- these two; the catalogue itself is seeded, so a screen picks from it
     -- rather than creating a code nothing would enforce.
@@ -101,6 +106,16 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_steps:delete', 'Delete a step kind from a seed profile');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:write', 'Create and modify the parameters a seed profile declares');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::seed_profile_parameters:delete', 'Delete a parameter from a seed profile');
+
+    -- Role grant requests: the IAM detail of an iam.role_grant approval
+    -- request. A person asks through the ask operation, which needs no code of
+    -- these; they guard the generated administrator surface.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:read', 'Read role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:write', 'Create and modify role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_requests:delete', 'Delete role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:read', 'Read the roles of role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:write', 'Create and modify the roles of role grant requests');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_grant_request_roles:delete', 'Delete the roles of role grant requests');
 
     -- IAM component wildcard
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::*', 'Full access to all IAM operations');

@@ -96,7 +96,7 @@ domain::seed_profile_parameter to_domain(const messaging::seed_profile_parameter
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_seed_profile_parameters_response
 seed_profile_parameter_service::list_seed_profile_parameters(

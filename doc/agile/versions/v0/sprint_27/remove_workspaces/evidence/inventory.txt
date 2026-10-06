@@ -1,0 +1,52 @@
+commit e88764c3e8
+
+## Tables with a workspace_id column, by SQL directory
+      3 analytics
+      1 marketdata
+     26 refdata
+      2 reporting
+      1 workspace
+
+## Models that set has_workspace_id true
+projects/ores.analytics/modeling/ores.analytics.credit_simulation_entity_config.org
+projects/ores.analytics/modeling/ores.analytics.credit_simulation_matrix_row_config.org
+projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org
+projects/ores.reporting/modeling/ores.reporting.report_definition.org
+
+## Models bound to fk-scoped-child or workspace-scoped-lookup
+      3 ores.analytics
+     26 ores.refdata
+      1 ores.reporting
+
+## Profiles that set has_workspace_id true
+projects/modeling/variability_fk_scoped_child.org
+projects/modeling/variability_workspace_scoped_lookup.org
+
+## Files naming workspace_id, by component (excluding ores.workspace and doc)
+    133 ores.refdata
+     43 ores.sql
+     35 ores.web
+     29 ores.codegen
+     17 ores.analytics
+     14 modeling
+     12 ores.marketdata
+     11 ores.reporting
+      5 ores.dsh_kanban
+      4 ores.nats
+      2 ores.trading
+      2 ores.shell
+      2 ores.service
+      2 ores.database
+      1 ores.utility
+
+## ores.workspace component files
+81
+
+## ores.shell workspace part files
+23
+
+## Callers that select a workspace other than Live
+setWorkspace callers in ores.web (excluding the definition):
+0
+with_workspace_id / with_workspace_resolution callers in C++ sources and headers, outside tests:
+0

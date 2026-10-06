@@ -37,6 +37,6 @@ register_bond_issue_conversion_target_event_mapping(
     ores::eventing::service::event_bus& event_bus,
     ores::nats::service::client& nats);
 
-} // namespace ores::trading::service::messaging
+}
 
 #endif

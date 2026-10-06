@@ -93,7 +93,7 @@ domain::vanilla_swap_instrument to_domain(const messaging::vanilla_swap_instrume
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_vanilla_swap_instruments_response
 vanilla_swap_instrument_service::list_vanilla_swap_instruments(

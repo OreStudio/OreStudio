@@ -38,9 +38,13 @@
 #include "ores.shell/app/commands/dq/dq_commands.hpp"
 #include "ores.shell/app/commands/history_commands.hpp"
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
+#include "ores.shell/app/commands/iam/role_grant_request_commands.hpp"
+#include "ores.shell/app/commands/iam/role_grant_request_role_commands.hpp"
+#include "ores.shell/app/commands/iam/role_request_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_decision_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_decision_type_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_kind_commands.hpp"
+#include "ores.shell/app/commands/inbox/approval_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_commands.hpp"
 #include "ores.shell/app/commands/inbox/approval_request_state_commands.hpp"
 #include "ores.shell/app/commands/inbox/notification_argument_commands.hpp"
@@ -138,6 +142,10 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     report_operations_operations_commands::register_commands(*root, session_);
     subscription_commands::register_commands(*root, session_);
     rbac_commands::register_commands(*root, session_, pagination_);
+    role_request_operations_operations_commands::register_commands(*root, session_);
+    approval_operations_operations_commands::register_commands(*root, session_);
+    role_grant_request_commands::register_commands(*root, session_);
+    role_grant_request_role_commands::register_commands(*root, session_);
     navigation_commands::register_commands(*root, pagination_);
     orgmode_commands::register_commands(*root);
     history_commands::register_commands(*root, session_);

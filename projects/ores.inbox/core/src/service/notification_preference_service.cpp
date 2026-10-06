@@ -93,7 +93,7 @@ domain::notification_preference to_domain(const messaging::notification_preferen
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_notification_preferences_response
 notification_preference_service::list_notification_preferences(

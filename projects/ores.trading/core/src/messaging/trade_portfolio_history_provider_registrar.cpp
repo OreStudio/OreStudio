@@ -35,4 +35,4 @@ void register_trade_portfolio_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

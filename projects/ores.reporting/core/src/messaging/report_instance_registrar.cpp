@@ -31,7 +31,7 @@ namespace ores::reporting::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.reporting.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription>
 register_report_instance_handlers(ores::nats::service::client& nats,
@@ -78,4 +78,4 @@ register_report_instance_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::reporting::messaging
+}

@@ -89,7 +89,7 @@ domain::subject_area to_domain(const messaging::subject_area_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_subject_areas_response
 subject_area_service::list_subject_areas(const messaging::list_subject_areas_request& request) {

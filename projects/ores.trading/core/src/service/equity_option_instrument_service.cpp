@@ -99,7 +99,7 @@ domain::equity_option_instrument to_domain(const messaging::equity_option_instru
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_equity_option_instruments_response
 equity_option_instrument_service::list_equity_option_instruments(

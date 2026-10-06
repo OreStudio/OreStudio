@@ -92,7 +92,7 @@ to_domain(const messaging::inflation_seasonality_factor_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_inflation_seasonality_factors_response
 inflation_seasonality_factor_service::list_inflation_seasonality_factors(

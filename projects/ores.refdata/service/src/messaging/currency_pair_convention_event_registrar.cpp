@@ -56,4 +56,4 @@ register_currency_pair_convention_event_mapping(ev::service::postgres_event_sour
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

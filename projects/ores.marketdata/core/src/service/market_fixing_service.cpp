@@ -91,7 +91,7 @@ domain::market_fixing to_domain(const messaging::market_fixing_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_market_fixings_response
 market_fixing_service::list_market_fixings(const messaging::list_market_fixings_request& request) {

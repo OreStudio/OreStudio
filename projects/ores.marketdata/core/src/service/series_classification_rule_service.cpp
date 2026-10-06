@@ -94,7 +94,7 @@ to_domain(const messaging::series_classification_rule_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_series_classification_rules_response
 series_classification_rule_service::list_series_classification_rules(

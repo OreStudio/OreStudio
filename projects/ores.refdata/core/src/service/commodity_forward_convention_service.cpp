@@ -96,7 +96,7 @@ to_domain(const messaging::commodity_forward_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_commodity_forward_conventions_response
 commodity_forward_convention_service::list_commodity_forward_conventions(

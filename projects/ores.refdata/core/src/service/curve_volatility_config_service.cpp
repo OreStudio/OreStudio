@@ -117,7 +117,7 @@ domain::curve_volatility_config to_domain(const messaging::curve_volatility_conf
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_curve_volatility_configs_response
 curve_volatility_config_service::list_curve_volatility_configs(

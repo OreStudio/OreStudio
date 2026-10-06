@@ -55,10 +55,10 @@ from the accepted design.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold lands the story and its six tasks; the tasks stay BACKLOG until their work begins. |
+| Now           | The scaffold, the heartbeat and the access model are done; [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] is next. |
 | Waiting on    | Nothing.                               |
-| Next          | The five data-model linkages, in any order; [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] is one of them. |
-| Last touched  | 2026-10-04                               |
+| Next          | The four remaining data-model linkages, in any order, then the screens. |
+| Last touched  | 2026-10-06                               |
 
 * Acceptance
 
@@ -77,8 +77,12 @@ from the accepted design.
 - Every gap the five journeys record is either closed with its evidence or
   stated on the screen, and every Related journeys entry is a link on the
   screen.
-- The Operations area carries the five screens with "Back to operations"
-  navigation, and every screen carries the footer with both builds.
+- The Operations area carries the five screens, the system-administration
+  menu carries the Operations entry and no other menu does, and every screen
+  carries the footer with both builds. The four installation screens carry
+  "Back to operations" navigation and stand in the area alone; the versions
+  screen is offered in every mode, so a tenant administrator and a regular
+  user reach it and no other operations screen.
 
 * Tasks
 
@@ -91,15 +95,17 @@ from the accepted design.
 | [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]] | BACKLOG | | | Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back. |
 | [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]] | BACKLOG | | | Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle. |
 | [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] | BACKLOG | | | The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer. |
+| [[id:1878A3E4-0ACE-4CE6-892D-81DA0BCA8717][State who reaches the operations screens]] | DONE | 2026-10-05 | 2026-10-06 | The documents state who reaches each operations screen: the four installation screens are the system administrator's in the Operations area, and the versions screen is any signed-in person's in every mode. |
 
 * Plan
 
 | # | Step | What it leaves behind |
 |---+------+-----------------------|
 | 1 | Scaffold the story and wire it into the programme | The story, its tasks, the sprint row and the programme's order table. |
-| 2 | Close the data-model linkages | The five fixes, each with its evidence, and each capture moved out of the inbox. |
-| 3 | Build the operations screens | The five screens, the Operations area and the footer in =ores.web=, on the runtime the Setup group landed. |
-| 4 | Line up the shell side | The grid stats command follows the changed read, and the story records where the shell carries no operations journey. |
+| 2 | State who reaches the screens | The access model on the group page, the five journeys, the story and the screens task: the four installation screens in the system-administration menu's area, the versions screen in every mode. |
+| 3 | Close the data-model linkages | The four fixes, each with its evidence, and each capture moved out of the inbox. |
+| 4 | Build the operations screens | The five screens, the Operations area and the footer in =ores.web=, on the runtime the Setup group landed. |
+| 5 | Line up the shell side | The grid stats command follows the changed read, and the story records where the shell carries no operations journey. |
 
 * Decisions
 
@@ -135,6 +141,13 @@ from the accepted design.
 - *A journey a person cannot reach from a screen is not finished.* Each
   journey's Related journeys list is links on the screen; a screen that omits
   them has not implemented the journey.
+- *The Operations area is offered in system administration alone.* The four
+  installation journeys' actor is the super administrator acting from the
+  system tenant, so the system-administration menu carries the Operations
+  entry and no other menu does: a tenant administrator and a regular user
+  reach none of the four screens. The versions screen is the exception. Its
+  actor is any signed-in person, so the shell offers it in every mode, beside
+  the footer. The accepted walk ran the prototype in that mode.
 - *The screens follow the accepted contracts.* The
   [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]], the
   [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] and the
@@ -165,7 +178,7 @@ from the accepted design.
 
 | Document | Kind | Purpose |
 |----------+------+---------|
-| [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] | knowledge | The group page: five journeys, two actors, and where the legacy screens went. |
+| [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] | knowledge | The group page: five journeys, who reaches each screen, and where the legacy screens went. |
 | [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | user_journey | The roster, its state words and its version skew. |
 | [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | user_journey | The nodes, the wrappers, and the failures. |
 | [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | user_journey | The server's vitals and the streams. |

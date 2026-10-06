@@ -93,7 +93,7 @@ domain::scripted_instrument to_domain(const messaging::scripted_instrument_write
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_scripted_instruments_response
 scripted_instrument_service::list_scripted_instruments(

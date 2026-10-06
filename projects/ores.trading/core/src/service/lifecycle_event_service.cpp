@@ -88,7 +88,7 @@ domain::lifecycle_event to_domain(const messaging::lifecycle_event_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_lifecycle_events_response lifecycle_event_service::list_lifecycle_events(
     const messaging::list_lifecycle_events_request& request) {

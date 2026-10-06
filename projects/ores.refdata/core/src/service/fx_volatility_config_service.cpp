@@ -107,7 +107,7 @@ domain::fx_volatility_config to_domain(const messaging::fx_volatility_config_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_fx_volatility_configs_response
 fx_volatility_config_service::list_fx_volatility_configs(

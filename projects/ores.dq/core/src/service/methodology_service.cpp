@@ -90,7 +90,7 @@ domain::methodology to_domain(const messaging::methodology_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_methodologies_response
 methodology_service::list_methodologies(const messaging::list_methodologies_request& request) {

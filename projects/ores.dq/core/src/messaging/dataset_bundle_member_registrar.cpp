@@ -31,7 +31,7 @@ namespace ores::dq::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.dq.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_dataset_bundle_member_handlers(
     ores::nats::service::client& nats,
@@ -77,4 +77,4 @@ std::vector<ores::nats::service::subscription> register_dataset_bundle_member_ha
     return subs;
 }
 
-} // namespace ores::dq::messaging
+}

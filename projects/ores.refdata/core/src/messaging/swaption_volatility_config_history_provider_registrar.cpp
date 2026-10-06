@@ -41,4 +41,4 @@ void register_swaption_volatility_config_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

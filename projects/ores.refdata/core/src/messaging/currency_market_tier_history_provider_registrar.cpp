@@ -41,4 +41,4 @@ void register_currency_market_tier_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

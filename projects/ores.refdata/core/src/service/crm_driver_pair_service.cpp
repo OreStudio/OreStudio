@@ -91,7 +91,7 @@ domain::crm_driver_pair to_domain(const messaging::crm_driver_pair_write& write)
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_crm_driver_pairs_response crm_driver_pair_service::list_crm_driver_pairs(
     const messaging::list_crm_driver_pairs_request& request) {

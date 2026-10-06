@@ -89,7 +89,7 @@ domain::sandbox_member to_domain(const messaging::sandbox_member_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_sandbox_members_response sandbox_member_service::list_sandbox_members(
     const messaging::list_sandbox_members_request& request) {

@@ -91,7 +91,7 @@ domain::system_setting to_domain(const messaging::system_setting_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_system_settings_response system_setting_service::list_system_settings(
     const messaging::list_system_settings_request& request) {

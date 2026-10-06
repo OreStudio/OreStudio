@@ -40,6 +40,6 @@ register_yield_curve_process_parameter_definition_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::synthetic::messaging
+}
 
 #endif

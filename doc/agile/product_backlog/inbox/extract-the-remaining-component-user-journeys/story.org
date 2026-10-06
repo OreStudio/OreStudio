@@ -63,7 +63,7 @@ moved here.
 | [[id:A200107D-35CA-44EE-9192-A2234A6C2918][Extract the ores.synthetic user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.synthetic, reading its legacy screens in ores.qt/synthetic. |
 | [[id:A7F0A526-A486-4D7C-A9AC-5D2C7389E407][Extract the ores.trading user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.trading, reading its legacy screens in ores.qt/trading. |
 | [[id:8EE415F7-0B51-4FA6-A3E0-D5BBAF751E1F][Extract the ores.workflow user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workflow, reading its legacy screens in ores.qt/workflow. |
-| [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] | BACKLOG | | | Run the User Journey Extraction Standard for ores.workspace, reading its legacy screens in ores.qt/workspace. |
+| [[id:05B371A7-0A30-4032-92D5-05201032A936][Extract the ores.workspace user journeys]] | ABANDONED | | 2026-10-05 | Run the User Journey Extraction Standard for ores.workspace, reading its legacy screens in ores.qt/workspace. |
 
 * Decisions
 

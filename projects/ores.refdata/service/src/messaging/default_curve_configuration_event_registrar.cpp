@@ -57,4 +57,4 @@ register_default_curve_configuration_event_mapping(ev::service::postgres_event_s
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

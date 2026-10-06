@@ -35,4 +35,4 @@ void register_instrument_schedule_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

@@ -93,7 +93,7 @@ domain::parameter_definition to_domain(const messaging::parameter_definition_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_parameter_definitions_response
 parameter_definition_service::list_parameter_definitions(

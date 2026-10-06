@@ -40,6 +40,6 @@ register_cross_currency_fix_float_convention_handlers(
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

@@ -88,7 +88,7 @@ domain::nature_dimension to_domain(const messaging::nature_dimension_write& writ
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_nature_dimensions_response nature_dimension_service::list_nature_dimensions(
     const messaging::list_nature_dimensions_request& request) {

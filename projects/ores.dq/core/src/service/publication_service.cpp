@@ -96,7 +96,7 @@ domain::publication to_domain(const messaging::publication_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_publications_response
 publication_service::list_publications(const messaging::list_publications_request& request) {

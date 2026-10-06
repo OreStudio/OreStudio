@@ -92,7 +92,7 @@ domain::counterparty_identifier to_domain(const messaging::counterparty_identifi
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_counterparty_identifiers_response
 counterparty_identifier_service::list_counterparty_identifiers(

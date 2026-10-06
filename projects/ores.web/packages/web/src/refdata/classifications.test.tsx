@@ -31,9 +31,10 @@ import type {
     HistoryVersion,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { ClassificationListPage } from './ClassificationListPage.js';
+import { ClassificationListPage, pageOfList } from './ClassificationListPage.js';
 import { ClassificationRowPage } from './ClassificationRowPage.js';
 import { ClassificationsPage } from './ClassificationsPage.js';
+import { FIRST_PAGE, pageKey } from './RecordList.js';
 import { RefdataPage } from './RefdataPage.js';
 
 /**
@@ -153,6 +154,15 @@ function version(n: number, name: string, order: string, reason: string): Histor
     };
 }
 
+/** Seeds the first page of a list, as the shared list reads it. */
+function seedPage(client: QueryClient, key: string, rows: readonly ClassificationRow[]): void {
+    client.setQueryData(['classifications', key], rows);
+    client.setQueryData(
+        pageKey({ key: `classification:${key}` }, FIRST_PAGE),
+        pageOfList(rows, FIRST_PAGE),
+    );
+}
+
 function render(path: string, seed: (client: QueryClient) => void): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['classifications'], LISTS);
@@ -265,25 +275,25 @@ describe('the classification index', () => {
 describe('one list', () => {
     it('offers a writer the actions, and paints each row with its label', () => {
         const html = render('/refdata/classifications/rounding-type', (client) => {
-            client.setQueryData(
-                ['classifications', 'rounding-type'],
-                [row('Up', 'Round Up', 1, 'rounding_type_up'), row('Odd', 'Odd', 2, null)],
-            );
+            seedPage(client, 'rounding-type', [
+                row('Up', 'Round Up', 1, 'rounding_type_up'),
+                row('Odd', 'Odd', 2, null),
+            ]);
             client.setQueryData(['my-access'], access(['refdata::rounding_types:write']));
         });
         expect(html).toContain('Add row');
         expect(html).toContain('Reorder');
-        expect(html).toContain('>Label</th>');
+        expect(html).toContain('Refresh');
+        expect(html).toContain('Search…');
+        expect(html).toContain('1–2 of 2');
+        expect(html).toMatch(/>Label<\/th>/);
         expect(html).toContain('background-color:#8b5cf6');
         expect(html).toContain('Unmapped');
     });
 
     it('offers a reader no change, and says why', () => {
         const html = render('/refdata/classifications/rounding-type', (client) => {
-            client.setQueryData(
-                ['classifications', 'rounding-type'],
-                [row('Up', 'Round Up', 1, null)],
-            );
+            seedPage(client, 'rounding-type', [row('Up', 'Round Up', 1, null)]);
             client.setQueryData(['my-access'], access(['refdata::rounding_types:read']));
         });
         expect(html).not.toContain('Add row');
@@ -292,13 +302,13 @@ describe('one list', () => {
 
     it('shows a list of ORE spellings read-only, even to someone who holds everything', () => {
         const html = render('/refdata/classifications/day-counter', (client) => {
-            client.setQueryData(['classifications', 'day-counter'], [row('A360', '', null, null)]);
+            seedPage(client, 'day-counter', [row('A360', '', null, null)]);
             client.setQueryData(['my-access'], access(['*']));
         });
         expect(html).toContain('ORE documents write these spellings exactly');
         expect(html).not.toContain('Add row');
-        expect(html).not.toContain('>Order</th>');
-        expect(html).not.toContain('>Label</th>');
+        expect(html).not.toMatch(/>Order<\/th>/);
+        expect(html).not.toMatch(/>Label<\/th>/);
     });
 });
 
@@ -312,11 +322,14 @@ describe('one row', () => {
             client.setQueryData(['my-access'], access(['*']));
         });
         expect(html).toContain('Round Up');
-        expect(html).toContain('Rounding types · Up · version 2');
+        expect(html).toContain('Up · version 2');
+        expect(html).toContain('Editable');
         expect(html).toContain('>Edit<');
-        expect(html).toContain('>Remove<');
+        expect(html).toContain('>Delete<');
         expect(html).toContain('aria-selected="true"');
-        expect(html).toContain('common.rectification — Fixed');
+        expect(html).toContain('Last changed');
+        expect(html).toContain('common.rectification');
+        expect(html).toContain('“Fixed”');
     });
 
     it('shows a change as an old line and a new line, and the provenance in the timeline', () => {
@@ -341,5 +354,35 @@ describe('one row', () => {
         expect(html).toContain('>+<');
         expect(html).toContain('<mark');
         expect(html).not.toContain('>Recorded At<');
+    });
+});
+
+describe('a page of one list', () => {
+    const rows = [
+        row('Up', 'Round Up', 20, null),
+        row('Down', 'Round Down', 10, null),
+        row('Half', 'Half Even', null, null),
+    ];
+
+    it('searches the code, the name and the description, and counts what it found', () => {
+        const page = pageOfList(rows, { ...FIRST_PAGE, search: 'round' });
+        expect(page.rows.map((found) => found.code)).toEqual(['Up', 'Down']);
+        expect(page.total).toBe(2);
+        expect(pageOfList(rows, { ...FIRST_PAGE, search: 'HALF' }).total).toBe(1);
+    });
+
+    it('keeps the list order unless a column orders it, and puts a row with no order last', () => {
+        const codes = (sort: string, descending = false) =>
+            pageOfList(rows, { ...FIRST_PAGE, sort, descending }).rows.map((found) => found.code);
+        expect(codes('')).toEqual(['Up', 'Down', 'Half']);
+        expect(codes('display_order')).toEqual(['Down', 'Up', 'Half']);
+        expect(codes('name', true)).toEqual(['Up', 'Down', 'Half']);
+        expect(codes('code')).toEqual(['Down', 'Half', 'Up']);
+    });
+
+    it('cuts the page and keeps the total of the whole match', () => {
+        const page = pageOfList(rows, { ...FIRST_PAGE, offset: 1, limit: 1 });
+        expect(page.rows.map((found) => found.code)).toEqual(['Down']);
+        expect(page.total).toBe(3);
     });
 });

@@ -55,4 +55,4 @@ register_netting_set_event_mapping(ev::service::postgres_event_source& event_sou
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -24,8 +24,11 @@ The five operations journeys run in =ores.web= against the real server, as
 the accepted prototype draws them: the services roster, the whole grid with
 its node table and wrapper panel, the bus vitals and streams, the logs filter
 bar, and the versions panels with the footer. The screens ride the journey
-runtime the Setup group landed, with a hand-written BFF route per screen, and
-Operations is an area with "Back to operations" navigation rather than tabs.
+runtime the Setup group landed, with a hand-written BFF route per screen.
+Operations is an area the system-administration menu carries: the four
+installation screens carry "Back to operations" navigation rather than tabs,
+and the versions screen is offered in every mode, so a tenant administrator
+and a regular user reach it as well.
 Where the data-model linkages are not yet closed, the screen states the gap
 as the prototype does rather than showing a guess.
 
@@ -46,8 +49,11 @@ as the prototype does rather than showing a guess.
   journey entity is added.
 - Each screen carries its Related journeys links, and the versions panel reads
   the database from the login answer with no request of its own.
-- The Operations area offers the five screens with "Back to operations"
-  navigation, and every screen carries the footer with both builds.
+- The Operations area is reached from the system-administration menu; the
+  four installation screens carry "Back to operations" navigation and no
+  other mode offers them; the versions screen is offered in every mode, so a
+  tenant administrator and a regular user reach it; and every screen carries
+  the footer with both builds.
 - Every gap the five journeys record is either closed or stated on the
   screen, and the statement is recorded.
 

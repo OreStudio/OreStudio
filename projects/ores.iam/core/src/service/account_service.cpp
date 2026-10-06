@@ -61,7 +61,7 @@ std::vector<domain::account> read_one(repository::account_repository& repo,
     return repo.read_latest_by_username(ctx, key.username);
 }
 
-} // namespace
+}
 
 messaging::list_accounts_response
 account_service::list_accounts(const messaging::list_accounts_request& request) {

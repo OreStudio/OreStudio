@@ -116,7 +116,7 @@ domain::bond_leg_rate to_domain(const messaging::bond_leg_rate_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_leg_rates_response
 bond_leg_rate_service::list_bond_leg_rates(const messaging::list_bond_leg_rates_request& request) {

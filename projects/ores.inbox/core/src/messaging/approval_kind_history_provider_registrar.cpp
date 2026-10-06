@@ -40,4 +40,4 @@ void register_approval_kind_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::inbox::messaging
+}

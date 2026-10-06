@@ -87,7 +87,7 @@ domain::dataset_bundle_member to_domain(const messaging::dataset_bundle_member_w
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_dataset_bundle_members_response
 dataset_bundle_member_service::list_dataset_bundle_members(

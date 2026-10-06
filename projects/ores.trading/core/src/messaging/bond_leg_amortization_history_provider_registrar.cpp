@@ -35,4 +35,4 @@ void register_bond_leg_amortization_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

@@ -102,7 +102,7 @@ domain::bond_issue_leg to_domain(const messaging::bond_issue_leg_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_bond_issue_legs_response bond_issue_leg_service::list_bond_issue_legs(
     const messaging::list_bond_issue_legs_request& request) {

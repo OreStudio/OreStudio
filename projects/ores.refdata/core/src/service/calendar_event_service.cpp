@@ -92,7 +92,7 @@ domain::calendar_event to_domain(const messaging::calendar_event_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_calendar_events_response calendar_event_service::list_calendar_events(
     const messaging::list_calendar_events_request& request) {

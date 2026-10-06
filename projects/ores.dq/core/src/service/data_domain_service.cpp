@@ -87,7 +87,7 @@ domain::data_domain to_domain(const messaging::data_domain_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_data_domains_response
 data_domain_service::list_data_domains(const messaging::list_data_domains_request& request) {

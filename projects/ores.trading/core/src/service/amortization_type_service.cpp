@@ -87,7 +87,7 @@ domain::amortization_type to_domain(const messaging::amortization_type_write& wr
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_amortization_types_response amortization_type_service::list_amortization_types(
     const messaging::list_amortization_types_request& request) {

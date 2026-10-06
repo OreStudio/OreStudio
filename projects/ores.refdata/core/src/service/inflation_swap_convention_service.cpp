@@ -104,7 +104,7 @@ to_domain(const messaging::inflation_swap_convention_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_inflation_swap_conventions_response
 inflation_swap_convention_service::list_inflation_swap_conventions(

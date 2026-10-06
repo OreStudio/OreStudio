@@ -87,7 +87,7 @@ domain::ascot to_domain(const messaging::ascot_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_ascots_response
 ascot_service::list_ascots(const messaging::list_ascots_request& request) {

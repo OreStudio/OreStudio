@@ -23,9 +23,19 @@ import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 
 /**
+ * The address parameters of a tab: none for the first, which is the page's
+ * own address, and only `tab` for the others. Every other parameter belongs
+ * to the tab left, so it is dropped.
+ */
+export function tabAddress(tabs: readonly string[], tab: string): Readonly<Record<string, string>> {
+    return tab === tabs[0] ? {} : { tab };
+}
+
+/**
  * The tabs of a page, held in the address so a link reopens the same tab. The
- * first tab is the page's own address; the others add `?tab=`, keeping any
- * other parameter. A tab change replaces the history entry, so Back leaves the
+ * first tab is the page's own address; the others add `?tab=`. A tab change
+ * drops the other parameters, which belong to the tab left, such as a list's
+ * page. A tab change replaces the history entry, so Back leaves the
  * page rather than walking back through its tabs. Every page with tabs draws
  * them through this, so they look and behave the same everywhere.
  */
@@ -54,15 +64,7 @@ export function useTabs({
                             ? 'border-b-2 border-accent px-3 py-2 text-sm text-ink'
                             : 'border-b-2 border-transparent px-3 py-2 text-sm text-ink-muted hover:text-ink'
                     }
-                    onClick={() => {
-                        const next = new URLSearchParams(search);
-                        if (candidate === tabs[0]) {
-                            next.delete('tab');
-                        } else {
-                            next.set('tab', candidate);
-                        }
-                        setSearch(next, { replace: true });
-                    }}
+                    onClick={() => setSearch(tabAddress(tabs, candidate), { replace: true })}
                 >
                     {titleOf(candidate)}
                 </button>

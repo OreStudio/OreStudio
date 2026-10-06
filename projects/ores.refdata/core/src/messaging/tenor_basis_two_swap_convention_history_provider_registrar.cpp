@@ -41,4 +41,4 @@ void register_tenor_basis_two_swap_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

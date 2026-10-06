@@ -92,7 +92,7 @@ domain::artefact_type to_domain(const messaging::artefact_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_artefact_types_response
 artefact_type_service::list_artefact_types(const messaging::list_artefact_types_request& request) {

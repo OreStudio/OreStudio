@@ -41,4 +41,4 @@ void register_cross_currency_basis_convention_history_provider(
         });
 }
 
-} // namespace ores::refdata::messaging
+}

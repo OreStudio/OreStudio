@@ -88,7 +88,7 @@ domain::permission to_domain(const messaging::permission_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_permissions_response
 permission_service::list_permissions(const messaging::list_permissions_request& request) {

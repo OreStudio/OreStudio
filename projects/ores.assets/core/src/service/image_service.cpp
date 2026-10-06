@@ -90,7 +90,7 @@ domain::image to_domain(const messaging::image_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_images_response
 image_service::list_images(const messaging::list_images_request& request) {

@@ -58,4 +58,4 @@ register_inflation_cap_floor_volatility_config_event_mapping(
         });
 }
 
-} // namespace ores::refdata::service::messaging
+}

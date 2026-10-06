@@ -93,7 +93,7 @@ to_domain(const messaging::instrument_option_payment_date_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_option_payment_dates_response
 instrument_option_payment_date_service::list_instrument_option_payment_dates(

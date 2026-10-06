@@ -91,7 +91,7 @@ domain::cap_floor_instrument to_domain(const messaging::cap_floor_instrument_wri
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_cap_floor_instruments_response
 cap_floor_instrument_service::list_cap_floor_instruments(

@@ -41,4 +41,4 @@ void register_fx_spot_generation_config_history_provider(
         });
 }
 
-} // namespace ores::synthetic::messaging
+}

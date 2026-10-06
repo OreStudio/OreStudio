@@ -41,4 +41,4 @@ void register_change_reason_category_history_provider(
         });
 }
 
-} // namespace ores::dq::messaging
+}

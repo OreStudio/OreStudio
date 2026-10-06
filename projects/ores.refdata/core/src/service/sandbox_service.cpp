@@ -95,7 +95,7 @@ domain::sandbox to_domain(const messaging::sandbox_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_sandboxes_response
 sandbox_service::list_sandboxes(const messaging::list_sandboxes_request& request) {

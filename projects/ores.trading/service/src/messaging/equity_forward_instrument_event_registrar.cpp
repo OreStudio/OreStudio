@@ -56,4 +56,4 @@ register_equity_forward_instrument_event_mapping(ev::service::postgres_event_sou
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

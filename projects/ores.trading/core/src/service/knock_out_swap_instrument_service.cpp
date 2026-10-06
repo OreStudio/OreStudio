@@ -95,7 +95,7 @@ to_domain(const messaging::knock_out_swap_instrument_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_knock_out_swap_instruments_response
 knock_out_swap_instrument_service::list_knock_out_swap_instruments(

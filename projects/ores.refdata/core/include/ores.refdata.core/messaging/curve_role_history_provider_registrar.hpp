@@ -31,6 +31,6 @@ namespace ores::refdata::messaging {
 
 void register_curve_role_history_provider(ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

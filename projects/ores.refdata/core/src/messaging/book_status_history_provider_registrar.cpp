@@ -40,4 +40,4 @@ void register_book_status_history_provider(ores::history::service::dispatch_regi
         });
 }
 
-} // namespace ores::refdata::messaging
+}

@@ -190,10 +190,17 @@ kind:
 
 The record never writes another component's data. When a request is approved,
 the decision publishes the request's change event, and the component that owns
-the kind applies it through its own operation: IAM grants the role with
-=iam.v1.roles.assign=, carrying the request as the grant's reason, so the grant
-has the same audit tail as any other. If applying fails, the request returns to
-=waiting= with the failure as a comment, rather than reading as approved.
+the kind applies it through its own grant: IAM grants the role as the approver,
+carrying the request as the grant's reason, so the grant has the same audit
+tail as any other.
+
+The event is a nudge, not the instruction. IAM applies approvals by
+reconciliation: at start and on every change to a request, it asks which
+approved request roles an account does not yet hold, in every tenant not
+terminated,
+and grants them. A missed event, a repeated one, or an approval made while IAM
+was down all converge to the same roles, and a grant that fails is tried again
+on the next run rather than turning the request back to =waiting=.
 
 ** What is generic and what a kind adds
 

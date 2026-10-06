@@ -32,6 +32,6 @@ namespace ores::refdata::messaging {
 void register_average_ois_convention_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::refdata::messaging
+}
 
 #endif

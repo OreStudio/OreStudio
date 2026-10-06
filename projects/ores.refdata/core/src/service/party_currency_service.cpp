@@ -63,7 +63,7 @@ void stamp_party_currency(domain::party_currency& row, const ores::database::con
         row.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
 }
 
-} // namespace
+}
 
 party_currency_service::party_currency_service(context ctx)
     : ctx_(std::move(ctx))
@@ -111,7 +111,7 @@ domain::party_currency to_domain(const messaging::party_currency_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_party_currencies_response party_currency_service::list_party_currencies(
     const messaging::list_party_currencies_request& request) {

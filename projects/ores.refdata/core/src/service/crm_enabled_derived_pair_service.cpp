@@ -92,7 +92,7 @@ domain::crm_enabled_derived_pair to_domain(const messaging::crm_enabled_derived_
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_crm_enabled_derived_pairs_response
 crm_enabled_derived_pair_service::list_crm_enabled_derived_pairs(

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: C85E9926-4AE7-54EE-A4CB-2EB71598C1DC
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the role_request_operations commands from the shell?
+#+description: Every command the role_request_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:role_request_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> role_request_operations ask-for-roles=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =ask-for-roles=
+:PROPERTIES:
+:ID: B12E0E7B-76CA-5106-956C-0A01D4F938A6
+:END:
+
+Sends =ask_for_roles_request= and prints =ask_for_roles_response=, so the shape is the protocol's and the meaning is the service's. It reads =role_ids=, =reason=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+role_request_operations ask-for-roles <role_ids> <reason>
+#+end_example
+
+It is addressed at =iam.v1.role-requests.ask=.
+
+#+name: role_request_operations-ask-for-roles
+#+begin_src ores-shell :tangle role_request_operations-ask-for-roles.ores :exports none
+role_request_operations ask-for-roles __none__ __none__
+#+end_src
+

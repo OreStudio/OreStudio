@@ -98,7 +98,7 @@ to_domain(const messaging::instrument_option_premium_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_instrument_option_premiums_response
 instrument_option_premium_service::list_instrument_option_premiums(

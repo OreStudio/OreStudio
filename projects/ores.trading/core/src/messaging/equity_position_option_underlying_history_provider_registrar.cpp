@@ -35,4 +35,4 @@ void register_equity_position_option_underlying_history_provider(
     (void)registry;
 }
 
-} // namespace ores::trading::messaging
+}

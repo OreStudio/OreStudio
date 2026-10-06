@@ -1,0 +1,6 @@
+# =decide-approval=
+#
+# GENERATED from doc/recipes/shell/approval_operations/approval_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+approval_operations decide-approval __none__ __none__ __none__

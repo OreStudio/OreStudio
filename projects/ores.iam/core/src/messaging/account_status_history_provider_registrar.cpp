@@ -40,4 +40,4 @@ void register_account_status_history_provider(ores::history::service::dispatch_r
         });
 }
 
-} // namespace ores::iam::messaging
+}

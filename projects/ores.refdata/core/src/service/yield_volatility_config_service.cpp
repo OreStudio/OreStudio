@@ -97,7 +97,7 @@ domain::yield_volatility_config to_domain(const messaging::yield_volatility_conf
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_yield_volatility_configs_response
 yield_volatility_config_service::list_yield_volatility_configs(

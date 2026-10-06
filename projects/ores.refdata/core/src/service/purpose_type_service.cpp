@@ -89,7 +89,7 @@ domain::purpose_type to_domain(const messaging::purpose_type_write& write) {
     return v;
 }
 
-} // namespace
+}
 
 messaging::list_purpose_types_response
 purpose_type_service::list_purpose_types(const messaging::list_purpose_types_request& request) {

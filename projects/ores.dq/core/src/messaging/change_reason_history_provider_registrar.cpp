@@ -40,4 +40,4 @@ void register_change_reason_history_provider(ores::history::service::dispatch_re
         });
 }
 
-} // namespace ores::dq::messaging
+}

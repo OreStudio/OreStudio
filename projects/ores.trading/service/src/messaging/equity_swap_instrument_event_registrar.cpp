@@ -56,4 +56,4 @@ register_equity_swap_instrument_event_mapping(ev::service::postgres_event_source
         });
 }
 
-} // namespace ores::trading::service::messaging
+}

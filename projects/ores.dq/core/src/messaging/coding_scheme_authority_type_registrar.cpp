@@ -31,7 +31,7 @@ namespace ores::dq::messaging {
 
 namespace {
 static constexpr std::string_view queue_group = "ores.dq.service";
-} // namespace
+}
 
 std::vector<ores::nats::service::subscription> register_coding_scheme_authority_type_handlers(
     ores::nats::service::client& nats,
@@ -89,4 +89,4 @@ std::vector<ores::nats::service::subscription> register_coding_scheme_authority_
     return subs;
 }
 
-} // namespace ores::dq::messaging
+}

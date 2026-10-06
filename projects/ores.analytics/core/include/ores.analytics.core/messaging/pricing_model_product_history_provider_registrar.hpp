@@ -32,6 +32,6 @@ namespace ores::analytics::messaging {
 void register_pricing_model_product_history_provider(
     ores::history::service::dispatch_registry& registry);
 
-} // namespace ores::analytics::messaging
+}
 
 #endif

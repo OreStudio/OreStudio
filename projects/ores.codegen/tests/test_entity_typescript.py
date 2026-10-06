@@ -563,3 +563,13 @@ def test_a_junction_keeps_the_key_column_named_like_provenance():
         "account_id", "party_id"]
     assert [f["name"] for f in messages["account_party_write"]["fields"]] == [
         "account_id", "party_id"]
+
+
+def test_a_client_read_only_entity_derives_reads_and_no_writes():
+    # The repository keeps its writes for the service's own operations; the
+    # wire, and so both protocol twins, carry the reads only.
+    names = set(_by_name(entity_protocol_messages(_entity(client_read_only=True))))
+    writable = set(_by_name(entity_protocol_messages(_entity())))
+    assert {"list_tenant_types_request", "get_tenant_type_request"} <= names
+    assert not {n for n in names if n.startswith(("save_", "put_", "delete_"))}
+    assert {n for n in writable if n.startswith(("save_", "put_", "delete_"))}

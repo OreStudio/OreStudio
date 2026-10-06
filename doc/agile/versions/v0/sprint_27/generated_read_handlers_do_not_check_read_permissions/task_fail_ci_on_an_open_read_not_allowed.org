@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: AE9539E8-D985-4F7C-AB62-E08CF01C1EBA
+:END:
+#+title: Task: Fail CI on an open read that is not allowed
+#+description: A check fails when a handler serves a read with no permission check and no allow-list entry.
+#+type: task
+#+level: s1
+#+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A read is classified by its method name, so an injected method named neither =list_= nor =get_= escapes the check | =check_open_reads.py= | Accepted | Classifies by the request the method decodes; it failed on both =composite_as_of= reads before the guard. |
+| 2 | The history-registrar check misses a dropped or non-literal read code | =check_open_reads.py= | Accepted | Counts =register_history_provider= calls against the matches that name a literal code. |
+| 3 | =allow_list()= raises a traceback on a renamed heading | =check_open_reads.py= | Accepted | Reports a reviewed failure instead. |
+| 4 | No planted-defect test reaches =main()='s failure paths | =test_open_reads.py= | Accepted | Tests cover the request-decoded classification and the missing section. |
+| 5 | =iam= is excluded from the permissions gate's registry | =check_handler_permissions.py:42= | Deferred | Pre-existing and unrelated to this story's reads; filed as a capture. |
+
+* Result
+
+=check_open_reads.py= fails when a generated read handler checks no
+permission and its subject is not allow-listed, when a generated history
+registrar passes no read code, and when the allow-list names a subject no
+protocol defines. It runs in the codegen drift workflow, which now also runs
+when Authorised reads changes. On its first run it found a hand-written read
+pasted into the composite instrument handler with no check, now guarded. A
+local review then found that it classified a read by the method's name, so the
+two injected =composite_as_of= reads escaped it; it now classifies by the
+request a method decodes, whatever its name, and it failed on both before
+their guard landed. It also counts each history registration against a literal
+read code, and reports a missing allow-list section rather than aborting.
+Seven tests cover it.

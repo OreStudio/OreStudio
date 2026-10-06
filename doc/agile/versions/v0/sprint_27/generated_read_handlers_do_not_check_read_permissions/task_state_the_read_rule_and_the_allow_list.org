@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: C8F06D29-CA09-43FF-A76D-3803FDB29BD0
+:END:
+#+title: Task: State the read rule and the allow-list
+#+description: Authorised reads states that a read checks its permission unless allow-listed, and lists every open read by subject with its reason.
+#+type: task
+#+level: s1
+#+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
+#+owner: marco
+#+branch: feature/generated-read-handlers-do-not-check-read-permissions
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule:
+a read checks its read permission unless the page's allow-list names its
+subject with the reason it is open. The allow-list holds every read that is
+meant to be open today.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The rule is in the Summary and in its own section, with the two reasons a
+  read may be open: a self read, or a read a member needs before holding any
+  role that grants it.
+- The allow-list names each open subject, what it answers, and why.
+- The planned self read for contact information is listed, so task 2 can open
+  it.
+- The page says where the code is today, so a reader does not mistake the rule
+  for the current state.
+- Every subject on the list exists in the generated protocol.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule in
+its Summary and in "Guarded unless allowed": a read checks its resource's
+=:read= code unless the allow-list names its subject and the reason. A read may
+be open as a self read, or because a member needs it before holding any role
+that grants it. The allow-list holds eight subjects, each checked against the
+generated protocol, and a planned row for the contact information self read.
+"Where the code is today" records that 363 of 367 generated read handlers were
+open on 2026-10-06. The page's permission-check table said the token check
+allows an empty permission list; the code denies it, and the row is corrected.
+The security hub states the rule in its entry for the page. Reviewed and
+accepted on 2026-10-06.

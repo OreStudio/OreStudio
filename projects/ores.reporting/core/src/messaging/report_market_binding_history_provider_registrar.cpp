@@ -33,6 +33,7 @@ void register_report_market_binding_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_market_binding",
+        "reporting::report_market_bindings:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_market_binding_service svc(scoped_ctx);
             auto versions = svc.get_binding_history(entity_id);

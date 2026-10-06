@@ -33,6 +33,7 @@ void register_tenor_resolution_algorithm_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.tenor_resolution_algorithm",
+        "refdata::tenor_resolution_algorithms:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::tenor_resolution_algorithm_service svc(scoped_ctx);
             auto versions = svc.get_algorithm_history(entity_id);

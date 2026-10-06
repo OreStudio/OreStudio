@@ -33,6 +33,7 @@ void register_credit_simulation_matrix_row_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.credit_simulation_matrix_row_config",
+        "analytics::credit_simulation_matrix_row_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::credit_simulation_matrix_row_config_service svc(scoped_ctx);
             auto versions = svc.get_row_history(entity_id);

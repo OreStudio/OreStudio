@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_run_grants_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_run_grant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_run_grants_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -203,6 +215,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_grantor_account_id_run_grants_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -244,6 +260,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_run_grant_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -285,6 +305,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::run_grants:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_run_grant_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(run_grant_handler_lg(), warn) << "Failed to decode: " << msg.subject;

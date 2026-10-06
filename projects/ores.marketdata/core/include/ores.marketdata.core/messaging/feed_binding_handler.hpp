@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::feed_bindings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_feed_bindings_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(feed_binding_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::feed_bindings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_feed_binding_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(feed_binding_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::feed_bindings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_feed_bindings_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(feed_binding_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -391,6 +403,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::feed_bindings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_feed_binding_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(feed_binding_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -433,6 +449,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::feed_bindings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_feed_binding_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(feed_binding_handler_lg(), warn) << "Failed to decode: " << msg.subject;

@@ -33,6 +33,7 @@ void register_role_grant_request_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.role_grant_request",
+        "iam::role_grant_requests:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::role_grant_request_service svc(scoped_ctx);
             auto versions = svc.get_role_grant_request_history(entity_id);

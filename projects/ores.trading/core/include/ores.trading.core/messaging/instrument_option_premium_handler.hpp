@@ -82,6 +82,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instrument_option_premiums:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_instrument_option_premiums_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(instrument_option_premium_handler_lg(), warn)
@@ -126,6 +130,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instrument_option_premiums:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_instrument_option_premium_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(instrument_option_premium_handler_lg(), warn)
@@ -170,6 +178,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instrument_option_premiums:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_instrument_option_premiums_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(instrument_option_premium_handler_lg(), warn)
@@ -406,6 +418,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instrument_option_premiums:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_instrument_option_premium_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(instrument_option_premium_handler_lg(), warn)
@@ -450,6 +466,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instrument_option_premiums:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_instrument_option_premium_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(instrument_option_premium_handler_lg(), warn)

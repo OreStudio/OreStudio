@@ -33,6 +33,7 @@ void register_badge_definition_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.dq.badge_definition",
+        "dq::badge_definitions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::badge_definition_service svc(scoped_ctx);
             auto versions = svc.get_definition_history(entity_id);

@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_basis_swap_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenor_basis_swap_conventions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_basis_swap_convention_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_basis_swap_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenor_basis_swap_convention_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_basis_swap_convention_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_basis_swap_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_tenor_basis_swap_conventions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_basis_swap_convention_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_basis_swap_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenor_basis_swap_convention_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_basis_swap_convention_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_basis_swap_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenor_basis_swap_convention_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_basis_swap_convention_handler_lg(), warn)

@@ -33,6 +33,7 @@ void register_cds_volatility_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.cds_volatility_config",
+        "refdata::cds_volatility_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::cds_volatility_config_service svc(scoped_ctx);
             auto versions = svc.get_cds_volatility_config_history(entity_id);

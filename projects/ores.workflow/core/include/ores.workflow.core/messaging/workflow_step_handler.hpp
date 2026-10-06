@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_workflow_steps_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_workflow_step_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_workflow_steps_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -391,6 +403,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_workflow_id_workflow_steps_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -433,6 +449,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_workflow_step_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -475,6 +495,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "workflow::workflow_steps:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_workflow_step_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(workflow_step_handler_lg(), warn) << "Failed to decode: " << msg.subject;

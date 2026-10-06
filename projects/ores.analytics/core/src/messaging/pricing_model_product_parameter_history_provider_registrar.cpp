@@ -33,6 +33,7 @@ void register_pricing_model_product_parameter_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.pricing_model_product_parameter",
+        "analytics::pricing_model_product_parameters:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::pricing_model_product_parameter_service svc(scoped_ctx);
             auto versions = svc.get_parameter_history(entity_id);

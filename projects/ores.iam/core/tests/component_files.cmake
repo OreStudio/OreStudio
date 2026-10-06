@@ -53,6 +53,7 @@ set(files
     "service_authorization_access_tests.cpp"
     "service_authorization_check_permission_tests.cpp"
     "service_internal_impersonation_service_tests.cpp"
+    "service_member_role_tests.cpp"
     "service_run_grant_operations_service_tests.cpp"
     "service_seed_profile_parameter_check_tests.cpp"
     "service_tenant_code_check_tests.cpp"

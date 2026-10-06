@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::csas:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_csas_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(csa_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +125,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::csas:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_csa_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(csa_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -162,6 +170,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::csas:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_csas_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(csa_handler_lg(), warn) << "Failed to decode: " << msg.subject;

@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::curve_configuration_sections:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_curve_configuration_sections_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(curve_configuration_section_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::curve_configuration_sections:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_curve_configuration_section_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(curve_configuration_section_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::curve_configuration_sections:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_curve_configuration_sections_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(curve_configuration_section_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::curve_configuration_sections:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_curve_configuration_section_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(curve_configuration_section_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::curve_configuration_sections:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_curve_configuration_section_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(curve_configuration_section_handler_lg(), warn)

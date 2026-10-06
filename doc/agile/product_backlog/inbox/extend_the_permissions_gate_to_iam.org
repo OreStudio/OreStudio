@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4DF474FA-DCF9-456B-9AE1-30526BAC356D
+:END:
+#+title: Extend the handler permissions gate to IAM
+#+description: check_handler_permissions.py's registry omits iam, so the new IAM read codes are ungated and pre-existing IAM write and delete codes are unseeded (iam::account_statuses write/delete, account_types write/delete, sessions delete, tenant_types write/delete, tenant_statuses write/delete, tenants write). Add iam to the registry and seed what it reports.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

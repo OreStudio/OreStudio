@@ -33,6 +33,7 @@ void register_report_run_setup_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_run_setup",
+        "reporting::report_run_setups:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_run_setup_service svc(scoped_ctx);
             auto versions = svc.get_setup_history(entity_id);

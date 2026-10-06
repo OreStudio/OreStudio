@@ -87,6 +87,10 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "dq::lei_entities:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         const auto& ctx = *ctx_expected;
         get_lei_entities_summary_response resp;
         try {
@@ -142,6 +146,10 @@ public:
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "dq::lei_entities:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         const auto& ctx = *ctx_expected;

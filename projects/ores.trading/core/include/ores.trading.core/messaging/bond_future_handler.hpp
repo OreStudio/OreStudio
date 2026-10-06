@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_futures:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_bond_futures_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_future_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -122,6 +126,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_futures:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_bond_future_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_future_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -164,6 +172,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_futures:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_bond_futures_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_future_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -390,6 +402,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_futures:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_bond_future_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_future_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -432,6 +448,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_futures:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_bond_future_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bond_future_handler_lg(), warn) << "Failed to decode: " << msg.subject;

@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenor_anchors_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenor_anchor_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_tenor_anchors_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -391,6 +403,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_tenor_anchor_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -433,6 +449,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::tenor_anchors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_tenor_anchor_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenor_anchor_handler_lg(), warn) << "Failed to decode: " << msg.subject;

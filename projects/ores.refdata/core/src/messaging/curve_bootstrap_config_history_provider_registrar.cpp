@@ -33,6 +33,7 @@ void register_curve_bootstrap_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_bootstrap_config",
+        "refdata::curve_bootstrap_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_bootstrap_config_service svc(scoped_ctx);
             auto versions = svc.get_bootstrap_config_history(entity_id);

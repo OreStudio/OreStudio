@@ -85,6 +85,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_market_series_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -127,6 +131,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_market_series_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -169,6 +177,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_market_series_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -395,6 +407,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_market_series_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -437,6 +453,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_market_series_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;

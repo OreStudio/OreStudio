@@ -33,6 +33,7 @@ void register_todays_market_collection_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.analytics.todays_market_collection",
+        "analytics::todays_market_collections:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::todays_market_collection_service svc(scoped_ctx);
             auto versions = svc.get_collection_history(entity_id);

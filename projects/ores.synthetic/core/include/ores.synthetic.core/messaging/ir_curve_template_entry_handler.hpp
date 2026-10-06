@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::ir_curve_template_entries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_ir_curve_template_entries_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_template_entry_handler_lg(), warn)
@@ -125,6 +129,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::ir_curve_template_entries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_ir_curve_template_entry_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_template_entry_handler_lg(), warn)
@@ -169,6 +177,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::ir_curve_template_entries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_ir_curve_template_entries_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_template_entry_handler_lg(), warn)
@@ -405,6 +417,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::ir_curve_template_entries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_ir_curve_template_entry_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_template_entry_handler_lg(), warn)
@@ -449,6 +465,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "synthetic::ir_curve_template_entries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_ir_curve_template_entry_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(ir_curve_template_entry_handler_lg(), warn)

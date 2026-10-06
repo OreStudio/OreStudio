@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::role_grant_request_roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_role_grant_request_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
@@ -119,6 +123,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::role_grant_request_roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_role_grant_request_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
@@ -157,6 +165,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::role_grant_request_roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_role_grant_request_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)
@@ -363,6 +375,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::role_grant_request_roles:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_request_id_role_grant_request_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_grant_request_role_handler_lg(), warn)

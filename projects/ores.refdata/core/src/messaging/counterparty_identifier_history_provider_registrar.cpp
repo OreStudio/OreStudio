@@ -33,6 +33,7 @@ void register_counterparty_identifier_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.counterparty_identifier",
+        "refdata::counterparty_identifiers:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::counterparty_identifier_service svc(scoped_ctx);
             auto versions = svc.get_counterparty_identifier_history(entity_id);

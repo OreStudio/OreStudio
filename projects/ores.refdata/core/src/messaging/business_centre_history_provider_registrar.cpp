@@ -33,6 +33,7 @@ void register_business_centre_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.business_centre",
+        "refdata::business_centres:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::business_centre_service svc(scoped_ctx);
             auto versions = svc.get_centre_history(entity_id);

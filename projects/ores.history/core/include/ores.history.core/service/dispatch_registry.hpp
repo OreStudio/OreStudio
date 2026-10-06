@@ -59,8 +59,16 @@ public:
     /**
      * @brief Registers a history provider for entity_type. A second
      * registration for the same entity_type replaces the first.
+     *
+     * read_permission is the permission a caller needs to read the history:
+     * the entity's own read code, such as iam::accounts:read. A history holds
+     * every version of the rows the entity's reads guard, so it needs the same
+     * code. An empty string leaves the history open to every signed-in caller,
+     * which is right only for an entity whose own reads are open.
      */
-    void register_history_provider(std::string entity_type, history_provider provider);
+    void register_history_provider(std::string entity_type,
+                                   std::string read_permission,
+                                   history_provider provider);
 
     /**
      * @brief True if a provider is registered for entity_type.
@@ -74,17 +82,21 @@ public:
 
     /**
      * @brief Dispatches a request to the provider registered for its
-     * entity_type, passing ctx through unexamined. Returns a failure
-     * response (success = false) when no provider is registered, or
-     * when the registered provider throws, rather than propagating an
-     * exception — the caller is a NATS handler that must always reply.
+     * entity_type. Returns a failure response (success = false) when no
+     * provider is registered, when the caller does not hold the provider's
+     * read permission, or when the provider throws, rather than propagating
+     * an exception — the caller is a NATS handler that must always reply.
      */
     [[nodiscard]] messaging::get_entity_history_response
     dispatch(const messaging::get_entity_history_request& request,
              const ores::database::context& ctx) const;
 
 private:
-    std::unordered_map<std::string, history_provider> providers_;
+    struct registered_provider {
+        std::string read_permission;
+        history_provider provider;
+    };
+    std::unordered_map<std::string, registered_provider> providers_;
 };
 
 }

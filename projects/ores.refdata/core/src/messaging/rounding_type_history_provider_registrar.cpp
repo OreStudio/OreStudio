@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_rounding_type_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.rounding_type",
+        "refdata::rounding_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::rounding_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

@@ -446,6 +446,36 @@ struct update_self_account_contact_information_response {
     std::optional<ores::iam::domain::account_contact_information> account_contact_information;
 };
 
+/**
+ * @brief A member's read of their own contact record.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's record. The read needs no permission: it is
+ * a self read on the allow-list of Authorised reads. Reading a colleague's
+ * record is list_by_account_id, which needs
+ * iam::account_contact_informations:read.
+ */
+struct get_my_account_contact_information_request {
+    using response_type = struct get_my_account_contact_information_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.mine";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct get_my_account_contact_information_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The caller's contact record, or nothing when they have none yet.
+     * The first update-self creates it.
+     */
+    std::optional<ores::iam::domain::account_contact_information> account_contact_information;
+};
+
 }
 
 #endif

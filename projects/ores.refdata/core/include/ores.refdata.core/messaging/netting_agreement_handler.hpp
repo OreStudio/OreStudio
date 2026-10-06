@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_netting_agreements_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_netting_agreement_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_netting_agreements_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_counterparty_id_netting_agreements_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_netting_agreement_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)
@@ -484,6 +504,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::netting_agreements:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_netting_agreement_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(netting_agreement_handler_lg(), warn)

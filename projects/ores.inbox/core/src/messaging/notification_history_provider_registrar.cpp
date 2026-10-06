@@ -32,6 +32,7 @@ namespace ores::inbox::messaging {
 void register_notification_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.inbox.notification",
+        "inbox::notifications:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::notification_service svc(scoped_ctx);
             auto versions = svc.get_notification_history(entity_id);

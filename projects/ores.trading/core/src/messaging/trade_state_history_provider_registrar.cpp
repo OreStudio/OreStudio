@@ -32,6 +32,7 @@ namespace ores::trading::messaging {
 void register_trade_state_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.trading.trade_state",
+        "trading::trade_states:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::trade_state_service svc(scoped_ctx);
             auto versions = svc.get_trade_state_history(entity_id);

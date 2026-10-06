@@ -32,6 +32,7 @@ namespace ores::compute::messaging {
 void register_app_version_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.compute.app_version",
+        "compute::app_versions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::app_version_service svc(scoped_ctx);
             auto versions = svc.get_app_version_history(entity_id);

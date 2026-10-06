@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_counterparty_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.counterparty",
+        "refdata::counterparties:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::counterparty_service svc(scoped_ctx);
             auto versions = svc.get_counterparty_history(entity_id);

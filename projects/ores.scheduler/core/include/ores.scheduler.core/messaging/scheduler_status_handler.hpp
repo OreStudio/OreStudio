@@ -68,6 +68,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!ores::service::messaging::has_permission(ctx, "scheduler::job_instances:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         if (!decode<get_scheduler_status_request>(msg)) {
             BOOST_LOG_SEV(scheduler_status_handler_lg(), warn)

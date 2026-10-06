@@ -85,6 +85,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::stress_shift_families:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_stress_shift_families_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -130,6 +134,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::stress_shift_families:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_stress_shift_family_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -175,6 +183,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::stress_shift_families:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_stress_shift_families_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -416,6 +428,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::stress_shift_families:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_stress_shift_family_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -461,6 +477,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::stress_shift_families:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_stress_shift_family_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)

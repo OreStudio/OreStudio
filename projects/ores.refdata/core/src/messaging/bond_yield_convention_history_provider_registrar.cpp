@@ -33,6 +33,7 @@ void register_bond_yield_convention_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.bond_yield_convention",
+        "refdata::bond_yield_conventions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::bond_yield_convention_service svc(scoped_ctx);
             auto versions = svc.get_bond_yield_convention_history(entity_id);

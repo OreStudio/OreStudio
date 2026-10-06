@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T15:09:22.055891Z
+' Generated: 2026-10-06T15:43:15.665866Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -82,6 +82,14 @@ package "iam" #E8F4FD {
     contact record per account (unlike party contact information, which
     allows several by contact_type — a person doesn't need a Legal/
     Operations/Settlement/Billing split).
+    The record is personal data, so the generated reads are not open to every
+    signed-in caller: iam.v1.account_contact_informations.list, get and
+    list_by_account_id require iam::account_contact_informations:read, as every
+    generated read requires its resource's read code. A person reads their own
+    record through iam.v1.account_contact_informations.mine, which takes no
+    account id, and writes it through update-self; both are in
+    [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
     entity ores_iam_account_parties_tbl <<junction>> #ECECEC {
@@ -257,11 +265,10 @@ package "iam" #E8F4FD {
     falls out of the flag rather than out of a suppression.
     The row holds the password material, the TOTP seed and the account holder's
     own name and mail address, so the generated reads are not open to every
-    signed-in caller: the model sets :guard_reads: true, and the generated
-    iam.v1.accounts.list and iam.v1.accounts.get handlers require
-    iam::accounts:read before they serve anything. The default in this estate
-    is that a read needs authentication alone, which is why the guard is stated
-    per entity rather than assumed.
+    signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get
+    handlers require iam::accounts:read before they serve anything, as every
+    generated read requires its resource's read code. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     Two behavioural facets are switched off, each with a reason:
     - The entity's CRUD handler and sub-registrar, because the hand-written
     account_operations_handler already owns the write verbs.
@@ -321,9 +328,9 @@ package "iam" #E8F4FD {
     indexes so none is lost.
     The row states when and from where each account signed in, how many attempts
     failed and whether the account is locked, so it is not open to every
-    signed-in caller: the model sets :guard_reads: true, and the generated
-    iam.v1.login_info.list and iam.v1.login_info.get handlers require
-    iam::login_info:read before they serve anything.
+    signed-in caller: the generated iam.v1.login_info.list and
+    iam.v1.login_info.get handlers require iam::login_info:read before they
+    serve anything, as every generated read requires its resource's read code.
     end note
 
     entity ores_iam_permissions_tbl <<temporal>> #C6F0D8 {
@@ -355,6 +362,10 @@ package "iam" #E8F4FD {
     the four audit columns while keeping the transaction-time window. The
     :skip_uuid_check: suppression on id drops the nil-UUID check the
     hand-written table never had.
+    The list is open to every signed-in member: a member reads a role's codes in
+    words, and asks "Can I…?". The model opens it by subject with
+    :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists it. The other reads need iam::permissions:read.
     end note
 
     entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
@@ -410,6 +421,11 @@ package "iam" #E8F4FD {
     The account is usually the person who asked, but a system may ask on a
     person's behalf, so it is a column of its own rather than the request's
     requested_by.
+    Who asked for which role is not every member's business, so the generated
+    reads require iam::role_grant_requests:read, as every generated read
+    requires its resource's read code. The person who asked reads their own requests
+    through the inbox's inbox.v1.approval-requests.mine. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
     entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
@@ -473,6 +489,11 @@ package "iam" #E8F4FD {
     prefix -- iam.v1.roles.assign, .revoke, .by-account,
     .permissions and .suggest-commands -- so the two coexist rather than
     compete, and no handler is suppressed here.
+    The list and the get are open to every signed-in member: a member reads the
+    tenant's roles to choose the one to ask for. The model opens them by subject
+    with :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists both. The other reads, such as the versions, need
+    iam::roles:read.
     end note
 
     entity ores_iam_run_grants_tbl <<temporal>> #C6F0D8 {
@@ -6131,7 +6152,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_account_contact_informations_artefact_tbl
-    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). - Artefact Table
+    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.account_contact_informations.mine, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
     end note
 
     entity ores_dq_account_types_artefact_tbl  #F7E5FF {
@@ -6167,7 +6188,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_accounts_artefact_tbl
-    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the password material, the TOTP secret, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. Two columns need care: - service_password_hash is a real column with no domain member: it is reached only by check_service_credentials and never travels on the wire, so it is declared :sql_only: true and the generated domain struct omits it while the entity struct and the mapper keep it. - image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the password material, the TOTP seed and the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the model sets :guard_reads: true, and the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything. The default in this estate is that a read needs authentication alone, which is why the guard is stated per entity rather than assumed. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
+    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the password material, the TOTP secret, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. Two columns need care: - service_password_hash is a real column with no domain member: it is reached only by check_service_credentials and never travels on the wire, so it is declared :sql_only: true and the generated domain struct omits it while the entity struct and the mapper keep it. - image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the password material, the TOTP seed and the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything, as every generated read requires its resource's read code. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
     end note
 
     entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {

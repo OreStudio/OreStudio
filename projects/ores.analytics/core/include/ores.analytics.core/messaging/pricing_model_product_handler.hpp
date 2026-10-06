@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_pricing_model_products_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_pricing_model_product_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_pricing_model_products_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_pricing_model_product_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_pricing_model_product_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)

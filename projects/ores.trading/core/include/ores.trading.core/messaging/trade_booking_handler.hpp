@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_bookings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_trade_bookings_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_booking_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_bookings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_trade_booking_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_booking_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_bookings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_trade_bookings_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_booking_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -391,6 +403,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_bookings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_trade_booking_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_booking_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -433,6 +449,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_bookings:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_trade_booking_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_booking_handler_lg(), warn) << "Failed to decode: " << msg.subject;

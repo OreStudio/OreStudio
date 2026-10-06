@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_report_definitions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_report_definition_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_report_definitions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_report_definition_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_report_definition_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)

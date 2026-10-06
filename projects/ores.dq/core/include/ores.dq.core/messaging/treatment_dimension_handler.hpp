@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::treatment_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_treatment_dimensions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(treatment_dimension_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::treatment_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_treatment_dimension_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(treatment_dimension_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::treatment_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_treatment_dimensions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(treatment_dimension_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::treatment_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_treatment_dimension_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(treatment_dimension_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::treatment_dimensions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_treatment_dimension_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(treatment_dimension_handler_lg(), warn)

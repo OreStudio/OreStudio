@@ -33,6 +33,7 @@ void register_cross_currency_fix_float_convention_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.cross_currency_fix_float_convention",
+        "refdata::cross_currency_fix_float_conventions:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::cross_currency_fix_float_convention_service svc(scoped_ctx);
             auto versions = svc.get_cross_currency_fix_float_convention_history(entity_id);

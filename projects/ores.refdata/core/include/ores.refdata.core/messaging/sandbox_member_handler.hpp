@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_sandbox_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_sandbox_member_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_sandbox_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -391,6 +403,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_sandbox_id_sandbox_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -433,6 +449,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_account_id_sandbox_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -475,6 +495,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_sandbox_member_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -517,6 +541,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::sandbox_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_sandbox_member_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(sandbox_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;

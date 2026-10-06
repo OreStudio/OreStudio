@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B78B0480-12BC-46A4-8DE3-19E988334C89
+:END:
+#+title: Give members self reads for their sessions and picture
+#+description: A member's own sessions and picture are read through privileged reads, iam.v1.sessions.active and iam.v1.accounts.get, so both answer 403 to a member; each needs a self read on the allow-list, and the shell should report a refusal rather than a decode failure.
+#+type: capture
+#+level: cross
+#+filetags: :security:iam:web:shell:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two of a member's own screens read through privileged reads, so a member is
+refused:
+
+| Route | Subject it reads | Needs |
+|-------+------------------+-------|
+| =GET /api/me/sessions= | =iam.v1.sessions.active= | =iam::sessions:read=, and answers every open session in the tenant |
+| =GET /api/accounts/<own username>/picture= | =iam.v1.accounts.get= | =iam::accounts:read= |
+
+Each needs a self read that takes no account id, as
+=iam.v1.account_contact_informations.mine= does for the contact record: the
+member's own open sessions, and the member's own account or picture. Each goes
+on the allow-list of Authorised reads, and the BFF's =me= routes move onto
+them.
+
+The shell reports a refusal badly. A refused read answers with an empty body
+and =X-Error: forbidden=, and the shell prints "Failed to parse response:
+Failed to unpack msgpack data." and aborts the script. It should read the
+header and say the read was refused, naming nothing it was not told.
+
+* Why
+
+Found on 2026-10-06 while proving the guard-every-read story through the BFF as
+=ashley.moore= (Member and Viewer): 51 of the 53 member routes answered 200, and
+these two answered 403. Both reads were guarded before that story, so this is
+not a regression, but "Protect my account" and the header picture do not work
+for a member.
+
+* References
+
+- =doc/agile/versions/v0/sprint_27/generated_read_handlers_do_not_check_read_permissions/evidence/member_screens.py=
+  — the route sweep that found them.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/session_operations_handler.hpp= —
+  =active=, which lists every session in the tenant.
+
+* See also
+
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — self reads and the allow-list.
+- [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] — the story that found them.

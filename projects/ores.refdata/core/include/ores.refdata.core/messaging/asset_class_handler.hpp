@@ -64,6 +64,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!ores::service::messaging::has_permission(ctx, "refdata::asset_class_codes:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::asset_class_service svc(ctx);
         get_asset_classes_response resp;
         auto req = decode<get_asset_classes_request>(msg);

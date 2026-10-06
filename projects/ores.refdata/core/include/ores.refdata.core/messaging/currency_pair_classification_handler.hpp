@@ -83,6 +83,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_classifications:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_currency_pair_classifications_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_pair_classification_handler_lg(), warn)
@@ -128,6 +132,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_classifications:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_currency_pair_classification_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_pair_classification_handler_lg(), warn)
@@ -173,6 +181,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_classifications:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_currency_pair_classifications_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_pair_classification_handler_lg(), warn)
@@ -414,6 +426,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_classifications:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_currency_pair_classification_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_pair_classification_handler_lg(), warn)
@@ -459,6 +475,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::currency_pair_classifications:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_currency_pair_classification_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(currency_pair_classification_handler_lg(), warn)

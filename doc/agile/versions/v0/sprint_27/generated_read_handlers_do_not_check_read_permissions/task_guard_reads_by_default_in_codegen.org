@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 816D9D8A-A4CA-45FE-8350-7DF3AE2C629A
+:END:
+#+title: Task: Guard reads by default in codegen
+#+description: A generated read checks its resource's read code unless its model opts out by naming its allow-list entry; every component is regenerated.
+#+type: task
+#+level: s1
+#+filetags: :generated_read_handlers_do_not_check_read_permissions:sprint_27:v0:
+#+owner: marco
+#+branch: feature/generated-read-handlers-do-not-check-read-permissions
+#+pr: 2700
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Codegen guards every generated read with its resource's read code. A model
+opens a read only by naming its subject in =:open_reads:=, and every component
+is regenerated.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F061BC3F-17D5-46A4-80A7-DF05E7AE6286][Guard every read the security documentation does not allow]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- =protocol_operations= guards a read unless its subject is in the model's
+  =:open_reads:=; a subject that is not one of the resource's reads fails the
+  generation.
+- =:guard_reads:= is removed; the role and permission models open exactly the
+  allow-listed subjects.
+- Every component's handlers and history registrars are regenerated, and the
+  diff is the permission checks alone.
+- The codegen tests state the new rule, including a junction and a misspelt
+  open subject.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2700][#2700]] | [all] Guard every generated read unless Authorised reads allows it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=protocol_operations= guards every read with its resource's read code. A
+model opens a read only by naming its subject in =:open_reads:=, and a subject
+that is not one of its reads fails the generation. =:guard_reads:= is gone
+from the seven models that set it; the role model opens =iam.v1.roles.list=
+and =iam.v1.roles.get=, and the permission model =iam.v1.permissions.list=.
+History registrars always pass the entity's read code.
+
+Every component's handlers and history registrars were regenerated; the diff
+is the permission checks alone (a script filtered every changed line against
+the check's shape). Codegen tests: 1161 passed, including an open read, a
+misspelt open subject and a junction.

@@ -422,6 +422,19 @@ public:
         const messaging::update_self_account_contact_information_request& request,
         const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Reads the contact record of the caller's own account.
+     *
+     * The record is found from the account id, which the session states, so a
+     * caller cannot name another account's record.
+     *
+     * @param account_id The account of the caller's session
+     * @return The shared result plus the record, or no record when the account
+     * has none yet
+     */
+    messaging::get_my_account_contact_information_response
+    get_my_account_contact_information(const boost::uuids::uuid& account_id);
+
 private:
     repository::account_repository account_repo_;
     repository::account_contact_information_repository contact_repo_;

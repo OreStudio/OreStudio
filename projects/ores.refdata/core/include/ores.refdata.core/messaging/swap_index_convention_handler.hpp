@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_index_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_swap_index_conventions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_index_convention_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_index_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_swap_index_convention_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_index_convention_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_index_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_swap_index_conventions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_index_convention_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_index_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_swap_index_convention_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_index_convention_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::swap_index_conventions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_swap_index_convention_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(swap_index_convention_handler_lg(), warn)

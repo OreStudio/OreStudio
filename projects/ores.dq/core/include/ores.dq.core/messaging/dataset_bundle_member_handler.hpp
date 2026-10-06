@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::dataset_bundle_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_dataset_bundle_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
@@ -118,6 +122,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::dataset_bundle_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_dataset_bundle_member_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
@@ -155,6 +163,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::dataset_bundle_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_dataset_bundle_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
@@ -356,6 +368,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::dataset_bundle_members:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_bundle_code_dataset_bundle_members_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)

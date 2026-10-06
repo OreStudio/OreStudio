@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::delivery_outcome_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_delivery_outcome_types_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(delivery_outcome_type_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::delivery_outcome_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_delivery_outcome_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(delivery_outcome_type_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::delivery_outcome_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_delivery_outcome_types_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(delivery_outcome_type_handler_lg(), warn)

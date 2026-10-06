@@ -55,9 +55,9 @@ namespace ores::iam::domain {
  *
  * The row states when and from where each account signed in, how many attempts
  * failed and whether the account is locked, so it is not open to every
- * signed-in caller: the model sets :guard_reads: true, and the generated
- * iam.v1.login_info.list and iam.v1.login_info.get handlers require
- * iam::login_info:read before they serve anything.
+ * signed-in caller: the generated iam.v1.login_info.list and
+ * iam.v1.login_info.get handlers require iam::login_info:read before they
+ * serve anything, as every generated read requires its resource's read code.
  */
 struct login_info final {
     /**

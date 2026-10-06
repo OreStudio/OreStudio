@@ -70,6 +70,7 @@ import {
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
+    readMyContactInformation,
     readImageUploadPolicy,
     updateAccount,
     updateSelfAccount,
@@ -1086,7 +1087,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/me/contact-information', async (request) => {
         const session = requireSession(request);
         return contactViewSchema.parse({
-            contact: await readContactInformation(session.client, session.accountId),
+            contact: await readMyContactInformation(session.client),
         });
     });
 
@@ -1132,9 +1133,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     /**
      * One account's contact record, as a tenant administrator reads it.
      *
-     * The server's read carries no permission guard, and this mirrors the
-     * access pair: the member's own record is the route without an id, and
-     * this is the administrator's.
+     * The server's read needs iam::account_contact_informations:read, and this
+     * mirrors the access pair: the member's own record is the route without an
+     * id, served by the self read, and this is the administrator's.
      */
     server.get('/api/accounts/:accountId/contact-information', async (request) => {
         const session = requireSession(request);

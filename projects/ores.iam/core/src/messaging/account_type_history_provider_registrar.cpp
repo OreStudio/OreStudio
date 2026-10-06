@@ -32,6 +32,7 @@ namespace ores::iam::messaging {
 void register_account_type_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.account_type",
+        "iam::account_types:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::account_type_service svc(scoped_ctx);
             auto versions = svc.get_type_history(entity_id);

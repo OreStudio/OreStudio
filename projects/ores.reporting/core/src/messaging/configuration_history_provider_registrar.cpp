@@ -32,6 +32,7 @@ namespace ores::reporting::messaging {
 void register_configuration_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.configuration",
+        "reporting::configurations:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::configuration_service svc(scoped_ctx);
             auto versions = svc.get_configuration_history(entity_id);

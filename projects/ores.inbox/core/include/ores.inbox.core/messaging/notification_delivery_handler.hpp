@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_notification_deliveries_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_notification_delivery_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_notification_deliveries_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_notification_id_notification_deliveries_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_notification_delivery_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)
@@ -484,6 +504,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "inbox::notification_deliveries:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_notification_delivery_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(notification_delivery_handler_lg(), warn)

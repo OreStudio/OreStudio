@@ -33,6 +33,7 @@ void register_csa_eligible_currency_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.csa_eligible_currency",
+        "refdata::csa_eligible_currencies:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::csa_eligible_currency_service svc(scoped_ctx);
             auto versions = svc.get_csa_eligible_currency_history(entity_id);

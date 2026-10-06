@@ -33,6 +33,7 @@ void register_report_analytic_parameter_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.reporting.report_analytic_parameter",
+        "reporting::report_analytic_parameters:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::report_analytic_parameter_service svc(scoped_ctx);
             auto versions = svc.get_parameter_value_history(entity_id);

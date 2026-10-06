@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::counterparty_aliases:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_counterparty_aliases_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_alias_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::counterparty_aliases:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_counterparty_alias_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_alias_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::counterparty_aliases:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_counterparty_aliases_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_alias_handler_lg(), warn)

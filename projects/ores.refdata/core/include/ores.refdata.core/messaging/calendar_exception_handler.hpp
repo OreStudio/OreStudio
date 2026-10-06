@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_calendar_exceptions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)
@@ -124,6 +128,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_calendar_exception_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)
@@ -167,6 +175,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_calendar_exceptions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)
@@ -398,6 +410,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_by_calendar_code_calendar_exceptions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)
@@ -441,6 +457,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_calendar_exception_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)
@@ -484,6 +504,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::calendar_exceptions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_calendar_exception_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calendar_exception_handler_lg(), warn)

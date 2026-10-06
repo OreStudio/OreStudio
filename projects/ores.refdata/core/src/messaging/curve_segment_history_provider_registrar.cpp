@@ -32,6 +32,7 @@ namespace ores::refdata::messaging {
 void register_curve_segment_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.curve_segment",
+        "refdata::curve_segments:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::curve_segment_service svc(scoped_ctx);
             auto versions = svc.get_segment_history(entity_id);

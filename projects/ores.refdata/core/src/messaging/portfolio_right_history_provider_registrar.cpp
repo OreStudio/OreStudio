@@ -33,6 +33,7 @@ void register_portfolio_right_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.portfolio_right",
+        "refdata::portfolio_rights:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::portfolio_right_service svc(scoped_ctx);
             auto versions = svc.get_portfolio_right_history(entity_id);

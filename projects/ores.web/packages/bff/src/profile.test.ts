@@ -180,6 +180,10 @@ function profileAnswers(overrides: Record<string, unknown> = {}) {
             result: okResult,
             account_contact_information: contactRow,
         },
+        'iam.v1.account_contact_informations.mine': {
+            result: okResult,
+            account_contact_information: contactRow,
+        },
         'iam.v1.account_contact_informations.list_by_account_id': {
             result: okResult,
             account_contact_informations: [contactRow],
@@ -289,25 +293,17 @@ describe('GET /api/me/contact-information', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.subject).toBe('iam.v1.account_contact_informations.list_by_account_id');
-        expect(calls[0]?.body).toEqual({
-            account_id: ACCOUNT_ID,
-            scope: 'direct',
-            offset: 0,
-            limit: 1,
-            order: { field: '', descending: false },
-            filter: null,
-        });
+        expect(calls[0]?.subject).toBe('iam.v1.account_contact_informations.mine');
+        expect(calls[0]?.body).toEqual({});
         expect(response.json().contact.city).toBe('London');
     });
 
     it('answers nothing for an account with no record', async () => {
         const { server, cookies } = buildTestServer(
             profileAnswers({
-                'iam.v1.account_contact_informations.list_by_account_id': {
+                'iam.v1.account_contact_informations.mine': {
                     result: okResult,
-                    account_contact_informations: [],
-                    total: 0,
+                    account_contact_information: null,
                 },
             }),
         );

@@ -33,6 +33,7 @@ void register_crm_enabled_derived_pair_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.refdata.crm_enabled_derived_pair",
+        "refdata::crm_enabled_derived_pairs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::crm_enabled_derived_pair_service svc(scoped_ctx);
             auto versions = svc.get_crm_enabled_derived_pair_history(entity_id);

@@ -80,6 +80,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::option_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_option_types_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(option_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -122,6 +126,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::option_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_option_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(option_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -164,6 +172,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::option_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_option_types_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(option_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -390,6 +402,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::option_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_option_type_versions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(option_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -432,6 +448,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::option_types:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_option_type_version_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(option_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;

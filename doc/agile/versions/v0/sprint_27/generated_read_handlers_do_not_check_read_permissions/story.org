@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: F061BC3F-17D5-46A4-80A7-DF05E7AE6286
+:END:
+#+title: Story: Guard every read the security documentation does not allow
+#+description: 363 of 367 generated read handlers answer any signed-in member, including every colleague's address, email and phone. A read checks its permission unless the security documentation allow-lists it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A read checks its read permission, unless the security documentation
+allow-lists it by subject, with the reason it is open. A member then reads only
+what a role they hold lets them read. Today the reverse is true: codegen makes a
+read need authentication alone unless its model opts in, so almost every read
+answers any signed-in member.
+
+The story closes the gap and keeps it closed:
+
+1. State the rule and the allow-list in
+   [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+2. Guard the personal data in IAM at once, with the opt-in the models already
+   have.
+3. Make codegen guard every read by default. A model opts out only by naming
+   its allow-list entry.
+4. Seed the =:read= codes each person role and each service role uses, so that
+   guarding a read does not lock anybody out of their work.
+5. Add a check that fails when a read is open and not allow-listed.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated handlers that serve reads, all components | 367 | =open_reads.py= (see References) | e1c2e52ebe |
+| Of those, with no read permission check | 363 | =open_reads.py= | e1c2e52ebe |
+| Of those, with a read check (=account=, =login_info=, =session=, =tenant=) | 4 | =open_reads.py= | e1c2e52ebe |
+| Contact records a Viewer read with =account_contact_informations list= | 57 | live, =ashley.moore@acme_corporation= | e1c2e52ebe |
+
+| Component | Handlers with reads | No read check |
+|-----------+---------------------+---------------|
+| ores.analytics | 21 | 21 |
+| ores.assets | 4 | 4 |
+| ores.compute | 9 | 9 |
+| ores.dq | 32 | 32 |
+| ores.iam | 17 | 13 |
+| ores.inbox | 13 | 13 |
+| ores.marketdata | 8 | 8 |
+| ores.refdata | 139 | 139 |
+| ores.reporting | 18 | 18 |
+| ores.scheduler | 2 | 2 |
+| ores.storage | 1 | 1 |
+| ores.synthetic | 9 | 9 |
+| ores.trading | 89 | 89 |
+| ores.variability | 1 | 1 |
+| ores.workflow | 3 | 3 |
+| ores.workspace | 1 | 1 |
+
+Two hand-written refdata handlers for configuration documents also check a read
+code; the count above covers the generated handlers only.
+
+* Root cause
+
+=projects/ores.codegen/src/codegen/org_loader.py= decides which operations a
+generated handler guards. A write names its =:write= or =:delete= code. A read
+names none unless its model sets =:guard_reads: true=; the loader states this
+as policy: "Without the flag a read needs authentication alone, which is the
+estate's default." Four models set the flag. The =:read= codes are seeded for
+most resources, so the permission exists and nothing checks it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule
+  and lists every open read by subject, with its reason.
+- A Viewer can no longer read another account's contact information, parties or
+  role requests.
+- Codegen guards a read by default, and a model that opts out names its
+  allow-list entry.
+- Every person role and service role holds the =:read= codes its journeys and
+  calls use; each journey a role carries is checked live as that role.
+- A check fails CI when a read is open and not allow-listed, and the count of
+  open reads equals the allow-list.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C8F06D29-CA09-43FF-A76D-3803FDB29BD0][State the read rule and the allow-list]] | DONE | 2026-10-06 | 2026-10-06 | Authorised reads states that a read checks its permission unless allow-listed, and lists every open read by subject with its reason. |
+| [[id:31A4DB2C-AE0C-488C-AE07-6203B0415E35][Guard the personal data in IAM]] | DONE | 2026-10-06 | 2026-10-06 | Contact information, account parties and role requests check their read code, and a person still reads their own through a self read. |
+| [[id:816D9D8A-A4CA-45FE-8350-7DF3AE2C629A][Guard reads by default in codegen]] | DONE | 2026-10-06 | 2026-10-06 | A generated read checks its resource's read code unless its model opts out by naming its allow-list entry; every component is regenerated. |
+| [[id:ED8035BF-475C-4F8A-B899-5DB479E0B86A][Seed the read codes each role uses]] | DONE | | 2026-10-06 | Each person role and service role holds the read codes its journeys and calls use, checked live as each role. |
+| [[id:AE9539E8-D985-4F7C-AB62-E08CF01C1EBA][Fail CI on an open read that is not allowed]] | DONE | | 2026-10-06 | A check fails when a handler serves a read with no permission check and no allow-list entry. |
+| [[id:8A592FC9-501C-4FAF-BAAC-563FA22C18E6][Guard or allow-list the hand-written reads]] | DONE | | 2026-10-06 | Every hand-written read handler either checks its read code or serves a subject Authorised reads allow-lists, and the open reads check covers them. |
+
+* Decisions
+
+1. *Allowed means written down.* A read may answer every signed-in member only
+   when [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] lists its
+   subject and the reason. Decided 2026-10-06.
+2. *Personal data first.* Contact information, account parties and role
+   requests are guarded with the opt-in that already exists, before the
+   default changes, because they are the exposure that matters most.
+3. *The default and the seeds ship together.* Guarding every read by default
+   without the =:read= codes the roles use would lock members out of screens
+   they use today, so the codegen task and the seed task land in one pull
+   request.
+4. *Explicit codes, composed through a Member role; no read wildcards.* A
+   wildcard such as =refdata::*:read= grants resources that do not exist yet,
+   so a sensitive entity added later would be readable by every person role
+   without anybody deciding it. Reads are granted one code at a time, and the
+   reads every person needs are held by one stored role, =Member=, that every
+   person account holds. Job roles add only their own codes. A person without
+   Member sees empty screens, which fails closed. Decided 2026-10-06.
+5. *Classify a read before granting it.* Vocabulary (currencies, calendars,
+   day counts, the status and type lookups) may go in Member. A business fact
+   (parties, counterparties, books, business units) or personal data goes only
+   to the job roles that need it. Decided 2026-10-06.
+6. *History is exactly as open as the entity.* A history provider registers
+   with its entity's read code, and the history dispatcher checks it, so the
+   per-component history subject is no side door.
+
+* Out of scope
+
+- Row-level security. It scopes rows by tenant and party, and it stays the
+  backstop; this story is the application check above it.
+- The divergence Authorised reads records between a refusal in the payload and
+  a refusal in the envelope. The guard keeps the envelope refusal the generated
+  handlers use today.
+
+* Promoted from capture
+
+Captured 2026-10-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Every read must check its read permission, unless the security documentation
+allow-lists the read by subject, with the reason it is open. Today most
+generated read handlers check no permission, so any signed-in member reads the
+entity. The fix has three parts:
+
+1. State the rule and the allow-list in
+   [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+2. Make codegen emit the read check by default, so a model must opt out to be
+   open, and an opt-out names its allow-list entry.
+3. Add a check that fails when a handler serves a read with no permission check
+   and no allow-list entry, in the shape of =check_handler_permissions.py=.
+
+** Why
+
+Found live on 2026-10-06. =ashley.moore@acme_corporation=, who holds only
+Viewer, ran =account_contact_informations list= and read 57 records. Each
+record holds a street address, a postal code, a city, an email and a phone.
+
+In =ores.iam=, 13 of the 17 handlers that serve reads check no read
+permission. Only =account=, =login_info=, =session= and =tenant= check one.
+The writes are guarded: puts and deletes check =:write= and =:delete=, and the
+account party writes check =iam::accounts:update=. The =:read= codes are
+already seeded in =iam_permissions_populate.sql=, so the check is missing, not
+the permission.
+
+| Open read | Exposure |
+|-----------+----------|
+| =account_contact_informations= | High: personal data |
+| =account_parties= | Medium: who works in which party |
+| =role_grant_requests=, =role_grant_request_roles= | Low to medium: who asked for which role (added by PR #2673) |
+| =roles=, =permissions= | Low; =iam.v1.roles.permissions= and =iam.v1.roles.mine= are allow-listed, the lists are not |
+| =account_statuses=, =account_types=, =tenant_statuses=, =tenant_types=, =seed_profiles=, =seed_profile_parameters=, =seed_profile_steps= | Low: lookups and configuration |
+
+The same default holds in every component; see * Measurements.
+
+** References
+
+- Count: for each =projects/ores.*/core/include/*/messaging/*_handler.hpp=, the
+  handlers named =list*=, =get*=, =get_many*= and =list_by*=, against the
+  =has_permission(..., "...:read")= calls in the same file. A file with reads
+  and no such call is open.
+
+** See also
+
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] — the rule and the allow-list.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster the rule belongs to.
+- [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] — paused behind this story; its role catalogue reads must be allow-listed.

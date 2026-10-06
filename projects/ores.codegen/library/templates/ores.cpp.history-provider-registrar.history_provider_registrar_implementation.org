@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-09-04
-#+updated: 2026-09-04
+#+updated: 2026-10-06
 
 Per-entity history-provider registrar implementation. Defines
 =register_<entity>_history_provider()= which registers the entity's
@@ -18,6 +18,14 @@ The provider body constructs the entity's service from the scoped
 context, reads the entity's version history through the service, and
 renders each version through the presentation mapper, via
 =ores::history::service::build_entity_history_versions()=.
+
+The provider is registered with the permission a caller needs to read
+the history: the entity's own read code, =<component>::<entity_plural>:read=.
+A history holds every version of the rows the entity's reads serve, so it
+needs the same code, and the dispatcher refuses a caller who does not hold
+it. The history subject is never on the allow-list of
+[[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]], so a history
+is guarded even when some of the entity's reads are open.
 
 Each entity's registrar includes only that entity's service and
 mapper headers, so a compile failure in one entity's provider cannot
@@ -35,6 +43,7 @@ Model inputs consumed by this template:
 - =entity_singular_short= (C++ =** Repository= drawer) — the service
   method's =get_<short>_history= spelling, so irregular entities come
   out right (=get_type_history=, =get_centre_history=).
+- =entity_plural= (Flags) — the read code's resource name.
 - =product= and =component= (Flags) — the =entity_type= key prefix,
   composed identically to the notify_trigger SQL facet's =entity_name=.
 
@@ -77,6 +86,7 @@ void register_{{entity_singular}}_history_provider(
 {{^primary_key.is_compound}}
     registry.register_history_provider(
         "{{product}}.{{component}}.{{entity_singular}}",
+        "{{component}}::{{entity_plural}}:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::{{entity_singular}}_service svc(scoped_ctx);
             auto versions = svc.get_{{entity_singular_short}}_history(entity_id);

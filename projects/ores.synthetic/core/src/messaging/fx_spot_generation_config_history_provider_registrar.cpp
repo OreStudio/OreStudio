@@ -33,6 +33,7 @@ void register_fx_spot_generation_config_history_provider(
     ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.synthetic.fx_spot_generation_config",
+        "synthetic::fx_spot_generation_configs:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::fx_spot_generation_config_service svc(scoped_ctx);
             auto versions = svc.get_fx_spot_generation_config_history(entity_id);

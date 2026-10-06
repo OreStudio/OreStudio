@@ -7,6 +7,8 @@ Run::
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = REPO_ROOT / "projects/ores.codegen/scripts/check_open_reads.py"
 
@@ -68,6 +70,37 @@ def test_the_allow_list_is_read_from_its_own_section():
     # The access reads table further down names guarded subjects; it is not
     # the allow-list.
     assert "iam.v1.roles.by-account" not in allowed
+
+
+INJECTED_HANDLER = """\
+ * Template: cpp_nats_handler.hpp.mustache
+    void composite_as_of(ores::nats::message msg) {
+        auto ctx = make();
+        auto req = decode<get_party_composite_as_of_request>(msg);
+    }
+
+    void guarded_composite_as_of(ores::nats::message msg) {
+        auto ctx = make();
+        if (!has_permission(ctx, "refdata::parties:read")) {
+            return;
+        }
+        auto req = decode<get_party_composite_as_of_request>(msg);
+    }
+"""
+
+SUBJECTS = {"get_party_composite_as_of_request": "refdata.v1.parties.composite_as_of"}
+
+
+def test_a_method_named_unlike_a_read_is_found_by_its_decoded_request():
+    found = dict(check.open_reads(INJECTED_HANDLER, SUBJECTS))
+
+    assert found["composite_as_of"] == "refdata.v1.parties.composite_as_of"
+    assert "guarded_composite_as_of" not in found
+
+
+def test_a_missing_allow_list_section_is_a_reviewed_failure():
+    with pytest.raises(check.MissingAllowList):
+        check.allow_list("** How the code obeys it\n")
 
 
 def test_the_tree_obeys_the_rule():

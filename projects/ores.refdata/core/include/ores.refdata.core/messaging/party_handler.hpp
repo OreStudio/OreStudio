@@ -555,6 +555,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::parties:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_party_composite_as_of_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;

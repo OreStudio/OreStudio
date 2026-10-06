@@ -80,7 +80,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A read is classified by its method name, so an injected method named neither =list_= nor =get_= escapes the check | =check_open_reads.py= | Accepted | Classifies by the request the method decodes; it failed on both =composite_as_of= reads before the guard. |
+| 2 | The history-registrar check misses a dropped or non-literal read code | =check_open_reads.py= | Accepted | Counts =register_history_provider= calls against the matches that name a literal code. |
+| 3 | =allow_list()= raises a traceback on a renamed heading | =check_open_reads.py= | Accepted | Reports a reviewed failure instead. |
+| 4 | No planted-defect test reaches =main()='s failure paths | =test_open_reads.py= | Accepted | Tests cover the request-decoded classification and the missing section. |
+| 5 | =iam= is excluded from the permissions gate's registry | =check_handler_permissions.py:42= | Deferred | Pre-existing and unrelated to this story's reads; filed as a capture. |
 
 * Result
 
@@ -89,5 +93,10 @@ permission and its subject is not allow-listed, when a generated history
 registrar passes no read code, and when the allow-list names a subject no
 protocol defines. It runs in the codegen drift workflow, which now also runs
 when Authorised reads changes. On its first run it found a hand-written read
-pasted into the composite instrument handler with no check, now guarded.
-Five tests cover it.
+pasted into the composite instrument handler with no check, now guarded. A
+local review then found that it classified a read by the method's name, so the
+two injected =composite_as_of= reads escaped it; it now classifies by the
+request a method decodes, whatever its name, and it failed on both before
+their guard landed. It also counts each history registration against a literal
+read code, and reports a missing allow-list section rather than aborting.
+Seven tests cover it.

@@ -8,7 +8,7 @@
 #+filetags: :tidy_up_the_system_core_and_the_leftovers:sprint_27:v0:
 #+owner: marco
 #+branch: feature/tidy-up-the-system-core
-#+pr:
+#+pr: 2711
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2711][#2711]] | [agile] Scaffold the system core tidy-up story |
 
 * Review
 

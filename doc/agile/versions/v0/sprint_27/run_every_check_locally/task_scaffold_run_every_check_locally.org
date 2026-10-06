@@ -8,7 +8,7 @@
 #+filetags: :run_every_check_locally:sprint_27:v0:
 #+owner: marco
 #+branch: feature/run-every-check-locally
-#+pr:
+#+pr: 2714
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2714][#2714]] | [agile] Scaffold the local check runner story |
 
 * Review
 

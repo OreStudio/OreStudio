@@ -1227,6 +1227,9 @@ export const en: SourceCatalogue = {
     },
 
     server: {
+        "Publish the system's own data": "Publish the system's own data",
+        'Publishes the datasets the installation itself is read from into the system tenant, before the tenant has any of its own.':
+            'Publishes the datasets the installation itself is read from into the system tenant, before the tenant has any of its own.',
         'Publish the reference data': 'Publish the reference data',
         'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.':
             'Publishes the reference data the tenant works from: the bundles the starting point orders, and the datasets those bundles name.',

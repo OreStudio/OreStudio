@@ -68,11 +68,10 @@
  *
  * The row holds the password material, the TOTP seed and the account holder's
  * own name and mail address, so the generated reads are not open to every
- * signed-in caller: the model sets :guard_reads: true, and the generated
- * iam.v1.accounts.list and iam.v1.accounts.get handlers require
- * iam::accounts:read before they serve anything. The default in this estate
- * is that a read needs authentication alone, which is why the guard is stated
- * per entity rather than assumed.
+ * signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get
+ * handlers require iam::accounts:read before they serve anything, as every
+ * generated read requires its resource's read code. See
+ * [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
  *
  * Two behavioural facets are switched off, each with a reason:
  *

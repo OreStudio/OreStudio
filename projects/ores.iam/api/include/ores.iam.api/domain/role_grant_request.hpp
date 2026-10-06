@@ -47,9 +47,9 @@ namespace ores::iam::domain {
  * person's behalf, so it is a column of its own rather than the request's
  * requested_by.
  *
- * Who asked for which role is not every member's business, so the model sets
- * :guard_reads: true, and the generated reads require
- * iam::role_grant_requests:read. The person who asked reads their own requests
+ * Who asked for which role is not every member's business, so the generated
+ * reads require iam::role_grant_requests:read, as every generated read
+ * requires its resource's read code. The person who asked reads their own requests
  * through the inbox's inbox.v1.approval-requests.mine. See
  * [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
  */

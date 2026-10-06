@@ -49,6 +49,12 @@
  * prefix -- iam.v1.roles.assign, .revoke, .by-account,
  * .permissions and .suggest-commands -- so the two coexist rather than
  * compete, and no handler is suppressed here.
+ *
+ * The list and the get are open to every signed-in member: a member reads the
+ * tenant's roles to choose the one to ask for. The model opens them by subject
+ * with :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+ * reads]] allow-lists both. The other reads, such as the versions, need
+ * iam::roles:read.
  */
 
 create table if not exists "ores_iam_roles_tbl" (

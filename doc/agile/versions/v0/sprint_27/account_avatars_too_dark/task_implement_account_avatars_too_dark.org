@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 19070B51-EC2B-4F2D-A88E-A29B57A45A89
+:END:
+#+title: Task: Draw the account avatars in the theme's ink
+#+description: Initial task for: Account avatars are too dark to see
+#+type: task
+#+level: s1
+#+filetags: :account_avatars_too_dark:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:150C3DDA-2A41-4F4F-92A0-E84E36BB410E][Account avatars are too dark to see]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An account's avatar reads as an identity on the dark theme, whether the account is a person, a service, or an administrator.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:150C3DDA-2A41-4F4F-92A0-E84E36BB410E][Account avatars are too dark to see]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- Every seeded account avatar is drawn in the theme's ink and no longer reads as disabled.
+- The seed regenerates from external/avatars with images_generate_sql.py --config system_avatars.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The 27 avatars in =external/avatars= were filled =#212121=, which is the
+dark theme's background rather than its ink, so a service account, tenant
+administrator or super administrator drew an avatar that read as disabled.
+Every source image is recoloured to =#e3e3e6=, the theme's ink, and the seed
+is regenerated with =images_generate_sql.py --config system_avatars=, so a
+provision from now on publishes the legible colour. The running environment's
+images were updated in place so the fix shows without a re-provision, and the
+BFF image cache, which holds bytes forever, was cleared by restarting
+=ores.web.service=.
+
+Verified in the browser: the Accounts list under System administration draws
+the service-account avatars in the theme's ink against the dark surface
+(=evidence/accounts_avatars_after.png=).

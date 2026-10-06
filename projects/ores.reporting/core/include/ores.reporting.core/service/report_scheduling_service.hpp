@@ -126,6 +126,18 @@ private:
     std::optional<ores::scheduler::messaging::job_definition_change>
     build_job_change(const domain::report_definition& def, const boost::uuids::uuid& job_id);
 
+    /**
+     * @brief Asks IAM, on behalf of the person scheduling, for the grant the
+     * definition's runs act under, and returns its id.
+     */
+    std::expected<boost::uuids::uuid, std::string>
+    grant_runs(const domain::report_definition& def);
+
+    /**
+     * @brief Asks IAM, on behalf of the person unscheduling, to revoke a grant.
+     */
+    std::expected<void, std::string> revoke_runs(const boost::uuids::uuid& grant_id);
+
     context ctx_;
     ores::nats::service::nats_client svc_nats_;
 };

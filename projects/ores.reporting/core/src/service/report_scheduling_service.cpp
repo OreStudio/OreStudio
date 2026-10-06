@@ -20,7 +20,9 @@
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -33,6 +35,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <expected>
@@ -52,6 +55,28 @@ struct report_trigger_action_payload {
     std::string report_definition_id;
     std::string tenant_id;
 };
+
+// The role a report run acts with, and the services that exchange its grant:
+// reporting for collection and finalisation, ORE for the input, compute for
+// submission.
+constexpr std::string_view run_role = "ReportRun";
+constexpr std::string_view run_audience = "ores.reporting.service,ores.ore.service,ores.compute.service";
+
+template <typename Request>
+std::expected<typename Request::response_type, std::string>
+call(ores::nats::service::nats_client& nats, const Request& request) {
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto msg = nats.authenticated_request(Request::nats_subject, codec.encode(request));
+    if (const auto it = msg.headers.find(std::string(ores::nats::headers::x_error));
+        it != msg.headers.end())
+        return std::unexpected(std::string(Request::nats_subject) + " refused: " + it->second);
+    auto response = codec.decode<typename Request::response_type>(msg.data);
+    if (!response)
+        return std::unexpected(std::string(Request::nats_subject) + " answered unreadably");
+    if (!response->success)
+        return std::unexpected(response->message);
+    return *response;
+}
 
 boost::uuids::uuid gen_uuid() {
     boost::uuids::random_generator rg;
@@ -156,6 +181,37 @@ report_scheduling_service::send_schedule_request(const domain::report_definition
     return {};
 }
 
+std::expected<boost::uuids::uuid, std::string>
+report_scheduling_service::grant_runs(const domain::report_definition& def) {
+    ores::iam::messaging::create_run_grant_request req;
+    req.resource = "reporting.report_definition/" + boost::uuids::to_string(def.id);
+    req.role = std::string(run_role);
+    req.audience = std::string(run_audience);
+    try {
+        const auto granted = call(svc_nats_, req);
+        if (!granted)
+            return std::unexpected("IAM refused the run grant for definition " +
+                                   boost::uuids::to_string(def.id) + ": " + granted.error());
+        return boost::uuids::string_generator()(granted->grant_id);
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string("IAM run grant call failed: ") + e.what());
+    }
+}
+
+std::expected<void, std::string>
+report_scheduling_service::revoke_runs(const boost::uuids::uuid& grant_id) {
+    ores::iam::messaging::revoke_run_grant_request req;
+    req.grant_id = boost::uuids::to_string(grant_id);
+    req.reason = "unscheduled";
+    try {
+        if (const auto revoked = call(svc_nats_, req); !revoked)
+            return std::unexpected(revoked.error());
+        return {};
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string("IAM run grant call failed: ") + e.what());
+    }
+}
+
 std::expected<bool, std::string>
 report_scheduling_service::schedule_one(const domain::report_definition& def,
                                         const std::string& actor) {
@@ -165,10 +221,25 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
         return false;
     }
 
+    if (!ores::scheduler::domain::cron_expression::from_string(def.schedule_expression))
+        return std::unexpected("Invalid cron expression for definition " +
+                               boost::uuids::to_string(def.id));
+
+    // The grant comes first: a job with no consent behind it would fire runs
+    // that cannot act in the definition's party.
+    const auto grant_id = grant_runs(def);
+    if (!grant_id)
+        return std::unexpected(grant_id.error());
+
     const auto job_id = gen_uuid();
     auto send_result = send_schedule_request(def, job_id);
-    if (!send_result)
+    if (!send_result) {
+        if (const auto revoked = revoke_runs(*grant_id); !revoked)
+            BOOST_LOG_SEV(lg(), warn) << "Run grant " << *grant_id << " of definition " << def.id
+                                      << " stays active after a failed schedule: "
+                                      << revoked.error();
         return std::unexpected(send_result.error());
+    }
 
     // Resolve the "active" FSM state UUID once from the system context.
     const auto active_state =
@@ -184,6 +255,7 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
     // Update the definition with the new scheduler_job_id and active state.
     auto updated = def;
     updated.scheduler_job_id = job_id;
+    updated.run_grant_id = *grant_id;
     updated.fsm_state_id = *active_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();
@@ -247,9 +319,22 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
                                "scheduler job was removed but the definition cannot record it.");
     }
 
+    // A grant that cannot be revoked here, because the person unscheduling is
+    // neither its grantor nor an administrator, serves no run once the job is
+    // gone; the definition keeps its id so the grant can still be found.
+    auto grant_to_keep = def.run_grant_id;
+    if (def.run_grant_id) {
+        if (const auto revoked = revoke_runs(*def.run_grant_id); revoked)
+            grant_to_keep = std::nullopt;
+        else
+            BOOST_LOG_SEV(lg(), warn) << "Run grant " << *def.run_grant_id << " of definition "
+                                      << def.id << " stays active: " << revoked.error();
+    }
+
     // Clear scheduler_job_id and transition to suspended state.
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
+    updated.run_grant_id = grant_to_keep;
     updated.fsm_state_id = *suspended_state;
     updated.modified_by = actor;
     updated.performed_by = ctx_.service_account();

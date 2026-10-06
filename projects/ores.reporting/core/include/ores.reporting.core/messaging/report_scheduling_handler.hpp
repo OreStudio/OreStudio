@@ -99,6 +99,15 @@ public:
                     auto def = svc.get_definition(sg(id));
                     if (!def)
                         continue;
+                    // The run grant is made for the session's party, so a
+                    // session acting for another party would grant the wrong one.
+                    if (req_ctx.party_id() != def->party_id) {
+                        failed_ids.push_back(id);
+                        if (first_error.empty())
+                            first_error = "Act for the definition's party to schedule it: its "
+                                          "runs act in that party, with your consent.";
+                        continue;
+                    }
                     auto result = scheduler.schedule_one(*def, actor);
                     if (!result) {
                         failed_ids.push_back(id);

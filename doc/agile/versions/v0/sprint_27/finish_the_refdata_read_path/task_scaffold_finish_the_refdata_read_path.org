@@ -8,7 +8,7 @@
 #+filetags: :finish_the_refdata_read_path:sprint_27:v0:
 #+owner: marco
 #+branch: feature/finish-the-refdata-read-path
-#+pr:
+#+pr: 2697
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2697][#2697]] | [agile] Scaffold the refdata read path story |
 
 * Review
 

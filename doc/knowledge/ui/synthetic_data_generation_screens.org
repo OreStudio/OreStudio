@@ -103,25 +103,20 @@ FRA, IRS, OIS), and at least one entry is required.
 The prototype is at
 [[file:../../prototypes/author-an-ir-curve-feed/][author an IR curve feed]].
 
-** Bootstrap a synthetic yield curve
+** Bootstrapping the curve a feed produces
 :PROPERTIES:
 :ID: 534255D5-39E4-42DF-AEAB-AE2CD034DA5D
 :END:
 
-The step that turns a Curve Template into a curve. The ladder is the strip of
-instruments to reprice (DEPO, FRA, IRS, OIS, each with its market par rate),
-the process and r0 come from the IR curve feed, and the bootstrap solves one
-discount factor per pillar so every instrument reprices to par. The screen
-shows the solved pillars (zero rate, discount factor, forward to the pillar,
-reprice residual), the three curves the result defines (zero, discount,
-instantaneous forward) and the checks that matter: the residual is a
-convergence check, and the forward shape is the plausibility check, because a
-curve can reprice every instrument and still be implausible. A ladder whose
-interval instruments overlap is refused by the curve template validator before
-the solve starts, which is why the periods must touch end to end.
-
-The prototype is at
-[[file:../../prototypes/synthetic-yield-curve-bootstrap/][synthetic yield curve bootstrap]].
+There is no synthetic curve bootstrap. Bootstrapping is one capability: a
+strip of instruments reprices to par and the curve is solved one pillar at a
+time, and it does not care whether each rate was observed or generated. The
+IR curve feed here produces observations; the same build then bootstraps them,
+and only the provenance differs — a generated rate is marked generated, so
+nothing downstream mistakes it for market data. The bootstrap screen, which
+carries a real or a synthetic input source, is the market data journey's
+[[file:../journeys/market_data/journey_bootstrap-or-refresh-a-curve.org][Bootstrap or refresh a curve]]
+([[file:../../prototypes/bootstrap-or-refresh-a-curve/][prototype]]).
 
 ** Manage synthetic collections
 :PROPERTIES:

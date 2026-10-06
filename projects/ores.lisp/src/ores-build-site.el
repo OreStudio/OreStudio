@@ -461,9 +461,6 @@ with the site chrome."
    "<style>body{display:block;padding:0;align-items:unset;}</style>")
   (ores-deploy-web-app
    "./doc/prototypes/manage-yield-curve-process-types" site-dir "doc/prototypes/manage-yield-curve-process-types"
-   "<style>body{display:block;padding:0;align-items:unset;}</style>")
-  (ores-deploy-web-app
-   "./doc/prototypes/synthetic-yield-curve-bootstrap" site-dir "doc/prototypes/synthetic-yield-curve-bootstrap"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

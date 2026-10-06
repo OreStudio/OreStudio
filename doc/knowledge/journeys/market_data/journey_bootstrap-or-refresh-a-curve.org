@@ -43,7 +43,10 @@ person sees here reaches pricing: pricing reads only a published curve.
 2. *Choose the as-of.* The person names the snapshot time the build reads, with
    now as the default. The system shows what the market holds for the
    blueprint's pillars at that time: which points exist, their age and their
-   source. It reads them by the as-of the person names.
+   source. It reads them by the as-of the person names. An observation may come
+   from a market feed or from the synthetic generator; the build treats both as
+   a point with a source, so a generated rate is marked generated rather than
+   observed, and the same bootstrap serves either.
 3. *Run the bootstrap.* The person chooses *Compute candidate*. The system calls
    =marketdata.v1.curve_bootstrap.compute=, which bootstraps the config's
    pillars from the observations at that as-of and replies with the computed

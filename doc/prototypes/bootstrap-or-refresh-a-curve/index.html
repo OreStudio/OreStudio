@@ -51,15 +51,22 @@ td.num{text-align:right;font-family:var(--mono)}
 
   The trader's "Bootstrap or refresh a curve" screen
   (doc/knowledge/journeys/market_data/journey_bootstrap-or-refresh-a-curve.org):
-  the blueprint and the as-of at the top, the candidate points in the middle,
-  and the health of the build at the bottom, so the person reads what was built
-  and then how well it was built. Nothing here is published.
+  the curve, its input source and the as-of at the top, the observations the
+  build read and the pillars it solved in the middle, and the diagnostics at
+  the bottom. Nothing here is published.
 
-  Variants with ?variant=a|b|c: a is the table this journey argues for, b is
-  the same data as charts, c puts the health beside the points and repeats the
-  charts below. The charts are a market term-structure plot and a discount
-  factor plot, both drawn with the shared PC.line helper. A pillar named in
-  health.missing breaks its line instead of plotting a value.
+  The bootstrap is one capability, not a real one and a synthetic one: the
+  same instruments reprice whether the rate came from a vendor, a fixing or a
+  synthetic feed. Only the provenance differs, so ?source=real|synthetic
+  switches where the rates came from and the screen records which. The
+  synthetic rates differ slightly, because a feed generates them from its
+  process; the shape and the bootstrap are identical.
+
+  Variants with ?variant=a|b|c: a is the observations and the bootstrapped
+  pillars, b is the four curves (input rate, zero, discount factor, forward),
+  c is the diagnostics (reprice residual, convergence) and the observations.
+  The charts use the shared PC helper. A pillar named in health.missing breaks
+  its line instead of plotting a value.
   ?state=clean|missing|projection switches the mock market. Nothing reads a
   service.
 -->
@@ -73,32 +80,90 @@ const params = new URLSearchParams(location.search);
 const variant = params.get('variant') || 'a';
 const state = params.get('state') || 'clean';
 
-const pillars = [
-  {tenor:'1M',  role:'DEPOSIT', market:4.3120, source:'ir_curve.usd', age:'3m'},
-  {tenor:'3M',  role:'DEPOSIT', market:4.3450, source:'ir_curve.usd', age:'3m'},
-  {tenor:'6M',  role:'DEPOSIT', market:4.3760, source:'ir_curve.usd', age:'4m'},
-  {tenor:'1Y',  role:'SWAP',    market:4.4020, source:'ir_curve.usd', age:'5m'},
-  {tenor:'2Y',  role:'SWAP',    market:4.3550, source:'ir_curve.usd', age:'5m'},
-  {tenor:'3Y',  role:'SWAP',    market:4.3110, source:'ir_curve.usd', age:'6m'},
-  {tenor:'5Y',  role:'SWAP',    market:4.2480, source:'ir_curve.usd', age:'6m'},
-  {tenor:'7Y',  role:'SWAP',    market:4.2110, source:'ir_curve.usd', age:'7m'},
-  {tenor:'10Y', role:'SWAP',    market:4.1850, source:'ir_curve.usd', age:'7m'},
-  {tenor:'20Y', role:'SWAP',    market:4.0220, source:'ir_curve.usd', age:'9m'},
-  {tenor:'30Y', role:'SWAP',    market:3.9110, source:'ir_curve.usd', age:'9m'}
-];
-// A discount factor per pillar, smoothed from the market value.
-let df = 1.0;
-const points = pillars.map((p, i) => {
-  const years = [1/12, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30][i];
-  df *= Math.exp(-(p.market/100) * (i ? years - [1/12,0.25,0.5,1,2,3,5,7,10,20,30][i-1] : years));
-  return {...p, years, df};
-});
+const source = params.get('source') || 'real';
+const TENORS = ['1M','3M','6M','1Y','2Y','3Y','5Y','7Y','10Y','20Y','30Y'];
+const YEARS = [1/12, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30];
+const MARKET = [4.3120,4.3450,4.3760,4.4020,4.3550,4.3110,4.2480,4.2110,4.1850,4.0220,3.9110];
+const AGE = ['3m','3m','4m','5m','5m','6m','6m','7m','7m','9m','9m'];
+const pillars = TENORS.map((tenor, i) => ({
+  tenor, years:YEARS[i], role:i < 3 ? 'DEPOSIT' : 'SWAP', market:MARKET[i],
+  source:'ir_curve.usd', age:AGE[i]
+}));
+
+// The bootstrap reads observations. Only their provenance differs by source:
+// the same instruments reprice, whether the rate came from a vendor, a fixing,
+// or the synthetic feed. That provenance is what the curve must record.
+const SOURCES = {
+  real: {label:'Market data', kind:'observation', origin:'ir_curve.usd · vendor quotes and fixings',
+    asOf:'2026-10-06 14:00', extra:'vintage 2026-10-06'},
+  synthetic: {label:'Synthetic feed', kind:'generated', origin:'synthetic.themes.realistic_2026.usdsofr',
+    asOf:'2026-10-06 14:00', extra:'USD SOFR OIS · Vasicek · seed 20261006'}
+};
+const SRC = SOURCES[source] || SOURCES.real;
+// The synthetic feed generates its own par ladder from the process, so the
+// numbers differ slightly; the shape is the same.
+const points = pillars.map(p => ({...p, rate: source === 'synthetic' ? p.market - 0.015 : p.market}));
 
 const health = {
   clean: {computed: 11, missing: [], stale: [], discount: true},
   missing: {computed: 9, missing: ['7Y','10Y'], stale: [], discount: true},
   projection: {computed: 11, missing: [], stale: ['1M','3M'], discount: false}
 }[state];
+
+// A real sequential bootstrap: each instrument is solved for the discount
+// factor that reprices it to par off the curve so far, then the set is refined
+// until the interpolation between pillars stops moving.
+const known = points.filter(p => !health.missing.includes(p.tenor));
+function logDfAt(ps, t){
+  if (!ps.length) return 0;
+  if (t <= ps[0].years) return Math.log(ps[0].df) * (t / ps[0].years);
+  for (let i = 1; i < ps.length; i++){
+    if (t <= ps[i].years){
+      const a = ps[i - 1], b = ps[i], w = (t - a.years) / (b.years - a.years);
+      return Math.log(a.df) + w * (Math.log(b.df) - Math.log(a.df));
+    }
+  }
+  const last = ps[ps.length - 1];
+  return Math.log(last.df) * (t / last.years);
+}
+const dfAt = (ps, t) => Math.exp(logDfAt(ps, t));
+function boot(rows){
+  const ps = [];
+  const solve = r => {
+    const q = r.rate / 100;
+    if (r.role === 'DEPOSIT') return 1 / (1 + q * r.years);
+    const n = Math.max(1, Math.round(r.years));
+    let s = 0;
+    for (let k = 1; k < n; k++) s += dfAt(ps, k);
+    return (1 - q * s) / (1 + q);
+  };
+  rows.forEach(r => ps.push({...r, df:solve(r)}));
+  let passes = 0, delta = 0;
+  for (let i = 1; i <= 8; i++){
+    passes = i; delta = 0;
+    ps.forEach(p => { const old = p.df, next = solve(p); p.df = next; delta = Math.max(delta, Math.abs(next - old)); });
+    if (delta < 1e-12) break;
+  }
+  ps.forEach(p => { p.zero = -Math.log(p.df) / p.years * 100; });
+  ps.forEach(p => {
+    const q = p.rate / 100;
+    if (p.role === 'DEPOSIT') p.model = (1 / p.df - 1) / p.years * 100;
+    else {
+      const n = Math.max(1, Math.round(p.years));
+      let a = 0; for (let k = 1; k <= n; k++) a += dfAt(ps, k);
+      p.model = (1 - p.df) / a * 100;
+    }
+    p.resid = (p.model - p.rate) * 100;
+  });
+  ps.forEach((p, i) => {
+    const prev = ps[i - 1];
+    p.fwd = prev ? (p.zero * p.years - prev.zero * prev.years) / (p.years - prev.years) : p.zero;
+  });
+  return {rows:ps, passes, delta};
+}
+const build = boot(known);
+const S = {}; build.rows.forEach(r => S[r.tenor] = r);
+const maxResid = Math.max(...build.rows.map(r => Math.abs(r.resid)));
 
 function urlButton(url){
   return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
@@ -127,70 +192,105 @@ function header(){
   const role = state === 'projection' ? 'PROJECTION' : 'FUNDING';
   return `
   <div class="top">
-    <h1>Curves / USD SOFR FOMC</h1>
+    <h1>Curve bootstrap / USD SOFR FOMC</h1>
     <span class="muted">candidate · not published</span>
     <a class="grow" style="text-align:right" href="../../knowledge/journeys/market_data/journey_bootstrap-or-refresh-a-curve.html">the journey &rarr;</a>
   </div>
   <div class="panel">
-    <h2>Blueprint and as-of</h2>
+    <h2>Curve, source and as-of</h2>
     <div class="row">
       <div class="field"><label>Currency</label><div class="value">USD</div></div>
       <div class="field"><label>Family role</label><div class="value">${role}</div></div>
       <div class="field"><label>Output series</label><div class="value mono">${urlButton('oresmd://ir/USD?…&amp;curve_id=USD-SOFR-FOMC')}</div></div>
-      <div class="field"><label>${state === 'projection' ? 'Discount curve' : 'Discount curve'}</label><div class="value">${state === 'projection' ? 'USD-SOFR-OIS' : '— (funding)'}</div></div>
+      <div class="field"><label>Discount curve</label><div class="value">${state === 'projection' ? 'USD-SOFR-OIS' : '— (funding)'}</div></div>
+      <div class="field"><label>Input source</label><div>${['real','synthetic'].map(s =>
+        `<button class="btn" data-src="${s}"${s === source ? ' style="border-color:var(--accent);color:var(--accent)"' : ''}>${SOURCES[s].label}</button>`).join(' ')}</div></div>
       <div class="field"><label>As-of</label><input type="datetime-local" value="2026-10-06T14:00"></div>
       <button class="btn primary" id="compute">Compute candidate</button>
     </div>
-    <div class="notice">Compute is stateless: it echoes the points and writes nothing. Publishing is a separate, approved act.</div>
+    <div class="notice">One bootstrap reads either source. The instruments to reprice are the same; what differs is where each rate came from, and the build must record that provenance on the points it writes.</div>
+  </div>`;
+}
+
+function sourcePanel(){
+  return `
+  <div class="panel">
+    <h2>Inputs — ${SRC.label}</h2>
+    <table><tbody>
+      <tr><td>Kind</td><td>${tag(SRC.kind, source === 'synthetic' ? 'warn' : 'ok')}</td></tr>
+      <tr><td>Origin</td><td class="mono">${SRC.origin}</td></tr>
+      <tr><td>As-of</td><td class="mono">${SRC.asOf}</td></tr>
+      <tr><td>Detail</td><td class="faint">${SRC.extra}</td></tr>
+      <tr><td>Series</td><td>${urlButton('oresmd://ir/USD?type=quote&amp;instrument=ir_swap&amp;quote=rate')}</td></tr>
+    </tbody></table>
+    <div class="notice">${source === 'synthetic'
+      ? 'The rates were generated by a synthetic feed, not observed. The curve is built the same way, but the provenance says generated, so nothing downstream can mistake it for market data.'
+      : 'The rates are market observations: a vendor quote or a fixing, each with the source and age the build read.'} Each observation keeps its own source, so a curve can mix both and still answer "where did this point come from?".</div>
+  </div>`;
+}
+
+function bootstrapTable(){
+  return `
+  <div class="panel">
+    <h2>Bootstrapped pillars — solved in instrument order</h2>
+    <table>
+      <thead><tr><th>Pillar</th><th>Instrument</th><th class="num">Input rate</th><th class="num">Solved zero</th><th class="num">Discount factor</th><th class="num">Forward to pillar</th><th class="num">Reprice residual</th></tr></thead>
+      <tbody>${points.map(p => {
+        const r = S[p.tenor], miss = health.missing.includes(p.tenor);
+        if (miss) return `<tr class="muted"><td class="mono">${p.tenor}</td><td>${p.role}</td><td colspan="5">${tag('missing input','bad')}</td></tr>`;
+        return `<tr><td class="mono">${p.tenor}</td><td>${p.role}</td>
+          <td class="num">${r.rate.toFixed(4)}%</td><td class="num">${r.zero.toFixed(3)}%</td>
+          <td class="num">${r.df.toFixed(6)}</td><td class="num">${r.fwd.toFixed(3)}%</td>
+          <td class="num">${Math.abs(r.resid) < 0.01 ? tag(r.resid.toFixed(3) + ' bp', 'ok') : tag(r.resid.toFixed(1) + ' bp', 'bad')}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div class="notice">Every pillar reprices its own instrument to par: that is what "solved" means. The residual is a convergence check, not a market view.</div>
   </div>`;
 }
 
 function pointsTable(){
   return `
   <div class="panel">
-    <h2>Candidate points</h2>
+    <h2>Observations the build read</h2>
     <table>
-      <thead><tr><th>Pillar</th><th>Role</th><th class="num">Market</th><th class="num">Discount factor</th><th>Source</th><th>Age</th></tr></thead>
+      <thead><tr><th>Pillar</th><th>Role</th><th class="num">Rate</th><th class="num">Discount factor</th><th>Source</th><th>Age</th></tr></thead>
       <tbody>${points.map(p => {
-        const miss = health.missing.includes(p.tenor);
+        const miss = health.missing.includes(p.tenor), r = S[p.tenor];
         return `<tr${miss ? ' class="muted"' : ''}><td class="mono">${p.tenor}</td><td>${p.role}</td>
-          <td class="num">${miss ? '—' : pct(p.market)}</td>
-          <td class="num">${miss ? '—' : dfmt(p.df)}</td>
-          <td>${miss ? tag('missing','bad') : p.source}</td><td class="faint">${miss ? '—' : p.age}</td></tr>`;
+          <td class="num">${miss ? '—' : p.rate.toFixed(4)}</td>
+          <td class="num">${miss ? '—' : r.df.toFixed(6)}</td>
+          <td>${miss ? tag('missing','bad') : `<span class="mono">${source === 'synthetic' ? SRC.origin : p.source}</span> <span class="faint">(${SRC.kind})</span>`}</td>
+          <td class="faint">${miss ? '—' : p.age}</td></tr>`;
       }).join('')}</tbody>
     </table>
   </div>`;
 }
 
-// Two term-structure plots that share one PC.line style: the market rate and
-// the discount factor, both against the pillars in order on an equal-spaced x
-// axis. A pillar in health.missing becomes a null point, so its line breaks.
+// The four curves the bootstrap defines, over the pillars in order. A pillar
+// with no input becomes a null point, so its line breaks.
 function pointsCharts(){
   const n = points.length;
   const x = points.map((_, i) => i / (n - 1));
-  const ticks = points.map((p, i) => ({at: i / (n - 1), label: p.tenor}));
+  const ticks = points.map((p, i) => ({at:i / (n - 1), label:p.tenor}));
   const miss = t => health.missing.includes(t);
-  const notes = health.missing.length ? [`missing: ${health.missing.join(', ')}`] : [];
-  const market = {
-    series: [{name: 'market rate', color: PC.colours.accent, points: points.map(p => miss(p.tenor) ? null : p.market), markers: true}],
-    x, ticks, yFmt: v => v.toFixed(3) + '%', yLabel: 'market rate (%)', h: 260,
-    notes, title: 'Market rate by pillar',
-    caption: 'Input market rates the build read, one point per pillar. A gap is a pillar the build could not read.'
-  };
-  const discount = {
-    series: [{name: 'discount factor', color: PC.colours.accent, points: points.map(p => miss(p.tenor) ? null : p.df), markers: true}],
-    x, ticks, yFmt: v => v.toFixed(5), yLabel: 'discount factor', h: 260,
-    notes, title: 'Discount factor by pillar',
-    caption: 'Discount factor the build derived per pillar. A gap matches a missing market rate.'
-  };
+  const chart = (name, label, vals, yFmt, colour, caption) => ({
+    series:[{name, color:colour, points:points.map((p, i) => miss(p.tenor) ? null : vals[i]), markers:true}],
+    x, ticks, yFmt, yLabel:label, h:250,
+    notes:health.missing.length ? [`missing: ${health.missing.join(', ')}`] : [], caption
+  });
   return `
   <div class="panel">
-    <h2>Term structure — market rate by pillar</h2>
-    ${PC.line(market)}
-  </div>
-  <div class="panel">
-    <h2>Discount factors</h2>
-    ${PC.line(discount)}
+    <h2>Term structure, zero curve and forwards</h2>
+    <div class="grid2">
+      <div>${PC.line(chart('input rate', 'rate %', points.map(p => p.rate), v => v.toFixed(3) + '%', PC.colours.warn,
+        'The input par rate per pillar, from whichever source is selected.'))}</div>
+      <div>${PC.line(chart('zero rate', 'zero %', points.map(p => S[p.tenor] ? S[p.tenor].zero : null), v => v.toFixed(3) + '%', PC.colours.accent,
+        'The zero rate the bootstrap solved at each pillar.'))}</div>
+      <div>${PC.line(chart('discount factor', 'DF', points.map(p => S[p.tenor] ? S[p.tenor].df : null), v => v.toFixed(5), PC.colours.ok,
+        'Discount factors must fall monotonically from one.'))}</div>
+      <div>${PC.line(chart('forward', 'forward %', points.map(p => S[p.tenor] ? S[p.tenor].fwd : null), v => v.toFixed(3) + '%', PC.colours.bad,
+        'The forward implied between pillars: the curve a desk actually trades.'))}</div>
+    </div>
   </div>`;
 }
 
@@ -206,6 +306,26 @@ function healthPanel(){
     <h2>Build health</h2>
     <table><tbody>${rows.map(([k, v, c]) => `<tr><td>${k}</td><td>${tag(v, c)}</td></tr>`).join('')}</tbody></table>
     <div class="notice">The server returns no diagnostics, so this panel is derived from the points received and the pillars read.</div>
+  </div>`;
+}
+
+function diagnostics(){
+  return `
+  <div class="panel">
+    <h2>Bootstrap diagnostics</h2>
+    <div class="grid2">
+      <div>${PC.bars({bars:build.rows.map(r => ({label:r.tenor, value:r.resid,
+        color:Math.abs(r.resid) < 0.01 ? PC.colours.ok : PC.colours.bad})),
+        yFmt:v => v.toFixed(3), yLabel:'residual bp', h:260, zero:true,
+        caption:'Repricing residual per pillar, in basis points. A converged bootstrap sits on zero.'})}</div>
+      <table><tbody>
+        <tr><td>Source</td><td>${tag(SRC.label + ' · ' + SRC.kind, source === 'synthetic' ? 'warn' : 'ok')}</td></tr>
+        <tr><td>Largest residual</td><td>${maxResid < 0.01 ? tag('< 0.01 bp', 'ok') : tag(maxResid.toFixed(2) + ' bp', 'bad')}</td></tr>
+        <tr><td>Refinement passes</td><td class="mono">${build.passes}</td></tr>
+        <tr><td>Inputs stale</td><td>${health.stale.length ? tag(health.stale.join(', '), 'warn') : tag('none', 'ok')}</td></tr>
+      </tbody></table>
+    </div>
+    <div class="notice">A stale input changes the curve's claim, not its arithmetic: the build still solves, and the provenance is what lets a reader discount it. A synthetic input is marked generated for the same reason.</div>
   </div>`;
 }
 
@@ -380,21 +500,25 @@ const PC = (() => {
 function render(){
   const app = document.getElementById('app');
   const head = header();
-  const table = pointsTable();
-  const charts = pointsCharts();
-  if (variant === 'b') app.innerHTML = head + charts + healthPanel();
-  else if (variant === 'c') app.innerHTML = head + `<div class="grid2">${table}${healthPanel()}</div>` + charts;
-  else app.innerHTML = head + table + healthPanel();
-  document.getElementById('note').textContent = `Prototype · bootstrap a curve · variant ${variant.toUpperCase()} · market: ${state} · candidate, nothing published`;
+  if (variant === 'b') app.innerHTML = head + sourcePanel() + pointsCharts();
+  else if (variant === 'c') app.innerHTML = head + sourcePanel() + diagnostics() + pointsTable();
+  else app.innerHTML = head + sourcePanel() + pointsTable() + bootstrapTable();
+  document.getElementById('note').textContent =
+    `Prototype · curve bootstrap · variant ${variant.toUpperCase()} · source: ${SRC.label} · market: ${state} · candidate, nothing published`;
   document.getElementById('bar').innerHTML =
     `<span class="label">Variant</span>` +
     ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Input source</span>` +
+    [['real','market'],['synthetic','synthetic']].map(([s, t]) =>
+      `<button data-src="${s}" class="${s===source?'on':''}">${t}</button>`).join('') +
     `<span class="sep">|</span><span class="label">Market</span>` +
     ['clean','missing','projection'].map(s => `<button data-s="${s}" class="${s===state?'on':''}">${s}</button>`).join('');
   document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-src]').forEach(b => b.onclick = () => set('source', b.dataset.src));
   document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('#app [data-src]').forEach(b => b.onclick = () => set('source', b.dataset.src));
   const c = document.getElementById('compute');
-  if (c) c.onclick = () => { c.textContent = 'Computed ' + new Date().toLocaleTimeString(); };
+  if (c) c.onclick = () => { c.textContent = `Computed from ${SRC.label.toLowerCase()} · ` + new Date().toLocaleTimeString(); };
 }
 function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
 render();

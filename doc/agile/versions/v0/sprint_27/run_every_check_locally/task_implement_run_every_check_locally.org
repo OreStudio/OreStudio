@@ -26,12 +26,12 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
-| Now          | Verification: running the gate on its own branch. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the task, raise the PR.          |
-| Last touched | 2026-10-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -86,9 +86,57 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Checks in the catalogue | 38 | =./compass.sh check --list= | =c35caff642= |
+| Change classes in the tree | 10 | =./compass.sh check --tree= | =c35caff642= |
+| Checks a documents-only change runs | 6, none heavy | =./compass.sh check --plan --paths doc/knowledge/x.org= | =c35caff642= |
+| Runner suite | 25 cases | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_local_checks.py -q= | =c35caff642= |
+| Trigger-guard suite | 6 cases | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_check_no_pr_triggers.py -q= | =c35caff642= |
+| The gate on its own branch | 38/38 passed, 3920s | =./compass.sh check= (report: =build/output/local_checks/report.md=) | =c35caff642= |
+| Workflows triggering on a pull request | 0 of 23 | =python3 build/scripts/check_no_pr_triggers.py= | =c35caff642= |
+| Checks CI used to gate a pull request with | 12 workflows, 40 jobs | =gh run list --branch <old branch>= | =a3be6f21c6= |
 
 * Notes
+
+* Result
+
+=compass check= is the pull-request gate. It classifies the branch diff
+against the decision tree in =build/scripts/local_checks.py=, runs the checks
+the matching classes need, and writes =build/output/local_checks/report.md=:
+a verdict, a *Fix these first* section naming each failure with the command
+that reproduces it, the command that fixes it and the tail of its log, then
+the full table and the reason each class was selected. The catalogue holds 38
+checks over 10 classes and 3 phases.
+
+Verified on this branch at =c35caff642=: 38 of 38 checks passed in 3920s,
+with a clean tree afterwards, so the regenerating checks left nothing behind.
+The gate is the first thing that ran the new =no-pr-triggers= guard, the
+=format= check and the =component-drift= family in one pass.
+
+Three defects surfaced by running it, all fixed here:
+
+- *A workflow grew the =pull_request= trigger back.* =entity-writes.yml= on
+  =feature/book-trade-through-repositories= declares it, and nothing read the
+  workflow files. =build/scripts/check_no_pr_triggers.py= now fails on the
+  plain trigger, ignores the =pull_request_review= events the =@claude= review
+  uses, and runs under the =ci= class.
+- *The drift checks write what the parallel checks read.* =component-drift
+  --all= regenerates every artefact in place, and it was rewriting generated
+  C++ while =format= read it, so =format= reported unformatted headers on a
+  branch that touches no C++. The regenerating and comparing checks now run in
+  the serial prepare phase.
+- *The tangles write outside the trees their checks verified.* =tangle-http=
+  emits ten =.hurl= files under =projects/ores.http/scripts/library= that main
+  never committed, and the check only looked at =doc/recipes/http=. Both tangle
+  checks now verify every tree they write, untracked files included.
+
+The gate also found three pre-existing drifts on main, and cleared them in its
+own commit: the =ores.synthetic= CMake file list stale since #2708, the
+physical-space inventories stale since the recent template edits, and the
+missing =.hurl= files.
+
+Out of scope, recorded for the next pass: the workflow files are still 12
+near-identical copies of the same drift gates, and nothing checks that every
+check in the catalogue has a counterpart in the retired workflow set.
 
 * Test Scenarios
 
@@ -99,7 +147,8 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| =compass check --plan= on a documents-only change | done | prints 6 checks, no build, no ctest |
+| =compass check= on this branch | done | 38/38, 3920s, tree clean |
 
 * PRs
 

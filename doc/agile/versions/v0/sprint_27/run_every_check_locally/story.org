@@ -21,12 +21,12 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-06                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-07                               |
 
 * Acceptance
 
@@ -40,11 +40,42 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:93FAC931-489F-401F-9870-E740C640A39F][Scaffold story: Run every check locally in one report]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0829AF20-92A5-4497-983F-A15B4D8C3871][Build the local check runner, its report and its decision tree]] | STARTED | 2026-10-06 | | Initial task for: Run every check locally in one report |
+| [[id:0829AF20-92A5-4497-983F-A15B4D8C3871][Build the local check runner, its report and its decision tree]] | DONE | 2026-10-06 | 2026-10-07 | Initial task for: Run every check locally in one report |
 | [[id:A932B4F2-DE97-4348-83E1-DBF22B0B89CB][Retire the GitHub pull-request checks]] | DONE | 2026-10-06 | 2026-10-06 | Delete every workflow that gates a pull request, once the local runner covers it. GitHub keeps only the builds that are not pull-request checks. |
 
 * Decisions
 
+- *The decision tree is data, and it lives beside the checks it selects.* A
+  table of change class to path glob in =build/scripts/local_checks.py=, not a
+  chain of conditionals, so =--list= prints it and the suite pins it.
+- *A path no rule claims selects every check.* A change the table cannot
+  classify is one it cannot vouch for; the cost of the extra run is smaller
+  than the cost of the break it hides.
+- *The checks that write the tree run serially, before the checks that read
+  it.* =component-drift --all= regenerates every artefact in place, and it was
+  rewriting generated C++ while =format= read it.
+- *A workflow may not carry a =pull_request= trigger.* The retirement removed
+  twelve of them, and nothing read the workflow files, so one grew back within
+  hours. A guard now fails on it.
+- *The change is measured from the merge base with the trunk*, so another
+  author's merge never reads as this branch's change.
+
 * Out of scope
 
--
+- Merging the twelve retired workflows into one. They remain twelve
+  near-identical copies of the same drift gates, running on a main push.
+- Checking that every check in the catalogue has a counterpart in the retired
+  workflow set.
+
+* Result
+
+GitHub runs no check on a pull request. The twelve workflows that gated one
+lost the trigger, and =compass check= is the gate: it classifies the branch
+diff against a decision tree of 10 change classes and runs the checks the
+matching classes need — 38 in the catalogue — writing one report that names
+every failure and its fix. A documents-only change runs the site page and the
+doc corpus checks and never reaches the compiler.
+
+Verified on the implementation branch at =c35caff642=: 38 of 38 checks passed
+in 3920s with a clean tree afterwards, the first run to exercise the whole
+catalogue including the build, the database recreation and ctest.

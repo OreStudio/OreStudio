@@ -23,13 +23,16 @@
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <thread>
 
 namespace {
 
@@ -348,4 +351,56 @@ TEST_CASE("read_latest_currencies_includes_the_written_row", tags) {
     const auto found = std::ranges::any_of(
         read_currencies, [&](const auto& v) { return v.iso_code == currency.iso_code; });
     CHECK(found);
+}
+
+TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
+    using ores::platform::time::datetime;
+    using namespace std::chrono_literals;
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    currency_repository repo;
+
+    auto ccy = generate_synthetic_currency(ctx);
+    const auto before_any = datetime::to_iso8601_utc(std::chrono::system_clock::now() - 1h);
+    const auto name = ccy.name;
+    ccy.name = name + " v1";
+    repo.write(h.context(), {ccy});
+
+    std::this_thread::sleep_for(50ms);
+    const auto between = datetime::to_iso8601_utc(std::chrono::system_clock::now());
+    std::this_thread::sleep_for(50ms);
+
+    auto v2 = ccy;
+    v2.name = name + " v2";
+    v2.modified_by = "unit test";
+    repo.write(h.context(), {v2});
+
+    ores::refdata::messaging::currencies_filter filter;
+    filter.iso_code_one_of = std::vector<std::string>{ccy.iso_code};
+
+    const auto then = repo.read_latest(h.context(), 0, 100, {}, filter, between);
+    REQUIRE(then.size() == 1);
+    CHECK(then.front().name == name + " v1");
+    CHECK(repo.get_total_currency_count(h.context(), filter, between) == 1);
+
+    const auto now = repo.read_latest(h.context(), 0, 100, {}, filter, std::nullopt);
+    REQUIRE(now.size() == 1);
+    CHECK(now.front().name == name + " v2");
+
+    CHECK(repo.read_latest(h.context(), 0, 100, {}, filter, before_any).empty());
+    CHECK(repo.get_total_currency_count(h.context(), filter, before_any) == 0);
+}
+
+TEST_CASE("list_currencies_refuses_an_as_of_that_is_not_a_timestamp", tags) {
+    scoped_database_helper h;
+    ores::refdata::service::currency_service svc(h.context());
+
+    ores::refdata::messaging::list_currencies_request request;
+    request.as_of = "yesterday";
+    const auto response = svc.list_currencies(request);
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::invalid);
+    CHECK(response.result.code == "as_of_invalid");
+    CHECK(response.currencies.empty());
 }

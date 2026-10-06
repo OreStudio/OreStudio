@@ -28,7 +28,8 @@ lines, or has established that the store holds none.
 
 The system administrator: an account that holds the =SuperAdmin= role and acts
 from the system tenant, in *system administration mode*. The shell offers this
-screen in the *Operations* area, so a tenant administrator cannot reach it.
+screen in the *Operations* area, so a tenant administrator cannot reach it, and
+neither can any other signed-in person.
 
 The trigger is always a symptom: a batch lost results, a sign-in was refused,
 a screen showed the wrong figure. The administrator opens the logs screen to

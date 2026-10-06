@@ -28,7 +28,8 @@ administrator can say whether the grid is working, and which node is behind.
 
 The system administrator: an account that holds the =SuperAdmin= role and acts
 from the system tenant, in *system administration mode*. The shell offers this
-screen in the *Operations* area, so a tenant administrator cannot reach it.
+screen in the *Operations* area, so a tenant administrator cannot reach it, and
+neither can any other signed-in person.
 
 The trigger is work in flight: a batch was submitted, a node was added, or
 results are late and somebody asks whether the grid is the reason. The

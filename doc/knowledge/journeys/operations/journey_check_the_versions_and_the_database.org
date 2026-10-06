@@ -31,7 +31,11 @@ system administrator's: a member reporting a fault, an administrator checking a
 rollout, and a support engineer on a call all ask the same question, and the
 answer is not sensitive. The answer is built into every screen already — the
 footer states the client and the server — and this journey adds the screen
-that states all three together.
+that states all three together. Because the answer belongs to every session,
+the shell offers the versions screen in every mode, so a tenant administrator
+and a regular user open it as well as the system administrator does; the four
+installation screens stay out of their reach, behind the *Operations* area
+that only system administration carries.
 
 The trigger is doubt about a build: a screen behaves like yesterday's, a
 release note asks for the deployment's version, or a support request asks

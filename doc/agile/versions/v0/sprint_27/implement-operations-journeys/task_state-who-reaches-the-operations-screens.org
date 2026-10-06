@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 1878A3E4-0ACE-4CE6-892D-81DA0BCA8717
+:END:
+#+title: Task: State who reaches the operations screens
+#+description: The documents state who reaches each operations screen: the four installation screens are the system administrator's in the Operations area, and the versions screen is any signed-in person's in every mode.
+#+type: task
+#+level: s1
+#+filetags: :implement-operations-journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/state-who-reaches-the-operations-screens
+#+pr: 2677
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The documents say who reaches each operations screen, for the three
+signed-in contexts the shell draws: the system administrator, a tenant
+administrator and a regular user. The four installation screens stand in the
+*Operations* area that the system-administration menu carries alone, and the
+versions screen is offered in every mode, because its answer belongs to any
+signed-in person. The group page, the five journeys, the story and the
+screens task carry one model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The group page states, for the system administrator, the tenant
+  administrator and the regular user, which operations screens each reaches
+  and why.
+- The four installation journeys state that a tenant administrator and every
+  other signed-in person cannot reach them.
+- The versions journey states that its screen is offered in every mode, to
+  any signed-in person.
+- The story's acceptance and the screens task's acceptance carry the same
+  model, so [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations
+  screens in ores.web]] has one contract.
+- The site check passes on the changed pages.
+
+* Plan
+
+One documentary pass. The model comes from the accepted record rather than
+from a new decision: the four installation journeys name the system
+administrator as their actor, the versions journey names any signed-in
+person, and the shell carries an area per mode — a screen that belongs to
+another mode is absent rather than disabled
+(=projects/ores.web/packages/web/src/shell/areas.ts=). The contexts are the
+three the session mode carries: *system administration*, *tenant
+administration* and *application* (=sessionModeSchema= in
+=@ores/wire-protocol=).
+
+The pass edits, in one commit set:
+
+1. The group page gains *Who reaches the screens*, a table of the three
+   contexts against the area, the installation screens and the versions
+   screen, and the intro paragraph points at it.
+2. Each of the four installation journeys states that no other signed-in
+   person reaches its screen.
+3. The versions journey states that the shell offers its screen in every
+   mode, because the answer belongs to every session.
+4. The story's acceptance and Decisions, and the screens task's Goal and
+   acceptance, carry the same contract.
+
+The prototype was re-read as the design record (accepted at =285519db99=,
+on =main= since PR #2676) before the pass. Its
+variant bar switches fixture states, not roles; every screen runs in system
+administration mode; and the versions panel is drawn as the *About* screen.
+No control on the prototype switched actor, so the documents carry the model
+and the screens task owns whatever control the build adds.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Site check on the changed pages | 1212 file(s), 0 failure(s) | =./compass.sh site page= | a971cb6a3e with this task's edits uncommitted |
+
+* Notes
+
+The task answers a question from the user at the story's start: how do these
+screens work for a super administrator, a tenant administrator and a regular
+user? The prototype was re-read to check for actor controls. It carries none:
+the variant bar switches fixture states (*Reporting*, *Nothing reported*, and
+so on), every screen runs as the system administrator, and the actor stands
+in prose on each screen. The documents therefore carry the model, and the
+screens task owns whatever control the build adds.
+
+The versions screen's reachability follows its audience. Its actor is any
+signed-in person, the login answer that carries the builds belongs to every
+session, and the four installation screens alone carry privileged data — which
+is also why the build must state the versions row as unknown rather than
+guessing until the login answer carries the database.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2677][#2677]] | [agile] State who reaches the operations screens |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The documents now carry one access model for the three signed-in contexts.
+The system administrator reaches the *Operations* area and all five screens.
+A tenant administrator and a regular user reach none of the four installation
+screens, which stand in an area only the system-administration menu carries,
+and both reach the versions screen, which the shell offers in every mode.
+
+The group page holds the model as a table, *Who reaches the screens*. The four
+installation journeys and the versions journey state their own row of it, and
+the story's acceptance and the screens task's acceptance carry the same
+contract, so the build has one source.
+
+The question that started the task assumed the prototype had actor buttons.
+It has none: its variant bar switches fixture states. The access model
+therefore comes from the accepted record (the journeys' actors, the session
+modes and the shell's absent-not-disabled rule), not from the prototype.

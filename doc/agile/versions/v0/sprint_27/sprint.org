@@ -78,6 +78,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------------|
 | [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] | DONE | | 2026-10-06 | The domain-entity generator template emits generator expressions that call boost::uuids::to_string without including <boost/uuid/uuid_io.hpp>, so the generated ores.iam run_grant generator fails to compile. |
 | [[id:F49BC762-0B5E-48F6-8F82-F5C8C932591A][Hotfix: Site build needs live GNU ELPA]] | DONE | | 2026-10-06 | The site build installs Emacs packages from elpa.gnu.org at build time, so a GNU ELPA outage turns site CI red; the workflows keep no package cache and the refresh retry never runs. |
+| [[id:6047EE39-7C69-46D8-80CF-F6B75B9851A2][Hotfix: scheduler accepts six-field cron expressions]] | DONE | 2026-10-06 | 2026-10-06 | Since the croncpp 2026-08-12 port, cron_expression::from_string accepts a six-field expression and reads it shifted, and ores.scheduler.api.tests fails. |
 
 * Achievements
 

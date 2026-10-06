@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 6047EE39-7C69-46D8-80CF-F6B75B9851A2
+:END:
+#+title: Story: Hotfix: scheduler accepts six-field cron expressions
+#+description: Since the croncpp 2026-08-12 port, cron_expression::from_string accepts a six-field expression and reads it shifted, and ores.scheduler.api.tests fails.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:scheduler:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A job or report schedule written with six fields is refused with a
+message that names the field count, instead of being stored and run on a
+shifted schedule. =ores.scheduler.api.tests= passes again.
+
+Main's vcpkg bump (978e1e098d) moved the =croncpp= port from 2023-03-30
+to 2026-08-12. The new default traits accept an optional seventh field,
+the year. =cron_expression::from_string= prepends a seconds field and
+relied on croncpp to reject anything but five fields, so a six-field
+input now passes, read as minute, hour, day, month, weekday and year.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Done. The parser refuses any count but five fields. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- =cron_expression::from_string= refuses any expression that does not
+  have exactly five fields, and its error names the count it found.
+- A test pins =next_occurrence= for an expression that restricts both day
+  fields, so a later croncpp change to that rule fails a test.
+- =ores.scheduler.api.tests= passes, with the new croncpp.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63A20F8D-4112-42FA-9C10-9DDEC1AE9221][Scaffold story: Hotfix: scheduler accepts six-field cron expressions]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A1A1617E-BD47-4BA4-B4C8-A9306DF69EF7][Implement Hotfix: scheduler accepts six-field cron expressions]] | DONE | 2026-10-06 | 2026-10-06 | Initial task for: Hotfix: scheduler accepts six-field cron expressions |
+
+* Decisions
+
+- Keep the new croncpp and check the field count in ORE Studio. Pinning
+  the old port would leave the parser depending on what a library
+  version happens to refuse.
+- Keep croncpp's new day rule. With both day fields restricted, the old
+  version fired only on a day matching both; the new default fires on a
+  day matching either, which is POSIX cron, and the header documents the
+  format as standard Unix cron. No seeded or hard-coded schedule
+  restricts both day fields, so no existing schedule changes its times.
+
+* Out of scope
+
+-

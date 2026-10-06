@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 384C19C6-DA69-4D75-97A5-E7BEAF84FABC
+:END:
+#+title: The seeded report definition Intercompany Exposure Matrix (p…
+#+description: The seeded report definition Intercompany Exposure Matrix (projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql:205) has schedule_expression '0 6 * * 1,15'. Its fifth field is the day of week, where 15 is out of range (0 to 6), and its description says Monthly cadence. The author probably meant the day of month: '0 6 1 * *' for monthly, or '0 6 1,15 * *' for the 1st and 15th. Any path that parses it with cron_expression::from_string refuses it. Decide which cadence was meant and correct the seed.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

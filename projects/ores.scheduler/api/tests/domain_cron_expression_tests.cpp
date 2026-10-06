@@ -52,7 +52,9 @@ TEST_CASE("cron_expression::from_string rejects invalid expressions", "[domain][
         "",            // empty
         "not a cron",  // garbage
         "99 * * * *",  // minute > 59
-        "* * * * * *", // 6 fields (croncpp uses 5)
+        "* * * * * *", // 6 fields
+        "0 0 6 * * 1", // 6 fields: seconds first, as Quartz writes it
+        "0 6 * *",     // 4 fields
     };
 
     for (const auto& expr : invalid_exprs) {
@@ -97,6 +99,57 @@ TEST_CASE("cron_expression::next_occurrence lands on a local midnight",
     std::tm local{};
     localtime_r(&as_time_t, &local);
     CHECK(local.tm_hour == 0);
+    CHECK(local.tm_min == 0);
+}
+
+TEST_CASE("cron_expression::from_string names the field count it rejects",
+          "[domain][cron_expression]") {
+    const auto result = cron_expression::from_string("* * * * * *");
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().find("expected 5 fields") != std::string::npos);
+    CHECK(result.error().find("found 6") != std::string::npos);
+}
+
+TEST_CASE("cron_expression::from_string accepts a run of spaces between fields",
+          "[domain][cron_expression]") {
+    // croncpp drops empty parts, so several spaces separate one field.
+    const auto result = cron_expression::from_string("0  0   *  *  *");
+    REQUIRE(result.has_value());
+    CHECK(result->to_string() == "0  0   *  *  *");
+}
+
+TEST_CASE("cron_expression::from_string counts fields as croncpp splits them",
+          "[domain][cron_expression]") {
+    // croncpp splits on the space character alone, so a tab joins two parts
+    // into one field. The count must agree with that split, or the message
+    // would name a different number of fields than the library sees.
+    const auto result = cron_expression::from_string("* * * *\t*");
+    REQUIRE_FALSE(result.has_value());
+    CHECK(result.error().find("found 4") != std::string::npos);
+}
+
+TEST_CASE("cron_expression::next_occurrence matches either restricted day field",
+          "[domain][cron_expression]") {
+    // POSIX cron: with both day of month and day of week restricted, a day
+    // matching either one fires. 2026-10-06 is a Tuesday, so the next
+    // match is Monday 2026-10-12 rather than 1 November or a Monday 1st.
+    std::tm start{};
+    start.tm_year = 2026 - 1900;
+    start.tm_mon = 9;
+    start.tm_mday = 6;
+    start.tm_isdst = -1;
+    const auto after = std::chrono::system_clock::from_time_t(std::mktime(&start));
+
+    auto sut = cron_expression::from_string("0 9 1 * 1");
+    REQUIRE(sut.has_value());
+
+    const auto as_time_t = std::chrono::system_clock::to_time_t(sut->next_occurrence(after));
+    std::tm local{};
+    localtime_r(&as_time_t, &local);
+    CHECK(local.tm_year == 2026 - 1900);
+    CHECK(local.tm_mon == 9);
+    CHECK(local.tm_mday == 12);
+    CHECK(local.tm_hour == 9);
     CHECK(local.tm_min == 0);
 }
 

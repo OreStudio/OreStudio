@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: B30B52D7-E6C9-438B-8F38-DA776F0C86A9
+:END:
+#+title: Story: Hotfix: Continuous Linux red and the site build cancelled on every push
+#+description: Continuous Linux fails the Boost port check on a header Boost.ContainerHash owns, and the site build fires on every push so its runs cancel each other.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore Continuous Linux to green and stop the site build from firing on every push.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- The Boost port check accepts boost/functional/hash.hpp.
+- The sccache steps do not fail when the compiler cache was never installed.
+- The site build runs on a two-hourly schedule instead of on every push to main.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DAA47A7A-B7A3-4681-A4C8-7E3B4A1871B3][Scaffold story: Hotfix: Continuous Linux red and the site build cancelled on every push]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F83D94D4-36B5-420C-A410-681C936236A7][Fix the Boost port check and the sccache cascade]] | DONE | 2026-10-06 | 2026-10-06 | The port check asks for boost-functional when the tree includes boost/functional/hash.hpp, a header Boost.ContainerHash ships; the sccache steps then redden a run that never built. |
+| [[id:C0FF9220-832E-4775-A4B8-958697A70ADA][Pace the site build to once every two hours]] | DONE | 2026-10-06 | 2026-10-06 | The Product website workflow fires on every push to main, so back-to-back pushes cancel each other's site build and deploy. Build and deploy on a two-hourly schedule instead. |
+
+* Decisions
+
+- The Boost port check resolves a header to the port that ships it, not to the
+  directory it happens to sit in. Boost.ContainerHash ships
+  boost/functional/hash.hpp, so the check no longer asks for boost-functional.
+- The site build is paced by schedule rather than by push, because one build
+  outlives the gap between pushes to main: consecutive pushes cancelled each
+  other, and the cancellation left the deployed pages behind main.
+
+* Out of scope
+
+-
+
+* Result
+
+The Linux Boost port check accepts boost/functional/hash.hpp, and a test pins
+the mapping that decided it. The sccache steps no longer fail or wipe the cache
+on a run that never built. The site build and deploy moved to a two-hourly
+schedule, so a push can no longer cancel a site build in flight. Landed with
+PR #2709.

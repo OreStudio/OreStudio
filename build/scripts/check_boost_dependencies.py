@@ -21,17 +21,22 @@ How it checks
 
 It reads the ports' own manifests from the vendored vcpkg checkout, takes the
 transitive closure of the declared dependencies, and compares that with the
-boost/<library>/ directories the tree actually includes. A library that
-arrives transitively is accepted, which is why boost-math does not need its own
-line: it comes with boost-multiprecision.
+boost/<library>/ headers the tree actually includes. A library that arrives
+transitively is accepted, which is why boost-math does not need its own line:
+it comes with boost-multiprecision.
+
+Most Boost headers sit under a directory named after their vcpkg port. The
+exceptions are listed in PORT_FOR_INCLUDE: Boost.ContainerHash ships the
+deprecated boost/functional/hash* headers, so they belong to
+boost-container-hash even though the rest of boost/functional belongs to
+boost-functional.
 
 What it cannot see
 ------------------
 
-A header provided by a port whose name does not match its directory (no Boost
-library is in that position today), and any third-party library that is not
-Boost -- sqlgen, reflectcpp or immer landing without a manifest entry would
-still reach CI.
+A header whose port is not named after its directory and not listed in
+PORT_FOR_INCLUDE, and any third-party library that is not Boost -- sqlgen,
+reflectcpp or immer landing without a manifest entry would still reach CI.
 
 Usage
 -----
@@ -52,7 +57,18 @@ import sys
 # themselves; it has no vcpkg port because it is not installable on its own.
 NOT_LIBRARIES = {"pending"}
 
-INCLUDE_RE = re.compile(r'#\s*include\s*[<"]boost/([a-z0-9_]+)/')
+# Headers whose vcpkg port is not named after the directory they live in.
+# Boost.ContainerHash ships the deprecated boost/functional/hash* headers, so
+# that path belongs to boost-container-hash even though the rest of
+# boost/functional belongs to boost-functional. Keyed by the include path
+# after "boost/" with the extension removed; a key covers its exact path and
+# anything under it.
+PORT_FOR_INCLUDE = {
+    "functional/hash": "boost-container-hash",
+    "functional/hash_fwd": "boost-container-hash",
+}
+
+INCLUDE_RE = re.compile(r'#\s*include\s*[<"]boost/([a-z0-9_]+/[a-z0-9_/.]*)[>"]')
 SOURCE_SUFFIXES = (".hpp", ".cpp")
 
 
@@ -94,19 +110,29 @@ def installed_closure(ports: pathlib.Path, declared: set[str]) -> set[str]:
     return closure
 
 
-def boost_directories_used(root: pathlib.Path) -> dict[str, str]:
-    """Every boost/<library>/ included under projects/, and one file using it."""
-    used: dict[str, str] = {}
+def boost_headers_used(root: pathlib.Path) -> dict[str, tuple[str, str]]:
+    """Every boost/<header> included under projects/, keyed by its vcpkg port,
+    with the header and one file that includes it."""
+    used: dict[str, tuple[str, str]] = {}
     for path in (root / "projects").rglob("*"):
         if path.suffix not in SOURCE_SUFFIXES or not path.is_file():
             continue
         for match in INCLUDE_RE.finditer(path.read_text(errors="ignore")):
-            used.setdefault(match.group(1), str(path.relative_to(root)))
+            include = match.group(1)
+            if include.split("/")[0] in NOT_LIBRARIES:
+                continue
+            used.setdefault(port_for(include),
+                            (include, str(path.relative_to(root))))
     return used
 
 
-def port_for(library: str) -> str:
-    return "boost-" + library.replace("_", "-")
+def port_for(include: str) -> str:
+    """The vcpkg port that installs boost/<include>."""
+    stem = include.rsplit(".", 1)[0]
+    for prefix, port in PORT_FOR_INCLUDE.items():
+        if stem == prefix or stem.startswith(prefix + "/"):
+            return port
+    return "boost-" + include.split("/")[0].replace("_", "-")
 
 
 def main() -> int:
@@ -126,24 +152,21 @@ def main() -> int:
 
     declared = declared_names(root)
     closure = installed_closure(ports, declared)
-    used = boost_directories_used(root)
+    used = boost_headers_used(root)
 
-    missing = {
-        library: first_use
-        for library, first_use in sorted(used.items())
-        if library not in NOT_LIBRARIES and port_for(library) not in closure
-    }
+    missing = {port: entry for port, entry in sorted(used.items())
+               if port not in closure}
 
     if not missing:
         print(
-            f"Boost dependencies declared: {len(used)} header director(ies) used, "
-            f"all covered by the {len(closure)} port(s) vcpkg installs."
+            f"Boost dependencies declared: every boost/ header the tree includes "
+            f"is provided by the {len(closure)} port(s) vcpkg installs."
         )
         return 0
 
     print("Boost headers are included but their vcpkg port is not installed:", file=sys.stderr)
-    for library, first_use in missing.items():
-        print(f"  boost/{library} ({first_use}) -> add \"{port_for(library)}\" to vcpkg.json",
+    for port, (include, first_use) in missing.items():
+        print(f"  boost/{include} ({first_use}) -> add \"{port}\" to vcpkg.json",
               file=sys.stderr)
     return 1
 

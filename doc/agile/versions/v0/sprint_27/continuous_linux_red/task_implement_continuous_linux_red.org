@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: F83D94D4-36B5-420C-A410-681C936236A7
+:END:
+#+title: Task: Fix the Boost port check and the sccache cascade
+#+description: Continuous Linux fails the Boost port check on boost/functional/hash.hpp, a header boost-container-hash ships, and the sccache steps then redden a run that never built.
+#+type: task
+#+level: s1
+#+filetags: :continuous_linux_red:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/continuous-linux-red
+#+pr: 2709
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B30B52D7-E6C9-438B-8F38-DA776F0C86A9][Hotfix: Continuous Linux red and the site build cancelled on every push]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Teach the Boost port check which vcpkg port ships boost/functional/hash.hpp,
+and stop the sccache steps from failing on a run that never reached the build.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B30B52D7-E6C9-438B-8F38-DA776F0C86A9][Hotfix: Continuous Linux red and the site build cancelled on every push]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The Boost port check passes on main, whose vcpkg submodule is pinned to
+  19780d9cdf84d0944cf9a318666703b89ab6629c.
+- A test pins the header-to-port mapping, so a later edit cannot silently
+  restore the wrong port.
+- The sccache statistics step does not fail when ccache-action never ran.
+- A failure before the build no longer deletes the saved sccache entry.
+
+* Plan
+
+The run reported =sccache: command not found=, but that is the last step of a
+run that stopped early. The first failure is =Check every Boost header has a
+vcpkg port behind it=:
+
+#+begin_example
+  boost/functional (projects/ores.utility/src/domain/hierarchy.cpp)
+  -> add "boost-functional" to vcpkg.json
+#+end_example
+
+The check took the first directory of an include and named a port after it.
+boost/functional/hash.hpp is not a Boost.Functional header: boostorg/container_hash
+carries it, and vcpkg installs it as =boost-container-hash=. The wrong mapping
+was hidden because =quantlib=, now absent from =vcpkg.json=, used to pull
+=boost-functional= into the closure.
+
+The fix maps a header to the port that ships it, through a small table for the
+paths that do not follow the directory rule, and adds a test for that table. It
+also gives the CTest step an id, so the cache delete, save and statistics steps
+run only when a build actually happened: on this run the =if: always()=
+statistics step found no sccache, and the delete step threw away a warm cache
+that the failed run never replaced.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Boost header ports the tree requires | 16 | python3 -c "import importlib.util,pathlib;spec=importlib.util.spec_from_file_location('c','build/scripts/check_boost_dependencies.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);print(len(m.boost_headers_used(pathlib.Path('.').resolve())))" | 27fd473a84 |
+| Ports in the closure at main's vcpkg pin | 115 | python3 build/scripts/check_boost_dependencies.py | 27fd473a84 |
+
+* Notes
+
+Root cause: the check mapped a header's first directory to a port named after
+it. =boost/functional/hash.hpp= belongs to =boost-container-hash=, so the check
+demanded a port the header does not need and, on main, is not installed.
+=quantlib= had pulled =boost-functional= in transitively, which hid the wrong
+mapping until it left =vcpkg.json=.
+
+Fix: =PORT_FOR_INCLUDE= names the ports for include paths that break the
+directory rule, =port_for= resolves every include through it, and
+=boost_headers_used= keys the result by port. The regression tests live in
+=projects/ores.codegen/tests/test_check_boost_dependencies.py=.
+
+The sccache steps now read the CTest step's outcome. =Show sccache statistics=
+still runs on failure, so a build failure keeps its statistics, but it no
+longer runs when no build started.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2709][#2709]] | [ci] Restore Continuous Linux and pace the site build |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Boost port check resolves an include to the port that ships it, so
+boost/functional/hash.hpp no longer asks for boost-functional. The check passes
+on main's tree at vcpkg pin 19780d9cd. Five tests in
+=projects/ores.codegen/tests/test_check_boost_dependencies.py= pin the mapping,
+and codegen-drift runs them when the check changes.
+
+The sccache delete, save and statistics steps run only when the CTest step
+started, so a failure before the build neither reddens the run a second time
+nor deletes the saved cache.

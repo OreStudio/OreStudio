@@ -222,6 +222,7 @@ jobs:
           doNotCache: false
 
       - name: Run CTest workflow
+        id: ctest
         run: |
           $env:VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
           $env:ORES_BUILD_PROVIDER="github"
@@ -233,7 +234,9 @@ jobs:
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Show sccache statistics
-        if: always()
+        # ccache-action installs sccache. If no build ran, it is absent, and
+        # the statistics are not worth a second red step.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats
 
       - name: Upload WiX log on failure

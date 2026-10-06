@@ -8,7 +8,7 @@
 #+filetags: :windows_msvc_unused_catch_parameter:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/windows-msvc-unused-catch-parameter
-#+pr:
+#+pr: 2710
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2710][#2710]] | [dq] Fix the Windows MSVC build failure on an unused catch parameter |
 
 * Review
 

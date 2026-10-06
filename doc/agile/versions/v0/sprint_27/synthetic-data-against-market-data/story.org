@@ -43,6 +43,7 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 |------+-------+-------+-----+-------------|
 | [[id:ABEC9FC0-A354-4AC7-9982-B5AAC1292614][Scaffold story: Implement synthetic data generation against the new market data model]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement synthetic data generation against the new market data model]] | STARTED | 2026-10-06 | | One pipeline for every asset class: prove the tick-to-row path, carry the producer kind, collapse the spurious FX/IR forks, and let the curve bootstrap read it. |
+| [[id:5BAD286D-1139-41F1-8F01-F3114E77A59A][Add a marketdata stream command to ores.shell]] | BACKLOG | | | A marketdata stream command that subscribes to the republished tick subject for an oresmd URI and prints ticks to the screen until Ctrl-C, or writes them to a CSV file, so synthetic streaming can be tested without a UI. |
 
 * Decisions
 

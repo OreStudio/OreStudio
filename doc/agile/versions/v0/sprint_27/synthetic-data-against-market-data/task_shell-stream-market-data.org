@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 5BAD286D-1139-41F1-8F01-F3114E77A59A
+:END:
+#+title: Task: Add a marketdata stream command to ores.shell
+#+description: A marketdata stream command that subscribes to the republished tick subject for an oresmd URI and prints ticks to the screen until Ctrl-C, or writes them to a CSV file, so synthetic streaming can be tested without a UI.
+#+type: task
+#+level: s1
+#+filetags: :synthetic-data-against-market-data:sprint_27:v0:
+#+owner: marco
+#+branch: feature/shell-stream-market-data
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make it possible to watch a market data series live from the shell, with no UI and no code: marketdata stream takes an oresmd URI, subscribes to the republished tick stream the marketdata service already produces for the caller's tenant and party, and either prints each tick to the screen until the person presses Ctrl-C, or writes them to a CSV file. This is the fastest way to prove that a synthetic feed is ticking and that its ticks reach a consumer as themselves: a bound synthetic feed's observations are republished on marketdata.v1.tick.<tenant>.<party>.<ore_key>, so a stream command is the end-to-end test a person can run by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- marketdata stream <oresmd-uri> prints each tick as it arrives (observation time, the point oresmd URI, the value, the source) until Ctrl-C, and then prints a summary count.
+- marketdata stream <oresmd-uri> --csv <path> writes one row per tick to the file, with a header, and still stops on Ctrl-C; the file is valid CSV for an empty run too.
+- The command resolves the oresmd URI to the datum's canonical ORE key and subscribes to the republished subject for the caller's tenant and party; an unparseable URI is refused with the codec's own message, not a raw subject error.
+- A series URI streams every point of that series, so a curve or surface can be watched without naming each point.
+- Ctrl-C exits cleanly (no stack trace, exit code 0 or the conventional 130), and a stream that receives nothing says so rather than hanging silently.
+
+* Plan
+
+** Where it goes
+
+A hand-written subcommand of the existing =marketdata= menu in
+=projects/ores.shell/application/src/app/commands/marketdata_commands.cpp=,
+beside the hand-written =import= and =export=. The per-entity menus are
+generated; this one is not, and the file already carries the
+=parse_args=-plus-=process_*= shape to follow.
+
+** How it streams
+
+- Resolve the argument with =oresmd_uri_codec= (the same codec the editor and
+  the ingest use), then write the datum's canonical ORE key with
+  =ore_key_codec::write=.
+- Subscribe on the shell's existing NATS session to
+  =market_tick_subject(tenant_id, party_id, ore_key)= from
+  =ores.marketdata.api/domain/tick_subjects.hpp=: the republished consumer
+  subject =marketdata.v1.tick.<tenant>.<party>.<key>=. The tenant and party
+  come from the session, so the command needs no extra arguments for them.
+  The subscribe-print-unsubscribe shape already exists in
+  =ores.shell/application/src/app/commands/subscription_commands.cpp=.
+- A series URI subscribes to the wildcard for that series' key prefix, so
+  every point of the series streams.
+
+** Screen and CSV
+
+Default writes one line per tick to the stream the REPL prints to; =--csv
+<path>= writes a header and one row per tick (=observation_time=,
+=oresmd_uri=, =value=, =source=). Ctrl-C is a SIGINT handler that unsubscribes,
+flushes and closes the file, prints the count and exits; the CSV is written
+flush-per-row or on exit so a killed stream still leaves usable data.
+
+** Testing
+
+A command unit test with a stub session: a URI resolves to the expected
+subject, the CSV has the header and the rows, and an unparseable URI is
+refused with the codec's message. The end-to-end check is the manual scenario
+in this task: start a synthetic feed, run the command and watch it tick.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

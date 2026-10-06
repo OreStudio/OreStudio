@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 1F609D0D-5C72-4A21-B988-6957F18D426F
+:END:
+#+title: The market tick
+#+description: The one tick type of every asset class, the four fields it carries, how the datum URI carries the asset identity, and the per consumer republish subject.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:nats:protocol:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=market_tick= is the one tick type of every asset class. It is declared in
+=ores.marketdata.api/messaging/operations_protocol.hpp= and travels on the
+NATS subject =marketdata.v1.tick=. The same struct is published by a
+producer and read by a consumer, so both ends of the pipeline share one
+wire type.
+
+* Detail
+
+** The four fields
+
+- =oresmd_uri= is the quote URI of the datum observed.
+- =value= is the observed value as decimal text, so the producer's digits
+  survive the trip.
+- =observation_time= is when the value was observed.
+- =source= is the producer, unique within a tenant. Its feed bindings name
+  the consumers.
+
+The tick carries no owner. The producer, the datum and the value are
+everything on the wire, and a binding supplies the ownership. That is what
+lets one tick land in the series of several parties.
+
+The struct also carries =requires_session= as a compile time flag, and its
+value is false. A client reads the flag rather than assuming that every
+call carries a token.
+
+** How the datum URI carries the asset identity
+
+The URI is the only identity a tick carries besides its source. A URI such
+as =oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M&term=5Y=
+names the instrument type, the quote type and every coordinate field of the
+datum. =oresmd_uri_codec::read= is strict, so a URI either names exactly
+one datum or is refused. [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] states the codec and
+the schema row behind it.
+
+** The republish subject
+
+=market_tick_subject(tenant, party, ore_key)=, in
+=ores.marketdata.api/domain/tick_subjects.hpp=, builds the per consumer
+subject ="marketdata.v1.tick.<tenant>.<party>.<key>"=. The key is the
+datum's canonical ORE key, lower cased with its slashes turned into dots.
+The producer subject note states the other end of this traffic, which is
+the subject a producer publishes on.
+
+* See also
+
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], the subject a tick is first published on.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], which reads a tick and republishes it.

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 94471941-E1D7-4796-9BB0-44C96667FE57
+:END:
+#+title: Preview and simulate
+#+description: The three stateless synthetic operations that show an editor what a feed would do, what each one returns, and how the tick and path counts are bounded.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:operations:preview:simulate:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+Three operations let an editor see what a feed would produce before it runs.
+=synthetic.v1.fx_spot.simulate= returns sample FX spot paths,
+=synthetic.v1.ir_curve.simulate_paths= returns sample short rate paths, and
+=synthetic.v1.ir_curve.preview_shape= returns the curve a set of process
+parameters and template rows implies. None of the three persists a row or
+publishes a tick. They exist so a change to a config is judged before it is
+saved, and they are the read side of the surface the Market Simulator drives.
+
+* Detail
+
+** What each operation returns
+
+=simulate_fx_spot_paths_request= carries the GMM means, stdevs and weights,
+a process type, an initial price, a tick count, a path count and a seed. The
+response carries =paths=, one series of prices per path, each =num_ticks=
+long.
+
+=simulate_ir_curve_paths_request= is the same shape for a short rate. It
+carries named parameters instead of a GMM mixture, and the response carries
+one series of short rate values per path.
+
+=preview_ir_curve_shape_request= carries a process type, named parameters,
+a fixed leg payment frequency code and the Curve Template rows as edited.
+Those rows are deliberately not the persisted =ir_curve_template_entry= rows,
+because an edited row has no id or party yet. The response carries one
+=preview_ir_curve_shape_point= per entry, sorted by =sequence_index=, each
+with the entry's tenors and a rate. The persisted ladder is
+[[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]].
+
+** Why a preview reads and a run writes
+
+The three handlers are stateless. =simulate_handler= and
+=ir_curve_preview_handler= build a real process, step it, and reply. Nothing
+reaches the database and nothing is published on NATS.
+
+A started feed is the opposite. It publishes its own ticks from inside the
+producer, and [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
+writes the observation and republishes onto the per-party stream. The tick
+type itself is [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. The divide
+matters because a preview is asked for a batch and answers it in one reply,
+while the feed is owned by the controller and keeps publishing until it is
+stopped.
+
+** How the counts are bounded
+
+=simulate_fx_spot_paths_request= and =simulate_ir_curve_paths_request= each
+declare =max_num_ticks = 5000= and =max_num_paths = 50=. The handlers apply
+them with =std::clamp= before generating anything, so a UI bug cannot ask
+for a runaway batch. The UI spinners read the same two constants, which
+makes the wire limit and the widget limit one number.
+
+=preview_ir_curve_shape_request= declares =max_entries = 50= and the handler
+rejects an empty entry list and a list above the ceiling.
+
+** Where each read gets its numbers
+
+The FX simulate builds its process through
+=ores::analytics::quant::service::process_factory::make_process=, using the
+request's own mixture, initial price and seed. Path =i= uses =seed + i=, so
+one seed gives a reproducible batch and changing the seed reseeds it. The
+mixture is the same one the =gmm_component= rows hold, stated in
+[[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]].
+
+The IR simulate rebuilds the ={definition, value}= shape the mapping layer
+consumes, from the request's named parameters, and calls
+=map_parameters_to_yield_curve_process=. The definitions are made up on the
+fly because the request carries parameter names rather than catalogue ids.
+
+The curve shape preview builds a refdata context from the
+=RATES_SPOT_FORWARD= tenor convention, resolves the template rows with
+=resolve()=, and prices each row through the shared =price_ir_curve_entry()=
+at the process's current state, with no ticking. The seed is fixed at 42, so
+the same parameters and template always give the same shape.
+
+** Authorisation
+
+Each handler authenticates the request and then checks a permission. The FX
+simulate needs =synthetic::fx_spot_generation_configs:read= and the two IR
+operations need =synthetic::ir_curve_generation_configs:read=. A caller who
+can read a config can preview it, and no separate operation permission
+exists.
+
+** Facts the code shape does not show
+
+- The curve shape preview has no FX equivalent. FX has one scalar spot and
+  not a tenor grid, so there is no ladder to price.
+- The preview prices each row the same way
+  [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]] does,
+  through =price_ir_curve_entry()=. A published curve and its preview
+  therefore cannot drift apart.
+- The IR preview path applies no minimum or maximum to a parameter value.
+  The handler re-materialises the definitions without bounds, so only the UI
+  spin boxes enforce a range on this path.
+- All three operations are registered in
+  =projects/ores.synthetic/service/src/registrar.cpp=, which is the one list
+  of the service's subjects.
+
+* See also
+
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], the two editors that call these operations.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], the process interface and factory both simulations build on.
+- The handlers are =projects/ores.synthetic/service/src/simulate_handler.hpp= and
+  =projects/ores.synthetic/service/src/ir_curve_preview_handler.hpp=.
+- The wire shapes and their bounds are
+  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp=
+  and
+  =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp=.

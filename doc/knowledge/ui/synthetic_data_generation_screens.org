@@ -1,48 +1,39 @@
 :PROPERTIES:
 :ID: 5779B40E-1C82-478D-951E-C81C13F7DFEA
 :END:
-#+title: Synthetic data generation screens
-#+description: The screens that author and run synthetic market data: the ores.qt Synthetic plugin's Market Simulator and its configuration windows, the data model each edits, and the prototype that argues each screen.
+#+title: The market simulator screens
+#+description: The Market Simulator composite window that authors and runs synthetic market data, the per-entity editors behind it, the cascade start and stop request each tree node sends, and the prototype that argues each screen.
 #+type: knowledge
 #+level: cross
-#+filetags: :synthetic:ui:prototype:reference:
+#+filetags: :synthetic:ui:qt:
 #+created: 2026-10-06
 #+updated: 2026-10-06
 
 * Summary
 
 The synthetic area authors and runs the market data the platform generates
-rather than receives. One screen does most of the work: the *Market
-Simulator*, a composite window that browses the configured feeds, starts and
-stops them, and shows what a running feed is producing. The configuration
-windows behind it edit one row at a time: a collection, an FX price feed, an
-IR curve feed, a GMM component, and the two catalogues that give the IR curve
-editor its process types and parameters.
+rather than receives. One window does most of the work, the Market
+Simulator. It browses the configured feeds, starts and stops them, and shows
+what a running feed is producing. The per-entity editors sit behind it, one
+per configured entity.
 
-The ores.qt implementation lives in the separate =ores.qt= checkout, under
-=synthetic/=, and its menu is *Market Data > Synthetic*. The prototypes below
-restate each screen as plain HTML so the layout and the arguments can be
-reviewed without a session.
+The Qt implementation is in the separate =ores.qt= checkout under
+=synthetic/=, and its menu is *Market Data > Synthetic*. Each screen below is
+restated as plain HTML under =doc/prototypes/= so its layout and its
+arguments can be reviewed without a session.
 
-* The data model the screens edit
+This note holds the screen inventory, the cascade rule and the prototype
+reference for each window. What each editor writes belongs to the config
+notes, which are
+[[id:49943F4F-D4E4-4A69-9A90-82AA1080818D][The generation config collection and folders]],
+[[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]],
+[[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]],
+[[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]],
+[[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]]
+and
+[[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]].
 
-| Entity | Table | What it is |
-|--------+-------+------------|
-| Generation config | =ores_synthetic_market_data_generation_configs_tbl= | A named, party-scoped collection of feeds, the Collection node of the tree. |
-| Folder | =ores_synthetic_folders_tbl= | A generic self-referencing hierarchy; the tree is built from real folder rows, not parsed from a name. |
-| FX spot generation config | =ores_synthetic_fx_spot_generation_configs_tbl= | One FX pair feed: base/quote, process, initial price, tick clock, provenance. |
-| GMM component | =ores_synthetic_gmm_components_tbl= | One Gaussian of a feed's mixture: mean, stdev, weight. |
-| IR curve generation config | =ores_synthetic_ir_curve_generation_configs_tbl= | One curve feed: currency, index family, tenor, role, process, provenance. |
-| IR curve template entry | =ores_synthetic_ir_curve_template_entries_tbl= | One row of the curve template ladder: start tenor, end tenor, instrument. |
-| Yield curve process type | =ores_synthetic_yield_curve_process_types_tbl= | A short-rate model the IR curve editor can choose: code, name, order. |
-| Process parameter definition | =ores_synthetic_process_parameter_definitions_tbl= | One parameter of one process type: name, symbol, default, range, order. |
-
-A feed is identified by its =source_name=, which mirrors its namespace path,
-for example =synthetic.themes.realistic_2026.gbpusd=. Starting or stopping a
-non-leaf tree node sends one folder-scoped request and the server fans it out;
-a Feed leaf or a mixed selection uses the per-feed request.
-
-* Screens
+* The composite window
 
 ** Market Simulator
 :PROPERTIES:
@@ -51,35 +42,58 @@ a Feed leaf or a mixed selection uses the per-feed request.
 
 The one-stop authoring window. A toolbar (New Collection, New FX Rate, New IR
 Curve, Edit, Delete, Start, Stop, Validate Vintage, Reload), a tree of the
-configured feeds on the left, and a hero header, a summary and a live chart on
-the right. FX feeds show a mid-price tick chart; IR curves show recent curve
-snapshots overlaid, newest bold, with the number of snapshots under a History
-control. *Validate Vintage* merges each contributor's check into one summary:
-for FX the availability of the named vintage, for IR the local
-binding-collision check, ending "N of M item(s) pass (or don't need)
-validation".
+configured feeds on the left, and a hero header, a summary and a live chart
+on the right. FX feeds show a mid-price tick chart. IR curves show recent
+curve snapshots overlaid, newest bold, with the number of snapshots under a
+History control.
 
-The design argument is the cascade: a node's state is running, stopped or
-partial ("3 of 8 running"), and starting a collection is one request, not N
-client-side calls. The prototype is at
+The *Validate Vintage* action merges each contributor's check into one
+summary. For FX it reports the availability of the named vintage, and for IR
+it reports the local binding collision check. The summary ends with the count
+of items that pass or do not need validation.
+
+The prototype is at
 [[file:../../prototypes/synthetic-market-simulator/][synthetic market simulator]].
+
+* The cascade rule
+
+A tree node carries one of three states, running, stopped, or partial, and a
+partial node reads as a count such as "3 of 8 running".
+
+Starting a non-leaf node sends one folder-scoped request, and the server
+fans it out over the subtree. The client does not walk the tree and it does
+not send one request per feed, so a collection of twenty feeds costs one
+round trip. A Feed leaf, or a selection that mixes a leaf with a non-leaf,
+uses the per-feed request instead.
+
+The same two paths exist outside the window. The shell exposes them as
+=synthetic start folder=, =synthetic start feed= and the matching stop verbs,
+and the folder token grammar is the same on both surfaces.
+
+A feed is identified by its =source_name=, which mirrors its namespace path,
+for example =synthetic.themes.realistic_2026.gbpusd=. The =source_name= is
+the identity and not the row id, so a rename is a re-identification.
+
+* The editors behind it
 
 ** Author an FX price feed
 :PROPERTIES:
 :ID: BDB77AC7-2442-4127-8CA6-B925759D6ADC
 :END:
 
-The FX spot generation config editor, three tabs: *Instrument* (pair, ORE key,
-source name, description, enabled), *Price behaviour* and *Provenance*. Price
-behaviour chooses an engine (Geometric Brownian Motion, Ornstein-Uhlenbeck,
-Gaussian Mixture), the tick clock ("New price every N s", echoed as ticks per
-hour), and a Simple or Advanced mode. Simple exposes drift, volatility and —
-for the mean-reverting engine — long-term mean and reversion speed with the
-derived half-life. Advanced edits the raw GMM components (μ, σ, w) with the
-weight sum normalised on save. Two live previews sit beside the form: the
-return distribution, f(x) = Σ wᵢ·N(x; μᵢ, σᵢ), and sample price paths with a
-Reseed control. Provenance chooses "Fixed" (the initial price is entered) or
-"From vintage data" (browse the available vintages).
+The FX spot generation config editor, three tabs. The *Instrument* tab holds
+the pair, the ORE key, the source name, the description and the enabled flag.
+The *Price behaviour* tab chooses an engine (Geometric Brownian Motion,
+Ornstein-Uhlenbeck, or Gaussian Mixture), the tick clock ("New price every N
+s", echoed as ticks per hour), and a Simple or Advanced mode. Simple exposes
+drift and volatility, and for the mean-reverting engine it also exposes the
+long-term mean and the reversion speed with the derived half-life. Advanced
+edits the raw GMM components with the weight sum normalised on save.
+
+Two live previews sit beside the form, the return distribution
+f(x) = Σ wᵢ·N(x; μᵢ, σᵢ) and sample price paths with a Reseed control.
+The *Provenance* tab chooses "Fixed", where the initial price is entered, or
+the "From vintage data" option, where the available vintages are browsed.
 
 The prototype is at
 [[file:../../prototypes/author-an-fx-price-feed/][author an FX price feed]].
@@ -89,45 +103,30 @@ The prototype is at
 :ID: 6AE940F0-160F-4F14-91F0-038038F4D37A
 :END:
 
-The IR curve generation config editor, four tabs: *Instrument* (currency, index
-name, tenor, role — Discount, Projection or Self-discounting — fixed leg
-frequency, ORE key), *Process*, *Curve Template* and *Provenance*. Process
+The IR curve generation config editor, four tabs. *Instrument* holds the
+currency, the index name, the tenor, the role (Discount, Projection or
+Self-discounting), the fixed leg frequency and the ORE key. *Process*
 chooses one of the seeded short-rate models, Vasicek, Cox-Ingersoll-Ross,
 Hull-White, Two-Factor Gaussian or Black-Karasinski, and renders one row per
-parameter the catalogue defines for it (κ, θ, σ, r0, with symbol, default,
-minimum and maximum). Two previews argue the choice: the *curve shape* the
-parameters and template imply, and *sample short-rate paths*. The Curve
-Template is the ordered tenor ladder the curve is bootstrapped from (DEPO,
-FRA, IRS, OIS), and at least one entry is required.
+parameter the catalogue defines for it, with the symbol, default, minimum
+and maximum. Two previews argue the choice, the curve shape the parameters
+and the template imply, and sample short-rate paths. *Curve Template* is the
+ordered tenor ladder the curve is bootstrapped from (DEPO, FRA, IRS, OIS),
+and at least one entry is required.
 
 The prototype is at
 [[file:../../prototypes/author-an-ir-curve-feed/][author an IR curve feed]].
-
-** Bootstrapping the curve a feed produces
-:PROPERTIES:
-:ID: 534255D5-39E4-42DF-AEAB-AE2CD034DA5D
-:END:
-
-There is no synthetic curve bootstrap. Bootstrapping is one capability: a
-strip of instruments reprices to par and the curve is solved one pillar at a
-time, and it does not care whether each rate was observed or generated. The
-IR curve feed here produces observations; the same build then bootstraps them,
-and only the provenance differs — a generated rate is marked generated, so
-nothing downstream mistakes it for market data. The bootstrap screen, which
-carries a real or a synthetic input source, is the market data journey's
-[[file:../journeys/market_data/journey_bootstrap-or-refresh-a-curve.org][Bootstrap or refresh a curve]]
-([[file:../../prototypes/bootstrap-or-refresh-a-curve/][prototype]]).
 
 ** Manage synthetic collections
 :PROPERTIES:
 :ID: 74B498A1-8DB5-4D3B-86A2-28684269AC8A
 :END:
 
-The Generation Configs window, which edits a collection: name, description and
-enabled, the feeds it owns, and its version history. In the tree these same
-rows are the Collection nodes, seeded as Basic, Realistic 2026, Uniform Demo
-and ORE Samples 2016. Deleting a collection deletes its feeds. The prototype
-is at
+The Generation Configs window, which edits a collection, its name, its
+description, its enabled flag, the feeds it owns, and its version history.
+In the tree these same rows are the Collection nodes, seeded as Basic,
+Realistic 2026, Uniform Demo and ORE Samples 2016. Deleting a collection
+deletes its feeds. The prototype is at
 [[file:../../prototypes/manage-synthetic-collections/][manage synthetic collections]].
 
 ** Manage GMM components
@@ -135,11 +134,12 @@ is at
 :ID: 698F2B46-BDF7-420B-8DB0-DFD2B339C5E6
 :END:
 
-The GMM Components window, the same rows the FX editor edits in Advanced mode,
-browsed across every FX feed at once. Each component belongs to one feed and
-carries a description, mean, stdev and weight; the weights are normalised
-across a feed's components when it is saved, so the screen shows both the raw
-sum the user typed and the normalised weights. The prototype is at
+The GMM Components window, which shows the same rows the FX editor edits in
+Advanced mode, browsed across every FX feed at once. Each component belongs
+to one feed and carries a description, a mean, a stdev and a weight. The
+weights are normalised across a feed's components when it is saved, so the
+screen shows both the raw sum the user typed and the normalised weights. The
+prototype is at
 [[file:../../prototypes/manage-gmm-components/][manage GMM components]].
 
 ** Manage yield curve process types
@@ -148,29 +148,49 @@ sum the user typed and the normalised weights. The prototype is at
 :END:
 
 Two runtime-managed catalogues that together drive the IR curve editor's
-Process tab: the process types (Vasicek, Cox-Ingersoll-Ross, Hull-White,
-Two-Factor Gaussian, Black-Karasinski) and their parameter definitions
-(parameter name, display name, symbol, short label, data type, default,
-minimum, maximum, order). Because the catalogue is data, a new model needs no
-code change to appear in the editor. The prototype is at
+Process tab, the process types and their parameter definitions, each with a
+parameter name, a display name, a symbol, a short label, a data type, a
+default, a minimum, a maximum and an order. Because the catalogue is data, a
+new model needs no code change to appear in the editor. The prototype is at
 [[file:../../prototypes/manage-yield-curve-process-types/][manage yield curve process types]].
+
+* The curve build, which is not a synthetic screen
+
+** Bootstrapping the curve a feed produces
+:PROPERTIES:
+:ID: 534255D5-39E4-42DF-AEAB-AE2CD034DA5D
+:END:
+
+There is no synthetic curve bootstrap. Bootstrapping is one capability. A
+strip of instruments reprices to par and the curve is solved one pillar at a
+time, and it does not care whether each rate was observed or generated. The
+IR curve feed here produces observations, the same build then bootstraps
+them, and only the provenance differs. A generated rate is marked generated,
+so nothing downstream mistakes it for market data.
+
+The bootstrap screen carries a real or a synthetic input source and belongs
+to the market data journeys, at
+[[file:../journeys/market_data/journey_bootstrap-or-refresh-a-curve.org][Bootstrap or refresh a curve]]
+([[file:../../prototypes/bootstrap-or-refresh-a-curve/][prototype]]).
 
 * What is missing
 
 - The Market Simulator's tick chart and the IR curve snapshot overlay read a
-  live stream. A history range, and a read as of a past instant, do not exist.
-- The GMM weight sum is normalised on save but the raw values are not kept, so
-  a reviewer cannot see what was typed.
-- The process-type and parameter-definition catalogues are runtime-managed but
-  the FX editor's engines are still a code-side list, so the two halves of the
-  same idea are managed differently.
-- A feed's =source_name= is the identity, not the row id, so a rename is a
-  re-identification.
-- No screen shows a collection's *coverage* (which asset classes, instruments
-  and currencies it spans) before it is started.
+  live stream. A history range, and a read as of a past instant, do not
+  exist.
+- The GMM weight sum is normalised on save but the raw values are not kept,
+  so a reviewer cannot see what was typed.
+- The process type and parameter definition catalogues are runtime managed,
+  but the FX editor's engines are still a code-side list, so the two halves
+  of the same idea are managed differently.
+- A feed's =source_name= is the identity and not the row id, so a rename is
+  a re-identification.
+- No screen shows a collection's coverage, which asset classes, instruments
+  and currencies it spans, before it is started.
 
 * See also
 
-- [[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] — the process library these screens configure.
-- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data]] — the journeys that consume what a feed produces.
-- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the one inventory of prototypes.
+- [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]], the operations the two editors call.
+- [[id:7557BCCA-54B5-43C0-8B12-F0AD373813F4][The shell operation surface]], the same start and stop paths without the window.
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]], the journeys that consume what a feed produces.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]], the one inventory of prototypes.

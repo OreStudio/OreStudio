@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-10-06
 
 * Summary
 
@@ -77,6 +77,24 @@ which is exactly why this codebase offers both processes rather than
 only [[id:3AD7973A-57ED-43EB-9504-825719F601A8][GBM]]: the choice between
 them is a modelling decision about the quantity being generated, not a
 strictly-better-or-worse ranking of the two processes.
+
+** Where it is selectable
+
+An FX spot generation config reaches this process by setting =process_type=
+to ="arithmetic"=. The column's check constraint admits that string, and
+=process_factory::make_process= in =ores.analytics.quant= builds
+=arithmetic_gaussian_mixture_model_process= for it from the config's
+=gmm_component= means, standard deviations and weights. The mixture shape is
+the same one the geometric engine uses, applied to absolute increments.
+
+No interest rate curve reaches it. The =yield_curve_process_type= catalogue
+carries no arithmetic row and the curve mapping layer's expected parameter
+set lists none, so the additive model is an FX and equity price choice only.
+
+The process still refuses a starting price of zero or less, even though the
+path it produces can cross zero later. Both mixture processes guard the
+initial value identically, and that guard sits in
+=validate_process_parameters=, which the factory and the Qt client share.
 
 * See also
 

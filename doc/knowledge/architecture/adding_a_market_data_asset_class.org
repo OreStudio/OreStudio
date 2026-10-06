@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: B7A03C80-6566-4E97-9D45-14A69726C381
+:END:
+#+title: Adding an asset class
+#+description: The two places a new asset class plugs in and the list of edits a new kind still requires outside the factory seam.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:producers:extension:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A new asset class plugs into two places. Its configuration rows become a
+typed build input, and its producer implements =IFeed= behind a new kind
+string. Everything outside those two places stays as it is, which covers the
+feed controller, the producer subject builder, the market tick type and the
+ingest loop.
+
+* Detail
+
+** The two plug in points
+
+1. The build input. Add a struct to =feed_build_input= in
+   =ores.synthetic/api/feeds/feed_factory.hpp= that carries the new config
+   entity plus the child rows its builder needs, and add the struct as a
+   variant member.
+2. The producer. Implement =IFeed= and register it in
+   =make_default_feed_factory= through =feed_factory::register_kind=, using
+   a kind constant declared beside the producer. The two constants in the
+   tree today are =fx_spot_feed_kind= and =ir_curve_feed_kind=.
+
+** The edits a new kind still requires
+
+The seam is not yet complete, and the shape of the gap is worth knowing
+before starting. The factory is kind agnostic, but three call sites name
+the existing kinds explicitly and each needs a new block for a new kind.
+
+- =ores.synthetic/service/src/app/application.cpp= builds the boot auto
+  start candidates, with one loop per kind that reads that kind's config
+  table, groups its child rows and pushes a candidate.
+- =ores.synthetic/service/src/feed_config_handler.hpp= has one on demand
+  start path per kind, each constructing that kind's build input.
+- =ores.synthetic/service/src/folder_feed_control_handler.hpp= has one
+  cascade loop per kind and one per kind result count in the response.
+
+None of these sits inside the lifecycle machinery. A new kind adds a block
+to each and leaves =feed_controller=, =producer_subject=, =market_tick= and
+=feed_ingest_loop= untouched.
+
+** Why the list is the point
+
+The list is the evidence about where the seam ends today. A note that
+claimed a new asset class is one registration would be wrong, and a future
+reader would find the three call sites by compiling rather than by reading.
+
+* See also
+
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], the seam these edits sit around.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the path that stays unchanged.

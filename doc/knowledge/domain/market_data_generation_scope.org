@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2
+:END:
+#+title: Scope
+#+description: The system, tenant and party scopes of a generation config, which levels the tree honours today, and why scope is orthogonal to binding mode.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:scope:synthetic:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A =scope= says how far a generated market data configuration is shared. It
+is declared in =ores.synthetic.api/domain/scope.hpp= with three values,
+=system=, =tenant= and =party=, and it is carried on
+=market_data_generation_config.scope=.
+
+* Detail
+
+** The three levels
+
+The scope is tied to the nullability of two columns by a check constraint on
+=market_data_generation_config=. The constraint and its reasoning are
+written in the config's modelling file,
+=ores.synthetic.market_data_generation_config.org=.
+
+- =system= has both =tenant_id= and =party_id= null, and is shared across
+  every tenant.
+- =tenant= has =tenant_id= set and =party_id= null, and is shared across
+  every party under one tenant.
+- =party= has both set, and is owned by, and visible only to, a single
+  party.
+
+** Which levels the tree honours today
+
+=party= is the level the tree exercises end to end. The generated test data
+is always party scoped, because the per column generator cannot coordinate
+a null =party_id= with a wider scope, so a real tenant scoped or system
+scoped config is created explicitly rather than by the generator. The
+header comment on the enum records that =system= is not exercised end to
+end.
+
+The feed data follows the scope through the binding rather than through a
+scope branch in the producer. The scope decides which tenant and party the
+config row belongs to, and therefore which caller can read and start it.
+The binding a start creates lands in that caller's tenant and party
+context, and the ingest loop stores and republishes every observation under
+the binding's tenant and party.
+
+** The fact the code shape does not show
+
+Scope is orthogonal to binding mode. Scope decides the audience of the
+generated data, and binding mode decides whether the data is authoritative
+enough to be stored at all. A sandboxed feed of any scope is unreachable by
+ingest, and a party scoped bound feed is stored for that one party.
+
+* See also
+
+- [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], the other, orthogonal config axis.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], where the binding's tenant and party decide the stored row.

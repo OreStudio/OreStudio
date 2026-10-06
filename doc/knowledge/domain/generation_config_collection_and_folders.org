@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 49943F4F-D4E4-4A69-9A90-82AA1080818D
+:END:
+#+title: The generation config collection and folders
+#+description: The named party-scoped container that owns the typed generation configs, and the self-referencing folder tree the Market Simulator browses.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:collection:folders:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A =market_data_generation_config= is the named container that owns one or
+more typed generation configs. It is declared in
+=ores.synthetic.api/domain/market_data_generation_config.hpp= and it is the
+top of the authoring tree. A =folder= row, declared in
+=ores.synthetic.api/domain/folder.hpp=, is the place that container and its
+feeds occupy in the hierarchy the Market Simulator browses.
+
+* Detail
+
+** The collection
+
+The collection carries three things a reader has to hold apart.
+
+- Its identity, which is a surrogate =id= plus a =name= that is unique per
+  tenant and party. =party_id= is not a natural key. One party may own
+  several containers at once, for example a "Basic" set and a "Realistic"
+  set, and the optional =dataset_id= records which DQ dataset a
+  publish-from-dq call produced each one. A container made by hand has no
+  dataset of origin, and that absence is how the two are told apart.
+- Its =scope=, which is =system=, =tenant= or =party=, and which decides who
+  consumes the generated data. See [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]].
+- Its =binding_mode=, which is =bound= or =sandboxed=, and which decides
+  whether the generated data is ever stored. See
+  [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]].
+
+Both axes default to the narrower end, =party= and =bound=, and they are
+orthogonal. The collection also carries =enabled= and a free-text
+description, and the usual audit block with =modified_by=, =performed_by=, a
+change reason code and a change commentary.
+
+** The folder tree
+
+=folder= is a generic self-referencing node. Its =kind= is one of ="root"=,
+="collection"=, ="asset_class"= or ="instrument_type"=, and =parent_id= is
+null for the root only. One root folder per party carries the name
+"Synthetic". A collection folder hangs under the root, the asset-class folder
+hangs under the collection, and the instrument-type folder hangs under that.
+
+A =collection= row is the only kind with =collection_id= populated. That
+column points at the =market_data_generation_config= the row represents, and
+the collection stays the source of truth for the name, the description, the
+enabled flag and the dataset. The folder row keeps its own name in step so
+the tree reads uniformly.
+
+A feed finds its place in the tree through its own =folder_id=, which is
+declared on =fx_spot_generation_config= and =ir_curve_generation_config=
+alike.
+
+** The fact the code shape does not show
+
+The tree is rows and never a parsed string. =source_name= stays a display
+string and a NATS subject suffix, so the hierarchy position and the subject
+can disagree, and neither is derived from the other. The read path is
+=folder_repository::get_hierarchy=, backed by
+=ores.utility/domain/hierarchy.hpp=, so the shell and any future screen walk
+the same function rather than each reimplementing a tree walk over
+=source_name=.
+
+=folder_id= is optional and only the publish-from-dq path fills it. An FX
+rate or a curve made by hand in the editor has no folder until the follow-up
+work resolves one, so a container can hold a feed the tree does not show.
+
+* See also
+
+- [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], which draws the tree and the editors behind it.
+- [[id:3EF67CE4-6AF2-45FC-AA9B-D543550EF8C2][Scope]], one of the two orthogonal axes on the collection.
+- [[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]], the other one.
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the first kind of child.
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], the second kind of child.

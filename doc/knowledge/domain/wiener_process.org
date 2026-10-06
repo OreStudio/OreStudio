@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-10-06
 
 * Summary
 
@@ -119,11 +119,49 @@ process inherits this unchanged — see the Markov Property doc for the
 general statement and why it is what makes exact tick-by-tick simulation
 possible.
 
+** The discrete-time counterpart
+
+The random walk is the discrete object this process is the limit of. It is
+the sequence formed by summing independent and identically distributed steps,
+$S_n = S_0 + \sum_{i=1}^{n} X_i$, and it carries the no-memory property in
+its plainest form, since each step is drawn independently of every earlier
+step and no continuous-time subtlety is involved.
+
+Two of its properties belong beside the continuous process.
+
+- The increments are stationary while the level is not. The law of one
+  change does not depend on the index, and the variance of the level grows in
+  proportion to the number of steps,
+  $\operatorname{Var}(S_n) = n\,\sigma^2$. Uncertainty widens with the horizon
+  instead of settling to a fixed spread.
+- The recursion puts a coefficient of exactly one on the previous level, so a
+  shock never decays and the level is $I(1)$. The
+  [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck process]]
+  is the contrast, where a restoring force makes each shock's influence fade
+  geometrically.
+
+The limit that turns one object into the other is a rescaling. Send each step
+to $1/\sqrt{n}$ in size and the spacing between steps to $1/n$ of a unit of
+time, then let $n$ grow without bound, and the rescaled walk converges to the
+Wiener process. That statement is Donsker's theorem, also called the
+functional central limit theorem, and it is the precise sense in which a
+Wiener process is a continuous-time random walk rather than an analogue of
+one.
+
+The relation also runs the other way in practice. A simulated Wiener process
+advances in discrete ticks, so a computer's version of it is already an
+approximating random walk aimed at the continuous idealisation rather than at
+the continuous object itself.
+
+This section absorbs the note [[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][Random Walk]], which stays in the graph until
+the disposal step removes it.
+
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
 - [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — the chain rule for functions of a Wiener-driven process.
 - [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]] — the "no memory" property a Wiener process has, and every process built on it inherits.
+- [[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][Random Walk]], the discrete-time counterpart whose substance the section above absorbs.
 - [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]] — the simplest mean-reverting process driven by $dW$.
 - [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]] — the simplest unbounded price process driven by $dW$.
 

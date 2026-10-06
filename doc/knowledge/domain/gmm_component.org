@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 7493D798-DD0D-43A5-8DAB-6E63377253DC
+:END:
+#+title: The GMM component
+#+description: One weighted Gaussian of an FX spot feed's mixture, the weight normalisation rule, and why the components are rows rather than a blob.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:fx:process:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A =gmm_component= is one weighted Gaussian of the price process an
+=fx_spot_generation_config= drives. It is declared in
+=ores.synthetic.api/domain/gmm_component.hpp=, it points at its parent
+through =fx_spot_config_id=, and a parent holds one or more of them.
+
+* Detail
+
+** What the row holds
+
+- =component_index=, a zero-based ordinal within the parent's mixture.
+- =description=, a human label such as "primary" or "jump".
+- =mean=, the mean log-return of this component per update. It is per tick
+  and not annualised.
+- =stdev=, the standard deviation of this component. It must be zero or
+  greater.
+- =weight=, the mixture weight.
+
+*Why rows rather than a blob.* The set is a child table, so the editor writes
+one row per component and the count of components is data rather than a
+schema shape. Adding a component is an insert and never a migration.
+
+** The weight normalisation rule
+
+The stored weights are not required to sum to one. They are passed straight
+into a =std::discrete_distribution<int>= when the process is built, and that
+distribution normalises them itself. Nothing rewrites the stored rows.
+
+The one rule a stored set must satisfy is that the weights sum to something
+greater than zero.
+=ores::analytics::quant::domain::validate_process_parameters= rejects an
+all-zero weight set with the message that at least one component must carry a
+positive weight. That check is shared by the service factory and the Qt
+client, so the same set is rejected in both places.
+
+** Why the components are not in one row
+
+The parent config row holds the datum, the cadence and the process choice.
+The mixture is a variable-length list, and the codegen entity shape used
+across this schema has no array column. The child table is therefore the
+schema's way of holding a list, and it is the same one-config-many-children
+shape =ir_curve_generation_config= uses for its template entries and its
+parameter values.
+
+** The fact the code shape does not show
+
+A zero standard deviation is legal and meaningful. It stands for a degenerate
+component whose draw is exactly its mean. Both mixture processes test for it
+and take the mean directly, because =std::normal_distribution= asserts on a
+zero standard deviation in a debug build and would abort the service.
+
+Nothing constrains =mean= or =stdev= to a plausible range in the database.
+The mean is a per-tick log-return, so the same number means different things
+at different =ticks_per_hour= values, and a set copied between two configs
+with different cadences does not carry the same dynamics.
+
+* See also
+
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], the parent.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the mixture process from these rows.
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]], which reads them at feed construction.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]], the single-Gaussian model a mixture generalises.
+- [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH models]], the discrete-time family that addresses the same fat-tail problem by a recurrence on the variance.

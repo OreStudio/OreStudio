@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: D67C930B-261F-480B-B5EF-020C6D617333
+:END:
+#+title: The feed factory and the kind seam
+#+description: How a kind string selects a producer builder, why the build input is a variant, and how the lifecycle stays unchanged as kinds are added.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:producers:factory:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=feed_factory=, declared in
+=ores.synthetic.api/feeds/feed_factory.hpp=, maps a feed kind string to
+the builder that constructs that kind's producer from persisted
+configuration. Control plane and lifecycle code request a producer by kind
+and never name a concrete producer class. The seam that results is this
+one lookup.
+
+* Detail
+
+** The lookup
+
+=make(kind, ctx, input)= finds the builder registered for =kind=, calls it
+with the shared context and the build input, and returns the producer as a
+=std::shared_ptr<IFeed>=. It throws =std::invalid_argument= when no
+builder is registered for the kind. It throws the same type when the input
+is not the kind's own build input member, because the =std::bad_variant_access=
+raised by =std::get= is caught and rethrown as =std::invalid_argument=.
+A caller therefore learns about both mistakes through one error type.
+
+=register_kind= replaces the builder when the kind already has one.
+=kinds()= returns the registered kind strings, sorted alphabetically.
+
+=make_default_feed_factory()= performs the registrations the tree ships
+today. It registers =fx_spot= and =ir_curve=, from the constants
+=fx_spot_feed_kind= and =ir_curve_feed_kind= that live in their producer
+headers.
+
+** Why the build input is a variant
+
+=feed_build_input= is a =std::variant= over one struct per kind,
+=fx_spot_feed_build_input= and =ir_curve_feed_build_input=. Each struct
+carries the persisted config plus the child rows that config needs. The IR
+input also carries a resolved refdata context, because its builder resolves
+refdata at construction. The variant is what lets the factory keep one
+=make= signature for every kind, and it puts the kind's own input check
+inside =make= rather than at every call site.
+
+=feed_build_context= carries the inputs every builder shares, which are the
+raw NATS client, the authenticated client and the caller's bearer token.
+The token is forwarded on delegated lookups so a vintage resolution runs in
+the caller's tenant and party context rather than the service account's.
+
+** The fact the code shape does not show
+
+A process that wants a different kind set builds its own factory and
+registers into it, because =make_default_feed_factory= is an ordinary
+function rather than a static registry. That is the property the lifecycle
+depends on, since adding a kind adds a registration and no lifecycle code.
+
+* See also
+
+- [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]], the two plug in points and the edits a new kind still requires.
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the type every builder returns.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]], the caller the factory serves.

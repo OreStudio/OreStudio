@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: CE99CD2A-B31F-4306-865F-CBC519FBC1B8
+:END:
+#+title: The oresmd datum identity
+#+description: What a market datum is behind its URI, the schema row that authorises every field, the series against datum split, and the two codecs checked against ORE.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:identifiers:datum:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+A datum is the thing a market data value is a value of. It is written as an
+oresmd URI by =oresmd_uri_codec=, in
+=ores.marketdata.core/datum/oresmd_uri_codec.hpp=. The note
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] states the
+URI grammar. This note states the datum the URI names.
+
+* Detail
+
+** The schema row is the authority
+
+A datum is built only through =market_datum::make= or
+=market_datum::make_series=, both declared in
+=ores.marketdata.api/datum/market_datum.hpp=. Each checks its fields
+against the schema row for the instrument type and quote type. Refused are
+a field the row does not list, a field given twice, a field the row lists
+and the input leaves out, none in a field the row says is never none, a
+value of the wrong type, and a code outside its field's vocabulary. The
+constructors are private, so a =market_datum= value always matches its
+schema.
+
+This is why the codec has no code per instrument type. It walks the datum's
+schema row, so a new instrument type is a schema row rather than a codec
+branch.
+
+** Series against datum
+
+A series holds only the row's identity fields, so every datum of one series
+has the same series. A datum holds every field of the row, with none where
+the key leaves one out. =series_of= moves from a datum to its series, and
+the ingest loop calls it to name the series a tick belongs to.
+
+** The canonical write
+
+=ore_key_codec=, in =ores.marketdata.core/datum/ore_key_codec.hpp=, reads
+and writes ORE's own key text. Its reader follows ORE's =parseMarketDatum=
+form by form, so every key form ORE accepts is accepted here, each token
+goes to the field ORE puts it in, and a field is chosen by what a token is
+rather than by where it sits.
+
+Two facts about the write are worth keeping. First, =write(read(k))= returns
+=k= except when the key spells its instrument or quote type with an alias
+that ORE also reads, such as FX_SPOT for FX, in which case the canonical
+spelling is written. Second, two kinds of key ORE accepts are refused,
+because the datum could not write them back. They are a key with tokens ORE
+ignores, such as a trailing token after a cap or floor shift, and a numeric
+slot holding text that ORE's own number reader would read only in part.
+
+** The fact the code shape does not show
+
+Values compare by the text the key carried and not by what it denotes. A
+strike of 1.0 and a strike of 1.00 are different datums and different
+series, because they are different keys. The strict reader refuses any text
+other than the writer's own spelling, so one datum has one URI and stored
+URIs compare as text.
+
+* See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]], the URI grammar this note assumes.
+- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]], the requirement side identifier, which is a different thing from the stored datum.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], which carries the datum's quote URI on the wire.
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], where the URI becomes a stored identity.

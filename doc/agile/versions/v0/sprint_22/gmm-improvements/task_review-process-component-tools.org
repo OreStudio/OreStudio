@@ -21,8 +21,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 The synthetic market data generator design
-([[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]],
-[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]]) catalogues several
+([[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]],
+the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]) catalogues several
 stochastic process types as component tools — GBM, Brownian/Wiener,
 jump, regime-mix, Ornstein-Uhlenbeck (=synthetic_ou=, mean-reverting)
 among them. Ornstein-Uhlenbeck in particular is documented but not
@@ -56,8 +56,8 @@ Ornstein-Uhlenbeck.
 * Plan
 
 *Inventory.* Process types catalogued in
-[[id:C6F45530-4B5D-4C03-95DF-65D13F7A4142][Synthetic market data generators]] /
-[[id:29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB][FX spot synthetic data PoC: architecture]] vs implemented under
+[[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] /
+the [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] vs implemented under
 =projects/ores.synthetic/service/src/processes/=: GBM/geometric
 (=gmm_process=) — implemented; arithmetic Brownian
 (=arithmetic_gmm_process=) — implemented; Ornstein-Uhlenbeck

@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 46FF8EF4-3874-4C9A-9222-69DA691E793F
+:END:
+#+title: The FX spot producer
+#+description: The fixed-mode tick clock, the step from process state to tick, and the datum URI an FX spot feed publishes.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:producers:fx:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=ores::synthetic::feed::fx_spot_feed= is the producer that turns an
+=fx_spot_generation_config= into a tick stream on NATS. It is declared in
+=ores.synthetic.api/feeds/fx_spot_feed.hpp= and implemented in
+=ores.synthetic.api/src/feeds/fx_spot_feed.cpp=. It implements
+=ores::marketdata::domain::IFeed=, and its =kind()= returns the string
+constant =fx_spot_feed_kind=, spelled ="fx_spot"=.
+
+* Detail
+
+** How the feed is built
+
+=make_fx_spot_feed= is the builder the factory calls with a persisted config
+and its component rows. It does four things.
+
+1. It rejects an empty component set with =std::invalid_argument=, because a
+   mixture with no components has no process to build.
+2. It resolves the initial price. Under ="fixed"= it takes
+   =gmm_initial_price=. Under ="vintage"= it reads a real observation from
+   the config's own series, scanning pages of two hundred rows for a match on
+   the vintage source, the config's own datum URI and the vintage date. A
+   miss raises =vintage_data_missing_error=.
+3. It draws one seed and logs it.
+4. It calls =process_factory::make_process= with the config's
+   =process_type= and the means, standard deviations and weights taken from
+   the component rows in order.
+
+The publish subject is not built here. The caller derives it from
+=source_name= and the binding mode through =producer_subject=, so two
+producers for one ORE key publish on distinct subjects.
+
+** The tick clock
+
+=start()= runs the loop on the calling thread, and the caller supplies a
+dedicated =std::thread=. The period is one hour divided by =ticks_per_hour=.
+The sleep is taken in slices of one hundred milliseconds rather than in one
+block, so a =stop()= arriving during a long period is seen promptly and the
+join does not wait out the period.
+
+=stop_flag_= is deliberately not reset at the top of =start()=. A =stop()=
+that lands between the thread spawn and the first loop test would otherwise
+be clobbered, and the loop and its join would never finish.
+
+** One tick
+
+Each pass through the loop advances the process once with =next()= and
+builds one =market_tick=.
+
+- =oresmd_uri= is the URI computed at construction from the ORE key. The
+  constructor reads the key through =ore_key_codec::read= and writes the URI
+  through =oresmd_uri_codec::write=, so the tick and any later vintage read
+  name one series.
+- =value= is the price as decimal text, produced by =std::format("{}", ...)=
+  on the double the process returned.
+- =observation_time= is the wall clock at the tick, and =source= is the
+  config's =source_name=.
+
+** Identity and conflict
+
+The constructor derives the qualifier as the text after the second slash of
+the ORE key, so ="FX/RATE/EUR/USD"= yields ="EUR/USD"=. The feed reports an
+empty role, so its conflict key is the qualifier alone. Nothing else about
+the config enters the conflict rule.
+
+** The facts the code shape does not show
+
+A publish failure is logged and the tick is dropped. The loop thread has no
+caller to receive an exception, and an uncaught throw would terminate the
+whole service process, taking every other feed and NATS handler with it. The
+next tick simply tries again.
+
+The seed comes from a function-local =static std::random_device= rather than
+a fresh device per call, and it is written to the log at info level as
+"SYNTHETIC SEED" together with the source name. The static keeps the OS
+entropy pool from being re-seeded between rapid successive calls, which on
+some platforms returns equal values. The log line is the only record of the
+seed a running feed used.
+
+=publish_count()= counts ticks published.
+
+* See also
+
+- [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], which this feed reads.
+- [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], one child row per weighted Gaussian.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the process this feed steps.
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], the interface contract this class implements.
+- [[id:97208391-AE4B-4032-9744-8F8B228FD567][The producer subject]], which turns the source name and the binding mode into the publish subject.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind seam]], where =fx_spot_feed_kind= selects this builder.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the message this feed publishes.

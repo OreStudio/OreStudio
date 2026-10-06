@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: E1C64302-FA31-4C25-8E92-38265013F644
+:END:
+#+title: The generator library
+#+description: The process interface, the process factory, the per-process RNG design and the seeding rule that both producers share.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:generators:process:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=ores.analytics.quant= is the library that holds the price and short-rate
+processes the synthetic producers step. Its two interfaces are
+=IStochasticProcess= in =ores.analytics.quant/domain/i_stochastic_process.hpp=
+and =IYieldCurveProcess= beside it, and its entry point is
+=process_factory::make_process= in
+=ores.analytics.quant/service/process_factory.hpp=.
+
+* Detail
+
+** The interface
+
+=IStochasticProcess= has two methods. =next()= advances the process by one
+step and returns the new price, and =current()= reads the price without
+advancing. The process owns its own state, which is the current price, the
+engine and the parameters, and it is not thread-safe.
+
+=IYieldCurveProcess= extends that interface with one method.
+=discount_factor(ticks_ahead)= answers, from the current state, what
+zero-coupon bond price the model implies at that distance in ticks. Every
+instrument a caller derives from one state is evaluated through that one
+call, which is what makes a published curve a slice of a single curve rather
+than a set of separately noised quotes. Mapping a calendar tenor to a tick
+count is the caller's job, not the process's.
+
+The library sits outside =ores.synthetic= on purpose, and the header records
+why. A calibration service, =ores.marketdata= or =ores.synthetic= can all
+instantiate a process without linking the synthetic service binary. The
+library also carries no logging dependency, so a caller that wants to diagnose
+an unknown process name has to log around the call rather than inside it.
+
+** The factory
+
+=process_factory::make_process= takes the process type string, the component
+means, standard deviations and weights, an initial price, a seed and a tick
+length in years. It has three branches.
+
+- ="arithmetic"= builds =arithmetic_gaussian_mixture_model_process=.
+- ="ornstein_uhlenbeck"= builds =ornstein_uhlenbeck_process=.
+- ="geometric"= and every unrecognised string build
+  =gaussian_mixture_model_process=.
+
+There is no error for an unknown name. The geometric engine is the silent
+fallback, which is why the FX generation config's =process_type= column is a
+plain checked string rather than a foreign key.
+
+Before any branch it calls
+=ores::analytics::quant::domain::validate_process_parameters=. That function
+is the single rule set, shared with the Qt client, so a parameter set the
+dialog rejects is rejected again in the service.
+
+** The Ornstein-Uhlenbeck branch repurposes the mixture columns
+
+The FX config stores a mixture, and an Ornstein-Uhlenbeck process is a single
+regime rather than a mixture. The factory therefore reads the component rows
+as scalars. =weights.front()= is kappa, the reversion speed.
+=stdevs.front()= is sigma, the volatility. =initial_price= doubles as theta,
+the long-run mean, so a fresh process reverts toward its own starting level.
+=means= is unused.
+
+A reader who edits an FX config's components while its =process_type= is
+="ornstein_uhlenbeck"= is therefore editing a reversion speed in a field
+labelled as a weight.
+
+** The RNG design
+
+Every process owns a =std::mt19937= engine built from the seed passed to its
+constructor, and the constructor's default is =42=. There is no global engine
+and no shared mutable state, so concurrent feeds do not contend.
+
+The mixture weight normalisation is delegated to the standard library. The
+component weights are handed to a =std::discrete_distribution<int>=, which
+normalises them itself, so no code rewrites the stored =gmm_component= rows.
+
+** The seeding rule
+
+The two producers seed differently, and the difference is deliberate in one
+case and not recorded in the other.
+
+- The FX path draws one =std::uint32_t= from a function-local
+  =static std::random_device= and writes it to the log at info level as
+  "SYNTHETIC SEED" with the source name. See
+  [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]].
+- The curve path passes the literal =42=. See
+  [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
+- The simulate and preview handlers take a caller seed and add the path index
+  to it, so several paths in one request are different streams and a repeated
+  request reproduces the same paths.
+
+** The facts the code shape does not show
+
+A zero standard deviation is a legal input and both mixture processes handle
+it directly by drawing the component's mean, because
+=std::normal_distribution= asserts on a zero standard deviation in a debug
+build and would abort the process. =validate_process_parameters= rejects a
+negative standard deviation but permits a zero one.
+
+=make_yield_curve_process= is a second factory entry point on the same class.
+It is not on any producer's path, it constructs only three of the five
+catalogued short-rate engines, and it has no caller in the tree. See
+[[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]].
+
+* See also
+
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], the hub that carries the mathematics of each process.
+- [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]], which explains why generation runs under P.
+- [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov Property]], which is what makes a one-step-at-a-time loop sufficient.
+- [[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]], the engine the factory falls back to.
+- [[id:39C32F26-7D95-4F42-948A-1171464E0FFF][Arithmetic Brownian Motion]], the engine the ="arithmetic"= name selects.
+- [[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck Process]], the engine whose parameters arrive through the mixture columns.
+- [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] and [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], the two callers.

@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: F15697C8-091E-4FA7-804E-C49021B9BDEF
+:END:
+#+title: The IR curve template and its parameters
+#+description: The tenor and instrument ladder, the pillar ticks the resolver derives from it, and the named parameter values resolved against the definition catalogue.
+#+type: knowledge
+#+level: cross
+#+filetags: :synthetic:config:ir:process:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+An =ir_curve_generation_config= carries two sets of child rows. The
+instrument ladder is held as =ir_curve_template_entry= rows, declared in
+=ores.synthetic.api/domain/ir_curve_template_entry.hpp=. The short-rate
+parameters are held as
+=ir_curve_generation_config_process_parameter_value= rows, declared in
+=ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp=,
+against the vocabulary in
+=ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp=.
+
+* Detail
+
+** The template entry
+
+One row is one point of the grid the curve publishes. It holds a
+=sequence_index= running from the short end to the long end, a
+=start_tenor_code=, an =end_tenor_code= and an =instrument_code= that names
+how the point is priced.
+
+Every entry is modelled as a genuine half-open period rather than a single
+maturity label.
+
+- A point instrument, which is a deposit or a swap, sets =start_tenor_code=
+  to ="SPOT"=. That is a real zero-duration tenor in the catalogue that
+  resolves to the spot date, and not a null or a sentinel.
+- An interval instrument, which is a forward rate agreement, sets
+  =start_tenor_code= to its own front tenor. A three by six FRA therefore
+  carries ="3M"= and ="6M"=.
+
+The symmetric shape is what lets =validate_curve_template= in
+=ores.synthetic.api/src/domain/curve_template_validation.cpp= detect a real
+period overlap with a plain =windows_overlap= test. That helper comes from
+=ores::refdata::domain= in =tenor_resolution.hpp=. A point-versus-interval
+special case would otherwise be needed.
+
+** From the ladder to pillar ticks
+
+=resolve()= in
+=ores.synthetic.api/feeds/ir_curve_template_resolver.cpp= turns each entry
+into an =ir_curve_resolved_entry=. That record carries the entry's start and
+end as calendar dates, the count of ticks ahead of the horizon for each, an
+accrual year fraction, and, for a swap, the fixed-leg schedule of payment
+dates and accrual fractions the par-rate solver needs.
+
+The refdata inputs are gathered once by =build_ir_curve_refdata_context=.
+That call reads the tenor, instrument code, payment frequency and tenor
+convention resolution catalogues, and it additionally reads the event store
+when the convention is the FOMC schedule walk. The tick loop never touches
+the catalogues again, which is the same resolve-once-tick-many shape the FX
+feed uses for its process and its subject.
+
+The resolver's simplifications are deliberate and they are the facts a reader
+needs. One tick is one calendar day. Spot equals the horizon. Year fractions
+use actual over 365 fixed. There is no business-day calendar and no
+currency-specific spot lag.
+
+** The parameter value and its definition
+
+A parameter is split across two rows.
+
+- The value row holds =config_id=, =parameter_definition_id= and
+  =parameter_value=. The pair of the config and the definition is unique, so
+  a parameter appears at most once per config. A hand-written trigger
+  enforces that the definition's =process_type_code= matches the config's
+  =process_type=, which the codegen single-argument mechanism cannot express.
+- The definition row holds =process_type_code=, =parameter_name=,
+  =display_name=, an optional =symbol=, =short_label=, a rich =description=,
+  =data_type=, =default_value=, optional =min_value= and =max_value=, and a
+  =display_order=. Definitions are system-tenant reference data and tenant
+  users never edit them.
+
+=map_parameters_to_yield_curve_process= in
+=ores.synthetic.api/src/domain/yield_curve_process_parameter_mapping.cpp=
+joins the two vectors and constructs the typed process. It rejects a value
+row whose definition belongs to another process type, a duplicate parameter, a
+missing required parameter, an unexpected parameter and a value outside its
+definition's bounds.
+
+** The facts the code shape does not show
+
+The template rows carry no rate and no noise. Every published rate is derived
+from the parent process's =discount_factor()= at the entry's maturity, so a
+published batch is by construction a slice of one internally consistent
+curve. Nothing in the grid can be independently wiggled.
+
+=default_value= is not a fallback. The mapping layer throws on a missing
+parameter rather than substituting the default, and the default exists only
+to pre-fill a new row in the editor.
+
+* See also
+
+- [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], the parent of both row sets.
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], the vocabulary the definitions belong to.
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]], which consumes the resolved ladder.
+- [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], which builds the process from the joined parameters.

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 97208391-AE4B-4032-9744-8F8B228FD567
+:END:
+#+title: The producer subject
+#+description: The one subject builder for every asset class, the token sanitising rule, and the sandbox prefix the ingest loop never subscribes to.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:feeds:subjects:nats:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+=producer_subject=, in =ores.synthetic.api/feeds/producer_subject.hpp=, is
+the one subject builder for every asset class. A producer supplies only its
+source name and its binding mode, and receives the subject it publishes on.
+The same function serves FX spot and interest rate curves, so a new asset
+class adds no subject grammar.
+
+* Detail
+
+** The token rule
+
+The source name is copied character by character. A character is kept when
+it is alphanumeric or one of the three safe punctuation marks, which are
+the dot, the underscore and the hyphen. Every other character becomes an
+underscore. The dot is kept deliberately, because it is the NATS hierarchy
+separator and source names are dotted. The rule exists so that a stray
+source name cannot produce surprise routing through a wildcard, or a
+publish error.
+
+** The two prefixes
+
+A bound feed yields ="synthetic.v1.tick.<token>"=. A sandboxed feed yields
+="synthetic.v1.sandbox.tick.<token>"=. Both prefixes are constants in
+=ores.marketdata.api/domain/tick_subjects.hpp=, which is also where the
+ingest loop's own wildcard is built, by appending the NATS multi token
+wildcard to the bound prefix.
+
+** The fact the code shape does not show
+
+The sandbox prefix is the mechanism and not a naming convention. The ingest
+loop subscribes to the bound wildcard only, so a sandboxed tick cannot
+reach storage even when a binding names its source. This is why
+[[id:04720FEB-1224-4398-B112-0B787B768D46][Binding mode]] can say a sandboxed feed is unreachable by ingest, and why
+the feed controller gives a sandboxed feed no binding at all.
+
+* See also
+
+- [[id:B4729C76-4D88-4F3C-B3D3-5FC7BD62D158][The feed and its lifecycle]], whose =nats_subject()= calls this builder.
+- [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the payload these subjects carry.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], which subscribes to the bound wildcard.

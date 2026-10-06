@@ -5,7 +5,7 @@
 #+description: Hub note for stochastic processes as a general modelling tool — the two foundational building blocks (Wiener process, Ito's lemma) and six concrete processes, currently consumed by ores.analytics.quant's synthetic data generators.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
+#+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:structure_note:
 #+created: 2026-07-16
 #+updated: 2026-07-16
 

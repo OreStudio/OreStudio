@@ -1,4 +1,7 @@
 account_contact_informations list --limit 2
 account_parties list --limit 2
 role_grant_requests list
-role_grant_request_roles list
+parties list --limit 2
+books list --limit 2
+counterparties list --limit 2
+currencies list --limit 2

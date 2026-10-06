@@ -1,0 +1,12 @@
+roles list --limit 2
+permissions list --limit 2
+currencies list --limit 2
+calendars list --limit 2
+countries list --limit 2
+account_operations get-my-account-contact-information
+account_contact_informations list --limit 2
+account_parties list --limit 2
+role_grant_requests list
+parties list --limit 2
+books list --limit 2
+counterparties list --limit 2

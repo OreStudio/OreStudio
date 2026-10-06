@@ -1,5 +1,0 @@
-account_operations get-my-account-contact-information
-account_contact_informations list
-account_parties list
-role_grant_requests list
-role_grant_request_roles list

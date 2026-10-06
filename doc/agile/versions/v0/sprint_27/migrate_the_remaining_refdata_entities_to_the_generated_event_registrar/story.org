@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: BA5BCF3B-8953-455D-85F9-1E05A49D9623
+:END:
+#+title: Story: Migrate the remaining refdata entities to the generated event registrar
+#+description: Twenty-three refdata entities generate an event-mapping registrar that nothing composes, so their changes reach no consumer; eight still publish through the hand-wired path in application.cpp. Compose every generated registrar and retire the hand-wired path, so one composition point carries every entity's events.
+#+type: story
+#+level: s2
+#+filetags: :codegen:eventing:refdata:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A change to any refdata entity publishes its event on that entity's own
+subjects, so the caches, the audit trail and any other consumer learn of it.
+Every entity that generates an event-mapping registrar has it composed in
+=event_registrar.cpp=, and the hand-wired mapping and subscriber blocks in
+=application.cpp= are gone. One composition point carries every entity's
+events, and a gate keeps it that way.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Promoted from capture BA5BCF3B into Sprint 27; the migration is not started. |
+| Waiting on    | Nothing.                               |
+| Next          | Compose every generated event registrar and retire the hand-wired path. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- Every generated =*_event_registrar.hpp= under =ores.refdata.service/messaging= is composed in =event_registrar.cpp=.
+- =application.cpp= registers no entity event mapping of its own and subscribes to no =*_changed_event= itself.
+- The service starts, registers each composed mapping on its channel, and subscribes each handler.
+- A gate fails when a generated registrar is left uncomposed and passes when every one is composed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:85908C64-31A3-4899-8EF8-7DC1C5D5A70D][Compose every generated event registrar]] | STARTED | 2026-10-06 | | Twenty-three refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path. |
+
+* Decisions
+
+* Out of scope
+
+-

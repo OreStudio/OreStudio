@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :tidy_up_the_system_core_and_the_leftovers:sprint_27:v0:
 #+owner: marco
-#+branch: feature/scaffold-story-tidy-up-the-system-core-and-the-leftovers
+#+branch: feature/tidy-up-the-system-core
 #+pr:
 #+blocked_on:
 #+blocked_since:

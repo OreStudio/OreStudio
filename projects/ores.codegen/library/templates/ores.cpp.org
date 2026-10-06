@@ -38,6 +38,7 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
+| [[id:e0f7d909-9a5c-4061-939f-832929baa455][ores.cpp.asset_class]] | 1 | Asset-class catalogue C++: the mapping from an oresmd authority to the refdata class it names. |
 | [[id:FFA58DE9-F839-4CC0-928F-A1BD9695AC41][ores.cpp.component]] | 2 | Per-component C++ presence: export macros and the Catch2 test main. |
 | [[id:62342007-5080-43BF-8207-CD05B6568BBE][ores.cpp.domain]] | 7 | Domain types: class, JSON I/O, table I/O. |
 | [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]] | 1 | C++ enum types. |
@@ -57,7 +58,8 @@ do not edit by hand.
 | [[id:4D5A5C43-B0AE-49E0-920F-2513335E0570][ores.cpp.scaffold]] | 5 | First-generation component scaffolding: the umbrella header, the placeholder domain type and its test. Emitted only where a component opts in. |
 | [[id:FC3A81FE-54F6-4119-8369-A7B8EF423E47][ores.cpp.service]] | 2 | C++ service application classes. |
 | [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app]] | 11 | Service-application C++ scaffold: application, host, config options/parser, main. |
-| [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 6 | Shell REPL command units: one submenu per entity or junction, one command per derived verb, and the per-menu registrar. |
+| [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] | 8 | Shell REPL command units: one submenu per entity or junction, one command per derived verb, and the per-menu registrar. |
+| [[id:2d187ab0-0676-45aa-9e0f-aca18580d3e0][ores.cpp.trade_type]] | 1 | Trade-type catalogue C++: the routing from a trade type to the instrument table that holds it. |
 
 * See also
 

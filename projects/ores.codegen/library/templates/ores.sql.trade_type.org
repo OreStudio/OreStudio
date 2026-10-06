@@ -26,7 +26,7 @@ table that holds it; the instrument tables' checks read that routing through
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:e37eee11-119f-456a-ad08-541b2c226db4][ores.sql.trade_type.catalogue_populate]] | The trade types seed. Output =projects/ores.sql/populate/trading/trading_trade_types_populate.sql=. |
+| [[id:e37eee11-119f-456a-ad08-541b2c226db4][ores.sql.trade_type.catalogue_populate]] | The trade types seed, generated from the trade-type catalogue. |
 
 * See also
 

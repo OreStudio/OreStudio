@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.compute.core/service/platform_service.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
@@ -112,14 +113,13 @@ platform_service::list_platforms(const messaging::list_platforms_request& reques
         response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    // A stated instant is parsed here, so a malformed one is the caller's
-    // mistake rather than a database error, and the store reads one form.
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
     std::optional<std::string> as_of;
     if (request.as_of) {
-        try {
-            as_of = ores::platform::time::datetime::to_iso8601_utc(
-                ores::platform::time::datetime::from_iso8601_utc(*request.as_of));
-        } catch (const std::invalid_argument&) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
             response.result.outcome = ores::utility::domain::outcome::invalid;
             response.result.code = "as_of_invalid";
             response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;

@@ -2,27 +2,29 @@
 :ID: D913FE21-6CF6-439A-89CF-6A1928AFA094
 :END:
 #+title: Prototypes
-#+description: Index of throwaway clickable prototypes: what each one argues, and where to open it.
+#+description: The only inventory of prototypes, and the one way to add one: plain HTML, CSS and JavaScript under doc/prototypes/.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:index:ui:
 #+created: 2026-09-11
-#+updated: 2026-10-04
+#+updated: 2026-10-06
 
 * Summary
 
 A prototype answers a question about layout or behaviour that a document
-argues badly. It is throwaway: static files, mock data, no framework and no
-backend. It exists so a design can be argued about with something concrete
-in front of you.
+argues badly. It is kept after the argument is settled, as the design record
+of what was agreed. A prototype is throwaway in spirit and plain in form:
+static files, mock data, no framework and no backend.
 
-This page is the index. Each entry opens the prototype, and names the page
-that describes it.
+This page is the only inventory. Every prototype appears in the table below,
+and every row opens its prototype. The one way to add a prototype is in
+* Adding a prototype; there is no second way, and none is planned.
 
 * The prototypes
 
-| Prototype                                       | What it argues                                                                                                        | Open it                                          |
-|-------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------|
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it |
+|-----------+----------------+---------|
 | [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. | [[file:trade-entry/][Booking screen]] |
 | [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door]] | Registration has five states and one of them is "waiting for an administrator". The door must show that before the person submits, not at sign-in. | [[file:registration-door/][Registration door]] |
 | [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen]] | One profile screen is not in dispute; where the save boundary sits is. One Save, a save per panel, or the panels as rail steps — and how a read-only panel and a proposed reporting line read. | [[file:profile/][Profile screen]] |
@@ -30,15 +32,41 @@ that describes it.
 | [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen]] | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][Home screen]] |
 | [[id:A5C3E9B1-7D24-4F6A-9B8E-2C1D0F3E5A71][Access screens]] | Access in a person's own words: a member's own roles and a "Can I…?" answer, the administrator giving and taking away roles with a reason, and a role catalogue whose permissions are a grid by area rather than a list of 890 codes. | [[file:access/][Access screens]] |
 | [[id:CB72DF9A-ED51-4E92-8A1E-FA03230FC077][Reference data]] | Reference data as an area: the classification lists found by topic, a list with its actions on it, and a row on its own page with Details and History, painted with the shared label catalogue. | [[file:refdata/][Reference data screens]] |
+| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | A new installation is welcomed and walked through before any session exists, and the first account is the super administrator. | [[file:first-run/][First run]] |
+| [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | A tenant is formed as a stepper that carries its own details and logo, with the super administrator's password started rather than asked for. | [[file:new-tenant/][New tenant]] |
+| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | A party is added as a journey on the shared journey page, and its members are the accounts that work in it. | [[file:new-party/][New party]] |
+| [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] | The member's security screen: the password and the sign-in state, with the variants disagreeing about where the save boundary sits. | [[file:protect-my-account/][Protect my account]] |
+| [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] | The administrator's rescue access: diagnose first and then act, so the recovery link is the administrator's action and not a self-service one. | [[file:rescue-access/][Rescue access]] |
+| [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] | The tenant administrator reads who signed in, what failed, and where from, without leaving the tenant's own area. | [[file:audit-sign-ins/][Audit sign-ins]] |
+| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | The roster the registry expects, met by the samples the instances send: a service that stopped keeps its row and a build that lags behind is visible. | [[file:services/][Services]] |
+| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | The grid is the installation's, shared by every tenant's work, so the screen shows the nodes and the wrappers running on them. | [[file:compute-grid/][Compute grid]] |
+| [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | The streams and their samples, listed so a stream nobody publishes to is visible rather than silently absent. | [[file:message-bus/][Message bus]] |
+| [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | The telemetry store read by source, with the client lines the compute wrapper publishes and the search a person actually reaches for. | [[file:telemetry-logs/][Telemetry logs]] |
+| [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | The versions of every service and the database under them, stating the migration the schema is at. | [[file:versions-and-database/][Versions and database]] |
 
 * Adding a prototype
 
-1. Put the static files under =doc/prototypes/<name>/=. Plain HTML, CSS and
-   JavaScript. No build step.
-2. Deploy them with one call to =ores-deploy-web-app= inside
-   =ores-deploy-web-apps=, in =projects/ores.lisp/src/ores-build-site.el=.
-3. Describe the prototype on a knowledge page beside this one.
+There is one way, and it is this.
+
+1. Create =doc/prototypes/<name>/= with an =index.html=, and a
+   =prototype.css= and =prototype.js= when the prototype needs them.
+   Plain HTML, CSS and JavaScript: no framework, no build step, no
+   backend. Switch variants and states with query parameters, as every
+   prototype here does.
+2. Copy the design tokens from
+   =projects/ores.web/packages/web/src/styles.css= so the prototype reads
+   in the application's own colours.
+3. Describe what it argues on the journey's page, or on a knowledge page
+   beside this one.
 4. Add a row to the table above.
+5. Publish it with one =ores-deploy-web-app= call inside
+   =ores-deploy-web-apps=, in =projects/ores.lisp/src/ores-build-site.el=.
+
+A prototype is never a route in =ores.web=. React is for the product, and a
+prototype must open without a build, a server or a session.
+
+=build/scripts/check_prototype_inventory.py --check= enforces this: it fails
+when a =doc/prototypes/<name>/index.html= is missing from the table above.
 
 * See also
 

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit sign-ins prototype — Credentials journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The tenant administrator's Audit: sign-ins screen: one filter bar, then the
+  active sessions, the session activity and the failed attempts. Refresh is its
+  only action. Ported from
+  projects/ores.web/packages/web/src/prototype/AuditSignInsPrototype.tsx, which
+  the journey doc records as accepted as variant B, tabs over one filter bar
+  (doc/knowledge/journeys/credentials/journey_audit_sign_ins.org).
+
+  Three structural variants, switchable with ?variant=a|b|c, a tab switchable
+  with ?tab=sessions|activity|failures, the filters with ?period= and ?event=,
+  and the expanded session with ?session=. Nothing here reads a service.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state" hidden></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

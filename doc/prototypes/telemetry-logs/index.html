@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations: telemetry logs prototype — Read the telemetry logs</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Read the telemetry logs, from
+  doc/knowledge/journeys/operations/journey_read_the_telemetry_logs.org.
+
+  Two variants, switchable with ?variant=matches|nothing, and two states,
+  switchable with ?state=rest|searched. The filters are switchable with
+  ?level=, ?source=, ?component=, ?tag= and ?message=. The rows are fixtures
+  shaped by the telemetry.v1.logs.list reply; the filters combine with AND.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

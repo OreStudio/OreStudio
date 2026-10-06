@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: E85DFD5F-6C33-4EA7-AEC5-0346B5E70260
+:END:
+#+title: Story: One way to keep a prototype
+#+description: Two prototype mechanisms exist: static HTML under doc/prototypes, and React journey prototypes in the ores.web package. Bring every prototype under doc/prototypes, document the one way to add one, and list every prototype in doc/prototypes/index.org.
+#+type: story
+#+level: s2
+#+filetags: :prototypes:doc:web:refactor:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two prototype mechanisms exist. Seven static pages live under
+=doc/prototypes/= and follow one documented way. Eleven journey prototypes
+live as React routes in =ores.web= and follow a second way. The React form
+needs the application's shell, build and types, so a prototype cannot open
+without running the app, cannot deploy with the documentation, drifts with
+the product, and leaves a second inventory that disagrees with the first.
+
+This story retires React for prototypes. It ports the journey prototypes to
+static pages under =doc/prototypes/=, makes =index.org= the only inventory
+and the only documented way, publishes every prototype through the site
+build, and guards the rule so a second way cannot grow back.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- Every prototype is a static page under =doc/prototypes/= and is listed in =doc/prototypes/index.org=.
+- =doc/prototypes/index.org= states the one way to add a prototype.
+- No prototype route or prototype source remains in =ores.web=.
+- The site build publishes every prototype.
+- =build/scripts/check_prototype_inventory.py= passes and runs in CI.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:07D963B4-9F76-4A02-B56E-217E96C71C4F][Scaffold story: One way to keep a prototype]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:04D34A61-3D69-42E0-852C-ADDE2C64B89A][Implement One way to keep a prototype]] | DONE | 2026-10-06 | 2026-10-06 | Port the eleven React journey prototypes to static pages under doc/prototypes/, make index.org the only inventory, publish them, remove the React prototype tree, and add the inventory guard. |
+
+* Decisions
+
+- React is for the product; a prototype is static HTML, CSS and JavaScript.
+  React buys fidelity to the real shell, but it costs the application's
+  build, dependencies and types, and a prototype is throwaway. Quick to
+  author, quick to open and quick to delete wins.
+- Every prototype is listed in =doc/prototypes/index.org= and published by
+  one =ores-deploy-web-app= call. The inventory is the only register.
+- A guard enforces the rule: it fails on a prototype missing from the
+  inventory, on a row with no prototype, on a prototype the site build does
+  not publish, and on any React prototype tree.
+- The journey documents keep the accepted design and its commit. The
+  clickable prototype is the argument; the document is the record.
+
+* Out of scope
+
+- The application's own React components. Only the prototype tree is removed.
+
+* Result
+
+Shipped in PR #2696. Every prototype is a static page under
+=doc/prototypes/=, listed in one inventory, published by the site build and
+guarded in CI, and no prototype is a React route.

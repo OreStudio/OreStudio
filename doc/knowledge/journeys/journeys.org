@@ -60,11 +60,11 @@ between related screens without going back to a menu.
 
 * Prototypes
 
-Some journeys already have a clickable prototype. Each prototype is merged
-into =main= and kept as the design record: the hub at =/prototype= lists every
-prototype route, and the journey document links its own under =* Prototype=.
-The journey names the accepted commit, which main's history keeps. The
-first-setup prototypes are the model for the rest.
+Some journeys have a clickable prototype. Every prototype is a static page
+under [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]], which is the
+only inventory and states the one way to add one: plain HTML, CSS and
+JavaScript, no framework and no build step. A journey document links its own
+prototype under =* Prototype= and names the commit that accepted it.
 
 * One screen, not one per entity
 

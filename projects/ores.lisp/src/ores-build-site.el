@@ -321,6 +321,61 @@ with the site chrome."
   ;; an area, a list and a row with history, on the Acme seed and its labels.
   (ores-deploy-web-app
    "./doc/prototypes/refdata" site-dir "doc/prototypes/refdata"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; First run prototype: the same body reset. The welcome and the first-run
+  ;; steps before any session exists, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/first-run" site-dir "doc/prototypes/first-run"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; New tenant prototype: the same body reset. The tenant stepper and its
+  ;; details, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/new-tenant" site-dir "doc/prototypes/new-tenant"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; New party prototype: the same body reset. Adding a party on the shared
+  ;; journey page, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/new-party" site-dir "doc/prototypes/new-party"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Protect my account prototype: the same body reset. The member's security
+  ;; screen and where the save boundary sits, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/protect-my-account" site-dir "doc/prototypes/protect-my-account"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Rescue access prototype: the same body reset. The administrator's rescue
+  ;; access, diagnose then act, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/rescue-access" site-dir "doc/prototypes/rescue-access"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Audit sign-ins prototype: the same body reset. The sign-in audit the
+  ;; tenant administrator reads, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/audit-sign-ins" site-dir "doc/prototypes/audit-sign-ins"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Services prototype: the same body reset. The service roster the registry
+  ;; expects, met by the samples the instances send, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/services" site-dir "doc/prototypes/services"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Compute grid prototype: the same body reset. The installation's grid and
+  ;; the wrappers running on its nodes, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/compute-grid" site-dir "doc/prototypes/compute-grid"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Message bus prototype: the same body reset. The streams and their samples,
+  ;; mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/message-bus" site-dir "doc/prototypes/message-bus"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Telemetry logs prototype: the same body reset. The telemetry store read by
+  ;; source and the search a person reaches for, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/telemetry-logs" site-dir "doc/prototypes/telemetry-logs"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Versions and database prototype: the same body reset. Every service's
+  ;; version and the database under them, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/versions-and-database" site-dir "doc/prototypes/versions-and-database"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

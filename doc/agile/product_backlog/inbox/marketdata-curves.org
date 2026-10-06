@@ -31,7 +31,7 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Deeper analysis and the curve data model done on 2026-10-06, recorded below. The model reuses the existing tables and adds none for the representation; the curve journeys decide whether a build header is earned. |
+| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement; the representation reuses the existing tables. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
 | Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
 | Last touched  | 2026-10-06                               |
@@ -455,26 +455,189 @@ right one.
   =marketdata.v1.curve-snapshot.get= is reshaped to it rather than joined by a
   second subject.
 
+** Does the storage hold up for the evolution read?
+
+It does. The composite object is a series; its nodes are the series' point
+observations at each instant; the hypertable already stores them that way, and
+=read_as_of_buckets= already reconstructs snapshots. Nothing about the
+evolution requirement needs a new table:
+
+- Discovery by typed attributes — currency pair, object kind, party — is a
+  *wire* and *service* concern: the request carries typed fields and the
+  server resolves them to the series URI. If that lookup needs an index rather
+  than a scan, the index goes on a derived projection of the URI's parts, not
+  on a new table.
+- Coordinate typing is a *read* concern: the server parses each node's
+  =oresmd_uri= once through the codec to produce the coordinate labels and to
+  align the matrix. The identity stays the URI, as the component decided.
+- Alignment, shape change and the instant range are the evolution read's
+  design, not the schema's.
+
+What the evolution requirement does change is the priority: the aligned
+matrix read is the first thing to build, and the single-curve build journey is
+not.
+
+* The composite object is the requirement, 2026-10-06
+
+A person does not ask for a series or a point. They ask for a *term structure*
+or a *surface* — a composite object with named axes — and then they ask how it
+*changed*. "Show me the FX vol surface for EURUSD over the last quarter" is
+the canonical question, and the acceptance below did not ask it: it asked for
+a curve's identity, one build and one consumer. Evolution, surfaces and axes
+were absent, and the word *surface* did not appear.
+
+** Today's answer to the canonical question, and why it is not easy
+
+The storage supports the question. An FX vol surface is one =market_series=
+whose points carry =(expiry, strike_label)= coordinates — the =fx_option= row
+in =datum/schema.hpp= — and the observation hypertable is append-only and
+partitioned on time. The *retrieval* does not:
+
+- *Discovery needs the URI string.* Both reads are keyed by =oresmd_uri=
+  (=get_curve_snapshot_buckets_request.oresmd_uri=). "The FX vol surface for
+  EURUSD" must be turned into the exact oresmd string by the caller; nothing
+  indexes the identity's parts or lists the surfaces of a currency pair.
+- *Evolution is a fixed window ending now.* The one evolution read takes
+  =bucket_seconds= and =bucket_count= (=5= buckets of =1800s= by default) and
+  ends at the present. There is no time range and no set of instants, so "over
+  the last quarter" is not expressible.
+- *The result is not aligned.* =get_curve_snapshot_buckets_response.buckets=
+  is a =vector<vector<market_observation>>=: the client matches nodes across
+  buckets itself, and each value is text. Nothing returns the surface as a
+  matrix of instants by nodes.
+- *Shape change is undefined.* When the surface gains an expiry or loses a
+  strike between two instants, the buckets simply hold different point sets.
+  Nothing reports an added, dropped or persistent node.
+- *The object has no type.* A curve, a surface and a grid are all "a series"
+  with different coordinate shapes; nothing states which series are surfaces,
+  or what their axes are. A generic evolution view cannot offer "all the vol
+  surfaces for EURUSD" because it cannot tell one composite object from
+  another.
+
+So the data model does *not* make the FX vol surface evolution easy to
+retrieve, and the reason is the requirements, not the storage. The storage
+already holds the right rows; the reads and the acceptance never ask the
+question in the person's terms.
+
+** The components: ATM, RR and BF are the surface's own axis
+
+The vol surface's quoting convention is not a detail beside the surface; it
+is one of its axes. The FX option key is
+=FX_OPTION/<quote>/unitCcy/ccy/expiry/strike=, and ORE keeps the strike as a
+*label*: =ATM=, =25RR=, =25BF= (=ore_key_fx.cpp:56-64=). So ATM, risk
+reversal and butterfly are =strike_label= values, one per node, and each one
+is a term structure over =expiry= — exactly the three the question names. That
+decomposition is already in the data; the model exposes none of it:
+
+- There is no read that returns a component. "The ATM ladder" is every node of
+  the surface whose URI carries =ATM=, and the client finds them by parsing
+  and filtering.
+- The labels are free text with no vocabulary and no validation, so =BF=,
+  =FLY= and =25BF= are three spellings the model cannot reconcile, and the
+  delta convention they imply is not stored at all.
+- There is no "what are the components of this surface" read, so a screen
+  cannot offer ATM, 25RR and 25BF without scanning history.
+- The evolution read is URI-keyed and windowed, so "the ATM ladder over the
+  last quarter" is not expressible either.
+
+This is the same gap as the surface, one axis down, and it argues for the axis
+work rather than for a table: the components are slices of the surface's grid,
+not independent objects.
+
+** One series per surface, or one per component?
+
+The question this raises is whether ATM, RR and BF should each be a series of
+their own, grouped into a surface, rather than a coordinate of one surface
+series. The answer turns on what changes and what is consumed:
+
+- A market quote is a =(pair, expiry, strike label)= point. The grid is one
+  object quoted by one convention, and a change to its shape is a point
+  change. One series per surface makes that an ordinary bitemporal point
+  write.
+- One series per component would make a shape change a change of *group
+  membership* with its own history, which is a junction with validity rather
+  than a point, and it would spread one object's identity across N series.
+- The components are almost always read together with the surface, and the
+  [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][curve set]] storage grouping is
+  for grouping *independent* series — a funding curve and its projections —
+  not for slicing one grid.
+
+So the recommendation stays: the surface is one series; ATM, RR and BF are
+values of its strike-label axis, and what they need is a typed, named,
+validated axis and a read that returns a slice, not a series and not a table.
+
+** The requirements the use case implies
+
+1. A composite object is first-class: identifiable and of a kind (term
+   structure, surface, grid), with its axes named, before any point is read.
+2. Its nodes have typed coordinates — terms, expiries, strikes or deltas,
+   dimensions — that can be queried, joined and aligned, not only text inside
+   an identity string.
+3. Every axis value is a typed, validated code with a vocabulary, so =ATM=,
+   =25RR= and =25BF= are canonical and a component can be named.
+4. The components of an object along an axis are retrievable as term
+   structures in their own right, over time: "the ATM ladder of the EURUSD
+   surface, over the last quarter" is one request.
+5. Evolution is a first-class read: one bounded request returns the aligned
+   matrix of instants by nodes, with the coordinate labels and the values.
+6. Shape change is explicit: the read reports nodes added, dropped and
+   persistent between instants.
+7. The single-instant read, the slice read and the evolution read share one
+   definition of the object, so they cannot disagree.
+8. Every node's value carries its provenance per instant, so the view can
+   explain a change.
+
 ** What to add, in order
 
-1. Validate the recipe's pillar tenor codes against =refdata_tenors= at save
-   time (capture =A6472918=). The point-to-tenor relation rests on it.
-2. Guard the curve-snapshot reads (capture =D9258D1F=).
-3. Add the =curve= value and =read_curve= projection, and reshape the
-   curve-snapshot wire message to batched arrays.
-4. Only then decide the =curve_builds= table, from the agreed journeys.
+1. The composite-object identity at the wire boundary: a typed request (asset
+   class, scope such as a currency pair, object kind, party) that resolves to
+   the series, so "the FX vol surface for EURUSD" needs no hand-built URI.
+2. The axis values as typed, validated codes: the strike-label vocabulary and
+   the quoting convention, so ATM, 25RR and 25BF are canonical and the
+   components of a surface are enumerable.
+3. The slice read: a component along one axis — the ATM ladder — returned as a
+   term structure over time, from the same object definition.
+4. The aligned evolution read: the object plus a range or a set of instants,
+   returning instants by nodes with the coordinate labels and numeric values,
+   and the added, dropped and persistent nodes. It replaces the fixed
+   five-bucket window and returns a matrix, not arrays of objects.
+5. The single-instant read reshaped to the same object definition, so the
+   three cannot disagree.
+6. Validate the recipe's pillar tenor codes against =refdata_tenors= (capture
+   =A6472918=).
+7. Guard the curve-snapshot reads (capture =D9258D1F=).
+8. Only then decide the =curve_builds= table, from the agreed journeys.
 
 * Acceptance
 
-- A curve is identifiable as a curve without knowing which strings to
-  combine. Whatever the representation, "is this a curve" and "which curve is
-  this" are answerable from the data.
-- A build records when it was built and against what, so two builds of the
-  same curve are distinguishable and a build is distinguishable from an
-  observation.
-- A curve's provenance is readable: what it was built from, by which recipe,
-  and when.
-- At least one production consumer reads a curve, or the story says in the
+Read every bullet in the person's terms: the composite object first, its
+evolution second, the representation third.
+
+- *A composite object is first-class.* A term structure or a surface is
+  identifiable, and of a kind, with its axes named, without knowing which
+  strings to combine. "Is this a curve or a surface" and "which one is this"
+  are answerable from the data.
+- *Its nodes are typed coordinates.* A node's coordinate tuple — terms,
+  expiries, strikes or deltas, dimensions — is queryable and joinable, not
+  only text inside an identity string.
+- *Its axis values are typed codes.* ATM, 25RR and 25BF are validated
+  vocabulary, so a component can be named and reconciled, and the quoting
+  convention they imply is recorded.
+- *A component is a term structure in its own right.* The ladders along one
+  axis — the ATM, RR and BF term structures of a vol surface — are retrievable
+  over time in one request, as term structures, not filtered points.
+- *Evolution is one bounded read.* Given the object and a time range or a set
+  of instants, the server returns the aligned matrix of instants by nodes,
+  with the coordinate labels and the values. "The FX vol surface for EURUSD
+  over the last quarter" is one request, not a client-side join.
+- *Shape change is explicit.* Nodes added, dropped and persistent between
+  instants are reported, never silently different point sets under the same
+  object.
+- *A node's provenance is readable per instant*: what it was built from, by
+  which recipe, and when.
+- *The single-instant, slice and evolution reads agree*, because they share
+  one definition of the object at an instant.
+- At least one production consumer reads the object, or the story says in the
   record why none does.
 - The three role vocabularies are either reconciled or documented where a
   reader meets them, because two of them share a name.

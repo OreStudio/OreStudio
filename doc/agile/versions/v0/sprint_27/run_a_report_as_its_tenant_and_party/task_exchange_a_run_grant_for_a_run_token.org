@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-IAM serves =iam.v1.run_grants.exchange=: a step service presents its own
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+the checks, the claims and the cache rules this task implements. IAM serves
+=iam.v1.run_grants.exchange=: a step service presents its own
 token, a grant id, a run id and a tenant, and receives a five-minute run
 token that acts in the grant's tenant and party with the role's permissions,
 after IAM re-checks the grant and its grantor, computes the permissions and
@@ -32,9 +34,9 @@ logs the issue.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Plan written; the claims and the exchange model are in. |
+| Now          | Implemented; PR #2702 is open and green. |
 | Waiting on   | Nothing.                               |
-| Next         | Regenerate the protocol, seed the permission, then the exchange service. |
+| Next         | Merge, then record the close-out.      |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

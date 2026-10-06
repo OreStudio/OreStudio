@@ -20,22 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story, its tasks and the sprint wiring, and record the memory
+that a fresh database is made usable by the runtime ACME provisioning.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8606AB12-826D-4F23-A779-35307A23B5AF][Bootstrap the system at runtime]] |
-| Now          | Not yet started.                       |
+| Now          | Done.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The story, both tasks and the sprint row exist and agree on the state.
+- The memory =make-the-system-usable-at-runtime= is filed.
 
 * Plan
 
@@ -83,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, both tasks, the sprint row and the runtime-bootstrap memory are in
+place. The implementation and the documents land in one PR.

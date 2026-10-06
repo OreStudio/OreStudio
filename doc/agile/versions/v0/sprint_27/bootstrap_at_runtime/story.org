@@ -15,32 +15,63 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A freshly created database holds the schema and the staged DQ artefacts and
+nothing else. The system is made usable at runtime, by running the ACME
+provisioning through =ores.shell= (or ores.web's setup journeys), which
+publishes the bundles in dependency order. A test that reads reference data
+inserts or publishes it in its own setup.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Done. The build publishes nothing; a recreate leaves the refdata tables empty and the suite is green. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | PR.            |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
 
--
+- =compass db recreate= publishes no reference data: refdata books, business
+  units, asset classes and images hold no published rows.
+- The DQ artefacts are still staged, so the runtime provisioning has
+  everything it needs to publish.
+- =ores.shell= (or ores.web) makes the system usable through the seed
+  profiles; no build-time step is needed.
+- The test suite is green, with the tests that need reference data
+  publishing it through the shared =ores.testing= helper.
+- The memory records that the system is made usable by the runtime ACME
+  provisioning.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:29CD45FB-1328-4A59-AACF-EF5D05F4146C][Scaffold story: Bootstrap the system at runtime]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:DB8BA356-B654-4AB1-AA0C-1AA0D21BD451][Implement Bootstrap the system at runtime]] | BACKLOG | | | Initial task for: Bootstrap the system at runtime |
+| [[id:29CD45FB-1328-4A59-AACF-EF5D05F4146C][Scaffold story: Bootstrap the system at runtime]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DB8BA356-B654-4AB1-AA0C-1AA0D21BD451][Implement Bootstrap the system at runtime]] | DONE | 2026-10-06 | 2026-10-06 | Remove the build-time publish and add the shared test publish helper. |
 
 * Decisions
 
+- *One publish path, and it is the runtime one.* The build-time bootstrap was
+  added in PR #2034 because a fresh database had no published books and no
+  trade could be booked. It duplicated the runtime publish and hand-ordered
+  the calls, so it drifted from the dependency graph and published countries
+  without the flag images their dependency declares. It goes.
+- *Staging stays at build time; publication moves out.* The DQ artefacts are
+  data the seeder generates and the build stages. Publishing them is a
+  business operation the seed profiles drive, so it belongs to the runtime.
+- *Tests publish what they need.* =ores.testing= gains =publish_dataset()= and
+  =publish_refdata_dataset()=, which make the same call the publish service
+  makes. A test no longer leans on a build-time bootstrap that is not there.
+
 * Out of scope
 
--
+- Attaching each service account's picture. It joins the published system
+  avatars, which now happens at runtime, so
+  =iam_service_account_pictures_populate.sql= is not wired at build time and is
+  named in =validation_ignore.txt=. The runtime attach step is its own change.
+- End-to-end verification that =ores.shell bootstrap setup= leaves a usable
+  system. The seed profiles and the bundle publish are unchanged by this
+  story; the check belongs with the shell work.

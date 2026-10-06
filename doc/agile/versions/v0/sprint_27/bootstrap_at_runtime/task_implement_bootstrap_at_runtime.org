@@ -7,41 +7,55 @@
 #+level: s1
 #+filetags: :bootstrap_at_runtime:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bootstrap-at-runtime
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8606AB12-826D-4F23-A779-35307A23B5AF][Bootstrap the system at runtime]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Remove the build-time reference-data publish, so a fresh database holds the
+schema and the staged DQ artefacts only, and give the test suite a shared
+helper that publishes the datasets a test needs.
 
 * Status
 
 | Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+|--------------+----------------------------------------+
+| State        | DONE                              |
 | Parent story | [[id:8606AB12-826D-4F23-A779-35307A23B5AF][Bootstrap the system at runtime]] |
-| Now          | Not yet started.                       |
+| Now          | Done. The recreate publishes nothing and the suite is green.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR.                  |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- =populate.sql= publishes no reference data; the DQ artefacts stay staged.
+- =ores.testing= exports =publish_dataset()= and =publish_refdata_dataset()=.
+- The FOMC curve test publishes its own chain, coding schemes included.
+- The full suite is green after a recreate.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Remove the publication. Delete =acme_publish_populate.sql= and the three ore
+sample publish scripts, drop their includes and the report-instance fixture
+from =populate.sql=, and stop publishing coding schemes, asset classes and
+system avatars from their master includes. Publication becomes the runtime
+act it was designed to be.
+
+Migrate the tests. =ores.testing= gains a =publish_dataset()= helper that
+makes the call the publish service makes: resolve the dataset by code and
+invoke the function its artefact type owns, against a tenant. The FOMC curve
+test, which leaned on the build-time coding-schemes publish, uses it.
+
+Recreate and run the suite; fix what breaks the same way.
 
 * Measurements
 
@@ -55,10 +69,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Refdata books after a recreate | 0 | `select count(*) from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn()` | this branch |
+| Refdata business units after a recreate | 0 | same, `ores_refdata_business_units_tbl` | this branch |
+| Refdata asset classes after a recreate | 0 | same, `ores_refdata_asset_classes_tbl` | this branch |
+| DQ country artefacts staged | 250 | `select count(*) from ores_dq_countries_artefact_tbl` | this branch |
+| DQ datasets staged | 95 | `select count(*) from ores_dq_datasets_tbl where valid_to = ores_utility_infinity_timestamp_fn()` | this branch |
+| Test suite | 94 tests, all passing | `ctest --test-dir build/output/linux-clang-debug-make` | this branch |
 
 * Notes
 
+- The build-time bootstrap was added in PR #2034 because a fresh database
+  held 53 staged books and zero published, so no trade could be booked.
+- Two populate scripts became unreachable when their trigger was removed:
+  =reporting_test_report_populate.sql=, a walkthrough fixture that a test now
+  provides for itself, and =iam_service_account_pictures_populate.sql=, which
+  joins the published avatars. The first is deleted; the second is kept and
+  named in =validation_ignore.txt=, because attaching the pictures belongs to
+  the runtime and is its own change.
+- The first full run failed 17 tests; 15 were the stopped fleet. Of the two
+  real failures, one was the stale base (#2681 landed after the branch) and
+  one was the missing coding schemes. Rebase and the shared helper fixed
+  both.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -83,3 +114,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The build stages the DQ artefacts and publishes nothing. The ACME
+provisioning through ores.shell is what makes a fresh database usable, and
+the memory says so. Tests that need reference data publish it with the
+shared helper; the suite is green after a recreate.

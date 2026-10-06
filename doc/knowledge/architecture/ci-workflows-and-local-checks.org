@@ -12,9 +12,10 @@
 * Summary
 
 GitHub runs *no check on a pull request*. The twelve workflows that used to
-carry a =pull_request= trigger lost it on 2026-10-06; the earlier =pr.yml=
-gate and the automatic review were already gone. The local check runner
-replaced the whole pull-request gate:
+carry a =pull_request= trigger lost it on 2026-10-06, and =entity-writes.yml=
+lost it when it was caught growing the trigger back hours later; the earlier
+=pr.yml= gate and the automatic review were already gone. The local check
+runner replaced the whole pull-request gate:
 
 #+begin_src sh :results verbatim
 ./compass.sh check
@@ -117,13 +118,19 @@ Nothing on a pull request. Eleven workflows keep their own triggers:
 | =stale.yml= | daily | closes stale issues and pull requests |
 | =claude.yml= | an =@claude= comment | the on-demand review |
 
-The twelve retired triggers were =codegen-drift=, =codegen-sweep=,
+The thirteen retired triggers were =codegen-drift=, =codegen-sweep=,
 =doc-lint=, =dsh-environment=, =dsh-kanban=,
-=event-registrar-composition=, =header-hygiene=,
+=entity-writes=, =event-registrar-composition=, =header-hygiene=,
 =populate-reference-drift=, =rls-system-tenant-widenings=,
 =shell-script-drift=, =template-drift= and =typescript=. Each keeps its
 =push= to =main= trigger, so a defect that escapes the runner still shows on
 main the moment it lands.
+
+=entity-writes= is the cautionary case. It was merged with the trigger the
+same evening the other twelve lost theirs, and nothing failed: the workflow
+files are read by nothing but GitHub. A guard now fails on the plain trigger,
+=build/scripts/check_no_pr_triggers.py=, and the runner runs it under the =ci=
+class, so the next one fails locally before it reaches main.
 
 * See also
 

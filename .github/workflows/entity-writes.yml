@@ -29,16 +29,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/scripts/entity_table_writes_baseline.json"
       - ".github/workflows/entity-writes.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/ores.sql/create/**"
-      - "projects/ores.*/src/**"
-      - "projects/ores.*/include/**"
-      - "projects/ores.codegen/scripts/check_entity_table_writes.py"
-      - "projects/ores.codegen/scripts/entity_table_writes_baseline.json"
-      - ".github/workflows/entity-writes.yml"
-
   workflow_dispatch:
 
 permissions:

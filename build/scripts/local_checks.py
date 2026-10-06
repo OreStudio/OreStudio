@@ -477,6 +477,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql",),
     ),
     Check(
+        id="entity-writes",
+        title="Only the repositories write an entity table",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_entity_table_writes.py"),
+        classes=("sql", "cpp", "modeling", "codegen"),
+        fix="Move the write into the repository, or add the writer to the"
+            " ratchet baseline at projects/ores.codegen/scripts/entity_table_writes_baseline.json.",
+    ),
+    Check(
         id="enum-attributes",
         title="No visibility macro decorates an enum",
         argv=("python3", "build/scripts/check_enum_export_attributes.py"),

@@ -1695,6 +1695,35 @@ private:
                                  std::string(super_admin_avatar_key),
                                  "Attached the super administrator's picture during provisioning",
                                  images);
+
+            // A service account holds only the permissions its own domain
+            // needs, and attaching a picture is not one of them, so an
+            // administrator acts here as it does for its own picture.
+            attach_service_account_pictures(super_client, sys_ctx, images);
+        }
+    }
+
+    /// The registry names a picture for each service account, and the seed
+    /// writes that name onto the account. Turning the name into a picture is
+    /// what gives a seeded account its own icon, and it also repairs an
+    /// account that was seeded before its picture existed. The scope is the
+    /// system tenant, because that is where the service accounts live, and
+    /// attach_account_photo leaves an account that already carries a picture
+    /// alone, so this never overwrites the administrators.
+    void attach_service_account_pictures(internal_request_client& client,
+                                         ores::database::context& sys_ctx,
+                                         std::vector<std::string>& images) {
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        for (const auto& account : system_accounts.list_accounts(0, 10'000)) {
+            if (account.picture_code.empty() || account.image_id)
+                continue;
+            attach_account_photo(client,
+                                 sys_ctx,
+                                 tenant_context::system_tenant_id,
+                                 account,
+                                 account.picture_code,
+                                 "Attached the service account's picture during provisioning",
+                                 images);
         }
     }
 

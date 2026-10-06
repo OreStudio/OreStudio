@@ -31,7 +31,7 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement, with typed axes, components and manually keyed points; the value representation reuses the existing tables and needs only a cold per-point provenance annex. |
+| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement, with a declared shape (axes and their ordered values), typed axes, components and manually keyed points. The point values reuse the existing tables; the shape and the point provenance are cold additions. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
 | Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
 | Last touched  | 2026-10-06                               |
@@ -358,7 +358,7 @@ validated (see below), with the point's coordinate equal to it by construction
 (=curve_republish_service.cpp= passes =point.point_id=, the end tenor, to
 =datum_at_point=).
 
-** The decision: the representation adds no table
+** The decision: the values add no table; the shape and the provenance do
 
 The facts a build needs are already stored, or are derivable:
 
@@ -379,11 +379,16 @@ observation hypertable already holds: the table is append-only, partitioned
 on =observation_datetime=, carries no audit payload, and gives identity by
 key. That is the shape a data-oriented model wants for the points.
 
-The one cold table the requirements do imply is the per-point provenance annex
-the manual-keying and trustworthiness needs call for, described under *Manually
-keyed points* below. It is keyed by the point and holds no value, so it is a
-split of cold data from the hot row, not a second representation of the
-points.
+The cold tables the requirements do imply are two, and neither is a second
+representation of the points:
+
+- the *shape* tables, which state the object's axes and their ordered values
+  so a hole is a hole (see *Where is the shape?* below), and
+- the *per-point provenance* annex, keyed by the point and holding no value
+  (see *Manually keyed points* below).
+
+Both are cold data split away from the hot row, which is what the
+data-oriented criteria ask for.
 
 ** If a first-class build is needed, it is a cold header
 
@@ -525,6 +530,77 @@ retrieve, and the reason is the requirements, not the storage. The storage
 already holds the right rows; the reads and the acceptance never ask the
 question in the person's terms.
 
+** Where is the shape? There is no shape table, and there must be
+
+The question is the right one, and the answer today is: nowhere. The seven
+marketdata tables hold the series identity, the points, the fixings, the
+asset-class junction, the lineage, the feed bindings and the classification
+rules. None of them says which tenors, expiries or strikes make up a term
+structure. The shape is inferred from the points and nothing else:
+
+- *For an observed structure* the shape is whatever arrived. The set of tenors
+  is =SELECT DISTINCT= over the point URIs, so a tenor missing because the feed
+  dropped it is indistinguishable from a tenor the structure does not have.
+- *For a bootstrapped curve* the shape is the refdata recipe's pillars:
+  =ir_curve_bootstrap_pillar= carries =start_tenor_code=, =end_tenor_code= and
+  =sequence_index=. That is close, but it is a *build recipe in another
+  component*, it exists only for bootstrapped curves, and it describes the
+  recipe's inputs rather than the term structure's nodes.
+- *The oresmd schema* declares the coordinate *fields* an instrument type
+  carries — the axes — but no per-series values, so it cannot say which tenors
+  a particular curve comprises.
+
+Without a shape, several of the requirements below cannot be met. A missing
+node cannot be drawn as a hole. Completeness cannot be checked. "Which nodes
+were added or dropped between two instants" cannot be answered against an
+expected axis. And a surface's components cannot be enumerated without
+scanning history.
+
+** The shape is a first-class, cold declaration
+
+The object's shape is its axes and their ordered values:
+
+| Object | Axes | Axis values |
+|--------+------+-------------|
+| A yield curve | =term= | 1M, 3M, 6M, 1Y, ... |
+| An FX vol surface | =expiry=, =strike_label= | the expiries; ATM, 25RR, 25BF |
+| A swaption cube | =expiry=, =term=, =strike_level= | ... |
+
+A *node* is one value per axis; the grid is the product of the axes; an
+observation is the value at a node; and a node with no observation is a hole,
+which is exactly what the rendering, completeness, alignment and component
+requirements need. The tables are small and cold:
+
+#+begin_example
+ores_marketdata_series_axes_tbl
+  series_id   uuid      -- FK -> market_series(id)
+  axis_field  text      -- an oresmd field code: term, expiry, strike_label, ...
+  sequence    integer
+  unique current: (tenant_id, party_id, series_id, axis_field)
+
+ores_marketdata_series_axis_values_tbl
+  series_id   uuid
+  axis_field  text
+  value       text      -- the code or level, validated where a vocabulary exists
+  sequence    integer
+  unique current: (tenant_id, party_id, series_id, axis_field, value)
+#+end_example
+
+Both are cold: tens of rows per object, read once when an axis is drawn or a
+build is validated, never on the point path. They join to the series by
+=series_id=, and to the points by =(series, axis attribute)= against the
+coordinate the read extracts from the point's URI. A point whose coordinate is
+not a declared axis value is a defect, and the write-time check that refuses
+it is what keeps the shape and the points from drifting.
+
+For a bootstrapped curve the shape and the recipe's pillars are the same tenors
+seen twice, so the rule is: the *shape* is the marketdata-side statement of
+what the object comprises, and the *recipe* states how each node is built. A
+build writes the shape from its pillars when it publishes, so the two cannot
+drift; an observed or imported structure writes its shape from what it
+declares, with no recipe at all. This is also where the tenor validation
+lands: an axis value that is a term must be a =refdata_tenors= code.
+
 ** The components: ATM, RR and BF are the surface's own axis
 
 The vol surface's quoting convention is not a detail beside the surface; it
@@ -622,54 +698,62 @@ can show the manual segment with its actor and its reason.
 
 1. A composite object is first-class: identifiable and of a kind (term
    structure, surface, grid), with its axes named, before any point is read.
-2. Its nodes have typed coordinates — terms, expiries, strikes or deltas,
-   dimensions — that can be queried, joined and aligned, not only text inside
-   an identity string.
-3. Every axis value is a typed, validated code with a vocabulary, so =ATM=,
+2. Its *shape* is declared: the axes and their ordered values are stored as a
+   cold, per-object declaration, so a node with no value is a hole and not an
+   absent node, and completeness can be checked.
+3. Its nodes have typed coordinates -- terms, expiries, strikes or deltas,
+   dimensions -- that can be queried, joined and aligned, not only text inside
+   an identity string, and every node coordinate is a value of the declared
+   shape.
+4. Every axis value is a typed, validated code with a vocabulary, so =ATM=,
    =25RR= and =25BF= are canonical and a component can be named.
-4. The components of an object along an axis are retrievable as term
+5. The components of an object along an axis are retrievable as term
    structures in their own right, over time: "the ATM ladder of the EURUSD
    surface, over the last quarter" is one request.
-5. Evolution is a first-class read: one bounded request returns the aligned
+6. Evolution is a first-class read: one bounded request returns the aligned
    matrix of instants by nodes, with the coordinate labels and the values.
-6. Shape change is explicit: the read reports nodes added, dropped and
-   persistent between instants.
-7. The single-instant read, the slice read and the evolution read share one
+7. Shape change is explicit: the read reports nodes added, dropped and
+   persistent against the declared shape.
+8. The single-instant read, the slice read and the evolution read share one
    definition of the object, so they cannot disagree.
-8. Every node's value carries its provenance per instant, so the view can
+9. Every node's value carries its provenance per instant, so the view can
    explain a change.
-9. A point's source kind is stored per point — quoted, derived or manual —
-   and a manual point names the actor, the time and the reason.
-10. A manual point is not silently overwritten by a later automatic write; the
-   precedence between the two is explicit.
-11. The evolution view distinguishes manual points and shows their actor and
-   reason, so a person can see what was keyed by hand.
+10. A point's source kind is stored per point -- quoted, derived or manual --
+    and a manual point names the actor, the time and the reason.
+11. A manual point is not silently overwritten by a later automatic write; the
+    precedence between the two is explicit.
+12. The evolution view distinguishes manual points and shows their actor and
+    reason, so a person can see what was keyed by hand.
 
 ** What to add, in order
 
 1. The composite-object identity at the wire boundary: a typed request (asset
    class, scope such as a currency pair, object kind, party) that resolves to
    the series, so "the FX vol surface for EURUSD" needs no hand-built URI.
-2. The axis values as typed, validated codes: the strike-label vocabulary and
+2. The shape tables: the per-object axes and their ordered values, written
+   from the recipe's pillars by a build and from the declaration by an import,
+   with every term value validated against =refdata_tenors= (which also closes
+   capture =A6472918= on the recipe side) and a write-time check that refuses a
+   point whose coordinate is not a declared axis value.
+3. The axis values as typed, validated codes: the strike-label vocabulary and
    the quoting convention, so ATM, 25RR and 25BF are canonical and the
    components of a surface are enumerable.
-3. The slice read: a component along one axis — the ATM ladder — returned as a
-   term structure over time, from the same object definition.
-4. The aligned evolution read: the object plus a range or a set of instants,
+4. The slice read: a component along one axis -- the ATM ladder -- returned as
+   a term structure over time, from the same object definition.
+5. The aligned evolution read: the object plus a range or a set of instants,
    returning instants by nodes with the coordinate labels and numeric values,
-   and the added, dropped and persistent nodes. It replaces the fixed
-   five-bucket window and returns a matrix, not arrays of objects.
-5. The single-instant read reshaped to the same object definition, so the
+   and the added, dropped and persistent nodes against the declared shape. It
+   replaces the fixed five-bucket window and returns a matrix, not arrays of
+   objects.
+6. The single-instant read reshaped to the same object definition, so the
    three cannot disagree.
-6. The per-point provenance annex: the source kind (quoted, derived, manual),
+7. The per-point provenance annex: the source kind (quoted, derived, manual),
    and for a manual point the actor, the time and the reason, in one cold
-   annex keyed by the point's natural key. Name it once — broaden
-   =observation_lineage= or rename it — rather than adding a second cold
+   annex keyed by the point's natural key. Name it once -- broaden
+   =observation_lineage= or rename it -- rather than adding a second cold
    table beside it.
-7. The manual precedence rule: what a later automatic write does to a manual
+8. The manual precedence rule: what a later automatic write does to a manual
    point, stated as a policy and covered by a test.
-8. Validate the recipe's pillar tenor codes against =refdata_tenors= (capture
-   =A6472918=).
 9. Guard the curve-snapshot reads (capture =D9258D1F=).
 10. Only then decide the =curve_builds= table, from the agreed journeys.
 
@@ -682,6 +766,9 @@ evolution second, the representation third.
   identifiable, and of a kind, with its axes named, without knowing which
   strings to combine. "Is this a curve or a surface" and "which one is this"
   are answerable from the data.
+- *Its shape is declared.* The axes and their ordered values are stored, so a
+  node with no value is a hole and not an absent node, completeness can be
+  checked, and every node's coordinate is a value of the declared shape.
 - *Its nodes are typed coordinates.* A node's coordinate tuple — terms,
   expiries, strikes or deltas, dimensions — is queryable and joinable, not
   only text inside an identity string.

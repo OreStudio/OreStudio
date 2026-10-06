@@ -23,9 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/presentation/market_observation_history_field_mapper.hpp"
-#include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::marketdata::presentation {
 

@@ -24,9 +24,15 @@
  */
 #include "ores.iam.core/repository/role_grant_request_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/domain/role_grant_request_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/repository/role_grant_request_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::iam::repository {
 

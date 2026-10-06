@@ -23,10 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/book_service.hpp"
-#include "ores.database/repository/valid_at.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.core/repository/book_repository.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <algorithm>
+#include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>
@@ -34,6 +38,14 @@
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.database/domain/context.hpp"
+#include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
 

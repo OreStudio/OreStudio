@@ -25,7 +25,9 @@
 #include "ores.assets.core/messaging/image_history_provider_registrar.hpp"
 #include "ores.assets.core/presentation/image_history_field_mapper.hpp"
 #include "ores.assets.core/service/image_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::assets::messaging {
 

@@ -556,6 +556,7 @@ read_system_party(context ctx, const std::string& tenant_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <array>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"

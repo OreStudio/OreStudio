@@ -23,16 +23,24 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/service/login_info_service.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <algorithm>
+#include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/messaging/login_info_protocol.hpp"
+#include "ores.iam.core/repository/login_info_repository.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
-#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
 

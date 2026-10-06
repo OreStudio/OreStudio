@@ -23,9 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/messaging/badge_definition_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
 #include "ores.dq.core/service/badge_definition_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 

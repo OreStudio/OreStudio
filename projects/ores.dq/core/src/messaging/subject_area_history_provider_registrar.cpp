@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/messaging/subject_area_history_provider_registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
 

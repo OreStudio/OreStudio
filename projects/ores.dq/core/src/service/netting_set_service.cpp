@@ -23,11 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/netting_set_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/netting_set.hpp"
+#include "ores.dq.api/messaging/netting_set_protocol.hpp"
+#include "ores.dq.core/repository/netting_set_repository.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <algorithm>
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <cstdint>
-#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>

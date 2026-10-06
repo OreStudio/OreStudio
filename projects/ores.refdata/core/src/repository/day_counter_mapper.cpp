@@ -24,7 +24,13 @@
  */
 #include "ores.refdata.core/repository/day_counter_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/day_counter.hpp"
 #include "ores.refdata.api/domain/day_counter_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/day_counter_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::refdata::repository {
 

@@ -24,7 +24,13 @@
  */
 #include "ores.iam.core/repository/tenant_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.api/domain/tenant_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/repository/tenant_type_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::iam::repository {
 

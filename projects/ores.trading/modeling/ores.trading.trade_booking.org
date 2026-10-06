@@ -220,6 +220,7 @@ A database foreign key: the anchor is immutable.
 #+begin_src cpp :name parent_seed_includes
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include <optional>
 #+end_src
 
 #+begin_src cpp :name parent_seed

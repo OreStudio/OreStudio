@@ -46,8 +46,7 @@ distinguished only by the field name the operator is written against.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <rfl/json/write.hpp>
 
 namespace ores::{{component}}::repository {
 
@@ -71,8 +70,7 @@ branches.
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <rfl/json/write.hpp>
 
 namespace ores::{{component}}::repository {
 

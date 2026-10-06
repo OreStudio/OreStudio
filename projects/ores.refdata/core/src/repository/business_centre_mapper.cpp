@@ -24,7 +24,13 @@
  */
 #include "ores.refdata.core/repository/business_centre_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.api/domain/business_centre_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/business_centre_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::refdata::repository {
 

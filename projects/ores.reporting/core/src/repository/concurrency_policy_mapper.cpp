@@ -24,7 +24,12 @@
  */
 #include "ores.reporting.core/repository/concurrency_policy_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
+#include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::reporting::repository {
 

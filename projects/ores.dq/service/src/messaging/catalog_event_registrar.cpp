@@ -23,11 +23,15 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.service/messaging/catalog_event_registrar.hpp"
-#include "ores.dq.api/eventing/catalog_event.hpp"
-#include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+// The event header specialises entity_event_traits, which the mapping and the
+// subject below instantiate.
+#include "ores.dq.api/eventing/catalog_event.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/messaging/catalog_protocol.hpp"
 
 namespace ores::dq::service::messaging {
 

@@ -26,9 +26,7 @@
 // System-scoped entity (see the SQL flags): rows belong to the system
 // tenant, so the write context below is stamped system and needs the
 // tenant_id helpers.
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
@@ -39,21 +37,29 @@
 #include "ores.iam.api/messaging/seed_profile_parameter_protocol.hpp"
 #include "ores.iam.core/repository/seed_profile_parameter_repository.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_service.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_iam_seed_profiles_tbl): the parent may live in another
-// component, so its own component names the headers.
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.iam.api/generators/seed_profile_generator.hpp"
 #include "ores.iam.core/repository/seed_profile_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for seed_profile_parameter -- the

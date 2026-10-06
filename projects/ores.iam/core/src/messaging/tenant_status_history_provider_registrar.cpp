@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/tenant_status_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/tenant_status_history_field_mapper.hpp"
 #include "ores.iam.core/service/tenant_status_service.hpp"
 

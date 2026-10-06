@@ -24,7 +24,13 @@
  */
 #include "ores.trading.core/repository/activity_category_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.trading.api/domain/activity_category.hpp"
 #include "ores.trading.api/domain/activity_category_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.core/repository/activity_category_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::trading::repository {
 

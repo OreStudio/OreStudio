@@ -24,11 +24,18 @@
  */
 #include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.core/repository/bond_issue_call_date_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 

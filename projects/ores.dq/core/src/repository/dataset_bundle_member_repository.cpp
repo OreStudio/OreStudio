@@ -23,15 +23,33 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_member_entity.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_mapper.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <optional>
-#include <sqlgen/postgres.hpp>
+#include <sqlgen/aggregations.hpp>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/select_from.hpp>
+#include <sqlgen/to.hpp>
+#include <sqlgen/where.hpp>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ores::dq::repository {
 

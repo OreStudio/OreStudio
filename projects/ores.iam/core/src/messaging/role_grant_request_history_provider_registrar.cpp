@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/messaging/role_grant_request_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/role_grant_request_history_field_mapper.hpp"
 #include "ores.iam.core/service/role_grant_request_service.hpp"
 

@@ -611,10 +611,12 @@ or nullopt when the account is absent, is a user account, or the SHA-256
 of the supplied password does not match.
 
 #+begin_src cpp :name includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.database/domain/tenant_aware_pool.hpp"
 #include <array>
 #include <format>
 #include <openssl/evp.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #+end_src
 

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/messaging/series_classification_rule_history_provider_registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::marketdata::messaging {
 

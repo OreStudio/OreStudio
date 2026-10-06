@@ -23,11 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/dataset_bundle_member_service.hpp"
+#include "ores.dq.api/domain/dataset_bundle_member.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <cstddef>
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/bond_issue_leg_rate_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.trading.api/messaging/bond_issue_leg_rate_protocol.hpp"
 #include "ores.trading.core/messaging/bond_issue_leg_rate_handler.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::trading::messaging {
 

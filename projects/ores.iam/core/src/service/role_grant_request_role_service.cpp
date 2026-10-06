@@ -23,15 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.iam.core/service/role_grant_request_role_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
+#include "ores.iam.api/domain/role_grant_request_role.hpp"
+#include "ores.iam.api/messaging/role_grant_request_role_protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 namespace ores::iam::service {
 

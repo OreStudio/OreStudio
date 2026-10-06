@@ -25,7 +25,9 @@
 #include "ores.compute.core/messaging/result_history_provider_registrar.hpp"
 #include "ores.compute.core/presentation/result_history_field_mapper.hpp"
 #include "ores.compute.core/service/result_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::compute::messaging {
 

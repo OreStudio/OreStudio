@@ -24,14 +24,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/tests/test_check_event_registrar_composition.py"
       - ".github/workflows/event-registrar-composition.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/*/service/**"
-      - "projects/ores.codegen/scripts/check_event_registrar_composition.py"
-      - "projects/ores.codegen/tests/test_check_event_registrar_composition.py"
-      - ".github/workflows/event-registrar-composition.yml"
-
   workflow_dispatch:
 
 permissions:

@@ -20,11 +20,9 @@ name: DSH Environment
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
-    paths: &plugin-paths
+    paths:
       - 'projects/ores.dsh_environment/**'
       - '.github/workflows/dsh-environment.yml'
-  pull_request:
-    paths: *plugin-paths
   workflow_dispatch:
 
 permissions:

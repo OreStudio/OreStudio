@@ -24,14 +24,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/tests/test_check_rls_system_tenant_widenings.py"
       - ".github/workflows/rls-system-tenant-widenings.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/ores.sql/create/**"
-      - "projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py"
-      - "projects/ores.codegen/tests/test_check_rls_system_tenant_widenings.py"
-      - ".github/workflows/rls-system-tenant-widenings.yml"
-
   workflow_dispatch:
 
 permissions:

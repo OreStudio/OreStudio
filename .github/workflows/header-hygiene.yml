@@ -27,14 +27,6 @@ on:  # yamllint disable-line rule:truthy
       - "build/scripts/check_exported_types_are_compiled.py"
       - ".github/workflows/header-hygiene.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/**"
-      - "build/scripts/check_enum_export_attributes.py"
-      - "build/scripts/check_exported_types_are_compiled.py"
-      - ".github/workflows/header-hygiene.yml"
-
   workflow_dispatch:
 
 permissions:
@@ -48,10 +40,9 @@ jobs:
   # and turned the Windows build red in ores.dq.core.lib.
   #
   # No compiler on Linux or macOS catches it, and the three continuous
-  # workflows run on a schedule rather than on a pull request, so Windows --
-  # the only platform that reports it -- would see it at best twelve hours
-  # after the merge. The check is a source scan, so it needs no toolchain and
-  # takes about a second.
+  # workflows run on a schedule, so Windows -- the only platform that reports
+  # it -- would see it at best twelve hours after the merge. The check is a
+  # source scan, so it needs no toolchain and takes about a second.
   enum-attributes:
     runs-on: ubuntu-24.04
     steps:

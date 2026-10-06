@@ -23,13 +23,6 @@ on:  # yamllint disable-line rule:truthy
       - ".prettierrc.yaml"
       - ".github/workflows/typescript.yml"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/ores.web/**"
-      - ".prettierrc.yaml"
-      - ".github/workflows/typescript.yml"
-
   workflow_dispatch:
 
 permissions:
@@ -37,9 +30,8 @@ permissions:
 
 jobs:
   # The component's checks are ctest entries, so the continuous and nightly
-  # builds already run them — but only after a full C++ build, and never on a
-  # pull request. This job answers the same two commands in about a minute,
-  # where the author can see them.
+  # builds already run them — but only after a full C++ build. This job answers
+  # the same commands in about a minute on a main push.
   typescript:
     runs-on: ubuntu-24.04
     steps:

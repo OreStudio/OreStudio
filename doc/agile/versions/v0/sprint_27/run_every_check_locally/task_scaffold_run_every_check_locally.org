@@ -20,28 +20,31 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story, its tasks, and the branch that the local check runner work
+lands on.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The story and its two tasks exist under sprint 27.
+- Sprint 27 lists the story, and the story lists both tasks.
+- The scaffold PR carries documentation only.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=compass story new= scaffolded the story, the scaffold task and the first
+implementation task, created =feature/run-every-check-locally= off
+=origin/main=, and wired every table. Commit and raise the PR.
 
 * Measurements
 
@@ -83,3 +86,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story A2C7D47F and tasks 93FAC931 (scaffold) and 0829AF20 (implementation) are
+in sprint 27 via PR #2714. Sprint 27 lists the story; the story lists both
+tasks. The first implementation task is BACKLOG and picks up its own branch
+with =compass task start=.

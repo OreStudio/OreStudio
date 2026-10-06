@@ -39,7 +39,7 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:93FAC931-489F-401F-9870-E740C640A39F][Scaffold story: Run every check locally in one report]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:93FAC931-489F-401F-9870-E740C640A39F][Scaffold story: Run every check locally in one report]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:0829AF20-92A5-4497-983F-A15B4D8C3871][Build the local check runner, its report and its decision tree]] | BACKLOG | | | Initial task for: Run every check locally in one report |
 
 * Decisions

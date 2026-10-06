@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: 51D261D5-2F9A-4B9A-AB11-A56378803EA8
+:END:
+#+title: Synthetic and market data note shape
+#+description: Proposal for the atomic notes, hubs and tags that document the market data pipeline, the feed bindings, the synthetic generation configs and the vendor side, with a disposition for every existing note on the subject.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:documentation:marketdata:synthetic:feeds:note_shape:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+* Summary
+
+The recent work settled the market data pipeline as one path. A producer
+publishes a =market_tick= on its own subject, a feed binding routes that tick
+to the parties that consume it, and the marketdata ingest loop plans the tick,
+writes the series and observation, and republishes onto the per-party stream.
+The knowledge graph does not yet mirror that shape. It holds four large notes
+that mix the pipeline with its history, plus one architecture note that
+predates the binding model it now describes.
+
+This proposal keeps one idea per note, names the code or model each note
+documents, and gathers the notes under two hubs. It follows the atomic note
+discipline in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]], where a note that grows is split rather than
+extended, and the structure note discipline, where a hub gists and links and
+carries no content its cluster does not. It also follows
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]], where the index lists the hub of a topic and never the pages
+under it.
+
+The proposal deletes two notes, splits three, and merges seven existing notes
+into proposed ones. It adds twenty nine notes, each with a path, a symbol or a
+table behind it, and it names the hub each one hangs from.
+
+* What exists today
+
+The notes below are the whole of the subject today. =Market map= notes carry
+no disposition because they describe a different pipeline, the logical
+requirement to physical identifier resolution, and are named only so the
+boundary is visible.
+
+** Synthetic generation and its approach
+
+| Note | ID | Tags | Disposition |
+|------+----+------+-------------|
+| Synthetic market data generation: approach | =BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87= | =market_data=synthetic=approach=sprint_21=knowledge= | Split. The method per asset class and the cross-asset constraints are a real idea and stay. The implementation model, the roadmap and the UI section describe code that now exists and move into the notes below. |
+| Synthetic market data generators | =C6F45530-4B5D-4C03-95DF-65D13F7A4142= | =marketdata=synthetic=generators=architecture= | Supersede. It specifies an =IStochasticProcess= / =IFxSpotFeed= split. =IFxSpotFeed= is gone, replaced by =IFeed= and =feed_factory=, so the note is wrong about the seam it exists to describe. Replace with the generator library note and the factory note. |
+| FX spot synthetic data PoC: architecture | =29573D59-1BA2-4DBB-A12B-8EAC7F7CC4AB= | =marketdata=synthetic=architecture=poc= | Retire. Every mechanism it specifies is superseded. It documents an =fx_spot_tick= struct and a per-ORE-key subject =marketdata.v1.tick.fx.rate.eur.usd=; the tick is now the one =market_tick= type, the ingest loop owns persistence, and the subject grammar is in =tick_subjects.hpp=. Its one open question on the feed manager is answered by =feed_factory=. |
+| ores.marketdata infrastructure inventory | =C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE= | =marketdata=synthetic=inventory= | Retire. It was written to scope the PoC and its DB schema, NATS subject and table inventory describe the pre-binding stack. Its ORE file format and CMake content belongs in the component overview, and its subject content is now the tick subject note. |
+| Paper summary: Gaussian GenAI, synthetic market data generation | =84E7CEA8-9654-431C-A8D1-C8B97E35B6D5= | =market_data=synthetic=research=generative_ai=knowledge= | Keep. It is a source record for the GMM method, it anchors the FX GMM choice, and it belongs in the =aside= section of the synthetic hub. |
+| ORE market data catalogue | =F9AE7F54-D995-476A-BA24-93698BF5029D= | =market_data=ore=synthetic=catalogue=knowledge= | Keep. It is the inventory of ORE quote keys and product dependencies, it is the input the generators answer to, and nothing in the pipeline replaced it. |
+| oresmd: ORE Studio Market Data URI | =C3E053CA-0D4B-480B-9119-E11530160EC1= | =marketdata=identifiers=design= | Keep. It is the datum identity note the pipeline needs, current as of the refdata work. Link it from the pipeline hub rather than restating it. |
+
+**Stochastic process cluster**
+
+| Note | ID | Tags | Disposition |
+|------+----+------+-------------|
+| Stochastic Processes | =A8C46639-0639-4587-B07D-B8B006C46618= | =knowledge=domain=quantitative_finance=stochastic_processes=ore= | Keep, promote. It is the hub for the cluster and it carries no =structure_note= tag, so the index call in [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] cannot find it. Add the tag and move the note under the new synthetic hub as its process catalogue. |
+| Wiener Process | =EED46603-D1E7-42BD-AA5A-B0C477F76B24= | =...=stochastic_processes=ore= | Keep. Referenced by process maths notes and by the generator library. |
+| Ito's Lemma | =BBF2D2A7-B504-4426-94E1-96DD95E31603= | =...=stochastic_processes=ore= | Keep. |
+| Geometric Brownian Motion | =3AD7973A-57ED-43EB-9504-825719F601A8= | =...=stochastic_processes=ore= | Keep. It is the default FX process in =fx_spot_generation_config.process_type=. |
+| Ornstein-Uhlenbeck Process | =4F7C0348-3C53-44E2-8C95-B3B26852FB94= | =...=stochastic_processes=ore= | Keep. |
+| Cox-Ingersoll-Ross (CIR) Process | =2350DE1D-00F7-4909-8308-D91831F4C0EA= | =...=stochastic_processes=interest_rates=ore= | Keep. It is one of the three =yield_curve_process_type= rows. |
+| Vasicek Process | =6FD62097-BF1C-4A29-AD6A-88281F457812= | =...=stochastic_processes=interest_rates=ore= | Keep. One of the three =yield_curve_process_type= rows. |
+| Hull-White Process | =3A5924E0-43BA-4A8E-8107-36D38DA07A87= | =...=stochastic_processes=interest_rates=ore= | Keep. One of the three =yield_curve_process_type= rows. |
+| Arithmetic Brownian Motion | =39C32F26-7D95-4F42-948A-1171464E0FFF= | =...=stochastic_processes=ore= | Merge into Geometric Brownian Motion as a section, or keep if a configured process type exposes it. Confirm against =process_factory=. |
+| Random Walk | =F07B50E2-0B51-4230-8D0D-F0587663BC9F= | =...=stochastic_processes=ore= | Merge into Wiener Process. |
+| Markov Property | =09BA4EBB-BEC0-4AAB-95B1-419B134C9795= | =...=stochastic_processes=ore= | Keep. It justifies the state-only step in every generator. |
+| Probability measures: P and Q | =A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47= | =quantitative_finance=pricing=market_data=knowledge= | Keep. It is the note that explains why generation runs under P. |
+| Volatility clustering and GARCH models | =351CB816-28F5-428A-A289-414B6F4B9F36= | =quantitative_finance=volatility=market_data=garch=knowledge= | Keep. It is a candidate process family and it belongs to the [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] hub, not this one. |
+
+**Architecture, UI and provenance**
+
+| Note | ID | Tags | Disposition |
+|------+----+------+-------------|
+| Market Data Architecture | =DF2B616F-E112-4C57-A73B-69F85BE96EF4= | =architecture=marketdata=nats=synthetic=feeds= | Rewrite, role change. It is the right hub and it is stale in the three places that matter. Its feed configuration section predates =feed_binding= and =producer_kind=; its subject section predates the tenant and party segments and the sandbox prefix; its current-versus-target section still describes a boot-time hardcoded bootstrap and an =fx_spot_tick=. Fix it into a hub that gists and links, and move the detail into the notes below. |
+| Market Data Requirements and Resolution | =FD427B5B-BDC5-4803-AFCD-97A59E31FE25= | =knowledge=domain=structure_note=marketdata=requirements=resolution= | Keep, boundary. It is a structure note for the logical requirement to physical identifier path. It is a different pipeline and the market hub must say so and link to it. |
+| Market Data Identifier | =3D56DB59-8075-42BB-8139-A7440C9786B2= | =knowledge=domain=marketdata=identifiers= | Keep, boundary. Requirement-side identifier, not the stored datum. Link from the datum note. |
+| External market data identifiers | =F3010EA7-6A0E-405C-81FA-1EF051749B5E= | =marketdata=identifiers= | Keep. It is the vendor notation survey and the vendor producer note links to it. |
+| Curve Point Provenance | =573F9165-C20B-463C-B0B3-F324AFE4E81F= | =knowledge=domain=finance=rates=curves=tenors=ore= | Keep. Curve derivation provenance. The observation lineage note links to it and must not restate it. |
+| Synthetic data generation screens | =5779B40E-1C82-478D-951E-C81C13F7DFEA= | =synthetic=ui=prototype=reference= | Keep, rename. It is current and its data model table is the best summary of the config entities. The name understates it, because it also holds the shells of the screens. Its per-entity rows move to the config notes and it keeps the screens. |
+| Market Data Snapshot | =CEC7844C-B3AE-4858-BF67-71F511007F82= | =knowledge=domain=marketdata=snapshot= | Keep, boundary. It is the resolution-side snapshot concept. The stored-data snapshot and cut note must say how it differs. |
+| ores.marketdata (component overview) | =F2FA516C-1F86-43EF-80D4-E92F640B6CFD= | =marketdata=component= | Keep. Component page, not a knowledge note. The codegen entity pages under it stay as the field-level record. |
+
+Count of existing notes dispositioned. Twenty five, of which thirteen are the
+stochastic process cluster including its hub, four are boundary notes held
+without change, and eight are on the pipeline itself.
+
+* The building blocks
+
+Each note below is one idea. The tag set is the note's own, separate from its
+hub's. Every entry names the code or model behind it.
+
+** Hub A. Market data pipeline and feeds
+
+Read this cluster to understand how a tick becomes a stored observation and
+how a consumer finds it.
+
+| Title | Scope | Filetags | Anchor |
+|-------+-------+----------+--------|
+| The feed and its lifecycle | What an =IFeed= is, its identity triple of source name, qualifier and role, its =start=/=stop= blocking contract, and its publish counter | =marketdata=feeds=producers=lifecycle= | =ores.marketdata.api/domain/i_feed.hpp=, class =IFeed= |
+| The feed controller | Why one process owns add, start, stop, conflict detection and the binding rule, and what each start result means | =marketdata=feeds=lifecycle=control= | =ores.synthetic/service/src/feed_controller.hpp=, =feed_controller::start_result= |
+| The feed factory and the kind seam | How a kind string selects a producer builder, why the build input is a variant, and how a third asset class registers without touching the lifecycle | =marketdata=feeds=producers=factory= | =ores.synthetic.api/feeds/feed_factory.hpp=, =feed_factory::make=, =make_default_feed_factory= |
+| Adding an asset class | The two places an asset class plugs in, its config rows into a typed build input and its producer behind =IFeed=, and the list of edits a new kind still requires | =marketdata=feeds=producers=extension= | =feed_factory::register_kind=, =fx_spot_feed_kind=, =ir_curve_feed_kind= |
+| Binding mode | The bound and sandboxed modes, which subjects each one publishes on, and why a sandboxed feed is unreachable by ingest | =marketdata=feeds=binding=synthetic= | =ores.synthetic.api/domain/binding_mode.hpp= |
+| Scope | The system, tenant and party scopes, which of them the config and the feed data honour today, and why scope is orthogonal to binding mode | =marketdata=feeds=scope=synthetic= | =ores.synthetic.api/domain/scope.hpp=, =market_data_generation_config.scope= |
+| The producer subject | The one subject builder for every asset class, the token sanitising rule, and the sandbox prefix ingest never subscribes to | =marketdata=feeds=subjects=nats= | =ores.synthetic.api/feeds/producer_subject.hpp=, =producer_subject= |
+| The market tick | The one tick type of every asset class, the fields it carries, and how the datum URI carries the asset identity | =marketdata=feeds=nats=protocol= | =operations_protocol.hpp=, struct =market_tick=; =tick_subjects.hpp=, =market_tick_subject= |
+| The oresmd datum identity | How a datum is named, the schema table behind the URI, the canonical write, and the codecs checked against ORE | =marketdata=identifiers=datum= | [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]; =ores.marketdata.core/datum/oresmd_uri_codec.hpp= |
+| Series and observation | What a series catalogues against what an observation records, the soft-update rule for a correction, and why observations carry no audit columns | =marketdata=storage=series=observations= | =ores.marketdata.api/domain/market_series.hpp=, =market_observation.hpp= |
+| Lineage and provenance | Why a derived observation carries an extra lineage row, how =derivation_kind= separates published from computed, and how =upstream_as_of= fixes a rerun | =marketdata=storage=provenance=lineage= | =observation_lineage.hpp=, =derivation_kind=; [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] |
+| The ingest loop and the one pipeline | How a tick is planned against its binding, written once per enabled binding, and republished on the per-party stream; where the pipeline is one path today and where an =if= still stands in for a registered hook | =marketdata=feeds=ingest=pipeline= | =feed_ingest_loop.cpp=, =plan_tick= in =tick_plan.cpp=, the =plan->datum.type() == instrument_type::fx_spot= CRM hook |
+
+**Hub B. Synthetic generation**
+
+Read this cluster to author and run a generator.
+
+| Title | Scope | Filetags | Anchor |
+|-------+-------+----------+--------|
+| The generation config collection and folders | The named party-scoped container, its scope and binding mode columns, and the self-referencing folder tree the Market Simulator browses | =synthetic=config=collection=folders= | =market_data_generation_config.hpp=, =folder.hpp=; =ores.synthetic.market_data_generation_config.org=, =ores.synthetic.folder.org= |
+| The FX spot generation config | One FX pair feed, its datum identity, its GMM process choice and its tick clock | =synthetic=config=fx= | =fx_spot_generation_config.hpp=; =ores.synthetic.fx_spot_generation_config.org= |
+| The GMM component | One weighted Gaussian of a feed's mixture, the weight normalisation rule, and why the components are rows rather than a blob | =synthetic=config=fx=process= | =gmm_component.hpp=; =ores.synthetic.gmm_component.org= |
+| The FX spot producer | The fixed-mode tick clock, the step from process state to tick, and the datum URI it publishes | =synthetic=producers=fx= | =fx_spot_feed.cpp=, =fx_spot_feed_kind= |
+| The IR curve generation config | One curve feed, its currency, index family, role and tenor, and its vintage binding | =synthetic=config=ir= | =ir_curve_generation_config.hpp=; =ores.synthetic.ir_curve_generation_config.org= |
+| The IR curve template and its parameters | The tenor and instrument ladder, the derived pillar ticks, and the named parameter values resolved against the definition catalogue | =synthetic=config=ir=process= | =ir_curve_template_entry.hpp=, =ir_curve_generation_config_process_parameter_value.hpp=, =yield_curve_process_parameter_definition.hpp=; =ores.synthetic.ir_curve_template_entry.org= |
+| The yield curve process type catalogue | The three short-rate engines a curve config may choose, and the parameter names each one accepts | =synthetic=config=catalogue= | =yield_curve_process_type.hpp=; =ores.synthetic.yield_curve_process_type.org= |
+| The IR curve producer | How one short-rate state becomes a pillar slice, and the refdata resolution a slice needs | =synthetic=producers=ir= | =ir_curve_feed.cpp=, =ir_curve_template_resolver.cpp=, =ir_curve_feed_kind= |
+| The generator library | The process interface, the process factory, the per-process RNG design and the seeding rule | =synthetic=generators=process= | =ores.analytics.quant=, =IStochasticProcess=, =process_factory::make_process= |
+
+**Hub C. Operations and the operation surface**
+
+| Title | Scope | Filetags | Anchor |
+|-------+-------+----------+--------|
+| Preview and simulate | What each operation returns, why a preview reads and a run writes, and how the path count and tick count are bounded | =synthetic=operations=preview=simulate= | =simulate_fx_spot_paths_protocol.hpp=, =preview_ir_curve_shape_protocol.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp= |
+| The shell operation surface | The =synthetic= command group, the folder and feed addressing rule, and the vintage check, all of it kind agnostic | =synthetic=shell=operations= | =ores.shell/app/commands/synthetic_commands.cpp=, =synthetic_commands::register_commands= |
+| The market simulator screens | The one composite window, the per-entity editors behind it, the cascade start and stop request per node, and the reference to each prototype | =synthetic=ui=qt= | [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], the =ores.qt= =synthetic/= menu |
+
+**Hub D. Vendor and stored data**
+
+The non-synthetic side of the same pipeline. It uses the same tick, the same
+ingest and the same store, so these notes link into Hub A rather than copy it.
+
+| Title | Scope | Filetags | Anchor |
+|-------+-------+----------+--------|
+| The feed binding | What a binding records, the one place a tick finds its owners, the enabled flag as a suspend, and rebinding as a source switch | =marketdata=feeds=binding=vendor= | =feed_binding.hpp=, =feed_binding_repository=; =ores.marketdata.feed_binding.org= |
+| The producer kind | Why real against generated is a property of the producer and not of the data, how the kind travels from the binding onto the series, and how it differs from =derivation_kind= | =marketdata=feeds=provenance=refdata= | =ores.refdata.producer_kind.org=, =PRODUCER_KIND=, =feed_binding.producer_kind= |
+| Vendor producers | What a vendor producer must satisfy to be bindable, the subjects it publishes on, and the fact that no vendor producer exists in the tree yet | =marketdata=feeds=vendor=producers= | =IFeed= consumers, =tick_subjects.hpp=; [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] |
+| Snapshots and cuts | The stored-data as-of read, the curve snapshot request and its bucket ceiling, and how both differ from the resolution-side [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] | =marketdata=storage=snapshot=cut= | =curve_snapshot_handler.hpp=, =as_of_rows.hpp=, =marketdata.v1.curve-snapshot.get= |
+| ORE import and export | How a =market.txt= vintage becomes observations and how the store is written back out, including the reversed-key correction and its delegated lookup | =marketdata=storage=ore=import=export= | =import_service.cpp=, =fx_quote_convention_checker=, =marketdata.v1.import=, =marketdata.v1.export= |
+
+**Merges and deletions in this set**
+
+- The =IFxSpotFeed= split note is deleted. Its generator half becomes the
+  generator library note, its seam half becomes the feed factory note.
+- The PoC architecture and the infrastructure inventory are deleted. Their
+  subject tables become the producer subject and market tick notes, their
+  schema tables become the series and observation note, and their history is
+  already recorded in the sprint evidence.
+- The per-asset-class method document keeps the method and the roadmap. It
+  loses the implementation and UI sections, which are the notes above.
+- The screens note loses its data model table to the config notes. It keeps
+  the window inventory and the prototype references.
+
+* The hubs
+
+Two hub notes are added and one existing note changes role.
+
+**Market Data Pipeline**
+
+The hub that already exists at [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]], rewritten as a
+structure note. It gathers Hub A, Hub B, Hub C and Hub D and argues this order.
+
+1. The market tick and the oresmd datum identity. The reader cannot follow a
+   subject or a series key without the datum first.
+2. The feed and its lifecycle. What a producer is before what it publishes.
+3. The producer subject, then binding mode. Where the tick goes, then whether
+   ingest can see it.
+4. The feed factory and adding an asset class. How the pipeline stays one path
+   as kinds are added.
+5. The feed binding and the producer kind. Who consumes the source, and what
+   the reader of the resulting series is told about it.
+6. The ingest loop and the one pipeline. The join of every part above.
+7. Series and observation, then lineage and provenance. What the pipeline
+   leaves behind.
+8. The synthetic generation hub, then the operations and screens hub. How a
+   human drives the producer side.
+9. Vendor producers, snapshots and cuts, ORE import and export. The same
+   pipeline from the other source.
+
+The hub states what it excludes. It excludes the requirement to identifier
+resolution path, which is [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]], and it
+excludes the process mathematics, which is [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. It links to
+both rather than absorbing either.
+
+**Synthetic Generation**
+
+A new structure note, titled =Synthetic generation=, tagged
+=knowledge=domain=structure_note=synthetic=marketdata=. It gathers Hub B and
+Hub C in the authoring order a person follows.
+
+1. The generation config collection and folders. The tree the author works in.
+2. The FX spot generation config, its GMM components, then the FX producer.
+   One asset class end to end, simplest first.
+3. The IR curve generation config, its template and parameters, its process
+   catalogue, then the IR producer. The second asset class, to show what the
+   first one's shape generalises to.
+4. The generator library, then the [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] hub. What both
+   producers share, and the mathematics each process note states once.
+5. Preview and simulate, then the shell surface, then the screens. The verbs
+   before the surfaces that call them.
+
+Its =aside= section holds [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] and
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][the approach document]], in keeping with the =aside= marker the zettelkasten
+note defines.
+
+**Stochastic Processes**
+
+The hub at [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] already exists and already gathers the six
+process notes and the two foundational ones. It is the process catalogue of
+this cluster, and it is the one hub that must be reachable from both the
+synthetic hub and the [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] hub. It needs its =structure_note= tag
+before the index can list it.
+
+**Changes to the index**
+
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] lists one entry per topic under Domain, and the entry today is
+=Synthetic Market Data Generation= pointing at the approach document. That
+entry becomes =Synthetic Generation= pointing at the new structure note. The
+=Market Data Architecture= row under Architecture stays and is extended to
+name the feed binding and the ingest loop. The =Stochastic Processes= row
+stays as it is.
+
+* How this grows
+
+The rule is a list of edits a person makes in the same change as the code.
+It is not a wish, because each item names a file that a reviewer opens.
+
+**A new feed kind**
+
+1. Add the config table and its codegen model under =projects/ores.synthetic/modeling/=.
+2. Add the producer behind =IFeed= and its kind string beside the existing two.
+3. Register the builder in =make_default_feed_factory=.
+4. Add one note under the synthetic hub, titled for the asset class, in the
+   same slot the FX and IR notes occupy, and name its config table and its
+   producer file.
+5. Add one row to the =Adding an asset class= note if the kind needed an edit
+   the note does not list. A row that is never needed is the evidence the seam
+   works.
+
+**A new operation**
+
+1. Add the request and response to the protocol model and register the handler.
+2. Add or extend the note under Hub C. If the operation is a new verb rather
+   than a parameterisation of =preview= or =simulate=, it earns its own note.
+3. Add the shell verb to =synthetic_commands.cpp= or its marketdata
+   counterpart, and extend the shell surface note in the same change.
+
+**A new asset class that only binds a vendor source**
+
+No producer note is added. The work touches the feed binding note and the
+vendor producers note, because the asset class is a new series and a new
+binding, not new generation code.
+
+**A new subject or a new tick field**
+
+The change touches the market tick note and the producer subject note, and
+the ingest loop note, in the same change. These three are the contract, and a
+contract note that lags its code is worse than no note.
+
+**How a reviewer checks the docs moved with the code**
+
+The reviewer opens the diff and asks three questions.
+
+1. Does every new table, struct or subject in the diff have a note that names
+   it, or does it belong to a note the diff also edits?
+2. Does any edited note now state something the diff made false? The usual
+   suspects are the two hub notes and the market tick note.
+3. Does the diff add a second copy of something a note already says? If it
+   does, the note is the wrong place and the new text belongs beside the code.
+
+A =grep= answer is available today for the third question. Every note in this
+proposal names its anchor, so =grep= for the anchor in =doc/knowledge/= returns
+the notes that touch a symbol. That check is what makes the rule enforceable
+rather than aspirational, and it is worth a script under =scripts/= once the
+notes exist.
+
+* Open questions
+
+These are the ones the code cannot answer.
+
+1. Should the two hubs be separate? The pipeline hub and the synthetic hub
+   share the market tick, the ingest loop and the binding notes. A reader who
+   wants to author a generator does not want the vendor section first, and a
+   reader who wants the store does not want the config entities. Keeping two
+   hubs duplicates nine links and one boundary statement. One hub with three
+   ordered sections removes the duplication and loses the separate reading
+   orders. The proposal splits them because the two orders differ and a reader
+   who takes the wrong one pays for it in pages read before the useful one.
+
+2. Does the vendor side have a producer to document? The =producer_kind=
+   table, the =VENDOR= default and the binding all exist, and the vocabulary
+   is settled. No vendor producer exists in the tree. The proposal writes the
+   vendor producers note as a contract note, stating what a vendor must
+   satisfy and that none exists yet. If a vendor integration is planned in the
+   next two quarters the note should be written now; if it is not, the note
+   should wait and the contract rule should live in the binding note alone.
+
+3. How much of the approach document survives? Its method-per-asset-class and
+   cross-asset constraint sections are the only place the reasoning behind the
+   GMM and short-rate choices is written down. Its roadmap section is about to
+   be wrong, because the work it sequences has landed. The proposal splits it
+   and keeps both halves. The alternative is to retire it whole and let the
+   session records carry the reasoning, which loses the reasoning.
+
+4. Does the architecture document's configuration split still hold? It says a
+   feed config references the producer's config. =feed_binding= stores only
+   =source_name=, so the link from a binding back to a =market_data_generation_config=
+   is the source name and nothing else, and the name-similarity rule is what
+   keeps them in step. The rewritten hub must describe the implementation or
+   the gap, and only the owner can say which.

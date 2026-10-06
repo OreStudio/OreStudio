@@ -4,6 +4,20 @@
 #+title: Asset-class fork inventory — synthetic generation pipeline
 #+description: Every FX/IR fork in the synthetic generation and ingest pipeline, classified genuine or spurious against the one-pipeline rule.
 
+* Status after implementation
+
+The inventory is the as-found record at =9c1c4af10e=. Three of its findings
+have since been acted on and must not be quoted as current.
+
+- The binding mode and the producer subject are one builder for every kind
+  now, so a sandboxed IR curve is expressible (=f09d43f5bf=).
+- =ensure_feed_binding= no longer exists anywhere. The FX-only
+  =start(ore_key, ...)= path and its vintage copy are deleted, and
+  =bind_feed= at =feed_controller.hpp:384= is called from both live start
+  paths, so binding auto-creation is reachable (=2e3ca06d17=).
+- The remaining spurious forks, the control-plane duplication, are captured
+  as a backlog task rather than closed.
+
 * Summary
 
 24 forks were found across the factory, the four control-plane handlers, the
@@ -20,8 +34,8 @@ subject are honoured by FX and silently dropped by IR
 is not expressible at all. The third is a dead-code cluster in
 =feed_controller:= the FX-only client-supplied-params =start(ore_key, ...)= has
 no production caller, yet it is the /only/ path that calls
-=ensure_feed_binding=; binding auto-creation is therefore currently
-unreachable from the live control plane. =tick_plan=, =market_tick= and
+=ensure_feed_binding=; binding auto-creation was therefore unreachable from the
+live control plane at the time of the survey. =tick_plan=, =market_tick= and
 =feed_ingest_loop::persist= are already one path for every asset class and need
 no change.
 

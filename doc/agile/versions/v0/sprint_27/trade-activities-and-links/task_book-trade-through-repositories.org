@@ -28,9 +28,9 @@ Every application write to an entity table goes through its generated repository
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Implementing the unit of work.         |
+| Now          | Unit of work written; its test runs.   |
 | Waiting on   | Nothing.                               |
-| Next         | Route the read and write helpers through the active transaction. |
+| Next         | Move booking onto the repositories in one unit of work. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -146,6 +146,37 @@ write to open a transaction, and it changes 343 call sites).
 The binding fact: =rfl::Ref= is an owning, copyable handle, so a =context=
 copy carries the transaction safely. No raw pointer and no lifetime rule
 are needed.
+
+** Implementation: the unit of work
+
+- =ores.database/repository/unit_of_work.hpp= owns one pooled session and
+  one =sqlgen::Transaction=. It yields a =context= bound to that
+  transaction, commits once, and rolls back on destruction.
+- =context= carries the transaction as an optional owning =rfl::Ref=. A
+  copy carries it, and =with_tenant= and =with_party= preserve it.
+- =execute_write_op= is new. =execute_read_query=,
+  =execute_write_query= and =execute_delete_query= join the context's
+  transaction when it has one, and otherwise open their own session as
+  before.
+- The repository template's current-state path now calls
+  =execute_write_op= instead of opening its own session. 21 generated
+  repositories in the drift-free components under test are regenerated.
+- =ores.database.tests.unit_of_work_tests= checks the binding and the
+  rollback.
+
+** Known offenders for the architectural check
+
+Three hand-written writes still open their own session and so do not join
+a unit of work:
+
+- =ores.telemetry.database/repository/telemetry_repository.cpp=
+- =ores.reporting.core/repository/report_input_bundle_repository.cpp=
+- =ores.iam.core/repository/session_repository.cpp=, its
+  =update_session_counters= and =end_session=.
+
+=ores.synthetic= and =ores.scheduler= carry current-state repositories
+whose generated output has pre-existing drift. This change leaves them
+alone. Regenerating them would mix their drift into the booking change.
 
 * Test Scenarios
 

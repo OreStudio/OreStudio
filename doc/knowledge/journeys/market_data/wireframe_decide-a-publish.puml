@@ -1,0 +1,71 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>APPROVALS: PUBLISH QUEUE (1 waiting)</b> | [ My requests ]
+  --
+  {#
+    Waiting | Age | Kind | Curve | State
+    . | 2h | marketdata.curve_publish | USD IRS | waiting
+    . | - | (no kind seeded) | - | -
+  }
+  The queue is empty until a market-data approval kind is seeded.
+  --
+  <b>REQUEST: USD IRS, candidates as of 2026-10-06 16:00</b>
+  {#
+    Field | Value
+    Requested by | a.trader
+    Requested at | 2026-10-06 16:04
+    Reason | Today's USD curve, reviewed against the quotes
+    Approvals required | 1
+    Decide permission | marketdata::curves:publish
+    Deciding group | Market data approvers
+    Expires | 2026-10-13
+  }
+  --
+  {#
+    Delta vs last published | Point | Last published | Candidate | Change
+    . | (no published marker) | - | 0.04125 | n/a
+    . | (no published marker) | - | 0.04180 | n/a
+    . | (no published marker) | - | 0.04210 | n/a
+  }
+  No published version exists to compare against; see What is missing.
+  --
+  {#
+    QA checks | Check | Result
+    . | All pillars priced | unknown
+    . | Discount factors monotonic | unknown
+    . | No arbitrage | unknown
+  }
+  No check operation returns these; see What is missing.
+  --
+  {
+    Comment | "Checked against the 16:00 quotes"
+    Approvals so far | "0 of 1"
+    [ Approve ] | [ Refuse ] | [ Hold ]
+  }
+  --
+  {#
+    Decisions | When | By | Decision | Comment
+    . | 2026-10-06 16:20 | b.approver | hold | Waiting on the 4pm fixing
+  }
+}
+
+@enduml

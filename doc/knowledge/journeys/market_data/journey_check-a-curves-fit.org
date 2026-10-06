@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 3AC1CC5B-3366-428A-A604-C5921CBEE2C8
+:END:
+#+title: User Journey: Check a curve's fit
+#+description: A trader or quant checks a candidate curve against the quotes it came from: the quotes overlaid on the candidate, the pillar residuals, the forward-rate smoothness, and the calendar and roll logic.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant checks a candidate curve against the quotes it came from: the quotes overlaid on the candidate, the pillar residuals, the forward-rate smoothness, and the calendar and roll logic.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know whether this candidate curve still stands on the quotes it was
+built from, and whether its forwards and its dates make sense." The journey is
+done when the person has seen the raw quotes against the candidate, the pillar
+residuals, the forward-rate smoothness, and the calendar and roll logic, and
+can say whether the candidate is sound. The person does not publish here.
+
+* Actor and trigger
+
+The actor is the trader or the quant. The trader owns the candidate; the quant
+owns the method and reads the same screen. Neither decides to publish here: an
+approver does that in a different journey. The trigger is a bootstrap or
+refresh just run, a residual that looks too large, a forward curve that steps,
+or a pillar that settles on an unexpected date. The journey starts at a
+candidate curve and ends when the person leaves it, still a candidate.
+
+This journey reads and diagnoses; it changes nothing. It is the check the maker
+runs before the candidate goes to a second pair of eyes.
+
+* Steps
+
+1. *Open the candidate.* The person opens *Curves and surfaces* and selects
+   the candidate curve. The system reads the =market_series= row and its
+   =derivation_kind=/config/version, which says the curve is derived and by
+   which recipe.
+2. *Read the candidate points.* The person chooses *Read candidate*. The
+   system reconstructs the latest snapshot of the curve with
+   =marketdata.v1.curve-snapshot.get=, one point per =point_id=, at now. The
+   read has no as-of parameter, so the person cannot look at the candidate as
+   of an earlier instant.
+3. *Read the raw quotes.* The system lists the quotes the curve was built
+   from with =marketdata.v1.market_observations.list_by_series_id=, one row
+   per =oresmd_uri= with its value, source and time. The quotes and the
+   candidate are two separate reads.
+4. *Overlay the quotes on the candidate.* The person reads each raw quote
+   against its candidate point. No operation joins the two lists: they come
+   from different subjects and are keyed differently (the quote by an
+   =oresmd_uri=, the candidate by a =point_id=), so the screen places them
+   side by side by reading both and matching on the coordinate. See /What is
+   missing/.
+5. *Read the pillar residuals.* The person reads the residual at each pillar,
+   meaning the distance between the quote the curve was built from and the
+   rate the curve returns at that pillar. No operation serves a residual; the
+   compute reply carries bootstrapped points and no per-pillar error. See
+   /What is missing/.
+6. *Read the forward-rate smoothness.* The person reads the forward curve
+   between pillars and looks for a step. A server-side health checker exists
+   that flags a negative forward rate as =INFO= and a leave-one-out outlier as
+   =WARNING=, but no operation calls it, so nothing reaches the screen. See
+   /What is missing/.
+7. *Read the calendar and roll logic.* The person checks how each pillar
+   tenor resolves to a date and which calendar and roll convention applied.
+   The system reads the recipe with
+   =refdata.v1.ir_curve_bootstrap_configs.get= and its pillars with
+   =refdata.v1.ir_curve_bootstrap_pillars.list=, and resolves a tenor through
+   =refdata.v1.tenor_convention_resolutions.list_by_convention_code=. The
+   resolved dates are not stored on a point, so the screen derives them.
+8. *Recompute if needed.* If the person suspects a stale candidate, they choose
+   *Recompute candidate*, which calls =marketdata.v1.curve_bootstrap.compute=
+   with the config and an as-of and returns the bootstrapped points. The
+   operation exists but no caller sends it today.
+9. *Leave.* The person returns to the list. The candidate is unchanged; the
+   person did not write or publish anything.
+
+The compute and the snapshot reads are server-side and synchronous, so the
+journey carries no state of its own. Recomputing a candidate returns points; it
+does not publish them.
+
+* Screens and wireframes
+
+One screen. The candidate and its as-of sit at the top; the quotes overlaid on
+the candidate, the residuals and the forwards sit in the middle; the calendar
+and roll logic sits at the foot, so the person reads the market, then the fit,
+then the dates it settles on.
+
+#+caption: Curve fit check: the candidate against its raw quotes, the pillar residuals, the forward-rate smoothness, and the calendar and roll logic.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/market_data/wireframe_check-a-curves-fit.png]]
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The candidate's identity and its =derivation_kind=/config/version | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
+| =market_observation= | The candidate points and the raw quotes, one per =oresmd_uri= and =observation_datetime= | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =observation_lineage= | The provenance of a derived point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
+| =ir_curve_bootstrap_config= | The recipe: interpolation, day count, tenor convention and split tenor | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_pillar= | The pillars the residuals are read at: sequence, start and end tenor, role | [[id:5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A][ores.refdata.ir_curve_bootstrap_pillar]] |
+| =curve_role= | The pillar's instrument role (deposit, FRA, swap) that decides the pricing derivation | [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][ores.refdata.curve_role]] |
+| =tenor= | The tenor labels a pillar is written in | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =tenor_convention= | The scheme that resolves a tenor to a date (spot/forward, FOMC, IMM) | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =day_count_fraction_type= | The day-count convention applied per pillar | [[id:D639B3AB-7421-4A7C-A17A-02000709E22F][ores.refdata.day_count_fraction_type]] |
+| =currency= | The currency the pillars are quoted in | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+
+A residual, a forward-rate finding and a resolved pillar date have no entity
+today. The screen computes the residual and the forward on the client from the
+two reads, and resolves the pillar dates from the recipe; see /What is
+missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the candidate | Read one series | =marketdata.v1.market_series.get= | exists |
+| Read the candidate points | Read the curve snapshot at now | =marketdata.v1.curve-snapshot.get= | partial |
+| Read the raw quotes | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
+| Overlay the quotes | Join the quotes to the candidate points | (no joint read) | missing |
+| Read the pillar residuals | Read the fit residual per pillar | =marketdata.v1.curve_bootstrap.diagnostics= | missing |
+| Read the forward rates | Read the forward-rate findings | =marketdata.v1.curve_bootstrap.health= | missing |
+| Read the calendar and roll | Read the recipe | =refdata.v1.ir_curve_bootstrap_configs.get= | exists |
+| Read the calendar and roll | Read the pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
+| Read the calendar and roll | Resolve a tenor to a date | =refdata.v1.tenor_convention_resolutions.list_by_convention_code= | exists |
+| Recompute the candidate | Bootstrap the candidate without publishing | =marketdata.v1.curve_bootstrap.compute= | exists |
+| Recompute and publish | Bootstrap and republish | =marketdata.v1.curve_bootstrap.republish= | exists |
+| Read the recipe lineage | Read the lineage of a derived point | =marketdata.v1.observation_lineages.list= | exists |
+
+=marketdata.v1.curve_bootstrap.compute= and =.republish= both exist and no
+caller sends them today; the preview half is the one this journey would use.
+The snapshot read is =partial= because it always reads now and has no as-of
+parameter. The generic history read is =marketdata.v1.history.get= with =entity_type=
+=ores.marketdata.market_series=; =market_series= and =observation_lineage=
+register history providers.
+
+* What is missing
+
+1. *There is no residuals or diagnostics operation.* The subject
+   =marketdata.v1.curve_bootstrap.diagnostics= would have to be added to
+   return, per pillar, the quote the curve was built from, the rate the curve
+   returns at that pillar, and the residual. Until then the screen reads the
+   candidate and the quotes separately and matches them by coordinate, and it
+   cannot say what the bootstrap engine itself measured.
+2. *The health checker has no caller.* =curve_health_checker= exists in
+   =ores.analytics.quant= and flags a non-positive discount factor, a negative
+   forward rate as =INFO= and a leave-one-out forward-rate outlier as
+   =WARNING=. Nothing calls it outside its tests, and the compute reply carries
+   points only, so no finding reaches the wire. The candidate is a subject
+   such as =marketdata.v1.curve_bootstrap.health=, or a findings field on the
+   compute response. Until then the screen plots the forwards and marks that no
+   check ran.
+3. *A read cannot be taken as of a time in the past.* The snapshot read always
+   reads now, so the person cannot check the candidate as of the instant it
+   was built. The candidate is an =as_of= parameter on the snapshot request.
+   Until then the screen reads the current snapshot only.
+4. *The quotes and the candidate are not joined.* They are keyed differently,
+   the quote by an =oresmd_uri= and the candidate by a =point_id=, and no
+   operation returns both. The candidate is an overlay read that returns a
+   quote and its candidate rate together. Until then the screen joins the two
+   lists itself and shows an unmatched quote as a gap.
+5. *A pillar's resolved date is not stored.* The recipe names a tenor
+   convention, and a resolution read returns the scheme's rows, but the date a
+   given pillar resolved to is not on the point, so the screen must resolve it
+   again and the two can disagree. The candidate is the resolved date on the
+   lineage of a derived point. Until then the screen derives the dates and
+   labels them as derived.
+6. *The curve-fit screen exists for curves only.* There is no surface or
+   slice read and no surface residual, so a surface fit cannot be checked on
+   this screen. The candidate is a surface read and a surface residual
+   subject. Until then a surface fit is checked on the concurrent journey
+   [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]],
+   where the same gap is recorded.
+
+* Related journeys
+
+- [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — build the candidate this journey checks.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — correct a pillar the residuals flag.
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — see which raw quote failed before the check.
+- [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — send a sound candidate to a second pair of eyes.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — compare the candidate with the published curve it would replace.
+
+* Related knowledge
+
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]]
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]
+
+* See also
+
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]]
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the approver reads a similar picture before deciding.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

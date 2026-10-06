@@ -1,0 +1,58 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>CURVE BLUEPRINT: USD / FUNDING</b> | [ Back to curves ]
+  --
+  {#
+    Identity | Value
+    Currency | USD
+    Family role | ^FUNDING^
+    Output series | oresmd://ir/USD?type=curve&family=FUNDING
+    Derivation | IR_CURVE_BOOTSTRAP (stamped on first build)
+    Version | 4
+  }
+  --
+  {
+    Discount curve (PROJECTION only) | ^none for FUNDING^
+  }
+  --
+  {#
+    Pillars | # | Start tenor | End tenor | Curve role
+    . | 0 | SPOT | 1M | DEPOSIT
+    . | 1 | SPOT | 3M | DEPOSIT
+    . | 2 | 3M | 6M | FRA
+    . | 3 | SPOT | 2Y | SWAP
+    . | 4 | SPOT | 10Y | SWAP
+  }
+  [ Add pillar ] | [ Change pillar ] | [ Remove pillar ] | [ Move up ] | [ Move down ]
+  --
+  {
+    Interpolation | ^LOG_LINEAR_DISCOUNT^
+    Day count | ^A365^
+    Tenor convention | ^RATES_SPOT_FORWARD^
+    Split tenor | ^1Y^
+  }
+  [ Save blueprint ] | [ History ]
+  --
+  Not published: build a curve from this blueprint and publish it before pricing can read it.
+}
+
+@enduml

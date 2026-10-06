@@ -15,12 +15,12 @@ bus is moving, what the logs recorded, and which builds sit under it all.
 These journeys are the operator's view of a running system, and they replace
 the telemetry and super-admin windows of the legacy =ores.qt= client.
 
-Four journeys belong to the system administrator. The last belongs to any
+Five journeys belong to the system administrator. The last belongs to any
 signed-in person: the versions screen answers "what am I talking to", which a
 member asks as often as an administrator. *Who reaches the screens* sets out
-what each of the three signed-in contexts sees. No journey here changes
-anything — each one reads samples, summaries or lines that the installation
-writes about itself. That is also what keeps them cheap to build: the server
+what each of the three signed-in contexts sees. Almost every journey here only
+reads: samples, summaries or lines that the installation writes about itself.
+The exception is the market data feeds journey, which starts and stops a feed. That is also what keeps them cheap to build: the server
 already stores everything they show, with the gaps recorded below.
 
 * Journeys
@@ -33,6 +33,7 @@ already stores everything they show, with the gaps recorded below.
 | [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | system administrator | The NATS server's vitals and one row per stream: messages, bytes and consumers over time |
 | [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | system administrator | The lines behind a symptom, found by time, level, source, component, tag or session |
 | [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | any signed-in person | The client build, the server build, and the database fingerprint |
+| [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] | system administrator | The feed bindings a market data feed runs under, each with its last tick, and start or stop |
 
 * Who reaches the screens
 

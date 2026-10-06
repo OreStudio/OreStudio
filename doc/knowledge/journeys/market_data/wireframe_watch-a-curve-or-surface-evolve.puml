@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>CURVE OR SURFACE: oresmd://ir/USD?type=series&instrument=ir_swap</b> | [ Back to market data ]
+  --
+  {#
+    Series | Value
+    Subclass | yield
+    Asset classes | IR, Rates
+    Derivation | IR_CURVE_BOOTSTRAP (config ...a41f, v3)
+  }
+  {
+    Show | ^One instant^ | ^A range^
+    As of | "2026-10-06 14:00"
+    Step | ^30 minutes^ | Span | ^6 hours^ | [ Apply ]
+  }
+  --
+  <b>ALIGNED VIEW</b> | values are read unaligned and as text; the browser aligns them by node
+  {#
+    Node | 12:00 | 12:30 | 13:00 | 13:30 | 14:00
+    fwd_start=0D&tenor=3M | 4.121 | 4.118 | 4.130 | 4.127 | 4.131
+    fwd_start=0D&tenor=6M | 4.204 | 4.199 | 4.211 | 4.209 | 4.214
+    fwd_start=0D&tenor=1Y | 4.301 | 4.295 | 4.310 | 4.306 | 4.312
+    fwd_start=0D&tenor=2Y | . | . | 4.402 | 4.398 | 4.405
+  }
+  --
+  <b>ADDED AND DROPPED NODES</b> | 12:00 against 14:00
+  {#
+    Node | Change | From | To
+    fwd_start=0D&tenor=2Y | added | (absent) | 4.405
+    fwd_start=0D&tenor=9M | dropped | 4.260 | (absent)
+  }
+  --
+  <b>COMPARE TWO INSTANTS</b> | ^12:00^ vs ^14:00^
+  {#
+    Node | Value A | Value B | Difference
+    fwd_start=0D&tenor=3M | 4.121 | 4.131 | +0.010
+    fwd_start=0D&tenor=6M | 4.204 | 4.214 | +0.010
+  }
+  --
+  The reads carry an oresmd URI and end at now. There is no time range and no
+  set of instants; the shape is not declared, so a hole in a bucket cannot be
+  told from a node that is not part of the curve. See the journey's What is
+  missing.
+}
+
+@enduml

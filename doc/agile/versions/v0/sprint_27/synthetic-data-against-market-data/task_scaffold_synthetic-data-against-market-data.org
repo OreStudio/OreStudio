@@ -20,22 +20,32 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Open the story in Sprint 27 with a branch, a scaffold task and an implement
+task, so the synthetic data generation work has a home and the curve story
+has something concrete to wait on.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The story and its two tasks exist, are wired into Sprint 27, and resolve
+  from the index.
+- The scaffold PR is open and recorded on this task.
+
+* Result
+
+Created the story and its tasks on =feature/synthetic-data-against-market-data=,
+wired them into Sprint 27, and opened PR #2703. The curve story now waits on
+this one.
 
 * Plan
 

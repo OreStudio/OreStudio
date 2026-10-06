@@ -29,7 +29,7 @@
  * an instance id is new at every start, so it fills no slot. A slot no
  * instance fills has null report columns.
  *
- * The caller decides running or stopped from sampled_at; this function only
+ * The caller decides running or lost from sampled_at; this function only
  * ranks, so the running window lives in one place.
  */
 create or replace function ores_telemetry_service_roster_fn()

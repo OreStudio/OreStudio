@@ -209,7 +209,7 @@ public:
      *
      * One slot per expected instance, ordered by service name and then slot.
      * A slot whose instance reported within service_running_window of @p now
-     * is running, one that reported earlier is stopped, and one no instance
+     * is running, one that reported earlier is lost, and one no instance
      * fills is missing.
      */
     std::vector<messaging::service_roster_slot>

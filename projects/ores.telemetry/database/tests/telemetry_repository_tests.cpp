@@ -345,7 +345,7 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
     CHECK(reporting_slots[0].state == ores::telemetry::domain::service_state::running);
     CHECK(reporting_slots[1].slot == 2);
     CHECK(reporting_slots[1].instance_id == std::optional<std::string>("quiet"));
-    CHECK(reporting_slots[1].state == ores::telemetry::domain::service_state::stopped);
+    CHECK(reporting_slots[1].state == ores::telemetry::domain::service_state::lost);
     CHECK(reporting_slots[1].host_id == std::optional<std::string>("roster-test-host"));
     CHECK(reporting_slots[1].sampled_at.has_value());
 

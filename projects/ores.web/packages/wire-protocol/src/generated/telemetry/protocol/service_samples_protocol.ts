@@ -119,7 +119,7 @@ export interface ServiceRosterSlot {
      */
     slot: number;
     /**
-     * @brief Running, stopped or missing, read from the heartbeats.
+     * @brief Running, lost or missing, read from the heartbeats.
      */
     state: string;
     /**

@@ -38,8 +38,11 @@ enum class service_state {
 
     /**
      * @brief The instance reported before, but not within the running window.
+     *
+     * Heartbeats cannot say why it went quiet: it may have stopped, crashed,
+     * hung or lost its network.
      */
-    stopped = 1,
+    lost = 1,
 
     /**
      * @brief No instance has reported for this expected slot.
@@ -54,8 +57,8 @@ enum class service_state {
     switch (s) {
         case service_state::running:
             return "running";
-        case service_state::stopped:
-            return "stopped";
+        case service_state::lost:
+            return "lost";
         case service_state::missing:
             return "missing";
     }

@@ -662,7 +662,7 @@ telemetry_repository::list_service_roster(context ctx,
             slot.sampled_at = datetime::from_db_string(*row[5]);
             slot.state = now - *slot.sampled_at <= service_running_window ?
                              ores::telemetry::domain::service_state::running :
-                             ores::telemetry::domain::service_state::stopped;
+                             ores::telemetry::domain::service_state::lost;
         } else {
             slot.state = ores::telemetry::domain::service_state::missing;
         }

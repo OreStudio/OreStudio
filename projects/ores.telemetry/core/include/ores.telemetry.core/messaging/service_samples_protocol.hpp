@@ -149,7 +149,7 @@ struct service_roster_slot {
      */
     int slot = 0;
     /**
-     * @brief Running, stopped or missing, read from the heartbeats.
+     * @brief Running, lost or missing, read from the heartbeats.
      */
     ores::telemetry::domain::service_state state = ores::telemetry::domain::service_state::missing;
     /**

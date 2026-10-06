@@ -272,7 +272,7 @@ and the operations dashboard reads the samples.
 
 #+begin_src cpp :name comment
 /**
- * @brief Running, stopped or missing, read from the heartbeats.
+ * @brief Running, lost or missing, read from the heartbeats.
  */
 #+end_src
 

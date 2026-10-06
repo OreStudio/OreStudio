@@ -32,6 +32,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <format>
 #include <thread>
 
 namespace {
@@ -354,21 +355,25 @@ TEST_CASE("read_latest_currencies_includes_the_written_row", tags) {
 }
 
 TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
-    using ores::platform::time::datetime;
     using namespace std::chrono_literals;
+    // To the microsecond: a version can be valid for less than a second.
+    const auto instant = [](std::chrono::system_clock::time_point tp) {
+        return std::format("{:%Y-%m-%dT%H:%M:%S}Z",
+                           std::chrono::time_point_cast<std::chrono::microseconds>(tp));
+    };
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     currency_repository repo;
 
     auto ccy = generate_synthetic_currency(ctx);
-    const auto before_any = datetime::to_iso8601_utc(std::chrono::system_clock::now() - 1h);
+    const auto before_any = instant(std::chrono::system_clock::now() - 1h);
     const auto name = ccy.name;
     ccy.name = name + " v1";
     repo.write(h.context(), {ccy});
 
     std::this_thread::sleep_for(50ms);
-    const auto between = datetime::to_iso8601_utc(std::chrono::system_clock::now());
+    const auto between = instant(std::chrono::system_clock::now());
     std::this_thread::sleep_for(50ms);
 
     auto v2 = ccy;
@@ -403,4 +408,10 @@ TEST_CASE("list_currencies_refuses_an_as_of_that_is_not_a_timestamp", tags) {
     CHECK(response.result.outcome == ores::utility::domain::outcome::invalid);
     CHECK(response.result.code == "as_of_invalid");
     CHECK(response.currencies.empty());
+
+    request.as_of = "2026-10-06 00:00:00junkZ";
+    CHECK(svc.list_currencies(request).result.code == "as_of_invalid");
+
+    request.as_of = "2026-10-06T00:00:00.123456Z";
+    CHECK(svc.list_currencies(request).result.outcome == ores::utility::domain::outcome::ok);
 }

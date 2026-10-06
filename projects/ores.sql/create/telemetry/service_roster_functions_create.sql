@@ -35,6 +35,7 @@
 create or replace function ores_telemetry_service_roster_fn()
 returns table (
     service_name text,
+    display_name text,
     description text,
     service_account text,
     slot integer,
@@ -63,11 +64,12 @@ as $$
         from latest l
     ),
     slots as (
-        select e.service_name, e.description, e.service_account, g.slot::integer as slot
+        select e.service_name, e.display_name, e.description, e.service_account,
+               g.slot::integer as slot
         from ores_telemetry_expected_services_tbl e
         cross join lateral generate_series(1, e.replicas) as g(slot)
     )
-    select sl.service_name, sl.description, sl.service_account, sl.slot,
+    select sl.service_name, sl.display_name, sl.description, sl.service_account, sl.slot,
            r.instance_id, r.host_id, r.version, r.sampled_at
     from slots sl
     left join ranked r

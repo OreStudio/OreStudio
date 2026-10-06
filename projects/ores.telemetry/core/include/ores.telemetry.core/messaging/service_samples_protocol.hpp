@@ -145,6 +145,10 @@ struct service_roster_slot {
      */
     std::string service_name;
     /**
+     * @brief The name a person reads, for example @c Analytics @c Service.
+     */
+    std::string display_name;
+    /**
      * @brief What the service does, in one sentence from the service registry.
      */
     std::string description;

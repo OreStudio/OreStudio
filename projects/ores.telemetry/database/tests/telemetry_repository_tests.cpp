@@ -307,13 +307,13 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
     const auto silent = "ores.test.silent-" + suffix + ".service";
     const std::string insert_expected =
         "INSERT INTO ores_telemetry_expected_services_tbl "
-        "(service_name, replicas, description, service_account) "
-        "VALUES ($1, $2::integer, $3, nullif($4, ''))";
+        "(service_name, replicas, display_name, description, service_account) "
+        "VALUES ($1, $2::integer, $3, $4, nullif($5, ''))";
     ores::database::repository::execute_parameterized_command(
-        h.context(), insert_expected, {reporting, "2", "Reports for the test.", "roster_test_user"},
+        h.context(), insert_expected, {reporting, "2", "Roster Test Service", "Reports for the test.", "roster_test_user"},
         lg, "Expecting the reporting service");
     ores::database::repository::execute_parameterized_command(
-        h.context(), insert_expected, {silent, "1", "Never reports.", ""}, lg,
+        h.context(), insert_expected, {silent, "1", "Silent Test Service", "Never reports.", ""}, lg,
         "Expecting the silent service");
 
     const auto now = std::chrono::system_clock::now();
@@ -343,6 +343,7 @@ TEST_CASE("list_service_roster_states_every_expected_instance", tags) {
                              << " silent=" << silent_slots.size();
 
     REQUIRE(reporting_slots.size() == 2);
+    CHECK(reporting_slots[0].display_name == "Roster Test Service");
     CHECK(reporting_slots[0].description == "Reports for the test.");
     CHECK(reporting_slots[0].service_account == std::optional<std::string>("roster_test_user"));
     CHECK(reporting_slots[0].slot == 1);

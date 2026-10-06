@@ -5601,7 +5601,8 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
 
 
 _SERVICE_REGISTRY_SCALARS = (
-    "psql_var", "env_key", "iam_role", "description", "summary", "account_var",
+    "psql_var", "env_key", "iam_role", "description", "display_name", "summary",
+    "account_var",
     "role", "email", "runtime", "entry_point",
 )
 
@@ -5681,6 +5682,8 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     ``:description:`` is shared by both aspects (a human-readable
     label/blurb, not aspect-specific). ``:summary:`` is one sentence on what
     the running process does, for a reader of the services roster.
+    ``:display_name:`` is the name a person reads, such as *Analytics
+    Service*; it names the service account and the roster row.
     ``:account_var:`` names the psql variable that holds the process's IAM
     service account when it has no ``:psql_var:``; with one, the account is
     ``<psql_var>_user``."""

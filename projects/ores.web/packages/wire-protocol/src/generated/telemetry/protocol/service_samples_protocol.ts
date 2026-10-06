@@ -115,6 +115,10 @@ export interface ServiceRosterSlot {
      */
     service_name: string;
     /**
+     * @brief The name a person reads, for example @c Analytics @c Service.
+     */
+    display_name: string;
+    /**
      * @brief What the service does, in one sentence from the service registry.
      */
     description: string;

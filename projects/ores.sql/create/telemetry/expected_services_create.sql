@@ -29,7 +29,8 @@
  * heartbeat of each instance, so an expected instance that never reports
  * still has a row.
  *
- * The description says what the service does. The service account is the
+ * The display name is the name a person reads, such as Analytics Service,
+ * and the description says what the service does. The service account is the
  * IAM account the process signs in as, null for a process that signs in as
  * no account of its own.
  *
@@ -38,6 +39,7 @@
 create table if not exists ores_telemetry_expected_services_tbl (
     "service_name"     text not null,
     "replicas"         integer not null,
+    "display_name"     text not null default '',
     "description"      text not null default '',
     "service_account"  text null,
     primary key (service_name),

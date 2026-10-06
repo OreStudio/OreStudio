@@ -14,6 +14,7 @@
 :env_key:     IAM_SERVICE
 :iam_role:    IamService
 :description: IAM
+:display_name: IAM Service
 :summary:     Signs people and services in, issues their tokens, and serves tenants, accounts, roles and permissions.
 :email:       iam_service@system.ores
 :replicas:    1
@@ -64,6 +65,7 @@
 :env_key:     REFDATA_SERVICE
 :iam_role:    RefdataService
 :description: Reference Data
+:display_name: Reference Data Service
 :summary:     Serves reference data: currencies, countries, parties, counterparties, books, portfolios and market conventions.
 :email:       refdata_service@system.ores
 :replicas:    1
@@ -100,6 +102,7 @@
 :env_key:     WORKSPACE_SERVICE
 :iam_role:    WorkspaceService
 :description: Workspace
+:display_name: Workspace Service
 :summary:     Serves each person's workspaces and the layout preferences saved with them.
 :email:       workspace_service@system.ores
 :replicas:    1
@@ -118,6 +121,7 @@
 :env_key:     DQ_SERVICE
 :iam_role:    DqService
 :description: Data Quality
+:display_name: Data Quality Service
 :summary:     Serves data quality: datasets and their bundles, code domains, badges and severities, and publishes datasets into tenants.
 :email:       dq_service@system.ores
 :replicas:    1
@@ -135,6 +139,7 @@
 :env_key:     VARIABILITY_SERVICE
 :iam_role:    VariabilityService
 :description: Variability
+:display_name: Variability Service
 :summary:     Serves the typed system settings each tenant and party keeps, with their history.
 :email:       variability_service@system.ores
 :replicas:    1
@@ -152,6 +157,7 @@
 :env_key:     ASSETS_SERVICE
 :iam_role:    AssetsService
 :description: Assets
+:display_name: Assets Service
 :summary:     Serves images, their tags and the pictures attached to accounts and parties.
 :email:       assets_service@system.ores
 :replicas:    1
@@ -173,6 +179,7 @@
 :env_key:     SCHEDULER_SERVICE
 :iam_role:    SchedulerService
 :description: Scheduler
+:display_name: Scheduler Service
 :summary:     Runs scheduled jobs on their cron expressions.
 :email:       scheduler_service@system.ores
 :replicas:    1
@@ -190,6 +197,7 @@
 :env_key:     REPORTING_SERVICE
 :iam_role:    ReportingService
 :description: Reporting
+:display_name: Reporting Service
 :summary:     Serves report definitions and risk report configurations, and tracks each report instance through its lifecycle.
 :email:       reporting_service@system.ores
 :replicas:    1
@@ -218,6 +226,7 @@
 :env_key:     TELEMETRY_SERVICE
 :iam_role:    TelemetryService
 :description: Telemetry
+:display_name: Telemetry Service
 :summary:     Stores logs, service heartbeats and message-bus samples, and serves them to the operations screens.
 :email:       telemetry_service@system.ores
 :replicas:    1
@@ -239,6 +248,7 @@
 :env_key:     TRADING_SERVICE
 :iam_role:    TradingService
 :description: Trading
+:display_name: Trading Service
 :summary:     Serves trades, their instruments, lifecycle events and party roles.
 :email:       trading_service@system.ores
 :replicas:    1
@@ -256,6 +266,7 @@
 :env_key:     COMPUTE_SERVICE
 :iam_role:    ComputeService
 :description: Compute Grid
+:display_name: Compute Service
 :summary:     Orchestrates the compute grid: hosts, apps, batches and the work units it hands to the wrapper nodes.
 :email:       compute_service@system.ores
 :replicas:    1
@@ -273,6 +284,7 @@
 :env_key:     SYNTHETIC_SERVICE
 :iam_role:    SyntheticService
 :description: Synthetic
+:display_name: Synthetic Data Service
 :summary:     Generates synthetic market data from its generation configs and publishes the ticks.
 :email:       synthetic_service@system.ores
 :replicas:    1
@@ -307,6 +319,7 @@
 :env_key:     WORKFLOW_SERVICE
 :iam_role:    WorkflowService
 :description: Workflow Orchestration
+:display_name: Workflow Service
 :summary:     Runs multi-step workflows such as tenant provisioning, step by step, with compensation when a step fails.
 :email:       workflow_service@system.ores
 :replicas:    1
@@ -332,6 +345,7 @@
 :env_key:     ORE_SERVICE
 :iam_role:    OreService
 :description: ORE Import
+:display_name: ORE Service
 :summary:     Imports and exports ORE documents and market data, and plans imports into the domain model.
 :email:       ore_service@system.ores
 :replicas:    1
@@ -350,6 +364,7 @@
 :env_key:     MARKETDATA_SERVICE
 :iam_role:    MarketdataService
 :description: Market Data
+:display_name: Market Data Service
 :summary:     Serves market series, observations, fixings and feed bindings.
 :email:       marketdata_service@system.ores
 :replicas:    1
@@ -372,6 +387,7 @@
 :env_key:     ANALYTICS_SERVICE
 :iam_role:    AnalyticsService
 :description: Analytics
+:display_name: Analytics Service
 :summary:     Serves pricing configuration: pricing models, engine types and product parameter mappings.
 :email:       analytics_service@system.ores
 :replicas:    1
@@ -386,6 +402,7 @@
 * ores.http.server
 :PROPERTIES:
 :description: HTTP API gateway
+:display_name: HTTP Server
 :summary:     Serves the REST API, projecting the services' operations onto HTTP routes.
 :account_var: http_user
 :replicas:    1
@@ -401,6 +418,7 @@
 * ores.web.service
 :PROPERTIES:
 :description: TypeScript web interface. One process serves the browser bundle and the HTTP API on ORES_WEB_PORT, and reaches the services over NATS.
+:display_name: Web Service
 :summary:     Serves the web interface and its API, and reaches the services over the message bus on the browser's behalf.
 :replicas:    1
 :enabled:     true
@@ -415,6 +433,7 @@
 :env_key:     STORAGE_SERVICE
 :iam_role:    StorageService
 :description: Object Storage
+:display_name: Storage Service
 :summary:     Stores and serves files as objects over the message bus.
 :email:       storage_service@system.ores
 :replicas:    1
@@ -445,6 +464,7 @@ reads back as "... and nothing else. domain service".
 :env_key:     INBOX_SERVICE
 :iam_role:    InboxService
 :description: Inbox
+:display_name: Inbox Service
 :summary:     Serves approval requests and notifications: what waits on a person's decision, and what a person is told.
 :email:       inbox_service@system.ores
 :replicas:    1
@@ -469,6 +489,7 @@ hold the permission.
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).
+:display_name: Compute Wrapper
 :summary:     Runs work units from the compute grid on one node and reports their results and logs.
 :account_var: compute_wrapper_user
 :replicas:    5

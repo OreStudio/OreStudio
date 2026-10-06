@@ -91,3 +91,9 @@ def test_every_entry_says_what_it_does(services):
     """The services roster shows each service's summary, so none is blank."""
     for name, svc in services.items():
         assert svc.get("summary", "").strip(), name
+
+
+def test_every_entry_has_a_display_name(services):
+    """Service accounts and roster rows show this name, not the binary's."""
+    for name, svc in services.items():
+        assert svc.get("display_name", "").strip(), name

@@ -89,6 +89,7 @@ export interface ListFraInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FraInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFraInstrumentsResponse {

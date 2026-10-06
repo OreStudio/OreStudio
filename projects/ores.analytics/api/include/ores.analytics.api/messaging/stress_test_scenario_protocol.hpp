@@ -100,6 +100,7 @@ struct list_stress_test_scenarios_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<stress_test_scenarios_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_stress_test_scenarios_response {

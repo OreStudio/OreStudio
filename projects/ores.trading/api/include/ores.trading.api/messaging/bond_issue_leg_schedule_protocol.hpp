@@ -113,6 +113,7 @@ struct list_bond_issue_leg_schedules_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<std::string> as_of;
 };
 
 struct list_bond_issue_leg_schedules_response {

@@ -94,6 +94,7 @@ export interface ListTenorBasisSwapConventionsRequest {
     limit: number;
     order: Order;
     filter: TenorBasisSwapConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorBasisSwapConventionsResponse {

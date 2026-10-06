@@ -99,6 +99,7 @@ struct list_series_subclass_codes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<series_subclass_codes_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_series_subclass_codes_response {

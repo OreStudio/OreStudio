@@ -83,6 +83,7 @@ export interface ListRolesRequest {
     limit: number;
     order: Order;
     filter: RolesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRolesResponse {

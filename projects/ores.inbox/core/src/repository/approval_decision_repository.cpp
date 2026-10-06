@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.inbox.api/domain/approval_decision_json_io.hpp" // IWYU pragma: keep.
 #include "ores.inbox.core/repository/approval_decision_entity.hpp"
 #include "ores.inbox.core/repository/approval_decision_mapper.hpp"
@@ -321,36 +322,40 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::approval_decisions_filter>& filter) {
+    const std::optional<messaging::approval_decisions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval decisions with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<approval_decision_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<approval_decision_entity, domain::approval_decision>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return approval_decision_mapper::map(entities); },
         lg(),
         "Reading latest approval decisions with pagination.");
 }
 
 std::uint32_t approval_decision_repository::get_total_decision_count(
-    context ctx, const std::optional<messaging::approval_decisions_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::approval_decisions_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval decision count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<approval_decision_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<approval_decision_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<approval_decision_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting approval decisions");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting approval decisions");
 }
 
 std::vector<domain::approval_decision>

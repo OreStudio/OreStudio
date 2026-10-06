@@ -83,6 +83,7 @@ export interface ListDiaryEntryTypesRequest {
     limit: number;
     order: Order;
     filter: DiaryEntryTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDiaryEntryTypesResponse {

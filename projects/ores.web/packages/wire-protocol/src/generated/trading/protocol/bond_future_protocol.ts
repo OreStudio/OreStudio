@@ -85,6 +85,7 @@ export interface ListBondFuturesRequest {
     limit: number;
     order: Order;
     filter: BondFuturesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondFuturesResponse {

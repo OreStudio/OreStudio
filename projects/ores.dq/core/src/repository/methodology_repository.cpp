@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/methodology_entity.hpp"
 #include "ores.dq.core/repository/methodology_mapper.hpp"
@@ -286,34 +287,37 @@ methodology_repository::read_latest(context ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
-                                    const std::optional<messaging::methodologies_filter>& filter) {
+                                    const std::optional<messaging::methodologies_filter>& filter,
+                                    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodologies with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<methodology_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<methodology_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<methodology_entity, domain::methodology>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return methodology_mapper::map(entities); },
         lg(),
         "Reading latest methodologies with pagination.");
 }
 
 std::uint32_t methodology_repository::get_total_methodology_count(
-    context ctx, const std::optional<messaging::methodologies_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::methodologies_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active methodology count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<methodology_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<methodology_entity>>;
 
     return execute_count_query<methodology_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting methodologies");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting methodologies");
 }
 
 std::vector<domain::methodology>

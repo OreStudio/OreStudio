@@ -100,6 +100,7 @@ struct list_app_versions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<app_versions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_app_versions_response {

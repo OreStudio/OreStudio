@@ -29,6 +29,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <algorithm>
 #include <initializer_list>
@@ -273,36 +274,40 @@ std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_la
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::pricing_engine_types_filter>& filter) {
+    const std::optional<messaging::pricing_engine_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing engine types with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_engine_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<pricing_engine_type_entity, domain::pricing_engine_type>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return pricing_engine_type_mapper::map(entities); },
         lg(),
         "Reading latest pricing engine types with pagination.");
 }
 
 std::uint32_t pricing_engine_type_repository::get_total_type_count(
-    context ctx, const std::optional<messaging::pricing_engine_types_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::pricing_engine_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing engine type count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_engine_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<pricing_engine_type_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<pricing_engine_type_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting pricing engine types");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting pricing engine types");
 }
 
 std::vector<domain::pricing_engine_type>

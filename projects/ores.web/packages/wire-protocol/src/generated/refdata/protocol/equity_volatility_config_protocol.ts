@@ -92,6 +92,7 @@ export interface ListEquityVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: EquityVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListEquityVolatilityConfigsResponse {

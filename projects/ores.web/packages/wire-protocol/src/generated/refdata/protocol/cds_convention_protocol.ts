@@ -90,6 +90,7 @@ export interface ListCdsConventionsRequest {
     limit: number;
     order: Order;
     filter: CdsConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCdsConventionsResponse {

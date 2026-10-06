@@ -83,6 +83,7 @@ export interface ListContactTypesRequest {
     limit: number;
     order: Order;
     filter: ContactTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListContactTypesResponse {

@@ -83,6 +83,7 @@ export interface ListDayCountFractionTypesRequest {
     limit: number;
     order: Order;
     filter: DayCountFractionTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDayCountFractionTypesResponse {

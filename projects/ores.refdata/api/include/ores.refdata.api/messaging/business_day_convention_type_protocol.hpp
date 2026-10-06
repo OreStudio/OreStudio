@@ -100,6 +100,7 @@ struct list_business_day_convention_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<business_day_convention_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_business_day_convention_types_response {

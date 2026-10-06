@@ -86,6 +86,7 @@ export interface ListConfigurationsRequest {
     limit: number;
     order: Order;
     filter: ConfigurationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListConfigurationsResponse {

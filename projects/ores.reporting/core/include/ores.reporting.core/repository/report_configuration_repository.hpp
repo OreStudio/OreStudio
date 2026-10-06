@@ -237,12 +237,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::report_configuration> read_latest(
-        context ctx,
-        std::uint32_t offset,
-        std::uint32_t limit,
-        const ores::utility::domain::order& order = {},
-        const std::optional<messaging::report_configurations_filter>& filter = std::nullopt);
+    std::vector<domain::report_configuration>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::report_configurations_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active report configurations.
@@ -251,7 +252,8 @@ public:
      */
     std::uint32_t get_total_report_configuration_count(
         context ctx,
-        const std::optional<messaging::report_configurations_filter>& filter = std::nullopt);
+        const std::optional<messaging::report_configurations_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a report configuration by closing its temporal validity.

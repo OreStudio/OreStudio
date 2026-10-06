@@ -108,6 +108,7 @@ struct list_report_definitions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_definitions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_report_definitions_response {

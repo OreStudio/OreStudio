@@ -104,6 +104,7 @@ struct list_report_instances_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<report_instances_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_report_instances_response {

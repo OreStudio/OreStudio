@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/coding_scheme_entity.hpp"
 #include "ores.dq.core/repository/coding_scheme_mapper.hpp"
@@ -254,39 +255,42 @@ void coding_scheme_repository::remove(context ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::coding_schemes_filter>& filter) {
+std::vector<domain::coding_scheme>
+coding_scheme_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::coding_schemes_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding schemes with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<coding_scheme_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<coding_scheme_entity, domain::coding_scheme>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return coding_scheme_mapper::map(entities); },
         lg(),
         "Reading latest coding schemes with pagination.");
 }
 
 std::uint32_t coding_scheme_repository::get_total_scheme_count(
-    context ctx, const std::optional<messaging::coding_schemes_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::coding_schemes_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<coding_scheme_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<coding_scheme_entity>>;
 
     return execute_count_query<coding_scheme_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting coding schemes");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting coding schemes");
 }
 
 std::vector<domain::coding_scheme>

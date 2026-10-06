@@ -86,6 +86,7 @@ export interface ListCompositeLegsRequest {
     limit: number;
     order: Order;
     filter: CompositeLegsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCompositeLegsResponse {

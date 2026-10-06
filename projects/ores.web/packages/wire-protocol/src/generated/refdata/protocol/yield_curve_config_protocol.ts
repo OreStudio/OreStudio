@@ -93,6 +93,7 @@ export interface ListYieldCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: YieldCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListYieldCurveConfigsResponse {

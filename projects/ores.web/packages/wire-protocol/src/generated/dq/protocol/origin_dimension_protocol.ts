@@ -82,6 +82,7 @@ export interface ListOriginDimensionsRequest {
     limit: number;
     order: Order;
     filter: OriginDimensionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListOriginDimensionsResponse {

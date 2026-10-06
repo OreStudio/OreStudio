@@ -81,6 +81,7 @@ export interface ListDayCountersRequest {
     limit: number;
     order: Order;
     filter: DayCountersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDayCountersResponse {

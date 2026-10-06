@@ -88,6 +88,7 @@ export interface ListObservationLineagesRequest {
     limit: number;
     order: Order;
     filter: ObservationLineagesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListObservationLineagesResponse {

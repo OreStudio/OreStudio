@@ -86,6 +86,7 @@ export interface ListCurveSegmentCurvesRequest {
     limit: number;
     order: Order;
     filter: CurveSegmentCurvesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveSegmentCurvesResponse {

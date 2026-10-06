@@ -83,6 +83,7 @@ export interface ListAccountTypesRequest {
     limit: number;
     order: Order;
     filter: AccountTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAccountTypesResponse {

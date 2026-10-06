@@ -83,6 +83,7 @@ export interface ListNotificationChannelsRequest {
     limit: number;
     order: Order;
     filter: NotificationChannelsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListNotificationChannelsResponse {

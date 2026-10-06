@@ -82,6 +82,7 @@ export interface ListCodingSchemeAuthorityTypesRequest {
     limit: number;
     order: Order;
     filter: CodingSchemeAuthorityTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCodingSchemeAuthorityTypesResponse {

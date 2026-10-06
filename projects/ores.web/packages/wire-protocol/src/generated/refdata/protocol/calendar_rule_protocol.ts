@@ -93,6 +93,7 @@ export interface ListCalendarRulesRequest {
     limit: number;
     order: Order;
     filter: CalendarRulesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCalendarRulesResponse {

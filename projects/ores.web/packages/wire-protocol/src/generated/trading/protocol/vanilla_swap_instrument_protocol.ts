@@ -86,6 +86,7 @@ export interface ListVanillaSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: VanillaSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListVanillaSwapInstrumentsResponse {

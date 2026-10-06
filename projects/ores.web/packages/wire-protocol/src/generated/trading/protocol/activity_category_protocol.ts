@@ -81,6 +81,7 @@ export interface ListActivityCategoriesRequest {
     limit: number;
     order: Order;
     filter: ActivityCategoriesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListActivityCategoriesResponse {

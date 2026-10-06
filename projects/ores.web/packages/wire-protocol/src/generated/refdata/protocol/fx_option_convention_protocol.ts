@@ -88,6 +88,7 @@ export interface ListFxOptionConventionsRequest {
     limit: number;
     order: Order;
     filter: FxOptionConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxOptionConventionsResponse {

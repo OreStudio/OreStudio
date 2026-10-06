@@ -81,6 +81,7 @@ export interface ListReturnTypesRequest {
     limit: number;
     order: Order;
     filter: ReturnTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReturnTypesResponse {

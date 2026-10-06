@@ -100,6 +100,7 @@ export interface ListInflationCapFloorVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: InflationCapFloorVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInflationCapFloorVolatilityConfigsResponse {

@@ -106,6 +106,7 @@ struct list_sandboxes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<sandboxes_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_sandboxes_response {

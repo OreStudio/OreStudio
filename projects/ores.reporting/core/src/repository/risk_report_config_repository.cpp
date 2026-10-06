@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/risk_report_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/risk_report_config_entity.hpp"
 #include "ores.reporting.core/repository/risk_report_config_mapper.hpp"
@@ -298,35 +299,35 @@ std::vector<domain::risk_report_config>
 risk_report_config_repository::read_latest(context ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit,
-                                           const ores::utility::domain::order& order) {
+                                           const ores::utility::domain::order& order,
+                                           const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest risk report configs with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<risk_report_config_entity, domain::risk_report_config>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        std::nullopt,
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return risk_report_config_mapper::map(entities); },
         lg(),
         "Reading latest risk report configs with pagination.");
 }
 
-std::uint32_t risk_report_config_repository::get_total_config_count(context ctx) {
+std::uint32_t
+risk_report_config_repository::get_total_config_count(context ctx,
+                                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active risk report config count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<risk_report_config_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<risk_report_config_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<risk_report_config_entity>(
-        ctx, query, std::nullopt, lg(), "Counting risk report configs");
+        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting risk report configs");
 }
 
 std::vector<domain::risk_report_config>

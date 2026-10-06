@@ -81,6 +81,7 @@ export interface ListTradeIdTypesRequest {
     limit: number;
     order: Order;
     filter: TradeIdTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradeIdTypesResponse {

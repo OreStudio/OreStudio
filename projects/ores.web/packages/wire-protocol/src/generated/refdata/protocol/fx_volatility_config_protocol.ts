@@ -100,6 +100,7 @@ export interface ListFxVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: FxVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxVolatilityConfigsResponse {

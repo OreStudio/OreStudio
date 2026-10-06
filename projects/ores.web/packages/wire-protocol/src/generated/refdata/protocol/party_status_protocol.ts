@@ -83,6 +83,7 @@ export interface ListPartyStatusesRequest {
     limit: number;
     order: Order;
     filter: PartyStatusesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPartyStatusesResponse {

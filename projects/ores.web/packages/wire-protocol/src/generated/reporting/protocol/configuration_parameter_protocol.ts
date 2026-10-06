@@ -89,6 +89,7 @@ export interface ListConfigurationParametersRequest {
     limit: number;
     order: Order;
     filter: ConfigurationParametersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListConfigurationParametersResponse {

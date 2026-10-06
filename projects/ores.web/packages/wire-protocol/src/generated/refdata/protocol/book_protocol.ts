@@ -96,6 +96,7 @@ export interface ListBooksRequest {
     limit: number;
     order: Order;
     filter: BooksFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBooksResponse {

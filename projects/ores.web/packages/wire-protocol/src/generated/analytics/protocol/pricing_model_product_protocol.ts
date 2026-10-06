@@ -85,6 +85,7 @@ export interface ListPricingModelProductsRequest {
     limit: number;
     order: Order;
     filter: PricingModelProductsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPricingModelProductsResponse {

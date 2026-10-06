@@ -29,6 +29,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <algorithm>
 #include <initializer_list>
@@ -270,36 +271,40 @@ std::vector<domain::stress_test_shift> stress_test_shift_repository::read_latest
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::stress_test_shifts_filter>& filter) {
+    const std::optional<messaging::stress_test_shifts_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest stress test shifts with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<stress_test_shift_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<stress_test_shift_entity, domain::stress_test_shift>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return stress_test_shift_mapper::map(entities); },
         lg(),
         "Reading latest stress test shifts with pagination.");
 }
 
 std::uint32_t stress_test_shift_repository::get_total_stress_test_shift_count(
-    context ctx, const std::optional<messaging::stress_test_shifts_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::stress_test_shifts_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active stress test shift count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<stress_test_shift_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<stress_test_shift_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<stress_test_shift_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting stress test shifts");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting stress test shifts");
 }
 
 std::vector<domain::stress_test_shift>

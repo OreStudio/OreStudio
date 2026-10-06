@@ -149,7 +149,8 @@ public:
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
-        const std::optional<messaging::fx_forward_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::fx_forward_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active FX forward instruments.
@@ -158,7 +159,8 @@ public:
      */
     std::uint32_t get_total_fx_forward_instrument_count(
         context ctx,
-        const std::optional<messaging::fx_forward_instruments_filter>& filter = std::nullopt);
+        const std::optional<messaging::fx_forward_instruments_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a FX forward instrument by closing its temporal validity.

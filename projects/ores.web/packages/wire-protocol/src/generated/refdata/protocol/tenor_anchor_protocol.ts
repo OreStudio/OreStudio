@@ -82,6 +82,7 @@ export interface ListTenorAnchorsRequest {
     limit: number;
     order: Order;
     filter: TenorAnchorsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorAnchorsResponse {

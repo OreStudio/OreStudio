@@ -153,14 +153,17 @@ public:
     read_latest(context ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
-                const ores::utility::domain::order& order = {});
+                const ores::utility::domain::order& order = {},
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active trade additional fields.
      * @param ctx Repository context with database connection
      * @return Total number of active trade additional fields
      */
-    std::uint32_t get_total_trade_additional_field_count(context ctx);
+    std::uint32_t
+    get_total_trade_additional_field_count(context ctx,
+                                           const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a trade additional field by closing its temporal validity.

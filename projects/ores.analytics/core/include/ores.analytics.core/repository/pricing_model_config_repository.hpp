@@ -192,12 +192,13 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::pricing_model_config> read_latest(
-        context ctx,
-        std::uint32_t offset,
-        std::uint32_t limit,
-        const ores::utility::domain::order& order = {},
-        const std::optional<messaging::pricing_model_configs_filter>& filter = std::nullopt);
+    std::vector<domain::pricing_model_config>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::pricing_model_configs_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active pricing model configurations.
@@ -206,7 +207,8 @@ public:
      */
     std::uint32_t get_total_config_count(
         context ctx,
-        const std::optional<messaging::pricing_model_configs_filter>& filter = std::nullopt);
+        const std::optional<messaging::pricing_model_configs_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a pricing model configuration by closing its temporal validity.

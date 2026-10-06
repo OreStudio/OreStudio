@@ -87,6 +87,7 @@ export interface ListCalendarExceptionsRequest {
     limit: number;
     order: Order;
     filter: CalendarExceptionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCalendarExceptionsResponse {

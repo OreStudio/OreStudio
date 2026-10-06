@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/currency_pair_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_pair_entity.hpp"
 #include "ores.refdata.core/repository/currency_pair_mapper.hpp"
@@ -273,41 +274,45 @@ void currency_pair_repository::remove(context ctx, const std::string& pair_code)
     static_cast<void>(remove(ctx, pair_code, std::nullopt));
 }
 
-std::vector<domain::currency_pair> currency_pair_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::currency_pairs_filter>& filter) {
+std::vector<domain::currency_pair>
+currency_pair_repository::read_latest(context ctx,
+                                      std::uint32_t offset,
+                                      std::uint32_t limit,
+                                      const ores::utility::domain::order& order,
+                                      const std::optional<messaging::currency_pairs_filter>& filter,
+                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pairs with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<currency_pair_entity, domain::currency_pair>(
         ctx,
         query,
         list_order(order, {"pair_code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return currency_pair_mapper::map(entities); },
         lg(),
         "Reading latest currency pairs with pagination.");
 }
 
 std::uint32_t currency_pair_repository::get_total_pair_count(
-    context ctx, const std::optional<messaging::currency_pairs_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::currency_pairs_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<currency_pair_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<currency_pair_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<currency_pair_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting currency pairs");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting currency pairs");
 }
 
 std::vector<domain::currency_pair>

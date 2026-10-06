@@ -89,6 +89,7 @@ export interface ListCommodityPriceSegmentsRequest {
     limit: number;
     order: Order;
     filter: CommodityPriceSegmentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityPriceSegmentsResponse {

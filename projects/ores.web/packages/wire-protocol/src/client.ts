@@ -439,6 +439,7 @@ export class OresClient {
                     offset,
                     limit: PAGE_SIZE,
                     order: { field: '', descending: false },
+                    as_of: null,
                     filter: null,
                 } satisfies ListPartiesRequest,
                 listPartiesReplySchema,

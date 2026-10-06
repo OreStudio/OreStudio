@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/counterparty_identifier_service.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -120,9 +121,22 @@ counterparty_identifier_service::list_counterparty_identifiers(
             "The filter lists more than 1000 values in counterparty_id_one_of.";
         return response;
     }
-    response.counterparty_identifiers =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_counterparty_identifier_count(ctx_, request.filter);
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
+    response.counterparty_identifiers = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_counterparty_identifier_count(ctx_, request.filter, as_of);
     return response;
 }
 

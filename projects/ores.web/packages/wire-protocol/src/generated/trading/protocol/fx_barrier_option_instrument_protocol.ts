@@ -93,6 +93,7 @@ export interface ListFxBarrierOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxBarrierOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxBarrierOptionInstrumentsResponse {

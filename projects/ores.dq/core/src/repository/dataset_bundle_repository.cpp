@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_entity.hpp"
 #include "ores.dq.core/repository/dataset_bundle_mapper.hpp"
@@ -290,34 +291,37 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::dataset_bundles_filter>& filter) {
+    const std::optional<messaging::dataset_bundles_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundles with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-                       where("valid_to"_c == max.value()) | sqlgen::offset(offset) |
+    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | sqlgen::offset(offset) |
                        sqlgen::limit(limit);
 
     return execute_ordered_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
         lg(),
         "Reading latest dataset bundles with pagination.");
 }
 
 std::uint32_t dataset_bundle_repository::get_total_bundle_count(
-    context ctx, const std::optional<messaging::dataset_bundles_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::dataset_bundles_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto query =
-        sqlgen::read<std::vector<dataset_bundle_entity>> | where("valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>>;
 
     return execute_count_query<dataset_bundle_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting dataset bundles");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting dataset bundles");
 }
 
 std::vector<domain::dataset_bundle>

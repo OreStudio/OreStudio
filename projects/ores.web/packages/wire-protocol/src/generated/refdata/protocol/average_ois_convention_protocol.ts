@@ -90,6 +90,7 @@ export interface ListAverageOisConventionsRequest {
     limit: number;
     order: Order;
     filter: AverageOisConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAverageOisConventionsResponse {

@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/currency_pair_classification_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/currency_pair_classification_entity.hpp"
 #include "ores.refdata.core/repository/currency_pair_classification_mapper.hpp"
@@ -288,37 +289,41 @@ currency_pair_classification_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::currency_pair_classifications_filter>& filter) {
+    const std::optional<messaging::currency_pair_classifications_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classifications with offset: "
                                << offset << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_classification_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<currency_pair_classification_entity,
                                       domain::currency_pair_classification>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return currency_pair_classification_mapper::map(entities); },
         lg(),
         "Reading latest currency pair classifications with pagination.");
 }
 
 std::uint32_t currency_pair_classification_repository::get_total_classification_count(
-    context ctx, const std::optional<messaging::currency_pair_classifications_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::currency_pair_classifications_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair classification count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_classification_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid);
 
     return execute_count_query<currency_pair_classification_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting currency pair classifications");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting currency pair classifications");
 }
 
 std::vector<domain::currency_pair_classification>

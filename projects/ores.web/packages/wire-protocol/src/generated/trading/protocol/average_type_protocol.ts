@@ -81,6 +81,7 @@ export interface ListAverageTypesRequest {
     limit: number;
     order: Order;
     filter: AverageTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListAverageTypesResponse {

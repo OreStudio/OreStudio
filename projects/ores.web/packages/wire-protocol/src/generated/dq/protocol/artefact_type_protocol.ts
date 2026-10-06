@@ -86,6 +86,7 @@ export interface ListArtefactTypesRequest {
     limit: number;
     order: Order;
     filter: ArtefactTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListArtefactTypesResponse {

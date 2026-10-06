@@ -104,6 +104,7 @@ struct list_observation_lineages_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<observation_lineages_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_observation_lineages_response {

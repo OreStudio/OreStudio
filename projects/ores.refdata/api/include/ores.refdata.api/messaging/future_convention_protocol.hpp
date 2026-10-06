@@ -101,6 +101,7 @@ struct list_future_conventions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<future_conventions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_future_conventions_response {

@@ -122,6 +122,7 @@ struct list_cross_currency_basis_conventions_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<cross_currency_basis_conventions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_cross_currency_basis_conventions_response {

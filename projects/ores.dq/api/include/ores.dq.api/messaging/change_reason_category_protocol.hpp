@@ -97,6 +97,7 @@ struct list_change_reason_categories_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<change_reason_categories_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_change_reason_categories_response {

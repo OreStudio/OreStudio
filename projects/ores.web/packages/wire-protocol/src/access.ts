@@ -191,6 +191,7 @@ export async function readRoles(caller: AuthenticatedCaller): Promise<RoleSummar
         offset: 0,
         limit: ROLE_PAGE,
         order: { field: '', descending: false },
+        as_of: null,
         filter: null,
     };
     const reply = await caller.callAuthenticated(
@@ -223,6 +224,7 @@ export async function readPermissionCatalogue(
         offset: 0,
         limit: PERMISSION_PAGE,
         order: { field: '', descending: false },
+        as_of: null,
         filter: null,
     };
     const reply = await caller.callAuthenticated(

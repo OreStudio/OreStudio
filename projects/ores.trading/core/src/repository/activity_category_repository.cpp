@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/activity_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/activity_category_entity.hpp"
 #include "ores.trading.core/repository/activity_category_mapper.hpp"
@@ -270,36 +271,40 @@ std::vector<domain::activity_category> activity_category_repository::read_latest
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::activity_categories_filter>& filter) {
+    const std::optional<messaging::activity_categories_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest activity categorys with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<activity_category_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<activity_category_entity, domain::activity_category>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return activity_category_mapper::map(entities); },
         lg(),
         "Reading latest activity categorys with pagination.");
 }
 
 std::uint32_t activity_category_repository::get_total_activity_category_count(
-    context ctx, const std::optional<messaging::activity_categories_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::activity_categories_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active activity category count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<activity_category_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<activity_category_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<activity_category_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting activity categorys");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting activity categorys");
 }
 
 std::vector<domain::activity_category>

@@ -90,6 +90,7 @@ export interface ListFxVanillaOptionInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxVanillaOptionInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxVanillaOptionInstrumentsResponse {

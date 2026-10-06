@@ -99,6 +99,7 @@ export interface ListWorkflowStepsRequest {
     limit: number;
     order: Order;
     filter: WorkflowStepsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListWorkflowStepsResponse {

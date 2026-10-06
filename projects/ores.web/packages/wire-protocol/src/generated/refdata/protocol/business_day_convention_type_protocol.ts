@@ -83,6 +83,7 @@ export interface ListBusinessDayConventionTypesRequest {
     limit: number;
     order: Order;
     filter: BusinessDayConventionTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBusinessDayConventionTypesResponse {

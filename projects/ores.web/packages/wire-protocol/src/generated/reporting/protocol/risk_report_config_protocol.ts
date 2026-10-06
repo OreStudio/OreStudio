@@ -112,6 +112,7 @@ export interface ListRiskReportConfigsRequest {
     limit: number;
     order: Order;
     filter: RiskReportConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRiskReportConfigsResponse {

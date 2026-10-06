@@ -83,6 +83,7 @@ export interface ListMonetaryNaturesRequest {
     limit: number;
     order: Order;
     filter: MonetaryNaturesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListMonetaryNaturesResponse {

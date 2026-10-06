@@ -86,6 +86,7 @@ export interface ListTenorsRequest {
     limit: number;
     order: Order;
     filter: TenorsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorsResponse {

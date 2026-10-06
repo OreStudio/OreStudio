@@ -101,6 +101,7 @@ struct list_csa_eligible_currencies_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<csa_eligible_currencies_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_csa_eligible_currencies_response {

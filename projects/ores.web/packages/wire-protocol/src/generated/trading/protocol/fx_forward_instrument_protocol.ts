@@ -88,6 +88,7 @@ export interface ListFxForwardInstrumentsRequest {
     limit: number;
     order: Order;
     filter: FxForwardInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListFxForwardInstrumentsResponse {

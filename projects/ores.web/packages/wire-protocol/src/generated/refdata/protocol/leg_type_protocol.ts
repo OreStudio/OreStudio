@@ -81,6 +81,7 @@ export interface ListLegTypesRequest {
     limit: number;
     order: Order;
     filter: LegTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListLegTypesResponse {

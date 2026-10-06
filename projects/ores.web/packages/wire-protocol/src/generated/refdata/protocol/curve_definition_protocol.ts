@@ -85,6 +85,7 @@ export interface ListCurveDefinitionsRequest {
     limit: number;
     order: Order;
     filter: CurveDefinitionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveDefinitionsResponse {

@@ -101,6 +101,7 @@ struct list_credit_simulation_matrix_configs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<credit_simulation_matrix_configs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_credit_simulation_matrix_configs_response {

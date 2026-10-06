@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/configuration_parameter_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/configuration_parameter_entity.hpp"
 #include "ores.reporting.core/repository/configuration_parameter_mapper.hpp"
@@ -434,37 +435,41 @@ std::vector<domain::configuration_parameter> configuration_parameter_repository:
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::configuration_parameters_filter>& filter) {
+    const std::optional<messaging::configuration_parameters_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameters with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<configuration_parameter_entity,
                                       domain::configuration_parameter>(
         ctx,
         query,
         list_order(order, {"id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return configuration_parameter_mapper::map(entities); },
         lg(),
         "Reading latest configuration parameters with pagination.");
 }
 
 std::uint32_t configuration_parameter_repository::get_total_parameter_value_count(
-    context ctx, const std::optional<messaging::configuration_parameters_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::configuration_parameters_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active configuration parameter count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<configuration_parameter_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<configuration_parameter_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<configuration_parameter_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting configuration parameters");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting configuration parameters");
 }
 
 std::vector<domain::configuration_parameter>

@@ -149,7 +149,8 @@ public:
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
-        const std::optional<messaging::default_curve_configurations_filter>& filter = std::nullopt);
+        const std::optional<messaging::default_curve_configurations_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active default curve configurations.
@@ -158,7 +159,8 @@ public:
      */
     std::uint32_t get_total_configuration_count(
         context ctx,
-        const std::optional<messaging::default_curve_configurations_filter>& filter = std::nullopt);
+        const std::optional<messaging::default_curve_configurations_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a default curve configuration by closing its temporal validity.

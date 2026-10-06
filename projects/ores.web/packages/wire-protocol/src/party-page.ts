@@ -69,6 +69,7 @@ async function readCentreFlags(
         offset: 0,
         limit: codes.length,
         order: { field: '', descending: false },
+        as_of: null,
         filter: { code_one_of: [...codes] },
     };
     const centres = await caller.callAuthenticated(
@@ -143,6 +144,7 @@ export async function readPartiesPage(
         offset: query.offset,
         limit: query.limit,
         order: { field: '', descending: false },
+        as_of: null,
         filter: null,
     };
     const reply = await caller.callAuthenticated(
@@ -168,6 +170,7 @@ export async function readPartiesPage(
             offset: 0,
             limit: elsewhere.length,
             order: { field: '', descending: false },
+            as_of: null,
             filter: { id_one_of: elsewhere },
         };
         const parents = await caller.callAuthenticated(

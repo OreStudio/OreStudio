@@ -81,6 +81,7 @@ export interface ListOptionTypesRequest {
     limit: number;
     order: Order;
     filter: OptionTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListOptionTypesResponse {

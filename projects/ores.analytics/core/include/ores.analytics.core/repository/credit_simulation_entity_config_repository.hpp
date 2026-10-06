@@ -225,7 +225,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::credit_simulation_entity_configs_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active credit simulation entities.
@@ -235,7 +236,8 @@ public:
     std::uint32_t get_total_entity_count(
         context ctx,
         const std::optional<messaging::credit_simulation_entity_configs_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a credit simulation entity by closing its temporal validity.

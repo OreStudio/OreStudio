@@ -148,7 +148,8 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::instrument_options_filter>& filter = std::nullopt);
+                const std::optional<messaging::instrument_options_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active instrument options.
@@ -157,7 +158,8 @@ public:
      */
     std::uint32_t get_total_instrument_option_count(
         context ctx,
-        const std::optional<messaging::instrument_options_filter>& filter = std::nullopt);
+        const std::optional<messaging::instrument_options_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument option by closing its temporal validity.

@@ -93,6 +93,7 @@ export interface ListCreditSimulationMatrixRowConfigsRequest {
     limit: number;
     order: Order;
     filter: CreditSimulationMatrixRowConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditSimulationMatrixRowConfigsResponse {

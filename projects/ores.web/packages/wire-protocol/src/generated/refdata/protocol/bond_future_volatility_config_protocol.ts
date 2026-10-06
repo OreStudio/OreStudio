@@ -90,6 +90,7 @@ export interface ListBondFutureVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: BondFutureVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondFutureVolatilityConfigsResponse {

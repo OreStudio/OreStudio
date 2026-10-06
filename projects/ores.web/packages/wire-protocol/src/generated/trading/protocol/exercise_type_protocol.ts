@@ -81,6 +81,7 @@ export interface ListExerciseTypesRequest {
     limit: number;
     order: Order;
     filter: ExerciseTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListExerciseTypesResponse {

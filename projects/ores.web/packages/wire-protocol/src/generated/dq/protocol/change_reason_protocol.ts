@@ -87,6 +87,7 @@ export interface ListChangeReasonsRequest {
     limit: number;
     order: Order;
     filter: ChangeReasonsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListChangeReasonsResponse {

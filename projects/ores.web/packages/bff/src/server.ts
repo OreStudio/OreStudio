@@ -2095,6 +2095,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             limit: query['limit'] === undefined ? 200 : Number(query['limit']),
             order: { field: '', descending: false },
             filter: null,
+            as_of: null,
         };
         const response = await session.client.callAuthenticated(
             SUBJECTS.listChangeReasons,

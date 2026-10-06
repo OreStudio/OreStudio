@@ -86,6 +86,7 @@ export interface ListTodaysMarketConfigurationsRequest {
     limit: number;
     order: Order;
     filter: TodaysMarketConfigurationsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTodaysMarketConfigurationsResponse {

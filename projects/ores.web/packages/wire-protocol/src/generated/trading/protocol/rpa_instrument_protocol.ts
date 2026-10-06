@@ -86,6 +86,7 @@ export interface ListRpaInstrumentsRequest {
     limit: number;
     order: Order;
     filter: RpaInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListRpaInstrumentsResponse {

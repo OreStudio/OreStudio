@@ -159,6 +159,7 @@ describe('GET /api/parties', () => {
                     offset: 20,
                     limit: 2,
                     order: { field: '', descending: false },
+                    as_of: null,
                     filter: null,
                 },
             },

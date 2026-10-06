@@ -81,6 +81,7 @@ export interface ListShiftTypesRequest {
     limit: number;
     order: Order;
     filter: ShiftTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListShiftTypesResponse {

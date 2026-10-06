@@ -87,6 +87,7 @@ export interface ListInflationSwapInstrumentsRequest {
     limit: number;
     order: Order;
     filter: InflationSwapInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListInflationSwapInstrumentsResponse {

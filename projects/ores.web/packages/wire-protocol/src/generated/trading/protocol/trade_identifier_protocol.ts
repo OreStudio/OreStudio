@@ -79,6 +79,7 @@ export interface ListTradeIdentifiersRequest {
     offset: number;
     limit: number;
     order: Order;
+    as_of: string | null;
 }
 
 export interface ListTradeIdentifiersResponse {

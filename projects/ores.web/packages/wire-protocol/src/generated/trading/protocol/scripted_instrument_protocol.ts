@@ -87,6 +87,7 @@ export interface ListScriptedInstrumentsRequest {
     limit: number;
     order: Order;
     filter: ScriptedInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListScriptedInstrumentsResponse {

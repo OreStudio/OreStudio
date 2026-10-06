@@ -86,6 +86,7 @@ export interface ListCreditSimulationNettingSetConfigsRequest {
     limit: number;
     order: Order;
     filter: CreditSimulationNettingSetConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCreditSimulationNettingSetConfigsResponse {

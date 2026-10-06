@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.marketdata.core/service/market_observation_service.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
@@ -118,9 +119,22 @@ messaging::list_market_observations_response market_observation_service::list_ma
         response.result.message = "The filter lists more than 1000 values in series_id_one_of.";
         return response;
     }
-    response.market_observations =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_market_observation_count(ctx_, request.filter);
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "as_of_invalid";
+            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            return response;
+        }
+    }
+    response.market_observations = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_market_observation_count(ctx_, request.filter, as_of);
     return response;
 }
 

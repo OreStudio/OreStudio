@@ -100,6 +100,7 @@ struct list_crm_topology_configs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<crm_topology_configs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_crm_topology_configs_response {

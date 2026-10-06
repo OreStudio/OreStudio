@@ -84,6 +84,7 @@ export interface ListStressTestScenariosRequest {
     limit: number;
     order: Order;
     filter: StressTestScenariosFilter | null;
+    as_of: string | null;
 }
 
 export interface ListStressTestScenariosResponse {

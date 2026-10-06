@@ -101,6 +101,7 @@ struct list_party_id_schemes_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<party_id_schemes_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_party_id_schemes_response {

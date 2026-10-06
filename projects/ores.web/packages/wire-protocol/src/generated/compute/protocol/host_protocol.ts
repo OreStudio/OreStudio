@@ -88,6 +88,7 @@ export interface ListHostsRequest {
     limit: number;
     order: Order;
     filter: HostsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListHostsResponse {

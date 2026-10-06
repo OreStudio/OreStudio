@@ -92,6 +92,7 @@ export interface ListTenantsRequest {
     limit: number;
     order: Order;
     filter: TenantsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenantsResponse {

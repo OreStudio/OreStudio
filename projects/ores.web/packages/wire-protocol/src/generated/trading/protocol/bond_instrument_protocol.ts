@@ -83,6 +83,7 @@ export interface ListBondInstrumentsRequest {
     limit: number;
     order: Order;
     filter: BondInstrumentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondInstrumentsResponse {

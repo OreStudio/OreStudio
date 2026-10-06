@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/callable_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/callable_swap_instrument_mapper.hpp"
@@ -285,37 +286,41 @@ std::vector<domain::callable_swap_instrument> callable_swap_instrument_repositor
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::callable_swap_instruments_filter>& filter) {
+    const std::optional<messaging::callable_swap_instruments_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest callable swap instruments with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<callable_swap_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<callable_swap_instrument_entity,
                                       domain::callable_swap_instrument>(
         ctx,
         query,
         list_order(order, {"trade_id"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return callable_swap_instrument_mapper::map(entities); },
         lg(),
         "Reading latest callable swap instruments with pagination.");
 }
 
 std::uint32_t callable_swap_instrument_repository::get_total_callable_swap_instrument_count(
-    context ctx, const std::optional<messaging::callable_swap_instruments_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::callable_swap_instruments_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active callable swap instrument count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<callable_swap_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<callable_swap_instrument_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<callable_swap_instrument_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting callable swap instruments");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting callable swap instruments");
 }
 
 std::vector<domain::callable_swap_instrument>

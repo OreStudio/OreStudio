@@ -94,6 +94,7 @@ export interface ListWorkflowInstancesRequest {
     limit: number;
     order: Order;
     filter: WorkflowInstancesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListWorkflowInstancesResponse {

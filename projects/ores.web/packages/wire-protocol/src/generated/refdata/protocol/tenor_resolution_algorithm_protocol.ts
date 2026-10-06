@@ -83,6 +83,7 @@ export interface ListTenorResolutionAlgorithmsRequest {
     limit: number;
     order: Order;
     filter: TenorResolutionAlgorithmsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTenorResolutionAlgorithmsResponse {

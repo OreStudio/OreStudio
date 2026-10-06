@@ -102,6 +102,7 @@ struct list_todays_market_configurations_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<todays_market_configurations_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_todays_market_configurations_response {

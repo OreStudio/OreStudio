@@ -87,6 +87,7 @@ export interface ListCommodityForwardConventionsRequest {
     limit: number;
     order: Order;
     filter: CommodityForwardConventionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityForwardConventionsResponse {

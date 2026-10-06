@@ -102,6 +102,7 @@ export interface ListCommodityCurveConfigsRequest {
     limit: number;
     order: Order;
     filter: CommodityCurveConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCommodityCurveConfigsResponse {

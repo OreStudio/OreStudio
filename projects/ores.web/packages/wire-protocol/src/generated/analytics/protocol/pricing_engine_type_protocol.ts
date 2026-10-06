@@ -82,6 +82,7 @@ export interface ListPricingEngineTypesRequest {
     limit: number;
     order: Order;
     filter: PricingEngineTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPricingEngineTypesResponse {

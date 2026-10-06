@@ -96,6 +96,7 @@ struct list_instrument_option_payment_dates_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<std::string> as_of;
 };
 
 struct list_instrument_option_payment_dates_response {

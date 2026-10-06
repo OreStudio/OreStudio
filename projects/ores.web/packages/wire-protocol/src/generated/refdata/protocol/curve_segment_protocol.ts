@@ -111,6 +111,7 @@ export interface ListCurveSegmentsRequest {
     limit: number;
     order: Order;
     filter: CurveSegmentsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurveSegmentsResponse {

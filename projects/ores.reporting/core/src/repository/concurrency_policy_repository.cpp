@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_mapper.hpp"
@@ -272,36 +273,40 @@ std::vector<domain::concurrency_policy> concurrency_policy_repository::read_late
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::concurrency_policies_filter>& filter) {
+    const std::optional<messaging::concurrency_policies_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policies with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<concurrency_policy_entity, domain::concurrency_policy>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
         lg(),
         "Reading latest concurrency policies with pagination.");
 }
 
 std::uint32_t concurrency_policy_repository::get_total_policy_count(
-    context ctx, const std::optional<messaging::concurrency_policies_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::concurrency_policies_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active concurrency policy count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<concurrency_policy_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<concurrency_policy_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting concurrency policies");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting concurrency policies");
 }
 
 std::vector<domain::concurrency_policy>

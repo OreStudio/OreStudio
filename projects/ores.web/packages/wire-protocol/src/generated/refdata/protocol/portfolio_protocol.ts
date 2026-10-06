@@ -93,6 +93,7 @@ export interface ListPortfoliosRequest {
     limit: number;
     order: Order;
     filter: PortfoliosFilter | null;
+    as_of: string | null;
 }
 
 export interface ListPortfoliosResponse {

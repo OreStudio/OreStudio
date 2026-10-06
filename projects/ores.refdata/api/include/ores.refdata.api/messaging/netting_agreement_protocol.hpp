@@ -103,6 +103,7 @@ struct list_netting_agreements_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<netting_agreements_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_netting_agreements_response {

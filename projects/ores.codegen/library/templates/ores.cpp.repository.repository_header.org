@@ -263,7 +263,8 @@ public:
     std::vector<domain::{{entity_singular}}>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
                 const ores::utility::domain::order& order = {}{{#domain_entity.has_filter_record}},
-        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+        const std::optional<std::string>& as_of = std::nullopt{{/domain_entity.has_as_of_lookup}});
 {{#domain_entity.has_newest_read}}
 
     /**
@@ -283,7 +284,8 @@ public:
      * @return Total number of active {{entity_plural_words}}
      */
     std::uint32_t get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
-        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}});
+        const std::optional<{{domain_entity.filter_type}}>& filter = std::nullopt{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
+        const std::optional<std::string>& as_of = std::nullopt{{/domain_entity.has_as_of_lookup}});
 
     /**
 {{#current_state}}

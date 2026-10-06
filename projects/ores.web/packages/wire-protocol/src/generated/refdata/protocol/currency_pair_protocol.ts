@@ -84,6 +84,7 @@ export interface ListCurrencyPairsRequest {
     limit: number;
     order: Order;
     filter: CurrencyPairsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCurrencyPairsResponse {

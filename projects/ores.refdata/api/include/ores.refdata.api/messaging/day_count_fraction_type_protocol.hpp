@@ -99,6 +99,7 @@ struct list_day_count_fraction_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<day_count_fraction_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_day_count_fraction_types_response {

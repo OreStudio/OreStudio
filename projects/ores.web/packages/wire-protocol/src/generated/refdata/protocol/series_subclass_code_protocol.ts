@@ -83,6 +83,7 @@ export interface ListSeriesSubclassCodesRequest {
     limit: number;
     order: Order;
     filter: SeriesSubclassCodesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSeriesSubclassCodesResponse {

@@ -92,6 +92,7 @@ export interface ListReportDefinitionsRequest {
     limit: number;
     order: Order;
     filter: ReportDefinitionsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListReportDefinitionsResponse {

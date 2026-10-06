@@ -81,6 +81,7 @@ export interface ListDataDomainsRequest {
     limit: number;
     order: Order;
     filter: DataDomainsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListDataDomainsResponse {

@@ -150,7 +150,8 @@ public:
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
                 const std::optional<messaging::todays_market_collection_kinds_filter>& filter =
-                    std::nullopt);
+                    std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active today's market collection kinds.
@@ -160,7 +161,8 @@ public:
     std::uint32_t get_total_kind_count(
         context ctx,
         const std::optional<messaging::todays_market_collection_kinds_filter>& filter =
-            std::nullopt);
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a today's market collection kind by closing its temporal validity.

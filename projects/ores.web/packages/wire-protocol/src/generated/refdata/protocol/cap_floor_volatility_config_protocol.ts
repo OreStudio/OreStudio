@@ -117,6 +117,7 @@ export interface ListCapFloorVolatilityConfigsRequest {
     limit: number;
     order: Order;
     filter: CapFloorVolatilityConfigsFilter | null;
+    as_of: string | null;
 }
 
 export interface ListCapFloorVolatilityConfigsResponse {

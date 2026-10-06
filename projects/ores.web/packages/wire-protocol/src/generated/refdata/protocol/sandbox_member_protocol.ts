@@ -87,6 +87,7 @@ export interface ListSandboxMembersRequest {
     limit: number;
     order: Order;
     filter: SandboxMembersFilter | null;
+    as_of: string | null;
 }
 
 export interface ListSandboxMembersResponse {

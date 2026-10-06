@@ -97,6 +97,7 @@ struct list_moment_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<moment_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_moment_types_response {

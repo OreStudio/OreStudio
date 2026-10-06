@@ -101,6 +101,7 @@ struct list_composite_legs_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<composite_legs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_composite_legs_response {

@@ -105,6 +105,7 @@ struct list_commodity_price_segments_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<commodity_price_segments_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_commodity_price_segments_response {

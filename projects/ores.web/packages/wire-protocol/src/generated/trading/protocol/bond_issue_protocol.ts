@@ -97,6 +97,7 @@ export interface ListBondIssuesRequest {
     limit: number;
     order: Order;
     filter: BondIssuesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBondIssuesResponse {

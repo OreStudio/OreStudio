@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.refdata.api/domain/instrument_code_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/instrument_code_entity.hpp"
 #include "ores.refdata.core/repository/instrument_code_mapper.hpp"
@@ -269,36 +270,40 @@ std::vector<domain::instrument_code> instrument_code_repository::read_latest(
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::instrument_codes_filter>& filter) {
+    const std::optional<messaging::instrument_codes_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument codes with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_code_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_ordered_read_query<instrument_code_entity, domain::instrument_code>(
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return instrument_code_mapper::map(entities); },
         lg(),
         "Reading latest instrument codes with pagination.");
 }
 
 std::uint32_t instrument_code_repository::get_total_instrument_count(
-    context ctx, const std::optional<messaging::instrument_codes_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::instrument_codes_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument code count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_code_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<instrument_code_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<instrument_code_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting instrument codes");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting instrument codes");
 }
 
 std::vector<domain::instrument_code>

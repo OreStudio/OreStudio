@@ -46,6 +46,7 @@ equity_position_instrument make_instrument(database_helper& h) {
     equity_position_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
+    r.identity.trade_activity_id = ores::trading::tests::write_parent_activity(h);
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "EquityPosition";
     r.underlying_name = "BBG00R251JN8";

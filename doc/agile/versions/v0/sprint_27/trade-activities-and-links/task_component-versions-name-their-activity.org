@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every component version names the activity that caused it through a real foreign
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -79,6 +79,7 @@ task and name that file in the Command column.
 | Imported rows naming their booking's activity | states 16/16, identifiers 16/16, additional fields 24/24, vanilla swaps 12/12, bonds 1/1 | psql join on the booking's activity | 128c74fc7f + working tree |
 | Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | 128c74fc7f + working tree |
 | codegen pytest | 1155 passed | =pytest projects/ores.codegen/tests= | 128c74fc7f + working tree |
+| ctest | 94 of 94 (93 in the full run; trading core rerun after its fixtures gained an activity) | =compass test run= | 128c74fc7f + working tree |
 
 * Notes
 
@@ -103,6 +104,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: the trading core repository tests wrote instruments with no activity, which the new key refuses. | =trade_parent_seed.hpp= | accept | =write_parent_activity= writes one activity per test; the 18 tests and the bond reader stamps use it. |
+| 2 | Owner: booking writes four tables with SQL inserts instead of the repositories. | =ores_trading_book_trade_fn= | accept | Its own task on this story: a unit of work in ores.database, booking through the repositories, and a checked architectural rule. |
 
 * Result
+
+Every trade-keyed table, the components and the instrument tables alike,
+names the activity that wrote each version through an enforced foreign key,
+and the trade state reads its transition through that activity rather than
+a bare code. Booking and the ORE import stamp the booking's activity on
+every row they write; the round trip is unchanged and every imported row
+names its trade's booking activity.

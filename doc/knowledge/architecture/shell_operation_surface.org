@@ -27,14 +27,56 @@ marketdata service owns the fan-out.
 party. It takes the flags =--config-id= to scope the listing to one
 collection and =--name= to filter by name.
 
-=synthetic list feeds= lists the feeds running in the service of every asset
-class. It takes no arguments and no asset class flag.
+=synthetic list feeds= lists every configured feed of every asset class,
+whether or not the service is running it. It takes no arguments and no asset
+class flag. Each line states the feed's class, its source name, whether it is
+enabled, whether it is set to auto-start, whether it is running now, and the
+child rows it holds; a feed missing a child row is marked =[partial]=, so an
+incomplete feed is visible rather than absent. The one fact no config row
+carries is what is running, so the command joins the config families against
+the service's running set by =source_name=, the only name a feed binding
+carries.
+
+=synthetic setup= authors a whole feed in one pass, of the class =--kind=
+names: for FX the collection, the folder chain, the generation config, the FX
+spot config and its GMM components; for IR the same container and chain, the
+IR curve config, its Curve Template entries and its process parameter values.
+Every reference the run depends on is checked before the first row is written,
+so a missing process type, parameter or required flag is named and nothing is
+half authored. The flow, its order and its reporting are shared; the class
+supplies only which rows a feed needs.
+
+=synthetic preview fx-spot=, =synthetic preview ir-shape= and =synthetic
+preview ir-paths= take one feed token and reach the three dry-run operations
+the service already offers: =synthetic.v1.fx_spot.simulate=,
+=synthetic.v1.ir_curve.preview_shape= and
+=synthetic.v1.ir_curve.simulate_paths=. Each states the feed's own process
+type and its stored rows, so the preview is of the configured feed and not of
+a request the caller assembles. =fx-spot= and =ir-paths= take =--ticks=,
+=--paths= and =--seed=; =ir-shape= takes =--seed= and =--frequency=.
 
 =synthetic start= and =synthetic stop= take one target, written as
 =folder <token>= or =feed <token>=.
 
 =synthetic validate-vintage= takes one feed token and reports whether the
 vintage data that feed needs is available.
+
+** marketdata stream
+
+=marketdata stream <oresmd-uri>= watches one datum on the republished tick
+stream. It resolves the URI with the oresmd codec, writes the datum's
+canonical ORE key, and subscribes on the caller's own tenant and party
+subject, so the command takes no tenant or party argument. Each tick prints
+its observation time, the point's oresmd URI, the value and the source;
+=--csv <path>= writes the same four fields as a header and one row per tick
+instead. Ctrl-C stops the stream, prints the count, and leaves the file
+flushed.
+
+An unparseable or unknown URI is refused with the codec's own message, naming
+what the grammar did not admit rather than a subject error. A series URI
+states two subjects, because the series key and the point keys under it are
+different subjects and no NATS wildcard covers both: the series subject and
+the point subject one token down.
 
 ** The target rule
 
@@ -93,9 +135,16 @@ found no entry rather than that the data is missing.
 - The shell talks to two services for one subject. The folder verbs are
   marketdata requests and the per-feed verbs are synthetic requests. That
   split follows the folder tree, which the marketdata side owns.
-- =synthetic list feeds= asks the service what is running rather than
-  reading configs, so a stopped feed and a config that was never started are
-  absent from the listing.
+- =synthetic list feeds= reads the config families and asks the service what
+  is running, then joins the two by =source_name=. A stopped feed and a config
+  that was never started therefore still appear, marked =[stopped]=, which is
+  what makes a partial feed visible rather than absent.
+- =synthetic setup= is the one verb that writes more than one row. It builds
+  the whole plan before it sends the first row, and every row it sends is the
+  request the matching generated =add= verb sends, on the same subject, so the
+  porcelain flow is not a second writer for a row the generated menus already
+  write. It is not transactional: a failure part way leaves the rows already
+  written, and the command says how many were not.
 - The command group is the surface a script uses, so its verb names and
   target grammar are a contract. The proposal keeps this note in step with
   =synthetic_commands.cpp= in the same change as any new verb.

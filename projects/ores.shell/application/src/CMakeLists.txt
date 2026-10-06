@@ -49,6 +49,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.api.lib
         ores.marketdata.api.lib
         ores.marketdata.client.lib
+        ores.marketdata.core.lib
         ores.ore.api.lib
         ores.ore.core.lib
         ores.variability.api.lib

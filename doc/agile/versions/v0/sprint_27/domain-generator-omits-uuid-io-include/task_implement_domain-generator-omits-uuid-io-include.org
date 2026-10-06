@@ -8,7 +8,7 @@
 #+filetags: :domain-generator-omits-uuid-io-include:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/domain-generator-omits-uuid-io-include
-#+pr:
+#+pr: 2689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2689][#2689]] | [codegen] Include the Boost UUID I/O header in entity generators |
 
 * Review
 

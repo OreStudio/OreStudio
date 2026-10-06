@@ -48,6 +48,7 @@ generate_synthetic_fx_vanilla_option_instrument(utility::generation::generation_
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxOption");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.bought_currency = std::string("EUR");
     r.bought_amount = ores::utility::decimal::decimal::from_string("1000000").value();
     r.sold_currency = std::string("USD");

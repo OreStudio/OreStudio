@@ -19,7 +19,7 @@ name: Doc Lint
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
-    paths: &lint-paths
+    paths:
       - '**.org'
       - '**.mustache'
       - 'build/scripts/generate_skill*.py'
@@ -29,8 +29,6 @@ on:  # yamllint disable-line rule:truthy
       - 'projects/ores.lisp/src/ores-build-site.el'
       - 'projects/ores.compass/src/compass.py'
       - '.github/workflows/doc-lint.yml'
-  pull_request:
-    paths: *lint-paths
   workflow_dispatch:
 
 permissions:

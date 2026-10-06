@@ -99,6 +99,7 @@ to_domain(const messaging::instrument_option_premium_write& write) {
     domain::instrument_option_premium v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.amount = write.amount;
     v.currency = write.currency;
     v.pay_date = write.pay_date;

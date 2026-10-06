@@ -82,6 +82,11 @@ struct bond_leg_amortization final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief How the step amortizes, as the document spells it.
      *
      * Soft FK to ores_trading_amortization_types_tbl: the values are the closed ORE

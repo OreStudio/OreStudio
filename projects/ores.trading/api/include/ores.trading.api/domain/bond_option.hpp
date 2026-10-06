@@ -72,6 +72,11 @@ struct bond_option final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Call or Put.
      *
      * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,

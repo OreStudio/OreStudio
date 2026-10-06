@@ -35,6 +35,7 @@ export interface FxAccumulatorInstrumentKey {
 export interface FxAccumulatorInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     currency: string;
     fixing_amount: string;
     strike: number;

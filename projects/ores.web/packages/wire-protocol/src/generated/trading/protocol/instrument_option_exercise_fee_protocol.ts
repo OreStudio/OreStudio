@@ -36,6 +36,7 @@ export interface InstrumentOptionExerciseFeeKey {
 export interface InstrumentOptionExerciseFeeWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     amount: string;
     type: string | null;
     start_date: string | null;

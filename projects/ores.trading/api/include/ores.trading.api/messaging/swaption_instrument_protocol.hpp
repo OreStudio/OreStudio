@@ -42,6 +42,7 @@ struct swaption_instrument_key {
 struct swaption_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day expiry_date;
     std::string exercise_type;
     std::string settlement_type;

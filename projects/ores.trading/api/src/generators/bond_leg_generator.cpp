@@ -46,6 +46,7 @@ domain::bond_leg generate_synthetic_bond_leg(utility::generation::generation_con
     r.trade_id = ctx.generate_uuid();
     r.leg_role = std::string(faker::word::noun());
     r.leg_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

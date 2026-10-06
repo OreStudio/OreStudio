@@ -81,6 +81,11 @@ struct bond_future final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Name of the futures contract (the bond the contract is written on).
      */
     std::string contract_name;

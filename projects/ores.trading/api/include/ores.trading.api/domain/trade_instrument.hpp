@@ -50,11 +50,12 @@ using trade_instrument = std::variant<std::monostate,
                                       composite_instrument_data,
                                       scripted_instrument>;
 
-inline void stamp_ids(trade_instrument& ti, boost::uuids::uuid trade_id) {
+inline void
+stamp_ids(trade_instrument& ti, boost::uuids::uuid trade_id, boost::uuids::uuid activity_id = {}) {
     std::visit(
         [&]<typename T>(T& v) {
             if constexpr (!std::is_same_v<T, std::monostate>)
-                stamp_ids(v, trade_id);
+                stamp_ids(v, trade_id, activity_id);
         },
         ti);
 }

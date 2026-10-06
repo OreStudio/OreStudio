@@ -47,6 +47,7 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.identity.id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.identity.leg_number = faker::number::integer(1, 2);
     r.leg_type_code = std::string("Fixed");
     r.day_count_fraction_code = std::string("A365F");

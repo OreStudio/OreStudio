@@ -36,6 +36,7 @@ export interface CompositeLegKey {
 export interface CompositeLegWrite {
     id: string;
     trade_id: string;
+    trade_activity_id: string;
     leg_sequence: number;
     constituent_trade_id: string;
 }

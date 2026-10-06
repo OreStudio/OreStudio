@@ -42,6 +42,11 @@
 \ir ./trading_activity_types_create.sql
 \ir ./trading_activity_types_notify_trigger_create.sql
 
+-- Trade activities (depend on the activity types above; every trade-keyed
+-- table below names the activity that wrote its version)
+\ir ./trading_trade_activities_create.sql
+\ir ./trading_trade_activities_notify_trigger_create.sql
+
 \ir ./trading_party_role_types_create.sql
 \ir ./trading_party_role_types_notify_trigger_create.sql
 

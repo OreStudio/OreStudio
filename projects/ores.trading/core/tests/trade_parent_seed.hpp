@@ -20,26 +20,25 @@
 #ifndef ORES_TRADING_TESTS_TRADE_PARENT_SEED_HPP
 #define ORES_TRADING_TESTS_TRADE_PARENT_SEED_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::trading::tests {
 
 /**
- * @brief Writes one trade anchor, with the party it belongs to.
+ * @brief Writes a party of the test tenant, under the tenant's root party.
  *
- * An instrument's key is the trade it belongs to, so a test that writes an
- * instrument row has to state a trade whose anchor exists. The anchor needs
- * only its party, which is written first.
- *
- * @return The id of the trade that was written.
+ * @return The context of that party.
  */
-inline boost::uuids::uuid write_parent_trade(ores::testing::database_helper& h) {
+inline ores::database::context write_parent_party(ores::testing::database_helper& h) {
     namespace refdata = ores::refdata;
     auto gen = ores::testing::make_generation_context(h);
 
@@ -53,14 +52,43 @@ inline boost::uuids::uuid write_parent_trade(ores::testing::database_helper& h) 
         }
     }
     party_repo.write(h.context(), party);
-    auto ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
-
-    auto anchor = generators::generate_synthetic_trade(gen);
-    anchor.party_id = party.id;
-    repository::trade_repository().write(ctx, anchor);
-    return anchor.id;
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
 
+/**
+ * @brief Writes one trade, with the party it belongs to.
+ *
+ * An instrument's key is the trade it belongs to, so a test that writes an
+ * instrument row has to state a trade that exists.
+ *
+ * @return The id of the trade that was written.
+ */
+inline boost::uuids::uuid write_parent_trade(ores::testing::database_helper& h) {
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_parent_party(h);
+    auto trade = generators::generate_synthetic_trade(gen);
+    trade.party_id = *ctx.party_id();
+    repository::trade_repository().write(ctx, trade);
+    return trade.id;
+}
+
+/**
+ * @brief Writes one trade activity, with the party it belongs to.
+ *
+ * Every trade-keyed row names the activity that wrote it, so a test that
+ * writes such a row has to state an activity that exists. One activity can
+ * stand behind every row a test writes.
+ *
+ * @return The id of the activity that was written.
+ */
+inline boost::uuids::uuid write_parent_activity(ores::testing::database_helper& h) {
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_parent_party(h);
+    auto activity = generators::generate_synthetic_trade_activity(gen);
+    activity.party_id = *ctx.party_id();
+    repository::trade_activity_repository().write(ctx, activity);
+    return activity.id;
+}
 }
 
 #endif

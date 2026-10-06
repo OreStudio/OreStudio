@@ -27,12 +27,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/**"
       - "doc/recipes/**"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/**"
-      - "doc/recipes/**"
-
   workflow_dispatch:
 
 permissions:

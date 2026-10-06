@@ -66,14 +66,14 @@ struct trade_state final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The trade's party, copied from the anchor.
      */
     boost::uuids::uuid party_id;
-
-    /**
-     * @brief The activity that cut this version of the state.
-     */
-    std::string activity_type_code;
 
     /**
      * @brief The state the trade occupies in the trade_status machine.

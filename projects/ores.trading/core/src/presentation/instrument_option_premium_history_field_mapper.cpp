@@ -39,6 +39,8 @@ render_instrument_option_premium_fields(const domain::instrument_option_premium&
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Amount", .value = v.amount.to_string()});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back(

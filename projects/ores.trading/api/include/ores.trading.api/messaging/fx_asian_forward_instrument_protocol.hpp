@@ -42,6 +42,7 @@ struct fx_asian_forward_instrument_key {
 struct fx_asian_forward_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string fx_index;
     std::string reference_currency;
     std::optional<ores::utility::decimal::decimal> reference_notional;

@@ -43,6 +43,7 @@ struct equity_position_option_underlying_key {
 struct equity_position_option_underlying_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     ores::utility::decimal::decimal strike;
     std::optional<ores::utility::decimal::decimal> weight;

@@ -45,6 +45,7 @@ struct bond_leg_rate_write {
     boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
+    boost::uuids::uuid trade_activity_id;
     std::string rate_kind;
     std::optional<std::string> index;
     std::optional<bool> is_in_arrears;

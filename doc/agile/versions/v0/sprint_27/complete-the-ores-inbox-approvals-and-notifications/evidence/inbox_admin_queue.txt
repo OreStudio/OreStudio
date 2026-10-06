@@ -1,0 +1,19 @@
+ORE Studio
+Acme Corporation
+Application
+Home
+People
+Requests
+Reference data
+My access
+2
+Requests
+
+Roles people in this tenant have asked for, oldest first.
+
+Who	Asked for	Why	Waiting
+
+ashley.moore
+	ReportRun	Covers the FX desk	53 seconds ago
+client v0.0.27 (d574d6bbb4-dirty)
+server v0.0.27 [x64-linux] (local d574d6bbb4-dirty)

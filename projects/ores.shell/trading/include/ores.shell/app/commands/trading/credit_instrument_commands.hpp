@@ -87,33 +87,35 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <reference_entity> <currency> <notional> <spread>
-     * <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_fraction_code>
-     * <payment_frequency_code> <index_name> <index_series> <seniority> <restructuring>
-     * <description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code>
-     * <tranche_attachment> <tranche_detachment> <reason> <commentary>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <currency>
+     * <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date>
+     * <day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> <seniority>
+     * <restructuring> <description> <option_type> <option_expiry_date> <option_strike>
+     * <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <reference_entity> <currency> <notional> <spread>
-     * <recovery_rate> <tenor> <start_date> <maturity_date> <day_count_fraction_code>
-     * <payment_frequency_code> <index_name> <index_series> <seniority> <restructuring>
-     * <description> <option_type> <option_expiry_date> <option_strike> <linked_asset_code>
-     * <tranche_attachment> <tranche_detachment> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <reference_entity> <currency>
+     * <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date>
+     * <day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> <seniority>
+     * <restructuring> <description> <option_type> <option_expiry_date> <option_strike>
+     * <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <reference_entity> <currency>
-     * <notional> <spread> <recovery_rate> <tenor> <start_date> <maturity_date>
-     * <day_count_fraction_code> <payment_frequency_code> <index_name> <index_series> <seniority>
-     * <restructuring> <description> <option_type> <option_expiry_date> <option_strike>
-     * <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
+     * <reference_entity> <currency> <notional> <spread> <recovery_rate> <tenor> <start_date>
+     * <maturity_date> <day_count_fraction_code> <payment_frequency_code> <index_name>
+     * <index_series> <seniority> <restructuring> <description> <option_type> <option_expiry_date>
+     * <option_strike> <linked_asset_code> <tranche_attachment> <tranche_detachment> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

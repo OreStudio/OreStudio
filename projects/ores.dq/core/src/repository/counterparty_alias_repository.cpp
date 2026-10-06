@@ -159,12 +159,10 @@ void counterparty_alias_repository::write(context ctx,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty alias. " << "id_value: " << v.id_value;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert_or_replace(counterparty_alias_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(counterparty_alias_mapper::map(t)),
+                     lg(),
+                     "Writing counterparty alias to database.");
 }
 
 void counterparty_alias_repository::write(
@@ -176,12 +174,10 @@ void counterparty_alias_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert_or_replace(counterparty_alias_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(counterparty_alias_mapper::map(batch)),
+                     lg(),
+                     "Writing counterparty aliases to database.");
 }
 
 std::vector<domain::counterparty_alias> counterparty_alias_repository::read_latest(context ctx) {

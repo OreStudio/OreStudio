@@ -37,6 +37,8 @@ std::vector<ores::diff::domain::field_value> render_ascot_fields(const domain::a
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Ascot Option Type", .value = v.ascot_option_type});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

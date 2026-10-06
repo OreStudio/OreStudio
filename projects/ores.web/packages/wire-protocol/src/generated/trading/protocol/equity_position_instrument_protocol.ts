@@ -35,6 +35,7 @@ export interface EquityPositionInstrumentKey {
 export interface EquityPositionInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     underlying_name: string;
     currency: string;
     quantity: number;

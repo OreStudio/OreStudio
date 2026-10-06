@@ -34,6 +34,7 @@ export interface InstrumentStrike {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     price_value: string | null;
     price_currency: string | null;
     yield_value: number | null;

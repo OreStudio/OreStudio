@@ -41,6 +41,7 @@ struct bond_trs_key {
 
 struct bond_trs_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::string return_type;
     std::string funding_leg_type;
     double funding_rate;

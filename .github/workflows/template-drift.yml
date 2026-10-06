@@ -22,12 +22,6 @@ on:  # yamllint disable-line rule:truthy
       - "projects/ores.codegen/library/templates/**"
       - "projects/ores.lisp/src/ores-build-codegen-templates.el"
 
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "projects/ores.codegen/library/templates/**"
-      - "projects/ores.lisp/src/ores-build-codegen-templates.el"
-
   workflow_dispatch:
 
 permissions:

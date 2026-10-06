@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: A2C7D47F-E8EB-4D67-862A-3E1007E78146
+:END:
+#+title: Story: Run every check locally in one report
+#+description: GitHub CI makes every pull request wait for checks a workstation can run faster. Give the repo one command that reads the change, classifies it, runs exactly the checks that class needs, and prints one report that names every failure and its fix. Ship the decision tree with the runner, so a documentation change never pays for a C++ build.
+#+type: story
+#+level: s2
+#+filetags: :ci:pr:velocity:devops:checks:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One local command replaces the GitHub pull-request wait. The command classifies the change against a documented decision tree, runs only the checks that class needs, and writes one report that names each failing check and the fix. A docs-only change runs no C++ build and no C++ test.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- One command classifies the change and runs every check the change needs.
+- The report names each failing check, the evidence, and the command that fixes it.
+- The decision tree maps each change class to its checks and lives in the repo.
+- A documents-only change runs no C++ build and no C++ test.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:93FAC931-489F-401F-9870-E740C640A39F][Scaffold story: Run every check locally in one report]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0829AF20-92A5-4497-983F-A15B4D8C3871][Build the local check runner, its report and its decision tree]] | STARTED | 2026-10-06 | | Initial task for: Run every check locally in one report |
+| [[id:A932B4F2-DE97-4348-83E1-DBF22B0B89CB][Retire the GitHub pull-request checks]] | DONE | 2026-10-06 | 2026-10-06 | Delete every workflow that gates a pull request, once the local runner covers it. GitHub keeps only the builds that are not pull-request checks. |
+
+* Decisions
+
+* Out of scope
+
+-

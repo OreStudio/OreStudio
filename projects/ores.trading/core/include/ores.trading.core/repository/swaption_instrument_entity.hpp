@@ -47,6 +47,7 @@ struct swaption_instrument_entity {
     int version = 0;
     std::string trade_type_code;
     std::string party_id;
+    std::string trade_activity_id;
     std::string expiry_date;
     std::string exercise_type;
     std::string settlement_type;

@@ -45,6 +45,7 @@ struct bond_trs_entity {
     sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string return_type;
     std::string funding_leg_type;
     std::optional<double> funding_rate;

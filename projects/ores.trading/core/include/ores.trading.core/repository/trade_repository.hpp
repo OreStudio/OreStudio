@@ -42,7 +42,7 @@
 namespace ores::trading::repository {
 
 /**
- * @brief Reads and writes trade anchors to data storage.
+ * @brief Reads and writes trades to data storage.
  */
 class ORES_TRADING_CORE_EXPORT trade_repository {
 private:
@@ -63,7 +63,7 @@ public:
     std::string sql();
 
     /**
-     * @brief Writes trade anchors to database.
+     * @brief Writes trades to database.
      *
      * The plain form replaces the row the caller last read: it states the
      * version the row carries now, so the store can tell a replace from a
@@ -76,7 +76,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Writes a trade anchor, honouring the claim it states.
+     * @brief Writes a trade, honouring the claim it states.
      *
      * The claim is the version the caller read (@c must_match_version), that no
      * current row exists (@c must_not_exist), or neither (@c any, which
@@ -94,7 +94,7 @@ public:
     write(context ctx, const domain::trade& v, const ores::utility::domain::precondition& claim);
 
     /**
-     * @brief Writes a set of trade anchors, each honouring its own
+     * @brief Writes a set of trades, each honouring its own
      * claim, as one statement.
      */
     void write(context ctx,
@@ -102,7 +102,7 @@ public:
                const std::vector<ores::utility::domain::precondition>& claims);
 
     /**
-     * @brief Reads latest trade anchors, possibly filtered by primary key.
+     * @brief Reads latest trades, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::trade> read_latest(context ctx);
@@ -112,7 +112,7 @@ public:
 
 
     /**
-     * @brief Reads the trade anchor rows for the given primary key.
+     * @brief Reads the trade rows for the given primary key.
      *
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
@@ -121,14 +121,14 @@ public:
 
 
     /**
-     * @brief Whether a list of trade anchors can be ordered by a field.
+     * @brief Whether a list of trades can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.
      */
     static bool is_sortable(std::string_view field);
 
     /**
-     * @brief Reads latest trade anchors with pagination support.
+     * @brief Reads latest trades with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
@@ -144,16 +144,16 @@ public:
                 const std::optional<messaging::trades_filter>& filter = std::nullopt);
 
     /**
-     * @brief Gets the total count of active trade anchors.
+     * @brief Gets the total count of active trades.
      * @param ctx Repository context with database connection
-     * @return Total number of active trade anchors
+     * @return Total number of active trades
      */
     std::uint32_t
     get_total_trade_count(context ctx,
                           const std::optional<messaging::trades_filter>& filter = std::nullopt);
 
     /**
-     * @brief Deletes a trade anchor permanently.
+     * @brief Deletes a trade permanently.
      *
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
@@ -172,7 +172,7 @@ public:
     enum class remove_status { removed, conflicting, missing, unsupported };
 
     /**
-     * @brief Removes a trade anchor, refusing a row that moved on.
+     * @brief Removes a trade, refusing a row that moved on.
      *
      * A stated version is the version the caller read. The removal is refused
      * with @c conflicting when the current row carries another, so a caller
@@ -183,7 +183,7 @@ public:
     remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
-     * @brief Deletes trade anchors permanently.
+     * @brief Deletes trades permanently.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 

@@ -36,6 +36,7 @@ export interface TradeIdentifierKey {
 export interface TradeIdentifierWrite {
     trade_id: string;
     id_type: string;
+    trade_activity_id: string;
     id_value: string;
     issuing_party_id: string | null;
 }

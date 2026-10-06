@@ -74,6 +74,11 @@ struct instrument_option_premium final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Amount of the premium.
      */
     ores::utility::decimal::decimal amount;

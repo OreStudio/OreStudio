@@ -99,6 +99,7 @@ to_domain(const messaging::equity_digital_option_instrument_write& write) {
     domain::equity_digital_option_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.underlying_name = write.underlying_name;
     v.currency = write.currency;
     v.notional = write.notional;

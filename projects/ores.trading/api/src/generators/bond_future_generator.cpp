@@ -45,6 +45,7 @@ domain::bond_future generate_synthetic_bond_future(utility::generation::generati
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
+    r.trade_activity_id = ctx.generate_uuid();
     r.contract_name = std::string("US 10YR T-NOTE");
     r.contract_notional = ores::utility::decimal::decimal::from_string("100000").value();
     r.long_short = std::string("Long");

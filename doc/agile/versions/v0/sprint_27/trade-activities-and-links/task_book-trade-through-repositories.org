@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: DD3DC229-6358-41B6-A9B5-9C0937439111
+:END:
+#+title: Task: Book a trade through the repositories
+#+description: Booking a trade writes the trade, its activity, its booking and its state with SQL inserts in ores_trading_book_trade_fn, bypassing the generated repositories. Give ores.database a unit of work so several repository writes share one transaction, move booking onto the repositories, and add an architectural rule, enforced by a check, that application code writes entity tables only through repositories.
+#+type: task
+#+level: s1
+#+filetags: :trade-activities-and-links:sprint_27:v0:
+#+owner: marco
+#+branch: feature/book-trade-through-repositories
+#+pr: 2718
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every application write to an entity table goes through its generated repository, booking included, and a check refuses code that writes an entity table any other way.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
+| Now          | Unit of work written; its test runs.   |
+| Waiting on   | Nothing.                               |
+| Next         | Move booking onto the repositories in one unit of work. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- ores.database offers a unit of work: repository writes made through it share one connection and one transaction, and commit or roll back together.
+- book_trade writes the trade, the activity, the booking and the state through their repositories inside one unit of work; a failure in any write leaves none, and a second booking of the same trade is still reported as a conflict.
+- ores_trading_book_trade_fn is deleted; no SQL function or hand-written C++ inserts into, updates or deletes from an entity table outside the generated repositories and the sanctioned purge.
+- An architectural rule states the policy, and a check run locally and in CI fails on a direct entity-table write outside the repositories, with the purge and test fixtures as its stated exceptions.
+- The round trip stays at in-scope lost 0; build, ctest, pgTAP under RLS and the local check set pass.
+
+* Plan
+
+** The problem
+
+Booking writes the trade, the activity, the booking and the state in one
+SQL function, =ores_trading_book_trade_fn=. The function bypasses the
+generated repositories. The task moves the four writes onto the
+repositories and keeps them atomic.
+
+** The seam
+
+Every repository write calls =execute_write_query=, defined once in
+=projects/ores.database/include/ores.database/repository/bitemporal_operations.hpp=.
+The helper calls =session(ctx.connection_pool())=, begins a transaction,
+writes, and commits. The read helper opens its own session in the same
+way. Current-state entities are a second shape: 33 generated repositories
+inline the same session/begin/commit in the template at
+=cpp_domain_type_repository.cpp.mustache=, and current-state reads use the
+same read helper.
+
+** The chosen seam: a transaction bound to the context
+
+The unit of work binds one transaction to the =context= that every
+repository already takes. This is the shape sqlc uses with
+=WithTx=. The service opens the boundary; the repositories join it.
+
+- =ores::database::unit_of_work= owns one pooled session and one
+  =sqlgen::Transaction=. It yields a =context= bound to that transaction.
+  =commit()= ends it; the destructor rolls back when the caller forgets.
+- =context= carries the transaction as an owning =rfl::Ref=, so a copy
+  carries it too and no lifetime rule is needed.
+- =execute_read_query=, =execute_write_query= and the current-state
+  template path use the active transaction when the context carries one.
+  Without one they open a session as they do today.
+- Repository signatures and all 343 call sites stay.
+- Reads must join, because =replace_claim= reads before it writes.
+- A service sets the tenant and the party before it opens the unit of
+  work. A held connection cannot change tenant inside a transaction.
+
+** Phases
+
+1. Unit of work in =ores.database=, as above.
+2. Booking onto the repositories. =trade_operations_service::book_trade=
+   opens one unit of work and writes the trade with a =must_not_exist=
+   claim, the activity, the booking and the state. A second booking still
+   returns =outcome::conflict=.
+3. Delete =ores_trading_book_trade_fn= and update the drop file. Rewrite
+   the two pgTAP files that call it.
+4. State the rule in =projects/modeling/system_model.org=. Add
+   =check_entity_table_writes.py= with a ratchet baseline. Run it in
+   =codegen-drift.yml= and locally.
+
+** Verification
+
+Build, ctest, pgTAP under RLS, the round trip at in-scope lost 0, and the
+new check.
+
+** Measurement
+
+Each number in the Measurements table states its command and its commit.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Measurements taken at e7caee274b
+
+- 110 SQL functions under =projects/ores.sql/create= write an
+  =ores_*_tbl= table directly. By component: refdata 39, dq 34, iam 19,
+  mq 7, inbox 4, variability 2, and trading, synthetic, marketdata,
+  assets and reporting one each.
+- =ores_iam_purge_tenant_fn= is the only purge-named writer, so it is the
+  sanctioned purge exception.
+- =projects/ores.sql/populate= holds 2127 direct DML statements. These
+  are seed data, not application code. The check excludes them.
+- =ores_trading_book_trade_fn= has one C++ caller
+  (=trade_operations_service.cpp=), two pgTAP callers and the drop file.
+- 343 files call =execute_write_query=. 33 generated repositories instead
+  inline the session/begin/commit in the repository template, because
+  they are current-state entities.
+
+** Decision: a transaction bound to the context
+
+Taken 2026-10-06 with the owner. The unit of work binds one transaction to
+the =context= the repositories already take. This is the sqlc =WithTx=
+shape. The alternatives were an ambient thread-local transaction (rejected:
+no DI framework, hidden control flow) and an explicit =unit_of_work&=
+parameter on every repository (rejected: it forces every single-statement
+write to open a transaction, and it changes 343 call sites).
+
+The binding fact: =rfl::Ref= is an owning, copyable handle, so a =context=
+copy carries the transaction safely. No raw pointer and no lifetime rule
+are needed.
+
+** Implementation: the unit of work
+
+- =ores.database/repository/unit_of_work.hpp= owns one pooled session and
+  one =sqlgen::Transaction=. It yields a =context= bound to that
+  transaction, commits once, and rolls back on destruction.
+- =context= carries the transaction as an optional owning =rfl::Ref=. A
+  copy carries it, and =with_tenant= and =with_party= preserve it.
+- =execute_write_op= is new. =execute_read_query=,
+  =execute_write_query= and =execute_delete_query= join the context's
+  transaction when it has one, and otherwise open their own session as
+  before.
+- The repository template's current-state path now calls
+  =execute_write_op= instead of opening its own session. 21 generated
+  repositories in the drift-free components under test are regenerated.
+- =ores.database.tests.unit_of_work_tests= checks the binding and the
+  rollback.
+
+** Known offenders for the architectural check
+
+Three hand-written writes still open their own session and so do not join
+a unit of work:
+
+- =ores.telemetry.database/repository/telemetry_repository.cpp=
+- =ores.reporting.core/repository/report_input_bundle_repository.cpp=
+- =ores.iam.core/repository/session_repository.cpp=, its
+  =update_session_counters= and =end_session=.
+
+=ores.synthetic= and =ores.scheduler= carry current-state repositories
+whose generated output has pre-existing drift. This change leaves them
+alone. Regenerating them would mix their drift into the booking change.
+
+** The sqlgen read that commits the unit of work
+
+Found 2026-10-06 while moving booking onto the repositories. sqlgen's
+postgres iterator wraps every read in its own =BEGIN= and =END=, and
+PostgreSQL reads =END= as =COMMIT=. A read inside a unit of work therefore
+commits it. The booking service's conflict read and every repository
+=apply_claim= read committed the transaction before the failing write, so
+the anchor and the activity stayed while the booking failed.
+
+=book_trade= reads inside its unit of work again, and states a
+=must_not_exist= claim for each of the four writes.
+
+The tracked overlay at =build/cmake/overlays/common/sqlgen= lists
+=fix-iterator-transaction.patch=. The patch asks =PQtransactionStatus=
+whether the iterator joined a transaction, and runs no =BEGIN= and no =END=
+when it did. sqlgen =0.8.0#2= carries it.
+
+Verified 2026-10-06 with sqlgen =0.8.0#2=: =ores.database.tests= passes, 138
+assertions across 39 cases, including "a read inside a unit of work does not
+commit it"; =ores.trading.core.tests= passes, 886 assertions across 127 cases,
+with the NATS server running. The memory
+[[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] carries the rule.
+
+Raised upstream as munich-data-engineering/sqlgen#140. The port's =0.8.0= is
+this project's own label for the pinned commit; upstream's tags stop at
+=v0.6.0= and its =CMakeLists.txt= still declares =0.6.0=. The portfile records
+that the commit is the thing to track. Raised as munich-data-engineering/sqlgen#141
+and closed by the owner.
+
+** Next
+
+Delete =ores_trading_book_trade_fn=, rewrite the two pgTAP files that call
+it, and add the architectural rule with its checked ratchet baseline.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2718][#2718]] | [database,trading] Book a trade through the repositories |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -69,6 +69,13 @@ The trade this instrument belongs to, and the instrument's own key.
 The trade id identifies both the trade and its instrument, so there is one
 identity rather than two and the two cannot disagree.
 
+** trade_activity_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The activity that wrote this version.
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

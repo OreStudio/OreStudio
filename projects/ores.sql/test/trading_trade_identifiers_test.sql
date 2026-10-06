@@ -57,12 +57,23 @@ select '00000000-0000-0000-0000-0000000ca001', ores_utility_system_tenant_id_fn(
     counterparty_id, 'Swap', 'external', 'actual', 'manual'
 from t_ctx;
 
+create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')
+returns uuid as $$
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), p_party, p_type, 'test',
+        now(), 'test')
+    returning id;
+$$ language sql;
+
 create or replace function pg_temp.identifier(p_trade uuid, p_scheme text, p_value text,
     p_party uuid default null)
 returns void as $$
-    insert into ores_trading_trade_identifiers_tbl (trade_id, id_type, tenant_id, version,
-        party_id, id_value, modified_by, performed_by, change_reason_code, change_commentary)
-    select p_trade, p_scheme, ores_utility_system_tenant_id_fn(), 0,
+    insert into ores_trading_trade_identifiers_tbl (trade_id, trade_activity_id, id_type,
+        tenant_id, version, party_id, id_value, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_trade, pg_temp.activity(coalesce(p_party, party_id)), p_scheme,
+        ores_utility_system_tenant_id_fn(), 0,
         coalesce(p_party, party_id), p_value, current_user, current_user,
         'system.new_record', 'test'
     from t_ctx;
@@ -71,9 +82,11 @@ $$ language sql;
 create or replace function pg_temp.party_role(p_trade uuid, p_role text,
     p_counterparty uuid default null)
 returns void as $$
-    insert into ores_trading_party_roles_tbl (trade_id, role, tenant_id, version, party_id,
-        counterparty_id, modified_by, performed_by, change_reason_code, change_commentary)
-    select p_trade, p_role, ores_utility_system_tenant_id_fn(), 0, party_id,
+    insert into ores_trading_party_roles_tbl (trade_id, trade_activity_id, role, tenant_id,
+        version, party_id, counterparty_id, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_trade, pg_temp.activity(party_id), p_role, ores_utility_system_tenant_id_fn(), 0,
+        party_id,
         coalesce(p_counterparty, counterparty_id), current_user, current_user,
         'system.new_record', 'test'
     from t_ctx;
@@ -82,10 +95,11 @@ $$ language sql;
 create or replace function pg_temp.field(p_trade uuid, p_sequence int,
     p_party uuid default null)
 returns void as $$
-    insert into ores_trading_trade_additional_fields_tbl (trade_id, sequence_number,
-        tenant_id, version, party_id, name, value, modified_by, performed_by,
+    insert into ores_trading_trade_additional_fields_tbl (trade_id, trade_activity_id,
+        sequence_number, tenant_id, version, party_id, name, value, modified_by, performed_by,
         change_reason_code, change_commentary)
-    select p_trade, p_sequence, ores_utility_system_tenant_id_fn(), 0,
+    select p_trade, pg_temp.activity(coalesce(p_party, party_id)), p_sequence,
+        ores_utility_system_tenant_id_fn(), 0,
         coalesce(p_party, party_id), 'Desk', 'Rates', current_user, current_user,
         'system.new_record', 'test'
     from t_ctx;

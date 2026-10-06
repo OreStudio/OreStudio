@@ -178,12 +178,10 @@ void session_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing session. " << "id: " << v.id
                                << " start_time: " << v.start_time;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(session_mapper::map(t)),
+                     lg(),
+                     "Writing session to database.");
 }
 
 void session_repository::write(context ctx,
@@ -194,12 +192,10 @@ void session_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert_or_replace(session_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(session_mapper::map(batch)),
+                     lg(),
+                     "Writing sessions to database.");
 }
 
 std::vector<domain::session> session_repository::read_latest(context ctx) {

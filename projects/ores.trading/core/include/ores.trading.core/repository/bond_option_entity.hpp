@@ -45,6 +45,7 @@ struct bond_option_entity {
     sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string option_type;
     std::string option_strike;
     std::optional<std::string> redemption;

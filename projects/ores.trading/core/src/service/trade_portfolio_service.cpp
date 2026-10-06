@@ -97,6 +97,7 @@ domain::trade_portfolio to_domain(const messaging::trade_portfolio_write& write)
     domain::trade_portfolio v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.portfolio_id = write.portfolio_id;
     return v;
 }

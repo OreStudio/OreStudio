@@ -69,6 +69,11 @@ identity rather than two and the two cannot disagree.
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Value equality.
      *
      * A field group is a value like the entity that holds it: the entity's

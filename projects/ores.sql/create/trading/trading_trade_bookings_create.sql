@@ -45,6 +45,7 @@ create table if not exists "ores_trading_trade_bookings_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "party_id" uuid not null,
     "counterparty_id" uuid null,
     "book_id" uuid not null,
@@ -68,6 +69,7 @@ create table if not exists "ores_trading_trade_bookings_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     constraint ores_trading_trade_bookings_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_bookings_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
     constraint ores_trading_trade_bookings_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id"),
     constraint ores_trading_trade_bookings_anchor_counterparty_pin foreign key ("tenant_id", "trade_id", "counterparty_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "counterparty_id")
 );

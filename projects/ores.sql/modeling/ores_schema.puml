@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T20:48:10.352844Z
+' Generated: 2026-10-06T22:24:43.753461Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -5257,6 +5257,42 @@ package "refdata" #FFF3E0 {
     via self-referencing parent_portfolio_id.
     end note
 
+    entity ores_refdata_producer_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_producer_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Producer Kind Table
+    Reference data table defining the valid feed_binding.producer_kind and
+    market_series.producer_kind values: whether the producer is a real feed
+    (VENDOR) or a generated one (SYNTHETIC). Real-versus-generated is a
+    property of the producer, not of the series: a generated producer publishes
+    its ticks exactly as a vendor does, so the axis this table carries is
+    orthogonal to derivation_kind, which answers published-versus-computed.
+    feed_binding carries the code for the producer it binds, and the series an
+    observation lands in is stamped with the binding's kind, so a reader of a
+    series can tell generated data from observed data without guessing from the
+    source string on its observations. Both values are seeded and the column
+    is FK-validated rather than free text, the same pattern its sibling
+    derivation_kind establishes. Managed by the system tenant, like other
+    refdata code tables.
+    end note
+
     entity ores_refdata_purpose_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -8126,6 +8162,7 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * ascot_option_type : text
         * modified_by : text
         * performed_by : text
@@ -8191,6 +8228,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           lockout_days : integer
@@ -8242,6 +8280,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
           long_in_forward : text
           forward_maturity_date : text
           forward_settlement_date : text
@@ -8282,6 +8321,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * contract_name : text
         * contract_notional : numeric(28, 10)
         * long_short : text
@@ -8331,6 +8371,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * issue_id : uuid <<FK>>
           notional : numeric(28, 10)
         * modified_by : text
@@ -8798,6 +8839,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * amortization_type : text
           value : numeric(28, 10)
           start_date : text
@@ -8837,6 +8879,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * value : numeric(28, 10)
           start_date : text
         * modified_by : text
@@ -8872,6 +8915,7 @@ package "trading" #E8F5E9 {
         * leg_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * rate_kind : text
           index : text
           is_in_arrears : boolean
@@ -8943,6 +8987,7 @@ package "trading" #E8F5E9 {
         * leg_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
           payer : boolean
           leg_type : text
           currency : text
@@ -8991,6 +9036,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * option_type : text
         * option_strike : numeric(28, 10)
           redemption : text
@@ -9029,6 +9075,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * repo_type : text
           repo_rate : numeric(28, 10)
           repo_index : text
@@ -9061,6 +9108,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * return_type : text
         * funding_leg_type : text
           funding_rate : numeric(28, 10)
@@ -9126,6 +9174,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * call_date : date
         * modified_by : text
         * performed_by : text
@@ -9162,6 +9211,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           description : text
@@ -9200,6 +9250,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           description : text
@@ -9226,6 +9277,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * underlying_code : text
           weight : numeric(28, 10)
         * modified_by : text
@@ -9261,6 +9313,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * commodity_code : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -9320,6 +9373,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -9350,6 +9404,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * party_id : uuid <<FK>>
         * trade_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * leg_sequence : integer
         * constituent_trade_id : text <<FK>>
         * modified_by : text
@@ -9409,6 +9464,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * reference_entity : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9491,6 +9547,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * strike : numeric(28, 10)
@@ -9533,6 +9590,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9573,6 +9631,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9617,6 +9676,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9656,6 +9716,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -9687,6 +9748,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9726,6 +9788,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * quantity : numeric(28, 10)
@@ -9761,6 +9824,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * strike : numeric(28, 10)
           weight : numeric(28, 10)
@@ -9811,6 +9875,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
           underlying_name : text
           basket_json : text
         * currency : text
@@ -9846,6 +9911,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * underlying_name : text
         * currency : text
         * notional : numeric(28, 10)
@@ -9931,6 +9997,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * end_date : date
         * currency : text
@@ -9963,6 +10030,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * currency : text
         * fixing_amount : numeric(28, 10)
         * strike : numeric(28, 10)
@@ -9996,6 +10064,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * fx_index : text
           reference_currency : text
           reference_notional : numeric(28, 10)
@@ -10038,6 +10107,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -10075,6 +10145,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * foreign_currency : text
         * domestic_currency : text
         * payoff_currency : text
@@ -10115,6 +10186,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -10147,6 +10219,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * bought_currency : text
         * bought_amount : numeric(28, 10)
         * sold_currency : text
@@ -10180,6 +10253,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * end_date : date
         * currency : text
@@ -10213,6 +10287,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * inflation_index_code : text
@@ -10242,6 +10317,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * amount : numeric(28, 10)
           type : text
           start_date : text
@@ -10274,6 +10350,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * payment_date : date
         * modified_by : text
         * performed_by : text
@@ -10301,6 +10378,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * amount : numeric(28, 10)
         * currency : text
         * pay_date : date
@@ -10339,6 +10417,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * long_short : text
           option_type : text
           payoff_type : text
@@ -10414,6 +10493,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * schedule_date : date
         * modified_by : text
         * performed_by : text
@@ -10453,6 +10533,7 @@ package "trading" #E8F5E9 {
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * schedule_kind : text
           start_date : date
           end_date : date
@@ -10520,6 +10601,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
           price_value : numeric(28, 10)
           price_currency : text
           yield_value : numeric(28, 10)
@@ -10556,6 +10638,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * barrier_start_date : date
@@ -10712,6 +10795,7 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * counterparty_id : uuid <<FK>>
         * modified_by : text
@@ -10832,6 +10916,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
         * reference_counterparty : text
@@ -10863,6 +10948,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * script_name : text
           script_body : text
           events_json : text
@@ -10935,6 +11021,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * party_id : uuid <<FK>>
         * trade_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * leg_number : integer
         * leg_type_code : text
         * day_count_fraction_code : text
@@ -10990,6 +11077,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * expiry_date : date
         * exercise_type : text
         * settlement_type : text
@@ -11015,12 +11103,41 @@ package "trading" #E8F5E9 {
     Bermudan, or American.
     end note
 
+    entity ores_trading_trade_activities_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+        * activity_type_code : text
+        * actor : text
+        * occurred_at : timestamptz
+        * comment : text
+        * is_operational_error : boolean
+    }
+
+    note right of ores_trading_trade_activities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Activity Table
+    One business event on a trade: what kind of event it was, who did it, when
+    it happened, why, and whether it corrects an operational error. An
+    activity is written once and never changed. Every component version names
+    the activity that caused it, so a version's cause is a row rather than a
+    code copied onto each table, and the axes the
+    [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][activity type]] states (economic, confirmable, real, priority) are read
+    from one place.
+    A null amend is an activity like any other: it is recorded, and because
+    its type is not real it versions nothing.
+    end note
+
     entity ores_trading_trade_additional_fields_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * name : text
         * value : text
@@ -11055,6 +11172,7 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
           counterparty_id : uuid <<FK>>
         * book_id : uuid <<FK>>
@@ -11120,6 +11238,7 @@ package "trading" #E8F5E9 {
         * id_type : text <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * id_value : text
           issuing_party_id : uuid <<FK>>
@@ -11154,6 +11273,7 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * portfolio_id : uuid <<FK>>
         * modified_by : text
@@ -11187,8 +11307,8 @@ package "trading" #E8F5E9 {
         * valid_from : timestamptz <<PK>>
         --
         * version : integer
+        * trade_activity_id : uuid <<FK>>
         * party_id : uuid <<FK>>
-        * activity_type_code : text
         * status_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -11280,6 +11400,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_type_code : text
         * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
         * start_date : date
         * maturity_date : date
           settlement_lag : integer
@@ -12664,6 +12785,7 @@ package "marketdata" #E3F2FD {
         * version : integer
         * party_id : uuid <<FK>>
         * source_name : text
+        * producer_kind : text
         * enabled : boolean
         * modified_by : text
         * performed_by : text
@@ -12690,6 +12812,12 @@ package "marketdata" #E3F2FD {
     Rebinding (editing source_name) switches the ingest source without restarting
     producers. Setting enabled  false= suspends the subscription without deleting
     the binding.
+    A binding also says what kind of producer it names: a real feed (VENDOR) or a
+    generated one (SYNTHETIC). The ingest loop stamps the series it creates with
+    the binding's producer_kind, so a reader of a series can tell generated data
+    from observed data without guessing from the source string. The column
+    defaults to VENDOR, so every binding a real feed creates carries it without
+    setting anything.
     This model binds to no variability profile. Its features match
     uuid-surrogate-lookup, but that profile also enables the shell command
     facet, which feed bindings do not have today. Binding it is a decision about
@@ -12789,6 +12917,7 @@ package "marketdata" #E3F2FD {
         * party_id : uuid <<FK>>
         * oresmd_uri : text
         * series_subclass : text
+        * producer_kind : text
         * derivation_kind : text
         * derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
@@ -12824,6 +12953,11 @@ package "marketdata" #E3F2FD {
     observations. Per-observation lineage (which source series/as-of a
     specific derived point came from) is a separate concern, tracked by
     observation_lineage, not this catalog-level marker.
+    producer_kind answers a different question: not how the series was
+    produced but who produced it, a real feed (VENDOR) or a generated one
+    (SYNTHETIC). It is stamped once, from the feed_binding the first
+    observation arrived under, and is never revised -- a series a generated
+    producer created stays generated however it is later read.
     end note
 
     entity ores_marketdata_observation_lineages_tbl <<temporal>> #C6F0D8 {

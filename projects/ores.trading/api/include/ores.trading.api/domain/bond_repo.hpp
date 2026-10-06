@@ -64,6 +64,11 @@ struct bond_repo final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Leg type of the repo leg (Fixed, Floating).
      *
      * The flattening mapper corrupts the coupon frequency from this value today; the reworked

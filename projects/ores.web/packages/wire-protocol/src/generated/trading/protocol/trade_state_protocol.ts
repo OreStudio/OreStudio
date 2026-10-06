@@ -34,7 +34,7 @@ export interface TradeStateKey {
 
 export interface TradeStateWrite {
     trade_id: string;
-    activity_type_code: string;
+    trade_activity_id: string;
     status_id: string;
 }
 

@@ -47,6 +47,7 @@ generate_synthetic_equity_position_option_underlying(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.sequence_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string(faker::word::noun());
     r.strike = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))

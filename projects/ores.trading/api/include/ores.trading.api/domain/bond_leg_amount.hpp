@@ -97,6 +97,11 @@ struct bond_leg_amount final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The amount, as a decimal.
      *
      * This is the first money column of decision D11 to adopt the decimal domain type. The database

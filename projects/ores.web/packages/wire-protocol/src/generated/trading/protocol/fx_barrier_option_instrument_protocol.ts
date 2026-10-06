@@ -35,6 +35,7 @@ export interface FxBarrierOptionInstrumentKey {
 export interface FxBarrierOptionInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     bought_currency: string;
     bought_amount: string;
     sold_currency: string;

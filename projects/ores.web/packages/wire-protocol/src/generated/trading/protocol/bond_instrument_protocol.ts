@@ -35,6 +35,7 @@ export interface BondInstrumentKey {
 export interface BondInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     issue_id: string;
     notional: string | null;
 }

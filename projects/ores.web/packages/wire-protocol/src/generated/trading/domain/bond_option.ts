@@ -34,6 +34,7 @@ export interface BondOption {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     option_type: string;
     option_strike: string;
     redemption: string | null;

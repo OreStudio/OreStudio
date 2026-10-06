@@ -43,6 +43,7 @@ struct trade_identifier_key {
 struct trade_identifier_write {
     boost::uuids::uuid trade_id;
     std::string id_type;
+    boost::uuids::uuid trade_activity_id;
     std::string id_value;
     std::optional<boost::uuids::uuid> issuing_party_id;
 };

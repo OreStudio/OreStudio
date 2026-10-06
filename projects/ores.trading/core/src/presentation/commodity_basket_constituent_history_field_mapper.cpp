@@ -39,6 +39,8 @@ render_commodity_basket_constituent_fields(const domain::commodity_basket_consti
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Underlying Code", .value = v.underlying_code});
     fields.push_back({.name = "Weight", .value = v.weight ? v.weight->to_string() : std::string{}});
     using ores::history::domain::provenance_fields;

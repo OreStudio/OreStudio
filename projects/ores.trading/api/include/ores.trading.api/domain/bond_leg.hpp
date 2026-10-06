@@ -95,6 +95,11 @@ and never carry a role here.
     int leg_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief True when the leg's payer is the trade's counterparty rather than the party.
      */
     std::optional<bool> payer;

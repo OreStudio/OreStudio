@@ -59,6 +59,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "trade_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "leg_number" integer not null default 1,
     "leg_type_code" text not null,
     "day_count_fraction_code" text not null,
@@ -85,7 +86,8 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("leg_number" >= 1),
     check ("notional" > 0),
-    check ("currency" <> '')
+    check ("currency" <> ''),
+    constraint ores_trading_swap_legs_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

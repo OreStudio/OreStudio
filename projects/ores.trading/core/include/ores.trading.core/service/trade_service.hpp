@@ -40,9 +40,9 @@
 namespace ores::trading::service {
 
 /**
- * @brief Service for managing trade anchors.
+ * @brief Service for managing trades.
  *
- * Provides a higher-level interface for trade anchor operations,
+ * Provides a higher-level interface for trade operations,
  * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT trade_service {
@@ -82,62 +82,62 @@ public:
     /**@}*/
 
     /**
-     * @brief Lists trade anchors with pagination support.
+     * @brief Lists trades with pagination support.
      *
      * @param offset Number of records to skip.
      * @param limit Maximum number of records to return.
-     * @return Vector of trade anchors for the requested page.
+     * @return Vector of trades for the requested page.
      */
     std::vector<domain::trade> list_trades(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Gets the total count of active trade anchors.
+     * @brief Gets the total count of active trades.
      *
-     * @return Total number of active trade anchors.
+     * @return Total number of active trades.
      */
     std::uint32_t count_trades();
 
 
     /**
-     * @brief Retrieves a single trade anchor by its primary key.
+     * @brief Retrieves a single trade by its primary key.
      *
      * The storage key is a uuid, so the signature says which key is meant and
      * the human-readable key cannot be passed here by mistake.
      *
-     * @return The trade anchor if found, std::nullopt otherwise.
+     * @return The trade if found, std::nullopt otherwise.
      */
     std::optional<domain::trade> get_trade(const boost::uuids::uuid& id);
 
     /**
-     * @brief Retrieves a batch of trade anchors by primary key.
+     * @brief Retrieves a batch of trades by primary key.
      */
     std::vector<domain::trade> get_trades(const std::vector<std::string>& ids);
 
     /**
-     * @brief Saves a trade anchor (creates or updates).
+     * @brief Saves a trade (creates or updates).
      *
-     * @param trade The trade anchor to save.
+     * @param trade The trade to save.
      * @throws std::exception on failure.
      */
     void save_trade(const domain::trade& trade);
 
     /**
-     * @brief Saves a batch of trade anchors.
+     * @brief Saves a batch of trades.
      *
-     * @param trades The trade anchors to save.
+     * @param trades The trades to save.
      * @throws std::exception on failure.
      */
     void save_trades(const std::vector<domain::trade>& trades);
 
     /**
-     * @brief Deletes a trade anchor by its primary key.
+     * @brief Deletes a trade by its primary key.
      *
      * @throws std::exception on failure.
      */
     void delete_trade(const boost::uuids::uuid& id);
 
     /**
-     * @brief Deletes trade anchors by their primary keys.
+     * @brief Deletes trades by their primary keys.
      */
     void delete_trades(const std::vector<std::string>& ids);
 

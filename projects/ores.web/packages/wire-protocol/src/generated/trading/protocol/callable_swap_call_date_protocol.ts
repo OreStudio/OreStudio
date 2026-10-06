@@ -36,6 +36,7 @@ export interface CallableSwapCallDateKey {
 export interface CallableSwapCallDateWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     call_date: string;
 }
 

@@ -41,6 +41,7 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
     "id_type" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "party_id" uuid not null,
     "id_value" text not null,
     "issuing_party_id" uuid null,
@@ -62,6 +63,7 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
     check ("id_type" <> ''),
     check ("id_value" <> ''),
     constraint ores_trading_trade_identifiers_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_identifiers_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
     constraint ores_trading_trade_identifiers_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
 );
 

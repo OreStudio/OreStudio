@@ -141,23 +141,24 @@ void composite_leg_commands::register_commands(cli::Menu& root_menu, nats_client
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>");
+        "add <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary> "
-        "[--version <n>]");
+        "set <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> "
-        "<commentary>");
+        "put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_sequence> "
+        "<constituent_trade_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,13 +360,15 @@ void composite_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.leg_sequence, parsed->positionals[next++], "leg_sequence");
         read_token(req.change.write.constituent_trade_id,
                    parsed->positionals[next++],
@@ -412,13 +415,15 @@ void composite_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.id, parsed->positionals[next++], "id");
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.leg_sequence, parsed->positionals[next++], "leg_sequence");
         read_token(req.change.write.constituent_trade_id,
                    parsed->positionals[next++],
@@ -477,8 +482,8 @@ void composite_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -486,6 +491,8 @@ void composite_leg_commands::process_put_many(std::ostream& out,
             messaging::composite_leg_change change;
             read_token(change.write.id, parsed->positionals[next++], "id");
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.leg_sequence, parsed->positionals[next++], "leg_sequence");
             read_token(change.write.constituent_trade_id,
                        parsed->positionals[next++],

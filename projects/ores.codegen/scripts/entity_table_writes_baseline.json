@@ -1,0 +1,688 @@
+{
+  "writers": [
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.dq/core/src/service/publish_service.cpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.iam/core/src/service/role_grant_applier.cpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.scheduler/core/src/repository/job_instance_repository.cpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.workspace/core/src/repository/workspace_repository.cpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_assets_publish_images_from_dq_fn",
+      "file": "projects/ores.sql/create/assets/assets_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_definitions_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_badge_definitions_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_definitions_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_mappings_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_badge_mappings_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_mappings_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_severities_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_badge_severities_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_badge_severities_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_catalogs_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_change_reason_categories_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_change_reasons_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_code_domains_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_code_domains_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_code_domains_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_coding_scheme_authority_types_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_coding_schemes_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_coding_schemes_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_coding_schemes_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_data_domains_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_dataset_bundle_members_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_dataset_bundles_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_dataset_dependencies_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_dataset_upsert_fn",
+      "file": "projects/ores.sql/create/dq/dq_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_datasets_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_image_tags_artefact_upsert_fn",
+      "file": "projects/ores.sql/create/dq/dq_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_images_artefact_upsert_fn",
+      "file": "projects/ores.sql/create/dq/dq_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_ip2country_publish_fn",
+      "file": "projects/ores.sql/create/dq/dq_population_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_lei_bic_artefact_insert_fn",
+      "file": "projects/ores.sql/create/dq/dq_lei_bic_artefact_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_lei_entities_artefact_insert_fn",
+      "file": "projects/ores.sql/create/dq/dq_lei_entities_artefact_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_lei_relationships_artefact_insert_fn",
+      "file": "projects/ores.sql/create/dq/dq_lei_relationships_artefact_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_methodologies_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_methodology_upsert_fn",
+      "file": "projects/ores.sql/create/dq/dq_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_nature_dimensions_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_origin_dimensions_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_subject_areas_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_tags_artefact_upsert_fn",
+      "file": "projects/ores.sql/create/dq/dq_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_tags_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_dq_treatment_dimensions_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_account_role_assign_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_account_roles_insert_fn",
+      "file": "projects/ores.sql/create/iam/iam_account_roles_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_accounts_give_member_fn",
+      "file": "projects/ores.sql/create/iam/iam_member_role_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_create_initial_admin_fn",
+      "file": "projects/ores.sql/create/iam/iam_system_provisioner_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_deprovision_tenant_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_deprovisioner_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_hard_delete_tenants_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_purger_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_mark_tenant_active_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_activate_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_permissions_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_provision_tenant_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_publish_account_contact_informations_from_dq_fn",
+      "file": "projects/ores.sql/create/iam/iam_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_publish_accounts_from_dq_fn",
+      "file": "projects/ores.sql/create/iam/iam_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_reset_system_fn",
+      "file": "projects/ores.sql/create/iam/iam_system_reset_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_reset_tenant_bootstrap_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_bootstrap_reset_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_reset_tenant_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_reset_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_role_permissions_assign_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_role_permissions_insert_fn",
+      "file": "projects/ores.sql/create/iam/iam_role_permissions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_roles_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_service_accounts_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_terminate_tenant_fn",
+      "file": "projects/ores.sql/create/iam/iam_tenant_terminator_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_inbox_clear_notifications_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_notification_fn_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_inbox_decide_approval_request_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_approval_decide_fn_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_inbox_mark_notifications_read_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_notification_fn_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_inbox_raise_notification_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_notification_fn_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_marketdata_publish_market_data_observations_from_dq_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_messages_ack_fn",
+      "file": "projects/ores.sql/create/mq/mq_messages_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_messages_nack_fn",
+      "file": "projects/ores.sql/create/mq/mq_messages_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_messages_read_fn",
+      "file": "projects/ores.sql/create/mq/mq_messages_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_messages_send_binary_fn",
+      "file": "projects/ores.sql/create/mq/mq_messages_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_messages_send_fn",
+      "file": "projects/ores.sql/create/mq/mq_messages_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_queue_stats_scrape_fn",
+      "file": "projects/ores.sql/create/mq/mq_queue_stats_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_mq_queues_create_fn",
+      "file": "projects/ores.sql/create/mq/mq_queues_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_account_types_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_asset_classes_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_asset_measures_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_benchmark_rates_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_books_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_business_centres_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_business_processes_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_business_units_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_calendar_events_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_calendar_types_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_calendars_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_cashflow_types_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_counterparty_aliases_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_countries_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_crm_topology_bundles_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_csas_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currencies_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_calendars_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_countries_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_pair_convention_calendars_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_pair_conventions_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_currency_pairs_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_entity_classifications_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_lei_counterparties_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_lei_parties_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_local_jurisdictions_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_named_portfolios_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_netting_agreements_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_netting_set_aliases_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_netting_sets_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_relationships_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_party_roles_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_payment_frequencies_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_person_roles_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_portfolios_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_regulatory_corporate_sectors_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_reporting_regimes_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_supervisory_bodies_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_tenor_schedules_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_reporting_publish_report_definitions_from_dq_fn",
+      "file": "projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_synthetic_publish_theme_from_dq_fn",
+      "file": "projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_variability_system_settings_set_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_variability_system_settings_upsert_fn",
+      "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
+      "reason": "predates the check"
+    }
+  ]
+}

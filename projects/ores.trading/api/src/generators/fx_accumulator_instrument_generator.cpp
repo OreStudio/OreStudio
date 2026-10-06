@@ -48,6 +48,7 @@ generate_synthetic_fx_accumulator_instrument(utility::generation::generation_con
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxAccumulator");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.currency = std::string("USD");
     r.fixing_amount = ores::utility::decimal::decimal::from_string("100000").value();
     r.strike = 1.10;

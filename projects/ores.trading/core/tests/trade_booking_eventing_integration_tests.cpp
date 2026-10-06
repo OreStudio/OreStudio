@@ -47,6 +47,11 @@
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include <optional>
+// Parent-seed snippet includes (ores_trading_trade_activities_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 // Parent-seed snippet includes (ores_refdata_books_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
@@ -164,6 +169,12 @@ TEST_CASE("write_trade_booking_publishes_an_event", tags) {
         v.trade_id = anchor.id;
         v.party_id = anchor.party_id;
         v.counterparty_id = std::nullopt;
+    }
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
     }
     {
         namespace gen = ores::refdata::generators;

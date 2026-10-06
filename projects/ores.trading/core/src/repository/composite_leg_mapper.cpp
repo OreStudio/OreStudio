@@ -48,6 +48,7 @@ domain::composite_leg composite_leg_mapper::map(const composite_leg_entity& v) {
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.identity.leg_sequence = v.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;
     r.audit.modified_by = v.modified_by;
@@ -69,6 +70,7 @@ composite_leg_entity composite_leg_mapper::map(const domain::composite_leg& v) {
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.trade_id = boost::uuids::to_string(v.identity.trade_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.leg_sequence = v.identity.leg_sequence;
     r.constituent_trade_id = v.constituent_trade_id;
     r.modified_by = v.audit.modified_by;

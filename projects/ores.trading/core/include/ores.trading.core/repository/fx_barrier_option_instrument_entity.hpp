@@ -47,6 +47,7 @@ struct fx_barrier_option_instrument_entity {
     int version = 0;
     std::string trade_type_code;
     std::string party_id;
+    std::string trade_activity_id;
     std::string bought_currency;
     std::string bought_amount;
     std::string sold_currency;

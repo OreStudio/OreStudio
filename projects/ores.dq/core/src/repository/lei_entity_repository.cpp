@@ -155,12 +155,10 @@ void lei_entity_repository::write(context ctx,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert_or_replace(lei_entity_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(lei_entity_mapper::map(t)),
+                     lg(),
+                     "Writing LEI entity to database.");
 }
 
 void lei_entity_repository::write(context ctx,
@@ -171,12 +169,10 @@ void lei_entity_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert_or_replace(lei_entity_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx,
+                     sqlgen::insert_or_replace(lei_entity_mapper::map(batch)),
+                     lg(),
+                     "Writing LEI entities to database.");
 }
 
 std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) {

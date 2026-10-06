@@ -35,6 +35,7 @@ export interface CommodityInstrumentKey {
 export interface CommodityInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     commodity_code: string;
     currency: string;
     quantity: number;

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/component-versions-name-their-activity
+#+pr: 2680
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every component version names the activity that caused it through a real foreign
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -41,9 +41,26 @@ Every component version names the activity that caused it through a real foreign
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Every model whose =trade_id= references the trade gets a
+  =trade_activity_id= column beside it (in the identity group where
+  =trade_id= is grouped) and an enforced foreign key to
+  =ores_trading_trade_activities_tbl=, with a parent seed that writes an
+  activity: 58 models, by =scratchpad/add_activity_fk.py=. The three
+  identity field groups gain the field.
+- Nine composed constraint names run past PostgreSQL's 63-character limit;
+  the codegen now takes =:constraint_name:= on a foreign key, and those
+  models name theirs =<table base>_activity_fk=.
+- The trade state drops =activity_type_code=: its transition trigger reads
+  the type through the activity. The generated round-trip test's amendment
+  becomes a model snippet (=amend_activity=) that writes an amendment
+  activity, replacing the column-and-code pair only the state used.
+- Booking writes the activity id into the booking and the state. The ORE
+  import stamps the instrument with the booking's activity after booking
+  (=stamp_ids= takes the activity id), passes it to the identifier,
+  portfolio and additional-field writes, and sets it beside every
+  =trade_id= on the instrument writes.
+- The activities are created before every table that references them and
+  dropped after.
 
 * Measurements
 
@@ -57,7 +74,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Models given an enforced activity key | 58 (9 with a named constraint) | =scratchpad/add_activity_fk.py= | 128c74fc7f + working tree |
+| pgTAP, every trading file, under the test DDL role | 6 files, 81 tests, pass | =pg_prove test/trading_*_test.sql= | 128c74fc7f + working tree |
+| Imported rows naming their booking's activity | states 16/16, identifiers 16/16, additional fields 24/24, vanilla swaps 12/12, bonds 1/1 | psql join on the booking's activity | 128c74fc7f + working tree |
+| Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | 128c74fc7f + working tree |
+| codegen pytest | 1155 passed | =pytest projects/ores.codegen/tests= | 128c74fc7f + working tree |
+| ctest | 94 of 94 (93 in the full run; trading core rerun after its fixtures gained an activity) | =compass test run= | 128c74fc7f + working tree |
 
 * Notes
 
@@ -76,12 +98,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2680][#2680]] | [trading] Point every component version at its activity |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local: the trading core repository tests wrote instruments with no activity, which the new key refuses. | =trade_parent_seed.hpp= | accept | =write_parent_activity= writes one activity per test; the 18 tests and the bond reader stamps use it. |
+| 2 | Owner: booking writes four tables with SQL inserts instead of the repositories. | =ores_trading_book_trade_fn= | accept | Its own task on this story: a unit of work in ores.database, booking through the repositories, and a checked architectural rule. |
 
 * Result
+
+Every trade-keyed table, the components and the instrument tables alike,
+names the activity that wrote each version through an enforced foreign key,
+and the trade state reads its transition through that activity rather than
+a bare code. Booking and the ORE import stamp the booking's activity on
+every row they write; the round trip is unchanged and every imported row
+names its trade's booking activity.

@@ -48,6 +48,7 @@ generate_synthetic_credit_instrument(utility::generation::generation_context& ct
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("CreditDefaultSwap");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.reference_entity = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();

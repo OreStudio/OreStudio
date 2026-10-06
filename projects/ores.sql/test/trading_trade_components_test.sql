@@ -64,6 +64,15 @@ select (select id from ores_refdata_parties_tbl
 
 select set_config('app.current_actor', (select owner_name from t_ctx), true);
 
+create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')
+returns uuid as $$
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), p_party, p_type, 'test',
+        now(), 'test')
+    returning id;
+$$ language sql;
+
 create or replace function pg_temp.portfolio(p_id uuid, p_party uuid, p_sandbox uuid)
 returns void as $$
     insert into ores_refdata_portfolios_tbl (id, tenant_id, version, party_id, name,
@@ -102,10 +111,11 @@ create or replace function pg_temp.booking(p_trade uuid, p_book uuid, p_version 
     p_counterparty uuid default null, p_netting_set uuid default null,
     p_party uuid default null)
 returns void as $$
-    insert into ores_trading_trade_bookings_tbl (trade_id, tenant_id, version, party_id,
-        counterparty_id, book_id, netting_set_id, trade_date,
+    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id, version,
+        party_id, counterparty_id, book_id, netting_set_id, trade_date,
         modified_by, performed_by, change_reason_code, change_commentary)
-    select p_trade, ores_utility_system_tenant_id_fn(), p_version,
+    select p_trade, pg_temp.activity(coalesce(p_party, party_id)),
+        ores_utility_system_tenant_id_fn(), p_version,
         coalesce(p_party, party_id), p_counterparty, p_book, p_netting_set, current_date,
         owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
@@ -113,11 +123,11 @@ $$ language sql;
 
 create or replace function pg_temp.state(p_trade uuid, p_activity text, p_version int)
 returns void as $$
-    insert into ores_trading_trade_states_tbl (trade_id, tenant_id, version, party_id,
-        activity_type_code, status_id,
+    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id, version,
+        party_id, status_id,
         modified_by, performed_by, change_reason_code, change_commentary)
-    select p_trade, ores_utility_system_tenant_id_fn(), p_version, party_id,
-        p_activity, ores_utility_nil_uuid_fn(),
+    select p_trade, pg_temp.activity(party_id, p_activity), ores_utility_system_tenant_id_fn(),
+        p_version, party_id, ores_utility_nil_uuid_fn(),
         owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
 $$ language sql;

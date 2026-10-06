@@ -41,6 +41,8 @@ render_fx_digital_option_instrument_fields(const domain::fx_digital_option_instr
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Foreign Currency", .value = v.foreign_currency});
     fields.push_back({.name = "Domestic Currency", .value = v.domestic_currency});
     fields.push_back({.name = "Payoff Currency", .value = v.payoff_currency});

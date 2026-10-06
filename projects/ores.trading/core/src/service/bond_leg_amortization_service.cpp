@@ -105,6 +105,7 @@ domain::bond_leg_amortization to_domain(const messaging::bond_leg_amortization_w
     v.leg_role = write.leg_role;
     v.leg_number = write.leg_number;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.amortization_type = write.amortization_type;
     v.value = write.value;
     v.start_date = write.start_date;

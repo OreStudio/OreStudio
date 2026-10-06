@@ -87,27 +87,29 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <fx_index> <reference_currency> <reference_notional>
-     * <settlement_currency> <settlement_notional> <payment_date> <long_short> <currency>
-     * <fixing_amount> <target_amount> <strike> <description> <reason> <commentary>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <fx_index> <reference_currency>
+     * <reference_notional> <settlement_currency> <settlement_notional> <payment_date> <long_short>
+     * <currency> <fixing_amount> <target_amount> <strike> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <fx_index> <reference_currency> <reference_notional>
-     * <settlement_currency> <settlement_notional> <payment_date> <long_short> <currency>
-     * <fixing_amount> <target_amount> <strike> <description> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <fx_index> <reference_currency>
+     * <reference_notional> <settlement_currency> <settlement_notional> <payment_date> <long_short>
+     * <currency> <fixing_amount> <target_amount> <strike> <description> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <fx_index> <reference_currency>
-     * <reference_notional> <settlement_currency> <settlement_notional> <payment_date> <long_short>
-     * <currency> <fixing_amount> <target_amount> <strike> <description> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <fx_index>
+     * <reference_currency> <reference_notional> <settlement_currency> <settlement_notional>
+     * <payment_date> <long_short> <currency> <fixing_amount> <target_amount> <strike> <description>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

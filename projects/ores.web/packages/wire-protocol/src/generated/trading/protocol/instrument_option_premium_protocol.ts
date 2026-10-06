@@ -36,6 +36,7 @@ export interface InstrumentOptionPremiumKey {
 export interface InstrumentOptionPremiumWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     amount: string;
     currency: string;
     pay_date: string;

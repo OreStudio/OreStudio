@@ -41,6 +41,7 @@ struct bond_option_key {
 
 struct bond_option_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::string option_type;
     ores::utility::decimal::decimal option_strike;
     std::optional<std::string> redemption;

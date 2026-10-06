@@ -87,27 +87,29 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <underlying_name> <currency> <notional> <option_type>
-     * <strike> <expiry_date> <exercise_type> <long_short> <average_type> <averaging_start_date>
-     * <averaging_end_date> <description> <reason> <commentary>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency>
+     * <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> <average_type>
+     * <averaging_start_date> <averaging_end_date> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <underlying_name> <currency> <notional> <option_type>
-     * <strike> <expiry_date> <exercise_type> <long_short> <average_type> <averaging_start_date>
-     * <averaging_end_date> <description> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency>
+     * <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> <average_type>
+     * <averaging_start_date> <averaging_end_date> <description> <reason> <commentary> [--version
+     * <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <underlying_name> <currency>
-     * <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> <average_type>
-     * <averaging_start_date> <averaging_end_date> <description> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
+     * <underlying_name> <currency> <notional> <option_type> <strike> <expiry_date> <exercise_type>
+     * <long_short> <average_type> <averaging_start_date> <averaging_end_date> <description>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

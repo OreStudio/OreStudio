@@ -36,6 +36,7 @@ export interface BondLegRate {
     trade_id: string;
     leg_role: string;
     leg_number: number;
+    trade_activity_id: string;
     rate_kind: string;
     index: string | null;
     is_in_arrears: boolean | null;

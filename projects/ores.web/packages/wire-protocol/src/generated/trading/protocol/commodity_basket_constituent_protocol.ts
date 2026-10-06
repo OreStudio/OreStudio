@@ -36,6 +36,7 @@ export interface CommodityBasketConstituentKey {
 export interface CommodityBasketConstituentWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     underlying_code: string;
     weight: string | null;
 }

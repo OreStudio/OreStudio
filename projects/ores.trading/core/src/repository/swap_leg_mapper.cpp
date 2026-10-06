@@ -50,6 +50,7 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.identity.leg_number = v.leg_number;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;
@@ -79,6 +80,7 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.trade_id = boost::uuids::to_string(v.identity.trade_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.leg_number = v.identity.leg_number;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;

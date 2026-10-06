@@ -90,8 +90,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!trade_repository::is_sortable(order.field))
-        throw std::invalid_argument("A list of trade anchors cannot be ordered by " + order.field +
-                                    ".");
+        throw std::invalid_argument("A list of trades cannot be ordered by " + order.field + ".");
     return make_order({order.field}, order.descending, {"id"});
 }
 
@@ -156,30 +155,21 @@ void trade_repository::write(context ctx, const std::vector<domain::trade>& v) {
 void trade_repository::write(context ctx,
                              const domain::trade& v,
                              const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade anchor. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing trade. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert(trade_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx, sqlgen::insert(trade_mapper::map(t)), lg(), "Writing trade to database.");
 }
 
 void trade_repository::write(context ctx,
                              const std::vector<domain::trade>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing trade anchors. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing trades. Count: " << v.size();
     std::vector<domain::trade> batch;
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert(trade_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(
+        ctx, sqlgen::insert(trade_mapper::map(batch)), lg(), "Writing trades to database.");
 }
 
 std::vector<domain::trade> trade_repository::read_latest(context ctx) {
@@ -192,11 +182,11 @@ std::vector<domain::trade> trade_repository::read_latest(context ctx) {
         query,
         [](const auto& entities) { return trade_mapper::map(entities); },
         lg(),
-        "Reading latest trade anchors");
+        "Reading latest trades");
 }
 
 std::vector<domain::trade> trade_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade anchor. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<trade_entity>> | where("tenant_id"_c == tid && "id"_c == id);
@@ -206,12 +196,12 @@ std::vector<domain::trade> trade_repository::read_latest(context ctx, const std:
         query,
         [](const auto& entities) { return trade_mapper::map(entities); },
         lg(),
-        "Reading latest trade anchor by id.");
+        "Reading latest trade by id.");
 }
 
 
 std::vector<domain::trade> trade_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all trade anchor versions. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all trade versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) | order_by("id"_c);
@@ -221,13 +211,13 @@ std::vector<domain::trade> trade_repository::read_all(context ctx, const std::st
         query,
         [](const auto& entities) { return trade_mapper::map(entities); },
         lg(),
-        "Reading all trade anchor versions by id.");
+        "Reading all trade versions by id.");
 }
 
 
 trade_repository::remove_status
 trade_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade anchor. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
     if (version)
@@ -239,7 +229,7 @@ trade_repository::remove(context ctx, const std::string& id, std::optional<std::
     const auto query =
         sqlgen::delete_from<trade_entity> | where("tenant_id"_c == tid && "id"_c == id);
 
-    execute_delete_query(ctx, query, lg(), "Removing trade anchor from database.");
+    execute_delete_query(ctx, query, lg(), "Removing trade from database.");
     return remove_status::removed;
 }
 
@@ -253,7 +243,7 @@ trade_repository::read_latest(context ctx,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
                               const std::optional<messaging::trades_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest trade anchors with offset: " << offset
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest trades with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> | where("tenant_id"_c == tid) |
@@ -266,19 +256,19 @@ trade_repository::read_latest(context ctx,
         filter_condition(filter),
         [](const auto& entities) { return trade_mapper::map(entities); },
         lg(),
-        "Reading latest trade anchors with pagination.");
+        "Reading latest trades with pagination.");
 }
 
 std::uint32_t
 trade_repository::get_total_trade_count(context ctx,
                                         const std::optional<messaging::trades_filter>& filter) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade anchor count";
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<trade_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting trade anchors");
+        ctx, query, filter_condition(filter), lg(), "Counting trades");
 }
 
 std::vector<domain::trade> trade_repository::read_latest(context ctx,
@@ -293,7 +283,7 @@ std::vector<domain::trade> trade_repository::read_latest(context ctx,
         query,
         [](const auto& entities) { return trade_mapper::map(entities); },
         lg(),
-        "Reading latest trade anchors by ids.");
+        "Reading latest trades by ids.");
     return result;
 }
 
@@ -309,7 +299,7 @@ void trade_repository::remove(context ctx, const std::vector<std::string>& ids) 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<trade_entity> | where("tenant_id"_c == tid && "id"_c.in(ids));
-    execute_delete_query(ctx, query, lg(), "Batch removing trade anchors.");
+    execute_delete_query(ctx, query, lg(), "Batch removing trades.");
 }
 
 

@@ -47,6 +47,7 @@ generate_synthetic_scripted_instrument(utility::generation::generation_context& 
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("ScriptedTrade");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.script_name = std::string("Autocallable");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

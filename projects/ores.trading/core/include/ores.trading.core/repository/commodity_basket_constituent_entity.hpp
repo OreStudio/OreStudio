@@ -46,6 +46,7 @@ struct commodity_basket_constituent_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string underlying_code;
     std::optional<std::string> weight;
     std::string modified_by;

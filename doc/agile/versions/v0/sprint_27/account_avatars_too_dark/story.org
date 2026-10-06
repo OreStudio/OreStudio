@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 150C3DDA-2A41-4F4F-92A0-E84E36BB410E
+:END:
+#+title: Story: Account avatars are too dark to see
+#+description: The seeded account avatars are Fluent SVGs filled #212121, so on the dark theme a service account, tenant administrator or super administrator reads as disabled.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An account's avatar reads as an identity on the dark theme, whether the account is a person, a service, or an administrator.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- Every seeded account avatar is drawn in the theme's ink and no longer reads as disabled.
+- The seed regenerates from external/avatars with images_generate_sql.py --config system_avatars.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C13CB1B8-280B-4971-9FC5-7B5B5BF11277][Scaffold story: Account avatars are too dark to see]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:19070B51-EC2B-4F2D-A88E-A29B57A45A89][Draw the account avatars in the theme's ink]] | DONE | | 2026-10-06 | Initial task for: Account avatars are too dark to see |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The 27 avatars in =external/avatars= are recoloured from =#212121= to
+=#e3e3e6=, the theme's ink, and the seed regenerates from them. The running
+environment's images were updated in place and the BFF image cache cleared, so
+the Accounts list and the Root Tenant People tab draw legible avatars. One
+environment quirk worth recording: =/api/images/:id= is served =immutable=
+for a year, so a browser that fetched an avatar before the in-place update
+keeps it until its site data is cleared. A provision creates fresh image ids,
+so the durable fix does not meet that cache.

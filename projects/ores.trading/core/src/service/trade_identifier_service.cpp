@@ -96,6 +96,7 @@ domain::trade_identifier to_domain(const messaging::trade_identifier_write& writ
     domain::trade_identifier v;
     v.trade_id = write.trade_id;
     v.id_type = write.id_type;
+    v.trade_activity_id = write.trade_activity_id;
     v.id_value = write.id_value;
     v.issuing_party_id = write.issuing_party_id;
     return v;

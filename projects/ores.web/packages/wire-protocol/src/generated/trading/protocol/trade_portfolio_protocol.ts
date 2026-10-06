@@ -36,6 +36,7 @@ export interface TradePortfolioKey {
 export interface TradePortfolioWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     portfolio_id: string;
 }
 

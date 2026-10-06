@@ -55,6 +55,7 @@ instrument_schedule_date_mapper::map(const instrument_schedule_date_entity& v) {
     r.schedule_role = v.schedule_role.value();
     r.schedule_sequence_number = boost::lexical_cast<int>(v.schedule_sequence_number.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.schedule_date = ores::platform::time::datetime::from_iso8601_date(v.schedule_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -79,6 +80,7 @@ instrument_schedule_date_mapper::map(const domain::instrument_schedule_date& v) 
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.schedule_date = ores::platform::time::datetime::to_iso8601_date(v.schedule_date);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

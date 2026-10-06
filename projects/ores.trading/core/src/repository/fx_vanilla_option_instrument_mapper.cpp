@@ -53,6 +53,7 @@ fx_vanilla_option_instrument_mapper::map(const fx_vanilla_option_instrument_enti
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.bought_currency = v.bought_currency;
     r.bought_amount = ores::utility::decimal::decimal::from_string(v.bought_amount).value();
     r.sold_currency = v.sold_currency;
@@ -82,6 +83,7 @@ fx_vanilla_option_instrument_mapper::map(const domain::fx_vanilla_option_instrum
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.bought_currency = v.bought_currency;
     r.bought_amount = v.bought_amount.to_string();
     r.sold_currency = v.sold_currency;

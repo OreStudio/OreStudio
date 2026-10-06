@@ -69,6 +69,11 @@ struct trade_booking final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The trade's party, copied from the anchor.
      */
     boost::uuids::uuid party_id;

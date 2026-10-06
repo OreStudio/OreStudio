@@ -38,6 +38,7 @@ create table if not exists "ores_trading_equity_digital_option_instruments_tbl" 
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "currency" text not null,
     "notional" numeric(28, 10) not null,
@@ -69,7 +70,8 @@ create table if not exists "ores_trading_equity_digital_option_instruments_tbl" 
     check ("currency" <> ''),
     check (("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" = 'EquityTouchOption' and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null)),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
-    check ("barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
+    check ("barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
+    constraint ores_trading_equity_digital_option_instruments_activity_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

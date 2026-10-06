@@ -33,6 +33,7 @@ create table if not exists "ores_trading_equity_forward_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "currency" text not null,
     "quantity" numeric(28, 10) not null,
@@ -59,7 +60,8 @@ create table if not exists "ores_trading_equity_forward_instruments_tbl" (
     check ("quantity" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))
+    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash')),
+    constraint ores_trading_equity_forward_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

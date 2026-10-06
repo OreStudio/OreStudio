@@ -43,6 +43,7 @@ struct trade_additional_field_key {
 struct trade_additional_field_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::string name;
     std::string value;
 };

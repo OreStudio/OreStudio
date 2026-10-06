@@ -1473,16 +1473,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         # An entity guarded by a state machine cannot be rewritten with the
         # activity that booked it: that activity names a transition which
         # starts the machine, and the row already has a state. The model
-        # therefore names the activity an amendment carries, so a generated
-        # round-trip test can amend the row it just wrote.
+        # therefore states, as an ``amend_activity`` source block, how the
+        # generated round-trip test points the row at an amending activity
+        # before it rewrites it.
         transition_section = _section(sql_section, "Status transition")
-        if transition_section and transition_section.properties:
-            props = {k.lower(): v for k, v in transition_section.properties.items()}
-            if props.get("amend_activity_code") and props.get("amend_activity_column"):
-                de["amend_activity"] = {
-                    "column": props["amend_activity_column"],
-                    "code": props["amend_activity_code"],
-                }
+        if transition_section and "amend_activity" in transition_section.src_blocks:
+            de["amend_activity"] = {
+                "snippet": transition_section.src_blocks["amend_activity"],
+            }
         # A pinned key holds a row's copies of another row's facts to that
         # row: the listed columns must equal the target's, so a copy cannot
         # drift from its source.

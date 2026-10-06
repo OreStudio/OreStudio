@@ -34,6 +34,7 @@ create table if not exists "ores_trading_knock_out_swap_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "start_date" date not null,
     "maturity_date" date not null,
     "barrier_start_date" date not null,
@@ -56,7 +57,8 @@ create table if not exists "ores_trading_knock_out_swap_instruments_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('KnockOutSwap')),
     check ("maturity_date" > "start_date"),
-    check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
+    check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
+    constraint ores_trading_knock_out_swap_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -95,6 +95,7 @@ messaging::bond_option_key key_from(const domain::bond_option& v) {
 domain::bond_option to_domain(const messaging::bond_option_write& write) {
     domain::bond_option v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.option_type = write.option_type;
     v.option_strike = write.option_strike;
     v.redemption = write.redemption;

@@ -50,6 +50,7 @@ generate_synthetic_instrument_schedule_date(utility::generation::generation_cont
     r.schedule_role = std::string(faker::word::noun());
     r.schedule_sequence_number = 0;
     r.sequence_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.schedule_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.modified_by = modified_by;
     r.performed_by = modified_by;

@@ -141,26 +141,27 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <bought_currency> <bought_amount> <sold_currency> "
-        "<sold_amount> <value_date> <settlement> <description> <reason> <commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
+        "<sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <bought_currency> <bought_amount> <sold_currency> "
-        "<sold_amount> <value_date> <settlement> <description> <reason> <commentary> [--version "
-        "<n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
+        "<sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_type_code> <bought_currency> <bought_amount> "
-        "<sold_currency> <sold_amount> <value_date> <settlement> <description> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> "
+        "<bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> <description> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,14 +356,16 @@ void fx_forward_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.bought_currency, parsed->positionals[next++], "bought_currency");
         read_token(req.change.write.bought_amount, parsed->positionals[next++], "bought_amount");
@@ -413,14 +416,16 @@ void fx_forward_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.bought_currency, parsed->positionals[next++], "bought_currency");
         read_token(req.change.write.bought_amount, parsed->positionals[next++], "bought_amount");
@@ -483,8 +488,8 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,6 +498,8 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(
                 change.write.bought_currency, parsed->positionals[next++], "bought_currency");
             read_token(change.write.bought_amount, parsed->positionals[next++], "bought_amount");

@@ -47,6 +47,7 @@ struct bond_leg_amortization_write {
     std::string leg_role;
     int leg_number;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::string amortization_type;
     std::optional<ores::utility::decimal::decimal> value;
     std::optional<std::string> start_date;

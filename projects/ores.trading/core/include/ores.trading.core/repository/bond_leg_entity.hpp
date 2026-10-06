@@ -47,6 +47,7 @@ struct bond_leg_entity {
     sqlgen::PrimaryKey<std::string> leg_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::optional<bool> payer;
     std::optional<std::string> leg_type;
     std::optional<std::string> currency;

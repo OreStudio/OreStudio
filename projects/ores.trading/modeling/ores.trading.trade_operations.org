@@ -115,6 +115,18 @@ generates no service handler.
  */
 #+end_src
 
+*** activity_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The activity that booked the trade; absent when the booking was
+ * refused.
+ */
+#+end_src
+
 ** trade_export_item
 :PROPERTIES:
 :END:

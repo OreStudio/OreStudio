@@ -43,6 +43,7 @@ struct instrument_option_payment_date_key {
 struct instrument_option_payment_date_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day payment_date;
 };
 

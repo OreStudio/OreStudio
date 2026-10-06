@@ -40,6 +40,7 @@ export interface BondLegAmortizationWrite {
     leg_role: string;
     leg_number: number;
     sequence_number: number;
+    trade_activity_id: string;
     amortization_type: string;
     value: string | null;
     start_date: string | null;

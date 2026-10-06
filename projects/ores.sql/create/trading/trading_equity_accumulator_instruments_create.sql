@@ -39,6 +39,7 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "currency" text not null,
     "strike" numeric(28, 10) not null,
@@ -72,7 +73,8 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     check ("currency" <> ''),
     check (("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null)),
     check ("payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
-    check ("target_type" is null or "target_type" in ('TargetFull', 'TargetExact'))
+    check ("target_type" is null or "target_type" in ('TargetFull', 'TargetExact')),
+    constraint ores_trading_equity_accumulator_instruments_activity_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

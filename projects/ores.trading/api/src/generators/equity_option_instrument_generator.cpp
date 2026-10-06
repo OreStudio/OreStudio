@@ -48,6 +48,7 @@ generate_synthetic_equity_option_instrument(utility::generation::generation_cont
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("EquityOption");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string("RIC:.SPX");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("775").value();

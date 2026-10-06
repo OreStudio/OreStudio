@@ -50,6 +50,7 @@ domain::rpa_instrument rpa_instrument_mapper::map(const rpa_instrument_entity& v
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;
@@ -74,6 +75,7 @@ rpa_instrument_entity rpa_instrument_mapper::map(const domain::rpa_instrument& v
     r.tenant_id = v.identity.tenant_id.to_string();
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.reference_counterparty = v.reference_counterparty;

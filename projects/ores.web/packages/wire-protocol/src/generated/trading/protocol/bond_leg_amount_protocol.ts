@@ -42,6 +42,7 @@ export interface BondLegAmountWrite {
     leg_number: number;
     amount_role: string;
     sequence_number: number;
+    trade_activity_id: string;
     value: string;
     start_date: string | null;
 }

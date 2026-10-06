@@ -64,6 +64,9 @@ the repositories and the handlers all read and write it.
   separation enforced by the database rather than by the caller.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that owns the DDL, the migrations and the
   role provisioning.
+- [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the write path an
+  entity table expects, the purge and test-fixture exceptions, and the check
+  that holds code to it.
 
 ** Object storage
 

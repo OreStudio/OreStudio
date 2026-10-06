@@ -52,6 +52,7 @@ knock_out_swap_instrument_mapper::map(const knock_out_swap_instrument_entity& v)
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.barrier_start_date = ores::platform::time::datetime::from_iso8601_date(v.barrier_start_date);
@@ -78,6 +79,7 @@ knock_out_swap_instrument_mapper::map(const domain::knock_out_swap_instrument& v
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.barrier_start_date = ores::platform::time::datetime::to_iso8601_date(v.barrier_start_date);

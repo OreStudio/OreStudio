@@ -90,41 +90,62 @@ struct equity_instrument_data {
 // The trade id is the instrument's own key, so there is one id to stamp
 // rather than a trade id and an instrument id that can disagree.
 template <Instrument T>
-void stamp_ids(T& instr, boost::uuids::uuid trade_id) {
+void stamp_ids(T& instr, boost::uuids::uuid trade_id, boost::uuids::uuid activity_id = {}) {
     instr.identity.trade_id = trade_id;
+    instr.identity.trade_activity_id = activity_id;
 }
 
 template <typename... Ts>
     requires(Instrument<Ts> && ...)
-void stamp_ids(std::variant<Ts...>& v, boost::uuids::uuid trade_id) {
-    std::visit([&](auto& instr) { stamp_ids(instr, trade_id); }, v);
+void stamp_ids(std::variant<Ts...>& v,
+               boost::uuids::uuid trade_id,
+               boost::uuids::uuid activity_id = {}) {
+    std::visit([&](auto& instr) { stamp_ids(instr, trade_id, activity_id); }, v);
 }
 
 template <typename T, typename Leg>
-void stamp_ids(with_legs<T, Leg>& data, boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, trade_id);
-    for (auto& leg : data.legs)
+void stamp_ids(with_legs<T, Leg>& data,
+               boost::uuids::uuid trade_id,
+               boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& leg : data.legs) {
         leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
 }
 
-inline void stamp_ids(swap_instrument_data& data, boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, trade_id);
-    for (auto& leg : data.legs)
+inline void stamp_ids(swap_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& leg : data.legs) {
         leg.identity.trade_id = trade_id;
-    for (auto& call_date : data.call_dates)
+        leg.identity.trade_activity_id = activity_id;
+    }
+    for (auto& call_date : data.call_dates) {
         call_date.trade_id = trade_id;
+        call_date.trade_activity_id = activity_id;
+    }
 }
 
-inline void stamp_ids(commodity_instrument_data& data, boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, trade_id);
-    for (auto& constituent : data.constituents)
+inline void stamp_ids(commodity_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& constituent : data.constituents) {
         constituent.trade_id = trade_id;
+        constituent.trade_activity_id = activity_id;
+    }
 }
 
-inline void stamp_ids(equity_instrument_data& data, boost::uuids::uuid trade_id) {
-    stamp_ids(data.instrument, trade_id);
-    for (auto& underlying : data.underlyings)
+inline void stamp_ids(equity_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    for (auto& underlying : data.underlyings) {
         underlying.trade_id = trade_id;
+        underlying.trade_activity_id = activity_id;
+    }
 }
 
 } // namespace ores::trading::domain

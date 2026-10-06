@@ -44,6 +44,7 @@ create table if not exists "ores_trading_bond_leg_amortizations_tbl" (
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "amortization_type" text not null,
     "value" numeric(28, 10) null,
     "start_date" text null,
@@ -71,7 +72,8 @@ create table if not exists "ores_trading_bond_leg_amortizations_tbl" (
     check ("leg_role" in ('trs_funding', 'repo', 'ascot_swap')),
     check ("leg_number" > 0),
     check ("sequence_number" > 0),
-    check ("amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity'))
+    check ("amortization_type" in ('FixedAmount', 'RelativeToInitialNotional', 'RelativeToPreviousNotional', 'Annuity', 'LinearToMaturity')),
+    constraint ores_trading_bond_leg_amortizations_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

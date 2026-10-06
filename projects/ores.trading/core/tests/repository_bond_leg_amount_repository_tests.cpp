@@ -75,6 +75,7 @@ bond_leg_amount make_amount(database_helper& h,
                             const char* text) {
     bond_leg_amount r;
     r.trade_id = trade_id;
+    r.trade_activity_id = ores::trading::tests::write_parent_activity(h);
     // The trade-keyed leg family holds the three product legs; a bond's
     // own legs belong to the security and key on the issue.
     r.leg_role = "trs_funding";

@@ -41,6 +41,7 @@ struct instrument_option_key {
 
 struct instrument_option_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::string long_short;
     std::optional<std::string> option_type;
     std::optional<std::string> payoff_type;

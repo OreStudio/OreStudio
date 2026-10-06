@@ -81,6 +81,9 @@ class Ctx:
     def __init__(self, project_root: Path, env: dict, preset_arg):
         self.root = project_root
         self.env = env
+        # The transport lives in .env, and compass never writes os.environ, so
+        # the dict has to be handed over or the file's choice does nothing here.
+        systemctl_bus.adopt_transport_setting(env)
         preset = preset_arg or env.get("ORES_PRESET", "")
         if not preset:
             print("error: no preset — pass --preset <preset> or set "

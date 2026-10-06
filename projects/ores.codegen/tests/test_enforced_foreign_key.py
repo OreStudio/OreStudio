@@ -240,3 +240,16 @@ def test_a_constraint_name_postgres_would_truncate_is_refused(tmp_path):
 
     with pytest.raises(ValueError, match="longer than 63 characters"):
         _render(tmp_path, edit_child=edit)
+
+
+def test_a_named_constraint_replaces_the_composed_name(tmp_path):
+    sql = _render(tmp_path, fk_flags=ENFORCE + ":constraint_name: child_anchor_fk\n")
+
+    assert ('constraint child_anchor_fk foreign key ("tenant_id", "anchor_id")'
+            ) in sql["child"]
+    assert "child_records_anchor_id_fk" not in sql["child"]
+
+
+def test_a_named_constraint_postgres_would_truncate_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="longer than 63 characters"):
+        _render(tmp_path, fk_flags=ENFORCE + ":constraint_name: " + "x" * 64 + "\n")

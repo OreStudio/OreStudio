@@ -32,11 +32,11 @@ moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Land the role request kind and build the screens. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-05                               |
 
 * Acceptance
@@ -50,7 +50,7 @@ moved here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | STARTED | 2026-10-05 | | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
+| [[id:6D9E6879-959D-4A78-9450-196D99593E1D][Build the request and notification screens]] | DONE | 2026-10-05 | 2026-10-06 | Ask for a role and Your requests on My access, the Requests queue, and the notification bell with its list, as the accepted prototype draws them. |
 | [[id:F4531E16-EBDB-446A-B11A-549E2FEAB8A3][Land the role request kind]] | DONE | 2026-10-05 | 2026-10-05 | The IAM role grant request and its roles as the first approval kind, applying an approval through the ordinary grant and raising the waiting and decided notifications. |
 
 * Decisions
@@ -68,3 +68,12 @@ moved here.
 * Out of scope
 
 -
+
+* Result
+
+Both tasks shipped. Serving the approvals and the notifications landed with
+PR #2652, the role request kind with PR #2673, and the request and notification
+screens with PR #2707. Live on a fresh database provisioned with ACME: a member
+asked for a role, the tenant administrator answered from the queue, the role
+was granted, and the member read the decision in the bell. The task page carries
+the evidence.

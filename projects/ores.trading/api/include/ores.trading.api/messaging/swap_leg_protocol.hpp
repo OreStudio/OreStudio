@@ -42,6 +42,7 @@ struct swap_leg_key {
 struct swap_leg_write {
     boost::uuids::uuid id;
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     int leg_number;
     std::string leg_type_code;
     std::string day_count_fraction_code;

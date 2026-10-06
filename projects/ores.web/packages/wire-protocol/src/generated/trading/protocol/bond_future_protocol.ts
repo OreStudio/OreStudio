@@ -34,6 +34,7 @@ export interface BondFutureKey {
 
 export interface BondFutureWrite {
     trade_id: string;
+    trade_activity_id: string;
     contract_name: string;
     contract_notional: string;
     long_short: string;

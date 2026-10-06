@@ -47,6 +47,7 @@ generate_synthetic_composite_instrument(utility::generation::generation_context&
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("CompositeTrade");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

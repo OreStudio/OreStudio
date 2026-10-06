@@ -40,6 +40,8 @@ render_composite_instrument_fields(const domain::composite_instrument& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

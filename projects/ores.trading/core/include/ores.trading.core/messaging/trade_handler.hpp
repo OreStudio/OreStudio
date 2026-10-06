@@ -52,7 +52,7 @@ using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 /**
- * @brief NATS message handler for trade anchor operations.
+ * @brief NATS message handler for trade operations.
  */
 class trade_handler {
 public:

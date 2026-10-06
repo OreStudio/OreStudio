@@ -40,6 +40,8 @@ render_scripted_instrument_fields(const domain::scripted_instrument& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Script Name", .value = v.script_name});
     fields.push_back({.name = "Script Body", .value = v.script_body});
     fields.push_back({.name = "Events Json", .value = v.events_json});

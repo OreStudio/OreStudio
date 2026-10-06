@@ -79,7 +79,7 @@ trade_service::list_trades(const messaging::list_trades_request& request) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "A list of trade anchors cannot be ordered by " + request.order.field + ".";
+            "A list of trades cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
@@ -127,18 +127,18 @@ trade_service::get_many_trades(const messaging::get_many_trades_request& request
 
 
 std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trade anchors";
+    BOOST_LOG_SEV(lg(), debug) << "Listing all trades";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t trade_service::count_trades() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trade anchors count";
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trades count";
     return repo_.get_total_trade_count(ctx_);
 }
 
 
 std::optional<domain::trade> trade_service::get_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade anchor. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
@@ -152,11 +152,11 @@ std::vector<domain::trade> trade_service::get_trades(const std::vector<std::stri
 void trade_service::save_trade(const domain::trade& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade anchor. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade anchor. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade. " << "id: " << v.id;
 }
 
 void trade_service::save_trades(const std::vector<domain::trade>& trades) {
@@ -164,7 +164,7 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
         if (e.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trade anchors";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
     auto ts = trades;
     for (auto& e : ts) {
         stamp(e, ctx_);
@@ -173,9 +173,9 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
 }
 
 void trade_service::delete_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade anchor. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade anchor. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade. " << "id: " << id;
 }
 
 void trade_service::delete_trades(const std::vector<std::string>& ids) {

@@ -42,6 +42,7 @@ struct bond_instrument_key {
 struct bond_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid issue_id;
     std::optional<ores::utility::decimal::decimal> notional;
 };

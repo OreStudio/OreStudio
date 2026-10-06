@@ -43,6 +43,7 @@ struct callable_swap_call_date_key {
 struct callable_swap_call_date_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day call_date;
 };
 

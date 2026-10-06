@@ -87,24 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <sequence_number> <underlying_name> <strike> <weight> <long_short>
-     * <option_type> <exercise_type> <settlement_type> <reason> <commentary>
+     * @brief add <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike>
+     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <sequence_number> <underlying_name> <strike> <weight> <long_short>
-     * <option_type> <exercise_type> <settlement_type> <reason> <commentary> [--version <n>]
+     * @brief set <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike>
+     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <sequence_number> <underlying_name> <strike> <weight>
-     * <long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <sequence_number> <trade_activity_id>
+     * <underlying_name> <strike> <weight> <long_short> <option_type> <exercise_type>
+     * <settlement_type> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

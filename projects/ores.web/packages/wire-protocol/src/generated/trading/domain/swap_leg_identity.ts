@@ -34,5 +34,6 @@ export interface SwapLegIdentity {
     id: string;
     party_id: string;
     trade_id: string;
+    trade_activity_id: string;
     leg_number: number;
 }

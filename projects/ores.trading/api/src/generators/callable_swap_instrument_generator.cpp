@@ -47,6 +47,7 @@ generate_synthetic_callable_swap_instrument(utility::generation::generation_cont
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("CallableSwap");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2029} / 1 / 15};
     r.audit.modified_by = modified_by;

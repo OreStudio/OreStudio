@@ -2,7 +2,7 @@
 :ID: E5862EF4-9286-4CA6-8E37-D7611F406585
 :END:
 #+title: Task: Implement Hotfix: Domain generator omits the Boost UUID I/O include
-#+description: Initial task for: Hotfix: Domain generator omits the Boost UUID I/O include
+#+description: Add the Boost UUID I/O include to the domain-entity generator template, gated on a generator_expr that calls boost::uuids::to_string, and regenerate run_grant_generator.cpp.
 #+type: task
 #+level: s1
 #+filetags: :domain-generator-omits-uuid-io-include:sprint_27:v0:
@@ -29,11 +29,11 @@ include. =run_grant= is the first entity to hit this.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] |
-| Now          | Fix verified locally; ready to commit. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open the PR.                |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -118,3 +118,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator template emits =<boost/uuid/uuid_io.hpp>= only when a
+=generator_expr= calls =boost::uuids::to_string=, and
+=run_grant_generator.cpp= carries the include. =ores.iam.api.lib= builds,
+the codegen suite passes (1158), and the =iam= component has no drift.
+Merging PR #2689 clears the CI failure.

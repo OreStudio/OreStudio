@@ -8,7 +8,7 @@
 #+filetags: :domain-generator-omits-uuid-io-include:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/domain-generator-omits-uuid-io-include
-#+pr:
+#+pr: 2689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -20,22 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the hotfix story, its scaffold task and its implement task, wire
+them into sprint 27, and raise the PR that carries the fix.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FAE71466-DC08-40EC-8911-18AA4E348C2D][Hotfix: Domain generator omits the Boost UUID I/O include]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The story, scaffold task and implement task exist and are wired into sprint 27.
+- PR #2689 carries the fix.
 
 * Plan
 
@@ -74,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2689][#2689]] | [codegen] Include the Boost UUID I/O header in entity generators |
 
 * Review
 
@@ -83,3 +85,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, scaffold task and implement task exist and sprint 27 carries
+the story. PR #2689 carries the fix on
+=hotfix/domain-generator-omits-uuid-io-include=.

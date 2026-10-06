@@ -30,11 +30,11 @@ entity. This hotfix emits the include when a =generator_expr= calls
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Fix verified locally: =ores.iam.api.lib= builds and the codegen suite passes. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit and open the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -48,11 +48,23 @@ entity. This hotfix emits the include when a =generator_expr= calls
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2A0F255C-DEA9-4752-AD60-6A39E53D825A][Scaffold story: Hotfix: Domain generator omits the Boost UUID I/O include]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E5862EF4-9286-4CA6-8E37-D7611F406585][Implement Hotfix: Domain generator omits the Boost UUID I/O include]] | STARTED | 2026-10-06 | | Initial task for: Hotfix: Domain generator omits the Boost UUID I/O include |
+| [[id:2A0F255C-DEA9-4752-AD60-6A39E53D825A][Scaffold story: Hotfix: Domain generator omits the Boost UUID I/O include]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E5862EF4-9286-4CA6-8E37-D7611F406585][Implement Hotfix: Domain generator omits the Boost UUID I/O include]] | DONE | 2026-10-06 | 2026-10-06 | Add the Boost UUID I/O include to the domain-entity generator template, gated on a generator_expr that calls boost::uuids::to_string, and regenerate run_grant_generator.cpp. |
 
 * Decisions
+
+- The include is conditional, not unconditional. The junction section of
+  the same template already gates =<boost/uuid/uuid_io.hpp>= on
+  =has_uuid_left_or_right=, and an unconditional include would land an
+  unused header in every generated generator file.
+- The durable fix lives in the org template source and =core.py=, not in
+  =run_grant_generator.cpp=. The generated file is tangled output and
+  would drift back on the next regeneration.
 
 * Out of scope
 
 -
+
+* Result
+
+Shipped in PR #2689. The CI failure is cleared once that PR merges.

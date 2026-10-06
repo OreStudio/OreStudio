@@ -23,60 +23,352 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
+        namespace core #F2F2F2 {
+            class classification_key <<struct>> {
+                +series_type : string
+                +metric : string
+                +qualifier : string
+            }
+            class series_classification <<struct>> {
+                +asset_classes : vector<string>
+                +series_subclass : string
+            }
+            class series_classifier {
+                +series_classifier(vector<domain::series_classification_rule> rules)
+                +classify(const string& series_type, const string& metric, const string& qualifier) : [[nodiscard]] series_classification
+                +try_classify(const string& series_type, const string& metric, const string& qualifier) : [[nodiscard]] optional<series_classification>
+                +known_series_types() : [[nodiscard]] vector<string>
+            }
+            class pillar_quote_key <<struct>> {
+                +series_type : string
+                +metric : string
+                +qualifier : string
+                +point : string
+            }
+        }
+        namespace datum #F2F2F2 {
+            class ore_index_codec {
+                +read(string_view name) : [[nodiscard]] static expected<market_index, string>
+                +write(const market_index& index) : [[nodiscard]] static string
+            }
+            class ore_key_codec {
+                +read(string_view key) : [[nodiscard]] static expected<market_datum, string>
+                +write(const market_datum& datum) : [[nodiscard]] static expected<string, string>
+                +token_of(instrument_type t) : [[nodiscard]] static string_view
+            }
+            class oresmd_uri_codec {
+                +read(string_view uri) : [[nodiscard]] static expected<market_datum, string>
+                +write(const market_datum& datum) : [[nodiscard]] static expected<string, string>
+                +read_index(string_view uri) : [[nodiscard]] static expected<market_index, string>
+                +write_index(const market_index& index) : [[nodiscard]] static expected<string, string>
+            }
+        }
         namespace messaging #F2F2F2 {
+            class curve_snapshot_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +get_snapshot(ores::nats::message msg) : void
+                +get_snapshot_buckets(ores::nats::message msg) : void
+            }
+            class feed_binding_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_feed_bindings(ores::nats::message msg) : void
+                +get_feed_binding(ores::nats::message msg) : void
+                +get_many_feed_bindings(ores::nats::message msg) : void
+                +put_feed_binding(ores::nats::message msg) : void
+                +put_many_feed_bindings(ores::nats::message msg) : void
+                +delete_feed_binding(ores::nats::message msg) : void
+                +delete_many_feed_bindings(ores::nats::message msg) : void
+                +list_feed_binding_versions(ores::nats::message msg) : void
+                +get_feed_binding_version(ores::nats::message msg) : void
+            }
             class import_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                -auth_nats_ : ores::nats::service::nats_client&
+                +import(ores::nats::message msg) : void
             }
             class market_fixing_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_market_fixings(ores::nats::message msg) : void
+                +get_market_fixing(ores::nats::message msg) : void
+                +get_many_market_fixings(ores::nats::message msg) : void
+                +put_market_fixing(ores::nats::message msg) : void
+                +put_many_market_fixings(ores::nats::message msg) : void
+                +delete_market_fixing(ores::nats::message msg) : void
+                +delete_many_market_fixings(ores::nats::message msg) : void
             }
             class market_observation_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_market_observations(ores::nats::message msg) : void
+                +get_market_observation(ores::nats::message msg) : void
+                +get_many_market_observations(ores::nats::message msg) : void
+                +put_market_observation(ores::nats::message msg) : void
+                +put_many_market_observations(ores::nats::message msg) : void
+                +delete_market_observation(ores::nats::message msg) : void
+                +delete_many_market_observations(ores::nats::message msg) : void
+                +list_by_series_id_market_observations(ores::nats::message msg) : void
+            }
+            class market_series_asset_class_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_market_series_asset_classes(ores::nats::message msg) : void
+                +get_market_series_asset_class(ores::nats::message msg) : void
+                +get_many_market_series_asset_classes(ores::nats::message msg) : void
+                +put_market_series_asset_class(ores::nats::message msg) : void
+                +put_many_market_series_asset_classes(ores::nats::message msg) : void
+                +delete_market_series_asset_class(ores::nats::message msg) : void
+                +delete_many_market_series_asset_classes(ores::nats::message msg) : void
+                +list_by_market_series_id_market_series_asset_classes(ores::nats::message msg) : void
             }
             class market_series_handler {
                 -nats_ : ores::nats::service::client&
                 -ctx_ : ores::database::context
                 -verifier_ : optional<ores::security::jwt::jwt_authenticator>
-                -http_base_url_ : string
+                +list_market_series(ores::nats::message msg) : void
+                +get_market_series(ores::nats::message msg) : void
+                +get_many_market_series(ores::nats::message msg) : void
+                +put_market_series(ores::nats::message msg) : void
+                +put_many_market_series(ores::nats::message msg) : void
+                +delete_market_series(ores::nats::message msg) : void
+                +delete_many_market_series(ores::nats::message msg) : void
+                +list_market_series_versions(ores::nats::message msg) : void
+                +get_market_series_version(ores::nats::message msg) : void
+                +export_to_storage(ores::nats::message msg, const string& http_base_url) : void
+            }
+            class observation_lineage_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_observation_lineages(ores::nats::message msg) : void
+                +get_observation_lineage(ores::nats::message msg) : void
+                +get_many_observation_lineages(ores::nats::message msg) : void
+                +put_observation_lineage(ores::nats::message msg) : void
+                +put_many_observation_lineages(ores::nats::message msg) : void
+                +delete_observation_lineage(ores::nats::message msg) : void
+                +delete_many_observation_lineages(ores::nats::message msg) : void
+                +list_observation_lineage_versions(ores::nats::message msg) : void
+                +get_observation_lineage_version(ores::nats::message msg) : void
+            }
+            class ore_export_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +write_all(ores::nats::message msg) : void
+            }
+            class publish_from_dq_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                +publish_from_dq_handler(ores::nats::service::client& nats, ores::database::context ctx)
+                +handle(ores::nats::message msg) : void
             }
             class registrar {
             }
+            class series_classification_rule_handler {
+                -nats_ : ores::nats::service::client&
+                -ctx_ : ores::database::context
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +list_series_classification_rules(ores::nats::message msg) : void
+                +get_series_classification_rule(ores::nats::message msg) : void
+                +get_many_series_classification_rules(ores::nats::message msg) : void
+                +put_series_classification_rule(ores::nats::message msg) : void
+                +put_many_series_classification_rules(ores::nats::message msg) : void
+                +delete_series_classification_rule(ores::nats::message msg) : void
+                +delete_many_series_classification_rules(ores::nats::message msg) : void
+                +list_series_classification_rule_versions(ores::nats::message msg) : void
+                +get_series_classification_rule_version(ores::nats::message msg) : void
+            }
         }
         namespace repository #F2F2F2 {
+            class feed_binding_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +workspace_id : string
+                +version : int
+                +party_id : string
+                +source_name : string
+                +enabled : bool
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class feed_binding_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const feed_binding_entity& v) : domain::feed_binding
+                +map(const domain::feed_binding& v) : feed_binding_entity
+                +map(const vector<feed_binding_entity>& v) : vector<domain::feed_binding>
+                +map(const vector<domain::feed_binding>& v) : vector<feed_binding_entity>
+            }
+            class feed_binding_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::feed_binding& v) : void
+                +write(context ctx, const vector<domain::feed_binding>& v) : void
+                +write(context ctx, const domain::feed_binding& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::feed_binding>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::feed_binding>
+                +read_latest(context ctx, const string& id) : vector<domain::feed_binding>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::feed_binding>
+                +read_latest_by_source_name(context ctx, const string& source_name) : vector<domain::feed_binding>
+                +read_any_by_source_name(context ctx, const string& source_name) : vector<domain::feed_binding>
+                +read_all(context ctx, const string& id) : vector<domain::feed_binding>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::feed_binding>
+                +is_sortable(string_view field) : bool
+                +get_total_feed_binding_count(context ctx, const optional<messaging::feed_bindings_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                +read_latest_all_tenants(context ctx) : vector<domain::feed_binding>
+                -replace_claim(context ctx, const domain::feed_binding& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::feed_binding& v, const ores::utility::domain::precondition& claim) : domain::feed_binding
+            }
             class market_fixing_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +party_id : string
                 +series_id : string
                 +fixing_date : string
                 +value : string
                 +source : optional<string>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class market_fixing_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const market_fixing_entity& v) : domain::market_fixing
+                +map(const domain::market_fixing& v) : market_fixing_entity
+                +map(const vector<market_fixing_entity>& v) : vector<domain::market_fixing>
+                +map(const vector<domain::market_fixing>& v) : vector<market_fixing_entity>
             }
-            class market_fixings_repository {
+            class market_fixing_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::market_fixing& v) : void
+                +write(context ctx, const vector<domain::market_fixing>& v) : void
+                +write(context ctx, const domain::market_fixing& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::market_fixing>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +insert(context ctx, const domain::market_fixing& v) : void
+                +insert(context ctx, const vector<domain::market_fixing>& v) : void
+                +read_latest(context ctx) : vector<domain::market_fixing>
+                +read_latest(context ctx, const string& id) : vector<domain::market_fixing>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::market_fixing>
+                +read_all(context ctx, const string& id) : vector<domain::market_fixing>
+                +is_sortable(string_view field) : bool
+                +get_total_market_fixing_count(context ctx, const optional<messaging::market_fixings_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                +read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) : vector<domain::market_fixing>
+                -replace_claim(context ctx, const domain::market_fixing& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::market_fixing& v, const ores::utility::domain::precondition& claim) : domain::market_fixing
             }
             class market_observation_entity <<struct>> {
                 +schema : constexpr static const char*
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
+                +party_id : string
                 +series_id : string
                 +observation_datetime : string
-                +point_id : string
+                +oresmd_uri : string
                 +value : string
                 +source : optional<string>
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class market_observation_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const market_observation_entity& v) : domain::market_observation
+                +map(const domain::market_observation& v) : market_observation_entity
+                +map(const vector<market_observation_entity>& v) : vector<domain::market_observation>
+                +map(const vector<domain::market_observation>& v) : vector<market_observation_entity>
             }
-            class market_observations_repository {
+            class market_observation_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::market_observation& v) : void
+                +write(context ctx, const vector<domain::market_observation>& v) : void
+                +write(context ctx, const domain::market_observation& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::market_observation>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +insert(context ctx, const domain::market_observation& v) : void
+                +insert(context ctx, const vector<domain::market_observation>& v) : void
+                +read_latest(context ctx) : vector<domain::market_observation>
+                +read_latest(context ctx, const string& id) : vector<domain::market_observation>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::market_observation>
+                +read_all(context ctx, const string& id) : vector<domain::market_observation>
+                +get_total_market_observation_count_by_series_id(context ctx, const string& series_id, const optional<messaging::market_observations_filter>& filter) : uint32_t
+                +is_sortable(string_view field) : bool
+                +get_total_market_observation_count(context ctx, const optional<messaging::market_observations_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                +read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) : vector<domain::market_observation>
+                +read_as_of(context ctx, const boost::uuids::uuid& series_id, const chrono::system_clock::time_point& as_of_datetime) : vector<domain::market_observation>
+                +read_as_of_buckets(context ctx, const boost::uuids::uuid& series_id, const chrono::system_clock::time_point& latest_boundary, const chrono::seconds& bucket_size, unsigned int bucket_count) : vector<vector<domain::market_observation>>
+                -replace_claim(context ctx, const domain::market_observation& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::market_observation& v, const ores::utility::domain::precondition& claim) : domain::market_observation
+            }
+            class market_series_asset_class_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +market_series_id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +asset_class_code : string
+                +version : int
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class market_series_asset_class_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const market_series_asset_class_entity& v) : domain::market_series_asset_class
+                +map(const domain::market_series_asset_class& v) : market_series_asset_class_entity
+                +map(const vector<market_series_asset_class_entity>& v) : vector<domain::market_series_asset_class>
+                +map(const vector<domain::market_series_asset_class>& v) : vector<market_series_asset_class_entity>
+            }
+            class market_series_asset_class_repository {
+                -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +market_series_asset_class_repository(context ctx)
+                +sql() : string
+                +write(const domain::market_series_asset_class& v) : void
+                +write(const vector<domain::market_series_asset_class>& v) : void
+                +write(const domain::market_series_asset_class& v, const ores::utility::domain::precondition& claim) : void
+                +write(const vector<domain::market_series_asset_class>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest() : vector<domain::market_series_asset_class>
+                +read_latest(uint32_t offset, uint32_t limit) : vector<domain::market_series_asset_class>
+                +read_latest(const boost::uuids::uuid& market_series_id, const string& asset_class_code) : vector<domain::market_series_asset_class>
+                +get_total_asset_class_count() : uint32_t
+                +read_latest_by_series(const boost::uuids::uuid& market_series_id) : vector<domain::market_series_asset_class>
+                +read_latest_by_series(const boost::uuids::uuid& market_series_id, uint32_t offset, uint32_t limit) : vector<domain::market_series_asset_class>
+                +get_total_asset_class_count_by_series(const boost::uuids::uuid& market_series_id) : uint32_t
+                +read_latest_by_asset_class(const string& asset_class_code) : vector<domain::market_series_asset_class>
+                +get_total_asset_class_count_by_asset_class(const string& asset_class_code) : uint32_t
+                +remove(const boost::uuids::uuid& market_series_id, const string& asset_class_code) : void
+                +remove(const boost::uuids::uuid& market_series_id, const string& asset_class_code, optional<uint32_t> version) : remove_status
+                +remove(const vector<boost::uuids::uuid>& market_series_ids, const vector<string>& asset_class_codes) : void
+                +remove_by_series(const boost::uuids::uuid& market_series_id) : void
+                -replace_claim(const domain::market_series_asset_class& v) : ores::utility::domain::precondition
+                -apply_claim(const domain::market_series_asset_class& v, const ores::utility::domain::precondition& claim) : domain::market_series_asset_class
             }
             class market_series_entity <<struct>> {
                 +schema : constexpr static const char*
@@ -84,42 +376,464 @@ namespace ores #F2F2F2 {
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
                 +version : int
-                +series_type : string
-                +metric : string
-                +qualifier : string
-                +asset_class : string
+                +party_id : string
+                +oresmd_uri : string
                 +series_subclass : string
+                +derivation_kind : string
+                +derivation_config_id : string
+                +derivation_config_version : int
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
             }
             class market_series_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const market_series_entity& v) : domain::market_series
+                +map(const domain::market_series& v) : market_series_entity
+                +map(const vector<market_series_entity>& v) : vector<domain::market_series>
+                +map(const vector<domain::market_series>& v) : vector<market_series_entity>
             }
             class market_series_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::market_series& v) : void
+                +write(context ctx, const vector<domain::market_series>& v) : void
+                +write(context ctx, const domain::market_series& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::market_series>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::market_series>
+                +read_latest(context ctx, const string& id) : vector<domain::market_series>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::market_series>
+                +read_all(context ctx, const string& id) : vector<domain::market_series>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::market_series>
+                +is_sortable(string_view field) : bool
+                +get_total_market_series_count(context ctx, const optional<messaging::market_series_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                -replace_claim(context ctx, const domain::market_series& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::market_series& v, const ores::utility::domain::precondition& claim) : domain::market_series
+            }
+            class observation_lineage_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +id : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +party_id : string
+                +series_id : string
+                +observation_datetime : string
+                +oresmd_uri : string
+                +derivation_config_id : string
+                +derivation_config_version : int
+                +source_as_of : string
+                +source_series_ids : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class observation_lineage_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const observation_lineage_entity& v) : domain::observation_lineage
+                +map(const domain::observation_lineage& v) : observation_lineage_entity
+                +map(const vector<observation_lineage_entity>& v) : vector<domain::observation_lineage>
+                +map(const vector<domain::observation_lineage>& v) : vector<observation_lineage_entity>
+            }
+            class observation_lineage_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::observation_lineage& v) : void
+                +write(context ctx, const vector<domain::observation_lineage>& v) : void
+                +write(context ctx, const domain::observation_lineage& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::observation_lineage>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::observation_lineage>
+                +read_latest(context ctx, const string& id) : vector<domain::observation_lineage>
+                +read_latest(context ctx, const vector<string>& ids) : vector<domain::observation_lineage>
+                +read_all(context ctx, const string& id) : vector<domain::observation_lineage>
+                +read_at_version(context ctx, const string& id, uint32_t version) : optional<domain::observation_lineage>
+                +is_sortable(string_view field) : bool
+                +get_total_observation_lineage_count(context ctx, const optional<messaging::observation_lineages_filter>& filter, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& id) : void
+                +remove(context ctx, const string& id, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& ids) : void
+                +read_latest_by_observation(context ctx, const boost::uuids::uuid& series_id, chrono::system_clock::time_point observation_datetime, const string& oresmd_uri) : optional<domain::observation_lineage>
+                -replace_claim(context ctx, const domain::observation_lineage& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::observation_lineage& v, const ores::utility::domain::precondition& claim) : domain::observation_lineage
+            }
+            class series_classification_rule_entity <<struct>> {
+                +schema : constexpr static const char*
+                +tablename : constexpr static const char*
+                +series_type : sqlgen::PrimaryKey<string>
+                +metric : sqlgen::PrimaryKey<string>
+                +tenant_id : string
+                +version : int
+                +asset_class_source : string
+                +asset_class_code : optional<string>
+                +series_subclass_code : string
+                +description : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +valid_from : db_timestamp
+                +valid_to : db_timestamp
+            }
+            class series_classification_rule_mapper {
+                -lg() : [[nodiscard]] static auto&
+                +map(const series_classification_rule_entity& v) : domain::series_classification_rule
+                +map(const domain::series_classification_rule& v) : series_classification_rule_entity
+                +map(const vector<series_classification_rule_entity>& v) : vector<domain::series_classification_rule>
+                +map(const vector<domain::series_classification_rule>& v) : vector<series_classification_rule_entity>
+            }
+            class series_classification_rule_repository {
+                -lg() : [[nodiscard]] static auto&
+                +sql() : string
+                +write(context ctx, const domain::series_classification_rule& v) : void
+                +write(context ctx, const vector<domain::series_classification_rule>& v) : void
+                +write(context ctx, const domain::series_classification_rule& v, const ores::utility::domain::precondition& claim) : void
+                +write(context ctx, const vector<domain::series_classification_rule>& v, const vector<ores::utility::domain::precondition>& claims) : void
+                +read_latest(context ctx) : vector<domain::series_classification_rule>
+                +read_latest(context ctx, const string& series_type, const string& metric) : vector<domain::series_classification_rule>
+                +read_latest(context ctx, const vector<string>& series_types, const vector<string>& metrics) : vector<domain::series_classification_rule>
+                +read_all(context ctx, const string& series_type, const string& metric) : vector<domain::series_classification_rule>
+                +read_at_version(context ctx, const string& series_type, const string& metric, uint32_t version) : optional<domain::series_classification_rule>
+                +is_sortable(string_view field) : bool
+                +get_total_rule_count(context ctx, const optional<string>& as_of) : uint32_t
+                +remove(context ctx, const string& series_type, const string& metric) : void
+                +remove(context ctx, const string& series_type, const string& metric, optional<uint32_t> version) : remove_status
+                +remove(context ctx, const vector<string>& series_types, const vector<string>& metrics) : void
+                -replace_claim(context ctx, const domain::series_classification_rule& v) : ores::utility::domain::precondition
+                -apply_claim(context ctx, const domain::series_classification_rule& v, const ores::utility::domain::precondition& claim) : domain::series_classification_rule
             }
         }
         namespace service #F2F2F2 {
+            class feed_binding_service {
+                -ctx_ : context
+                -repo_ : repository::feed_binding_repository
+                -lg() : [[nodiscard]] static auto&
+                +feed_binding_service(context ctx)
+                +list_feed_bindings(const messaging::list_feed_bindings_request& request) : messaging::list_feed_bindings_response
+                +get_feed_binding(const messaging::get_feed_binding_request& request) : messaging::get_feed_binding_response
+                +get_many_feed_bindings(const messaging::get_many_feed_bindings_request& request) : messaging::get_many_feed_bindings_response
+                +put_feed_binding(const messaging::put_feed_binding_request& request) : messaging::put_feed_binding_response
+                +put_many_feed_bindings(const messaging::put_many_feed_bindings_request& request) : messaging::put_many_feed_bindings_response
+                +delete_feed_binding(const messaging::delete_feed_binding_request& request) : messaging::delete_feed_binding_response
+                +delete_many_feed_bindings(const messaging::delete_many_feed_bindings_request& request) : messaging::delete_many_feed_bindings_response
+                +list_feed_binding_versions(const messaging::list_feed_binding_versions_request& request) : messaging::list_feed_binding_versions_response
+                +get_feed_binding_version(const messaging::get_feed_binding_version_request& request) : messaging::get_feed_binding_version_response
+                +list_feed_bindings(uint32_t offset, uint32_t limit) : vector<domain::feed_binding>
+                +count_feed_bindings() : uint32_t
+                +get_feed_binding_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::feed_binding>
+                +get_feed_binding(const boost::uuids::uuid& id) : optional<domain::feed_binding>
+                +get_feed_binding_by_source_name(const string& source_name) : optional<domain::feed_binding>
+                +get_feed_bindings(const vector<string>& ids) : vector<domain::feed_binding>
+                +save_feed_binding(const domain::feed_binding& feed_binding) : void
+                +save_feed_bindings(const vector<domain::feed_binding>& feed_bindings) : void
+                +delete_feed_binding(const boost::uuids::uuid& id) : void
+                +delete_feed_bindings(const vector<string>& ids) : void
+                +get_feed_binding_history(const string& key) : vector<domain::feed_binding>
+                -prepare_change(const messaging::feed_binding_change& change, const ores::utility::domain::change_intent& intent, domain::feed_binding& out) : ores::utility::domain::result
+            }
             class import_service {
                 -ctx_ : context
+                -auth_nats_ : ores::nats::service::nats_client&
+                -known_pairs_ : known_pairs_provider
+                -lg() : [[nodiscard]] static auto&
+                +import(const messaging::import_market_data_request& req) : messaging::import_market_data_response
             }
             class market_fixing_service {
                 -ctx_ : context
-                -repo_ : repository::market_fixings_repository
+                -repo_ : repository::market_fixing_repository
+                -lg() : [[nodiscard]] static auto&
+                +market_fixing_service(context ctx)
+                +list_market_fixings(const messaging::list_market_fixings_request& request) : messaging::list_market_fixings_response
+                +get_market_fixing(const messaging::get_market_fixing_request& request) : messaging::get_market_fixing_response
+                +get_many_market_fixings(const messaging::get_many_market_fixings_request& request) : messaging::get_many_market_fixings_response
+                +put_market_fixing(const messaging::put_market_fixing_request& request) : messaging::put_market_fixing_response
+                +put_many_market_fixings(const messaging::put_many_market_fixings_request& request) : messaging::put_many_market_fixings_response
+                +delete_market_fixing(const messaging::delete_market_fixing_request& request) : messaging::delete_market_fixing_response
+                +delete_many_market_fixings(const messaging::delete_many_market_fixings_request& request) : messaging::delete_many_market_fixings_response
+                +list_market_fixings(uint32_t offset, uint32_t limit) : vector<domain::market_fixing>
+                +count_market_fixings() : uint32_t
+                +get_market_fixing(const boost::uuids::uuid& id) : optional<domain::market_fixing>
+                +get_market_fixings(const vector<string>& ids) : vector<domain::market_fixing>
+                +save_market_fixing(const domain::market_fixing& market_fixing) : void
+                +save_market_fixings(const vector<domain::market_fixing>& market_fixings) : void
+                +delete_market_fixing(const boost::uuids::uuid& id) : void
+                +delete_market_fixings(const vector<string>& ids) : void
+                +get_market_fixing_history(const string& id) : vector<domain::market_fixing>
+                -prepare_change(const messaging::market_fixing_change& change, const ores::utility::domain::change_intent& intent, domain::market_fixing& out) : ores::utility::domain::result
             }
             class market_observation_service {
                 -ctx_ : context
-                -repo_ : repository::market_observations_repository
+                -repo_ : repository::market_observation_repository
+                -lg() : [[nodiscard]] static auto&
+                +market_observation_service(context ctx)
+                +list_market_observations(const messaging::list_market_observations_request& request) : messaging::list_market_observations_response
+                +get_market_observation(const messaging::get_market_observation_request& request) : messaging::get_market_observation_response
+                +get_many_market_observations(const messaging::get_many_market_observations_request& request) : messaging::get_many_market_observations_response
+                +put_market_observation(const messaging::put_market_observation_request& request) : messaging::put_market_observation_response
+                +put_many_market_observations(const messaging::put_many_market_observations_request& request) : messaging::put_many_market_observations_response
+                +delete_market_observation(const messaging::delete_market_observation_request& request) : messaging::delete_market_observation_response
+                +delete_many_market_observations(const messaging::delete_many_market_observations_request& request) : messaging::delete_many_market_observations_response
+                +list_by_series_id_market_observations(const messaging::list_by_series_id_market_observations_request& request) : messaging::list_by_series_id_market_observations_response
+                +list_market_observations(uint32_t offset, uint32_t limit) : vector<domain::market_observation>
+                +count_market_observations() : uint32_t
+                +list_market_observations_by_series_id(const string& series_id, uint32_t offset, uint32_t limit) : vector<domain::market_observation>
+                +count_market_observations_by_series_id(const string& series_id) : uint32_t
+                +get_market_observation(const boost::uuids::uuid& id) : optional<domain::market_observation>
+                +get_market_observations(const vector<string>& ids) : vector<domain::market_observation>
+                +save_market_observation(const domain::market_observation& market_observation) : void
+                +save_market_observations(const vector<domain::market_observation>& market_observations) : void
+                +delete_market_observation(const boost::uuids::uuid& id) : void
+                +delete_market_observations(const vector<string>& ids) : void
+                +get_market_observation_history(const string& id) : vector<domain::market_observation>
+                -prepare_change(const messaging::market_observation_change& change, const ores::utility::domain::change_intent& intent, domain::market_observation& out) : ores::utility::domain::result
+            }
+            class market_series_asset_class_service {
+                -ctx_ : context
+                -repo_ : repository::market_series_asset_class_repository
+                -lg() : [[nodiscard]] static auto&
+                +market_series_asset_class_service(context ctx)
+                +list_market_series_asset_classes(const messaging::list_market_series_asset_classes_request& request) : messaging::list_market_series_asset_classes_response
+                +get_market_series_asset_class(const messaging::get_market_series_asset_class_request& request) : messaging::get_market_series_asset_class_response
+                +get_many_market_series_asset_classes(const messaging::get_many_market_series_asset_classes_request& request) : messaging::get_many_market_series_asset_classes_response
+                +put_market_series_asset_class(const messaging::put_market_series_asset_class_request& request) : messaging::put_market_series_asset_class_response
+                +put_many_market_series_asset_classes(const messaging::put_many_market_series_asset_classes_request& request) : messaging::put_many_market_series_asset_classes_response
+                +delete_market_series_asset_class(const messaging::delete_market_series_asset_class_request& request) : messaging::delete_market_series_asset_class_response
+                +delete_many_market_series_asset_classes(const messaging::delete_many_market_series_asset_classes_request& request) : messaging::delete_many_market_series_asset_classes_response
+                +list_by_market_series_id_market_series_asset_classes(const messaging::list_by_market_series_id_market_series_asset_classes_request& request) : messaging::list_by_market_series_id_market_series_asset_classes_response
+                -prepare_change(const messaging::market_series_asset_class_change& change, const ores::utility::domain::change_intent& intent, domain::market_series_asset_class& out) : ores::utility::domain::result
             }
             class market_series_service {
                 -ctx_ : context
                 -repo_ : repository::market_series_repository
+                -lg() : [[nodiscard]] static auto&
+                +market_series_service(context ctx)
+                +list_market_series(const messaging::list_market_series_request& request) : messaging::list_market_series_response
+                +get_market_series(const messaging::get_market_series_request& request) : messaging::get_market_series_response
+                +get_many_market_series(const messaging::get_many_market_series_request& request) : messaging::get_many_market_series_response
+                +put_market_series(const messaging::put_market_series_request& request) : messaging::put_market_series_response
+                +put_many_market_series(const messaging::put_many_market_series_request& request) : messaging::put_many_market_series_response
+                +delete_market_series(const messaging::delete_market_series_request& request) : messaging::delete_market_series_response
+                +delete_many_market_series(const messaging::delete_many_market_series_request& request) : messaging::delete_many_market_series_response
+                +list_market_series_versions(const messaging::list_market_series_versions_request& request) : messaging::list_market_series_versions_response
+                +get_market_series_version(const messaging::get_market_series_version_request& request) : messaging::get_market_series_version_response
+                +list_market_series(uint32_t offset, uint32_t limit) : vector<domain::market_series>
+                +count_market_series() : uint32_t
+                +get_market_series_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::market_series>
+                +get_market_series(const boost::uuids::uuid& id) : optional<domain::market_series>
+                +get_market_series(const vector<string>& ids) : vector<domain::market_series>
+                +save_market_series(const domain::market_series& market_series) : void
+                +save_market_series(const vector<domain::market_series>& market_series) : void
+                +delete_market_series(const boost::uuids::uuid& id) : void
+                +delete_market_series(const vector<string>& ids) : void
+                +get_market_series_history(const string& id) : vector<domain::market_series>
+                -prepare_change(const messaging::market_series_change& change, const ores::utility::domain::change_intent& intent, domain::market_series& out) : ores::utility::domain::result
+            }
+            class observation_lineage_service {
+                -ctx_ : context
+                -repo_ : repository::observation_lineage_repository
+                -lg() : [[nodiscard]] static auto&
+                +observation_lineage_service(context ctx)
+                +list_observation_lineages(const messaging::list_observation_lineages_request& request) : messaging::list_observation_lineages_response
+                +get_observation_lineage(const messaging::get_observation_lineage_request& request) : messaging::get_observation_lineage_response
+                +get_many_observation_lineages(const messaging::get_many_observation_lineages_request& request) : messaging::get_many_observation_lineages_response
+                +put_observation_lineage(const messaging::put_observation_lineage_request& request) : messaging::put_observation_lineage_response
+                +put_many_observation_lineages(const messaging::put_many_observation_lineages_request& request) : messaging::put_many_observation_lineages_response
+                +delete_observation_lineage(const messaging::delete_observation_lineage_request& request) : messaging::delete_observation_lineage_response
+                +delete_many_observation_lineages(const messaging::delete_many_observation_lineages_request& request) : messaging::delete_many_observation_lineages_response
+                +list_observation_lineage_versions(const messaging::list_observation_lineage_versions_request& request) : messaging::list_observation_lineage_versions_response
+                +get_observation_lineage_version(const messaging::get_observation_lineage_version_request& request) : messaging::get_observation_lineage_version_response
+                +list_observation_lineages(uint32_t offset, uint32_t limit) : vector<domain::observation_lineage>
+                +count_observation_lineages() : uint32_t
+                +get_observation_lineage_at_version(const boost::uuids::uuid& id, uint32_t version) : optional<domain::observation_lineage>
+                +get_observation_lineage(const boost::uuids::uuid& id) : optional<domain::observation_lineage>
+                +get_observation_lineages(const vector<string>& ids) : vector<domain::observation_lineage>
+                +save_observation_lineage(const domain::observation_lineage& observation_lineage) : void
+                +save_observation_lineages(const vector<domain::observation_lineage>& observation_lineages) : void
+                +delete_observation_lineage(const boost::uuids::uuid& id) : void
+                +delete_observation_lineages(const vector<string>& ids) : void
+                +get_observation_lineage_history(const string& id) : vector<domain::observation_lineage>
+                -prepare_change(const messaging::observation_lineage_change& change, const ores::utility::domain::change_intent& intent, domain::observation_lineage& out) : ores::utility::domain::result
+            }
+            class ore_export_result <<struct>> {
+                +market_data : string
+                +fixings : string
+                +series_count : int
+                +observation_count : int
+                +fixing_count : int
+            }
+            class ore_export_service {
+                -ctx_ : context
+                -lg() : [[nodiscard]] static auto&
+                +ore_export_service(context ctx)
+                +write_all() : [[nodiscard]] ore_export_result
+            }
+            class series_classification_rule_service {
+                -ctx_ : context
+                -repo_ : repository::series_classification_rule_repository
+                -lg() : [[nodiscard]] static auto&
+                +series_classification_rule_service(context ctx)
+                +list_series_classification_rules(const messaging::list_series_classification_rules_request& request) : messaging::list_series_classification_rules_response
+                +get_series_classification_rule(const messaging::get_series_classification_rule_request& request) : messaging::get_series_classification_rule_response
+                +get_many_series_classification_rules(const messaging::get_many_series_classification_rules_request& request) : messaging::get_many_series_classification_rules_response
+                +put_series_classification_rule(const messaging::put_series_classification_rule_request& request) : messaging::put_series_classification_rule_response
+                +put_many_series_classification_rules(const messaging::put_many_series_classification_rules_request& request) : messaging::put_many_series_classification_rules_response
+                +delete_series_classification_rule(const messaging::delete_series_classification_rule_request& request) : messaging::delete_series_classification_rule_response
+                +delete_many_series_classification_rules(const messaging::delete_many_series_classification_rules_request& request) : messaging::delete_many_series_classification_rules_response
+                +list_series_classification_rule_versions(const messaging::list_series_classification_rule_versions_request& request) : messaging::list_series_classification_rule_versions_response
+                +get_series_classification_rule_version(const messaging::get_series_classification_rule_version_request& request) : messaging::get_series_classification_rule_version_response
+                +list_rules(uint32_t offset, uint32_t limit) : vector<domain::series_classification_rule>
+                +count_rules() : uint32_t
+                +get_rule_at_version(const string& series_type, const string& metric, uint32_t version) : optional<domain::series_classification_rule>
+                +get_rule(const string& series_type, const string& metric) : optional<domain::series_classification_rule>
+                +get_rules(const vector<string>& series_types, const vector<string>& metrics) : vector<domain::series_classification_rule>
+                +save_rule(const domain::series_classification_rule& rule) : void
+                +save_rules(const vector<domain::series_classification_rule>& rules) : void
+                +delete_rule(const string& series_type, const string& metric) : void
+                +delete_rules(const vector<string>& series_types, const vector<string>& metrics) : void
+                +get_rule_history(const string& series_type, const string& metric) : vector<domain::series_classification_rule>
+                -prepare_change(const messaging::series_classification_rule_change& change, const ores::utility::domain::change_intent& intent, domain::series_classification_rule& out) : ores::utility::domain::result
             }
         }
     }
 }
 
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Relationships the automated pass cannot see.
+'
+' The generator emits a box per class with its members and no edges, so every
+' line below is read from the code rather than derived from it. A data member
+' is ownership (*--); a type that appears only in a signature is a dependency
+' (..>). Types from another component are left out, per the class-diagram
+' conventions.
+
+ores::marketdata::core::series_classifier ..> ores::marketdata::core::series_classification
+ores::marketdata::repository::feed_binding_mapper ..> ores::marketdata::repository::feed_binding_entity
+ores::marketdata::repository::market_fixing_mapper ..> ores::marketdata::repository::market_fixing_entity
+ores::marketdata::repository::market_observation_mapper ..> ores::marketdata::repository::market_observation_entity
+ores::marketdata::repository::market_series_asset_class_mapper ..> ores::marketdata::repository::market_series_asset_class_entity
+ores::marketdata::repository::market_series_mapper ..> ores::marketdata::repository::market_series_entity
+ores::marketdata::repository::observation_lineage_mapper ..> ores::marketdata::repository::observation_lineage_entity
+ores::marketdata::repository::series_classification_rule_mapper ..> ores::marketdata::repository::series_classification_rule_entity
+ores::marketdata::service::feed_binding_service *-- ores::marketdata::repository::feed_binding_repository
+ores::marketdata::service::market_fixing_service *-- ores::marketdata::repository::market_fixing_repository
+ores::marketdata::service::market_observation_service *-- ores::marketdata::repository::market_observation_repository
+ores::marketdata::service::market_series_asset_class_service *-- ores::marketdata::repository::market_series_asset_class_repository
+ores::marketdata::service::market_series_service *-- ores::marketdata::repository::market_series_repository
+ores::marketdata::service::observation_lineage_service *-- ores::marketdata::repository::observation_lineage_repository
+ores::marketdata::service::ore_export_service ..> ores::marketdata::service::ore_export_result
+ores::marketdata::service::series_classification_rule_service *-- ores::marketdata::repository::series_classification_rule_repository
+
+' Free functions and nested types.
+'
+' The generator reads types and the members and methods they declare at
+' namespace scope. A free function and a type declared inside another type
+' leave no trace in the boxes above. A free function belongs to a namespace
+' rather than a class, so it is drawn as a note; a nested type is noted
+' against the box that declares it.
+
+note as OresMarketdataCoreFreeFunctions
+    Free functions in ores::marketdata::core:
+    classification_key_of(d : const datum::market_datum&) : classification_key
+    make_pillar_quote_key(ccy, start_tenor_code : const string&, start_date, end_date : chrono::year_month_day) : pillar_quote_key
+    pillar_series_uri(key : const pillar_quote_key&) : string
+    pillar_datum_uri(key : const pillar_quote_key&) : string
+    classification_key_of reads the series type, metric and qualifier that
+    the classification rules are keyed by out of an ORE key. make_pillar_quote_key
+    builds one curve pillar's quote key from the currency and the pillar's own
+    dates, and the two URI functions project it: pillar_series_uri drops the
+    point for the series identity, pillar_datum_uri keeps it for the datum.
+end note
+
+note as OresMarketdataRepositoryHelpers
+    Free functions in ores::marketdata::repository:
+    as_of_observation(row : const as_of_row&, first : size_t, read : string_view) : market_observation_entity
+    as_of_bucket_ordinal(row : const as_of_row&, bucket_count : size_t) : size_t
+    operator<<(s : ostream&, v : const T&) : ostream&
+    as_of_observation reads the ten observation columns of an as-of read row
+    from column first on and throws std::runtime_error when the row is short.
+    as_of_bucket_ordinal reads the bucket ordinal the row's first column carries
+    and throws unless it is all digits and below bucket_count. The operator is
+    emitted for all seven entities: feed_binding, market_fixing,
+    market_observation, market_series, market_series_asset_class,
+    observation_lineage and series_classification_rule. as_of_row itself is a
+    namespace-scope alias, using as_of_row = vector<optional<string>>, and has no
+    box either.
+end note
+
+note as OresMarketdataPresentationFieldMappers
+    Free functions in ores::marketdata::presentation:
+    render_feed_binding_fields(v : const domain::feed_binding&) : vector<ores::diff::domain::field_value>
+    render_market_fixing_fields(v : const domain::market_fixing&) : vector<ores::diff::domain::field_value>
+    render_market_observation_fields(v : const domain::market_observation&) : vector<ores::diff::domain::field_value>
+    render_market_series_fields(v : const domain::market_series&) : vector<ores::diff::domain::field_value>
+    render_observation_lineage_fields(v : const domain::observation_lineage&) : vector<ores::diff::domain::field_value>
+    render_series_classification_rule_fields(v : const domain::series_classification_rule&) : vector<ores::diff::domain::field_value>
+    Each renders its entity to an ordered field list for history-diff display,
+    one line per field in mapper order, with no runtime reflection. The namespace
+    holds no type, so the automated pass draws no part of it.
+end note
+
+note as OresMarketdataMessagingRegistrars
+    Free functions in ores::marketdata::messaging. The one-table handler
+    registrars (nats : client&, ctx : context, verifier : optional<jwt_authenticator>)
+    return vector<subscription>:
+    register_feed_binding_handlers, register_market_fixing_handlers,
+    register_market_observation_handlers, register_market_series_handlers,
+    register_market_series_asset_class_handlers, register_observation_lineage_handlers,
+    register_series_classification_rule_handlers.
+    The history providers (registry : dispatch_registry&) return void:
+    register_feed_binding_history_provider, register_market_series_history_provider,
+    register_observation_lineage_history_provider,
+    register_series_classification_rule_history_provider.
+    Each handler registrar subscribes that table's handlers and returns the
+    subscriptions; each history provider registers a history-diff provider for
+    its entity with ores.history.
+end note
+
+note as OresMarketdataHandlerHelpers
+    File-local free functions, each in its own header's unnamed namespace, each
+    returning its handler's own logger singleton:
+    curve_snapshot_handler_lg(), feed_binding_handler_lg(), import_handler_lg(),
+    market_fixing_handler_lg(), market_observation_handler_lg(),
+    market_series_handler_lg(), market_series_asset_class_handler_lg(),
+    observation_lineage_handler_lg(), ore_export_handler_lg(),
+    series_classification_rule_handler_lg().
+    curve_snapshot_handler.hpp also holds max_bucket_count : uint32_t = 200 in
+    the same unnamed namespace, the server-side ceiling on a snapshot's buckets.
+end note
+
+class ores::marketdata::repository::feed_binding_repository {
+}
+note right of "ores::marketdata::repository::feed_binding_repository"
+Declares a nested enum class remove_status in its own body: removed,
+conflicting, missing, unsupported. The pass draws namespace-scope types only,
+so remove_status has no box. remove(id, version) returns it: removed when the
+row was closed, conflicting when it moved on, missing when no current row
+existed, unsupported when the store cannot answer the stated version.
+market_fixing_repository, market_observation_repository,
+market_series_asset_class_repository, market_series_repository,
+observation_lineage_repository and series_classification_rule_repository each
+declare the same enum in their own bodies.
+end note
+
+class ores::marketdata::service::feed_binding_service {
+}
+note right of "ores::marketdata::service::feed_binding_service"
+Declares a public nested alias, using context = ores::database::context, in its
+own body; the pass skips using lines, so it has no box. The other eight services
+here declare it too, and so does every repository in the part. import_service
+also declares known_pairs_provider, a std::function returning the currency pairs
+its reversed-key correction checks against.
+end note
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.marketdata.core.puml"

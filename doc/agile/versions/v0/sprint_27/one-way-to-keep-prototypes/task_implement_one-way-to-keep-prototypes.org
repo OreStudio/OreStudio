@@ -8,7 +8,7 @@
 #+filetags: :one-way-to-keep-prototypes:sprint_27:v0:
 #+owner: marco
 #+branch: feature/one-way-to-keep-prototypes
-#+pr:
+#+pr: 2696
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2696][#2696]] | [doc] Keep every prototype as a static page under doc/prototypes |
 
 * Review
 

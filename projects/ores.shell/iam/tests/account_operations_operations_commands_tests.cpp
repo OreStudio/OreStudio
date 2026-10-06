@@ -987,34 +987,10 @@ TEST_CASE("account_operations_operations_process_attach_account_pictures_require
 
     command_feedback::reset();
     account_operations_operations_commands::process_attach_account_pictures(
-        out,
-        session,
-        std::vector<std::string>{
-            "sample",
-        });
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE(
-    "account_operations_operations_process_attach_account_pictures_reports_the_expected_count",
-    tags) {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    account_operations_operations_commands::process_attach_account_pictures(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -1031,11 +1007,7 @@ TEST_CASE("account_operations_operations_process_attach_account_pictures_reaches
 
     command_feedback::reset();
     account_operations_operations_commands::process_attach_account_pictures(
-        out,
-        session,
-        std::vector<std::string>{
-            "sample",
-        });
+        out, session, std::vector<std::string>{});
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

@@ -48,6 +48,7 @@ std::vector<ores::diff::domain::field_value> render_account_fields(const domain:
                                                     std::string{}});
     fields.push_back({.name = "Image ID",
                       .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
+    fields.push_back({.name = "Picture Code", .value = v.picture_code});
     fields.push_back({.name = "Job Title", .value = v.job_title});
     fields.push_back({.name = "Reports To Account ID",
                       .value = v.reports_to_account_id ?

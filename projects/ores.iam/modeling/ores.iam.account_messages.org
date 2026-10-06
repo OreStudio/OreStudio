@@ -791,27 +791,15 @@ from here is what the registrar subscribes with.
 
 #+begin_src cpp :name comment
 /**
- * @brief Reconciles the accounts a scope names with their pictures.
+ * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
- * The scope names the accounts dataset whose rows each carry the picture code
- * an account wants. Every account the dataset names that carries no picture
- * gets one: the image is ensured in the tenant and the account is updated.
- * An account that already carries a picture is left alone, so a repeated call
- * writes nothing.
+ * Every account that names a picture code and carries no picture gets one:
+ * the image is ensured in the tenant and the account is updated. An account
+ * that already carries a picture is left alone, so a repeated call writes
+ * nothing.
  *
  * A trigger rather than a report: the provisioning step sends it, and an
  * operator may re-run it from a client.
- */
-#+end_src
-
-*** dataset_code
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The accounts dataset whose photo_key column names each picture.
  */
 #+end_src
 

@@ -187,7 +187,7 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_attach_account_pictures(std::ref(out), std::ref(session), std::move(args));
         },
-        "attach-account-pictures <dataset_code>");
+        "attach-account-pictures");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -974,7 +974,7 @@ void account_operations_operations_commands::process_attach_account_pictures(
         return;
     }
 
-    constexpr std::size_t positional_count = 1;
+    constexpr std::size_t positional_count = 0;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -982,9 +982,7 @@ void account_operations_operations_commands::process_attach_account_pictures(
     }
 
     request_type req;
-    std::size_t next = 0;
     try {
-        req.dataset_code = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

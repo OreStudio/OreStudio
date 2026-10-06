@@ -192,6 +192,14 @@ struct account final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
+     * @brief The image code this account wants as its profile picture, such as
+     * acme_staff_photo:female_age20_european_02. The reconcile attaches the image the code names,
+     * so the wanted picture is data about the account rather than something a handler reads out of
+     * a staging table. Unset means the account wants no picture.
+     */
+    std::string picture_code;
+
+    /**
      * @brief Job title / functional role of the person holding this account (for example "Head of
      * Desk", "Senior Trader"). Distinct from the RBAC role assignments, which grant coarse
      * permission sets rather than describe what the person actually does.

@@ -477,13 +477,12 @@ struct get_my_account_contact_information_response {
 };
 
 /**
- * @brief Reconciles the accounts a scope names with their pictures.
+ * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
- * The scope names the accounts dataset whose rows each carry the picture code
- * an account wants. Every account the dataset names that carries no picture
- * gets one: the image is ensured in the tenant and the account is updated.
- * An account that already carries a picture is left alone, so a repeated call
- * writes nothing.
+ * Every account that names a picture code and carries no picture gets one:
+ * the image is ensured in the tenant and the account is updated. An account
+ * that already carries a picture is left alone, so a repeated call writes
+ * nothing.
  *
  * A trigger rather than a report: the provisioning step sends it, and an
  * operator may re-run it from a client.
@@ -498,10 +497,6 @@ struct attach_account_pictures_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /**
-     * @brief The accounts dataset whose photo_key column names each picture.
-     */
-    std::string dataset_code;
 };
 
 struct attach_account_pictures_response {

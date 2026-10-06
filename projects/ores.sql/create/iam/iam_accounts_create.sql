@@ -100,6 +100,7 @@ create table if not exists "ores_iam_accounts_tbl" (
     "email" text not null,
     "default_party_id" uuid null,
     "image_id" uuid null,
+    "picture_code" text null,
     "job_title" text null,
     "reports_to_account_id" uuid null,
     "modified_by" text not null,

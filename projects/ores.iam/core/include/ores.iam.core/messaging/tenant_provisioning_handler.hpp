@@ -667,7 +667,7 @@ public:
                                            caller->default_party_id.value_or(boost::uuids::uuid{}),
                                            caller->username);
             std::vector<std::string> images;
-            attach_staff_photos(client, caller_ctx, tenant_id, req->dataset_code, images);
+            attach_staff_photos(client, caller_ctx, tenant_id, images);
             response.image_ids = std::move(images);
             response.result.outcome = ores::utility::domain::outcome::ok;
             reply(nats_, msg, response);
@@ -1028,7 +1028,7 @@ private:
 
             auto client =
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-            attach_staff_photos(client, tenant_ctx, command.tenant_id, assignment.dataset, images);
+            attach_staff_photos(client, tenant_ctx, command.tenant_id, images);
 
             // The party is read here, after any earlier step that wrote it, so
             // the version the logo's write states is the version the store
@@ -1579,64 +1579,33 @@ private:
                                          const std::string& dataset_code) {
         try {
             std::vector<std::string> images;
-            attach_staff_photos(client, ctx, tenant_id, dataset_code, images);
+            attach_staff_photos(client, ctx, tenant_id, images);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
                 << "attach_staff_photos did not complete for " << dataset_code << ": " << e.what();
         }
     }
 
-    // Attaches a profile picture to every staff account the named dataset
-    // carries a photo_key for. Reads (username, photo_key) directly from the
-    // DQ artefact table (not modeled in the account NATS API, same reason
-    // grant_cross_entity_access's account_ids_for does the same for
-    // business_unit_code/role); each picture goes on through
-    // attach_account_photo.
+    // Attaches a profile picture to every account that names one it does not
+    // have. The wanted code rides the account, so the reconcile reads it from
+    // the account rather than from a DQ staging table, and the scope is simply
+    // "the accounts this tenant holds". Each picture goes on through
+    // attach_account_photo, which leaves an account that already has one alone.
     void attach_staff_photos(internal_request_client& client,
-                             ores::database::context& ctx,
-                             const std::string& tenant_id,
-                             const std::string& dataset_code,
+                             [[maybe_unused]] ores::database::context& ctx,
+                             [[maybe_unused]] const std::string& tenant_id,
                              std::vector<std::string>& images) {
-        auto dataset = execute_parameterized_string_query(
-            ctx,
-            "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
-            "AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {dataset_code},
-            tenant_provisioning_handler_lg(),
-            "attach_staff_photos");
-        if (dataset.empty())
-            throw std::runtime_error("The dataset '" + dataset_code +
-                                     "' does not exist, so its staff photos cannot be attached.");
-
-        auto rows = execute_parameterized_multi_column_query(
-            ctx,
-            "SELECT username, photo_key FROM ores_dq_accounts_artefact_tbl "
-            "WHERE dataset_id = $1::uuid AND photo_key IS NOT NULL",
-            {dataset.front()},
-            tenant_provisioning_handler_lg(),
-            "attach_staff_photos");
-        if (rows.empty())
-            return;
-
-        std::unordered_map<std::string, std::string> photo_key_by_username;
-        for (const auto& row : rows) {
-            if (row.size() < 2 || !row[0] || !row[1])
-                continue;
-            photo_key_by_username[*row[0]] = *row[1];
-        }
-
         iam::messaging::list_accounts_request accounts_req;
         accounts_req.limit = 10'000;
         auto accounts_resp = client.request(accounts_req);
         for (const auto& a : accounts_resp.accounts) {
-            const auto it = photo_key_by_username.find(a.username);
-            if (it == photo_key_by_username.end())
+            if (a.picture_code.empty())
                 continue;
             attach_account_photo(client,
                                  ctx,
                                  tenant_id,
                                  a,
-                                 it->second,
+                                 a.picture_code,
                                  "Attached staff photo during provisioning",
                                  images);
         }

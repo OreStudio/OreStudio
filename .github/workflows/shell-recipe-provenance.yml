@@ -1,0 +1,58 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Shell recipe provenance
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/ores.shell/scripts/library/**"
+      - "doc/recipes/shell/**"
+      - "projects/ores.codegen/scripts/check_shell_recipe_sources.py"
+      - "projects/ores.codegen/tests/test_check_shell_recipe_sources.py"
+      - ".github/workflows/shell-recipe-provenance.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # A recipe under scripts/library is the tangle of a document under
+  # doc/recipes/shell, and its header names that document. Delete or rename the
+  # document and leave the recipe, and the recipe survives as an orphan.
+  # Nothing regenerates it, so it keeps the verbs and the arguments of the day
+  # it was written, and replaying it against the live fleet fails on a command
+  # or a signature that has since moved on. This job fails when a recipe has no
+  # document behind it.
+  recipe-provenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check every shell recipe names a document that exists
+        run: |
+          python3 projects/ores.codegen/scripts/check_shell_recipe_sources.py
+      - name: Install test dependencies
+        run: |
+          pip install --quiet pytest
+      - name: Test the check
+        run: |
+          python3 -m pytest projects/ores.codegen/tests/test_check_shell_recipe_sources.py -q

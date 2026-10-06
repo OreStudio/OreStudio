@@ -44,7 +44,7 @@ inline auto& trade_activity_handler_lg() {
         ores::logging::make_logger("ores.trading.messaging.trade_activity_handler");
     return instance;
 }
-} // namespace
+}
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
@@ -81,6 +81,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_activities:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<list_trade_activities_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -123,6 +127,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_activities:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_trade_activity_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -165,6 +173,10 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::trade_activities:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         auto req = decode<get_many_trade_activities_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(trade_activity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -196,6 +208,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::trading::messaging
+}
 
 #endif

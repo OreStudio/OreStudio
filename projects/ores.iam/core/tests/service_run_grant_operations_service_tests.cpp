@@ -73,8 +73,8 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     roles.write(h.context(), r);
 
     auto existing = permissions_repo.read_latest_by_code(h.context(), code);
-    auto p = existing.empty() ? ores::iam::generators::generate_synthetic_permission(gen)
-                              : existing.front();
+    auto p = existing.empty() ? ores::iam::generators::generate_synthetic_permission(gen) :
+                                existing.front();
     if (existing.empty()) {
         p.code = code;
         permissions_repo.write(h.context(), p);
@@ -91,9 +91,13 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     return r;
 }
 
-context person(database_helper& h, const account& a, const boost::uuids::uuid& party,
+context person(database_helper& h,
+               const account& a,
+               const boost::uuids::uuid& party,
                std::vector<std::string> held) {
-    return h.context().with_party(h.tenant_id(), party, {party}, a.username).with_roles(std::move(held));
+    return h.context()
+        .with_party(h.tenant_id(), party, {party}, a.username)
+        .with_roles(std::move(held));
 }
 
 create_run_grant_request request_for(const role& r, const std::string& resource) {
@@ -105,7 +109,8 @@ create_run_grant_request request_for(const role& r, const std::string& resource)
 }
 
 std::string resource_name() {
-    return "reporting.report_definition/" + boost::uuids::to_string(boost::uuids::random_generator()());
+    return "reporting.report_definition/" +
+           boost::uuids::to_string(boost::uuids::random_generator()());
 }
 
 boost::uuids::uuid id_of(const std::string& s) {
@@ -145,7 +150,8 @@ TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full", ta
     const auto r = write_role_bundling(h, gen, granted_code);
     const auto ctx = person(h, a, boost::uuids::random_generator()(), {"iam::accounts:update"});
 
-    const auto resp = run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
+    const auto resp =
+        run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
     CHECK_FALSE(resp.success);
     CHECK(resp.grant_id.empty());
     CHECK_THAT(resp.message, ContainsSubstring(granted_code));
@@ -158,7 +164,8 @@ TEST_CASE("create_run_grant_refuses_a_session_that_acts_for_no_party", tags) {
     const auto r = write_role_bundling(h, gen, granted_code);
     const auto ctx = h.context().with_tenant(h.tenant_id(), a.username).with_roles({granted_code});
 
-    const auto resp = run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
+    const auto resp =
+        run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
     CHECK_FALSE(resp.success);
     CHECK_THAT(resp.message, ContainsSubstring("party"));
 }
@@ -171,7 +178,8 @@ TEST_CASE("create_run_grant_refuses_a_context_without_the_persons_permissions", 
     const auto party = boost::uuids::random_generator()();
     const auto ctx = h.context().with_party(h.tenant_id(), party, {party}, a.username);
 
-    const auto resp = run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
+    const auto resp =
+        run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
     CHECK_FALSE(resp.success);
     CHECK_THAT(resp.message, ContainsSubstring("permissions"));
 }
@@ -254,8 +262,8 @@ TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", tags) {
     revoke_run_grant_request req;
     req.grant_id = created.grant_id;
 
-    const auto refused = run_grant_operations_service(person(h, other, party, {granted_code}))
-                             .revoke_run_grant(req);
+    const auto refused =
+        run_grant_operations_service(person(h, other, party, {granted_code})).revoke_run_grant(req);
     CHECK_FALSE(refused.success);
 
     const auto allowed =
@@ -325,10 +333,10 @@ TEST_CASE("revoke_run_grant_by_an_administrator_of_another_party_keeps_the_grant
                              .create_run_grant(request_for(r, resource_name()));
     REQUIRE(created.success);
 
-    const auto admin_ctx = h.context()
-                               .with_party(h.tenant_id(), other_party, {other_party, party},
-                                           admin.username)
-                               .with_roles({"iam::run_grants:revoke"});
+    const auto admin_ctx =
+        h.context()
+            .with_party(h.tenant_id(), other_party, {other_party, party}, admin.username)
+            .with_roles({"iam::run_grants:revoke"});
     revoke_run_grant_request req;
     req.grant_id = created.grant_id;
     REQUIRE(run_grant_operations_service(admin_ctx).revoke_run_grant(req).success);

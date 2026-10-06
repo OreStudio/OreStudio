@@ -1715,8 +1715,7 @@ private:
     /// The accounts of the system tenant that hold the SuperAdmin role, which
     /// is the rule the bootstrap service uses to find the deployment's
     /// administrators.
-    static std::vector<std::string>
-    super_admin_account_ids(ores::database::context& sys_ctx) {
+    static std::vector<std::string> super_admin_account_ids(ores::database::context& sys_ctx) {
         return execute_parameterized_string_query(
             sys_ctx,
             "SELECT DISTINCT a.id::text FROM ores_iam_accounts_tbl a "

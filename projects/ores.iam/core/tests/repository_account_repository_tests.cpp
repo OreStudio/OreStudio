@@ -328,8 +328,7 @@ TEST_CASE("write_account_with_itself_as_modified_by", tags) {
     BOOST_LOG_SEV(lg, debug) << "Self write revision: " << second;
     CHECK_NOTHROW(repo.write(h.context(), {second}));
 
-    auto read_accounts = repo.read_latest(h.context(),
-        boost::uuids::to_string(first.id));
+    auto read_accounts = repo.read_latest(h.context(), boost::uuids::to_string(first.id));
     BOOST_LOG_SEV(lg, debug) << "Read accounts: " << read_accounts;
 
     REQUIRE(read_accounts.size() == 1);

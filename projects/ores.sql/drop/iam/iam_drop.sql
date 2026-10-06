@@ -53,6 +53,7 @@
 
 -- Sessions and login
 \ir ./iam_auth_events_drop.sql
+\ir ./iam_run_token_issues_drop.sql
 \ir ./iam_session_samples_drop.sql
 \ir ./iam_session_stats_drop.sql
 \ir ./iam_sessions_notify_trigger_drop.sql

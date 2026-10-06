@@ -42,12 +42,14 @@ inline auto& run_grant_operations_handler_lg() {
 }
 
 /**
- * @brief Hand-written NATS handler for creating and revoking run grants.
+ * @brief Hand-written NATS handler for creating, revoking and exchanging run
+ * grants.
  *
- * The run grant's generated protocol carries its reads only, so these two
+ * The run grant's generated protocol carries its reads only, so these three
  * operations are the table's only writes. The handler proves the request and
  * replies; the service makes the checks, from the request context the token
- * produced.
+ * produced. The exchange is the one operation that mints a token, so it is the
+ * one that hands the service the authenticator it holds.
  */
 class run_grant_operations_handler {
 public:
@@ -74,9 +76,21 @@ public:
             std::move(msg), [](auto& svc, const auto& req) { return svc.revoke_run_grant(req); });
     }
 
+    /**
+     * @brief Serves iam.v1.run_grants.exchange.
+     */
+    void exchange(ores::nats::message msg) {
+        handle<exchange_run_grant_request>(
+            std::move(msg),
+            [](auto& svc, const auto& req) { return svc.exchange_run_grant(req); },
+            verifier_);
+    }
+
 private:
     template <typename Request, typename Call>
-    void handle(ores::nats::message msg, Call call) {
+    void handle(ores::nats::message msg,
+                Call call,
+                std::optional<ores::security::jwt::jwt_authenticator> signer = std::nullopt) {
         using ores::service::messaging::decode;
         using ores::service::messaging::error_reply;
         using ores::service::messaging::log_handler_entry;
@@ -95,7 +109,7 @@ private:
             return;
         }
         try {
-            service::run_grant_operations_service svc(*req_ctx);
+            service::run_grant_operations_service svc(*req_ctx, std::move(signer));
             reply(nats_, msg, call(svc, *req));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(run_grant_operations_handler_lg(), error)

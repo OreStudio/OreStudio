@@ -68,6 +68,10 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:read', 'View run grants of the tenant');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:revoke', 'Revoke any run grant of the tenant');
 
+    -- A step service exchanges a grant for a run token. Only the services a
+    -- grant's audience names hold it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:exchange', 'Exchange a run grant for a run token');
+
     -- Permission catalogue permissions. The generated permission CRUD checks
     -- these two; the catalogue itself is seeded, so a screen picks from it
     -- rather than creating a code nothing would enforce.

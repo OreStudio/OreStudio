@@ -78,6 +78,10 @@
 \ir ./iam_run_grants_create.sql
 \ir ./iam_run_grants_notify_trigger_create.sql
 
+-- Run token issues: the log the exchange appends to, and the one it counts a
+-- grant's served runs from.
+\ir ./iam_run_token_issues_create.sql
+
 -- Account-party association (depends on accounts and refdata.parties)
 \ir ./iam_account_party_create.sql
 \ir ./iam_account_party_functions_create.sql

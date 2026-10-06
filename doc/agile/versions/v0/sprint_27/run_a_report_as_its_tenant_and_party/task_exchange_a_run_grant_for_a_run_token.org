@@ -7,41 +7,96 @@
 #+level: s1
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/exchange-a-run-grant-for-a-run-token
+#+pr: 2702
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+the checks, the claims and the cache rules this task implements. IAM serves
+=iam.v1.run_grants.exchange=: a step service presents its own
+token, a grant id, a run id and a tenant, and receives a five-minute run
+token that acts in the grant's tenant and party with the role's permissions,
+after IAM re-checks the grant and its grantor, computes the permissions and
+logs the issue.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- A step service in the grant's audience, holding =iam::run_grants:exchange=,
+  exchanges a live grant for a run token; a caller that fails any of the five
+  checks is refused with the reason that names the check.
+- The token carries the grantor's account id and username, the grant's tenant,
+  the grant's party as its only visible party, the computed permission codes,
+  the requesting service as the actor, the grant id and the run id. It expires
+  five minutes after issue and opens no session.
+- The permissions are the role's permissions intersected with the grantor's
+  permissions in the party now. A grantor who holds none of them makes the
+  exchange answer =forbidden= with the reason =grant_lapsed=.
+- Each issue appends one row to the issue log.
+- IAM limits exchanges per service and per tenant, so one caller cannot
+  exhaust it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The exchange is IAM's. It needs four things the tree does not have yet, so
+the work lands in this order, each unit verifiable on its own.
+
+1. *The claims.* Add =act=, =grant_id= and =run_id= to
+   =ores::security::jwt::jwt_claims=, write them in =create_token= and read
+   them in =validate= and =validate_allow_expired=. Only the run token the
+   exchange issues carries them; the caller's own token does not need them.
+2. *The caller's service name.* The run token's =act= and =aud= name the
+   requesting service. The identity is the =<Component>Service= role the
+   caller's account holds, read with =authorization_service::get_account_roles=
+   from =caller_account()=. It is bound to the account and stable across
+   environments, so no environment-scoped user name is stored on a grant. This
+   departs from the dotted =ores.reporting.service= names in the design page,
+   which have no source in a token today; the reporting audience becomes the
+   three service role names.
+3. *The operation.* Add =exchange_run_grant_request= /=response= to
+   =ores.iam.run_grant_messages.org= and regenerate the protocol. Seed
+   =iam::run_grants:exchange= and assign it to =ReportingService=,
+   =OreService= and =ComputeService=.
+4. *The service.* =run_grant_operations_service::exchange_run_grant= makes
+   the five checks in order, computes the role's permissions intersected with
+   the grantor's, mints the token with the claims the design page lists,
+   appends the issue-log row and answers.
+5. *The issue log.* A new insert-only table modelled on
+   =ores_iam_auth_events_tbl=, carrying the grant, the run, the service, the
+   tenant, the party and the outcome, with its entity and repository.
+6. *The limits.* An in-memory token bucket per key, in
+   =ores.service/service/rate_limiter.hpp= beside =request_context.hpp=, with
+   the clock injected as =partition_token_cache= injects its own. A refusal
+   carries the time to the next token, so the caller backs off by exactly that
+   much; the backoff itself stays in =ores.nats/service/retry.hpp=. IAM keeps
+   one limiter for the calling service and one for the tenant, and answers a
+   refusal as =unavailable=.
+
+The step service's cache is the next task
+([[id:FAAE99F3-0C98-4265-BFD6-4BD8A052B2F2][Cache run tokens in the step
+services]]), so the exchange answers a token and the cache is not built here.
+The deferred grant moments — a manual run's grant, the suspension on
+=grant_lapsed=, the revoke on delete and the re-grant on a party change —
+belong to this operation's callers; this task builds the exchange they call.
 
 * Measurements
 
@@ -95,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2702][#2702]] | [iam] Exchange a run grant for a run token |
 
 * Review
 
@@ -104,3 +159,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The exchange is live. =decide_exchange= makes the five checks in order over
+  gathered values, the service intersects the role's permissions with the
+  grantor's, mints a five minute token, and appends one row to the issue log.
+- Verified on a real database. The twelve exchange tests pass with 50
+  assertions against a freshly seeded throwaway database, created with
+  =compass db setup= and dropped afterwards. They cover each check and its
+  reason, the run budget, the token claims and a rate limit refusal.
+- =ores.iam.core.lib=, =ores.iam.core.tests=, =ores.iam.service.exe= and
+  =ores.reporting.core.tests= build with zero errors. =validate_schemas.sh=
+  reports 0 warnings over 446 tables. =compass site page= compiles the changed
+  pages with 0 failures.
+- An independent review raised ten findings and all ten are fixed. They include
+  six tests built without a signer, four schema validation failures, a grantor
+  permission read in the wrong tenant, and a =max_runs= race.
+- The target state is recorded in
+  [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] and
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]], with
+  the long run diagram.
+- The development database is stale against this branch, so the normal suites
+  need a recreate before they run from it. That recreate is still pending.

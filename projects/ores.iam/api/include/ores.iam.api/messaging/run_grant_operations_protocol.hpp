@@ -117,6 +117,42 @@ struct revoke_run_grant_response {
     std::string message;
 };
 
+/**
+ * @brief Asks IAM for a run token, presenting a grant and a run.
+ *
+ * Sent by a step service in the grant's audience, with its own token. The
+ * tenant is the one the run acts in, and must be the grant's. The run id
+ * names the run the token serves, so two runs under one grant never share a
+ * token.
+ */
+struct exchange_run_grant_request {
+    using response_type = struct exchange_run_grant_response;
+    static constexpr std::string_view nats_subject = "iam.v1.run_grants.exchange";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string grant_id;
+    std::string run_id;
+    std::string tenant_id;
+};
+
+/**
+ * @brief The run token, or why there is none.
+ */
+struct exchange_run_grant_response {
+    bool success = false;
+    std::string message;
+    std::string token;
+    /**
+     * @brief When the token stops working, in seconds since the epoch.
+     */
+    std::int64_t expires_at = 0;
+};
+
 }
 
 #endif

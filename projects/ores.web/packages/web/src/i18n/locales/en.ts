@@ -80,6 +80,7 @@ export const en: SourceCatalogue = {
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
+            requests: 'Requests',
             people: 'People',
             roles: 'Roles',
             refdata: 'Reference data',
@@ -218,6 +219,85 @@ export const en: SourceCatalogue = {
             storage: 'Storage',
         },
     },
+
+    inbox: {
+        state: {
+            waiting: 'Waiting',
+            held: 'Held',
+            approved: 'Given',
+            refused: 'Refused',
+            withdrawn: 'Withdrawn',
+            expired: 'Expired',
+        },
+        kind: {
+            'iam.role_grant': 'Role request',
+        },
+        bell: {
+            label: 'Notifications, {count} unread',
+            title: 'Notifications',
+            empty: 'Nothing to tell you.',
+            markAll: 'Mark all read',
+        },
+        ask: {
+            open: 'Ask for a role',
+            title: 'Ask for a role',
+            lead: 'Your tenant administrator decides. Nothing changes until they do.',
+            role: 'Which role',
+            why: 'Why you need it',
+            whyHint: 'Your administrator reads this before deciding.',
+            whyPlaceholder: 'What you cannot do today, and what this would let you do',
+            none: 'There is no role left to ask for.',
+            submit: 'Ask',
+        },
+        mine: {
+            title: 'Your requests',
+            asked: 'asked {date}',
+            youWrote: 'You wrote: {reason}',
+            withdraw: 'Withdraw',
+        },
+        withdraw: {
+            title: 'Withdraw the request',
+            lead: 'You are taking back your request for {role}. Nothing is given to you.',
+            comment: 'Why you are taking it back',
+            submit: 'Withdraw',
+        },
+        queue: {
+            title: 'Requests',
+            lead: 'Roles people in this tenant have asked for, oldest first.',
+            who: 'Who',
+            askedFor: 'Asked for',
+            why: 'Why',
+            waiting: 'Waiting',
+            noReason: 'No reason given.',
+            empty: 'Nothing is waiting.',
+            answered: 'Answered',
+            by: 'by {decider}',
+        },
+        request: {
+            title: '{who} asks for {role}',
+            lead: '{state}, asked {date}.',
+            noDeadline: 'No deadline.',
+            expires: 'Expires {at}.',
+            why: 'Why they need it',
+            wouldAllow: 'What {role} would let them do',
+            answer: 'Your answer',
+            notYourself: 'You asked for this yourself, so another administrator answers it.',
+            reason: 'Reason',
+            reasonHint: '{who} reads it. Needed to refuse; optional to give.',
+            give: 'Give {role}',
+            refuse: 'Refuse',
+            decided: 'Decided',
+            notFound: 'This request is not in the queue. It may have been answered already.',
+        },
+    },
+
+    /*
+     * The keys the notification kinds name. They are the server's own dotted
+     * paths, so the screen asks for the key it was sent rather than mapping it.
+     */
+    'notification.inbox.approval_waiting': '{requester} asks for {kind}. They wrote: {reason}',
+    'notification.inbox.approval_decided':
+        'Your request for {kind} is {state}. {decider} wrote: {comment}',
 
     signIns: {
         title: 'Sign-ins',

@@ -99,8 +99,11 @@ describe('the application shell', () => {
         width?: 'column' | 'workspace',
         permissionCodes: readonly string[] = [],
         self?: Account | null,
+        unread = 0,
     ): string {
         const client = new QueryClient();
+        client.setQueryData(['unread-notifications'], unread);
+        client.setQueryData(['notifications'], { items: [], total: 0 });
         client.setQueryData(['my-access'], {
             roles: [
                 {
@@ -245,5 +248,17 @@ describe('the application shell', () => {
         expect(renderAppShell('Acme', 'application', undefined, ['iam::accounts:read'])).toContain(
             'href="/people"',
         );
+    });
+
+    /*
+     * The bell sits in the header on every screen, and the count is the one
+     * thing it must say before anybody opens it: a bell that only tells a
+     * person what happened after they look is a bell nobody looks at.
+     */
+    it('carries the notification bell, saying how much is unread', () => {
+        const html = renderAppShell('Acme Operations', 'application', undefined, [], undefined, 4);
+
+        expect(html).toContain('aria-label="Notifications, 4 unread"');
+        expect(html).toContain('>4</span>');
     });
 });

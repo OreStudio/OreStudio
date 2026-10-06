@@ -43,6 +43,8 @@ import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
+import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
@@ -514,6 +516,35 @@ export function AppRoutes({
                     shell,
                     () => (
                         <RolePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            {/*
+             * The approval requests: the administrator's queue, and the screen
+             * one request is answered on. Both are tables and bundles, so both
+             * take the width.
+             */}
+            <Route
+                path="/requests"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RequestsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/requests/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => (
+                        <RequestDetailPage me={view.username} />
                     ),
                     'workspace',
                 )}

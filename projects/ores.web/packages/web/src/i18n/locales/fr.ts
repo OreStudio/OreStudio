@@ -74,6 +74,7 @@ const fr: SourceCatalogue = {
             parties: 'Parties',
             rescue: 'Rétablir un accès',
             audit: 'Connexions',
+            requests: 'Demandes',
             people: 'Personnes',
             roles: 'Rôles',
             refdata: 'Données de référence',
@@ -214,6 +215,84 @@ const fr: SourceCatalogue = {
             storage: 'Stockage',
         },
     },
+
+    inbox: {
+        state: {
+            waiting: 'En attente',
+            held: 'En suspens',
+            approved: 'Accordé',
+            refused: 'Refusé',
+            withdrawn: 'Retiré',
+            expired: 'Expiré',
+        },
+        kind: {
+            'iam.role_grant': 'Demande de rôle',
+        },
+        bell: {
+            label: 'Notifications, {count} non lues',
+            title: 'Notifications',
+            empty: 'Rien à vous signaler.',
+            markAll: 'Tout marquer comme lu',
+        },
+        ask: {
+            open: 'Demander un rôle',
+            title: 'Demander un rôle',
+            lead: 'Votre administrateur de locataire décide. Rien ne change avant sa décision.',
+            role: 'Quel rôle',
+            why: 'Pourquoi vous en avez besoin',
+            whyHint: 'Votre administrateur le lit avant de décider.',
+            whyPlaceholder:
+                "Ce que vous ne pouvez pas faire aujourd'hui, et ce que ce rôle vous permettrait",
+            none: 'Il ne reste aucun rôle à demander.',
+            submit: 'Demander',
+        },
+        mine: {
+            title: 'Vos demandes',
+            asked: 'demandé le {date}',
+            youWrote: 'Vous avez écrit : {reason}',
+            withdraw: 'Retirer',
+        },
+        withdraw: {
+            title: 'Retirer la demande',
+            lead: 'Vous retirez votre demande de {role}. Rien ne vous est accordé.',
+            comment: 'Pourquoi vous la retirez',
+            submit: 'Retirer',
+        },
+        queue: {
+            title: 'Demandes',
+            lead: 'Les rôles demandés dans ce locataire, du plus ancien au plus récent.',
+            who: 'Qui',
+            askedFor: 'Demandé',
+            why: 'Pourquoi',
+            waiting: 'En attente',
+            noReason: 'Aucune raison donnée.',
+            empty: "Rien n'est en attente.",
+            answered: 'Répondues',
+            by: 'par {decider}',
+        },
+        request: {
+            title: '{who} demande {role}',
+            lead: '{state}, demandé le {date}.',
+            noDeadline: 'Aucune échéance.',
+            expires: 'Expire le {at}.',
+            why: 'Pourquoi cette demande',
+            wouldAllow: 'Ce que {role} lui permettrait de faire',
+            answer: 'Votre réponse',
+            notYourself:
+                'Vous avez fait cette demande vous-même, un autre administrateur y répond.',
+            reason: 'Raison',
+            reasonHint: '{who} la lit. Obligatoire pour refuser ; facultative pour accorder.',
+            give: 'Accorder {role}',
+            refuse: 'Refuser',
+            decided: 'Décidée',
+            notFound: "Cette demande n'est pas dans la file. Elle a peut-être déjà été tranchée.",
+        },
+    },
+
+    /* The keys the notification kinds name, as the server states them. */
+    'notification.inbox.approval_waiting': '{requester} demande {kind}. Il a écrit : {reason}',
+    'notification.inbox.approval_decided':
+        'Votre demande de {kind} est {state}. {decider} a écrit : {comment}',
 
     signIns: {
         title: 'Connexions',

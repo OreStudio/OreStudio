@@ -85,9 +85,29 @@ function render(
     gate: BootstrapState,
     sessionState: SessionState,
     overrides: Partial<AppRoutesProps> = {},
+    permissionCodes: readonly string[] = [],
 ): string {
+    const client = new QueryClient();
+    /*
+     * What the person holds, which is what decides the menu: the screens the
+     * session's mode holds, less the ones gated on a permission.
+     */
+    client.setQueryData(['my-access'], {
+        roles: [
+            {
+                roleId: '77777777-7777-7777-7777-777777777777',
+                name: 'Viewer',
+                description: '',
+                permissionCodes: [...permissionCodes],
+                givenBy: 'system',
+                givenAt: '2026-10-05 09:30:00Z',
+                reasonCode: 'access.initial',
+                commentary: '',
+            },
+        ],
+    });
     return renderToStaticMarkup(
-        <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter initialEntries={[path]}>
                     <AppRoutes
@@ -281,5 +301,39 @@ describe('a server that does not answer', () => {
         expect(html).toContain('503: no broker');
         expect(html).toContain('Try again');
         expect(html).not.toContain('First run journey');
+    });
+});
+
+/*
+ * The requests queue is the administrator's, and the menu says so: the screen
+ * offers the door only to somebody who holds the permission the kind names to
+ * decide it. The server checks the same permission again on every call.
+ */
+describe('the requests queue', () => {
+    it('is offered in the menu to somebody who may assign roles', () => {
+        const html = render('/', ready, authenticated, {}, ['iam::roles:assign']);
+
+        expect(html).toContain('href="/requests"');
+        expect(html).toContain('>Requests</a>');
+    });
+
+    it('is left out of the menu for somebody who may not', () => {
+        const html = render('/', ready, authenticated, {}, ['refdata::currencies:read']);
+
+        expect(html).not.toContain('href="/requests"');
+    });
+
+    it('renders the queue for a signed-in person at its own route, not the sign-in form', () => {
+        const html = render('/requests', ready, authenticated, {}, ['iam::roles:assign']);
+
+        expect(html).toContain('Sign out');
+        expect(html).not.toContain('current-password');
+    });
+
+    it('sends a visitor to sign in rather than to the queue', () => {
+        const html = render('/requests', ready, anonymous);
+
+        expect(html).not.toContain('Roles people in this tenant have asked for, oldest first.');
+        expect(html).not.toContain('Sign out');
     });
 });

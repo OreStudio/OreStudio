@@ -23,3 +23,10 @@ add_custom_target(${diagram_target}
     COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 add_dependencies(make_all_diagrams ${diagram_target})
+
+set(data_model_diagram_target generate_${name}_data_model_diagram)
+add_custom_target(${data_model_diagram_target}
+    COMMENT "Generating PlantUML data-model diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.data_model.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${data_model_diagram_target})

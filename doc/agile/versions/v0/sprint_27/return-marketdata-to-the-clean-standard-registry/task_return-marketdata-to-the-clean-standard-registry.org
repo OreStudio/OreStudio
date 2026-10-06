@@ -8,11 +8,11 @@
 #+filetags: :return-marketdata-to-the-clean-standard-registry:sprint_27:v0:
 #+owner: marco
 #+branch: feature/return-marketdata-to-the-clean-standard-registry
-#+pr:
+#+pr: 2688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-06
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ marketdata passes every item of the component clean standard, or holds an except
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
-| Now          | Not yet started.                       |
+| Now          | The 49 items are re-measured and marketdata is back in =COMPONENTS_UNDER_TEST=. The PR is next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Next         | Raise the PR.                  |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
@@ -74,7 +74,49 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| B01 Baseline | No drift from the checked-in tree; no model drift (the one known exception is =reporting=) | =check_component_drift.py --component marketdata --dry-run=; =check_model_drift.py= | =279e51c04c= |
+| B02 Model metatypes | 9 models: 6 =ores.codegen.entity=, 1 =ores.codegen.junction=, 1 =ores.codegen.operation=, 1 =ores.codegen.component= | =grep '#+type:'= over the modeling directory | =279e51c04c= |
+| B03 Hand-written C++ | 267 non-test C++ files: 191 generated, 76 hand-written. Of the 76, 39 are under =src/= and 41 under =include/=; 33 test files in the component and 8 in =ores.shell.marketdata= | =find= over =include/= and =src/=, =grep 'AUTO-GENERATED FILE'=, =find … tests/= | =279e51c04c= |
+| B04 Subjects and headers | 8 protocol headers under =marketdata.v1=; the subjects the models own are generated constants, and the raw literals left are the seven eventing prefixes, the tick-subject builders and the one =publish-from-dq= subscription | =ls= on =messaging/*.hpp=; =grep '"marketdata\.v1\.'= | =279e51c04c= |
+| B05 Captures and branches | 33 inbox captures name marketdata; the return task is the only in-flight branch for the component | =grep -l marketdata doc/agile/product_backlog/inbox/*.org=; =compass fleet= | =279e51c04c= |
+| B06 Public symbols | The consumer census is the clean task's record, re-read; the symbols it found test-only were deleted there, and the component still builds and links with every consumer | Clean task record, [[id:E773291A-0E73-4AAA-86AD-E94E16D691AF][Clean the marketdata code]] | =279e51c04c= |
+| M01–M04 Models on format, bound, no redundant state, features placed | Pass. =check_model_drift.py= reports every bound model agrees with its profile, and regeneration at the bind is byte-identical (G01), so no feature is misplaced | =check_model_drift.py= | =279e51c04c= |
+| M05–M08 Entity shape, junctions, types | Pass. Each model describes one table; the junction names its singular and keys and is tenant-scoped; every custom type is bound to its header and every flag is a boolean | Model review; regeneration | =279e51c04c= |
+| M09 No legacy fragment | Pass. No Qt or Wt drawer, no retired message type and no dead history property remains in the models | =grep= over the modeling directory | =279e51c04c= |
+| M10 Component model | Pass. The root =component_overview.org= declares the four parts, the group model generates the root =CMakeLists.txt=, and =validate_docs.sh= passes | =validate_docs.sh=; regeneration | =279e51c04c= |
+| P01 Point-in-time read | Pass. The six entity list protocols carry =as_of= and their services refuse a malformed one with =as_of_invalid=; the junction and the operation model carry no window read by design | =grep as_of= on the protocols; =grep as_of_invalid= on the services | =279e51c04c= |
+| P02 Subjects modelled | Pass. Every subject the component owns is declared in its models; the raw literals left are the hand-written eventing prefixes and the tick-subject builders, which the models do not own | =grep= for subject literals | =279e51c04c= |
+| P03 No duplicate or unserved subject | Pass. The registrar review found no duplicate subject and no declared message nothing serves | Registrar review | =279e51c04c= |
+| P04 Operations modelled | Pass. The nine non-entity surfaces are the =ores.marketdata.operations= model, and no hand-written protocol header remains | =check_protocol_twin_coverage.py=; model review | =279e51c04c= |
+| P05 Consumers follow | Pass. The whole tree builds with the component and its consumers (V01) | =cmake --build build/output/linux-clang-debug-make= | =279e51c04c= |
+| P06 Event cache | Not applicable. The component has no event cache | Model review; clean task record | =279e51c04c= |
+| G01 Regeneration byte-identical | Pass, twice: =check_component_drift.py --component marketdata= reports no drift at every address, and the second run over the committed tree changes nothing | =check_component_drift.py --component marketdata= (twice) | =279e51c04c= |
+| G02 No hand-written duplicate | Pass. Re-running the B03 survey leaves no generatable file hand-written; the duplicate =market_fixings_repository= and =market_observations_repository= are gone | B03 survey; clean task record | =279e51c04c= |
+| G03 Generated marker | Pass. 191 C++ files carry the marker and no hand-written file does | =grep -l 'AUTO-GENERATED FILE'= against the B03 survey | =279e51c04c= |
+| G04 Generated code reads well | Pass. The regenerated output was re-read in the code-review pass; no new finding | Review record; clean task record | =279e51c04c= |
+| G05 Generator defects fixed at source | Pass, and this task added two: the nested one-line type read as a member, and the two-brace initialiser that left a namespace unclosed. Both are fixed in =build/scripts/generate_component_puml.py= with the regression test =test_plantuml_component_parse_nested_type.py= | =projects/ores.codegen/venv/bin/python3 -m pytest projects/ores.codegen/tests= | =279e51c04c= |
+| G06 CMake source lists | Pass. All =component_files.cmake= up to date | =regenerate_cmake_component_files.py --all --check= | =279e51c04c= |
+| G07 No refresh over a known defect | Pass. The two generator defects were fixed with tests before the refresh, and the two-pass contract held: the automated pass replaced only the section above the sentinel, and each manual section survived byte for byte | Generator dry run; =git diff= before and after | =279e51c04c= |
+| G08 Namespace headers | Pass. The component keeps its outermost namespace headers, api, client, core and service, each with its =@brief= | Component header list | =279e51c04c= |
+| W01 Registrars composed | Pass. The seven entity registrars, the history providers and the event mappings are composed at the service composition points; the one unwired family is the CRM publish, captured as [[id:92EECF35-B025-4DAF-A591-A0E9C7975937][CRM rates publish with no consumer]] | Registrar review | =279e51c04c= |
+| W02 Handler permissions | Pass. Every code the component's handlers check is seeded | =check_handler_permissions.py= | =279e51c04c= |
+| W03 Populate references | Pass | =check_populate_references.py= | =279e51c04c= |
+| W04 SQL reachable; recreate | Pass. The schema recreates from scratch with no =WIRE_001=, the fleet comes back up, and the service grants cover every table the service reads | =compass db recreate -y -k=; =compass services start= | =279e51c04c= |
+| S01 Shell units and tests | Pass. Every entity and junction verb has a generated shell command unit and a test, and the shell command suites pass | Generated units; shell test suite | =279e51c04c= |
+| S02 Recipes and inventory | Pass. Every command has a generated recipe and the inventory lists them all | =regenerate_shell_recipe_inventory.py --check= | =279e51c04c= |
+| H01 Architecture audit and diagram | Pass, with the composite root recorded. The four part diagrams are authored in two passes: the automated pass refreshed every box, the manual pass below each sentinel adds the derived edges and the notes for the free functions, the nested types and the declarations the parser cannot read, and each rendered image was read. The composite root is a hand-authored component diagram of the four parts and their measured dependencies; it carries no sentinel because the automated pass reads C++ headers and the root owns no code, and its data-model diagram is kept beside it as =ores.marketdata.data_model.puml=. The audit findings are this row and its Notes | =generate_component_puml.py --project <part>=; =derive_component_puml_edges.py --project <part>=; =plantuml=; the four images read | =279e51c04c= |
+| H02 No legacy code | Pass. No Qt or Wt fragment, no dead code and no hand-written duplicate remains; the B03 survey holds the current list | B03 survey; clean task record | =279e51c04c= |
+| H03 Comment rules | Pass. The comment-rules pass over the component's models and hand-written files found no end-of-line comment, no commented-out code and no edit narration | =compass-code-review-comments= pass; clean task record | =279e51c04c= |
+| H04 No platform shim | Pass. The component carries no =_WIN32=, =__APPLE__= or =_MSC_VER= shim | =grep= over the component | =279e51c04c= |
+| H05 Documentation | Pass. All five overviews, the root and the four parts, carry the six sections and their Diagram section points at a committed =.puml=/=.png= pair; the root points at both the component diagram and the data model | =grep '^\* '= on the five overviews; =validate_docs.sh= | =279e51c04c= |
+| V01 Whole tree builds | Pass. The full build completes with no error | =cmake --build build/output/linux-clang-debug-make -j 3= | =279e51c04c= |
+| V02 Codegen and component suites | Pass. The codegen suite passes 1,162 tests; the component suites pass: api 507 assertions in 38 cases, core 1,974 in 107, service 202 in 36, and client has no cases | =pytest projects/ores.codegen/tests=; the test binaries on a recreated database | =279e51c04c= |
+| V03 Database and fleet | Pass. The database recreates from scratch and the fleet starts and serves | =compass db recreate -y -k=; =compass services start= | =279e51c04c= |
+| V04 Shell commands run | Pass for the generated set. 73 recipes replayed against the live fleet: 69 ANSWERED, 4 NOT_WIRED — the four hand-written =crm rates= recipes, whose command went with the retired CRM client stack and is captured as [[id:92EECF35-B025-4DAF-A591-A0E9C7975937][CRM rates publish with no consumer]]. No generated command failed | =check_shell_recipes.py= over the eight marketdata groups against the live fleet | =279e51c04c= |
+| V05 Every gate green | Pass. Component drift, catalogue sweep, paste blocks, model drift, protocol twins, handler permissions, populate references, recipe inventory, test reachability, CMake lists, route auth, shell menus and registry exceptions all pass with marketdata listed | Each check script; =check_component_drift.py --all= | =279e51c04c= |
+| V06 Registry | Pass. marketdata is in =COMPONENTS_UNDER_TEST= and =check_component_drift.py --all= passes with it listed | =component_registry.py=; =check_component_drift.py --all= | =279e51c04c= |
+| V07 No vacuous test | Pass. The coverage task's stub-and-rerun review is the record; re-running it is that task's evidence, and the suites it covers pass here | Coverage task record, [[id:20980D32-EFDE-4030-A167-55E7A43BA849][Close the marketdata test coverage]] | =279e51c04c= |
+| V08 Per-file survey | Pass, with the coverage work item named. 118 =src/= files: 46 are named by a test and 72 are not; the 72 are generated repository, I/O, registrar and messaging boilerplate, and each carries its reason in the coverage task's survey | Per-file survey over =src/= against the component's tests | =279e51c04c= |
 
 * Notes
 
@@ -97,6 +139,39 @@ Start this task after the four owning tasks close. P01 is the canonical
 =as_of= read, which backlog story =F15A8480= scopes across components; if it is
 still open then, P01 is the one item to put to the owner as an exception.
 
+** What H01 cost
+
+The four part diagrams had gone stale and their manual sections were empty. The
+automated pass, =build/scripts/generate_component_puml.py=, was run with its
+diff read before the refresh, per G07. It exposed two parser defects, both
+fixed at source with the regression test
+=test_plantuml_component_parse_nested_type.py=:
+
+- A type declared inside a class on one line was read as a data member named
+  after the type, so a repository box gained =+remove_status : enum class=. The
+  pass draws types at namespace scope only, so the nested declaration is
+  skipped and left to the manual section.
+- A two-level brace initialiser at namespace scope opened two braces but the
+  parser counted one, so the enclosing namespace never closed and the next
+  sibling was nested inside it: =ores::marketdata::datum::detail::detail=.
+
+The manual pass below each sentinel adds the derived edges and notes the free
+functions, the nested types and the declarations the parser cannot read; each
+rendered image was read. The composite root owns no code, so the automated pass
+has nothing to contribute to it: the root is a hand-authored component diagram,
+and its oresmd data-model diagram is kept as =ores.marketdata.data_model.puml=.
+The root's missing sentinel is recorded as an accepted exception for H01 in
+=projects/ores.codegen/scripts/component_registry.py=, with the reason every
+listed composite gives.
+
+** What the re-measurement found
+
+Nothing new failed. The two items this task owns are closed: P01 by the
+generated point-in-time read, the six entity protocols carrying =as_of= and the
+six services refusing a malformed one, and H01 as above. The four =crm rates=
+recipes are the only shell recipes that do not answer; their command went with
+the retired CRM client stack and is already captured as =92EECF35=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -112,7 +187,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2688][#2688]] | [marketdata] Return marketdata to the clean-standard registry |
 
 * Review
 
@@ -121,3 +196,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+marketdata passes every item of the component clean standard and is back in
+=COMPONENTS_UNDER_TEST=. Every one of the 49 items is re-measured at
+=279e51c04c= and recorded in Measurements. P01 is done rather than excepted:
+the six entity list protocols carry =as_of= and their services refuse a
+malformed one with =as_of_invalid=. H01 is done for the four part diagrams,
+authored in two passes with their rendered images read, and the composite root
+carries a hand-authored component diagram; the root's missing sentinel is the
+one accepted exception, because the root owns no code for the automated pass to
+read. Two generator parser defects found on the way are fixed at source with a
+regression test. The drift and protocol twin gates pass with marketdata listed.

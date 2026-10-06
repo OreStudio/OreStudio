@@ -56,8 +56,8 @@ struct rate_limit_decision {
  *
  * The limiter is per process: several replicas each grant the limit, so the
  * effective limit multiplies by the replica count, the pattern's "a limit per
- * replica" pitfall. That is deliberate for the run grant exchange, where a
- * shared store would cost more than the fault it guards against.
+ * replica" pitfall. A caller that needs one deployment-wide limit shares the
+ * count; a caller that accepts the multiplied bound keeps the count here.
  */
 class rate_limiter {
 public:

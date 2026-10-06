@@ -92,9 +92,37 @@ export interface RevokeRunGrantResponse {
     message: string;
 }
 
+/**
+ * @brief Asks IAM for a run token, presenting a grant and a run.
+ *
+ * Sent by a step service in the grant's audience, with its own token. The
+ * tenant is the one the run acts in, and must be the grant's. The run id
+ * names the run the token serves, so two runs under one grant never share a
+ * token.
+ */
+export interface ExchangeRunGrantRequest {
+    grant_id: string;
+    run_id: string;
+    tenant_id: string;
+}
+
+/**
+ * @brief The run token, or why there is none.
+ */
+export interface ExchangeRunGrantResponse {
+    success: boolean;
+    message: string;
+    token: string;
+    /**
+     * @brief When the token stops working, in seconds since the epoch.
+     */
+    expires_at: number;
+}
+
 export const subjects = {
     create_run_grant_request: 'iam.v1.run_grants.create',
     revoke_run_grant_request: 'iam.v1.run_grants.revoke',
+    exchange_run_grant_request: 'iam.v1.run_grants.exchange',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -104,4 +132,5 @@ export const subjects = {
 export const requiresSession = {
     create_run_grant_request: true,
     revoke_run_grant_request: true,
+    exchange_run_grant_request: true,
 } as const;

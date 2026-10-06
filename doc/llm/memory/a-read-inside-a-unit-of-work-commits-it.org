@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 9562C34E-5790-422D-8E31-774691995860
+:END:
+#+title: A read inside a unit of work commits it
+#+description: sqlgen's postgres iterator wraps every read in its own transaction and ends it with END, which PostgreSQL reads as COMMIT, so a read inside a unit of work commits it.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+A read inside a unit of work commits it. sqlgen's postgres iterator wraps every read in its own BEGIN and END, and PostgreSQL reads END as COMMIT. A unit of work stays atomic only while no read runs between its writes.
+
+*Why:* Found on 2026-10-06 while moving booking onto the repositories: a booking that failed on its last write left the trade anchor behind. The service's conflict read and every repository apply_claim read committed the transaction before the failing write, so the destructor's rollback had nothing to undo. It took a long hunt, because the destructor reported a successful rollback and the row vanished from psql when the test run dropped its tenant.
+
+*How to apply:* Never read through sqlgen inside a unit of work. State write claims that read nothing instead: precondition must_not_exist for a versioned table, or any for a current-state table, and do a conflict read before the unit of work opens. vcpkg-overlays/sqlgen patches the iterator to leave an enclosing transaction alone; enable that overlay, then remove the read-free claims and invert the unit-of-work case that records the defect.

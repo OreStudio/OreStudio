@@ -1,0 +1,63 @@
+diff --git a/include/sqlgen/postgres/Iterator.hpp b/include/sqlgen/postgres/Iterator.hpp
+index 598599c856..78b0511b22 100644
+--- a/include/sqlgen/postgres/Iterator.hpp
++++ b/include/sqlgen/postgres/Iterator.hpp
+@@ -69,6 +69,10 @@ class SQLGEN_API Iterator {
+ 
+   /// Whether the end is reached.
+   bool end_;
++
++  /// Whether this iterator opened the transaction it runs in. An iterator
++  /// that joins an enclosing transaction must not end it.
++  bool started_transaction_;
+ };
+ 
+ }  // namespace sqlgen::postgres
+diff --git a/src/sqlgen/postgres/Iterator.cpp b/src/sqlgen/postgres/Iterator.cpp
+index d99ea30058..61b6ec8a45 100644
+--- a/src/sqlgen/postgres/Iterator.cpp
++++ b/src/sqlgen/postgres/Iterator.cpp
+@@ -11,15 +11,21 @@
+ namespace sqlgen::postgres {
+ 
+ Iterator::Iterator(const std::string& _sql, const Conn& _conn)
+-    : cursor_name_(make_cursor_name()), conn_(_conn), end_(false) {
+-  exec(conn_, "BEGIN").value();
++    : cursor_name_(make_cursor_name()),
++      conn_(_conn),
++      end_(false),
++      started_transaction_(PQtransactionStatus(conn_.ptr()) == PQTRANS_IDLE) {
++  if (started_transaction_) {
++    exec(conn_, "BEGIN").value();
++  }
+   exec(conn_, "DECLARE " + cursor_name_ + " CURSOR FOR " + _sql).value();
+ }
+ 
+ Iterator::Iterator(Iterator&& _other) noexcept
+     : cursor_name_(std::move(_other.cursor_name_)),
+       conn_(std::move(_other.conn_)),
+-      end_(_other.end_) {
++      end_(_other.end_),
++      started_transaction_(_other.started_transaction_) {
+   _other.end_ = true;
+ }
+ 
+@@ -77,6 +83,7 @@ Iterator& Iterator::operator=(Iterator&& _other) noexcept {
+   cursor_name_ = std::move(_other.cursor_name_);
+   conn_ = std::move(_other.conn_);
+   end_ = _other.end_;
++  started_transaction_ = _other.started_transaction_;
+   _other.end_ = true;
+   return *this;
+ }
+@@ -84,7 +91,9 @@ Iterator& Iterator::operator=(Iterator&& _other) noexcept {
+ void Iterator::shutdown() {
+   if (!end_) {
+     exec(conn_, "CLOSE " + cursor_name_);
+-    exec(conn_, "END");
++    if (started_transaction_) {
++      exec(conn_, "END");
++    }
+     end_ = true;
+   }
+ }

@@ -1,0 +1,44 @@
+vcpkg_from_github(
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO getml/sqlgen
+    REF 47e571149b5e40f63cf7afb5fded134872cc68c0
+    SHA512 84831e35e527fa7dc991402322a9e97405a277e094a45d9a51d41ba838f32c1bc9891f424d51ceb551fddfda7bf875f77a71e237b235ff9e416501aa3751f921
+    HEAD_REF main
+    PATCHES
+        fix-iterator-transaction.patch
+)
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
+endif()
+string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" SQLGEN_BUILD_SHARED)
+
+vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
+    FEATURES
+        duckdb              SQLGEN_DUCKDB
+        mariadb             SQLGEN_MYSQL
+        postgres            SQLGEN_POSTGRES
+)
+
+vcpkg_cmake_configure(
+    SOURCE_PATH ${SOURCE_PATH}
+    OPTIONS
+        ${FEATURE_OPTIONS}
+        -DSQLGEN_BUILD_TESTS=OFF
+        -DSQLGEN_SQLITE3=ON
+        -DSQLGEN_BUILD_SHARED=${SQLGEN_BUILD_SHARED}
+)
+
+vcpkg_cmake_install()
+
+vcpkg_cmake_config_fixup(
+    CONFIG_PATH "lib/cmake/${PORT}"
+)
+
+file(REMOVE_RECURSE
+    "${CURRENT_PACKAGES_DIR}/debug/include"
+    "${CURRENT_PACKAGES_DIR}/debug/share"
+)
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
+configure_file("${CMAKE_CURRENT_LIST_DIR}/usage" "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage" COPYONLY)

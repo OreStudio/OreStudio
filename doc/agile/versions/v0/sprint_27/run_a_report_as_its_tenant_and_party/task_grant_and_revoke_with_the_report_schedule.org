@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,10 +30,10 @@ every tenant.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Not yet started.                       |
+| Now          | Reconciliation fixed; re-running the live schedule/unschedule cycle. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Re-run the live test, then open the PR. |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
@@ -87,10 +87,20 @@ task and name that file in the Command column.
   15 in the day-of-week field, which takes 0 to 7. It most likely means days 1
   and 15 of the month, =0 6 1,15 * *=. That is a seed data defect outside this
   task.
-- Reconciliation schedules every unscheduled definition at service start, as
-  the service account, so those jobs have no grant. Under the run token design
-  such a run cannot act in its party. The exchange task decides whether
-  reconciliation only re-creates jobs for definitions that hold a grant.
+- Reconciliation used to schedule every unscheduled definition at service
+  start and on every definition change, as the service account and with no
+  grant, so it overrode what a person had just unscheduled. It now keeps a
+  report job only when a definition records both the job and the grant behind
+  it. It removes every other report job, restores a granted definition's job if
+  the scheduler lost it (the recorded grant is the consent, so no person is
+  needed), and clears the =scheduler_job_id= of a definition whose job has no
+  grant so the person can schedule it again. It never creates a schedule no
+  person asked for. This changes visible behavior: seeded definitions no
+  longer schedule themselves.
+- The schedule handler built the scheduling service with the relayed client as
+  its only client, so scheduler puts would have carried the person's token and
+  the grant calls would have had no client at all. It now passes the service
+  client for scheduler jobs and the relayed client for the grants.
 
 * Test Scenarios
 
@@ -116,3 +126,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Unit tests: 57 cases in =ores.reporting.core.tests= pass, including the new
+  reconciliation-decision cases in =service_scheduling_plan_tests.cpp=.
+- Live test against the running fleet (tenant Acme Corporation, party Acme
+  Corporation Plc, definition /Headline Position/):
+  - =schedule-report-definitions= returned =scheduled_count: 1=. The definition
+    then carried a =scheduler_job_id= and a =run_grant_id= and the matching
+    scheduler job existed. Reconciliation ran on the change and kept the job.
+  - =unschedule-report-definitions= returned =unscheduled_count: 1=. The
+    definition's =scheduler_job_id= and =run_grant_id= were cleared, the
+    scheduler job was gone, and reconciliation did not put it back.
+  - On the first start of the fixed service, reconciliation removed the 181
+    report jobs the scheduler held, none of which had a grant, and cleared 156
+    definitions whose job had no grant.

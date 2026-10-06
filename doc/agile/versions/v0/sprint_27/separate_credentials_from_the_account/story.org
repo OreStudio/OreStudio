@@ -38,7 +38,7 @@ A profile write can never change a credential, and the history says which of the
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | DONE | 2026-10-06 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | STARTED | 2026-10-06 | | Initial task for: Separate the account's credentials from its profile |
 
 * Decisions

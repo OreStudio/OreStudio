@@ -79,6 +79,17 @@ reads what was built, then how well it was built.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_bootstrap-or-refresh-a-curve.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=: mock data only, no backend,
+no build step and no session. It argues that a build produces a candidate, not a curve the system uses: the points, their provenance and the health read together, unpublished.
+
+- Variants :: a the points table, b the discount-factor chart, c the health beside the points
+- States :: clean, missing (inputs absent), projection (a projection whose discount curve is absent)
+- Source :: =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/bootstrap-or-refresh-a-curve/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

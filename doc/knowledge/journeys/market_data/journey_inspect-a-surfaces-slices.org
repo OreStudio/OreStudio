@@ -86,6 +86,17 @@ person reads the slices, then the whole surface, then its faults.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_inspect-a-surfaces-slices.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/inspect-a-surfaces-slices/index.html=: mock data only, no backend,
+no build step and no session. It argues that a surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy.
+
+- Variants :: a one slice at a tenor, b the mesh, c the arbitrage report
+- States :: clean, butterfly (a negative implied density); =?tenor== picks the slice
+- Source :: =doc/prototypes/inspect-a-surfaces-slices/index.html=
+- Open :: =/OreStudio/doc/prototypes/inspect-a-surfaces-slices/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check a curve's fit prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's or quant's "Check a curve's fit" screen
+  (doc/knowledge/journeys/market_data/journey_check-a-curves-fit.org):
+  the candidate at the top, the quotes overlaid on the candidate, the pillar
+  residuals and the forward rates in the middle, and the calendar and roll
+  logic at the foot, so the person reads the market, then the fit, then the
+  dates it settles on. Nothing here is published.
+  Variants with ?variant=a|b|c. The variant is the presentation, which is the
+  journey's central design question: a is a residuals table, b is an overlay
+  chart, c is a combined view. ?state=fit|large|gap switches the mock market:
+  a sound fit, a large residual at one pillar, and a quote the candidate does
+  not join. Nothing reads a service.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'fit';
+const raw = [
+  {c:'3M',  role:'DEPOSIT', quote:4.1200, cand:4.1200, date:'2027-01-06'},
+  {c:'6M',  role:'DEPOSIT', quote:4.1820, cand:4.1805, date:'2027-04-06'},
+  {c:'1Y',  role:'SWAP',    quote:4.2440, cand:4.2462, date:'2027-10-06'},
+  {c:'2Y',  role:'SWAP',    quote:3.9600, cand:3.9580, date:'2028-10-06'},
+  {c:'3Y',  role:'SWAP',    quote:3.9050, cand:3.9062, date:'2029-10-08'},
+  {c:'5Y',  role:'SWAP',    quote:3.8800, cand:3.8830, date:'2031-10-06'},
+  {c:'7Y',  role:'SWAP',    quote:3.8480, cand:3.8330, date:'2033-10-06'},
+  {c:'10Y', role:'SWAP',    quote:3.8120, cand:3.8155, date:'2036-10-06'},
+  {c:'30Y', role:'SWAP',    quote:3.6400, cand:3.6390, date:'2056-10-06'}
+];
+const pillars = raw.map(p => ({...p}));
+if (state === 'large') pillars[6].cand = 3.7830;
+if (state === 'gap') pillars[6].cand = null;
+const forwards = [
+  {seg:'spot-3M', fwd:4.1180, step:null},
+  {seg:'3M-6M', fwd:4.2010, step:null},
+  {seg:'6M-1Y', fwd:4.3150, step:null},
+  {seg:'1Y-2Y', fwd:3.9010, step:null},
+  {seg:'2Y-3Y', fwd:3.8520, step:null},
+  {seg:'3Y-5Y', fwd:3.8210, step:null},
+  {seg:'5Y-7Y', fwd:3.7420, step:state === 'large' ? '−9.2 bp' : null},
+  {seg:'7Y-10Y', fwd:3.8680, step:null},
+  {seg:'10Y-30Y', fwd:3.6120, step:null}
+];
+const roll = [
+  ['Tenor convention', 'RATES_SPOT_FORWARD'],
+  ['Calendar', 'US-NY (USD)'],
+  ['Roll convention', 'MODIFIED_FOLLOWING'],
+  ['Day count', 'ACT/365.FIXED'],
+  ['Interpolation', 'LOG_LINEAR_DISCOUNT'],
+  ['Split tenor', '1Y'],
+  ['Spot lag', '2 business days']
+];
+function tag(t, k){ return `<span class="tag ${k || ''}">${t}</span>`; }
+function res(p){ return p.cand == null || p.quote == null ? null : (p.cand - p.quote) * 100; }
+function fmt(v){ return v == null ? '—' : v.toFixed(4); }
+function bp(v){ return v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + ' bp'; }
+function bad(p){ const r = res(p); return r != null && Math.abs(r) > 2.0; }
+function header(){
+  return `
+  <div class="top">
+    <h1>Check fit: USD OIS curve (candidate)</h1>
+    <span class="muted">candidate · not published</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_check-a-curves-fit.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Candidate</h2>
+    <div class="row">
+      <div class="field"><label>Series</label><div class="value mono">USD.RATES.OIS.3M</div></div>
+      <div class="field"><label>Derivation</label><div class="value mono">IR_CURVE_BOOTSTRAP</div></div>
+      <div class="field"><label>Config</label><div class="value mono">ir_curve_bootstrap_config v3</div></div>
+      <div class="field"><label>As of</label><div class="value">now · 2026-10-06 14:00 <span class="faint">(no past read)</span></div></div>
+      <button class="btn primary" data-act="read">Read candidate</button>
+      <button class="btn" data-act="recompute">Recompute candidate</button>
+    </div>
+  </div>`;
+}
+
+function quotesTable(){
+  const body = pillars.map(p => {
+    const r = res(p);
+    return `<tr><td class="mono">${p.c}</td><td class="num">${fmt(p.quote)}</td><td class="num">${fmt(p.cand)}</td>
+      <td class="num">${r == null ? tag('not joined', 'bad') : bp(r)}</td><td class="faint">joined on ${p.c}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Quotes over candidate</h2>
+    <table>
+      <thead><tr><th>Pillar</th><th class="num">Raw quote</th><th class="num">Candidate</th><th class="num">Difference</th><th>Join</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    <div class="notice">No operation joins the two lists. The quote is keyed by <span class="mono">oresmd_uri</span>, the candidate by <span class="mono">point_id</span>, so the screen matches them on the coordinate. A quote with no candidate point is a gap.</div>
+  </div>`;
+}
+
+function residualsTable(){
+  const body = pillars.map(p => {
+    const r = res(p);
+    return `<tr><td class="mono">${p.c}</td><td>${p.role}</td><td class="num">${bp(r)}</td>
+      <td class="num">${r == null ? '—' : (r / p.quote * 100).toFixed(3) + '%'}</td>
+      <td>${r == null ? tag('unmatched', 'bad') : bad(p) ? tag('too large', 'bad') : tag('within 2 bp', 'ok')}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Pillar residuals</h2>
+    <table>
+      <thead><tr><th>Pillar</th><th>Role</th><th class="num">Residual</th><th class="num">Relative</th><th>Reading</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    <div class="notice">No diagnostics operation serves a residual. The compute reply carries points and no per-pillar error, so this screen computes the distance itself from the two reads.</div>
+  </div>`;
+}
+
+function forwardTable(){
+  const body = forwards.map(f => `<tr><td class="mono">${f.seg}</td><td class="num">${f.fwd.toFixed(4)}</td>
+    <td class="num">${f.step || '—'}</td><td>${f.step ? tag('step, not served', 'warn') : tag('smooth', 'ok')}</td></tr>`).join('');
+  return `
+  <div class="panel">
+    <h2>Forward-rate smoothness</h2>
+    <table>
+      <thead><tr><th>Segment</th><th class="num">Forward</th><th class="num">Step</th><th>Finding</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+    <div class="notice">The health checker exists and flags a step as <span class="mono">WARNING</span>, but nothing calls it, so no finding reaches the wire. The screen plots the forwards and marks that no check ran.</div>
+  </div>`;
+}
+
+function overlayChart(){
+  const w = 960, h = 300, pad = 44;
+  const vals = pillars.flatMap(p => [p.quote, p.cand]).filter(v => v != null);
+  const lo = Math.min(...vals) - 0.03, hi = Math.max(...vals) + 0.03;
+  const x = i => pad + i * (w - 2 * pad) / (pillars.length - 1);
+  const y = v => h - pad - (v - lo) * (h - 2 * pad) / (hi - lo);
+  let d = '', pen = false;
+  pillars.forEach((p, i) => {
+    if (p.cand == null) { pen = false; return; }
+    d += (pen ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(p.cand).toFixed(1) + ' ';
+    pen = true;
+  });
+  const marks = pillars.map((p, i) => {
+    if (p.quote == null) return '';
+    const over = p.cand != null && Math.abs(p.cand - p.quote) > 0.02;
+    return `<circle cx="${x(i).toFixed(1)}" cy="${y(p.quote).toFixed(1)}" r="${over ? 5 : 3.5}" fill="${over ? '#f85149' : '#d29922'}"></circle>
+      <text x="${x(i).toFixed(1)}" y="${h - 12}" fill="#71717a" font-size="10" text-anchor="middle">${p.c}</text>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Overlay chart — candidate against raw quotes</h2>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="300" role="img" aria-label="Candidate curve with raw quotes overlaid">
+      <path d="${d}" fill="none" stroke="#58a6ff" stroke-width="2"></path>
+      ${marks}
+      <text x="6" y="${y(hi - 0.03) + 4}" fill="#71717a" font-size="10">${(hi - 0.03).toFixed(2)}%</text>
+      <text x="6" y="${y(lo + 0.03) + 4}" fill="#71717a" font-size="10">${(lo + 0.03).toFixed(2)}%</text>
+    </svg>
+    <div class="row"><span class="muted">line: candidate</span><span class="muted">dot: raw quote</span>${state === 'gap' ? tag('7Y quote not joined', 'bad') : ''}</div>
+  </div>`;
+}
+
+function forwardChart(){
+  const w = 960, h = 200, pad = 40;
+  const lo = Math.min(...forwards.map(f => f.fwd)) - 0.05, hi = Math.max(...forwards.map(f => f.fwd)) + 0.05;
+  const bw = (w - 2 * pad) / forwards.length;
+  const bars = forwards.map((f, i) => {
+    const y = h - pad - (f.fwd - lo) * (h - 2 * pad) / (hi - lo);
+    return `<rect x="${(pad + i * bw + 4).toFixed(1)}" y="${y.toFixed(1)}" width="${(bw - 8).toFixed(1)}" height="${(h - pad - y).toFixed(1)}" fill="${f.step ? '#d29922' : '#3fb950'}" opacity=".8"></rect>
+      <text x="${(pad + i * bw + bw / 2).toFixed(1)}" y="${h - 14}" fill="#71717a" font-size="9" text-anchor="middle">${f.seg}</text>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Forward rates by segment</h2>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="200" role="img" aria-label="Forward rate per segment">${bars}</svg>
+    <div class="notice">A step between 5Y and 7Y is not proof of a fault: the checker that would say so has no caller.</div>
+  </div>`;
+}
+
+function calendarPanel(){
+  const body = pillars.map(p => `<tr><td class="mono">${p.c}</td><td>${p.role}</td><td class="mono">${p.date}</td>
+    <td class="faint">RATES_SPOT_FORWARD · ACT/365.FIXED · Modified Following</td></tr>`).join('');
+  return `
+  <div class="panel">
+    <h2>Calendar and roll</h2>
+    <div class="grid2">
+      <table><tbody>${roll.map(([k, v]) => `<tr><td>${k}</td><td class="mono">${v}</td></tr>`).join('')}</tbody></table>
+      <table><thead><tr><th>Pillar</th><th>Role</th><th>Resolved date</th><th>Derived from</th></tr></thead><tbody>${body}</tbody></table>
+    </div>
+    <div class="notice">A resolved date is not stored on a point, so the screen resolves each tenor again and labels the dates as derived. The two can disagree.</div>
+  </div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let body;
+  if (variant === 'b') body = overlayChart() + forwardChart();
+  else if (variant === 'c') body = overlayChart() + `<div class="grid2">${quotesTable()}${residualsTable()}</div>`;
+  else body = quotesTable() + residualsTable() + forwardTable();
+  app.innerHTML = header() + body + calendarPanel();
+  document.getElementById('note').textContent =
+    `Prototype · check a curve's fit · variant ${variant.toUpperCase()} · market: ${state} · reads and diagnoses only`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Show</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'residuals' : v === 'b' ? 'overlay' : 'combined'}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Market</span>` +
+    ['fit','large','gap'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    document.getElementById('note').textContent = `${b.textContent}: revert-only in this prototype — the screen changes nothing`;
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

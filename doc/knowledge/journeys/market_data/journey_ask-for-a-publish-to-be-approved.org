@@ -92,6 +92,17 @@ are asking about above the act of asking.
 The raise control is disabled while no market-data kind exists, and the panel
 says why, so an empty action is never mistaken for a broken one.
 
+* Prototype
+
+A static page at =doc/prototypes/ask-for-a-publish-to-be-approved/index.html=: mock data only, no backend,
+no build step and no session. It argues that a publish is a request, not a save: the maker raises it with the delta and cannot decide it.
+
+- Variants :: a a per-curve changed list, b a node-level diff, c a summary by currency
+- States :: nothing, ready, raised
+- Source :: =doc/prototypes/ask-for-a-publish-to-be-approved/index.html=
+- Open :: =/OreStudio/doc/prototypes/ask-for-a-publish-to-be-approved/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

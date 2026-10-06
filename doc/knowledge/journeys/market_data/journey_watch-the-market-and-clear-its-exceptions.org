@@ -86,6 +86,17 @@ clearing read as one act.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_watch-the-market-and-clear-its-exceptions.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/watch-the-market-and-clear-its-exceptions/index.html=: mock data only, no backend,
+no build step and no session. It argues that the market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen.
+
+- Variants :: a exceptions beside the quotes, b below them, c queue-first
+- States :: clean, crossed, stale
+- Source :: =doc/prototypes/watch-the-market-and-clear-its-exceptions/index.html=
+- Open :: =/OreStudio/doc/prototypes/watch-the-market-and-clear-its-exceptions/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

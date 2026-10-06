@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bootstrap a curve prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's "Bootstrap or refresh a curve" screen
+  (doc/knowledge/journeys/market_data/journey_bootstrap-or-refresh-a-curve.org):
+  the blueprint and the as-of at the top, the candidate points in the middle,
+  and the health of the build at the bottom, so the person reads what was built
+  and then how well it was built. Nothing here is published.
+
+  Variants with ?variant=a|b|c: a is the table this journey argues for, b is
+  the same data as a chart, c puts the health beside the points.
+  ?state=clean|missing|projection switches the mock market. Nothing reads a
+  service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'clean';
+
+const pillars = [
+  {tenor:'1M',  role:'DEPOSIT', market:4.3120, source:'ir_curve.usd', age:'3m'},
+  {tenor:'3M',  role:'DEPOSIT', market:4.3450, source:'ir_curve.usd', age:'3m'},
+  {tenor:'6M',  role:'DEPOSIT', market:4.3760, source:'ir_curve.usd', age:'4m'},
+  {tenor:'1Y',  role:'SWAP',    market:4.4020, source:'ir_curve.usd', age:'5m'},
+  {tenor:'2Y',  role:'SWAP',    market:4.3550, source:'ir_curve.usd', age:'5m'},
+  {tenor:'3Y',  role:'SWAP',    market:4.3110, source:'ir_curve.usd', age:'6m'},
+  {tenor:'5Y',  role:'SWAP',    market:4.2480, source:'ir_curve.usd', age:'6m'},
+  {tenor:'7Y',  role:'SWAP',    market:4.2110, source:'ir_curve.usd', age:'7m'},
+  {tenor:'10Y', role:'SWAP',    market:4.1850, source:'ir_curve.usd', age:'7m'},
+  {tenor:'20Y', role:'SWAP',    market:4.0220, source:'ir_curve.usd', age:'9m'},
+  {tenor:'30Y', role:'SWAP',    market:3.9110, source:'ir_curve.usd', age:'9m'}
+];
+// A discount factor per pillar, smoothed from the market value.
+let df = 1.0;
+const points = pillars.map((p, i) => {
+  const years = [1/12, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30][i];
+  df *= Math.exp(-(p.market/100) * (i ? years - [1/12,0.25,0.5,1,2,3,5,7,10,20,30][i-1] : years));
+  return {...p, years, df};
+});
+
+const health = {
+  clean: {computed: 11, missing: [], stale: [], discount: true},
+  missing: {computed: 9, missing: ['7Y','10Y'], stale: [], discount: true},
+  projection: {computed: 11, missing: [], stale: ['1M','3M'], discount: false}
+}[state];
+
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+function pct(v){ return v.toFixed(4); }
+function dfmt(v){ return v.toFixed(6); }
+
+function header(){
+  const role = state === 'projection' ? 'PROJECTION' : 'FUNDING';
+  return `
+  <div class="top">
+    <h1>Curves / USD SOFR FOMC</h1>
+    <span class="muted">candidate · not published</span>
+    <a class="grow" style="text-align:right" href="../../knowledge/journeys/market_data/journey_bootstrap-or-refresh-a-curve.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Blueprint and as-of</h2>
+    <div class="row">
+      <div class="field"><label>Currency</label><div class="value">USD</div></div>
+      <div class="field"><label>Family role</label><div class="value">${role}</div></div>
+      <div class="field"><label>Output series</label><div class="value mono">oresmd://ir/USD?…&amp;curve_id=USD-SOFR-FOMC</div></div>
+      <div class="field"><label>${state === 'projection' ? 'Discount curve' : 'Discount curve'}</label><div class="value">${state === 'projection' ? 'USD-SOFR-OIS' : '— (funding)'}</div></div>
+      <div class="field"><label>As-of</label><input type="datetime-local" value="2026-10-06T14:00"></div>
+      <button class="btn primary" id="compute">Compute candidate</button>
+    </div>
+    <div class="notice">Compute is stateless: it echoes the points and writes nothing. Publishing is a separate, approved act.</div>
+  </div>`;
+}
+
+function pointsTable(){
+  return `
+  <div class="panel">
+    <h2>Candidate points</h2>
+    <table>
+      <thead><tr><th>Pillar</th><th>Role</th><th class="num">Market</th><th class="num">Discount factor</th><th>Source</th><th>Age</th></tr></thead>
+      <tbody>${points.map(p => {
+        const miss = health.missing.includes(p.tenor);
+        return `<tr${miss ? ' class="muted"' : ''}><td class="mono">${p.tenor}</td><td>${p.role}</td>
+          <td class="num">${miss ? '—' : pct(p.market)}</td>
+          <td class="num">${miss ? '—' : dfmt(p.df)}</td>
+          <td>${miss ? tag('missing','bad') : p.source}</td><td class="faint">${miss ? '—' : p.age}</td></tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+function pointsChart(){
+  const w = 960, h = 260, pad = 34;
+  const xs = points.map((_, i) => pad + i * (w - 2*pad) / (points.length - 1));
+  const lo = Math.min(...points.map(p => p.df)), hi = Math.max(...points.map(p => p.df));
+  const ys = points.map(p => h - pad - (p.df - lo) * (h - 2*pad) / (hi - lo));
+  const path = xs.map((x, i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  return `
+  <div class="panel">
+    <h2>Candidate points (discount factors)</h2>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="260" role="img" aria-label="Discount factors per pillar">
+      <path d="${path}" fill="none" stroke="#58a6ff" stroke-width="2"></path>
+      ${points.map((p, i) => `<circle cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="#8ab4f8"></circle>
+        <text x="${xs[i].toFixed(1)}" y="${h-10}" fill="#71717a" font-size="10" text-anchor="middle">${p.tenor}</text>`).join('')}
+    </svg>
+  </div>`;
+}
+
+function healthPanel(){
+  const rows = [
+    ['Pillars computed', `${health.computed} of ${points.length}`, health.computed === points.length ? 'ok' : 'bad'],
+    ['Inputs missing', health.missing.length ? health.missing.join(', ') : 'none', health.missing.length ? 'bad' : 'ok'],
+    ['Inputs stale', health.stale.length ? health.stale.join(', ') : 'none', health.stale.length ? 'warn' : 'ok'],
+    ['Discount curve present', health.discount ? 'yes' : 'no', health.discount ? 'ok' : 'bad']
+  ];
+  return `
+  <div class="panel">
+    <h2>Build health</h2>
+    <table><tbody>${rows.map(([k, v, c]) => `<tr><td>${k}</td><td>${tag(v, c)}</td></tr>`).join('')}</tbody></table>
+    <div class="notice">The server returns no diagnostics, so this panel is derived from the points received and the pillars read.</div>
+  </div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const head = header();
+  const pts = variant === 'b' ? pointsChart() : pointsTable();
+  if (variant === 'c') app.innerHTML = head + `<div class="grid2">${pts}${healthPanel()}</div>`;
+  else app.innerHTML = head + pts + healthPanel();
+  document.getElementById('note').textContent = `Prototype · bootstrap a curve · variant ${variant.toUpperCase()} · market: ${state} · candidate, nothing published`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Variant</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Market</span>` +
+    ['clean','missing','projection'].map(s => `<button data-s="${s}" class="${s===state?'on':''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  const c = document.getElementById('compute');
+  if (c) c.onclick = () => { c.textContent = 'Computed ' + new Date().toLocaleTimeString(); };
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

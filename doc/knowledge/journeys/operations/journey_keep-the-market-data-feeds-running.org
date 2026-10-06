@@ -98,6 +98,17 @@ can be done to it.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_keep-the-market-data-feeds-running.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/keep-the-market-data-feeds-running/index.html=: mock data only, no backend,
+no build step and no session. It argues that a feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear.
+
+- Variants :: a a flat table, b grouped by source family, c the roster with a per-feed detail
+- States :: all, quiet, disabled
+- Source :: =doc/prototypes/keep-the-market-data-feeds-running/index.html=
+- Open :: =/OreStudio/doc/prototypes/keep-the-market-data-feeds-running/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

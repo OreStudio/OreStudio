@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface framework prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.cell{background:var(--panel-2);font-family:var(--mono);text-align:right}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The "Author a surface's framework" screen
+  (doc/knowledge/journeys/market_data/journey_author-a-surfaces-framework.org):
+  the two axes at the top, the grid and the quoting convention that read from
+  them in the middle, and the interpolation, the extrapolation and the
+  parametric model at the bottom, so the person reads the shape before the
+  maths. No surface model exists, so nothing on this page is written.
+
+  The design question is the axis definition. Variants with ?variant=a|b|c:
+  a is two label ladders, b is the full grid preview, c is a
+  convention-first form. ?state=proposed|nostrike switches the mock: nostrike
+  is a surface with no strike-label vocabulary defined, so no label can be
+  validated or ordered. Nothing reads a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'proposed';
+
+const expiries = [
+  {label:'1M',  kind:'tenor', date:'2026-11-06', dayCount:'A365'},
+  {label:'3M',  kind:'tenor', date:'2027-01-06', dayCount:'A365'},
+  {label:'6M',  kind:'tenor', date:'2027-04-06', dayCount:'A365'},
+  {label:'1Y',  kind:'tenor', date:'2027-10-06', dayCount:'A365'},
+  {label:'2Y',  kind:'tenor', date:'2028-10-06', dayCount:'A365'},
+  {label:'5Y',  kind:'IMM',   date:'2031-12-17', dayCount:'A365'},
+  {label:'10Y', kind:'IMM',   date:'2036-12-17', dayCount:'A365'},
+  {label:'30Y', kind:'IMM',   date:'2056-12-17', dayCount:'A365'}
+];
+const quoteLabels = [
+  {label:'ATM',  kind:'ATM',           order:0},
+  {label:'25RR', kind:'risk reversal', order:1},
+  {label:'25BF', kind:'butterfly',     order:2},
+  {label:'10RR', kind:'risk reversal', order:3},
+  {label:'10BF', kind:'butterfly',     order:4}
+];
+// Decoded from the oresmd URIs when no vocabulary exists: text, no order.
+const rawLabels = ['25BF','ATM','10RR','25RR','10BF'];
+
+// Volatility points in percent; null is a cell the series holds no point for.
+const grid = [
+  [22.6, -1.4, 0.6, -2.8, 1.1],
+  [22.1, -1.5, 0.7, -3.0, 1.2],
+  [21.8, -1.6, 0.8, -3.1, 1.3],
+  [21.4, -1.7, 0.8, -3.3, 1.4],
+  [20.7, -1.8, 0.9, -3.4, 1.5],
+  [19.8, -2.0, 1.0, -3.7, 1.6],
+  [18.9, -2.2, 1.1, null, null],
+  [null, null, 1.2, null, 1.8]
+];
+const quoted = grid.flat().filter(v => v !== null).length;
+const missing = grid.flat().length - quoted;
+const noVocab = state === 'nostrike';
+
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+function vol(v){ return v === null ? '—' : v.toFixed(1); }
+
+function header(){
+  return `
+  <div class="top">
+    <h1>Surface framework: USD / 5Y swaption (proposed)</h1>
+    <span class="muted">candidate · no framework stored</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_author-a-surfaces-framework.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Series and identity</h2>
+    <div class="row">
+      <div class="field"><label>Asset class</label><div class="value">rates</div></div>
+      <div class="field"><label>Series subclass</label><div class="value">volatility</div></div>
+      <div class="field" style="flex:1"><label>Volatility series (oresmd URI)</label><div class="value mono">oresmd://vol/USD?type=surface&amp;instrument=swaption</div></div>
+      <div class="field"><label>Framework stored</label><div class="value">${tag('no','bad')}</div></div>
+    </div>
+    <div class="notice">No surface model is stored today. This page states the framework the desk needs; the cells below are read from the series' points.</div>
+  </div>`;
+}
+
+function ladders(){
+  const right = noVocab ? rawLabels.map((l, i) => ({label:l, kind:'(decoded text)', order:i})) : quoteLabels;
+  return `
+  <div class="grid2">
+    <div class="panel">
+      <h2>Expiry axis — tenor ladder</h2>
+      <table><thead><tr><th>#</th><th>Tenor</th><th>Date kind</th><th>Expiry date</th></tr></thead>
+      <tbody>${expiries.map((e, i) => `<tr><td class="mono">${i}</td><td class="mono">${e.label}</td><td class="muted">${e.kind}</td><td class="faint">${e.date}</td></tr>`).join('')}</tbody></table>
+      <div class="row"><button class="btn" data-add="expiry">Add expiry</button><span class="faint">Tenor codes come from the reference list.</span></div>
+    </div>
+    <div class="panel">
+      <h2>Strike or delta axis — label ladder</h2>
+      ${noVocab ? `<div class="notice" style="border-color:#5a2320">${tag('no strike-label vocabulary','bad')} The labels below are the text decoded from the point URIs. Nothing names them, so the screen can neither validate nor order them.</div>` : ''}
+      <table><thead><tr><th>#</th><th>Label</th><th>Kind</th><th>Order</th></tr></thead>
+      <tbody>${right.map((l, i) => `<tr><td class="mono">${i}</td><td class="mono">${l.label}</td><td class="muted">${l.kind}</td><td>${noVocab ? tag('unknown','warn') : l.order}</td></tr>`).join('')}</tbody></table>
+      <div class="row"><button class="btn" data-add="label">Add label</button><span class="faint">Labels are free text inside a URI today.</span></div>
+    </div>
+  </div>`;
+}
+
+function gridPreview(){
+  if(noVocab) return `
+  <div class="panel">
+    <h2>Grid preview</h2>
+    <div class="notice" style="border-color:#5a2320">${tag('no grid','bad')} The second axis has no vocabulary, so a cell cannot be named. ${quoted} points carry a decodable label, but the axis order is unknown and the 40 cells cannot be laid out.</div>
+  </div>`;
+  return `
+  <div class="panel">
+    <h2>Grid preview — ${expiries.length} expiries &times; ${quoteLabels.length} labels = ${expiries.length * quoteLabels.length} cells</h2>
+    <table><thead><tr><th>Expiry</th>${quoteLabels.map(l => `<th class="num">${l.label}</th>`).join('')}</tr></thead>
+    <tbody>${expiries.map((e, r) => `<tr><td class="mono">${e.label}</td>${grid[r].map(v => `<td class="cell"${v === null ? ' style="color:var(--bad);background:none"' : ''}>${vol(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>
+    <div class="row"><span>${tag(quoted + ' quoted','ok')}</span><span>${tag(missing + ' missing','bad')}</span>
+      <span class="faint">Cells with no point at the series are the desk's to fill or exclude.</span></div>
+    <div class="notice">Quote type: volatility. Expiry dates: IMM and tenor dates. Day count: A365. The system previews how many cells the axes produce.</div>
+  </div>`;
+}
+
+function conventionFirst(){
+  const right = noVocab ? rawLabels.map(l => ({label:l, kind:'(decoded text)'})) : quoteLabels;
+  return `
+  <div class="panel">
+    <h2>Quoting convention first</h2>
+    <div class="row">
+      <div class="field"><label>Label meaning</label><select><option>delta</option><option>strike</option><option>ATM / RR / BF combination</option></select></div>
+      <div class="field"><label>Delta convention</label><select><option>forward</option><option>spot</option><option>premium-adjusted</option></select></div>
+      <div class="field"><label>ATM type</label><select><option>forward</option><option>delta-neutral</option></select></div>
+      <div class="field"><label>Quote type</label><select><option>volatility</option><option>price</option><option>normal volatility</option></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Expiry dates</label><select><option>IMM</option><option>tenor dates</option></select></div>
+      <div class="field"><label>Day count</label><select><option>A365</option><option>ACT/360</option><option>ACT/ACT</option></select></div>
+      <div class="field"><label>Currency</label><div class="value">USD</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Axes the convention implies</h2>
+    <div class="row">
+      <div class="field" style="flex:1"><label>Expiry axis</label><div class="value mono">${expiries.map(e => e.label).join(', ')}</div></div>
+      <div class="field" style="flex:1"><label>Label axis</label><div class="value mono">${right.map(l => l.label).join(', ')}</div></div>
+    </div>
+    <div class="notice">${noVocab
+      ? tag('labels unresolved','bad') + ' The convention names deltas, but no strike-label vocabulary exists, so the second axis stays the decoded text.'
+      : `A delta convention orders the 25 and 10 pillars around ATM; ${quoted} of ${expiries.length * quoteLabels.length} cells carry a point.`}</div>
+  </div>`;
+}
+
+function maths(){
+  return `
+  <div class="panel">
+    <h2>Interpolation, extrapolation and model</h2>
+    <div class="row">
+      <div class="field"><label>Time interpolation</label><select><option>linear in variance</option><option>linear in vol</option><option>cubic</option></select></div>
+      <div class="field"><label>Strike interpolation</label><select><option>cubic</option><option>linear</option><option>spline in delta</option></select></div>
+      <div class="field"><label>Extrapolation, expiry</label><select><option>flat</option><option>linear</option><option>none</option></select></div>
+      <div class="field"><label>Extrapolation, strike</label><select><option>none</option><option>flat</option><option>linear</option></select></div>
+      <div class="field"><label>Parametric model</label><select><option>SABR</option><option>SVI</option><option>(none — grid only)</option></select></div>
+    </div>
+    <div class="row">
+      <span class="faint">SABR parameters per expiry:</span>
+      <span class="mono">1Y alpha 0.0312 · beta 0.5 · rho -0.28 · nu 0.61</span>
+      <span class="mono">5Y alpha 0.0488 · beta 0.5 · rho -0.35 · nu 0.44</span>
+      <span class="mono">10Y alpha 0.0601 · beta 0.5 · rho -0.41 · nu 0.38</span>
+    </div>
+    <div class="notice">No model kind and no parameter set is stored, so a fitted SABR or SVI surface cannot be re-read.</div>
+  </div>`;
+}
+
+function footer(){
+  return `
+  <div class="panel">
+    <div class="row">
+      <button class="btn" disabled>Save framework (not available)</button>
+      <button class="btn" id="preview">Preview grid</button>
+      <span class="faint" id="preview-note"></span>
+    </div>
+    <div class="notice">Nothing on this page is written: no surface entity, no axis rows, no grid cells. The framework lives in the page session only.</div>
+  </div>`;
+}
+
+function render(){
+  const body = variant === 'b' ? gridPreview() + ladders() : variant === 'c' ? conventionFirst() : ladders() + gridPreview();
+  document.getElementById('app').innerHTML = header() + body + maths() + footer();
+  document.getElementById('preview').onclick = () => {
+    document.getElementById('preview-note').textContent = noVocab
+      ? 'preview incomplete: the label axis has no vocabulary' : `preview: ${quoted} of ${missing + quoted} cells quoted`;
+  };
+  document.getElementById('note').textContent = `Prototype · author a surface's framework · variant ${variant.toUpperCase()} · ${noVocab ? 'no strike-label vocabulary' : 'labels proposed'} · nothing written`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Axis definition</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Labels</span>` +
+    [['proposed','proposed'],['nostrike','none']].map(([s, t]) => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('#app [data-add]').forEach(b => b.onclick = () => {
+    b.textContent = b.dataset.add === 'expiry' ? 'expiry added — pick a tenor' : 'label added — pick a label';
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

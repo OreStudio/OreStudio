@@ -93,6 +93,17 @@ sits at the bottom, so the person reads cause above effect.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_manage-a-curves-blueprint.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/manage-a-curves-blueprint/index.html=: mock data only, no backend,
+no build step and no session. It argues that a curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits.
+
+- Variants :: a flat pillared table, b grouped by instrument kind (deposit, future, swap), c a drag-ordered list
+- States :: funding, projection (a projection with no discount curve, which the screen refuses), empty
+- Source :: =doc/prototypes/manage-a-curves-blueprint/index.html=
+- Open :: =/OreStudio/doc/prototypes/manage-a-curves-blueprint/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

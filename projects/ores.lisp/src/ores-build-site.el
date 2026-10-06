@@ -376,6 +376,66 @@ with the site chrome."
   ;; version and the database under them, mock data only.
   (ores-deploy-web-app
    "./doc/prototypes/versions-and-database" site-dir "doc/prototypes/versions-and-database"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Blueprint editor prototype: the same body reset. A curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/manage-a-curves-blueprint" site-dir "doc/prototypes/manage-a-curves-blueprint"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Surface framework prototype: the same body reset. A surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/author-a-surfaces-framework" site-dir "doc/prototypes/author-a-surfaces-framework"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Market watch prototype: the same body reset. The market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/watch-the-market-and-clear-its-exceptions" site-dir "doc/prototypes/watch-the-market-and-clear-its-exceptions"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Curve bootstrap prototype: the same body reset. A build produces a candidate, not a curve the system uses: the points, their provenance and the health read together, unpublished., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/bootstrap-or-refresh-a-curve" site-dir "doc/prototypes/bootstrap-or-refresh-a-curve"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Surface calibration prototype: the same body reset. A surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/calibrate-or-refresh-a-surface" site-dir "doc/prototypes/calibrate-or-refresh-a-surface"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Hand adjustment prototype: the same body reset. A hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/adjust-a-curve-or-surface-by-hand" site-dir "doc/prototypes/adjust-a-curve-or-surface-by-hand"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Curve fit prototype: the same body reset. A curve is checked against the quotes it came from: residuals, forward smoothness and the roll logic, on one screen., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/check-a-curves-fit" site-dir "doc/prototypes/check-a-curves-fit"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Surface slices prototype: the same body reset. A surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/inspect-a-surfaces-slices" site-dir "doc/prototypes/inspect-a-surfaces-slices"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Ask to publish prototype: the same body reset. A publish is a request, not a save: the maker raises it with the delta and cannot decide it., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/ask-for-a-publish-to-be-approved" site-dir "doc/prototypes/ask-for-a-publish-to-be-approved"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Decide a publish prototype: the same body reset. The checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/decide-a-publish" site-dir "doc/prototypes/decide-a-publish"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Publish prototype: the same body reset. Publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/publish-the-approved-set" site-dir "doc/prototypes/publish-the-approved-set"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Withdraw a curve prototype: the same body reset. A wrong publish is undone as an act with a reason, and the withdrawal can need its own approval., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/withdraw-or-replace-a-published-curve" site-dir "doc/prototypes/withdraw-or-replace-a-published-curve"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Evolution view prototype: the same body reset. One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/watch-a-curve-or-surface-evolve" site-dir "doc/prototypes/watch-a-curve-or-surface-evolve"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Curve trail prototype: the same body reset. The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/see-who-changed-a-curve" site-dir "doc/prototypes/see-who-changed-a-curve"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Market data feeds prototype: the same body reset. A feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear., mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/keep-the-market-data-feeds-running" site-dir "doc/prototypes/keep-the-market-data-feeds-running"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

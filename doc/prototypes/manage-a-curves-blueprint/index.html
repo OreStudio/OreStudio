@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curve blueprint prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.dragrow{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.dragrow .handle{cursor:grab;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's "Manage a curve's blueprint" screen
+  (doc/knowledge/journeys/market_data/journey_manage-a-curves-blueprint.org):
+  the curve's identity and family role at the top, its output series and
+  discount curve, the pillar instruments in order, and the bootstrap method,
+  interpolation, day count, tenor convention and split tenor below them, so the
+  person reads cause above effect. A saved blueprint is a candidate; nothing is
+  published and no curve is built.
+
+  The design question is the shape of the pillar editor. Variants with
+  ?variant=a|b|c: a is one flat pillared table, b groups the pillars by
+  instrument kind (deposit, future, swap), c is a drag-ordered list.
+  ?state=funding|projection|empty switches the mock. The projection state has
+  no discount curve and the server refuses the save. Nothing reads a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'funding';
+
+const pillars = [
+  {seq:0, start:'SPOT', end:'1M',  role:'DEPOSIT', instrument:'USD SOFR 1M deposit', market:4.3120},
+  {seq:1, start:'SPOT', end:'3M',  role:'DEPOSIT', instrument:'USD SOFR 3M deposit', market:4.3450},
+  {seq:2, start:'SPOT', end:'6M',  role:'DEPOSIT', instrument:'USD SOFR 6M deposit', market:4.3760},
+  {seq:3, start:'3M',   end:'6M',  role:'FRA',     instrument:'3x6 SOFR FRA',         market:4.3580},
+  {seq:4, start:'6M',   end:'1Y',  role:'FRA',     instrument:'6x12 SOFR FRA',        market:4.3910},
+  {seq:5, start:'SPOT', end:'2Y',  role:'SWAP',    instrument:'2Y SOFR swap',         market:4.3550},
+  {seq:6, start:'SPOT', end:'5Y',  role:'SWAP',    instrument:'5Y SOFR swap',         market:4.2480},
+  {seq:7, start:'SPOT', end:'10Y', role:'SWAP',    instrument:'10Y SOFR swap',        market:4.1850},
+  {seq:8, start:'SPOT', end:'30Y', role:'SWAP',    instrument:'30Y SOFR swap',        market:3.9110}
+];
+
+const blueprints = {
+  funding: {
+    currency:'USD', role:'FUNDING', version:'4',
+    derivation:'IR_CURVE_BOOTSTRAP (stamped on first build)',
+    series:'oresmd://ir/USD?type=curve&amp;family=FUNDING',
+    discount:null, discountText:'none for FUNDING', pillars
+  },
+  projection: {
+    currency:'USD', role:'PROJECTION', version:'1', derivation:'IR_CURVE_BOOTSTRAP (not stamped yet)',
+    series:'oresmd://ir/USD?type=curve&amp;family=PROJECTION&amp;index=SOFR',
+    discount:null, discountText:'— choose a FUNDING blueprint —',
+    pillars: pillars.map(p => p.role === 'DEPOSIT' ? {...p, market:p.market + 0.0100} : p)
+  },
+  empty: {
+    currency:'USD', role:'(not set)', version:'new', derivation:'not stamped until the first build',
+    series:'(minted on first save)', discount:null, discountText:'— choose a FUNDING blueprint —', pillars:[]
+  }
+};
+
+const bp = blueprints[state];
+let rows = bp.pillars.map(p => ({...p}));
+const kindLabel = {DEPOSIT:'Deposit', FRA:'Future (FRA)', SWAP:'Swap'};
+const history = [
+  {v:'4', when:'2026-10-06 14:12', by:'a.reyes (trader)', what:'added pillar 8, SPOT → 30Y SWAP'},
+  {v:'3', when:'2026-09-29 09:41', by:'m.oduya (quant)', what:'moved split tenor 1Y → 2Y'},
+  {v:'2', when:'2026-09-14 16:03', by:'j.silva (market data ops)', what:'added pillars 3 and 4, the 3x6 and 6x12 FRA'}
+];
+
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+function mv(p){ return p.market == null ? '—' : p.market.toFixed(4); }
+
+function identity(){
+  const missing = bp.role === 'PROJECTION' && !bp.discount;
+  return `
+  <div class="top">
+    <h1>Curve blueprint: ${bp.currency} / ${bp.role}</h1>
+    <span class="muted">candidate · not published</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_manage-a-curves-blueprint.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Identity and family role</h2>
+    <div class="row">
+      <div class="field"><label>Currency</label><div class="value">${bp.currency}</div></div>
+      <div class="field"><label>Family role</label><select><option>${bp.role}</option><option>FUNDING</option><option>PROJECTION</option></select></div>
+      <div class="field"><label>Version</label><div class="value mono">${bp.version}</div></div>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1"><label>Output series (oresmd URI)</label><div class="value mono">${bp.series}</div></div>
+      <div class="field" style="flex:1"><label>Discount curve (PROJECTION only)</label><div class="value mono">${bp.discountText}</div></div>
+    </div>
+    <div class="row"><div class="field" style="flex:1"><label>Derivation stamp</label><div class="value">${bp.derivation}</div></div></div>
+    ${missing ? `<div class="notice" style="border-color:#5a2320;color:var(--ink-dim)">${tag('discount curve required','bad')} The server refuses a projection that discounts off nothing. Pick this currency's FUNDING blueprint before the save.</div>`
+      : `<div class="notice">A blueprint has no name: the screen titles it by the output series' oresmd URI. The URI is the identity at the wire.</div>`}
+  </div>`;
+}
+
+function flatTable(){
+  if(!rows.length) return `<div class="panel"><h2>Pillars</h2><div class="notice">New blueprint: no pillars yet. Add one to start the list; the bootstrap reads the list in sequence order.</div><div class="row"><button class="btn" data-add>Add pillar</button></div></div>`;
+  return `
+  <div class="panel">
+    <h2>Pillars — one flat list</h2>
+    <table>
+      <thead><tr><th>#</th><th>Start tenor</th><th>End tenor</th><th>Curve role</th><th>Instrument</th><th class="num">Market</th><th>Split</th></tr></thead>
+      <tbody>${rows.map((p, i) => `<tr>
+        <td class="mono">${i}</td><td class="mono">${p.start}</td><td class="mono">${p.end}</td>
+        <td>${p.role}</td><td class="muted">${p.instrument}</td><td class="num">${mv(p)}</td>
+        <td>${p.end === '1Y' ? tag('split tenor','warn') : ''}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="row"><button class="btn" data-add>Add pillar</button>
+      <span class="faint">Reorder rewrites sequence; each row is written as a new bitemporal version.</span></div>
+  </div>`;
+}
+
+function groupedTable(){
+  const groups = ['DEPOSIT','FRA','SWAP'].map(k => {
+    const g = rows.filter(p => p.role === k);
+    if(!g.length) return '';
+    return `<div class="muted mono">${kindLabel[k]} · ${g.length} pillar${g.length > 1 ? 's' : ''}</div>
+    <table><thead><tr><th>#</th><th>Start</th><th>End</th><th>Instrument</th><th class="num">Market</th></tr></thead>
+    <tbody>${g.map(p => `<tr><td class="mono">${rows.indexOf(p)}</td><td class="mono">${p.start}</td><td class="mono">${p.end}</td>
+      <td class="muted">${p.instrument}</td><td class="num">${mv(p)}</td></tr>`).join('')}</tbody></table>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Pillars — grouped by instrument kind</h2>
+    ${groups || `<div class="notice">New blueprint: no pillars yet.</div>`}
+    <div class="notice">A segment is contiguous pillars of one kind: deposits to 6M, FRA 3M → 1Y, swaps from 2Y. The group boundary is the split tenor.</div>
+    <div class="row"><button class="btn" data-add>Add pillar</button></div>
+  </div>`;
+}
+
+function dragList(){
+  if(!rows.length) return `<div class="panel"><h2>Pillars — drag order</h2><div class="notice">New blueprint: no pillars yet.</div><div class="row"><button class="btn" data-add>Add pillar</button></div></div>`;
+  return `
+  <div class="panel">
+    <h2>Pillars — ordered list, dragged into place</h2>
+    <div style="display:grid;gap:6px">${rows.map((p, i) => `
+      <div class="dragrow">
+        <span class="handle mono" title="drag to reorder">&#9776;</span>
+        <span class="mono faint">${String(i).padStart(2,'0')}</span>
+        <span class="mono">${p.start} &rarr; ${p.end}</span>
+        <span class="tag">${p.role}</span>
+        <span class="muted">${p.instrument}</span>
+        <span class="mono" style="margin-left:auto">${mv(p)}</span>
+        <button class="btn" data-up="${i}" ${i === 0 ? 'disabled' : ''}>&uarr;</button>
+        <button class="btn" data-down="${i}" ${i === rows.length - 1 ? 'disabled' : ''}>&darr;</button>
+        <button class="btn" data-rm="${i}">Remove</button>
+      </div>`).join('')}</div>
+    <div class="row"><button class="btn" data-add>Add pillar</button>
+      <span class="faint">The list is the sequence; the bootstrap reads it top to bottom.</span></div>
+  </div>`;
+}
+
+function conventions(){
+  return `
+  <div class="panel">
+    <h2>Bootstrap method and conventions</h2>
+    <div class="row">
+      <div class="field"><label>Interpolation</label><select><option>LOG_LINEAR_DISCOUNT</option><option>CUBIC_SPLINE</option><option>FLAT_FORWARD_THEN_LOG_LINEAR</option></select></div>
+      <div class="field"><label>Day count</label><select><option>A365</option><option>ACT/360</option><option>30/360</option><option>ACT/ACT</option></select></div>
+      <div class="field"><label>Tenor convention</label><select><option>RATES_SPOT_FORWARD</option><option>RATES_SPOT_FOMC</option></select></div>
+      <div class="field"><label>Split tenor</label><select><option>1Y</option><option>2Y</option><option>6M</option></select></div>
+    </div>
+    <div class="notice">Single-segment method: the split tenor is the last pillar's end tenor, offered from the same tenor list. The pillar tenors are soft references: a code the list does not hold is marked, not refused.</div>
+  </div>`;
+}
+
+function historyPanel(){
+  return `
+  <div class="panel">
+    <h2>Version history</h2>
+    <table><thead><tr><th>Version</th><th>Written</th><th>By</th><th>Change from the one before</th></tr></thead>
+    <tbody>${history.map(h => `<tr><td class="mono">${h.v}</td><td class="faint">${h.when}</td><td>${h.by}</td><td class="muted">${h.what}</td></tr>`).join('')}</tbody></table>
+    <div class="notice">A revert is a new version, not a deletion. The history names the writer alone: no approval kind covers a blueprint change yet.</div>
+  </div>`;
+}
+
+function footer(){
+  return `
+  <div class="panel">
+    <div class="row">
+      <button class="btn primary" id="save">Save blueprint</button>
+      <button class="btn">History</button>
+      <span class="faint" id="save-note"></span>
+    </div>
+    <div class="notice">Not published: build a curve from this blueprint and publish that output curve before pricing can read it. Saving is two writes, not one.</div>
+  </div>`;
+}
+
+function render(){
+  const pills = variant === 'b' ? groupedTable() : variant === 'c' ? dragList() : flatTable();
+  document.getElementById('app').innerHTML = identity() + pills + conventions() + historyPanel() + footer();
+  document.querySelectorAll('#app [data-add]').forEach(b => b.onclick = () => {
+    rows.push({seq:rows.length, start:'SPOT', end:'1Y', role:'SWAP', instrument:'new pillar — pick an instrument', market:null}); render();
+  });
+  document.querySelectorAll('#app [data-rm]').forEach(b => b.onclick = () => { rows.splice(+b.dataset.rm, 1); render(); });
+  document.querySelectorAll('#app [data-up]').forEach(b => b.onclick = () => { const i = +b.dataset.up; [rows[i-1], rows[i]] = [rows[i], rows[i-1]]; render(); });
+  document.querySelectorAll('#app [data-down]').forEach(b => b.onclick = () => { const i = +b.dataset.down; [rows[i+1], rows[i]] = [rows[i], rows[i+1]]; render(); });
+  document.getElementById('save').onclick = () => {
+    document.getElementById('save-note').textContent = bp.role === 'PROJECTION' && !bp.discount
+      ? 'refused: projection has no discount curve' : `config v${bp.version} and ${rows.length} pillar rows written`;
+  };
+  document.getElementById('note').textContent = `Prototype · manage a curve's blueprint · variant ${variant.toUpperCase()} · ${bp.role.toLowerCase()} · candidate, nothing published`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Pillar editor</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Blueprint</span>` +
+    ['funding','projection','empty'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

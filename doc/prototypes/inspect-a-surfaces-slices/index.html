@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspect a surface's slices prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's or quant's "Inspect a surface's slices" screen
+  (doc/knowledge/journeys/market_data/journey_inspect-a-surfaces-slices.org):
+  the surface and its tenor picker at the top, the smiles and the mesh in the
+  middle, and the calendar and butterfly arbitrage checks at the foot, so the
+  person reads the slices, then the whole surface, then its faults. Nothing
+  here is published.
+
+  Variants with ?variant=a|b|c. The variant is the view, which is the journey's
+  central design question: a is a slice at one tenor, b is the mesh or grid,
+  c is the arbitrage report. ?state=clean|butterfly switches the mock market;
+  the butterfly state carries a violation in the 5Y smile.
+  ?tenor=1Y|2Y|5Y|10Y picks the slice. Nothing reads a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'clean';
+const tenor = params.get('tenor') || '5Y';
+
+const deltas = [
+  {k:'10P', label:'10d put', strike:2.40, jitter:0.12},
+  {k:'25P', label:'25d put', strike:2.85, jitter:-0.09},
+  {k:'ATM', label:'ATM', strike:3.25, jitter:0.04},
+  {k:'25C', label:'25d call', strike:3.70, jitter:0.11},
+  {k:'10C', label:'10d call', strike:4.15, jitter:-0.07}
+];
+const strikes = deltas.map(d => d.strike);
+
+const surface = [
+  {exp:'6M',  T:0.5, vols:[15.8,14.4,13.2,13.9,15.4]},
+  {exp:'1Y',  T:1.0, vols:[16.4,15.1,13.9,14.6,16.1]},
+  {exp:'2Y',  T:2.0, vols:[17.1,15.6,14.2,15.0,16.8]},
+  {exp:'5Y',  T:5.0, vols:[18.9,17.0,15.4,16.3,18.4]},
+  {exp:'10Y', T:10.0, vols:[20.2,18.1,16.2,17.3,19.6]},
+  {exp:'30Y', T:30.0, vols:[21.0,18.6,16.4,17.6,20.1]}
+];
+if (state === 'butterfly') surface[3].vols = [18.9, 16.1, 15.4, 16.3, 19.9];
+
+const density = (state === 'butterfly' ? {'6M':0.0021,'1Y':0.0018,'2Y':0.0015,'5Y':-0.0017,'10Y':0.0008,'30Y':0.0005}
+                                      : {'6M':0.0021,'1Y':0.0018,'2Y':0.0015,'5Y':0.0011,'10Y':0.0008,'30Y':0.0005});
+
+const mesh = surface.map(s => {
+  const n = s.vols.length;
+  const vols = strikes.map((_, j) => {
+    const p = j * (n - 1) / (strikes.length - 1);
+    const i0 = Math.floor(p), i1 = Math.min(n - 1, i0 + 1), f = p - i0;
+    return s.vols[i0] * (1 - f) + s.vols[i1] * f;
+  });
+  return {exp:s.exp, T:s.T, vols};
+});
+const tvAll = mesh.flatMap(r => r.vols.map(v => (v / 100) ** 2 * r.T));
+const tvMin = Math.min(...tvAll), tvMax = Math.max(...tvAll);
+
+function tag(t, k){ return `<span class="tag ${k || ''}">${t}</span>`; }
+function slice(exp){ return surface.find(s => s.exp === exp) || surface[3]; }
+function quad(s, i){ return s.vols[i - 1] - 2 * s.vols[i] + s.vols[i + 1]; }
+
+function header(){
+  return `
+  <div class="top">
+    <h1>Surface slices: USD swaption vol (candidate)</h1>
+    <span class="muted">candidate · not published</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_inspect-a-surfaces-slices.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Surface and tenor picker</h2>
+    <div class="row">
+      <div class="field"><label>Surface</label><div class="value mono">oresmd://vol/USD?type=surface&amp;instrument=swaption</div></div>
+      <div class="field"><label>Derivation</label><div class="value">volatility · SABR</div></div>
+      <div class="field"><label>As of</label><div class="value">now · 2026-10-06 14:00 <span class="faint">(no past read)</span></div></div>
+      <div class="field"><label>Quotes held</label><div class="value">42</div></div>
+      <button class="btn primary" data-act="read">Read surface</button>
+    </div>
+    <div class="row"><span class="muted">Tenors shown</span>
+      ${surface.map(s => `<button class="btn" data-t="${s.exp}"${s.exp === tenor ? ' style="border-color:var(--accent);color:var(--accent)"' : ''}>${s.exp}</button>`).join('')}
+      <button class="btn" data-act="smiles">Read smiles</button>
+    </div>
+    <div class="notice">There is no surface read and no slice read. <span class="mono">marketdata.v1.surface.get</span> and <span class="mono">.surface-slice.get</span> are candidate subjects, so every value below is a mock of what those subjects would return.</div>
+  </div>`;
+}
+
+function smileChart(){
+  const s = slice(tenor), w = 960, h = 300, pad = 46;
+  const lo = Math.min(...s.vols) - 0.6, hi = Math.max(...s.vols) + 0.6;
+  const x = i => pad + i * (w - 2 * pad) / (s.vols.length - 1);
+  const y = v => h - pad - (v - lo) * (h - 2 * pad) / (hi - lo);
+  const d = s.vols.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const marks = s.vols.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="4" fill="#58a6ff"></circle>
+    <circle cx="${x(i).toFixed(1)}" cy="${y(v + deltas[i].jitter).toFixed(1)}" r="3.5" fill="#d29922"></circle>
+    <text x="${x(i).toFixed(1)}" y="${h - 26}" fill="#71717a" font-size="10" text-anchor="middle">${deltas[i].k}</text>
+    <text x="${x(i).toFixed(1)}" y="${h - 12}" fill="#71717a" font-size="10" text-anchor="middle">${deltas[i].strike.toFixed(2)}%</text>`).join('');
+  const bad = state === 'butterfly' && tenor === '5Y';
+  return `
+  <div class="panel">
+    <h2>Smile at ${tenor}${bad ? ' — butterfly violation' : ''}</h2>
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="300" role="img" aria-label="Fitted smile at one tenor with quotes">
+      <path d="${d}" fill="none" stroke="#58a6ff" stroke-width="2"></path>${marks}
+    </svg>
+    <div class="row"><span class="muted">line: fitted smile</span><span class="muted">dot: raw quote</span>
+      ${bad ? tag('density negative at 5Y', 'bad') : tag('density non-negative', 'ok')}</div>
+  </div>`;
+}
+
+function smilesTable(){
+  const rows = surface.map(s => {
+    const b = deltas.map((_, i) => `<td class="num"${Math.abs(quad(s, i)) > 1.6 && i === 1 && s.exp === '5Y' && state === 'butterfly' ? ' style="color:var(--bad)"' : ''}>${s.vols[i].toFixed(2)}</td>`).join('');
+    const flag = state === 'butterfly' && s.exp === '5Y' ? tag('butterfly', 'bad') : tag('ok', 'ok');
+    return `<tr><td class="mono">${s.exp}</td>${b}<td>${flag}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Smiles across tenors</h2>
+    <table>
+      <thead><tr><th>Tenor</th><th class="num">10d put</th><th class="num">25d put</th><th class="num">ATM</th><th class="num">25d call</th><th class="num">10d call</th><th>Butterfly</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function meshPanel(){
+  const head = strikes.map(k => `<th class="num">${k.toFixed(2)}%</th>`).join('');
+  const rows = mesh.map(r => {
+    const cells = r.vols.map(v => {
+      const tv = (v / 100) ** 2 * r.T;
+      const a = (0.12 + 0.5 * (tv - tvMin) / (tvMax - tvMin)).toFixed(2);
+      return `<td class="num" style="background:rgba(88,166,255,${a})">${v.toFixed(2)}</td>`;
+    }).join('');
+    return `<tr><td class="mono">${r.exp}</td>${cells}<td class="num faint">${r.T.toFixed(1)}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Mesh — expiry by strike, shaded by total variance</h2>
+    <table><thead><tr><th>Expiry / Strike</th>${head}<th class="num">T (yrs)</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">There is no mesh read, so this grid is a mock of <span class="mono">marketdata.v1.surface-mesh.get</span>. No strike-label vocabulary exists, so the strike axis is shown in absolute levels here.</div>
+  </div>`;
+}
+
+function arbitragePanel(){
+  const pairs = [['6M','1Y'],['1Y','2Y'],['2Y','5Y'],['5Y','10Y'],['10Y','30Y']];
+  const cal = pairs.map(([a, b]) => {
+    const ra = mesh.find(r => r.exp === a), rb = mesh.find(r => r.exp === b);
+    const i = 2;
+    const tva = (ra.vols[i] / 100) ** 2 * ra.T, tvb = (rb.vols[i] / 100) ** 2 * rb.T;
+    const ok = tvb > tva;
+    return `<tr><td class="mono">${a} → ${b}</td><td class="num">${strikes[i].toFixed(2)}%</td>
+      <td class="num">${tva.toFixed(5)}</td><td class="num">${tvb.toFixed(5)}</td><td>${ok ? tag('ok', 'ok') : tag('falls', 'bad')}</td></tr>`;
+  }).join('');
+  const fly = surface.map(s => {
+    const d0 = density[s.exp];
+    return `<tr><td class="mono">${s.exp}</td><td class="num">${d0.toFixed(4)}</td>
+      <td>${d0 < 0 ? tag('negative density', 'bad') : tag('non-negative', 'ok')}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Arbitrage checks</h2>
+    <div class="grid2">
+      <div>
+        <h2>Calendar</h2>
+        <table><thead><tr><th>Expiry pair</th><th class="num">Strike</th><th class="num">Total variance A</th><th class="num">Total variance B</th><th>Flag</th></tr></thead><tbody>${cal}</tbody></table>
+      </div>
+      <div>
+        <h2>Butterfly</h2>
+        <table><thead><tr><th>Tenor</th><th class="num">Implied density</th><th>Flag</th></tr></thead><tbody>${fly}</tbody></table>
+      </div>
+    </div>
+    <div class="notice"><span class="mono">marketdata.v1.surface.arbitrage</span> does not exist. No operation returns a total variance along an expiry axis or a density along a smile, and the client has no fitted surface to check, so both tables are mocks and the screen would name the checks it needs.</div>
+  </div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let body;
+  if (variant === 'b') body = meshPanel() + arbitragePanel();
+  else if (variant === 'c') body = arbitragePanel() + smilesTable();
+  else body = smileChart() + smilesTable() + arbitragePanel();
+  app.innerHTML = header() + body;
+  document.getElementById('note').textContent =
+    `Prototype · inspect a surface's slices · variant ${variant.toUpperCase()} · market: ${state} · slice: ${tenor} · reads and diagnoses only`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">View</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'slice' : v === 'b' ? 'mesh' : 'arbitrage'}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Market</span>` +
+    ['clean','butterfly'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Slice</span>` +
+    surface.map(s => `<button data-t="${s.exp}" class="${s.exp === tenor ? 'on' : ''}">${s.exp}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('#bar [data-t]').forEach(b => b.onclick = () => set('tenor', b.dataset.t));
+  document.querySelectorAll('#app [data-t]').forEach(b => b.onclick = () => set('tenor', b.dataset.t));
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    document.getElementById('note').textContent = `${b.textContent}: mock only — the subject it names is missing`;
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

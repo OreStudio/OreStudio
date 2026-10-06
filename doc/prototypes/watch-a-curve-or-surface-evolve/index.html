@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch a curve or surface evolve prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The consumer's "Watch a curve or surface evolve" screen
+  (doc/knowledge/journeys/market_data/journey_watch-a-curve-or-surface-evolve.org):
+  the object and its time control at the top, the aligned grid of instants by
+  nodes in the middle, and the added, dropped and two-instant comparison at the
+  bottom, so the person reads the object, then the range, then what changed.
+  One screen at two zooms: an instant, and a range.
+
+  Variants with ?variant=a|b|c. The variant is the layout, which is the
+  journey's central design question: a is a matrix of instants by nodes, b is a
+  per-node sparkline list, c is a two-instant compare. ?state=stable|churn|surface
+  switches the mock market: a stable curve, a curve with added and dropped
+  nodes, and a surface. ?show=instant|range sets the zoom; ?a= and ?b= pick the
+  compared instants. Nothing reads a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'churn';
+const show = params.get('show') || 'range';
+const ia = Math.min(4, parseInt(params.get('a') || '0', 10));
+const ib = Math.min(4, parseInt(params.get('b') || '4', 10));
+
+const instants = ['12:00','12:30','13:00','13:30','14:00'];
+const uri = 'oresmd://ir/USD?type=series&instrument=ir_swap';
+
+const stable = [
+  {n:'fwd_start=0D&tenor=3M',  v:[4.121,4.118,4.130,4.127,4.131]},
+  {n:'fwd_start=0D&tenor=6M',  v:[4.204,4.199,4.211,4.209,4.214]},
+  {n:'fwd_start=0D&tenor=1Y',  v:[4.301,4.295,4.310,4.306,4.312]},
+  {n:'fwd_start=0D&tenor=2Y',  v:[4.402,4.398,4.405,4.401,4.408]},
+  {n:'fwd_start=0D&tenor=5Y',  v:[4.248,4.244,4.252,4.249,4.255]},
+  {n:'fwd_start=0D&tenor=10Y', v:[4.185,4.181,4.190,4.187,4.192]}
+];
+const churn = [
+  {n:'fwd_start=0D&tenor=3M',  v:[4.121,4.118,4.130,4.127,4.131]},
+  {n:'fwd_start=0D&tenor=6M',  v:[4.204,4.199,4.211,4.209,4.214]},
+  {n:'fwd_start=0D&tenor=9M',  v:[4.260,null,null,null,null]},
+  {n:'fwd_start=0D&tenor=1Y',  v:[4.301,4.295,4.310,4.306,4.312]},
+  {n:'fwd_start=0D&tenor=2Y',  v:[null,null,4.402,4.398,4.405]},
+  {n:'fwd_start=0D&tenor=5Y',  v:[4.248,4.244,4.252,4.249,4.255]},
+  {n:'fwd_start=0D&tenor=10Y', v:[4.185,4.181,4.190,4.187,4.192]}
+];
+const surfs = [
+  {n:'ori=swaption&expiry=1Y&delta=ATM',   v:[13.90,13.80,14.10,14.00,14.20]},
+  {n:'ori=swaption&expiry=1Y&delta=25RR',  v:[-0.90,-0.80,-1.00,-0.90,-1.10]},
+  {n:'ori=swaption&expiry=2Y&delta=ATM',   v:[null,null,14.60,14.50,14.70]},
+  {n:'ori=swaption&expiry=5Y&delta=ATM',   v:[15.40,15.20,15.60,15.50,15.70]},
+  {n:'ori=swaption&expiry=5Y&delta=25BF',  v:[0.40,0.40,0.50,0.50,0.60]},
+  {n:'ori=swaption&expiry=10Y&delta=ATM',  v:[16.20,16.00,16.40,16.30,16.50]},
+  {n:'ori=swaption&expiry=30Y&delta=ATM',  v:[16.80,null,null,null,null]}
+];
+const nodes = state === 'surface' ? surfs : state === 'churn' ? churn : stable;
+const shown = show === 'instant' ? [4] : [0,1,2,3,4];
+const dec = state === 'surface' ? 2 : 3;
+
+function tag(t, k){ return `<span class="tag ${k || ''}">${t}</span>`; }
+function dsp(v){ return v == null ? '.' : v.toFixed(dec); }
+function diff(a, b){ return a == null || b == null ? null : b - a; }
+function addedAt(i){ return nodes.filter(x => x.v[0] == null && x.v[i] != null); }
+function droppedBy(i){ return nodes.filter(x => x.v[0] != null && x.v[i] == null); }
+
+function header(){
+  const attrs = state === 'surface'
+    ? [['Subclass', 'vol'], ['Asset classes', 'IR, Vol'], ['Derivation', 'SURFACE_CALIBRATION (config …b72c, v2)']]
+    : [['Subclass', 'yield'], ['Asset classes', 'IR, Rates'], ['Derivation', 'IR_CURVE_BOOTSTRAP (config …a41f, v3)']];
+  return `
+  <div class="top">
+    <h1>Curve or surface: <span class="mono">${uri}</span></h1>
+    <span class="muted">read only</span>
+    <a style="margin-left:auto" href="../../knowledge/journeys/market_data/journey_watch-a-curve-or-surface-evolve.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Object and time control</h2>
+    <div class="grid2">
+      <table><tbody>${attrs.map(([k, v]) => `<tr><td>${k}</td><td class="mono">${v}</td></tr>`).join('')}
+        <tr><td>Nodes read</td><td class="mono">${nodes.length} <span class="faint">(shape not declared)</span></td></tr></tbody></table>
+      <div class="row">
+        <div class="field"><label>Show</label>
+          <select id="show"><option value="instant"${show === 'instant' ? ' selected' : ''}>One instant</option><option value="range"${show === 'range' ? ' selected' : ''}>A range</option></select></div>
+        <div class="field"><label>As of</label><div class="value mono">2026-10-06 14:00 <span class="faint">(ends at now)</span></div></div>
+        <div class="field"><label>Step</label><select><option>30 minutes</option><option>1 hour</option></select></div>
+        <div class="field"><label>Span</label><select><option>6 hours</option><option>1 day</option></select></div>
+        <button class="btn primary" data-act="apply">Apply</button>
+      </div>
+    </div>
+    <div class="notice">The instant read answers for now only, and the bucket read takes a step and a count that end at now, not a start and an end. The values come back unaligned and as text, so the browser aligns them by node and a hole in a bucket is a gap, not a typed null.</div>
+  </div>`;
+}
+
+function matrix(){
+  const cols = shown.map(i => `<th class="num">${instants[i]}</th>`).join('');
+  const rows = nodes.map(x => {
+    const cells = shown.map(i => {
+      const isAdd = i > 0 && x.v[0] == null && x.v[i] != null;
+      const isDrop = i > 0 && x.v[0] != null && x.v[i] == null;
+      const style = isAdd ? ' style="color:var(--ok)"' : isDrop ? ' style="color:var(--bad)"' : '';
+      return `<td class="num${x.v[i] == null ? ' faint' : ''}"${style}>${dsp(x.v[i])}</td>`;
+    }).join('');
+    const flag = x.v[0] == null ? tag('added', 'ok') : x.v[4] == null ? tag('dropped', 'bad') : tag('held');
+    return `<tr><td class="mono">${x.n}</td>${cells}<td>${flag}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Aligned view — ${show === 'instant' ? 'one instant' : 'instants by nodes'}</h2>
+    <table><thead><tr><th>Node</th>${cols}<th>Across the range</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">The grid is the screen's own. There is no declared shape, so a node that should be there and is not cannot be told from a node that is not part of the shape at all.</div>
+  </div>`;
+}
+
+function spark(v){
+  const pts = v.map((x, i) => x == null ? null : [i, x]).filter(Boolean);
+  if (pts.length < 2) return '<span class="faint">one point</span>';
+  const w = 160, h = 30, pad = 4;
+  const lo = Math.min(...pts.map(p => p[1])), hi = Math.max(...pts.map(p => p[1]));
+  const span = hi - lo || 1;
+  const X = i => pad + i * (w - 2 * pad) / (v.length - 1);
+  const Y = x => h - pad - (x - lo) * (h - 2 * pad) / span;
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" width="160" height="30" role="img" aria-label="sparkline">
+    <path d="${d}" fill="none" stroke="#58a6ff" stroke-width="1.5"></path>
+    <circle cx="${X(pts[pts.length - 1][0]).toFixed(1)}" cy="${Y(pts[pts.length - 1][1]).toFixed(1)}" r="2.5" fill="#8ab4f8"></circle></svg>`;
+}
+
+function sparkList(){
+  const rows = nodes.map(x => {
+    const first = x.v.find(v => v != null), last = [...x.v].reverse().find(v => v != null);
+    const dd = first == null || last == null ? null : last - first;
+    const gaps = x.v.filter(v => v == null).length;
+    return `<tr><td class="mono">${x.n}</td><td>${spark(x.v)}</td>
+      <td class="num">${dsp(first)}</td><td class="num">${dsp(last)}</td>
+      <td class="num">${dd == null ? '—' : (dd >= 0 ? '+' : '') + dd.toFixed(dec)}</td>
+      <td>${gaps ? tag(gaps + ' gap' + (gaps > 1 ? 's' : ''), 'warn') : tag('held', 'ok')}</td></tr>`;
+  }).join('');
+  return `
+  <div class="panel">
+    <h2>Per-node evolution</h2>
+    <table><thead><tr><th>Node</th><th>12:00 → 14:00</th><th class="num">First</th><th class="num">Last</th><th class="num">Move</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+function compare(){
+  const rows = nodes.map(x => {
+    const a = x.v[ia], b = x.v[ib], dd = diff(a, b);
+    const kind = a == null && b != null ? tag('added', 'ok') : a != null && b == null ? tag('dropped', 'bad') : a == null ? tag('absent both', 'warn') : tag('both', 'ok');
+    return `<tr><td class="mono">${x.n}</td><td class="num">${dsp(a)}</td><td class="num">${dsp(b)}</td>
+      <td class="num"${dd != null && Math.abs(dd) > 0.02 ? ' style="color:var(--warn)"' : ''}>${dd == null ? '—' : (dd >= 0 ? '+' : '') + dd.toFixed(dec)}</td><td>${kind}</td></tr>`;
+  }).join('');
+  const pick = (sel, val) => `<select data-pick="${sel}">${instants.map((t, i) => `<option value="${i}"${i === val ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+  return `
+  <div class="panel">
+    <h2>Compare two instants</h2>
+    <div class="row">
+      <div class="field"><label>Instant A</label>${pick('a', ia)}</div>
+      <div class="field"><label>Instant B</label>${pick('b', ib)}</div>
+    </div>
+    <table><thead><tr><th>Node</th><th class="num">Value A ${instants[ia]}</th><th class="num">Value B ${instants[ib]}</th><th class="num">Difference</th><th>Node set</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">No request names two instants and returns one snapshot per instant, so this comparison is two reads the browser stitches. No subject returns the difference either.</div>
+  </div>`;
+}
+
+function changesPanel(){
+  const added = addedAt(ib).filter(x => !(x.v[ia] != null));
+  const dropped = droppedBy(ib).filter(x => !(x.v[ia] == null));
+  const rows = [
+    ...added.map(x => [x.n, 'added', '(absent)', dsp(x.v[ib])]),
+    ...dropped.map(x => [x.n, 'dropped', dsp(x.v[ia]), '(absent)'])
+  ].map(([n, k, f, t]) => `<tr><td class="mono">${n}</td><td>${tag(k, k === 'added' ? 'ok' : 'bad')}</td><td class="num">${f}</td><td class="num">${t}</td></tr>`).join('');
+  return `
+  <div class="panel">
+    <h2>Added and dropped nodes — ${instants[ia]} against ${instants[ib]}</h2>
+    <table><thead><tr><th>Node</th><th>Change</th><th class="num">From</th><th class="num">To</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4" class="faint">no node appeared or dropped; the node set held</td></tr>'}</tbody></table>
+    <div class="notice">No subject compares two instants' node sets. A node the series identity names but an instant does not carry cannot be told from a node that was never part of the shape.</div>
+  </div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const body = variant === 'b' ? sparkList() : variant === 'c' ? compare() : matrix();
+  app.innerHTML = header() + body + changesPanel();
+  document.getElementById('note').textContent =
+    `Prototype · watch a curve or surface evolve · variant ${variant.toUpperCase()} · market: ${state} · zoom: ${show} · read only`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Layout</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'matrix' : v === 'b' ? 'sparklines' : 'compare'}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Zoom</span>` +
+    ['instant','range'].map(s => `<button data-z="${s}" class="${s === show ? 'on' : ''}">${s}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Market</span>` +
+    ['stable','churn','surface'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-z]').forEach(b => b.onclick = () => set('show', b.dataset.z));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  document.querySelectorAll('[data-pick]').forEach(s => s.onchange = () => set(s.dataset.pick, s.value));
+  const sh = document.getElementById('show');
+  if (sh) sh.onchange = () => set('show', sh.value);
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+    document.getElementById('note').textContent = `${b.textContent}: the range always ends at now — there is no start and end`;
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask for a publish to be approved — prototype</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The maker's "Ask for a publish to be approved" screen
+  (doc/knowledge/journeys/market_data/journey_ask-for-a-publish-to-be-approved.org):
+  the curve and its recipe, the day's candidate points with the proposed change
+  beside them, and the ask and the maker's own requests last, so the act of
+  asking comes after reading what is asked about. Nothing calls a service.
+
+  Variants ?variant=a|b|c present the delta: a per-curve changed list, a
+  node-level diff, a summary by currency.
+  States ?state=nothing|ready|raised: no candidate set, a set ready to raise,
+  and a request already waiting.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'ready';
+const maker = {id:'a.reyes', role:'Market data maker'};
+const asOf = '2026-10-06 16:00 UTC';
+// The approval kind is generic and configurable: a count, a deciding group, a
+// decide permission, a comment rule, whether a hold is allowed, a lifetime.
+const kind = {
+  code:'marketdata.curve_publish', approvals_required:1,
+  deciding_group:'Market data approvers', decide_permission:'marketdata::curves:publish',
+  comment_on_approve:true, allows_hold:true, expires_days:7
+};
+const recipe = {'USD-SOFR-3M':'USD-SOFR-3M v4','EUR-ESTR-6M':'EUR-ESTR-6M v2','GBP-SONIA-3M':'GBP-SONIA-3M v3'};
+const tenors = ['1M','3M','6M','1Y','2Y','5Y','10Y','30Y'];
+// [last published, candidate, discount factor] per tenor, in tenor order.
+const book = [
+  ['USD','USD-SOFR-3M',[[4.1250,4.1520,0.99655],[4.1800,4.2050,0.98955],[4.2100,4.1980,0.97920],[4.0950,4.1010,0.95990],[4.0600,4.0480,0.92240],[4.2100,4.2360,0.80910],[4.1850,4.1900,0.65790],[3.9110,3.8800,0.31280]]],
+  ['EUR','EUR-ESTR-6M',[[2.9300,2.9400,0.99755],[2.8700,2.8850,0.99282],[2.7800,2.8100,0.98603],[2.6500,2.6800,0.97357],[2.5000,2.5200,0.95096],[2.4200,2.4400,0.88540],[2.6000,2.6100,0.77060],[2.7000,2.7200,0.44250]]],
+  ['GBP','GBP-SONIA-3M',[[4.6600,4.6800,0.99610],[4.6000,4.6100,0.98854],[4.5300,4.5200,0.97765],[4.3900,4.3800,0.95718],[4.2500,4.2400,0.91875],[4.1000,4.1100,0.81422],[4.0400,4.0500,0.66761],[3.9500,3.9400,0.30710]]]
+];
+const all = book.flatMap(([ccy, curve, rows]) =>
+  rows.map((r, i) => ({ccy, curve, tenor:tenors[i], last:r[0], cand:r[1], df:r[2]})));
+const live = state === 'nothing' ? [] : all;
+const curves = [...new Set(live.map(n => n.curve))];
+const rowsFor = c => live.filter(n => n.curve === c);
+const bp = n => (n.cand - n.last) * 100;
+const biggest = list => list[list.map(n => Math.abs(bp(n))).indexOf(Math.max(...list.map(n => Math.abs(bp(n)))))];
+function tag(t, c){ return `<span class="tag ${c || ''}">${t}</span>`; }
+function bpt(v){ return `${v >= 0 ? '+' : ''}${v.toFixed(1)} bp`; }
+function val(v){ return v.toFixed(4); }
+function header(){
+  const raised = state === 'raised';
+  return `
+  <div class="top">
+    <h1>Curves / candidate set</h1>
+    <span class="muted">${raised ? 'request waiting' : 'candidate · not published'}</span>
+    <span style="margin-left:auto">signed in: <span class="mono">${maker.id}</span> (${maker.role})</span>
+    <a href="../../knowledge/journeys/market_data/journey_ask-for-a-publish-to-be-approved.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Curve and recipe</h2>
+    <div class="row">
+      <div class="field"><label>Series</label><div class="value mono">oresmd://ir/USD?type=quote&amp;instrument=ir_swap</div></div>
+      <div class="field"><label>Derivation</label><div class="value">IR_CURVE_BOOTSTRAP</div></div>
+      <div class="field"><label>Recipe</label><div class="value">${recipe['USD-SOFR-3M']}</div></div>
+      <div class="field"><label>Candidates as of</label><div class="value mono">${asOf}</div></div>
+      <div class="field"><label>Currencies in set</label><div class="value mono">${[...new Set(live.map(n => n.ccy))].join(', ') || '—'}</div></div>
+    </div>
+    <div class="notice">Compute is stateless. This screen only reads; the raise writes one approval request and applies nothing.</div>
+  </div>`;
+}
+function candidates(){
+  if(!live.length) return `<div class="panel"><h2>Candidate points</h2>
+    <div class="notice">No candidate set exists for ${asOf}. Bootstrap the curve first; there is nothing to ask about.</div></div>`;
+  return `
+  <div class="panel">
+    <h2>Candidate points — ${live.length} rows for ${asOf}</h2>
+    <table>
+      <thead><tr><th>Curve</th><th>Point</th><th class="num">Value</th><th class="num">Discount factor</th><th>Observed at</th><th>Source</th></tr></thead>
+      <tbody>${live.map(n => `<tr><td class="mono">${n.curve}</td><td class="mono">tenor=${n.tenor}</td>
+        <td class="num">${val(n.cand)}</td><td class="num">${n.df.toFixed(6)}</td>
+        <td class="faint">${asOf}</td><td>curve_bootstrap</td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+// Variant a: the changed list, one row per curve.
+function deltaPerCurve(){
+  return `
+  <div class="panel">
+    <h2>Change vs last published — per curve</h2>
+    <table>
+      <thead><tr><th>Curve</th><th>Currency</th><th class="num">Points</th><th class="num">Changed</th><th>Largest move</th><th class="num">Mean change</th><th></th></tr></thead>
+      <tbody>${curves.map(c => {
+        const list = rowsFor(c);
+        const moves = list.map(bp);
+        const mean = moves.reduce((s, v) => s + v, 0) / moves.length;
+        const big = biggest(list);
+        return `<tr><td class="mono">${c}</td><td>${list[0].ccy}</td><td class="num">${list.length}</td>
+          <td class="num">${list.filter(n => Math.abs(bp(n)) >= 0.5).length}</td>
+          <td class="mono">${big.tenor} ${bpt(bp(big))}</td><td class="num">${bpt(mean)}</td>
+          <td>${tag(Math.abs(mean) > 2 ? 'review' : 'small', Math.abs(mean) > 2 ? 'warn' : 'ok')}</td></tr>`;
+      }).join('') || '<tr><td colspan="7" class="faint">no candidate set, so no change to show</td></tr>'}</tbody>
+    </table>
+    <div class="notice">The baseline is a marker nothing writes yet; the comparison is by eye against a snapshot the maker chooses.</div>
+  </div>`;
+}
+// Variant b: the node-level diff.
+function deltaPerNode(){
+  return `
+  <div class="panel">
+    <h2>Change vs last published — node by node</h2>
+    <table>
+      <thead><tr><th>Curve</th><th>Point</th><th class="num">Last published</th><th class="num">Candidate</th><th class="num">Change</th><th></th></tr></thead>
+      <tbody>${live.map(n => `<tr><td class="mono">${n.curve}</td><td class="mono">${n.tenor}</td>
+        <td class="num faint">${val(n.last)}</td><td class="num">${val(n.cand)}</td><td class="num">${bpt(bp(n))}</td>
+        <td>${tag(Math.abs(bp(n)) > 2 ? 'moved' : 'flat', Math.abs(bp(n)) > 2 ? 'warn' : '')}</td></tr>`).join('') ||
+        '<tr><td colspan="6" class="faint">no candidate points</td></tr>'}</tbody>
+    </table>
+    <div class="notice">Delta column only. There is no published marker and no diff subject today; see the journey's What is missing.</div>
+  </div>`;
+}
+// Variant c: the summary by currency.
+function deltaPerCurrency(){
+  const ccys = [...new Set(live.map(n => n.ccy))];
+  const rows = ccys.map(ccy => {
+    const list = live.filter(n => n.ccy === ccy);
+    const moves = list.map(bp);
+    return {ccy, nodes:list.length, curves:new Set(list.map(n => n.curve)).size,
+      max:Math.max(...moves.map(Math.abs)), mean:moves.reduce((s, v) => s + v, 0) / moves.length};
+  });
+  const peak = Math.max(1, ...rows.map(r => r.max));
+  return `
+  <div class="panel">
+    <h2>Change vs last published — by currency</h2>
+    <table>
+      <thead><tr><th>Currency</th><th class="num">Curves</th><th class="num">Points</th><th class="num">Max |move|</th><th class="num">Mean change</th><th>Profile</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td>${r.ccy}</td><td class="num">${r.curves}</td><td class="num">${r.nodes}</td>
+        <td class="num">${r.max.toFixed(1)} bp</td><td class="num">${bpt(r.mean)}</td>
+        <td><span style="display:inline-block;height:8px;width:${(r.max / peak * 140).toFixed(0)}px;background:var(--accent);border-radius:4px;vertical-align:middle"></span></td></tr>`).join('') ||
+        '<tr><td colspan="6" class="faint">no candidate points</td></tr>'}</tbody>
+    </table>
+    <div class="notice">A summary reads the set at a glance but hides which node moved, so the maker opens the per-curve view before asking.</div>
+  </div>`;
+}
+function lineage(){
+  return `
+  <div class="panel">
+    <h2>Provenance</h2>
+    <table>
+      <thead><tr><th>Curve</th><th>Recipe</th><th>Source as of</th><th>Points</th></tr></thead>
+      <tbody>${curves.map(c => `<tr><td class="mono">${c}</td><td class="mono">${recipe[c]}</td>
+        <td class="faint">2026-10-06 15:55 UTC</td><td class="mono">${rowsFor(c).length}</td></tr>`).join('') ||
+        '<tr><td colspan="4" class="faint">no lineage rows</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+function ask(){
+  const raised = state === 'raised', nothing = state === 'nothing';
+  const why = raised ? 'Already raised for this set: one request is waiting under My requests.'
+    : nothing ? 'Raise is disabled: no candidate set exists for this value date.'
+    : 'Raise is enabled. The kind needs 1 approval from Market data approvers, a comment on approval, and lives 7 days.';
+  return `
+  <div class="panel">
+    <h2>The ask</h2>
+    <div class="row">
+      <div class="field" style="flex:1;min-width:280px"><label>Reason (kept on the request)</label>
+        <input id="reason" value="Today's set, reviewed against the 16:00 quotes"></div>
+      <div class="field"><label>Kind</label><div class="value mono">${kind.code}</div></div>
+      <div class="field"><label>Approvals required</label><div class="value">${kind.approvals_required} — ${kind.deciding_group}</div></div>
+      <div class="field"><label>Decide permission</label><div class="value mono">${kind.decide_permission}</div></div>
+      <div class="field"><label>Expires</label><div class="value">${kind.expires_days} days after the raise</div></div>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="raise" ${raised || nothing ? 'disabled' : ''}>Raise publish request</button>
+      <span class="faint">A comment is required on approval. The maker cannot decide their own request: four-eyes holds at the approval record, not here.</span>
+    </div>
+    <div class="notice" id="ask-note">${why}</div>
+  </div>`;
+}
+function myRequests(){
+  const rows = state === 'raised'
+    ? [['2026-10-06 16:04', kind.code, 'USD, EUR, GBP set', 'waiting', 'warn'],
+       ['2026-10-05 09:12', 'iam.role_grant', '—', 'approved', 'ok']]
+    : [['2026-10-05 09:12', 'iam.role_grant', '—', 'approved', 'ok'],
+       ['2026-10-02 11:40', kind.code, 'USD-SOFR-3M', 'refused', 'bad']];
+  return `
+  <div class="panel">
+    <h2>My requests</h2>
+    <table>
+      <thead><tr><th>Raised</th><th>Kind</th><th>Curve</th><th>State</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td class="mono faint">${r[0]}</td><td class="mono">${r[1]}</td><td>${r[2]}</td><td>${tag(r[3], r[4])}</td></tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+function render(){
+  const delta = variant === 'b' ? deltaPerNode() : variant === 'c' ? deltaPerCurrency() : deltaPerCurve();
+  document.getElementById('app').innerHTML = header() + candidates() + delta + lineage() + ask() + myRequests();
+  document.getElementById('note').textContent =
+    `Prototype · ask for a publish to be approved · variant ${variant.toUpperCase()} · state: ${state} · candidate, nothing published`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Delta</span>` +
+    [['a','per curve'],['b','by node'],['c','by currency']].map(([v,l]) =>
+      `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()} ${l}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">State</span>` +
+    ['nothing','ready','raised'].map(s => `<button data-s="${s}" class="${s===state?'on':''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+  const raise = document.getElementById('raise');
+  if(raise) raise.onclick = () => {
+    document.getElementById('ask-note').textContent =
+      'Raised: one request, waiting on Market data approvers. No service is called and nobody is notified yet.';
+    raise.disabled = true;
+  };
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

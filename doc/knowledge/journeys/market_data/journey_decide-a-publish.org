@@ -104,6 +104,17 @@ The queue is the market-data approval screen, beside the curve screens rather
 than inside one curve, because the approver's work is the tenant's requests and
 not one curve's points.
 
+* Prototype
+
+A static page at =doc/prototypes/decide-a-publish/index.html=: mock data only, no backend,
+no build step and no session. It argues that the checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes.
+
+- Variants :: a the queue beside the request, b the request first, c a group inbox
+- States :: waiting, held, decided, multi (two approvals required, one given)
+- Source :: =doc/prototypes/decide-a-publish/index.html=
+- Open :: =/OreStudio/doc/prototypes/decide-a-publish/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

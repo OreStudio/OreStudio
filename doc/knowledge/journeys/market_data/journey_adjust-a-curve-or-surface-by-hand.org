@@ -96,6 +96,17 @@ point survives later feed updates until it is cleared.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_adjust-a-curve-or-surface-by-hand.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/adjust-a-curve-or-surface-by-hand/index.html=: mock data only, no backend,
+no build step and no session. It argues that a hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send.
+
+- Variants :: a edit one node, b a spread overlay over a segment (parallel or twist), c paste a set of nodes
+- States :: none, some, overwrite (a feed tick tried to take a manual point back)
+- Source :: =doc/prototypes/adjust-a-curve-or-surface-by-hand/index.html=
+- Open :: =/OreStudio/doc/prototypes/adjust-a-curve-or-surface-by-hand/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

@@ -92,6 +92,17 @@ built, then who signed it off.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_see-who-changed-a-curve.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/see-who-changed-a-curve/index.html=: mock data only, no backend,
+no build step and no session. It argues that the trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor.
+
+- Variants :: a one merged timeline, b one table per kind, c a two-version compare
+- States :: rich, empty (nothing published yet), manual (a hand adjustment with its actor)
+- Source :: =doc/prototypes/see-who-changed-a-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/see-who-changed-a-curve/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

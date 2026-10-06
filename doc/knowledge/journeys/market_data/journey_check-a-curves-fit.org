@@ -97,6 +97,17 @@ then the dates it settles on.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_check-a-curves-fit.png]]
 
+* Prototype
+
+A static page at =doc/prototypes/check-a-curves-fit/index.html=: mock data only, no backend,
+no build step and no session. It argues that a curve is checked against the quotes it came from: residuals, forward smoothness and the roll logic, on one screen.
+
+- Variants :: a the residuals table, b the overlay chart, c both
+- States :: fit, large (one pillar's residual is large), gap (a quote the candidate does not join)
+- Source :: =doc/prototypes/check-a-curves-fit/index.html=
+- Open :: =/OreStudio/doc/prototypes/check-a-curves-fit/= once the site is built, or the
+  file directly
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading

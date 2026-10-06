@@ -44,13 +44,14 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.nats.lib
         ores.scheduler.api.lib
+        ores.service.lib
     PRIVATE
         ores.diff.lib
         ores.dq.api.lib
         ores.history.core.lib
         ores.iam.api.lib
+        ores.iam.client.lib
         ores.marketdata.api.lib
-        ores.service.lib
         ores.storage.api.lib
         ores.storage.core.lib
         ores.trading.api.lib

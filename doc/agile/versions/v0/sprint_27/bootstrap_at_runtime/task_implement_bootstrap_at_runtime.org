@@ -8,7 +8,7 @@
 #+filetags: :bootstrap_at_runtime:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bootstrap-at-runtime
-#+pr:
+#+pr: 2695
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2695][#2695]] | [sql] Bootstrap the system at runtime |
 
 * Review
 

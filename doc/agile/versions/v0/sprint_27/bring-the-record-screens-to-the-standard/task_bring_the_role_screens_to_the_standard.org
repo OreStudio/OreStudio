@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: BB15DD97-53FF-47AE-AAA1-8675BCFB9882
+:END:
+#+title: Task: Bring the role screens to the standard
+#+description: Move the roles list and role page onto the shared record parts, with paged server reads for roles and for the people who hold a role.
+#+type: task
+#+level: s1
+#+filetags: :bring-the-record-screens-to-the-standard:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-the-record-screens-to-the-standard
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The roles list and the role page conform to the record screen standard: the list pages, searches and sorts on the server, and the role page reads the people who hold the role one page at a time instead of every account.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:28BF2793-41A7-428F-A1B9-AFEC95B1B647][Bring the record screens to the standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- The roles list is the shared record list over a paged server read.
+- The role page uses the shared header, tabs and dialogs, and reads the role's holders a page at a time.
+- The conformance table in the record screen standard shows roles as conforming, or names what still differs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 07D63ECE-ED8B-4F4D-B219-5256D043CF64
+:END:
+#+title: Serve search, order and history for tenants and parties
+#+description: The tenant list has a server search but no order, and no tenant history is served, so the tenant page has no History tab. The party read has neither search nor order. Add them on the server so both lists sort and search like the refdata lists, and the tenant page gets its history.
+#+type: capture
+#+level: cross
+#+filetags: :web:iam:refdata:record-screens:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The tenant list reads its pages with a search and filters, but the roster
+query has no order, so no tenant column sorts. The server serves no history
+for a tenant, so the tenant page has Details, Parties and People but no
+History tab. The party read takes only an offset and a limit, so the parties
+list has no search and no column sorts. Add the order to the tenant roster,
+the tenant to the history types, and search and order to the party read.
+
+* Why
+
+The record screen standard says every list searches and sorts on the server,
+and every versioned record has a History tab. The tenant and party screens now
+use the shared list and page, so these server gaps are the only reason they
+differ; the conformance table in the standard names them.
+
+* References
+
+-
+
+* See also
+
+-

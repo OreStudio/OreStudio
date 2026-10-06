@@ -19,107 +19,82 @@
  *
  */
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { TenantParty } from '@ores/wire-protocol/browser';
-import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { Notice, PageHeader } from '../ui/Primitives.js';
+import { useTranslation } from '../i18n/Provider.js';
 import { FlaggedCode } from '../images/flags.js';
+import { RecordList, type ListColumn, type ListSource } from '../refdata/RecordList.js';
 import { imageUrl } from '../ui/Images.js';
-import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
+
+/** The parties of the session's own tenant; the server pages them in key order. */
+const PARTIES: ListSource<TenantParty> = {
+    key: 'parties',
+    read: async (page) => {
+        const read = await api.parties({ offset: page.offset, limit: page.limit });
+        return { rows: read.parties, total: read.totalCount };
+    },
+    search: false,
+    sortable: [],
+    mayAdd: false,
+};
 
 /**
- * The parties of the session's own tenant, a page at a time.
- *
- * The tenant is the session's, so the read names none: row-level security
- * scopes it from the session's token. A system administrator reads a tenant's
- * parties here after entering the tenant. The server pages in key order, and
- * a parent is named when it is on the same page.
+ * The columns of a list of parties. `tenant` names the tenant whose images
+ * the flags come from, when it is not the session's own.
  */
-export function PartiesPage(): ReactNode {
-    const { t, plural } = useTranslation();
-    const [offset, setOffset] = useState(0);
-    const read = useQuery({
-        queryKey: ['parties', offset],
-        queryFn: () => api.parties({ offset, limit: DEFAULT_PAGE_SIZE }),
-        placeholderData: keepPreviousData,
-    });
-
-    if (read.isPending) {
-        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
-    }
-
-    if (read.isError) {
-        const reason = read.error instanceof Error ? read.error.message : String(read.error);
-        return (
-            <div>
-                <PageHeader title={t('parties.title')} description={t('parties.failed')} />
-                <Notice tone="error">{reason}</Notice>
-            </div>
-        );
-    }
-
-    const { parties, totalCount } = read.data;
-    return (
-        <div>
-            <PageHeader title={t('parties.title')} description={t('parties.description')} />
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            <th className="py-2 pr-4 font-medium">{t('parties.code')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('parties.name')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('parties.category')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('parties.type')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('parties.status')}</th>
-                            <th className="py-2 pr-4 font-medium">{t('parties.businessCentre')}</th>
-                            <th className="py-2 font-medium">{t('parties.parent')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {parties.map((party) => (
-                            <PartyRow key={party.id} party={party} />
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <Pager
-                offset={offset}
-                shown={parties.length}
-                total={totalCount}
-                pageSize={DEFAULT_PAGE_SIZE}
-                showing={plural('parties.showing', totalCount, pageBounds(offset, parties.length))}
-                onMove={setOffset}
-            />
-        </div>
-    );
-}
-
-function PartyRow({ party }: { readonly party: TenantParty }): ReactNode {
-    const { t } = useTranslation();
-    return (
-        <tr className="border-b border-line-subtle">
-            <td className="py-2.5 pr-4 font-mono text-xs">{party.code}</td>
-            <td className="py-2.5 pr-4">{party.name}</td>
-            <td className="py-2.5 pr-4">{party.category}</td>
-            <td className="py-2.5 pr-4">{party.type}</td>
-            <td className="py-2.5 pr-4">{party.status}</td>
-            <td className="py-2.5 pr-4">
+export function partyColumns(
+    t: (key: string) => string,
+    tenant?: string,
+): readonly ListColumn<TenantParty>[] {
+    return [
+        { id: 'code', header: t('parties.code'), cell: (party) => party.code, mono: true },
+        { id: 'name', header: t('parties.name'), cell: (party) => party.name },
+        { id: 'category', header: t('parties.category'), cell: (party) => party.category },
+        { id: 'type', header: t('parties.type'), cell: (party) => party.type },
+        { id: 'status', header: t('parties.status'), cell: (party) => party.status },
+        {
+            id: 'business_centre',
+            header: t('parties.businessCentre'),
+            cell: (party) => (
                 <FlaggedCode
                     code={party.businessCentreCode}
-                    src={party.flagImageId === null ? null : imageUrl(party.flagImageId)}
+                    src={party.flagImageId === null ? null : imageUrl(party.flagImageId, tenant)}
                 />
-            </td>
-            <td className="py-2.5">
-                {party.parentId === null ? (
-                    ''
+            ),
+        },
+        {
+            id: 'parent',
+            header: t('parties.parent'),
+            cell: (party) =>
+                party.parentId === null ? (
+                    <span className="text-ink-faint">{t('parties.topOfGroup')}</span>
                 ) : party.parentName !== null ? (
                     party.parentName
                 ) : (
                     <span className="text-ink-faint">{t('parties.parentElsewhere')}</span>
-                )}
-            </td>
-        </tr>
+                ),
+        },
+    ];
+}
+
+/**
+ * The parties of the session's own tenant: the shared record list. The read
+ * names no tenant, because row-level security scopes it from the session's
+ * token; a system administrator reads a tenant's parties after entering it. A
+ * parent is named when it is on the same page. A party has no page of its own
+ * yet, so a row does not open.
+ */
+export function PartiesPage(): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <RecordList
+            source={PARTIES}
+            title={t('parties.title')}
+            lead={t('parties.description')}
+            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('parties.title') }]}
+            keyOf={(party) => party.id}
+            columns={partyColumns(t)}
+        />
     );
 }

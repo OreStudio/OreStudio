@@ -49,7 +49,7 @@ describe('RemoveTenantDialog', () => {
     it('says what removal does, in the server terms', () => {
         const html = render();
 
-        expect(html).toContain('Remove Acme Corporation?');
+        expect(html).toContain('Delete Acme Corporation?');
         expect(html).toContain('Nobody can sign in to it any more.');
         expect(html).toContain('lose access');
         expect(html).toContain('Its data is kept, and it leaves the tenant list.');
@@ -59,6 +59,6 @@ describe('RemoveTenantDialog', () => {
         const html = render();
 
         expect(html).toContain('Type acme_corporation to confirm');
-        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Remove tenant<\/button>/);
+        expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Delete tenant<\/button>/);
     });
 });

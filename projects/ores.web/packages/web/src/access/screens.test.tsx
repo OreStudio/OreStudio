@@ -27,6 +27,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import type { Account, HeldRole, RoleSummary } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { MyAccessPage } from './MyAccessPage.js';
+import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { PeoplePage } from './PeoplePage.js';
 import { PersonPage } from './PersonPage.js';
 import { RolePage } from './RolePage.js';
@@ -239,15 +240,10 @@ describe('The people list', () => {
     it('draws one page of people through the shared record list', () => {
         const html = render(
             (client) => {
-                client.setQueryData(
-                    [
-                        'records',
-                        'people',
-                        'page',
-                        { offset: 0, limit: 15, search: '', sort: '', descending: false },
-                    ],
-                    { rows: [daniel], total: 31 },
-                );
+                client.setQueryData(pageKey({ key: 'people' }, FIRST_PAGE), {
+                    rows: [daniel],
+                    total: 31,
+                });
             },
             '/people',
             <Route path="/people" element={<PeoplePage mode="tenant-administration" />} />,
@@ -263,15 +259,10 @@ describe('The people list', () => {
     it("names the same list as the deployment's own accounts for a system administrator", () => {
         const html = render(
             (client) => {
-                client.setQueryData(
-                    [
-                        'records',
-                        'people',
-                        'page',
-                        { offset: 0, limit: 15, search: '', sort: '', descending: false },
-                    ],
-                    { rows: [daniel, batch], total: 2 },
-                );
+                client.setQueryData(pageKey({ key: 'people' }, FIRST_PAGE), {
+                    rows: [daniel, batch],
+                    total: 2,
+                });
             },
             '/people',
             <Route path="/people" element={<PeoplePage mode="system-administration" />} />,

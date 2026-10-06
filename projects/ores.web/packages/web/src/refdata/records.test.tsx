@@ -29,6 +29,7 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { CURRENCY_FIELDS, CurrenciesPage, CurrencyPage } from './currencies.js';
 import { CurrencyPairPage } from './currencyPairs.js';
 import { DeskGroupPage } from './deskGroups.js';
+import { FIRST_PAGE, pageKey } from './RecordList.js';
 import { valuesFromHistory, writeOf, type FieldSpec } from './records.js';
 import { reasonsFor } from './shared.js';
 import { parseTimestamp, relativeTime } from '../ui/Time.js';
@@ -184,12 +185,12 @@ describe('the field table', () => {
     });
 });
 
-const firstPage = { offset: 0, limit: 15, search: '', sort: '', descending: false };
+const currencies = { key: 'currencies' };
 
 describe('the currency screens', () => {
     it('lists one page of currencies with the server total, Refresh, Add and the pager', () => {
         const html = render('/refdata/currencies', (client) => {
-            client.setQueryData(['records', 'currencies', 'page', firstPage], {
+            client.setQueryData(pageKey(currencies, FIRST_PAGE), {
                 rows: [euro],
                 total: 168,
             });
@@ -207,7 +208,7 @@ describe('the currency screens', () => {
     it('orders by a sortable column from the address, and marks it', () => {
         const html = render('/refdata/currencies?sort=name&desc=1', (client) => {
             client.setQueryData(
-                ['records', 'currencies', 'page', { ...firstPage, sort: 'name', descending: true }],
+                pageKey(currencies, { ...FIRST_PAGE, sort: 'name', descending: true }),
                 { rows: [euro], total: 1 },
             );
         });
@@ -217,7 +218,7 @@ describe('the currency screens', () => {
 
     it('says the list is empty, and offers Add to a writer', () => {
         const html = render('/refdata/currencies', (client) => {
-            client.setQueryData(['records', 'currencies', 'page', firstPage], {
+            client.setQueryData(pageKey(currencies, FIRST_PAGE), {
                 rows: [],
                 total: 0,
             });

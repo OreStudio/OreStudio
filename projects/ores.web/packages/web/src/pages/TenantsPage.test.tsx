@@ -25,7 +25,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { TenantSummary } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { TenantsPage } from './TenantsPage.js';
+import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
+import { TenantsPage, tenantListPage, tenantQuery } from './TenantsPage.js';
 
 /**
  * The roster, as a reader sees it.
@@ -109,11 +110,17 @@ function render(
     hiddenTestCount = 0,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['tenants', '', '', '', false, 0], {
-        tenants,
-        totalCount,
-        setupUnavailable,
-        hiddenTestCount,
+    client.setQueryData(pageKey({ key: 'tenants' }, FIRST_PAGE), {
+        rows: tenants,
+        total: totalCount,
+        notes: [
+            ...(setupUnavailable
+                ? [{ tone: 'warn', text: 'The provisioning runs could not be read.' }]
+                : []),
+            ...(hiddenTestCount > 0
+                ? [{ tone: 'info', text: `${hiddenTestCount} test tenants hidden` }]
+                : []),
+        ],
     });
     client.setQueryData(['tenant-statuses'], statuses);
     client.setQueryData(['tenant-types'], tenantTypes);
@@ -136,7 +143,7 @@ describe('the tenant roster', () => {
         expect(html).toContain('Acme Corporation');
         expect(html).toContain('operational');
         expect(html).toContain('Active');
-        expect(html).toContain('Showing 1–1 of 1 tenant');
+        expect(html).toContain('1–1 of 1');
     });
 
     it('names the columns the journey document states', () => {
@@ -218,7 +225,6 @@ describe('the tenant roster', () => {
 
     it('offers to add a tenant from the header, at any row count', () => {
         for (const html of [render([acme], 1), render([], 0)]) {
-            expect(html).toContain('href="/tenants/new"');
             expect(html).toContain('Add tenant');
         }
     });
@@ -299,23 +305,13 @@ describe('the tenant roster', () => {
     it('says the runs are missing rather than that there are none', () => {
         const html = render([acme], 1, [activeStatus], true);
 
-        expect(html).toContain('provisioning runs could not be read');
+        expect(html).toContain('The provisioning runs could not be read.');
     });
 
-    /*
-     * A deployment whose administrator exists and whose first tenant does not
-     * is a normal state, not a failure. The state is stated once and the way
-     * out is the header's action, not a second button beneath it.
-     */
-    /*
-     * The journey asks for a search over code, name and hostname, so a
-     * deployment with tenants offers one above the table.
-     */
-    it('offers a search over code, name and hostname', () => {
+    it('offers a search over the tenants on the server', () => {
         const html = render([acme], 1);
 
         expect(html).toContain('type="search"');
-        expect(html).toContain('Search by code, name or hostname');
     });
 
     /*
@@ -326,7 +322,7 @@ describe('the tenant roster', () => {
     it('counts every match and pages from the first page', () => {
         const html = render([acme], 60);
 
-        expect(html).toContain('Showing 1–1 of 60 tenants');
+        expect(html).toContain('1–1 of 60');
         const previous = html.match(/<button[^>]*>Previous<\/button>/)?.[0] ?? '';
         const next = html.match(/<button[^>]*>Next<\/button>/)?.[0] ?? '';
         expect(previous).toContain('disabled=""');
@@ -338,10 +334,6 @@ describe('the tenant roster', () => {
 
         const next = html.match(/<button[^>]*>Next<\/button>/)?.[0] ?? '';
         expect(next).toContain('disabled=""');
-    });
-
-    it('offers no search to a deployment that holds no tenant', () => {
-        expect(render([], 0)).not.toContain('type="search"');
     });
 
     /*
@@ -370,7 +362,7 @@ describe('the tenant roster', () => {
      * Test infrastructure is hidden by default, and the screen says how much
      * it hid, so a person who wants it knows it is there.
      */
-    it('says how many test tenants it hides, beside the toggle that shows them', () => {
+    it('says how many test tenants it hides, above the table, beside the toggle that shows them', () => {
         const html = render([acme], 1, [activeStatus], false, 12);
 
         expect(html).toContain('Show test tenants');
@@ -381,99 +373,66 @@ describe('the tenant roster', () => {
         const html = render([], 0, [activeStatus], false, 3);
 
         expect(html).toContain('Show test tenants');
-        expect(html).not.toContain('no tenant of its own');
+        expect(html).toContain('3 test tenants hidden');
     });
 
     /*
-     * Each row has one menu of what can be done to its tenant. Resuming setup
-     * is the one action the tree has built for a tenant whose run is not done.
+     * A row opens the tenant's page, which is where setup is resumed and the
+     * tenant is deleted, so the row carries no menu of its own.
      */
-    it('offers to resume setup from the row of a tenant whose run is unfinished', () => {
-        const html = render(
-            [
-                {
-                    ...acme,
-                    setup: {
-                        instanceId: RUN,
-                        status: 'failed',
-                        currentStepIndex: 3,
-                        stepCount: 7,
-                        error: 'Seeding failed.',
-                    },
-                },
-            ],
-            1,
-        );
-
-        expect(html).toContain('aria-label="Actions for Acme Corporation"');
-        expect(html).toContain('Resume setup');
-        // One link from the Setup column and one from the menu.
-        expect(html.match(new RegExp(`href="/tenants/runs/${RUN}"`, 'g'))?.length).toBe(2);
-    });
-
-    it('does not offer to resume a run that completed, or a tenant with none', () => {
-        const completed = render(
-            [
-                {
-                    ...acme,
-                    setup: {
-                        instanceId: RUN,
-                        status: 'completed',
-                        currentStepIndex: 6,
-                        stepCount: 7,
-                        error: '',
-                    },
-                },
-            ],
-            1,
-        );
-
-        expect(completed).not.toContain('Resume setup');
-        expect(render([acme], 1)).not.toContain('Resume setup');
-    });
-
-    /*
-     * The tenant's name and the menu's Open both lead to the tenant's own
-     * screen, addressed by its code.
-     */
-    it('opens the tenant from its name and from the menu', () => {
+    it('opens the tenant from its row, and offers no row menu', () => {
         const html = render([acme], 1);
 
-        expect(html.match(/href="\/tenants\/acme_corporation"/g)).toHaveLength(2);
-        expect(html).toContain('>Open<');
+        expect(html).toContain('tabindex="0"');
+        expect(html).not.toContain('Actions for');
+        expect(html).not.toContain('Remove tenant');
     });
 
-    /*
-     * Retiring or resetting a tenant is not in this release. The menu names it
-     * and says so, rather than hiding it or offering a link that goes nowhere.
-     */
-    /*
-     * Each tenant offers its removal, except the system tenant, which holds
-     * the deployment itself.
-     */
-    it('offers removal on every row but the system tenant', () => {
-        const html = render(
-            [
-                acme,
-                {
-                    ...acme,
-                    id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
-                    code: 'system',
-                    name: 'System',
-                    type: 'system',
-                },
-            ],
-            2,
-        );
-
-        expect(html.match(/>Remove tenant</g)).toHaveLength(1);
-        expect(html).not.toContain('Not in this release');
-    });
-
-    it('says so when the deployment holds no tenant, without repeating the action', () => {
+    it('says so when the deployment holds no tenant, and offers Add', () => {
         const html = render([], 0);
 
-        expect(html).toContain('no tenant of its own');
-        expect(html.match(/href="\/tenants\/new"/g)).toHaveLength(1);
+        expect(html).toContain('There are no tenants yet.');
+        expect(html.match(/Add tenant/g)).toHaveLength(2);
+    });
+});
+
+describe('the tenant roster read', () => {
+    it('sends the search, the filters and the bounds of the page', () => {
+        expect(
+            tenantQuery({
+                ...FIRST_PAGE,
+                offset: 30,
+                search: 'acme',
+                filters: { type: 'operational', status: 'active', test: '1' },
+            }),
+        ).toEqual({
+            search: 'acme',
+            type: 'operational',
+            status: 'active',
+            includeTest: true,
+            offset: 30,
+            limit: 15,
+        });
+        expect(tenantQuery(FIRST_PAGE)).toMatchObject({ type: '', status: '', includeTest: false });
+    });
+
+    it('turns missing runs and hidden test tenants into notes, and says nothing otherwise', () => {
+        const t = (key: string) => key;
+        const plural = (key: string, count: number) => `${key}:${count}`;
+        const quiet = {
+            tenants: [acme],
+            totalCount: 1,
+            setupUnavailable: false,
+            hiddenTestCount: 0,
+        };
+
+        expect(tenantListPage(quiet, t, plural)).toEqual({ rows: [acme], total: 1, notes: [] });
+        expect(
+            tenantListPage({ ...quiet, setupUnavailable: true, hiddenTestCount: 4 }, t, plural)
+                .notes,
+        ).toEqual([
+            { tone: 'warn', text: 'tenants.setupUnavailable' },
+            { tone: 'info', text: 'tenants.hiddenTest:4' },
+        ]);
     });
 });

@@ -18,15 +18,13 @@
  *
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.ore.core/store/run_store.hpp"
+#include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <filesystem>
@@ -130,12 +128,12 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
         // The run document and the configuration it names, laid out where the
-        // engine reads them.
-        const auto tenant_ctx = ores::service::messaging::for_requested_party(
-            ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id),
-            req.party_id);
-        const auto input = ores::ore::store::archive_layout(ores::ore::store::export_run(
-            tenant_ctx, boost::uuids::string_generator()(req.definition_id)));
+        // engine reads them. The documents come from their owners through the
+        // owners' operations, carrying the run token, so ore never reads their
+        // tables.
+        auto owners = service_nats_.with_delegation(run_token);
+        const auto input = ores::ore::store::archive_layout(
+            ores::ore::service::messaging::export_run(owners, req.definition_id));
         for (const auto& [path, content] : input) {
             const auto target = stage_dir / path;
             std::filesystem::create_directories(target.parent_path());

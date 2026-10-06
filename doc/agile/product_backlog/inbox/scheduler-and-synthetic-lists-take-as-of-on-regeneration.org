@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 949C2A80-533A-461D-B92C-C7B37CACA662
+:END:
+#+title: Scheduler and synthetic entities have no point-in-time list …
+#+description: Scheduler and synthetic entities have no point-in-time list read yet. PR 2683 made as_of the default for every entity with a validity window, but applied it by merge and left ores.scheduler and ores.synthetic out, because their generated files drift too far from their templates to merge. Their clean-up stories (clean-scheduler, clean-synthetic) regenerate them, which brings as_of with it; each should check its list protocols carry as_of and its services read it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The entities of =ores.scheduler= and =ores.synthetic= have no point-in-time
+list read yet. PR 2683 made =as_of= the default for every entity with a
+validity window and applied it to the generated files by a three-way merge.
+Every merge in those two components conflicted, because their generated files
+predate the ordering and filter templates, so both were left out.
+
+* Why
+
+Their clean-up stories, =clean-scheduler= and =clean-synthetic=, regenerate the
+files, and the default then brings =as_of= with it. Nothing needs writing by
+hand; each clean-up should check that its list protocols carry =as_of= and its
+services refuse a malformed one with =as_of_invalid=.
+
+* References
+
+- [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]] -- the change and why the two were left out.
+
+* See also
+
+-

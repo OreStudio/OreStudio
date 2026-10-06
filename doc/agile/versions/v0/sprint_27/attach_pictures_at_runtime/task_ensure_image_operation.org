@@ -28,11 +28,11 @@ today call it instead of repeating the read-then-write.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -90,3 +90,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=assets.v1.images.ensure= is served and registered, the assets service and
+the test users hold the template-image grant, and IAM's
+=copy_template_image= is a call to it. The assets suite is green, 48 cases
+including the two new ones, and the full suite is 94 of 94 after a recreate.

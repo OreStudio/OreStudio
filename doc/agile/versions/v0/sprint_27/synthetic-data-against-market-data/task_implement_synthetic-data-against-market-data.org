@@ -32,11 +32,11 @@ consumer such as the curve bootstrap reads it and says where it came from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Slices 1 to 4 done and green: one producer subject, the binding gate on the one start path, the producer kind on binding and series, and the persist test. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Slice 5, collapse the remaining spurious forks the inventory names, then slice 6, the curve bootstrap consumer check. |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -153,6 +153,7 @@ task and name that file in the Command column.
 | Slice 3 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =08b308b968= |
 | Slice 4 persist test | service suite 40 cases / 215 assertions pass, 18 in the 2 new cases | =ctest -R ores.marketdata.service.tests= | =627f2386e1= |
 | Slice 4 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =627f2386e1= |
+| Fork disposition | 2 forks collapsed, 1 remaining group captured | =evidence/asset-class-fork-inventory.org= | =2887d018ef= |
 
 * Notes
 
@@ -212,6 +213,41 @@ SYNTHETIC= and the observation carrying the point URI, source, series id and
 value. A tick whose source has no enabled binding returns =unbound_source= and
 leaves no series. The codegen sweep stays clean.
 
+** Slice 5, fork disposition 2026-10-06. The inventory found 24 forks, 13 of
+them spurious. Each spurious one is now collapsed or captured.
+
+- *Collapsed.* The producer subject and binding mode fork, one builder for
+  every kind (slice 1). The FX-only ad-hoc =start(ore_key, GMM...)= and the
+  vintage scan it alone duplicated, deleted in slice 2, which also removed the
+  two-mode =should_ensure_feed_binding= contract that existed only to protect
+  its default argument.
+- *Captured.* The remaining spurious forks are the control-plane duplication
+  around the producer registry: the per-asset =feed_config_handler= start and
+  stop with kind resolved by probing the FX then the IR repository, the
+  FX-shaped and triplicated vintage lookup, the duplicated tick clock, the
+  duplicated simulate and preview envelope, the factory rebuilt at four call
+  sites, and the common config plumbing fields repeated across the two
+  generation-config entities. They are one coherent piece of work and are
+  captured as [[id:F9E2DB59-962B-48D1-96C9-022D56665ECC][Collapse the
+  remaining synthetic control-plane forks]], so this task can close without
+  leaving them unrecorded. Every one is listed with its file and line in
+  =evidence/asset-class-fork-inventory.org=.
+
+** Slice 6, the bootstrap consumer check 2026-10-06. No code change is needed,
+and here is the evidence rather than an assertion.
+
+- The ingest writes one =market_observation= per bound consumer whatever the
+  producer kind is, because =persist= takes the binding and the datum only;
+  nothing in it branches on the asset class or the kind.
+- The curve bootstrap reads observations through the same
+  =market_observation_repository= on the same table, so a synthetic series and
+  a vendor series are the same shape to it. That is what makes the one-pipeline
+  rule pay off here: the consumer needs no synthetic case.
+- The generated provenance is readable from the series: the slice 4 test reads
+  a series written by the ingest back from the database and asserts
+  =producer_kind == "SYNTHETIC"=, and =market_series= carries the field for
+  every consumer to read.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -236,3 +272,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The synthetic feeds now run the same pipeline as every other producer, and the
+path is proved end to end.
+
+- Slices 1 to 4 are implemented, tested and committed, and the branch is in PR
+  [[https://github.com/OreStudio/OreStudio/pull/2708][#2708]].
+- Slice 5's spurious forks are collapsed or captured; the one large remaining
+  group is its own backlog task, [[id:F9E2DB59-962B-48D1-96C9-022D56665ECC][Collapse the remaining synthetic
+  control-plane forks]].
+- Slice 6 is evidenced rather than asserted: the ingest writes the one
+  observation shape and the bootstrap reads that shape through the one
+  repository, so no consumer needs a synthetic case, and the generated
+  provenance is readable from the series a slice 4 test reads back.
+- Two product calls are left open on purpose. Boot auto-start has no session,
+  so its binding must come from provisioning or a service-account identity.
+  And the shell =marketdata stream= task is backlog, which is the by-hand
+  end-to-end check this work enables.

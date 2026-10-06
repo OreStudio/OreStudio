@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/cache-run-tokens-in-the-step-services
-#+pr:
+#+pr: 2712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -139,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2712][#2712]] | [reporting] Cache run tokens in the step services |
 
 * Review
 

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: F49BC762-0B5E-48F6-8F82-F5C8C932591A
+:END:
+#+title: Story: Hotfix: Site build needs live GNU ELPA
+#+description: The site build installs Emacs packages from elpa.gnu.org at build time, so a GNU ELPA outage turns site CI red; the workflows keep no package cache and the refresh retry never runs.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:hotfix:docs:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Site CI turns red whenever =elpa.gnu.org= does not answer. Two
+dependencies of the site packages, =queue= and =compat=, exist only on
+GNU ELPA, and both site workflows install the packages on every run
+with no cache. The outage of 2026-10-06 kept the `Product website`
+workflow red for hours. This hotfix caches the package tree in CI and
+falls back to a mirror when the primary GNU archives do not answer, so
+a GNU ELPA outage no longer fails the build.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Fix verified locally: cold fallback, warm no-op. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit and open the PR.                |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- A cold run with unreachable GNU archives installs every site package (=queue=, =compat=, =citeproc=, =org-roam=, =htmlize=).
+- A warm =.packages= tree makes =ores-site-ensure-packages= a no-op.
+- Both site workflows restore and save =./.packages=.
+- The refresh retries a failed primary refresh, then reads from a mirror.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7CC9903-B2EB-44B2-9B35-D3A9CAF1576A][Scaffold story: Hotfix: Site build needs live GNU ELPA]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:64415938-135B-4E32-AC30-FB64801B7A81][Implement Hotfix: Site build needs live GNU ELPA]] | STARTED | 2026-10-06 | | Cache the Emacs package tree in both site workflows, add a GNU ELPA mirror fallback, and make the archive-refresh retry detect a failed refresh. |
+
+* Decisions
+
+- The fallback mirrors are =https://mirrors.bfsu.edu.cn/elpa/gnu/= and its
+  =nongnu= sibling. Emacs verifies the archive signatures against the GNU
+  keyring, so the mirror cannot substitute content.
+- The retry detects a failed refresh by the absence of =queue= in the
+  archive contents. =package-refresh-contents= only warns on a failed
+  archive and never signals, so the old retry loop never ran.
+- The CI cache key tracks the package-defining elisp file, so a change
+  to the package list rebuilds the cache instead of reusing a stale one.
+
+* Out of scope
+
+- Replacing GNU ELPA as the source of =queue= and =compat=.

@@ -172,6 +172,7 @@
 ** Execute prefixes
 
 - ores_assets_publish_
+- ores_assets_get_template_image_fn
 
 * ores.scheduler.service
 :PROPERTIES:

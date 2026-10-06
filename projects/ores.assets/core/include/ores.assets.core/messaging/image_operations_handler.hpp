@@ -144,12 +144,45 @@ public:
         }
     }
 
+    /**
+     * @brief Serves assets.v1.images.ensure.
+     */
+    void ensure_image(ores::nats::message msg) {
+        BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        auto req = decode<ensure_image_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(image_operations_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::image_operations_service svc(req_ctx);
+        try {
+            auto response = svc.ensure_image(*req);
+            BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(image_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            ensure_image_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The ensure failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
-
 }
 
 #endif

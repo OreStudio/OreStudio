@@ -49,7 +49,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_tag_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
-    // Image operations: the upload and the policy read
+    // Image operations: the upload, the policy read and the ensure
     // ----------------------------------------------------------------
     {
         auto ioh = std::make_shared<image_operations_handler>(nats, ctx, verifier);
@@ -61,6 +61,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_image_upload_policy_request::nats_subject,
             "ores.assets.service",
             [ioh](ores::nats::message msg) { ioh->get_image_upload_policy(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            ensure_image_request::nats_subject,
+            "ores.assets.service",
+            [ioh](ores::nats::message msg) { ioh->ensure_image(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------

@@ -86,9 +86,34 @@ export interface GetImageUploadPolicyResponse {
     min_height: number;
 }
 
+/**
+ * @brief Ensures an image with this code exists in the caller's tenant.
+ *
+ * The system tenant carries the template images an installation ships. This
+ * operation answers the caller's own image with the code, and when the tenant
+ * holds none it copies the system tenant's template through the same store the
+ * upload writes to. It is idempotent: a tenant that already holds the code is
+ * answered with what it holds.
+ *
+ * A code the installation carries no template for is refused, so a caller that
+ * wanted a picture learns the template is missing rather than storing nothing.
+ */
+export interface EnsureImageRequest {
+    code: string;
+}
+
+export interface EnsureImageResponse {
+    result: Result;
+    /**
+     * @brief The id of the caller tenant's image with the requested code, on success.
+     */
+    image_id: string;
+}
+
 export const subjects = {
     upload_image_request: 'assets.v1.images.upload',
     get_image_upload_policy_request: 'assets.v1.images.upload-policy',
+    ensure_image_request: 'assets.v1.images.ensure',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -98,4 +123,5 @@ export const subjects = {
 export const requiresSession = {
     upload_image_request: true,
     get_image_upload_policy_request: true,
+    ensure_image_request: true,
 } as const;

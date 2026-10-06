@@ -134,3 +134,34 @@ TEST_CASE("get_image_upload_policy_answers_the_validator_policy", tags) {
     CHECK(response.min_width == static_cast<int>(rules.min_width));
     CHECK(response.min_height == static_cast<int>(rules.min_height));
 }
+
+TEST_CASE("ensure_image_answers_the_image_and_leaves_a_repeat_unchanged", tags) {
+    scoped_database_helper h;
+    image_operations_service svc(h.context());
+
+    ores::assets::messaging::ensure_image_request request;
+    request.code = "acme_party_logo";
+
+    const auto first = svc.ensure_image(request);
+    REQUIRE(first.result.outcome == outcome::ok);
+    REQUIRE_FALSE(first.image_id.empty());
+
+    // A tenant that already holds the code is answered with what it holds, so
+    // the second call writes nothing and mints no new id.
+    const auto second = svc.ensure_image(request);
+    REQUIRE(second.result.outcome == outcome::ok);
+    CHECK(second.image_id == first.image_id);
+}
+
+TEST_CASE("ensure_image_refuses_a_code_with_no_template", tags) {
+    scoped_database_helper h;
+    image_operations_service svc(h.context());
+
+    ores::assets::messaging::ensure_image_request request;
+    request.code = "no_such_template_code";
+
+    const auto response = svc.ensure_image(request);
+    CHECK(response.result.outcome == outcome::invalid);
+    CHECK(response.result.code == "template_not_found");
+    CHECK(response.image_id.empty());
+}

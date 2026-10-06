@@ -205,6 +205,7 @@ select _ores_grant_dml_fn('ores_variability_', :'variability_service_user');
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_assets_', :'assets_service_user');
 select _ores_grant_execute_fn('ores_assets_publish_', :'assets_service_user');
+select _ores_grant_execute_fn('ores_assets_get_template_image_fn', :'assets_service_user');
 
 -- ---------------------------------------------------------------------------
 -- scheduler_service: Scheduler domain service

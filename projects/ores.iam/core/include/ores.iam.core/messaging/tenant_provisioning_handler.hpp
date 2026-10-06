@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 
+#include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -1492,63 +1493,23 @@ private:
         return all_saved;
     }
 
-    // Copies the system-tenant "key" template image into p_tenant_id (if not
-    // already copied) via the real assets.v1.images.save path, returning
-    // the per-tenant image_id. The template read itself stays a direct SQL
-    // read (not a NATS round-trip): unlike the write-side activation logic
-    // this rework replaces, a read has no versioning/validation behaviour
-    // to duplicate incorrectly, and reading the system tenant's own data
-    // needs no impersonation of an unrelated identity.
+    // Ensures the caller tenant holds the image with this code, copying the
+    // system tenant's template through the assets service when it does not,
+    // and answers the tenant image's id. The tenant and the actor are the
+    // session's, so the copy lands where the work is happening; the assets
+    // service owns both the cross-tenant template read and the write, so
+    // neither is repeated here.
     std::optional<boost::uuids::uuid> copy_template_image(internal_request_client& client,
-                                                          ores::database::context& ctx,
-                                                          const std::string& tenant_id,
                                                           const std::string& key) {
-        auto existing = execute_parameterized_string_query(
-            ctx,
-            "SELECT id::text FROM ores_assets_images_tbl WHERE tenant_id = $1::uuid AND "
-            "code = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {tenant_id, key},
-            tenant_provisioning_handler_lg(),
-            "copy_template_image");
-        if (!existing.empty())
-            return boost::uuids::string_generator{}(existing.front());
-
-        auto rows = execute_parameterized_multi_column_query(
-            ctx,
-            "SELECT description, mime_type, data FROM ores_assets_get_template_image_fn($1)",
-            {key},
-            tenant_provisioning_handler_lg(),
-            "copy_template_image");
-        if (rows.empty() || rows.front().size() < 3 || !rows.front()[0] || !rows.front()[1] ||
-            !rows.front()[2]) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "No system-tenant template image: " << key;
-            return std::nullopt;
-        }
-
-        // A write carries the user-owned fields alone. The tenant, the actor
-        // and the provenance are the assets service's to derive from the
-        // authenticated context, and the version is the database's.
-        ores::assets::messaging::put_image_request req;
-        const auto new_image_id = boost::uuids::random_generator{}();
-        req.change.write.id = new_image_id;
-        req.change.write.code = key;
-        req.change.write.description = *rows.front()[0];
-        req.change.write.mime_type = *rows.front()[1];
-        // The template function returns the column as stored: base64 text.
-        // The write record carries raw bytes, so decode that hop here.
-        req.change.write.data = ores::utility::convert::base64_converter::convert(*rows.front()[2]);
-        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        req.intent.reason_code = "system.external_data_import";
-        req.intent.commentary = "Copied from system-tenant template: " + key;
-
+        ores::assets::messaging::ensure_image_request req;
+        req.code = key;
         auto resp = client.request(req);
-        if (resp.result.outcome != ores::utility::domain::outcome::ok) {
+        if (resp.result.outcome != ores::utility::domain::outcome::ok || resp.image_id.empty()) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                << "Failed to copy template image " << key << ": " << resp.result.message;
+                << "No tenant image for '" << key << "': " << resp.result.message;
             return std::nullopt;
         }
-        return new_image_id;
+        return boost::uuids::string_generator{}(resp.image_id);
     }
 
     /// The legacy synchronous handler treats a staff photo as cosmetic: it
@@ -1630,8 +1591,8 @@ private:
     /// a picture is left untouched, which is what makes a repeated run leave
     /// it unchanged.
     void attach_account_photo(internal_request_client& client,
-                              ores::database::context& ctx,
-                              const std::string& tenant_id,
+                              [[maybe_unused]] ores::database::context& ctx,
+                              [[maybe_unused]] const std::string& tenant_id,
                               const ores::iam::domain::account& account,
                               const std::string& template_key,
                               const std::string& commentary,
@@ -1639,7 +1600,7 @@ private:
         if (account.image_id)
             return;
 
-        auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        auto image_id = copy_template_image(client, template_key);
         if (!image_id)
             throw std::runtime_error("The template image '" + template_key +
                                      "' was not copied into the tenant.");
@@ -1735,12 +1696,12 @@ private:
     /// Copies the named template image into the tenant and saves it on the
     /// party, which the caller read first so the write states its version.
     void attach_party_logo(internal_request_client& client,
-                           ores::database::context& ctx,
+                           [[maybe_unused]] ores::database::context& ctx,
                            const ores::refdata::domain::party& party,
                            const std::string& template_key,
-                           const std::string& tenant_id,
+                           [[maybe_unused]] const std::string& tenant_id,
                            std::vector<std::string>& images) {
-        const auto image_id = copy_template_image(client, ctx, tenant_id, template_key);
+        const auto image_id = copy_template_image(client, template_key);
         if (!image_id)
             throw std::runtime_error("The template image '" + template_key +
                                      "' was not copied into the tenant.");
@@ -1879,8 +1840,8 @@ private:
     // synchronous Acme handler this serves never read these responses;
     // the step kinds report their failures instead.
     void finish_party(internal_request_client& client,
-                      ores::database::context& ctx,
-                      const std::string& tenant_id,
+                      [[maybe_unused]] ores::database::context& ctx,
+                      [[maybe_unused]] const std::string& tenant_id,
                       const boost::uuids::uuid& account_id,
                       [[maybe_unused]] const std::string& username,
                       ores::refdata::domain::party party,
@@ -1889,7 +1850,7 @@ private:
             const auto status = party.status == "Active" ? party.status : std::string("Active");
             auto image_id = party.image_id;
             if (!image_id)
-                image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo");
+                image_id = copy_template_image(client, "acme_party_logo");
             if (status != party.status || image_id != party.image_id)
                 save_party(client,
                            party,

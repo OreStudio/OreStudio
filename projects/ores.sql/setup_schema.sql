@@ -94,6 +94,13 @@ alter default privileges in schema public
 -- Grant per-service least-privilege table access
 \ir ./create/iam/iam_service_db_grants_create.sql
 
+-- The test users drive the services directly, so the function a service reads a
+-- system-tenant template through is granted to them too. The production roles
+-- do not get it: only the services that copy templates, and the tests that
+-- stand in for them, may read across the tenant boundary.
+grant execute on function ores_assets_get_template_image_fn(text)
+    to :test_dml_user, :test_ddl_user;
+
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql
 

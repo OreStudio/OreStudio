@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5684FD21-4381-4940-9858-65C81907EB88][Hotfix: Windows MSVC build treats an unused catch parameter as an error]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2710][#2710]] | [dq] Fix the Windows MSVC build failure on an unused catch parameter |
 
 * Review
 
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass story new --kind hotfix= created the story, its branch and the two
+tasks, and wired the story into sprint 27's Hotfixes table. Both tasks ride this
+branch, so the scaffold closes with PR #2710 rather than a separate scaffold PR.

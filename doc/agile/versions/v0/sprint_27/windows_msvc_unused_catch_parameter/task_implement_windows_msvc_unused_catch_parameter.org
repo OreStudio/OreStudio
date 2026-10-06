@@ -26,11 +26,11 @@ Make the MSVC build compile publish_service.cpp again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5684FD21-4381-4940-9858-65C81907EB88][Hotfix: Windows MSVC build treats an unused catch parameter as an error]] |
-| Now          | The parameter is unnamed; the file compiles under the project's flags. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open the PR.                |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -103,3 +103,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=publish_service.cpp:196= now catches =const boost::not_a_dag&= with no
+parameter name. A scan of =projects/= for catch clauses whose own handler never
+mentions the parameter reports 0, down from 1, and the file syntax-checks under
+the project's own flags.

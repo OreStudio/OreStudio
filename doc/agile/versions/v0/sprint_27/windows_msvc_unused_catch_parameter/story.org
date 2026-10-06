@@ -21,11 +21,11 @@ Make the MSVC build compile publish_service.cpp again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The catch parameter is unnamed and the file compiles. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit and open the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -37,8 +37,8 @@ Make the MSVC build compile publish_service.cpp again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6012D227-0FFB-416E-A50D-103253EE38FB][Scaffold story: Hotfix: Windows MSVC build treats an unused catch parameter as an error]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:593F5B14-0D65-4F13-9AC4-C4859C5D5913][Drop the unused catch parameter in publish_service.cpp]] | STARTED | 2026-10-06 | | MSVC flags the unused boost::not_a_dag catch parameter at publish_service.cpp:196 as C4101 and promotes it to an error under /W4 /WX. |
+| [[id:6012D227-0FFB-416E-A50D-103253EE38FB][Scaffold story: Hotfix: Windows MSVC build treats an unused catch parameter as an error]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:593F5B14-0D65-4F13-9AC4-C4859C5D5913][Drop the unused catch parameter in publish_service.cpp]] | DONE | 2026-10-06 | 2026-10-06 | MSVC flags the unused boost::not_a_dag catch parameter at publish_service.cpp:196 as C4101 and promotes it to an error under /W4 /WX. |
 
 * Decisions
 
@@ -48,7 +48,19 @@ Make the MSVC build compile publish_service.cpp again.
 - No checker is added. A scan of =projects/= for catch parameters that its own
   handler never mentions finds this one occurrence, and the compiler already
   fails the build on it wherever /W4 /WX is on.
+- No Linux job can catch this class: GCC has no warning for an unused exception
+  parameter, and clang emits =unused-exception-parameter= only when asked. The
+  Linux builds run =-Wall -Wextra -Werror=, so MSVC's C4101 under /W4 /WX is the
+  only gate that sees it.
 
 * Out of scope
 
 -
+
+* Result
+
+=publish_service.cpp:196= no longer names the =boost::not_a_dag= exception
+object, so the MSVC jobs clear the translation unit that stopped the Windows
+build at 512 of 6393. Landed with PR #2710. The full Windows build was not run
+here, so any later /W4 /WX failure in the remaining translation units is still
+unknown.

@@ -26,6 +26,7 @@ set(files
     "main.cpp"
     "rate_limiter_tests.cpp"
     "request_context_tests.cpp"
+    "run_token_cache_tests.cpp"
     "standard_service_options_tests.cpp"
     "systemd_notify_tests.cpp"
     "workflow_helpers_tests.cpp"

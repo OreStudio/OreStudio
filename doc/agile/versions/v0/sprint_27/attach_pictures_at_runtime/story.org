@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: C045EB53-9FC2-490B-AAD2-689D1EB9F35D
+:END:
+#+title: Story: Attach pictures at runtime through one seam
+#+description: One assets operation ensures a template image exists in a tenant; one IAM operation reconciles account pictures from it. Staff photos, party logos, counterparty logos and service account pictures all use the same seam, reachable from ores.shell and ores.web.
+#+type: story
+#+level: s2
+#+filetags: :runtime:assets:iam:pictures:codegen:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Pictures are attached at runtime through one seam: an assets operation
+ensures a template image exists in a tenant, and an IAM operation reconciles
+accounts' pictures from a scope. Staff photos, party logos, counterparty
+logos and the service accounts' pictures all use it, and both =ores.shell=
+and =ores.web= can run it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded; the work is broken into four tasks.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start with the ensure-image operation.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- =assets.v1.images.ensure= copies a system-tenant template image into a
+  tenant and returns its id, idempotently, with no workflow context.
+- =iam.v1.accounts.attach-pictures= reconciles the accounts a scope names:
+  each account that wants a picture and has no =image_id= gets one.
+- The three places that copy templates today use the assets operation; no
+  copy logic is duplicated.
+- The wanted picture code rides the account API, so the handler stops
+  reading =ores_dq_accounts_artefact_tbl=.
+- The service accounts' pictures attach from the service registry at
+  installation bring-up and on demand, and
+  =iam_service_account_pictures_populate.sql= plus its
+  =validation_ignore.txt= entry are gone.
+- Both clients reach the same subjects; no behaviour is client-specific.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AA7E5CCF-BE50-40E1-8B00-16F21964EADE][Scaffold story: Attach pictures at runtime through one seam]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6E40EE56-4297-4FBE-9B8E-327A14D2FA0A][Add the ensure-image operation]] | BACKLOG | | | One assets operation copies a system-tenant template image into a tenant and returns its id, idempotently; the three existing copiers use it. |
+| [[id:A66E10E1-D60A-4545-904C-99B0853F133A][Reconcile account pictures]] | BACKLOG | | | One IAM operation reconciles each account's picture from a scope; attach_photos delegates to it. |
+| [[id:0AE594AB-8474-49A0-A169-CFE062F0D331][Model the picture code on the account]] | BACKLOG | | | The wanted picture code rides the account API, so the handler stops reading the DQ artefact table. |
+| [[id:635C5F3E-CE1D-4623-B8FA-4065D13FEC2E][Attach the service account pictures]] | BACKLOG | | | Reconcile the service accounts from the service registry at installation bring-up, expose it to both clients, and delete the build-time script. |
+
+* Decisions
+
+- *One seam per concern.* Copying a template into a tenant is the assets
+  service's job, exposed as =assets.v1.images.ensure=. Deciding which account
+  gets which picture is IAM's job, exposed as
+  =iam.v1.accounts.attach-pictures=. Neither knows about the other's tables.
+- *Runtime and server-side, so both clients are equal.* The operations are
+  ordinary NATS subjects, so =ores.shell= and =ores.web= reach them through
+  the same generated protocol. No behaviour lives in a client.
+- *Reconcile, do not orchestrate.* Each operation is idempotent and safe to
+  re-run; the caller supplies a scope, not a step-by-step plan. This is what
+  lets the installation bring-up and an operator's re-run use the same call.
+- *The provisioning step keeps its place.* =attach_photos= stays the place a
+  tenant's staff photos are attached; it becomes a caller of the two
+  operations rather than an owner of the copy logic.
+
+* Out of scope
+
+- Re-picturing an account when its template image changes. The reconcile
+  fills a missing picture and leaves an existing one alone. Whether a changed
+  icon should overwrite every account that carries the old one is a product
+  decision, and it changes the idempotence rule.
+- The dead =attach_staff_photos_best_effort= wrapper. It has no callers and
+  retires with the legacy synchronous handler, not here.

@@ -8,7 +8,7 @@
 #+filetags: :run_every_check_locally:sprint_27:v0:
 #+owner: marco
 #+branch: feature/retire-github-pr-checks
-#+pr:
+#+pr: 2716
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2716][#2716]] | [ci] Retire the pull-request triggers on the twelve gating workflows |
 
 * Review
 

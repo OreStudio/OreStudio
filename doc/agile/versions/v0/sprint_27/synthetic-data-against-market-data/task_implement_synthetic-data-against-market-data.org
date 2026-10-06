@@ -34,9 +34,9 @@ consumer such as the curve bootstrap reads it and says where it came from.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Reconnaissance done; the ingest path is traced and two gaps are named. Provenance decided (producer kind on the binding). The common-pipeline constraint is the spine of the work. |
+| Now          | Fork inventory done: 24 forks, 13 spurious. Two live defects found: IR ignores =binding_mode=, and binding auto-creation is unreachable from the control plane. |
 | Waiting on   | Nothing. |
-| Next         | Inventory the asset-class branching and classify it, then prove the persist path and implement the producer kind. |
+| Next         | Slice 1: one mode-aware producer subject for every kind. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -105,13 +105,30 @@ is one path parameterised by the config, not a branch per asset class. Any
 existing FX/IR fork in the pipeline is either justified against this rule or
 removed.
 
-**D3. Work in slices.** (0) inventory the asset-class branching in the
-synthetic pipeline and the ingest, and classify each fork as genuine or
-spurious; (1) an integration test that drives =persist()= and asserts the
-series and observation, and that an unbound source is dropped; (2) the
-=producer_kind= from D1, on the shared binding and the shared persist path;
-(3) collapse the spurious forks the inventory found; (4) the curve bootstrap
-consumer check.
+**D3. Work in slices.** Slice 0 is done: the fork inventory is at
+=evidence/asset-class-fork-inventory.org= — 24 forks, 13 spurious, 11 genuine.
+It changed the order, because it found that binding auto-creation is
+unreachable from the live control plane (=feed_controller::start(ore_key, GMM)=
+is FX-only with no production caller, and it is the only caller of
+=ensure_feed_binding=), and that =binding_mode= is not expressible for IR, so a
+sandboxed IR curve publishes on the ingested subject.
+
+- 1. One producer subject, mode-aware for every kind: collapse the FX
+  =synthetic_producer_subject(source, mode)= and the IR hardcoded
+  =synthetic_tick_subject(source)=, thread =binding_mode= into the IR build
+  input and through the one =add()= / =start()= path. Fixes the IR sandbox
+  bug; test both subjects.
+- 2. Binding creation on the one live start path, gated by =binding_mode=,
+  deleting the FX-only ad-hoc start.
+- 3. The =producer_kind= from D1, on the shared binding and the shared persist
+  path.
+- 4. The =persist()= integration test: series and observation written, an
+  unbound source dropped.
+- 5. Collapse the remaining spurious forks the inventory lists: the
+  =feed_config_handler= kind resolution and duplicated start/stop, the
+  duplicated vintage scan, the duplicated tick clock, the duplicated
+  simulate/preview envelope, and the common config plumbing fields.
+- 6. The curve bootstrap consumer check.
 
 * Measurements
 

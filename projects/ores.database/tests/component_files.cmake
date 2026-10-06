@@ -27,4 +27,5 @@ set(files
     "postgres_listener_service_tests.cpp"
     "session_settings_tests.cpp"
     "stated_order_tests.cpp"
+    "unit_of_work_tests.cpp"
 )

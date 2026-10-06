@@ -73,11 +73,50 @@ std::vector<DomainType> execute_read_query(context ctx,
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
-    const auto r = session(ctx.connection_pool()).and_then(query);
+    const auto r = ctx.active_transaction() ? query(*ctx.active_transaction()) :
+                                              session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg);
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << r->size();
     return std::forward<MapperFunc>(mapper)(*r);
+}
+
+/**
+ * @brief Executes a write composable in the context's transaction, or in
+ * a transaction of its own.
+ *
+ * A context bound to a unit of work carries a transaction, and the write
+ * joins it and does not commit; the unit of work commits once for all the
+ * writes made through it. A context without one runs the write in a
+ * transaction of its own, committed here.
+ *
+ * @tparam QueryType The sqlgen write composable, such as insert(entity).
+ * @param ctx The repository context
+ * @param query The write composable to run
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ */
+template <typename QueryType>
+void execute_write_op(context ctx,
+                      const QueryType& query,
+                      logging::logger_t& lg,
+                      const std::string& operation_desc) {
+
+    using namespace ores::logging;
+    using namespace sqlgen;
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+
+    if (ctx.active_transaction())
+        ensure_success(query(*ctx.active_transaction()), lg);
+    else
+        ensure_success(session(ctx.connection_pool())
+                           .and_then(begin_transaction)
+                           .and_then(query)
+                           .and_then(commit),
+                       lg);
+
+    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
 /**
@@ -90,17 +129,18 @@ std::vector<DomainType> execute_read_query(context ctx,
  * 4. Committing the transaction
  * 5. Ensuring success
  *
+ * It joins the context's own transaction when the context carries one.
+ *
  * @tparam EntityType The database entity type
  * @param ctx The repository context
  * @param entity The entity or vector of entities to write
- * @param logger_name The name to use for logging
+ * @param lg The logger to use
  * @param operation_desc Description of the operation for logging
  *
  * @example
  * execute_write_query(ctx_,
  *     account_mapper::map(account),
- *     "ores.iam.repository.account_repository",
- *     "Writing account to database");
+ *     lg(), "Writing account to database");
  */
 template <typename EntityType>
 void execute_write_query(context ctx,
@@ -108,18 +148,7 @@ void execute_write_query(context ctx,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
 
-    using namespace ores::logging;
-    using namespace sqlgen;
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
-
-    const auto r = session(ctx.connection_pool())
-                       .and_then(begin_transaction)
-                       .and_then(insert(entity))
-                       .and_then(commit);
-    ensure_success(r, lg);
-
-    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
+    execute_write_op(ctx, sqlgen::insert(entity), lg, operation_desc);
 }
 
 /**
@@ -152,9 +181,14 @@ void execute_delete_query(context ctx,
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
-    const auto r =
-        session(ctx.connection_pool()).and_then(begin_transaction).and_then(query).and_then(commit);
-    ensure_success(r, lg);
+    if (ctx.active_transaction())
+        ensure_success(query(*ctx.active_transaction()), lg);
+    else
+        ensure_success(session(ctx.connection_pool())
+                           .and_then(begin_transaction)
+                           .and_then(query)
+                           .and_then(commit),
+                       lg);
 
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }

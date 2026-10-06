@@ -157,12 +157,7 @@ void trade_repository::write(context ctx,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
-    const auto query = sqlgen::insert(trade_mapper::map(t));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(ctx, sqlgen::insert(trade_mapper::map(t)), lg(), "Writing trade to database.");
 }
 
 void trade_repository::write(context ctx,
@@ -173,12 +168,8 @@ void trade_repository::write(context ctx,
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    const auto query = sqlgen::insert(trade_mapper::map(batch));
-    const auto r = sqlgen::session(ctx.connection_pool())
-                       .and_then(sqlgen::begin_transaction)
-                       .and_then(query)
-                       .and_then(sqlgen::commit);
-    ensure_success(r, lg());
+    execute_write_op(
+        ctx, sqlgen::insert(trade_mapper::map(batch)), lg(), "Writing trades to database.");
 }
 
 std::vector<domain::trade> trade_repository::read_latest(context ctx) {

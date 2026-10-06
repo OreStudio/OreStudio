@@ -54,6 +54,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "schedule_expression" text not null,
     "concurrency_policy" text not null,
     "scheduler_job_id" uuid null,
+    "run_grant_id" uuid null,
     "pre_processing" text not null,
     "prepared_input_key" text null,
     "post_processing" text not null,

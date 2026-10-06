@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <name> <party_id> <description> <report_type> <fsm_state_id> <schedule_expression>
-     * <concurrency_policy> <scheduler_job_id> <pre_processing> <prepared_input_key>
+     * <concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing> <prepared_input_key>
      * <post_processing> <is_official> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
@@ -97,7 +97,7 @@ public:
 
     /**
      * @brief set <id> <name> <party_id> <description> <report_type> <fsm_state_id>
-     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing>
+     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing>
      * <prepared_input_key> <post_processing> <is_official> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -106,7 +106,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <name> <party_id> <description> <report_type> <fsm_state_id>
-     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <pre_processing>
+     * <schedule_expression> <concurrency_policy> <scheduler_job_id> <run_grant_id> <pre_processing>
      * <prepared_input_key> <post_processing> <is_official> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,

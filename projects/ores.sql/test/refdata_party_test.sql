@@ -27,7 +27,7 @@
  * - status validation (invalid value rejected, default Active applied)
  * - Parent party validation (invalid parent rejected)
  * - Root party uniqueness constraint
- * - Natural key uniqueness (full_name, short_code)
+ * - Natural key uniqueness (short_code)
  * - First insert gets version 1
  * - Soft delete via DELETE rule
  *
@@ -44,13 +44,13 @@ select plan(12);
 
 -- Test 1: Insert root party (no parent) succeeds with version 1
 insert into ores_refdata_parties_tbl (
-    id, tenant_id, version, full_name, short_code, party_type,
+    id, tenant_id, version, full_name, short_code, party_category, party_type,
     parent_party_id, business_center_code, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'a0000000-0000-0000-0000-000000000001'::uuid,
-    ores_utility_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'TBH', 'Bank',
-    NULL, NULL, 'Active',
+    ores_utility_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'TBH', 'Operational', 'Bank',
+    NULL, 'WRLD', 'Active',
     current_user, current_user, 'system.test', 'Test party insert'
 );
 
@@ -75,13 +75,13 @@ select is(
 -- Test: Validation - party_category
 -- =============================================================================
 
--- Test 3: party_category defaults to 'Operational'
+-- Test 3: party_category is stored as inserted
 select is(
     (select party_category from ores_refdata_parties_tbl
      where id = 'a0000000-0000-0000-0000-000000000001'::uuid
        and valid_to = ores_utility_infinity_timestamp_fn()),
     'Operational',
-    'party insert: party_category defaults to Operational'
+    'party insert: party_category is Operational'
 );
 
 -- Test 4: Invalid party_category is rejected
@@ -106,11 +106,11 @@ select throws_ok(
 -- Test 5: Invalid party_type is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
-        id, tenant_id, version, full_name, short_code, party_type,
+        id, tenant_id, version, full_name, short_code, party_category, party_type,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000099'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Bad Type Corp', 'BTC', 'INVALID_TYPE',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Type Corp', 'BTC', 'Operational', 'INVALID_TYPE',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -125,11 +125,12 @@ select throws_ok(
 -- Test 6: Invalid status is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
-        id, tenant_id, version, full_name, short_code, party_type, status,
+        id, tenant_id, version, full_name, short_code, party_category, party_type, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000098'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Bad Status Corp', 'BSC', 'Bank', 'INVALID_STATUS',
+        ores_utility_system_tenant_id_fn(), 0, 'Bad Status Corp', 'BSC',
+        'Operational', 'Bank', 'INVALID_STATUS',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -143,13 +144,13 @@ select throws_ok(
 
 -- Test 7: Insert child party with valid parent succeeds
 insert into ores_refdata_parties_tbl (
-    id, tenant_id, version, full_name, short_code, party_type,
-    parent_party_id,
+    id, tenant_id, version, full_name, short_code, party_category, party_type,
+    parent_party_id, business_center_code, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'a0000000-0000-0000-0000-000000000002'::uuid,
-    ores_utility_system_tenant_id_fn(), 0, 'Test Bank UK', 'TBUK', 'Bank',
-    'a0000000-0000-0000-0000-000000000001'::uuid,
+    ores_utility_system_tenant_id_fn(), 0, 'Test Bank UK', 'TBUK', 'Operational', 'Bank',
+    'a0000000-0000-0000-0000-000000000001'::uuid, 'WRLD', 'Active',
     current_user, current_user, 'system.test', 'Test child party'
 );
 
@@ -164,13 +165,13 @@ select is(
 -- Test 8: Invalid parent_party_id is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
-        id, tenant_id, version, full_name, short_code, party_type,
-        parent_party_id,
+        id, tenant_id, version, full_name, short_code, party_category, party_type,
+        parent_party_id, business_center_code, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000097'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Orphan Corp', 'OC', 'Bank',
-        'deadbeef-0000-0000-0000-000000000000'::uuid,
+        ores_utility_system_tenant_id_fn(), 0, 'Orphan Corp', 'OC', 'Operational', 'Bank',
+        'deadbeef-0000-0000-0000-000000000000'::uuid, 'WRLD', 'Active',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23503',
@@ -185,13 +186,13 @@ select throws_ok(
 -- Test 9: Second root party (no parent) for same tenant is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
-        id, tenant_id, version, full_name, short_code, party_type,
-        parent_party_id,
+        id, tenant_id, version, full_name, short_code, party_category, party_type,
+        parent_party_id, business_center_code, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000096'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Second Root Corp', 'SRC', 'Bank',
-        NULL,
+        ores_utility_system_tenant_id_fn(), 0, 'Second Root Corp', 'SRC', 'Operational', 'Bank',
+        NULL, 'WRLD', 'Active',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23505',
@@ -203,21 +204,22 @@ select throws_ok(
 -- Test: Natural key uniqueness
 -- =============================================================================
 
--- Test 10: Duplicate full_name is rejected
+-- Test 10: Duplicate short_code is rejected
 select throws_ok(
     $$insert into ores_refdata_parties_tbl (
-        id, tenant_id, version, full_name, short_code, party_type,
-        parent_party_id,
+        id, tenant_id, version, full_name, short_code, party_category, party_type,
+        parent_party_id, business_center_code, status,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'a0000000-0000-0000-0000-000000000095'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Test Bank Holdings', 'UNIQUE', 'Bank',
-        'a0000000-0000-0000-0000-000000000001'::uuid,
+        ores_utility_system_tenant_id_fn(), 0, 'Another Bank Holdings', 'TBH',
+        'Operational', 'Bank',
+        'a0000000-0000-0000-0000-000000000001'::uuid, 'WRLD', 'Active',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23505',
     NULL,
-    'party insert: duplicate full_name raises unique_violation'
+    'party insert: duplicate short_code raises unique_violation'
 );
 
 -- =============================================================================

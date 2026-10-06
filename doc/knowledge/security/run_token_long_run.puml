@@ -1,0 +1,68 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Work that outlives one token re-exchanges, and a worker node holds no token
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "ores.workflow" as engine
+participant "step handler" as handler
+participant "run token cache" as cache
+participant "ores.iam" as iam
+
+== A step service whose work outlives a token ==
+
+engine -> handler : step command
+loop while the step's work continues
+    handler -> cache : get (grant id, run id)
+    alt a token with more than 20% of its life left
+        cache --> handler : the run token
+    else the first request, or close to expiry
+        cache -> iam : iam.v1.run_grants.exchange
+        iam --> cache : a signed token that lasts 5 minutes
+        cache --> handler : the run token
+    end
+    handler -> handler : call an owner with the run token
+end
+
+note over handler, cache
+  A run of four steps that lasts thirty minutes makes about seven exchanges,
+  and a run of hours lives through many tokens. The grant id and the run id do
+  not change, so the exchange spends one run of the grant's max_runs in total.
+end note
+
+== The engine's own work holds no run token ==
+
+participant "worker node" as worker
+participant "storage" as storage
+
+engine -> worker : an assignment, when the tenant's share allows it
+worker -> storage : read the engine package and the input (node identity)
+worker -> worker : run the engine, which can take hours
+worker -> storage : write the output archive (node identity)
+
+note over worker
+  The node holds no run token. An engine run can outlast any token, and a node
+  serves many tenants, so the node acts under its own identity. That identity
+  reaches only the keys the assignment names.
+end note
+
+@enduml

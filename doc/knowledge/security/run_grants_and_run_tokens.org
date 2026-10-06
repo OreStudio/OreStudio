@@ -159,7 +159,8 @@ rules are these:
 - *Work longer than a token.* A step whose work outlives its token keeps
   exchanging, so a run of hours lives through many tokens. An actor that cannot
   re-exchange holds no run token at all and acts under its own identity, as the
-  grid's worker node does.
+  grid's worker node does in
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]].
 - *Expiry in flight.* An owner that answers =token_expired= causes one
   invalidation, one exchange and one retry of the same request. Any other
   refusal fails the request.
@@ -177,6 +178,17 @@ rules are these:
 
 Source: [[./run_token_cache_states.puml][=run_token_cache_states.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/security/run_token_cache_states.puml=.
+
+A run outlives many tokens, and the exchange bounds how long a revocation takes
+to reach it. The sequence below shows a step service exchanging again while it
+works, and the engine's own work acting without a run token.
+
+#+caption: A long step re-exchanges while it works, and a worker node uses its own identity. Keyed by grant id and run id, so the whole run spends one of the grant's runs.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/security/run_token_long_run.png]]
+
+Source: [[./run_token_long_run.puml][=run_token_long_run.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/security/run_token_long_run.puml=.
 
 ** Load on IAM
 

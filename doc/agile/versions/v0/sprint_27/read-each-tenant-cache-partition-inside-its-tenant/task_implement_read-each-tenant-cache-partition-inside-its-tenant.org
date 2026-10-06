@@ -8,7 +8,7 @@
 #+filetags: :read-each-tenant-cache-partition-inside-its-tenant:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-each-tenant-cache-partition-inside-its-tenant
-#+pr:
+#+pr: 2679
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2679][#2679]] | [iam,refdata] Read each cache partition inside its tenant |
 
 * Review
 

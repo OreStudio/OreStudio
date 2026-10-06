@@ -28,6 +28,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
       - "doc/knowledge/security/authorised-reads.org"
+      - "build/scripts/check_boost_dependencies.py"
       - ".prettierrc.yaml"
 
   pull_request:
@@ -42,6 +43,7 @@ on:  # yamllint disable-line rule:truthy
       - "projects/**/tests/**"
       - "doc/recipes/shell/**"
       - "doc/knowledge/security/authorised-reads.org"
+      - "build/scripts/check_boost_dependencies.py"
       - ".prettierrc.yaml"
 
   workflow_dispatch:

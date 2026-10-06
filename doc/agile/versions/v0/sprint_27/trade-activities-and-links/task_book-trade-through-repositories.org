@@ -178,6 +178,31 @@ a unit of work:
 whose generated output has pre-existing drift. This change leaves them
 alone. Regenerating them would mix their drift into the booking change.
 
+** The sqlgen read that commits the unit of work
+
+Found 2026-10-06 while moving booking onto the repositories. sqlgen's
+postgres iterator wraps every read in its own =BEGIN= and =END=, and
+PostgreSQL reads =END= as =COMMIT=. A read inside a unit of work therefore
+commits it. The booking service's conflict read and every repository
+=apply_claim= read committed the transaction before the failing write, so
+the anchor and the activity stayed while the booking failed.
+
+=book_trade= works around it. The conflict read runs before the unit of work
+opens, and each write states a claim that reads nothing: =any= for the two
+current-state tables, =must_not_exist= for the two versioned ones. All three
+booking tests pass.
+
+=vcpkg-overlays/sqlgen= holds an overlay port that patches the iterator to
+leave an enclosing transaction alone, with the defect and the enable step
+written in =vcpkg-overlays/README.org=. The overlay is inert until
+=vcpkg-configuration.json= names it. The memory
+[[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] carries the rule.
+
+** Next
+
+Delete =ores_trading_book_trade_fn=, rewrite the two pgTAP files that call
+it, and add the architectural rule with its checked ratchet baseline.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

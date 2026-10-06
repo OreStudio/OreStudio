@@ -36,6 +36,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -85,6 +91,25 @@ const curves = [...new Set(live.map(n => n.curve))];
 const rowsFor = c => live.filter(n => n.curve === c);
 const bp = n => (n.cand - n.last) * 100;
 const biggest = list => list[list.map(n => Math.abs(bp(n))).indexOf(Math.max(...list.map(n => Math.abs(bp(n)))))];
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
 function tag(t, c){ return `<span class="tag ${c || ''}">${t}</span>`; }
 function bpt(v){ return `${v >= 0 ? '+' : ''}${v.toFixed(1)} bp`; }
 function val(v){ return v.toFixed(4); }
@@ -100,7 +125,7 @@ function header(){
   <div class="panel">
     <h2>Curve and recipe</h2>
     <div class="row">
-      <div class="field"><label>Series</label><div class="value mono">oresmd://ir/USD?type=quote&amp;instrument=ir_swap</div></div>
+      <div class="field"><label>Series</label><div class="value mono">${urlButton('oresmd://ir/USD?type=quote&amp;instrument=ir_swap')}</div></div>
       <div class="field"><label>Derivation</label><div class="value">IR_CURVE_BOOTSTRAP</div></div>
       <div class="field"><label>Recipe</label><div class="value">${recipe['USD-SOFR-3M']}</div></div>
       <div class="field"><label>Candidates as of</label><div class="value mono">${asOf}</div></div>

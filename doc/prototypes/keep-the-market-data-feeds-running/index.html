@@ -36,6 +36,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -77,6 +83,25 @@ const feeds = [
   {src:'ir_curve.gbp', kind:'IR curve', party:'Rates desk', ws:'Live', series:'oresmd://ir/GBP?type=series', folder:'Synthetic / Rates / IR', ccy:'GBP', family:'GBP-SONIA', tenor:'3M..30Y', tph:60, last:'2026-10-06T16:00:06Z', ver:3, by:'m.oduya'}
 ];
 
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
 function live(f){
   let enabled = true, running = true, last = f.last;
   if (state === 'quiet' && f.src === 'fx_spot.gbp-usd'){ running = false; last = '2026-10-06T15:18:44Z'; }
@@ -119,7 +144,7 @@ function flat(){
     <table><thead><tr><th>Source</th><th>Kind</th><th>Party</th><th>Workspace</th><th>Enabled</th><th>Running</th><th>Last tick</th><th>Series (inferred)</th><th></th></tr></thead><tbody>
     ${rows.map(f => `<tr><td><a href="#" data-f="${f.src}">${f.src}</a></td><td>${f.kind}</td><td>${f.party}</td><td>${f.ws}</td>
       <td>${enabledTag(f)}</td><td>${runningTag(f)}</td><td class="mono">${f.enabled ? ageLabel(f.age) : '—'}</td>
-      <td class="mono faint">${f.enabled ? f.series : '—'}</td><td><button class="btn" disabled>${f.running ? 'Stop' : 'Start'}</button></td></tr>`).join('')}
+      <td class="mono faint">${f.enabled ? urlButton(f.series) : '—'}</td><td><button class="btn" disabled>${f.running ? 'Stop' : 'Start'}</button></td></tr>`).join('')}
     </tbody></table>
     <div class="notice">A binding names a source, not a series, so the series column is inferred from the newest observations. No read returns a last tick, so the column is a mock reading of the ingest loop's in-memory counter.</div>
   </div>`;
@@ -135,7 +160,7 @@ function grouped(){
       <a href="#" data-f="${f.src}" style="min-width:200px">${f.src}</a>
       <span class="muted">${f.party} · ${f.ws}</span>${enabledTag(f)} ${runningTag(f)}
       <span class="mono faint" style="margin-left:auto">${f.enabled ? ageLabel(f.age) : 'disabled'}</span>
-      <span class="mono faint">${f.enabled ? f.series : '—'}</span>
+      <span class="mono faint">${f.enabled ? urlButton(f.series) : '—'}</span>
     </li>`).join('')}</ul>
   </div>`).join('');
 }
@@ -146,7 +171,7 @@ function bindingTable(f){
     <tr><td>Party</td><td>${f.party}</td><td>Workspace</td><td>${f.ws}</td></tr>
     <tr><td>Running</td><td>${runningTag(f)}</td><td>Last tick</td><td class="mono">${f.enabled ? ageLabel(f.age) : '—'}</td></tr>
     <tr><td>Version</td><td class="mono">${f.ver}</td><td>Last changed by</td><td>${f.by}</td></tr>
-    <tr><td>Series (inferred)</td><td class="mono" colspan="3">${f.enabled ? f.series : 'disabled, no ticks land'}</td></tr>
+    <tr><td>Series (inferred)</td><td class="mono" colspan="3">${f.enabled ? urlButton(f.series) : 'disabled, no ticks land'}</td></tr>
   </tbody></table>`;
 }
 function producerTable(f){

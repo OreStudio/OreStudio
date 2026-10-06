@@ -36,6 +36,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -76,6 +82,25 @@ const base = [
   {t:'11:28:41', tenor:'30Y', term:'5Y', v:3.911, src:'vendor.x.feed', age:'79s'}
 ];
 
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
 function market(st){
   const p = base.map(q => ({...q}));
   const at = t => p.find(x => x.tenor === t);
@@ -147,7 +172,7 @@ function quotesPanel(){
       <thead><tr><th>Observation time</th><th>oresmd URI</th><th class="num">Value</th><th>Source</th><th>Age</th><th>Quality</th></tr></thead>
       <tbody>${points.map(pt => `<tr>
         <td class="mono">${pt.t}</td>
-        <td class="mono faint">?type=quote&amp;tenor=${pt.tenor}&amp;term=${pt.term}</td>
+        <td class="mono faint">${urlButton(`?type=quote&amp;tenor=${pt.tenor}&amp;term=${pt.term}`)}</td>
         <td class="num">${pt.v.toFixed(3)}</td>
         <td class="${pt.src === source ? 'muted' : ''}">${pt.src}</td>
         <td class="faint">${pt.age}</td>
@@ -168,7 +193,7 @@ function exceptionsPanel(){
         const k = key(e), done = res[k];
         return `<tr>
           <td>${tag(e.kind, e.kind === 'crossed' ? 'bad' : 'warn')}</td>
-          <td class="mono faint">?type=quote&amp;tenor=${e.tenor}&amp;term=${e.term}</td>
+          <td class="mono faint">${urlButton(`?type=quote&amp;tenor=${e.tenor}&amp;term=${e.term}`)}</td>
           <td class="muted">${e.detail}</td>
           <td>${done ? tag(done.label, 'ok') : ['carry','proxy','escalate'].map(c => `<button class="btn" data-c="${c}" data-k="${k}">${choices[c].label}</button>`).join(' ')}</td></tr>`;
       }).join('')}</tbody>

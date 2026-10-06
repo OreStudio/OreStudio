@@ -37,6 +37,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
 .cell{background:var(--panel-2);font-family:var(--mono);text-align:right}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -102,6 +108,25 @@ const quoted = grid.flat().filter(v => v !== null).length;
 const missing = grid.flat().length - quoted;
 const noVocab = state === 'nostrike';
 
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
 function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
 function vol(v){ return v === null ? '—' : v.toFixed(1); }
 
@@ -117,7 +142,7 @@ function header(){
     <div class="row">
       <div class="field"><label>Asset class</label><div class="value">rates</div></div>
       <div class="field"><label>Series subclass</label><div class="value">volatility</div></div>
-      <div class="field" style="flex:1"><label>Volatility series (oresmd URI)</label><div class="value mono">oresmd://vol/USD?type=surface&amp;instrument=swaption</div></div>
+      <div class="field" style="flex:1"><label>Volatility series (oresmd URI)</label><div class="value mono">${urlButton('oresmd://vol/USD?type=surface&amp;instrument=swaption')}</div></div>
       <div class="field"><label>Framework stored</label><div class="value">${tag('no','bad')}</div></div>
     </div>
     <div class="notice">No surface model is stored today. This page states the framework the desk needs; the cells below are read from the series' points.</div>

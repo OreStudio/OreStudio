@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B31E04E2-7819-45BC-AAA7-4B8BBF8388AF
+:END:
+#+title: Support the role grant request roles filter
+#+description: iam.v1.role_grant_request_roles.list refuses every filter: role_grant_request_role_service.cpp returns filter_not_supported whenever request.filter is set, although the generated filter declares request_id_one_of. The inbox screens therefore read the roles of a page of requests one call per request. Implement request_id_one_of in the repository and service so a page of requests costs one call.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

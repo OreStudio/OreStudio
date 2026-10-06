@@ -48,6 +48,7 @@ export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
         { nameKey: 'shell.menu.home', to: '/' },
         { nameKey: 'shell.menu.parties', to: '/parties' },
         { nameKey: 'shell.menu.people', to: '/people' },
+        { nameKey: 'shell.menu.requests', to: '/requests', permission: 'iam::roles:assign' },
         { nameKey: 'shell.menu.roles', to: '/roles' },
         { nameKey: 'shell.menu.refdata', to: '/refdata' },
         { nameKey: 'shell.menu.rescue', to: '/rescue' },
@@ -56,6 +57,7 @@ export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
     application: [
         { nameKey: 'shell.menu.home', to: '/' },
         { nameKey: 'shell.menu.people', to: '/people', permission: 'iam::accounts:read' },
+        { nameKey: 'shell.menu.requests', to: '/requests', permission: 'iam::roles:assign' },
         { nameKey: 'shell.menu.refdata', to: '/refdata' },
         { nameKey: 'shell.menu.access', to: '/access' },
     ],

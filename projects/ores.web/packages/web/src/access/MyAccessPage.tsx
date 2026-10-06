@@ -24,10 +24,12 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
-import { Input, Notice, PageHeader } from '../ui/Primitives.js';
+import { Button, Input, Notice, PageHeader } from '../ui/Primitives.js';
 import { areasOf, countCovered, grantedBy, rolesGranting, search } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
 import { roleLabel } from './words.js';
+import { AskForRoleDialog } from '../inbox/AskForRoleDialog.js';
+import { MyRequests } from '../inbox/MyRequests.js';
 
 /** How many answers "Can I…?" shows at once. */
 const ANSWERS = 8;
@@ -44,6 +46,7 @@ const ANSWERS = 8;
 export function MyAccessPage({ tenantName }: { readonly tenantName: string }): ReactNode {
     const { t } = useTranslation();
     const [question, setQuestion] = useState('');
+    const [asking, setAsking] = useState(false);
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
     const areas = useMemo(() => areasOf(catalogue.data ?? []), [catalogue.data]);
@@ -70,7 +73,12 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
             />
 
             <section className="rounded-md border border-line bg-surface-raised">
-                <h2 className="px-4 pt-4 text-sm font-semibold">{t('access.mine.roles')}</h2>
+                <div className="flex items-center justify-between gap-4 px-4 pt-4">
+                    <h2 className="text-sm font-semibold">{t('access.mine.roles')}</h2>
+                    <Button variant="primary" size="sm" onClick={() => setAsking(true)}>
+                        {t('inbox.ask.open')}
+                    </Button>
+                </div>
                 {roles.length === 0 ? (
                     <p className="px-4 py-4 text-sm text-ink-muted">{t('access.mine.noRoles')}</p>
                 ) : (
@@ -100,6 +108,8 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                     </ul>
                 )}
             </section>
+
+            <MyRequests />
 
             <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
                 <h2 className="text-sm font-semibold">{t('access.mine.canI')}</h2>
@@ -170,6 +180,8 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                     />
                 )}
             </section>
+
+            {asking && <AskForRoleDialog onClose={() => setAsking(false)} />}
         </div>
     );
 }

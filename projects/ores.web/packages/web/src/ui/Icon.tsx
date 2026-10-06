@@ -21,6 +21,7 @@
 
 import type { ReactNode } from 'react';
 import add from '../assets/icons/ic_fluent_add_20_regular.svg';
+import alert from '../assets/icons/ic_fluent_alert_20_regular.svg';
 import arrowClockwise from '../assets/icons/ic_fluent_arrow_clockwise_20_regular.svg';
 import arrowRotateCounterclockwise from '../assets/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg';
 import copy from '../assets/icons/ic_fluent_copy_20_regular.svg';
@@ -41,6 +42,7 @@ import search from '../assets/icons/ic_fluent_search_20_regular.svg';
  */
 const ICONS = {
     add,
+    alert,
     cancel: dismiss,
     copy,
     delete: deleteIcon,

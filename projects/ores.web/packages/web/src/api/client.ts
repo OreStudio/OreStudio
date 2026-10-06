@@ -43,10 +43,15 @@ import {
     classificationListSchema,
     classificationRowSchema,
     historyVersionSchema,
+    inboxNotificationPageSchema,
+    inboxRequestPageSchema,
     type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
+    type InboxNotificationView,
+    type InboxPage,
+    type InboxRequestView,
     type AccountAccess,
     type PermissionEntry,
     type RoleSummary,
@@ -441,6 +446,124 @@ export const api = {
             `/api/accounts/${encodeURIComponent(accountId)}/roles/${encodeURIComponent(roleId)}`,
             { method: 'DELETE' },
         );
+    },
+
+    /**
+     * The signed-in person's own approval requests, newest first.
+     *
+     * The roles a request asks for are joined from the account list, which a
+     * member may not read: the queue resolves them, and a member's own answer
+     * comes back with `roles` empty.
+     */
+    async myRequests(page: {
+        readonly offset: number;
+        readonly limit: number;
+    }): Promise<InboxPage<InboxRequestView>> {
+        return inboxRequestPageSchema.parse(
+            await request(`/api/me/requests?${pageQuery(page)}`, { method: 'GET' }),
+        );
+    },
+
+    /** Asks for roles, and answers the request raised. */
+    async askForRoles(input: {
+        readonly roleIds: readonly string[];
+        readonly reason: string;
+    }): Promise<string> {
+        return z.object({ requestId: z.string() }).parse(
+            await request('/api/me/requests', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(input),
+            }),
+        ).requestId;
+    },
+
+    /**
+     * Takes back one of the signed-in person's own requests.
+     *
+     * The version they read travels as the claim, so a queue that moved on is
+     * refused by the server rather than silently discarded.
+     */
+    async withdrawRequest(
+        requestId: string,
+        input: { readonly version: number; readonly comment: string },
+    ): Promise<void> {
+        await request(`/api/me/requests/${encodeURIComponent(requestId)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** The requests waiting to be decided, oldest first. */
+    async requestQueue(page: {
+        readonly offset: number;
+        readonly limit: number;
+    }): Promise<InboxPage<InboxRequestView>> {
+        return inboxRequestPageSchema.parse(
+            await request(`/api/requests?${pageQuery(page)}`, { method: 'GET' }),
+        );
+    },
+
+    /** Approves, refuses, holds or resumes a request, against the version read. */
+    async decideRequest(
+        requestId: string,
+        input: {
+            readonly version: number;
+            readonly decisionCode: 'approve' | 'refuse' | 'hold' | 'resume';
+            readonly comment: string;
+        },
+    ): Promise<void> {
+        await request(`/api/requests/${encodeURIComponent(requestId)}/decision`, {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** The signed-in person's notifications, newest first. */
+    async myNotifications(query: {
+        readonly unreadOnly: boolean;
+        readonly offset: number;
+        readonly limit: number;
+    }): Promise<InboxPage<InboxNotificationView>> {
+        const params = new URLSearchParams({
+            unreadOnly: String(query.unreadOnly),
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        return inboxNotificationPageSchema.parse(
+            await request(`/api/me/notifications?${params.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /** How many notifications are unread, for the bell on every screen. */
+    async unreadNotificationCount(): Promise<number> {
+        return z
+            .object({ unread: z.int().nonnegative() })
+            .parse(await request('/api/me/notifications/unread-count', { method: 'GET' })).unread;
+    },
+
+    /** Marks notifications read. An empty list marks every unread one. */
+    async markNotificationsRead(ids: readonly string[]): Promise<number> {
+        return z.object({ marked: z.int().nonnegative() }).parse(
+            await request('/api/me/notifications/read', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ ids }),
+            }),
+        ).marked;
+    },
+
+    /** Removes notifications from the person's list. An empty list clears the read ones. */
+    async clearNotifications(ids: readonly string[]): Promise<number> {
+        return z.object({ cleared: z.int().nonnegative() }).parse(
+            await request('/api/me/notifications/clear', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ ids }),
+            }),
+        ).cleared;
     },
 
     /** The classification lists, by topic, with each list's columns and row count. */

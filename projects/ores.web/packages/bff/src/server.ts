@@ -29,6 +29,7 @@ import fastifyStatic from '@fastify/static';
 import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
+import { registerInboxRoutes } from './inbox.js';
 import { registerRecordRoutes } from './records.js';
 import {
     NatsTransport,
@@ -2090,6 +2091,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
 
     registerClassificationRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
+    registerInboxRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.

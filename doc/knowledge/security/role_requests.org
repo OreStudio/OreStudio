@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 2BA72C77-99DC-4538-8937-52A572CF6F53
+:END:
+#+title: Role requests
+#+description: How a person gains a role by asking: which roles may be asked for, who decides, how an approval becomes a grant exactly once, and what each step leaves for the audit.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:iam:rbac:approval:
+#+created: 2026-10-05
+#+updated: 2026-10-06
+
+* Summary
+
+A person gains a role by asking for it. The ask is stored as an approval
+request of kind =iam.role_grant=, with the role ids in IAM's own detail tables
+and the reason on the request. A tenant administrator answers from the queue if
+they hold the kind's decide permission, =iam::roles:assign=, and nobody answers
+their own request. An approval is not a grant: the IAM service reconciles
+approved requests into role assignments exactly once. Both people are told
+through in-application notifications.
+
+* Detail
+
+** A request is a record, not a waiting workflow
+
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] holds the
+decision: the workflow engine cannot wait on a person, so a request is its own
+record with a state, a raiser, and an answer. The role request is the first
+kind, and a kind names the permission that decides it.
+
+** Asking
+
+A member calls =iam.v1.role-requests.ask= with the role ids and a reason. IAM
+forwards =inbox.v1.approval-requests.raise= with =kind_code= =iam.role_grant=,
+reusing the caller's token so the request is the person's, then writes
+=ores_iam_role_grant_requests_tbl= and
+=ores_iam_role_grant_request_roles_tbl=. The ask is refused when a role is
+unknown, already held, or already asked for in a request that still waits. If
+the detail write fails, IAM forwards a withdrawal so the request does not wait
+naming no roles.
+
+The roles a person may ask for are the tenant's roles minus what they already
+hold, minus the service roles and the role that grants everything. A flag on
+the role row would state this directly; today the screens filter, and the ask
+operation refuses what it should.
+
+** The queue and the answer
+
+=inbox.v1.approval-requests.queue= returns the open requests the caller holds
+the decide permission for, and leaves out the ones they raised. The order is
+oldest first. =inbox.v1.approval-requests.decide= takes the request id, the
+version the row was read at, a decision code, and a comment. A refusal, a hold
+and a reversal each need a comment, because they are what the person reads.
+An approval needs one only when the kind asks for it. The version is the whole
+concurrency control: a second decision on a request that moved is refused.
+
+Four eyes is a rule of the store, not of the screen. The decisions table
+refuses a decision by the person who asked, and the queue read already leaves
+their own requests out.
+
+** From an approval to a grant
+
+The IAM service does not grant at the moment of the decision. Its
+=role_grant_applier= reconciles: =ores_iam_unapplied_role_grants_fn= returns the
+approved request roles an account does not hold, the applier grants them as the
+person who approved, and marks the detail row applied. The query is idempotent,
+so a crash and a retry converge, and a role taken away after it was applied is
+not granted again. The grant reaches the member at their next sign-in.
+
+** States
+
+A request is =waiting=, =held=, =approved=, =refused=, =withdrawn= or
+=expired=. A refusal is final, and an approval is reversed rather than edited.
+The role request kind does not allow a hold, and it carries no expiry.
+
+** Telling the two people
+
+The approval handler raises =inbox.approval_waiting= to the holders of the
+kind's decide permission, less the asker, when a request is raised, and
+=inbox.approval_decided= to the asker when its state changes. Each notification
+carries a kind, the values its sentence names, and a link to the request.
+
+** What a screen cannot read
+
+The self read, =inbox.v1.approval-requests.mine=, returns the request rows and
+not the roles they ask for. The roles live in IAM's detail tables, whose read
+codes a plain member does not hold, so a member's own request shows the kind and
+the reason. A joined read would close the gap; the store serves no batched read
+on =role_grant_request_roles= yet.
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][User Journey: Ask for more access]]
+- [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]]

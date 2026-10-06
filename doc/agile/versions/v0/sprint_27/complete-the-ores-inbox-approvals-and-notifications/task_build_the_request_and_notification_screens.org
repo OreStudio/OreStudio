@@ -7,35 +7,44 @@
 #+level: s1
 #+filetags: :web:approval:notification:complete-the-ores-inbox-approvals-and-notifications:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-request-and-notification-screens
+#+pr: 2707
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
 #+updated: 2026-10-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A member asks for a role from My access and reads the answer there. A tenant
+administrator answers from a Requests queue, with the role's permission bundle
+in front of them. A notification bell in the header carries the unread count
+and the list, and links each entry to what it is about.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Now          | Implemented and tested; the live walk waits on a working ACME bundle. |
+| Waiting on   | The ACME provisioning fix in brave_hopper. |
+| Next         | Walk the flow in the browser once the environment provisions a tenant. |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- My access lists the person's own requests and offers a role to ask for.
+- The Requests queue lists the open requests the administrator may decide,
+  oldest first, and one request is answered on its own screen.
+- The bell carries the unread count and the list, marks a notification read,
+  and links to what it is about.
+- A member asks, an administrator answers, and both are told through an
+  in-application notification.
 
 * Plan
 
@@ -74,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2707][#2707]] | [web] Ask for a role and read the answer in the browser |
 
 * Review
 
@@ -83,3 +92,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The nine inbox operations are reachable from the browser. The new
+=wire-protocol/src/inbox.ts= maps the wire shapes to camelCase views and joins
+the names the wire rows do not carry. The new =bff/src/inbox.ts= serves nine
+routes; every one is gated on a session and nothing else, because which role
+may decide a kind is data and the server re-checks it. The web layer adds the
+nine =api= methods, "Your requests" and "Ask for a role" on My access, the
+Requests queue and its detail screen, and a notification bell in the header
+with the unread count, the list, and a link to what each entry is about.
+
+Two data gaps shaped the screens. A member may not read another person's
+request roles, so their own row falls back to the approval kind and the reason.
+There is no single-request read, so the detail screen finds its row in the
+queue.
+
+=packages/web=: 332 tests pass (22 new), typecheck clean. =packages/bff=: 242
+tests pass (19 new), typecheck clean. =packages/wire-protocol=: 140 tests pass.
+The bundle builds and boots in headless Chrome. The live walk (a member asks,
+an administrator answers, both read the bell) waits on the ACME provisioning
+fix in brave_hopper: the running environment is in bootstrap mode with no
+tenant, so there is no account to sign in with. Filed on the task as Waiting
+on.

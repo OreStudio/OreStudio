@@ -68,6 +68,7 @@
 #include "ores.shell/app/commands/refdata/payment_frequency_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_commands.hpp"
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
+#include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
@@ -158,6 +159,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     payment_frequency_commands::register_commands(root_menu, session);
     portfolio_commands::register_commands(root_menu, session);
     portfolio_right_commands::register_commands(root_menu, session);
+    producer_kind_commands::register_commands(root_menu, session);
     sandbox_commands::register_commands(root_menu, session);
     sandbox_member_commands::register_commands(root_menu, session);
     purpose_type_commands::register_commands(root_menu, session);

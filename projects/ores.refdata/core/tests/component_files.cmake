@@ -127,6 +127,7 @@ set(files
     "payment_frequency_eventing_integration_tests.cpp"
     "portfolio_eventing_integration_tests.cpp"
     "portfolio_right_eventing_integration_tests.cpp"
+    "producer_kind_eventing_integration_tests.cpp"
     "purpose_type_eventing_integration_tests.cpp"
     "regulatory_book_type_eventing_integration_tests.cpp"
     "repository_book_status_repository_tests.cpp"

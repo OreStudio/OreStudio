@@ -189,6 +189,25 @@ feed_ingest_loop::classifier_for(const ores::database::context& tenant_ctx) {
     return classifiers_.try_emplace(tenant, std::move(classifier)).first->second;
 }
 
+domain::market_series make_feed_series(const domain::feed_binding& binding,
+                                       const boost::uuids::uuid& id,
+                                       const std::string& series_uri,
+                                       const std::string& series_subclass,
+                                       const std::string& service_account) {
+    domain::market_series series;
+    series.id = id;
+    series.tenant_id = binding.tenant_id;
+    series.party_id = binding.party_id;
+    series.oresmd_uri = series_uri;
+    series.series_subclass = series_subclass;
+    series.producer_kind = binding.producer_kind;
+    series.modified_by = service_account;
+    series.performed_by = service_account;
+    series.change_reason_code = "system.initial_load";
+    series.change_commentary = "Created by the feed ingest loop for source " + binding.source_name;
+    return series;
+}
+
 bool feed_ingest_loop::persist(const domain::feed_binding& binding,
                                const datum::market_datum& tick_datum,
                                const messaging::market_tick& tick) {
@@ -208,16 +227,8 @@ bool feed_ingest_loop::persist(const domain::feed_binding& binding,
                 classifier_for(tenant_ctx)->classify(ck.series_type, ck.metric, ck.qualifier);
             BOOST_LOG_SEV(lg(), info) << "Creating market series " << series_uri;
 
-            domain::market_series series;
-            series.id = uuid_gen();
-            series.tenant_id = tenant_ctx.tenant_id();
-            series.party_id = binding.party_id;
-            series.oresmd_uri = series_uri;
-            series.series_subclass = cl.series_subclass;
-            series.modified_by = ctx_.service_account();
-            series.performed_by = ctx_.service_account();
-            series.change_reason_code = "system.initial_load";
-            series.change_commentary = "Created by the feed ingest loop for source " + tick.source;
+            auto series = make_feed_series(
+                binding, uuid_gen(), series_uri, cl.series_subclass, ctx_.service_account());
             series_repo.write(tenant_ctx, series);
 
             std::vector<domain::market_series_asset_class> classes;

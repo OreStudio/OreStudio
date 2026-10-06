@@ -36,6 +36,7 @@ export interface FeedBindingWrite {
     id: string;
     party_id: string;
     source_name: string;
+    producer_kind: string;
     enabled: boolean;
 }
 

@@ -1445,3 +1445,7 @@ tangled into the runnable script library
 * Run Grants
 
 - [[id:06C03FD7-22F4-5FF3-8455-450B924032B1][How do I run the run_grants commands from the shell?]]
+
+* Producer Kinds
+
+- [[id:E2798B72-C22B-509D-A08B-76CF530B20CF][How do I run the producer_kinds commands from the shell?]]

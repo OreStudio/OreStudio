@@ -43,6 +43,7 @@ struct feed_binding_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     std::string source_name;
+    std::string producer_kind;
     bool enabled;
 };
 

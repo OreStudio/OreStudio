@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-market_series add <party_id> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+market_series add <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put=.
 
 #+name: market_series-add
 #+begin_src ores-shell :tangle market_series-add.ores :exports none
-market_series add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+market_series add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-market_series set <id> <party_id> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
+market_series set <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put=.
 
 #+name: market_series-set
 #+begin_src ores-shell :tangle market_series-set.ores :exports none
-market_series set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+market_series set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-market_series put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
+market_series put-many --count <n> <id> <party_id> <oresmd_uri> <series_subclass> <producer_kind> <derivation_kind> <derivation_config_id> <derivation_config_version> <reason> <commentary>
 #+end_example
 
 It is addressed at =marketdata.v1.market_series.put_many=.
 
 #+name: market_series-put-many
 #+begin_src ores-shell :tangle market_series-put-many.ores :exports none
-market_series put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+market_series put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

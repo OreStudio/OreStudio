@@ -591,6 +591,28 @@ public:
     explicit marketdata_binding_store(ores::nats::service::nats_client& auth_nats)
         : auth_nats_(auth_nats) {}
 
+    /**
+     * @brief The binding this store creates for @p source_name.
+     *
+     * The store names a generated producer, so the binding it creates carries
+     * SYNTHETIC rather than the entity's VENDOR default. The ingest loop
+     * stamps the series it creates from this code, so the axis travels with
+     * the binding onto every series this feed's ticks land in. Public because
+     * the store's rule is what a test asserts, without a live marketdata
+     * service.
+     */
+    static ores::marketdata::domain::feed_binding binding_for(const std::string& source_name) {
+        ores::marketdata::domain::feed_binding b;
+        boost::uuids::random_generator uuid_gen;
+        b.id = uuid_gen();
+        b.source_name = source_name;
+        b.producer_kind = "SYNTHETIC";
+        b.enabled = true;
+        b.change_reason_code = "system.new_record";
+        b.change_commentary = "Auto-created by feed_controller on feed start.";
+        return b;
+    }
+
     std::expected<void, std::string>
     save_if_absent(const std::string& source_name, const std::string& caller_bearer_token) override {
         auto delegated = auth_nats_.with_delegation(caller_bearer_token);
@@ -605,14 +627,7 @@ public:
             if (b.source_name == source_name)
                 return {};
 
-        ores::marketdata::domain::feed_binding b;
-        boost::uuids::random_generator uuid_gen;
-        b.id = uuid_gen();
-        b.source_name = source_name;
-        b.enabled = true;
-        b.change_reason_code = "system.new_record";
-        b.change_commentary = "Auto-created by feed_controller on feed start.";
-        auto saved = md_client.save_feed_binding(b);
+        auto saved = md_client.save_feed_binding(binding_for(source_name));
         if (!saved)
             return std::unexpected(saved.error());
         return {};

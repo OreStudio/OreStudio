@@ -50,6 +50,7 @@ struct feed_binding_entity {
 
     std::string source_name;
 
+    std::string producer_kind = "VENDOR";
     bool enabled = true;
     std::string modified_by;
     std::string performed_by;

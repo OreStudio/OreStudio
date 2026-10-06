@@ -45,6 +45,12 @@
  * observations. Per-observation lineage (which source series/as-of a
  * specific derived point came from) is a separate concern, tracked by
  * observation_lineage, not this catalog-level marker.
+ *
+ * producer_kind answers a different question: not how the series was
+ * produced but who produced it, a real feed (VENDOR) or a generated one
+ * (SYNTHETIC). It is stamped once, from the feed_binding the first
+ * observation arrived under, and is never revised -- a series a generated
+ * producer created stays generated however it is later read.
  */
 
 create table if not exists "ores_marketdata_market_series_tbl" (
@@ -54,6 +60,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "party_id" uuid not null,
     "oresmd_uri" text not null,
     "series_subclass" text not null,
+    "producer_kind" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
     "derivation_config_version" integer not null default 0,
@@ -104,6 +111,9 @@ begin
 
     -- Validate series_subclass
     NEW.series_subclass := ores_refdata_validate_series_subclass_code_fn(NEW.tenant_id, NEW.series_subclass);
+
+    -- Validate producer_kind
+    NEW.producer_kind := ores_refdata_validate_producer_kind_fn(NEW.tenant_id, NEW.producer_kind);
 
     -- Validate derivation_kind
     NEW.derivation_kind := ores_refdata_validate_derivation_kind_fn(NEW.tenant_id, NEW.derivation_kind);

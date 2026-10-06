@@ -68,6 +68,7 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
                                                           "correlation"};
         return std::string(subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)]);
     }();
+    r.producer_kind = std::string("VENDOR");
     r.derivation_kind = std::string("OBSERVED");
     r.derivation_config_id = boost::uuids::nil_uuid();
     r.derivation_config_version = 0;

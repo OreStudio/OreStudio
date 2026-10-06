@@ -36,6 +36,7 @@ export interface FeedBinding {
     id: string;
     party_id: string;
     source_name: string;
+    producer_kind: string;
     enabled: boolean;
     modified_by: string;
     performed_by: string;

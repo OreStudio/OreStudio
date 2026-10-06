@@ -38,6 +38,7 @@ using ores::synthetic::feed::producer_subject;
 using ores::synthetic::service::feed_binding_store;
 using ores::synthetic::service::feed_controller;
 using ores::synthetic::service::feeds_conflict;
+using ores::synthetic::service::marketdata_binding_store;
 
 const std::string test_bearer("test-session-token");
 
@@ -87,7 +88,9 @@ private:
 
 // In-memory feed_binding store. Mirrors the real store's one rule -- bind a
 // source unless it is already bound -- so a second start of the same source
-// is observable as a single recorded row rather than a second write.
+// is observable as a single recorded row rather than a second write. It
+// records the production store's own binding, so the kinds the controller's
+// bindings carry are asserted rather than restated here.
 class fake_binding_store final : public feed_binding_store {
 public:
     std::expected<void, std::string>
@@ -95,12 +98,7 @@ public:
         for (const auto& b : bindings_)
             if (b.source_name == source_name)
                 return {};
-        ores::marketdata::domain::feed_binding b;
-        b.source_name = source_name;
-        b.enabled = true;
-        b.change_reason_code = "system.new_record";
-        b.change_commentary = "Auto-created by feed_controller on feed start.";
-        bindings_.push_back(b);
+        bindings_.push_back(marketdata_binding_store::binding_for(source_name));
         return {};
     }
 
@@ -201,8 +199,17 @@ TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike",
     REQUIRE(f.store->bindings_.size() == 2);
     CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
     CHECK(f.store->bindings_[0].enabled == true);
+    CHECK(f.store->bindings_[0].producer_kind == "SYNTHETIC");
     CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
     CHECK(f.store->bindings_[1].enabled == true);
+    CHECK(f.store->bindings_[1].producer_kind == "SYNTHETIC");
+}
+
+TEST_CASE("the binding a synthetic store creates names a generated producer, for FX and IR "
+          "alike",
+          tags) {
+    CHECK(marketdata_binding_store::binding_for("eur.usd").producer_kind == "SYNTHETIC");
+    CHECK(marketdata_binding_store::binding_for("usd.sofr").producer_kind == "SYNTHETIC");
 }
 
 TEST_CASE("starting a sandboxed feed never creates a feed_binding, for FX and IR alike", tags) {

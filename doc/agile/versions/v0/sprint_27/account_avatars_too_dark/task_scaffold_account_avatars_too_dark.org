@@ -8,7 +8,7 @@
 #+filetags: :account_avatars_too_dark:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/account-avatars-too-dark
-#+pr:
+#+pr: 2717
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2717][#2717]] | [sql] Draw the account avatars in the theme's ink |
 
 * Review
 

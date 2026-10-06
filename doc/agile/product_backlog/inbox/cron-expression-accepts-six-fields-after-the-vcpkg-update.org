@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: C92DB57D-B4CC-4D50-8BC1-4AE3B630792E
+:END:
+#+title: ores.scheduler.api.tests fails on main since the vcpkg updat…
+#+description: ores.scheduler.api.tests fails on main since the vcpkg update of 2026-10-05 (978e1e098d): cron_expression::from_string accepts the six-field '* * * * * *', which the test expects it to refuse. from_string prepends a seconds field before calling croncpp, so a six-field input reaches croncpp as seven fields, and the newer croncpp evidently accepts seven. The fix is to require exactly five fields before the prepend.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.scheduler.api.tests= fails on main since the =vcpkg= submodule update of
+2026-10-05 (=978e1e098d=). The case "cron_expression::from_string rejects
+invalid expressions" expects the six-field =* * * * * *= to be refused, and
+=from_string= accepts it.
+
+=from_string= prepends a seconds field before it calls =croncpp=, so a
+six-field input reaches the library as seven fields. The newer =croncpp=
+evidently accepts seven; that the extra field is read as a year is a guess, not
+checked against its source.
+
+* Why
+
+A cron expression is five fields in this system. Without a field count of its
+own, which inputs pass depends on the vendored library's version. The fix is to
+require exactly five fields before the prepend, which keeps the test as it is.
+
+* References
+
+- =projects/ores.scheduler/api/src/domain/cron_expression.cpp=, =from_string=.
+- =projects/ores.scheduler/api/tests/domain_cron_expression_tests.cpp=, line 61.
+- Found by the full test run of
+  [[id:78F3062A-B833-4BC7-B1D2-5A037C8FF88B][Honour as_of on every generated list read]],
+  which changes nothing in scheduler.
+
+* See also
+
+-

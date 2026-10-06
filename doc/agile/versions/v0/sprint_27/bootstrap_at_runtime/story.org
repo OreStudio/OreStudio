@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 8606AB12-826D-4F23-A779-35307A23B5AF
+:END:
+#+title: Story: Bootstrap the system at runtime
+#+description: A fresh database holds the schema and the staged DQ artefacts only. Making it usable is a runtime act: the ACME provisioning runs through ores.shell, or through ores.web's setup journeys. Tests insert the content they need through shared helpers.
+#+type: story
+#+level: s2
+#+filetags: :runtime:bootstrap:sql:tests:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:29CD45FB-1328-4A59-AACF-EF5D05F4146C][Scaffold story: Bootstrap the system at runtime]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DB8BA356-B654-4AB1-AA0C-1AA0D21BD451][Implement Bootstrap the system at runtime]] | BACKLOG | | | Initial task for: Bootstrap the system at runtime |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -235,29 +235,15 @@ select ores_utility_allow_version_replace_fn();
 \ir fpml/fpml_populate.sql
 
 -- =============================================================================
--- Reference Data Publication (must precede Trading -- a trade's book_id is
--- validated against ores_refdata_books_tbl, which is empty until this runs)
--- =============================================================================
-
-\echo ''
-\echo '--- Reference Data Publication ---'
-\ir acme/acme_publish_populate.sql
-\ir ore/ore_sample_counterparties_publish_populate.sql
-\ir ore/ore_sample_netting_publish_populate.sql
-\ir ore/ore_sample_portfolios_publish_populate.sql
-
--- =============================================================================
--- Report Instance FSM Test Fixture
+-- Reference data is NOT published here.
 --
--- A report definition needs a party and a book, so this runs after the
--- reference data publication rather than with the reporting seeds. It exists
--- so that the report instance FSM can be walked end to end from ores.shell in
--- any environment; see the script's own header for what each fixture covers.
+-- Publication is a runtime act. Run the ACME provisioning through ores.shell
+-- (or the equivalent setup journeys in ores.web) to publish the bundles in
+-- dependency order. A freshly created database holds the schema and the
+-- staged DQ artefacts only, so the refdata tables are empty until that runs.
+-- A test that needs reference-data rows inserts them in its own setup.
 -- =============================================================================
 
-\echo ''
-\echo '--- Report Instance FSM Test Fixture ---'
-\ir reporting/reporting_test_report_populate.sql
 
 -- =============================================================================
 -- Trading Layer

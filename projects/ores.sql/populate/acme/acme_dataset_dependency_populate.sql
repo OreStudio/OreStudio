@@ -55,4 +55,34 @@ BEGIN
         'acme.acme_hk.portfolios', 'acme.acme_hk.business_units', 'owner_unit_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_hk.books', 'acme.acme_hk.portfolios', 'parent_portfolio_source');
+
+    -- The service accounts' images ride assets.system_avatars, and the
+    -- provisioning attaches them by code. Every ACME dataset declares the
+    -- dependency, so publishing ACME data publishes the images first.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(
+        ores_utility_system_tenant_id_fn(), v.code, 'assets.system_avatars', 'visual_assets')
+    FROM (VALUES
+        ('acme.acme_group.accounts'),
+        ('acme.acme_group.books'),
+        ('acme.acme_group.business_units'),
+        ('acme.acme_group.portfolios'),
+        ('acme.acme_hk.account_contact_informations'),
+        ('acme.acme_hk.accounts'),
+        ('acme.acme_hk.books'),
+        ('acme.acme_hk.business_units'),
+        ('acme.acme_hk.portfolios'),
+        ('acme.acme_uk.account_contact_informations'),
+        ('acme.acme_uk.accounts'),
+        ('acme.acme_uk.books'),
+        ('acme.acme_uk.business_units'),
+        ('acme.acme_uk.portfolios'),
+        ('acme.acme_us.account_contact_informations'),
+        ('acme.acme_us.accounts'),
+        ('acme.acme_us.books'),
+        ('acme.acme_us.business_units'),
+        ('acme.acme_us.portfolios'),
+        ('acme.lei_entities'),
+        ('acme.lei_parties'),
+        ('acme.lei_relationships')
+    ) AS v(code);
 END $$;

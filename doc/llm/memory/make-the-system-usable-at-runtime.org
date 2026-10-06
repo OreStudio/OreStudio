@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 1E2BB523-4620-4F0D-AF2B-8D52CC03B26E
+:END:
+#+title: Make the system usable by running the ACME provisioning at runtime
+#+description: A fresh database holds the schema and the staged DQ artefacts only; run the ACME provisioning through ores.shell to publish the reference data.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:bearings:runtime:bootstrap:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+
+A freshly created database is not usable on its own. Run the ACME provisioning through ores.shell to publish the reference data.
+
+*Why:* The database build creates the schema and stages the DQ artefacts only; it publishes no reference data. Publication is a runtime act, driven by the IAM seed profiles and the dependency-aware bundle publish, so the refdata tables are empty after a recreate until a provision runs.
+
+*How to apply:* After compass db recreate and compass services start, run the provisioning through ores.shell (or the equivalent setup journeys in ores.web): bootstrap setup with the acme_demo profile publishes the base and risk_management bundles. Never add a publish step to the build-time populate scripts to work around an empty table. A test that needs rows must insert them itself in its own setup.

@@ -99,6 +99,7 @@ from the accepted design.
 | [[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]] | BACKLOG | | | Every process announces its start and its graceful stop through the shared service lifecycle; telemetry stores the events, so the roster tells stopped from lost and counts restarts. |
 | [[id:2F054957-1C41-4E98-B89E-6DE3D16924F7][Notify super administrators of service restarts]] | BACKLOG | | | Telemetry raises a service-restarted notification to the super administrators when a service starts again, marking a restart whose previous instance never stopped gracefully. |
 | [[id:2F80B0B6-1C58-4157-9FDC-30D5A1D996CF][Close service sessions on shutdown]] | BACKLOG | | | A service that logged in as its service account logs out through iam.v1.auth.logout when it shuts down gracefully, so a restart leaves no open session behind. |
+| [[id:B762A8D2-22A2-4A2B-868A-D173F6715BDD][Show the services in system health]] | BACKLOG | | | The system administrator's home splits System health into sections, one for tenants and one for services; the services section summarises the roster and links to the services screen. |
 
 * Plan
 

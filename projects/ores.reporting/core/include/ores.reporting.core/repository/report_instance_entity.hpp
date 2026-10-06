@@ -51,6 +51,7 @@ struct report_instance_entity {
     std::string description;
     std::string party_id;
     std::string definition_id;
+    std::optional<std::string> run_grant_id;
     std::optional<std::string> fsm_state_id;
     std::int64_t trigger_run_id;
     std::string output_message;

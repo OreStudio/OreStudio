@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,9 +35,9 @@ the cache rules this task implements.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Plan written.                          |
+| Now          | Cache, exchange adapter and the reporting wiring build. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the cache, then its exchange adapter. |
+| Next         | Wire the =ores.ore= and =ores.compute= steps, then the story's live test. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -106,12 +106,12 @@ task and name that file in the Command column.
 - The reporting service is wired first. Its =gather_trades= and
   =gather_market_data= steps call their owner with a run token from the cache,
   and an owner that answers =token_expired= costs one exchange and one repeat of
-  the request. The grant id is read from the definition's =run_grant_id=, since
-  the step carries the definition id and the report instance does not yet hold a
-  grant id. The design says the instance should hold it, so that the run keeps
-  the grant it was admitted under even if the definition is re-scheduled. Moving
-  the grant id onto the instance is a follow-up, and it needs a field on
-  =report_instance=.
+  the request. The grant id is read from the report instance's =run_grant_id=.
+  The trigger handler records that field at admission, copied from the
+  definition, so the run keeps the grant it was admitted under even if the
+  definition is later re-scheduled or unscheduled. An earlier cut read the
+  definition's =run_grant_id= at step time and shared the definition's current
+  consent across every run; the instance field removes that.
 - Two of the owners the design names are not wired yet. =ores.ore= reads the
   configuration documents through its own steps, and =ores.compute= obtains the
   run token to create its batch. Those follow the same shape.

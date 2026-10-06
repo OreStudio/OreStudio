@@ -84,6 +84,14 @@ struct report_instance final {
     boost::uuids::uuid definition_id;
 
     /**
+     * @brief The IAM run grant that this run acts under. Copied from the definition when the
+     * scheduler trigger admits the run. The instance records the grant id so that a later change to
+     * the definition's consent cannot change the authority of a run that is already in flight. IAM
+     * owns the grant, so this column is not a checked foreign key.
+     */
+    std::optional<boost::uuids::uuid> run_grant_id;
+
+    /**
      * @brief Current FSM state (FK to ores_dq_fsm_states_tbl).
      */
     std::optional<boost::uuids::uuid> fsm_state_id;

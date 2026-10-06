@@ -117,7 +117,11 @@ only reporting's choices.
 | =audience= | =ores.reporting.service=, =ores.ore.service=, =ores.compute.service= |
 | =max_runs=, =not_after= | empty for a schedule; one run, and the run's longest duration, for a manual run |
 
-Reporting stores the grant id on the definition beside the scheduler job id.
+Reporting stores the grant id on the definition beside the scheduler job id. That
+grant is the standing consent for the schedule. When a trigger admits a run,
+reporting copies the grant id onto the report instance, so the run acts under the
+grant that was live at admission. A later schedule, unschedule or party change
+therefore cannot change the authority of a run that is already in flight.
 
 *** When reporting grants and revokes
 
@@ -267,14 +271,15 @@ instance for that firing and returns it.
 
 Reporting creates the instance and publishes =workflow.v1.start=. The workflow
 instance id is created by reporting and recorded on the instance. A repeated
-start therefore opens the same run. The request carries:
+start therefore opens the same run. The instance also records the grant id it was
+admitted under, and every step reads that id from the instance. The request
+carries:
 
 #+ATTR_HTML: :class hug-leading
 | Field | Why the run needs it |
 |-------+----------------------|
 | the report instance id | the run id; the =run_id= claim of the token |
 | the tenant and the party | the step headers; the check at exchange |
-| the grant id | the exchange |
 | the as-of instant | the instant of the firing; every bitemporal read of the run uses it |
 | the run configuration | the chain the engine builds |
 | the definition id | the run document to read |

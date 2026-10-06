@@ -94,6 +94,23 @@ The report definition that produced this instance.
 ctx.generate_uuid()
 #+end_src
 
+** run_grant_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The IAM run grant that this run acts under. Copied from the definition when
+the scheduler trigger admits the run. The instance records the grant id so that
+a later change to the definition's consent cannot change the authority of a run
+that is already in flight. IAM owns the grant, so this column is not a checked
+foreign key.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 ** fsm_state_id
 :PROPERTIES:
 :type:     uuid

@@ -82,16 +82,16 @@ private:
     /**
      * @brief A client that carries the run's token, for calls to an owner.
      *
-     * The token comes from the cache, keyed by the definition's grant and the
-     * run. @p renew drops the held token first, which is how a caller that read
-     * =token_expired= exchanges once and repeats its request.
+     * The token comes from the cache, keyed by the grant the report instance
+     * recorded at admission and the run. @p renew drops the held token first,
+     * which is how a caller that read =token_expired= exchanges once and
+     * repeats its request.
      *
-     * @return The client, or nothing when the definition holds no grant or the
+     * @return The client, or nothing when the instance holds no grant or the
      * exchange refuses; @p error then says why.
      */
     std::optional<ores::nats::service::nats_client>
     run_token_client(const std::string& tenant_id,
-                     const std::string& definition_id,
                      const std::string& run_id,
                      bool renew,
                      std::string& error);

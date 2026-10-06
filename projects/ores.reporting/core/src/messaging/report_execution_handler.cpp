@@ -28,7 +28,6 @@
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
-#include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
@@ -122,22 +121,21 @@ report_execution_handler::report_execution_handler(
 
 std::optional<ores::nats::service::nats_client>
 report_execution_handler::run_token_client(const std::string& tenant_id,
-                                           const std::string& definition_id,
                                            const std::string& run_id,
                                            bool renew,
                                            std::string& error) {
     try {
         const auto tenant_ctx =
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
-        service::report_definition_service definitions(tenant_ctx);
+        service::report_instance_service instances(tenant_ctx);
         boost::uuids::string_generator sg;
-        const auto definition = definitions.get_definition(sg(definition_id));
-        if (!definition || !definition->run_grant_id) {
-            error = "The definition records no run grant, so its runs cannot act.";
+        const auto instance = instances.get_instance(sg(run_id));
+        if (!instance || !instance->run_grant_id) {
+            error = "The report instance records no run grant, so its run cannot act.";
             return std::nullopt;
         }
         const ores::service::service::cache::run_token_key key{
-            .grant_id = boost::uuids::to_string(*definition->run_grant_id), .run_id = run_id};
+            .grant_id = boost::uuids::to_string(*instance->run_grant_id), .run_id = run_id};
         if (renew)
             run_tokens_.invalidate(key);
         const auto token = run_tokens_.token_for(key, tenant_id);
@@ -218,16 +216,14 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         exp_req.storage_key = key;
 
         std::string err;
-        auto owner = run_token_client(
-            req.tenant_id, req.definition_id, req.report_instance_id, false, err);
+        auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
         std::optional<decltype(exp_req)::response_type> exp_resp;
         if (owner)
             exp_resp = nats_call(*owner, exp_req, err);
         // An expired token costs one exchange and one repeat of the request.
         if (!exp_resp && err.find("token_expired") != std::string::npos) {
             err.clear();
-            owner = run_token_client(
-                req.tenant_id, req.definition_id, req.report_instance_id, true, err);
+            owner = run_token_client(req.tenant_id, req.report_instance_id, true, err);
             if (owner)
                 exp_resp = nats_call(*owner, exp_req, err);
         }
@@ -284,16 +280,14 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         md_req.storage_key = key;
 
         std::string err;
-        auto owner = run_token_client(
-            req.tenant_id, req.definition_id, req.report_instance_id, false, err);
+        auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
         std::optional<decltype(md_req)::response_type> md_resp;
         if (owner)
             md_resp = nats_call(*owner, md_req, err);
         // An expired token costs one exchange and one repeat of the request.
         if (!md_resp && err.find("token_expired") != std::string::npos) {
             err.clear();
-            owner = run_token_client(
-                req.tenant_id, req.definition_id, req.report_instance_id, true, err);
+            owner = run_token_client(req.tenant_id, req.report_instance_id, true, err);
             if (owner)
                 md_resp = nats_call(*owner, md_req, err);
         }

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/book-trade-through-repositories
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every application write to an entity table goes through its generated repository
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Now          | Design chat on the unit-of-work seam.  |
+| Waiting on   | The seam decision (chat with owner).   |
+| Next         | Write the unit of work, then move booking onto the repositories. |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
@@ -43,9 +43,45 @@ Every application write to an entity table goes through its generated repository
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The problem
+
+Booking writes the trade, the activity, the booking and the state in one
+SQL function, =ores_trading_book_trade_fn=. The function bypasses the
+generated repositories. The task moves the four writes onto the
+repositories and keeps them atomic.
+
+** The seam
+
+Every repository write calls =execute_write_query=, defined once in
+=projects/ores.database/include/ores.database/repository/bitemporal_operations.hpp=.
+The helper calls =session(ctx.connection_pool())=, begins a transaction,
+writes, and commits. A shared transaction therefore needs one seam, not
+343. The read helper opens its own session in the same way.
+
+** Phases
+
+1. Unit of work in =ores.database=. One type owns one pooled session and
+   one transaction, and yields a =context= that carries it. The helpers
+   use the active transaction when the context carries one. Repository
+   signatures and codegen templates stay unchanged.
+2. Booking onto the repositories. =trade_operations_service::book_trade=
+   opens one unit of work and writes the trade with a =must_not_exist=
+   claim, the activity, the booking and the state. A second booking still
+   returns =outcome::conflict=.
+3. Delete =ores_trading_book_trade_fn= and update the drop file. Rewrite
+   the two pgTAP files that call it.
+4. State the rule in =projects/modeling/system_model.org=. Add
+   =check_entity_table_writes.py= with a ratchet baseline. Run it in
+   =codegen-drift.yml= and locally.
+
+** Verification
+
+Build, ctest, pgTAP under RLS, the round trip at in-scope lost 0, and the
+new check.
+
+** Measurement
+
+Each number in the Measurements table states its command and its commit.
 
 * Measurements
 
@@ -62,6 +98,26 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Measurements taken at e7caee274b
+
+- 110 SQL functions under =projects/ores.sql/create= write an
+  =ores_*_tbl= table directly. By component: refdata 39, dq 34, iam 19,
+  mq 7, inbox 4, variability 2, and trading, synthetic, marketdata,
+  assets and reporting one each.
+- =ores_iam_purge_tenant_fn= is the only purge-named writer, so it is the
+  sanctioned purge exception.
+- =projects/ores.sql/populate= holds 2127 direct DML statements. These
+  are seed data, not application code. The check excludes them.
+- =ores_trading_book_trade_fn= has one C++ caller
+  (=trade_operations_service.cpp=), two pgTAP callers and the drop file.
+- 343 files call =execute_write_query=.
+
+** Open decision: the unit-of-work seam
+
+The owner wants the architecturally correct and idiomatic shape, so churn
+does not decide it. The candidates and the outcome are recorded here once
+the design chat settles them.
 
 * Test Scenarios
 

@@ -15,11 +15,15 @@
 #
 ---
 name: Product website
-# Pull requests build the site locally via the compass-pr-raise skill; this
-# workflow covers pushes to main (build + deploy) and manual runs.
+# Pull requests build the site locally via the compass-pr-raise skill. This
+# workflow builds and deploys on a two-hourly schedule and on manual runs,
+# not on every push: a site build takes longer than the gap between pushes to
+# main, so per-push runs cancelled each other and seldom finished.
 on:  # yamllint disable-line rule:truthy
-  push:
-    branches: ["main"]
+  schedule:
+    # Offset from Continuous Linux's '0 */2 * * *', so the two do not start
+    # their jobs together.
+    - cron: '30 */2 * * *'
 
   workflow_dispatch:
 
@@ -30,15 +34,15 @@ permissions:
 
 jobs:
   # Submit the full documentation build (site + Doxygen) to CDash as the Site
-  # group on every push to main — the heavy build the PR link-check defers.
-  # Independent of build/deploy below.
+  # group on every scheduled and manual run — the heavy build the PR link-check
+  # defers. Independent of build/deploy below.
   cdash:
     uses: ./.github/workflows/site-cdash.yml
     with:
       with_doxygen: true
 
-  # Build the site on every push to main and hand it to the deploy job as
-  # an artifact. Doc-class pull requests build the site locally via the
+  # Build the site on every scheduled and manual run and hand it to the deploy
+  # job as an artifact. Doc-class pull requests build the site locally via the
   # compass-pr-raise skill, which is where broken id-links are caught before they
   # reach main. It does not deploy. Kept as a separate job so the ~5 min
   # Org build runs outside the serialized Pages-deploy concurrency group.
@@ -71,9 +75,9 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
-  # Deploy to GitHub Pages only for pushes to main (and manual runs); never
-  # for pull requests. Reuses the site built by the build job rather than
-  # rebuilding it, then layers Doxygen on top and deploys.
+  # Deploy to GitHub Pages on every scheduled and manual run; never for pull
+  # requests. Reuses the site built by the build job rather than rebuilding it,
+  # then layers Doxygen on top and deploys.
   deploy:
     needs: build
     environment:

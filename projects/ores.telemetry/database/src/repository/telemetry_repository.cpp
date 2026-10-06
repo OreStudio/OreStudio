@@ -650,8 +650,11 @@ telemetry_repository::list_service_roster(context ctx,
     std::vector<messaging::service_roster_slot> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() < 9)
+        if (row.size() < 9) {
+            BOOST_LOG_SEV(lg(), warn) << "Skipping a roster row with " << row.size()
+                                      << " column(s); the roster reads 9";
             continue;
+        }
 
         messaging::service_roster_slot slot;
         slot.service_name = row[0].value_or("");

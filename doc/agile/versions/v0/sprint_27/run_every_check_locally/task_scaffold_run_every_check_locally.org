@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 93FAC931-489F-401F-9870-E740C640A39F
+:END:
+#+title: Task: Scaffold story: Run every check locally in one report
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :run_every_check_locally:sprint_27:v0:
+#+owner: marco
+#+branch: feature/run-every-check-locally
+#+pr: 2714
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Create the story, its tasks, and the branch that the local check runner work
+lands on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The story and its two tasks exist under sprint 27.
+- Sprint 27 lists the story, and the story lists both tasks.
+- The scaffold PR carries documentation only.
+
+* Plan
+
+=compass story new= scaffolded the story, the scaffold task and the first
+implementation task, created =feature/run-every-check-locally= off
+=origin/main=, and wired every table. Commit and raise the PR.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2714][#2714]] | [agile] Scaffold the local check runner story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story A2C7D47F and tasks 93FAC931 (scaffold) and 0829AF20 (implementation) are
+in sprint 27 via PR #2714. Sprint 27 lists the story; the story lists both
+tasks. The first implementation task is BACKLOG and picks up its own branch
+with =compass task start=.

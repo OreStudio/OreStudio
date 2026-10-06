@@ -252,6 +252,7 @@ export async function listTenantsPage(
         offset: input.offset ?? 0,
         limit: input.limit ?? 100,
         order: { field: 'code', descending: false },
+        as_of: null,
         filter: {
             type: input.type === undefined || input.type === '' ? null : input.type,
             status: input.status === undefined || input.status === '' ? null : input.status,

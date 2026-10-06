@@ -361,6 +361,7 @@ export const listAccountsRequestSchema = z.object({
         .object({ id_one_of: z.array(z.string()).nullable(), search: z.string().nullable() })
         .nullable()
         .default(null),
+    as_of: z.string().nullable().default(null),
 }) satisfies z.ZodType<GeneratedListAccountsRequest>;
 
 /** `list_login_info_request`, sent on `iam.v1.login_info.list`. */
@@ -800,6 +801,7 @@ export const listSeedProfilesRequestSchema = z.object({
         })
         .default({ field: '', descending: false }),
     filter: z.null().default(null),
+    as_of: z.string().nullable().default(null),
 }) satisfies z.ZodType<GeneratedListSeedProfilesRequest>;
 
 /**

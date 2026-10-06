@@ -62,6 +62,7 @@ export const listBadgeDefinitionsRequestSchema = z.object({
     limit: z.int().positive().max(1000).default(200),
     order: orderSchema.default({ field: '', descending: false }),
     filter: z.null().default(null),
+    as_of: z.string().nullable().default(null),
 }) satisfies z.ZodType<GeneratedListBadgeDefinitionsRequest>;
 
 /** The catalogue, keyed by the badge's own code. */

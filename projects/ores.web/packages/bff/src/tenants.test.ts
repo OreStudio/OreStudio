@@ -245,12 +245,14 @@ describe('GET /api/tenants', () => {
                 offset: 0,
                 limit: 100,
                 order: { field: 'code', descending: false },
+                as_of: null,
                 filter: { ...NO_FILTER, type_one_of: ['production', 'evaluation', 'system'] },
             },
             {
                 offset: 0,
                 limit: 1,
                 order: { field: 'code', descending: false },
+                as_of: null,
                 filter: { ...NO_FILTER, type_one_of: ['automation'] },
             },
         ]);

@@ -1,0 +1,51 @@
+ORE Studio
+Acme Corporation
+Application
+Home
+People
+Requests
+Reference data
+My access
+2
+Requests
+/
+ReportRun
+ashley.moore asks for ReportRun
+
+Waiting, asked 2026-10-06.
+
+ashley.moore
+Waiting
+No deadline.
+Why they need it
+
+Covers the FX desk
+
+REPORTRUN
+Report run - what a scheduled report run reads and writes in its party
+What ReportRun would let them do
+Reference data refdata
+2 of 378
+What	Read	Write	Delete	Other
+conventions	✓	–	·	
+curve configurations	✓	–	–	
+Analytics analytics
+2 of 56
+What	Read	Write	Delete	Other
+pricing model configs	✓	–	·	
+todays market configs	✓	–	–	
+Compute compute
+1 of 23
+What	Read	Write	Delete	Other
+workunits	–	✓	–	
+Storage storage
+2 of 3
+What	Read	Write	Delete	Other
+objects	✓	✓	–	
+Your answer
+Reason
+ashley.moore reads it. Needed to refuse; optional to give.
+Give ReportRun
+Refuse
+client v0.0.27 (d574d6bbb4-dirty)
+server v0.0.27 [x64-linux] (local d574d6bbb4-dirty)

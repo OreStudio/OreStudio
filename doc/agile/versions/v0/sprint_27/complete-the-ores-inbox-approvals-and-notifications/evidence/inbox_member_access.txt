@@ -1,0 +1,112 @@
+ORE Studio
+Acme Corporation
+Application
+Home
+People
+Reference data
+My access
+1
+My access
+
+What you can do in Acme Corporation, and which role lets you.
+
+Roles you hold
+Ask for a role
+Member · Member - the reference data vocabulary and the shared screens every person reads
+Given by
+OE
+ores_eager_maxwell_ddl_user · 2026-10-06 · Every person holds Member
+Operations · Operations - currency management and account viewing
+Given by
+tenant_admin · 2026-10-06 · Approved request 01a11315-66da-7304-af5d-089788f08bfd
+Viewer · Viewer - basic read-only access to domain data
+Given by
+OE
+ores_eager_maxwell_ddl_user · 2026-10-06 · Published from organisation dataset
+Your requests
+Role request
+Waiting
+asked 2026-10-06
+You wrote: Covers the FX desk
+Withdraw
+Role request
+Given
+asked 2026-10-06
+You wrote: Covers the settlement desk
+Can I…?
+What your roles let you do
+
+55 of 983 permissions, by area.
+
+Reference data refdata
+49 of 378
+What	Read	Write	Delete	Other
+asset class codes	✓	–	–	
+book purpose types	✓	–	–	
+book statuses	✓	·	–	
+business centres	✓	–	–	
+business day convention types	✓	–	–	
+calendar dates	✓	·	·	
+calendar events	✓	–	–	
+calendar exceptions	✓	–	–	
+calendar names	✓	–	–	
+calendar rules	✓	–	–	
+calendar types	✓	–	–	
+calendars	✓	·	–	
+contact types	✓	–	–	
+countries	✓	–	–	
+currencies	✓	✓	✓	
+currency calendars	✓	✓	✓	
+currency countries	✓	·	·	
+currency currency groups	✓	✓	✓	
+currency groups	✓	–	–	
+currency market tiers	✓	–	–	
+currency pair classifications	✓	–	–	
+currency pair convention calendars	✓	✓	✓	
+currency pair conventions	✓	–	–	
+currency pairs	✓	–	–	
+curve roles	✓	–	·	
+day counters	✓	–	–	
+derivation kinds	✓	–	–	
+diary entry types	✓	·	·	
+floating index types	✓	–	–	
+ledger feed types	✓	–	–	
+leg types	✓	–	–	
+party statuses	✓	–	–	
+party types	✓	–	–	
+purpose types	✓	–	–	
+regulatory book types	✓	–	–	
+rounding types	✓	–	–	
+series subclass codes	✓	–	–	
+tenor anchors	✓	–	–	
+tenor kinds	✓	–	–	
+tenor resolution algorithms	✓	·	–	
+tenor units	✓	–	–	
+Data quality dq
+3 of 72
+What	Read	Write	Delete	Other
+badge definitions	✓	–	–	
+badge mappings	✓	–	–	
+change reasons	✓	–	–	
+Assets assets
+1 of 8
+What	Read	Write	Delete	Other
+images	✓	–	–	
+Workspaces workspace
+1 of 6
+What	Read	Write	Delete	Other
+workspaces	✓	–	–	
+–
+archive
+–
+archive any
+Feature flags variability
+1 of 4
+What	Read	Write	Delete	Other
+flags	✓	·	·	
+–
+create
+–
+update
+client v0.0.27 (d574d6bbb4-dirty)
+server v0.0.27 [x64-linux] (local d574d6bbb4-dirty)

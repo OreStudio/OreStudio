@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 04D34A61-3D69-42E0-852C-ADDE2C64B89A
+:END:
+#+title: Task: Implement One way to keep a prototype
+#+description: Port the eleven React journey prototypes to static pages under doc/prototypes/, make index.org the only inventory, publish them, remove the React prototype tree, and add the inventory guard.
+#+type: task
+#+level: s1
+#+filetags: :one-way-to-keep-prototypes:sprint_27:v0:
+#+owner: marco
+#+branch: feature/one-way-to-keep-prototypes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E85DFD5F-6C33-4EA7-AEC5-0346B5E70260][One way to keep a prototype]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every prototype is a static page under =doc/prototypes/=, listed in one
+inventory, published by the site build, and guarded. No prototype is a React
+route.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E85DFD5F-6C33-4EA7-AEC5-0346B5E70260][One way to keep a prototype]] |
+| Now          | Ports in progress; inventory, method and guard are done. |
+| Waiting on   | Nothing.                               |
+| Next         | Integrate the ports, delete the React tree, raise the PR. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- Every prototype is a static page under =doc/prototypes/= and is listed in =doc/prototypes/index.org=.
+- =doc/prototypes/index.org= states the one way to add a prototype.
+- No prototype route or prototype source remains in =ores.web=.
+- The site build publishes every prototype.
+- =build/scripts/check_prototype_inventory.py= passes.
+
+* Plan
+
+1. Port the eleven React journey prototypes to self-contained static pages
+   under =doc/prototypes/<name>/=. Plain HTML, CSS and JavaScript, mock data,
+   variants and states carried on query parameters, as the existing
+   prototypes do.
+2. Make =doc/prototypes/index.org= the only inventory, listing all
+   prototypes, and state the one way to add one there.
+3. Point the journeys hub, =doc/knowledge/journeys/journeys.org=, at that
+   inventory instead of describing a second way.
+4. Publish each prototype with one =ores-deploy-web-app= call in
+   =ores-build-site.el=.
+5. Delete the React prototype tree and the =/prototype= route.
+6. Add =build/scripts/check_prototype_inventory.py= and run it in the doc-lint
+   workflow.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

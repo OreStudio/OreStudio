@@ -35,15 +35,27 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 - The path is exercised end to end against a running service: start a feed, see the series and observations appear, and read them back by oresmd URI.
 - The curve bootstrap consumes a synthetic feed's observations the same way it consumes market observations, and the resulting points record the synthetic provenance.
 - The gaps found are fixed or captured as their own tasks, and the story states what a workspace-scoped or scenario feed would still need.
+- IR and FX run one pipeline: the same feed abstraction, tick, binding, producer kind, ingest and persistence, with any difference justified as the datum, the config fields or the process.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ABEC9FC0-A354-4AC7-9982-B5AAC1292614][Scaffold story: Implement synthetic data generation against the new market data model]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement Implement synthetic data generation against the new market data model]] | STARTED | 2026-10-06 | | Initial task for: Implement synthetic data generation against the new market data model |
+| [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement synthetic data generation against the new market data model]] | STARTED | 2026-10-06 | | One pipeline for every asset class: prove the tick-to-row path, carry the producer kind, collapse the spurious FX/IR forks, and let the curve bootstrap read it. |
 
 * Decisions
+
+**D1. One pipeline, asset class only where it is real.** The generator
+pipeline is common to every asset class; IR and FX must not have separate paths
+with spurious differences. An asset class varies only in the shape of its
+datum, its config fields, and the process that produces its numbers. Everything
+around that is one path parameterised by the config.
+
+**D2. Provenance is a producer kind, not a derivation kind.** =derivation_kind=
+means published-versus-computed; real-versus-generated is a separate axis about
+the producer, carried by the feed binding and readable from the series an
+observation belongs to.
 
 * Out of scope
 

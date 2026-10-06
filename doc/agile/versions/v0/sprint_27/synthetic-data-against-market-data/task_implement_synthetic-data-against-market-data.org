@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2178AA83-4A4C-4734-8837-33F158FA5A3C
 :END:
-#+title: Task: Implement Implement synthetic data generation against the new market data model
+#+title: Task: Implement synthetic data generation against the new market data model
 #+description: Initial task for: Implement synthetic data generation against the new market data model
 #+type: task
 #+level: s1
@@ -46,6 +46,7 @@ consumer such as the curve bootstrap reads it and says where it came from.
 - The path is exercised end to end against a running service: start a feed, see the series and observations appear, and read them back by oresmd URI.
 - The curve bootstrap consumes a synthetic feed's observations the same way it consumes market observations, and the resulting points record the synthetic provenance.
 - The gaps found are fixed or captured as their own tasks, and the story states what a workspace-scoped or scenario feed would still need.
+- IR and FX run one pipeline: the same feed abstraction, tick, binding, producer kind, ingest and persistence. Any remaining difference is the datum, the config fields or the process, and the fork inventory justifies every one of them.
 
 * Plan
 

@@ -107,40 +107,44 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
         return;
     }
 
+    static_cast<void>(handle_tick(*tick));
+}
+
+std::optional<tick_drop> feed_ingest_loop::handle_tick(const messaging::market_tick& tick) {
     std::vector<domain::feed_binding> bindings;
     {
         std::lock_guard lock(mu_);
-        const auto it = bindings_by_source_.find(tick->source);
+        const auto it = bindings_by_source_.find(tick.source);
         if (it != bindings_by_source_.end())
             bindings = it->second;
     }
 
-    const auto plan = plan_tick(*tick, bindings);
+    const auto plan = plan_tick(tick, bindings);
     if (!plan) {
         std::lock_guard lock(mu_);
         switch (plan.error()) {
             case tick_drop::unbound_source:
-                if (unbound_warned_.insert(tick->source).second)
-                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '"
-                                              << tick->source << "': no enabled feed_binding";
+                if (unbound_warned_.insert(tick.source).second)
+                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '" << tick.source
+                                              << "': no enabled feed_binding";
                 break;
             case tick_drop::unnameable_datum:
-                if (unnameable_warned_.insert(tick->oresmd_uri).second)
+                if (unnameable_warned_.insert(tick.oresmd_uri).second)
                     BOOST_LOG_SEV(lg(), warn)
-                        << "Dropping ticks for '" << tick->oresmd_uri << "': it names no ORE datum";
+                        << "Dropping ticks for '" << tick.oresmd_uri << "': it names no ORE datum";
                 break;
             case tick_drop::not_a_number:
-                if (bad_value_warned_.insert(tick->source).second)
-                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks from source '" << tick->source
-                                              << "': value '" << tick->value << "' is not a number";
+                if (bad_value_warned_.insert(tick.source).second)
+                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks from source '" << tick.source
+                                              << "': value '" << tick.value << "' is not a number";
                 break;
         }
-        return;
+        return plan.error();
     }
 
     for (const auto& target : plan->targets) {
         const auto& b = target.binding;
-        if (!persist(b, plan->datum, *tick))
+        if (!persist(b, plan->datum, tick))
             continue;
 
         const binding_key key{b.source_name,
@@ -159,8 +163,8 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
 
         if (prev_count == 0)
             BOOST_LOG_SEV(lg(), info)
-                << "INGEST FIRST TICK: source='" << b.source_name << "' datum='" << tick->oresmd_uri
-                << "' subject='" << target.subject << "' value=" << tick->value;
+                << "INGEST FIRST TICK: source='" << b.source_name << "' datum='" << tick.oresmd_uri
+                << "' subject='" << target.subject << "' value=" << tick.value;
 
         // Currency driver pairs are FX-shaped, so only an FX spot rate is a
         // candidate driver update. The bridge offers it tenant-wide.
@@ -169,9 +173,11 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
                                 *plan->datum.get<datum::field::unit_ccy>(),
                                 *plan->datum.get<datum::field::ccy>(),
                                 plan->value,
-                                tick->observation_time);
-        nats_.js_publish(target.subject, msg.data);
+                                tick.observation_time);
+        nats_.js_publish(target.subject, ores::nats::default_wire_codec().encode(tick));
     }
+
+    return std::nullopt;
 }
 
 std::shared_ptr<const core::series_classifier>

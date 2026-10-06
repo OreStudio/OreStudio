@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "app_crm_ingest_bridge_tests.cpp"
+    "app_feed_ingest_loop_tests.cpp"
     "app_feed_series_tests.cpp"
     "app_tick_plan_tests.cpp"
     "config_parser_tests.cpp"

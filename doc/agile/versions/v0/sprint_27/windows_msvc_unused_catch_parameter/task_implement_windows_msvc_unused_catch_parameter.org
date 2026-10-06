@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 593F5B14-0D65-4F13-9AC4-C4859C5D5913
+:END:
+#+title: Task: Drop the unused catch parameter in publish_service.cpp
+#+description: MSVC flags the unused boost::not_a_dag catch parameter at publish_service.cpp:196 as C4101 and promotes it to an error under /W4 /WX.
+#+type: task
+#+level: s1
+#+filetags: :windows_msvc_unused_catch_parameter:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/windows-msvc-unused-catch-parameter
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5684FD21-4381-4940-9858-65C81907EB88][Hotfix: Windows MSVC build treats an unused catch parameter as an error]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the MSVC build compile publish_service.cpp again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5684FD21-4381-4940-9858-65C81907EB88][Hotfix: Windows MSVC build treats an unused catch parameter as an error]] |
+| Now          | The parameter is unnamed; the file compiles under the project's flags. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit and open the PR.                |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The boost::not_a_dag catch parameter is unnamed.
+- No unused catch parameter remains in projects/.
+
+* Plan
+
+MSVC at /W4 /WX stops the build on the unused =e= in
+
+#+begin_example
+} catch (const boost::not_a_dag& e) {
+#+end_example
+
+at =publish_service.cpp:196=. The handler logs and throws its own circular
+dependency message, so the exception object is dead weight. Drop the name:
+=} catch (const boost::not_a_dag&) {=. The file keeps its one-line diff, and no
+other file in =projects/= has a catch parameter its handler never mentions.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Catch parameters under projects/ that their own handler never mentions, before the fix | 1 | python3 scan of projects/ for catch (...) with an unused name | 19161c3aa3 |
+| The same count after the fix | 0 | the same scan | 19161c3aa3 |
+| clang -Wunused-exception-parameter -Werror on the old file | 1 error, line 196 | clang++ with the file's own compile_commands.json entry | 19161c3aa3 |
+| clang -Wunused-exception-parameter -Werror on the new file | 0 | the same command | 19161c3aa3 |
+
+* Notes
+
+Root cause: =boost/not_a_dag= arrives across a catch clause whose body never
+reads it, and MSVC's C4101 "unreferenced local variable" is an error under the
+project's /W4 /WX. The file has not changed since df60ea85fc (2026-09-27), so
+the failure only appeared when the MSVC toolchain started flagging it.
+
+The same warning class reproduces on Linux with clang's
+=-Wunused-exception-parameter=, which is how the fix was verified without a
+Windows runner.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

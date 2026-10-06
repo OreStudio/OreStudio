@@ -39,6 +39,13 @@ Structured as a composite component with four sub-components.
 #+caption: ores.marketdata
 [[file:ores.marketdata.png][file:ores.marketdata.png]]
 
+The oresmd identifier grammar and the data it projects are drawn separately,
+as the target model they were designed against:
+
+#+attr_html: :width 100% :alt ores.marketdata target data model
+#+caption: ores.marketdata target data model
+[[file:ores.marketdata.data_model.png][file:ores.marketdata.data_model.png]]
+
 * Inputs
 
 - ORE-format market data files, parsed at the import boundary.

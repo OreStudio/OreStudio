@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 5BAD286D-1139-41F1-8F01-F3114E77A59A
 :END:
-#+title: Task: Add a marketdata stream command to ores.shell
-#+description: A marketdata stream command that subscribes to the republished tick subject for an oresmd URI and prints ticks to the screen until Ctrl-C, or writes them to a CSV file, so synthetic streaming can be tested without a UI.
+#+title: Task: Complete the ores.shell synthetic market data commands
+#+description: Give ores.shell the full operation surface for synthetic market data, so a person can set a feed up, list it and its state, start and stop it, validate its vintage, preview it, and stream an oresmd to the screen until Ctrl-C or to a CSV file, with no UI and no code.
 #+type: task
 #+level: s1
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
@@ -20,7 +20,37 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Make it possible to watch a market data series live from the shell, with no UI and no code: marketdata stream takes an oresmd URI, subscribes to the republished tick stream the marketdata service already produces for the caller's tenant and party, and either prints each tick to the screen until the person presses Ctrl-C, or writes them to a CSV file. This is the fastest way to prove that a synthetic feed is ticking and that its ticks reach a consumer as themselves: a bound synthetic feed's observations are republished on marketdata.v1.tick.<tenant>.<party>.<ore_key>, so a stream command is the end-to-end test a person can run by hand.
+Give the shell everything a person needs to run synthetic market data end to
+end, so none of it requires the Qt client or code. The operations are: set a
+feed up (author the collection, the feed config, and the rows that make it
+work, an FX feed's GMM components or an IR feed's template entries and process
+parameter values), list the feeds and their state, start and stop a feed or a
+whole folder, validate a feed's vintage data, preview what a feed would
+produce, and watch it live. Watching is =marketdata stream=, which takes an
+oresmd URI, subscribes to the republished tick stream the marketdata service
+already produces for the caller's tenant and party, and either prints each
+tick to the screen until Ctrl-C or writes them to a CSV file. That is the
+fastest way to prove a synthetic feed is ticking and its ticks reach a
+consumer as themselves, because a bound synthetic feed's observations are
+republished on =marketdata.v1.tick.<tenant>.<party>.<ore_key>=.
+
+* Coverage today, so the gaps are explicit
+
+- *Exists.* Generated per-entity menus for the synthetic entities
+  (=market_data_generation_config=, =fx_spot_generation_config=,
+  =gmm_component=, =ir_curve_generation_config=, =ir_curve_template_entry=,
+  =ir_curve_generation_config_process_parameter_value=, =folder=,
+  =yield_curve_process_type=, =yield_curve_process_parameter_definition=),
+  each with the usual list, get, put and delete. A hand-written =synthetic=
+  menu with =list folders=, =list feeds=, =start=, =stop= and
+  =validate-vintage=.
+- *Missing.* A porcelain way to set a feed up in one pass rather than
+  assembling several raw entity writes by hand. State in the listing, so a
+  person can see which feeds are enabled, auto-start and actually running,
+  and which are partial. The =preview= operations the service already offers
+  but the shell does not expose, =synthetic.v1.fx_spot.simulate=,
+  =synthetic.v1.ir_curve.preview_shape= and
+  =synthetic.v1.ir_curve.simulate_paths=. And =marketdata stream=.
 
 * Status
 
@@ -35,21 +65,74 @@ Make it possible to watch a market data series live from the shell, with no UI a
 
 * Acceptance
 
-- marketdata stream <oresmd-uri> prints each tick as it arrives (observation time, the point oresmd URI, the value, the source) until Ctrl-C, and then prints a summary count.
-- marketdata stream <oresmd-uri> --csv <path> writes one row per tick to the file, with a header, and still stops on Ctrl-C; the file is valid CSV for an empty run too.
-- The command resolves the oresmd URI to the datum's canonical ORE key and subscribes to the republished subject for the caller's tenant and party; an unparseable URI is refused with the codec's own message, not a raw subject error.
-- A series URI streams every point of that series, so a curve or surface can be watched without naming each point.
-- Ctrl-C exits cleanly (no stack trace, exit code 0 or the conventional 130), and a stream that receives nothing says so rather than hanging silently.
+Every operation below is reachable from the shell alone, with no Qt client and
+no code, and each states its result rather than failing silently.
+
+- *Set a feed up.* One porcelain flow authors a working feed: for FX, a
+  collection and folder, the feed config and its GMM components; for IR, the
+  feed config, its Curve Template entries and its process parameter values.
+  The flow names the reference data it needs and refuses with the missing
+  code rather than writing a half-configured feed.
+- *List the feeds and their state.* The listing shows, per feed, its asset
+  class, source name, whether it is enabled and set to auto-start, and whether
+  it is running now, so a partial feed is visible rather than absent.
+- *Start and stop.* A feed starts and stops by id, ORE key or source name, and
+  a folder or collection cascades to every feed under it. Starting an
+  already-running feed is idempotent and says so.
+- *Validate and preview.* =validate-vintage= reports each contributor's result
+  as one summary, and the preview operations the service offers are reachable:
+  =synthetic.v1.fx_spot.simulate=, =synthetic.v1.ir_curve.preview_shape= and
+  =synthetic.v1.ir_curve.simulate_paths=.
+- *Stream to the screen.* =marketdata stream <oresmd-uri>= prints each tick as
+  it arrives (observation time, the point oresmd URI, the value, the source)
+  until Ctrl-C, then prints a summary count.
+- *Stream to a file.* =marketdata stream <oresmd-uri> --csv <path>= writes one
+  row per tick with a header, still stopping on Ctrl-C, and the file is valid
+  CSV for an empty run too.
+- *Resolve the URI properly.* The command resolves the oresmd URI to the
+  datum's canonical ORE key and subscribes to the republished subject for the
+  caller's tenant and party; an unparseable URI is refused with the codec's
+  own message, not a raw subject error.
+- *Stream a series.* A series URI streams every point of that series, so a
+  curve or surface can be watched without naming each point.
+- *Stop cleanly.* Ctrl-C exits without a stack trace, exit code 0 or the
+  conventional 130, and a stream that receives nothing says so rather than
+  hanging silently.
 
 * Plan
 
 ** Where it goes
 
-A hand-written subcommand of the existing =marketdata= menu in
+The operation surface lives in the hand-written =synthetic= menu in
+=projects/ores.shell/application/src/app/commands/synthetic_commands.cpp=,
+which already carries =list folders=, =list feeds=, =start=, =stop= and
+=validate-vintage=. Setup, state and preview extend that menu. The per-entity
+menus are generated and stay as they are.
+
+=marketdata stream= is a hand-written subcommand of the =marketdata= menu in
 =projects/ores.shell/application/src/app/commands/marketdata_commands.cpp=,
-beside the hand-written =import= and =export=. The per-entity menus are
-generated; this one is not, and the file already carries the
+beside the hand-written =import= and =export=. The file already carries the
 =parse_args=-plus-=process_*= shape to follow.
+
+** How setup authors a feed
+
+The generated per-entity commands already write each row; the gap is a flow
+that writes the rows a feed needs in one pass and refuses cleanly when a
+reference it needs is missing. For FX that is the collection, the folder, the
+=market_data_generation_config=, the =fx_spot_generation_config= and its
+=gmm_component= rows; for IR it is the config, its =ir_curve_template_entry=
+rows and its =ir_curve_generation_config_process_parameter_value= rows, whose
+definitions come from the process-type catalogue. The asset class supplies
+which rows a feed needs; the flow, its validation and its reporting are one.
+
+** How state and preview are surfaced
+
+=list feeds= already asks =synthetic.v1.feed_configs.list=; the reply carries
+the running state, so the listing renders enabled, auto-start and running
+rather than only the names. The preview operations are already on the wire and
+need only a shell command each:
+=synthetic.v1.fx_spot.simulate=, =synthetic.v1.ir_curve.preview_shape= and
+=synthetic.v1.ir_curve.simulate_paths=.
 
 ** How it streams
 

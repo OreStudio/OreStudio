@@ -8,7 +8,7 @@
 #+filetags: :web:approval:notification:complete-the-ores-inbox-approvals-and-notifications:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/build-the-request-and-notification-screens
-#+pr: 2707
+#+pr: 2715
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -29,11 +29,11 @@ and the list, and links each entry to what it is about.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] |
-| Now          | Implemented and tested; the live walk waits on a working ACME bundle. |
+| Now          | Nothing. |
 | Waiting on   | The ACME provisioning fix in brave_hopper. |
-| Next         | Walk the flow in the browser once the environment provisions a tenant. |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -83,6 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2715][#2715]] | [agile] Close the inbox approvals and notifications story |
 | [[https://github.com/OreStudio/OreStudio/pull/2707][#2707]] | [web] Ask for a role and read the answer in the browser |
 
 * Review
@@ -109,8 +110,19 @@ queue.
 
 =packages/web=: 332 tests pass (22 new), typecheck clean. =packages/bff=: 242
 tests pass (19 new), typecheck clean. =packages/wire-protocol=: 140 tests pass.
-The bundle builds and boots in headless Chrome. The live walk (a member asks,
-an administrator answers, both read the bell) waits on the ACME provisioning
-fix in brave_hopper: the running environment is in bootstrap mode with no
-tenant, so there is no account to sign in with. Filed on the task as Waiting
-on.
+The bundle builds.
+
+Live, on a fresh database provisioned with ACME
+(=evidence/inbox_api_walk.txt=): =ashley.moore=, holding Member and Viewer,
+asked for Operations, ReportRun and Sales in turn through the BFF. The tenant
+administrator's queue named the requested role on every row. Each decision was
+approved and the role was granted. The member read the
+=inbox.approval_decided= notifications.
+
+In the browser (=evidence/inbox_member_access.png=,
+=evidence/inbox_admin_queue.png=, =evidence/inbox_admin_detail.png=,
+=evidence/inbox_after_give.png=, =evidence/inbox_bell.png=): My access drew
+Your requests with a Waiting row and its Withdraw, then Given rows after each
+answer. The Requests queue drew the requester, the role and the reason. The
+detail screen drew the role's permission bundle and the answer panel. Clicking
+Give emptied the queue, and the bell listed the decisions in words.

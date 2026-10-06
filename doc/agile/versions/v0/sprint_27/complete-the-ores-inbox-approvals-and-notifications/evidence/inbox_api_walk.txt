@@ -1,0 +1,11 @@
+member ashley.moore holds 4 roles; asks for Sales
+ask: 200 {'requestId': '01a11317-9cd2-72d7-a1df-d8593376c7f3'}
+my requests: state=waiting reason='Covers the settlement desk' roles=[]
+queue total=1 row: who=ashley.moore roles=['Sales']
+decide: 204
+my requests after: state=approved decision=None
+notification: kind=inbox.approval_decided key=notification.inbox.approval_decided unread=True link=requests values={'comment': '', 'decider': 'tenant_admin', 'kind': 'Role request', 'state': 'approved'}
+notification: kind=inbox.approval_decided key=notification.inbox.approval_decided unread=True link=requests values={'comment': '', 'decider': 'tenant_admin', 'kind': 'Role request', 'state': 'approved'}
+notification: kind=inbox.approval_decided key=notification.inbox.approval_decided unread=True link=requests values={'comment': '', 'decider': 'tenant_admin', 'kind': 'Role request', 'state': 'approved'}
+unread count: {'unread': 3}
+role granted: True

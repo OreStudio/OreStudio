@@ -34,9 +34,9 @@ consumer such as the curve bootstrap reads it and says where it came from.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Slice 1 done: one mode-aware producer subject for every kind, IR sandboxing fixed, tests green. |
+| Now          | Slices 1 to 4 done and green: one producer subject, the binding gate on the one start path, the producer kind on binding and series, and the persist test. |
 | Waiting on   | Nothing. |
-| Next         | Slice 2: binding creation on the one live start path, then the =producer_kind= on the shared binding. |
+| Next         | Slice 5, collapse the remaining spurious forks the inventory names, then slice 6, the curve bootstrap consumer check. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -151,6 +151,8 @@ task and name that file in the Command column.
 | Slice 2 binding tests | service and api suites 2/2 pass | =ctest -R 'ores.synthetic.service.tests\|ores.synthetic.api.tests'= | =2e3ca06d17= |
 | Slice 3 affected suites | 9/9 pass (refdata, marketdata, synthetic, shell) | =ctest -R 'ores.refdata\|ores.marketdata\|ores.synthetic\|ores.shell.refdata\|ores.shell.marketdata'= | =08b308b968= |
 | Slice 3 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =08b308b968= |
+| Slice 4 persist test | service suite 40 cases / 215 assertions pass, 18 in the 2 new cases | =ctest -R ores.marketdata.service.tests= | =627f2386e1= |
+| Slice 4 codegen sweep | no file this branch touched would change | =check_component_drift.py --sweep= | =627f2386e1= |
 
 * Notes
 
@@ -199,6 +201,16 @@ Everything is generated from the org models, including the SQL and the shell
 surface for the new entity. The codegen sweep reports that no file this branch
 touched would change. All nine affected suites pass, including the generated
 producer-kind eventing test.
+
+** Slice 4 done, 2026-10-06 (=627f2386e1=). The persist path is now proved
+against the database. =feed_ingest_loop::handle_tick= holds the whole of what
+the loop does with an arrived tick and returns the drop reason the caller
+observes, so a test reaches the real =persist= through the real path; =on_tick=
+only decodes and delegates. A bound synthetic tick is driven through it and the
+rows are read back by oresmd URI, with the series carrying =producer_kind
+SYNTHETIC= and the observation carrying the point URI, source, series id and
+value. A tick whose source has no enabled binding returns =unbound_source= and
+leaves no series. The codegen sweep stays clean.
 
 * Test Scenarios
 

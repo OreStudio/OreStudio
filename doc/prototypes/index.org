@@ -34,7 +34,7 @@ and every row opens its prototype. The one way to add a prototype is in
 | [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][Curve trail]] |
 | [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] | A feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear. | [[file:keep-the-market-data-feeds-running/][Market data feeds]] |
 
-| [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, index names) as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][oresmd URL editor]] |
+| [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][oresmd URL editor]] |
 * Adding a prototype; there is no second way, and none is planned.
 
 * The prototypes

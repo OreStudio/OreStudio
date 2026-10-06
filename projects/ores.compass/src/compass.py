@@ -2560,6 +2560,20 @@ def _collect_org_types(files):
     return types
 
 
+def cmd_check(argv):
+    """compass check — run every local check the change needs, then report.
+
+    The catalogue, the decision tree and the runner live in
+    build/scripts/local_checks.py, so the checks stay reachable without
+    compass. This verb is the one command the pull-request flow names.
+    """
+    script = Path(PROJECT_ROOT) / "build" / "scripts" / "local_checks.py"
+    if not script.is_file():
+        print(f"❌  local check runner not found: {script}", file=sys.stderr)
+        return 1
+    return subprocess.run([sys.executable, str(script), *argv]).returncode
+
+
 def cmd_lint(argv):
     """compass lint — validate filetags across all .org files."""
     ap = argparse.ArgumentParser(
@@ -7541,6 +7555,8 @@ def main():
         sys.exit(cmd_heading(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "lint":
         sys.exit(cmd_lint(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "check":
+        sys.exit(cmd_check(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "codegen":
         sys.exit(cmd_codegen(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
@@ -7564,7 +7580,7 @@ def main():
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "image", "nats", "db", "sql", "services", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
-            "orient", "timeline", "capture", "lint", "codegen", "branches",
+            "orient", "timeline", "capture", "lint", "check", "codegen", "branches",
             "skills",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]

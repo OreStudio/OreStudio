@@ -37,152 +37,33 @@ lifecycle is ordered this way.
 
 * How to use this skill
 
-1. *MANDATORY — classify the change and run only the matching checks
-   locally first, and do not skip this even under time pressure*. CI
-   gates a PR on drift and lint alone. Four path-filtered workflows
-   run on =pull_request=: =codegen-drift.yml=, =doc-lint.yml=,
-   =shell-script-drift.yml=, and =template-drift.yml=. Each one fires
-   only on its own paths, and none of them builds or tests: the
-   workflows that compile the C++ and run ctest (=continuous-*.yml=,
-   =nightly-*.yml=) run on a schedule, not on a PR. So this step is
-   the *only* thing that catches a broken build before review, and the
-   PR description is the only record that it happened.
+1. *MANDATORY — run the local check gate, and do not skip it even under
+   time pressure*. GitHub runs no check on a pull request, so this step is
+   the only gate between the branch and main.
 
-   Classify the diff against its branch point:
+   Run the local check gate:
 
    #+begin_src sh :results verbatim
-   git diff origin/main...HEAD --name-only
+   ./compass.sh check
    #+end_src
 
-   Bucket every changed file with the rule table. A mixed change runs
-   the union of its classes' checks:
+   It classifies the branch diff against the decision tree in
+   =build/scripts/local_checks.py=, runs the checks that class needs, and
+   writes =build/output/local_checks/report.md=. Read the report: it names
+   every failure, the command that reproduces it, the command that fixes
+   it, and the tail of the failing check's log. =--plan= prints the classes
+   and the checks without running them.
 
-   | Class          | Paths                                                         | Checks to run                    |
-   |----------------+---------------------------------------------------------------+----------------------------------|
-   | docs           | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= (vendored) | Site check (+ codegen drift when =projects/*/modeling/*= changed) |
-   | code (C++)     | =projects/ores.*= C++ sources and headers, =*.cmake=, =CMakeLists.txt= | Full build + ctest; drift checks; CDash experimental |
-   | ci             | =.github/*=, =projects/ores.codegen/library/templates/*=      | Site check; drift checks |
-   | python tooling | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | Compass test suite; drift checks |
-   | anything else  | any path matching no bucket above                             | Code class checks (full build + ctest; drift checks) |
+   A documentation-only change builds the changed pages and runs the doc
+   corpus checks; it never reaches the compiler. A change to the compiled
+   tree builds and runs the suites. The classes, their paths and the whole
+   catalogue are in
+   [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]].
 
-   The catch-all defaults an unmatched path to the code class — a
-   change that matches no bucket still gets the full build.
-
-   The =projects/*/modeling/*= paths under docs carry a codegen-drift
-   exception — to this table's default, not to CI: =codegen-drift.yml=
-   does gate them on a PR. The exception exists because a model-only
-   edit classifies as docs, and the docs class on its own runs no
-   codegen check. A change touching the modeling paths therefore also
-   runs the codegen drift checks (=compass build --direct
-   codegen_templates= then =check_component_drift.py=). Run them
-   locally even though CI repeats them: the gate only reports after a
-   reviewer is already looking.
-
-   The checks:
-
-   - *Site check*: =./compass.sh site page=. It publishes every page
-     changed since the last build and stops on a broken link in any of
-     them, in seconds. The full =compass build --direct site= takes
-     minutes; run it only when the checkout has never had a full build,
-     because =site page= reuses the caches that build writes.
-   - *Full build and tests* (code class only; run both via =compass=,
-     never raw =cmake --build= or =ctest= — it takes the host-wide
-     build lock so a concurrent build in another worktree can't
-     corrupt this one; see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
-
-     #+begin_src sh :results verbatim
-     ./compass.sh build --preset <preset>
-     ./compass.sh test run --preset <preset>
-     #+end_src
-
-   - *cmake-sources drift*:
-     =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=
-     (when a source file was added or removed, regenerate with
-     =--all= instead; see [[id:B45805F2-BAD4-4879-A571-3C962C79670B][compass-codegen-sync-cmake-sources]]).
-   - *codegen drift*: =./compass.sh build --direct codegen_templates=
-     then
-     =python3 projects/ores.codegen/scripts/check_component_drift.py --all=.
-     =--all= regenerates the script's known-drift-free registry (the
-     components verified at zero drift) and fails on any tracked or
-     untracked drift it surfaces. A component not yet at zero drift is
-     measured per-component with =--component <name>=; it cannot pass
-     =--all= until it joins the registry.
-   - *catalogue drift sweep*:
-     =python3 projects/ores.codegen/scripts/check_component_drift.py --sweep=.
-     =--all= covers the registry, which is the components that are already
-     clean, so a component waiting its turn has no gate, and neither does
-     output an archetype routes into another component's tree -- rendering
-     =ores.trading= writes 66 files under =projects/ores.shell/=, which no run
-     of =ores.shell= can reach. The sweep renders all twenty catalogue
-     components at the whole =ores= address into a temporary root and compares,
-     then fails only on the files this branch touched, because a component's
-     remaining drift belongs to its own clean-up story. The whole address
-     matters: expanding =ores= into the technical spaces skips every facet whose
-     =#+requires_facet:= names a facet in another space, which is how the
-     generated recipes under =doc/recipes/= went unchecked. It renders and
-     compares only, so nothing is written and it is safe on a branch whose
-     templates are older than main's. Run it whenever anything under
-     =projects/= changed, which is why it also runs on every pull request that
-     touches =projects/**=.
-   - *pasted block symbols*:
-     =python3 projects/ores.codegen/scripts/check_paste_block_symbols.py=.
-     A model can paste hand-written C++ into generated output through an
-     =:implements= block, and the block reaches the compiler only when its
-     component is regenerated, so a block can name a symbol a rename elsewhere
-     deleted and nothing notices. The =ores.service= clean-up moved three
-     workflow header names into =ores.workflow.api= while =ores.refdata= kept a
-     pasted block naming the old home. The check resolves every qualified name a
-     block references against the namespaces and types the headers declare, so a
-     rename fails at review with no regeneration. Run it whenever anything under
-     =projects/= changed; it takes about eight seconds.
-   - *shell script drift*: =./compass.sh build --direct tangle_shell_scripts=,
-     then =git status --short projects/ores.shell/scripts/library=. Every
-     recipe under =doc/recipes/shell/= tangles into a script, and a generated
-     entity brings a recipe with it, so a new entity adds scripts as well as
-     changing them. The status must be empty: a modified script is stale, and
-     an untracked one is a script nobody committed. Run it when anything under
-     =doc/recipes/shell/= or =projects/*/modeling/*= changed.
-   - *populate reference drift*:
-     =python3 projects/ores.codegen/scripts/check_populate_references.py=.
-     It reads the lookup contract from the upsert function bodies under
-     =projects/ores.sql/create= and fails when a populate script names a
-     methodology, dataset or account that no populate script defines. A
-     name nothing defines aborts =compass db recreate= part-way through
-     =setup_schema.sql=, so the GRANT block never runs and the database
-     stays half-built. Run it when anything under =projects/ores.sql/*=
-     or =projects/ores.seeder/*= changed.
-   - *handler permission seeding*:
-     =python3 projects/ores.codegen/scripts/check_handler_permissions.py=.
-     It reads every =has_permission(req_ctx, "<code>")= code from the
-     generated handler headers of the components whose seeds are complete,
-     and fails when =iam_permissions_populate.sql= defines none of them: an
-     unseeded code refuses every caller, administrators included. Run it when
-     anything under =projects/*/modeling/*=, =projects/ores.sql/populate/*=
-     or =projects/ores.codegen/*= changed.
-   - *test case reachability*:
-     =python3 projects/ores.codegen/scripts/check_test_case_reachability.py=.
-     It fails when a =TEST_CASE= sits inside a conditional compilation
-     block, because a false conditional deletes the case: the file
-     compiles, the link succeeds, and ctest reports green with a case
-     count nothing compares against the sources. Three =ores.service=
-     readiness cases sat inside such a guard and never reached the
-     compiler. Run it when anything under =projects/**/tests/*= or
-     =projects/ores.codegen/*= changed.
-   - *pattern uses*: =python3 build/scripts/check_pattern_uses.py=. A
-     service architecture pattern names each use under =* In ORE Studio=,
-     and a page that applies a pattern names it under =* Patterns used=;
-     the check fails when a link goes only one way, or when a Patterns used
-     entry is not a pattern. Run it when anything under =doc/= changed.
-   - *Compass test suite*:
-     =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
-   - *CDash experimental* (code class; visibility only):
-     =./compass.sh test run --preset <preset> --cdash Experimental=.
-
-   Do not raise the PR until the checks for the class are clean. Note
-   the class(es), the checks run, and the results (e.g. "doc-only;
-   local site check clean" or "code; build clean (<preset>); ctest
-   142/142 passed") — they go into the PR body's Testing section in
-   step 4 (=--testing-evidence=).
+   Do not raise the PR until the report is green. Note the classes and the
+   result (e.g. "doc-only; site page and doc corpus clean", or "code; build
+   clean (<preset>); ctest 142/142 passed") — they go into the PR body's
+   Testing section in step 4 (=--testing-evidence=).
 
 2. *Run the local code review before raising the PR*. The automatic
    GitHub review (=claude-code-review.yml=) was retired with the

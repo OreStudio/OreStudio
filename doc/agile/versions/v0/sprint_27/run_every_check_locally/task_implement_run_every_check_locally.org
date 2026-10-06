@@ -28,9 +28,9 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
-| Now          | Not yet started.                       |
+| Now          | Verification: running the gate on its own branch. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close the task, raise the PR.          |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -42,9 +42,37 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=build/scripts/local_checks.py= holds four things: the *catalogue* of checks
+(id, title, argv, classes, optional path narrowing, phase, fix hint, working
+directory, timeout); the *decision tree*, a table of change class to path
+globs; =classify=/=select_checks=, both pure functions of the changed paths;
+and the *executor*, which runs the writers first, then the fast reads in
+parallel, then the heavy tier, and writes =build/output/local_checks/report.md=.
+=compass check= hands its arguments to the script, so the catalogue is
+reachable with or without compass.
+
+Decisions:
+
+- *The tree is data, not a chain of conditionals.* =--list= prints it and the
+  suite pins it, so a check cannot be added without a class and a phase.
+- *A path no rule claims selects every check.* A change the table cannot
+  classify is one it cannot vouch for.
+- *A model or template change does not by itself force a build.* The
+  regeneration writes the generated C++ into the tree, so that file appears in
+  the diff and the =cpp= class does the build. A missing regeneration fails
+  =component-drift= first, which is the cheaper and more precise verdict.
+- *The change is measured from the merge base with =origin/main=*, including
+  uncommitted and untracked files. Another author's merge onto trunk must not
+  read as this branch's change, and the runner has to be useful mid-work.
+- *The tangle checks carry the CI path filters*, so a tangle runs only when a
+  file it tangles from changed, not on every model edit.
+- *The retired half of the gate is deleted, not kept.* The twelve
+  =pull_request= triggers went first, on their own task; the orphaned
+  classifier at =projects/ores.codegen/src/codegen/change_classification.py=
+  (no caller since =pr.yml= was deleted) goes with this one, superseded by the
+  new tree.
+- *=compass pr checks= treats "no checks reported" as green.* With no workflow
+  triggering on a pull request, the old guard would have refused every merge.
 
 * Measurements
 

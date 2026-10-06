@@ -2,145 +2,133 @@
 :ID: BC85C0DF-99BE-4079-A649-88A236AE0ACF
 :END:
 #+title: CI workflows and local checks
-#+description: Every GitHub Actions workflow, its fate after the absorb-PR-checks-locally story (run locally before submit, stay on GitHub, or retire), and the change-classification rules the submit-PR skills use to decide what to run.
+#+description: GitHub runs no check on a pull request. Every check that used to gate one runs locally through compass check, which classifies the change against the decision tree in build/scripts/local_checks.py and writes one report. The workflows that never touched a pull request still run on GitHub.
 #+type: knowledge
 #+level: cross
-#+filetags: :ci:devops:pr:velocity:
+#+filetags: :ci:devops:pr:velocity:checks:
 #+created: 2026-08-11
 #+updated: 2026-10-06
 
 * Summary
 
-GitHub runs no automatic review and no build or test gate: the =pr.yml=
-workflow was deleted (including its classifier, and the
-branch-protection required check), and the =claude-code-review.yml=
-auto review is retired too. Ten workflows still gate a pull request on
-drift, lint and generated output — =codegen-drift.yml=,
-=codegen-sweep.yml=, =doc-lint.yml=, =dsh-kanban.yml=,
-=entity-writes.yml=, =header-hygiene.yml=, =populate-reference-drift.yml=,
-=shell-script-drift.yml=, =template-drift.yml=, and =typescript.yml= —
-and none of them compiles the C++ or runs ctest. The
-[[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]]'s submit-PR skills classify the change
-and run only the matching checks before raising the PR; the review
-runs locally before submit (the =compass-code-review-pr= skill, including the
-misspell check), and the on-demand =@claude= trigger (=claude.yml=)
-remains on GitHub. GitHub keeps the continuous builds, nightlies, site
-deploy, and coverage. This document is the inventory, the fate of
-every check, and the classification rule table.
+GitHub runs *no check on a pull request*. The twelve workflows that used to
+carry a =pull_request= trigger lost it on 2026-10-06; the earlier =pr.yml=
+gate and the automatic review were already gone. The local check runner
+replaced the whole pull-request gate:
 
-* Detail
+#+begin_src sh :results verbatim
+./compass.sh check
+#+end_src
 
-** The PR gate
+=compass check= reads the branch diff against =origin/main=, classifies every
+changed path against the decision tree in =build/scripts/local_checks.py=,
+runs the checks that class needs, and writes
+=build/output/local_checks/report.md= — one table of every check with its
+result and time, and a *Fix these first* section naming each failure, the
+command that reproduces it, the command that fixes it, and the tail of its
+log. The exit code is 0 when every selected check passed.
 
-No workflow builds or tests a pull request. The =pr.yml= workflow gated
-every pull request to =main= until the gate-reduction task deleted it:
-the =classify= job (the path classifier) and =pr-gate= (the sole
-required check, which aggregated classify) went with it, and the
-branch-protection required check was removed. The site check it once
-ran now runs locally (see the fate table below).
+The runner is the gate for two reasons. GitHub checks arrived minutes after a
+push, so a broken change waited behind a queue for a verdict a workstation
+reaches in seconds. And a workflow could only fire on the paths it named; a
+change matching no workflow saw no check at all, while the runner's
+catch-all sends an unclassified path through everything.
 
-Ten workflows run on =pull_request=, and not one of them builds or
-tests the C++ tree. Each fires only on its own paths and covers drift,
-lint or generated output:
+* The decision tree
 
-| Workflow | Paths | What it runs |
-|----------+-------+--------------|
-| =codegen-drift.yml= | the inputs codegen reads | component and model drift, the ER diagram render, SQL hygiene, protocol twin coverage, and the codegen test suite |
-| =codegen-sweep.yml= | =projects/**=, =doc/recipes/**= | a clean render of every catalogue component compared with the tree, and the pasted-block symbol check |
-| =doc-lint.yml= | =**.org=, =**.mustache=, =build/scripts/generate_skill*.py=, =compass.py=, itself | =compass lint= plus the six skill-consistency checks |
-| =dsh-kanban.yml= | =projects/ores.dsh_kanban/**= | the kanban plugin's own checks |
-| =entity-writes.yml= | =projects/ores.sql/create/**=, =projects/ores.*/src/**=, =projects/ores.*/include/**= | the entity-table write check and its ratchet baseline |
-| =header-hygiene.yml= | =projects/**= | =check_enum_export_attributes.py= |
-| =populate-reference-drift.yml= | the populate inputs | the populate reference drift check |
-| =shell-script-drift.yml= | =doc/recipes/shell/**=, the recipe script builder, =projects/ores.shell/scripts/library/**= | re-runs the shell tangle and fails on a diff |
-| =template-drift.yml= | =projects/ores.codegen/library/templates/**= and the tangle script | re-runs the template tangle and fails on a diff |
-| =typescript.yml= | the TypeScript sources | builds and tests the TypeScript |
+One table, in =build/scripts/local_checks.py=, maps a changed path to a
+change class. A check runs when its class matched the change *and*, when the
+check declares its own path patterns, one of them matched too.
 
-=claude.yml= runs the review on demand via an =@claude= comment.
+| Class | Paths | What it covers |
+|-------+-------+----------------|
+| docs | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =LICENSE*= | the site corpus and the agile record |
+| modeling | =projects/*/modeling/*= | a component model, which is what codegen reads |
+| codegen | =projects/ores.codegen/*=, =projects/ores.http/*= | the generator, its templates and its tests |
+| sql | =projects/ores.sql/*=, =projects/ores.seeder/*=, =*.sql= | the schema, its populate scripts and the migrations |
+| cpp | =*.cpp=, =*.hpp=, =*.h=, =*.ipp=, =*.c=, =*.cc=, =*.cxx=, =*.cmake=, =CMakeLists.txt=, =CMakePresets.json=, =vcpkg*.json= | compiled sources, headers and the build description |
+| services | =projects/*/service/*=, =projects/ores.service/*=, =build/config/*=, =docker/*=, =compose*.yml= | a service, its launcher and what starts it |
+| web | =projects/ores.web/*=, =*.ts=, =*.tsx=, =package.json=, =pnpm-lock.yaml=, =.prettierrc.yaml= | the ores.web client and its packages |
+| plugins | =projects/ores.dsh_environment/*=, =projects/ores.dsh_kanban/*= | the DSH profile plugins |
+| tooling | =projects/ores.compass/*=, =build/scripts/*= | the project's own tools and their checks |
+| ci | =.github/*=, =projects/ores.codegen/library/templates/*= | the check configuration itself |
 
-A change matching none of those paths sees no CI at all, which is why
-the submit-PR skill's local classification stays mandatory: it is the
-only thing that catches a broken build before review. A check added to
-one of these workflows narrows that gap by one defect class and no
-further: =header-hygiene.yml= was added on 2026-09-29 for the enum
-export attribute, which Windows reports and no other platform can.
+Three rules follow from the table:
 
-** Fate of each check
+1. *A mixed change takes the union.* A model edit that also regenerates
+   headers is a =docs= and =modeling= and =cpp= change, and runs the checks of
+   all three.
+2. *A path no rule claims asks for everything.* A change this table cannot
+   classify is a change it cannot vouch for, and the cost of the extra run is
+   smaller than the cost of the break it hides.
+3. *A model or template change does not by itself compile the tree.* The
+   regeneration writes the generated C++ into the tree, so that file appears
+   in the diff and the =cpp= class does the build. A model change whose
+   regeneration is missing fails =component-drift= first, which is the point.
 
-| Check                 | Fate            | Where it runs instead / rationale |
-|-----------------------+-----------------+-----------------------------------|
-| classify, site, cmake-sources-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally) for a full publish, or =compass site page= for the incrementally rebuilt pages; optional CDash submission as experimental. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. pr-gate: no branch-protection required check remains. |
-| codegen-drift          | deleted with pr.yml; restored as =codegen-drift.yml= 2026-09-11 | =codegen-drift.yml= gates a PR on =projects/*/modeling/**= and =projects/ores.codegen/**=. Locally: tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the shared =COMPONENTS_UNDER_TEST= list in =component_registry.py=; a component not yet at zero drift is measured with =--component <name>=. |
-| doc-lint               | added 2026-09-09 | =doc-lint.yml= gates a PR on =**.org=, =**.mustache=, =build/scripts/generate_skill*.py=, =compass.py=, and itself. Locally: =compass lint= plus the six =build/scripts/= skill-consistency checks. |
-| header-hygiene         | added 2026-09-29 | =header-hygiene.yml= gates a PR on =projects/**= and on the check itself. Locally: =python3 build/scripts/check_enum_export_attributes.py=, which fails when a visibility macro decorates an enum. |
-| entity-writes          | added 2026-10-06 | =entity-writes.yml= gates a PR on the SQL create tree, the hand-written C++ trees, the check and its baseline. Locally: =python3 projects/ores.codegen/scripts/check_entity_table_writes.py=, which fails on a writer of an entity table outside the repositories, the purge and the fixtures, and on a stale baseline entry. |
-| claude-code-review    | deleted with the local-review task | Local: the =compass-code-review-pr= skill runs before submit (in =compass-pr-raise=); findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
-| misspell              | deleted with the local-review task | Local misspell check folded into the =compass-code-review-pr= review pass (=misspell-fixer .=, check-only; exit 0 = clean; =.misspell-fixer.ignore= respected). |
-| site-cdash (Doxygen)  | stays        | =build-site.yml= builds the full site + Doxygen and deploys on main push. |
-| continuous-* (linux/macos/windows) | stays | Every 2/3/12h + tags: full build matrix + ctest, submitted to CDash as continuous. |
-| nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
-| nightly-format        | stays        | Daily clang-format drift → auto-fix PR; local =tangle_clang_format= exists. |
-| shell-script-drift / template-drift | stays | Cheap checks on both a PR and a main push; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
-| codeql-analysis, stale | stays       | Manual security scan; housekeeping bot. |
+The classes and the heavy tier:
 
-** Change-classification rules
+| Tier | Checks |
+|------+--------|
+| always | the class's fast checks: =compass lint=, the drift gates, the codegen and compass suites, the per-language checks |
+| heavy (=cpp=, =sql=, =services=, unclassified) | =build=, then =db recreate=, then =ctest= |
 
-The submit-PR skill classifies the diff and runs only the matching
-checks. The classes mirror the retired =pr.yml= classifier's buckets,
-with one addition (python tooling):
+A documentation-only change therefore runs =compass site page= and the doc
+corpus checks and never reaches the compiler.
 
-| Class           | Paths                                                             | Checks the submit-PR skill runs                        |
-|-----------------+-------------------------------------------------------------------+--------------------------------------------------------|
-| docs            | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= vendored | site build; codegen drift when =projects/*/modeling/*= changed; review; misspell |
-| code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
-| ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; drift checks; review; misspell         |
-| python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
-| anything else   | any path matching no bucket above                                | code class checks; review; misspell                   |
+* Running it
 
-A mixed change runs the union of its classes' checks.
+| Command | What it does |
+|---------+--------------|
+| =./compass.sh check= | classify the branch diff and run what it needs |
+| =./compass.sh check --plan= | print the classes, the checks and the reason for each, without running |
+| =./compass.sh check --list= | print the decision tree and the whole catalogue |
+| =./compass.sh check --only <id>= | run one check (repeatable) |
+| =./compass.sh check --class cpp= | force a class, skipping classification |
+| =./compass.sh check --all= | run every check |
+| =./compass.sh check --exclude-heavy= | never run build, database or ctest |
+| =./compass.sh check --include-heavy= | add the heavy tier to a change that does not need it |
+| =./compass.sh check --json= | also write =build/output/local_checks/report.json= |
+| =./compass.sh check --base <ref>= | measure against another ref (default =origin/main=) |
 
-The python tooling class exists because the retired classifier
-bucketed =ores.compass= and =ores.codegen= changes as docs, so their
-test suites never ran anywhere; locally they always do.
+Three details matter when reading the report. The change is measured from the
+*merge base* with =origin/main=, including uncommitted and untracked files, so
+the runner is useful mid-work as well as before a raise, and another author's
+merge onto main never reads as this branch's change. The tangle checks
+(=tangle-templates=, =tangle-shell=, =tangle-http=) re-run the tangle and then
+ask git whether the tree moved: they fail when the committed output is stale,
+which is the same contract the retired workflows had. And the drift family
+(=component-drift=, =model-drift=, the tangles) compares the regenerated tree
+against =HEAD=, so it needs a committed tree — an uncommitted edit to any file
+reads as drift. Commit before running the modeling or codegen classes.
 
-The =projects/*/modeling/*= paths under docs carry a codegen-drift
-exception — to this table's default, not to CI: =codegen-drift.yml= does
-gate them on a PR. The exception exists because a model-only edit
-classifies as docs, and the docs class on its own runs no codegen
-check. A change touching the modeling paths therefore also runs the
-codegen drift checks (tangle, then =check_component_drift.py=). Run
-them locally even though CI repeats them: the gate only reports after a
-reviewer is already looking.
+* What still runs on GitHub
 
-** Local verification flow
+Nothing on a pull request. Eleven workflows keep their own triggers:
 
-1. Classify the diff with the rule table.
-2. Run the checks for the class (site build, or =compass build= +
-   =compass test run=).
-3. Submit the build to CDash as experimental for visibility
-   (=./compass.sh test run --preset <preset> --cdash Experimental=;
-   runs the CTest.cmake script under the build lock, same shape CI
-   uses).
-4. Run the review skill locally (=compass-code-review-pr=, including the
-   misspell check); record findings in the task's =* Review= table;
-   address them.
-5. Record the verification in the PR description as a
-   =--change= bullet (e.g. "Verification: doc-only change; local site
-   build clean").
-6. Raise the PR. The four drift/lint workflows run their own checks on
-   the paths they cover, and the on-demand =@claude= trigger stays.
-   Nothing on GitHub builds or tests the PR. Merge when the review
-   round is complete. Continuous builds and nightlies stay on GitHub.
+| Workflow | When | Why it stays |
+|----------+------+--------------|
+| =continuous-linux.yml=, =continuous-macos.yml=, =continuous-windows.yml= | every 2, 3 and 12 hours, and on a tag | the only multi-platform build, and the only Windows and macOS coverage; submits to CDash |
+| =nightly-linux.yml= | daily | full build and =ctest= with coverage and memcheck, to CDash |
+| =nightly-format.yml= | daily | rewrites formatting drift and opens a fix PR |
+| =nightly-includes.yml= | daily | =misc-include-cleaner= fix PR |
+| =build-site.yml= and =site-cdash.yml= | every 2 hours and manual | the published site, Doxygen and the CDash site build |
+| =codeql-analysis.yml= | manual | security scan, currently disabled |
+| =stale.yml= | daily | closes stale issues and pull requests |
+| =claude.yml= | an =@claude= comment | the on-demand review |
 
-** Open questions for the implementation tasks
-
-- How experimental submissions are tagged and filtered out of the
-  continuous/nightly dashboards on CDash.
-- Which exact test suites run for python tooling changes
-  (compass, codegen).
+The twelve retired triggers were =codegen-drift=, =codegen-sweep=,
+=doc-lint=, =dsh-environment=, =dsh-kanban=,
+=event-registrar-composition=, =header-hygiene=,
+=populate-reference-drift=, =rls-system-tenant-widenings=,
+=shell-script-drift=, =template-drift= and =typescript=. Each keeps its
+=push= to =main= trigger, so a defect that escapes the runner still shows on
+main the moment it lands.
 
 * See also
 
-- [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] — the story this analysis feeds.
-- [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] — the driving task.
+- [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] — the story this analysis fed.
+- [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] — the story that built the runner.
+- [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] — the inventory this document replaced.
+- [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]] — the skill that runs =compass check= before raising.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.

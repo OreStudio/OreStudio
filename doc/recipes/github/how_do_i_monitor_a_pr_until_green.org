@@ -2,22 +2,27 @@
 :ID: F6E88DCC-9240-4632-A9A3-9F36F79C9262
 :END:
 #+title: How do I monitor a PR until green?
-#+description: Drive a PR to green CI and zero unresolved review threads — via the pr-watch background script, or by hand with compass pr checks.
+#+description: Drive a PR to zero unresolved review threads — via the pr-watch background script, or by hand with compass review. GitHub runs no check on a pull request, so there is no CI to wait for.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-05
+#+updated: 2026-10-06
 
 This is the outer loop the =PR Shepherd= skill drives. The two
 inner branches are [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]] and [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][fixing failing
-CI checks]].
+local checks]].
+
+GitHub runs no check on a pull request: the =pull_request= triggers were
+retired and the local =compass check= run in
+[[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]] is the gate. Nothing here
+waits on CI; the loop runs until every review thread is resolved.
 
 * Question
 
 How do I keep watching a PR after it has been opened, react to
-review comments and CI failures as they arrive, and stop when
-everything is green and resolved?
+review comments as they arrive, and stop when the review is
+resolved?
 
 * Answer
 

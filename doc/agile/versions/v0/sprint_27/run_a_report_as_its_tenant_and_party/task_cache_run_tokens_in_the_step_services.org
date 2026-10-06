@@ -103,6 +103,19 @@ task and name that file in the Command column.
   one string, has no bound and cannot drop one run. This task builds the bounded
   cache the run token needs, and leaves both generic caches alone.
 
+- The reporting service is wired first. Its =gather_trades= and
+  =gather_market_data= steps call their owner with a run token from the cache,
+  and an owner that answers =token_expired= costs one exchange and one repeat of
+  the request. The grant id is read from the definition's =run_grant_id=, since
+  the step carries the definition id and the report instance does not yet hold a
+  grant id. The design says the instance should hold it, so that the run keeps
+  the grant it was admitted under even if the definition is re-scheduled. Moving
+  the grant id onto the instance is a follow-up, and it needs a field on
+  =report_instance=.
+- Two of the owners the design names are not wired yet. =ores.ore= reads the
+  configuration documents through its own steps, and =ores.compute= obtains the
+  run token to create its batch. Those follow the same shape.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

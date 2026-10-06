@@ -81,8 +81,13 @@ the work lands in this order, each unit verifiable on its own.
 5. *The issue log.* A new insert-only table modelled on
    =ores_iam_auth_events_tbl=, carrying the grant, the run, the service, the
    tenant, the party and the outcome, with its entity and repository.
-6. *The limits.* An in-memory limiter keyed by service and by tenant, with a
-   refusal answered as =unavailable=.
+6. *The limits.* An in-memory token bucket per key, in
+   =ores.service/service/rate_limiter.hpp= beside =request_context.hpp=, with
+   the clock injected as =partition_token_cache= injects its own. A refusal
+   carries the time to the next token, so the caller backs off by exactly that
+   much; the backoff itself stays in =ores.nats/service/retry.hpp=. IAM keeps
+   one limiter for the calling service and one for the tenant, and answers a
+   refusal as =unavailable=.
 
 The step service's cache is the next task
 ([[id:FAAE99F3-0C98-4265-BFD6-4BD8A052B2F2][Cache run tokens in the step

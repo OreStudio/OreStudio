@@ -72,6 +72,11 @@ instrument, so it is the parent key rather than a separate instrument key.
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief 1-based ordinal of this leg within the parent instrument.
      */
     int leg_number = 1;

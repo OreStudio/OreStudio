@@ -46,6 +46,7 @@ struct callable_swap_call_date_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string call_date;
     std::string modified_by;
     std::string performed_by;

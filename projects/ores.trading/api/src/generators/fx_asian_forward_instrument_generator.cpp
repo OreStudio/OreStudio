@@ -48,6 +48,7 @@ generate_synthetic_fx_asian_forward_instrument(utility::generation::generation_c
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FxAverageForward");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.fx_index = std::string("FX-TR20H-EUR-USD");
     r.reference_currency = std::string("EUR");
     r.reference_notional = ores::utility::decimal::decimal::from_string("8614").value();

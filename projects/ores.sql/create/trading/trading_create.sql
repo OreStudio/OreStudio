@@ -42,6 +42,11 @@
 \ir ./trading_activity_types_create.sql
 \ir ./trading_activity_types_notify_trigger_create.sql
 
+-- Trade activities (depend on the activity types above; every trade-keyed
+-- table below names the activity that wrote its version)
+\ir ./trading_trade_activities_create.sql
+\ir ./trading_trade_activities_notify_trigger_create.sql
+
 \ir ./trading_party_role_types_create.sql
 \ir ./trading_party_role_types_notify_trigger_create.sql
 
@@ -289,10 +294,6 @@
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
-
--- Trade activities (depend on the activity types above)
-\ir ./trading_trade_activities_create.sql
-\ir ./trading_trade_activities_notify_trigger_create.sql
 
 -- Trades (depend on the classification lookups above)
 \ir ./trading_trades_create.sql

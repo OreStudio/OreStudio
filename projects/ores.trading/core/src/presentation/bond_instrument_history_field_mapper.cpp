@@ -41,6 +41,8 @@ render_bond_instrument_fields(const domain::bond_instrument& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Issue ID", .value = boost::uuids::to_string(v.issue_id)});
     fields.push_back(
         {.name = "Notional", .value = v.notional ? v.notional->to_string() : std::string{}});

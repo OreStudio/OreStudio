@@ -34,6 +34,7 @@ export interface Ascot {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     ascot_option_type: string;
     modified_by: string;
     performed_by: string;

@@ -42,6 +42,7 @@ struct credit_instrument_key {
 struct credit_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string reference_entity;
     std::string currency;
     ores::utility::decimal::decimal notional;

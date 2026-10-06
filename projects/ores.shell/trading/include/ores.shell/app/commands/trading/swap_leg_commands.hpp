@@ -87,25 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code>
-     * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <fixed_rate>
-     * <spread> <notional> <currency> <reason> <commentary>
+     * @brief add <id> <trade_id> <trade_activity_id> <leg_number> <leg_type_code>
+     * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
+     * <floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <trade_id> <leg_number> <leg_type_code> <day_count_fraction_code>
-     * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <fixed_rate>
-     * <spread> <notional> <currency> <reason> <commentary> [--version <n>]
+     * @brief set <id> <trade_id> <trade_activity_id> <leg_number> <leg_type_code>
+     * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
+     * <floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <trade_id> <leg_number> <leg_type_code>
+     * @brief put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_number> <leg_type_code>
      * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
      * <floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>
      */

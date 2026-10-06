@@ -98,6 +98,7 @@ to_domain(const messaging::fx_asian_forward_instrument_write& write) {
     domain::fx_asian_forward_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.fx_index = write.fx_index;
     v.reference_currency = write.reference_currency;
     v.reference_notional = write.reference_notional;

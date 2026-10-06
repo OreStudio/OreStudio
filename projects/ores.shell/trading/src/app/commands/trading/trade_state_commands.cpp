@@ -141,21 +141,21 @@ void trade_state_commands::register_commands(cli::Menu& root_menu, nats_client& 
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <activity_type_code> <status_id> <reason> <commentary>");
+        "add <trade_activity_id> <status_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <activity_type_code> <status_id> <reason> <commentary> [--version <n>]");
+        "set <trade_id> <trade_activity_id> <status_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <activity_type_code> <status_id> <reason> <commentary>");
+        "put-many --count <n> <trade_id> <trade_activity_id> <status_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,7 +356,7 @@ void trade_state_commands::process_add(std::ostream& out,
         }
         req.change.write.trade_id = boost::uuids::random_generator()();
         read_token(
-            req.change.write.activity_type_code, parsed->positionals[next++], "activity_type_code");
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.status_id, parsed->positionals[next++], "status_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -407,7 +407,7 @@ void trade_state_commands::process_set(std::ostream& out,
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
-            req.change.write.activity_type_code, parsed->positionals[next++], "activity_type_code");
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.status_id, parsed->positionals[next++], "status_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -472,7 +472,7 @@ void trade_state_commands::process_put_many(std::ostream& out,
             messaging::trade_state_change change;
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
-                change.write.activity_type_code, parsed->positionals[next++], "activity_type_code");
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.status_id, parsed->positionals[next++], "status_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

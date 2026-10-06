@@ -49,6 +49,7 @@ domain::trade_booking trade_booking_mapper::map(const trade_booking_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.counterparty_id =
         v.counterparty_id.has_value() ?
@@ -91,6 +92,7 @@ trade_booking_entity trade_booking_mapper::map(const domain::trade_booking& v) {
     r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.party_id = boost::uuids::to_string(v.party_id);
     r.counterparty_id = v.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.counterparty_id)) :

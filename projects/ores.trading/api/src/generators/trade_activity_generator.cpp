@@ -44,8 +44,9 @@ generate_synthetic_trade_activity(utility::generation::generation_context& ctx) 
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.activity_type_code = std::string(faker::word::noun());
+    r.activity_type_code = std::string("new_booking");
     r.actor = std::string(faker::word::noun());
+    r.occurred_at = std::chrono::system_clock::now();
     r.comment = std::string(faker::word::noun());
     return r;
 }

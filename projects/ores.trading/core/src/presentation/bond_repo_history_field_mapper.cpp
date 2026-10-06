@@ -38,6 +38,8 @@ std::vector<ores::diff::domain::field_value> render_bond_repo_fields(const domai
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Repo Type", .value = v.repo_type});
     fields.push_back({.name = "Repo Rate", .value = std::to_string(v.repo_rate)});
     fields.push_back({.name = "Repo Index", .value = v.repo_index});

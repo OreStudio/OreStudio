@@ -35,6 +35,7 @@ export interface CommodityBasketConstituent {
     tenant_id: string;
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     underlying_code: string;
     weight: string | null;
     modified_by: string;

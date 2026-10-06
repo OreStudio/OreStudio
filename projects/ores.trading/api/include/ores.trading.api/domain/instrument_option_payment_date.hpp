@@ -65,6 +65,11 @@ struct instrument_option_payment_date final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The payment date.
      */
     std::chrono::year_month_day payment_date;

@@ -47,6 +47,7 @@ struct scripted_instrument_entity {
     int version = 0;
     std::string trade_type_code;
     std::string party_id;
+    std::string trade_activity_id;
     std::string script_name;
     std::optional<std::string> script_body;
     std::optional<std::string> events_json;

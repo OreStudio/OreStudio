@@ -40,6 +40,7 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -55,7 +56,8 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('CompositeTrade', 'TotalReturnSwap', 'ContractForDifference'))
+    check ("trade_type_code" in ('CompositeTrade', 'TotalReturnSwap', 'ContractForDifference')),
+    constraint ores_trading_composite_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -68,6 +68,13 @@ Party that owns this leg record.
 The trade the leg belongs to. The trade id identifies both the trade and its
 instrument, so it is the parent key rather than a separate instrument key.
 
+** trade_activity_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The activity that wrote this version.
+
 ** leg_sequence
 :PROPERTIES:
 :cpp_type: int

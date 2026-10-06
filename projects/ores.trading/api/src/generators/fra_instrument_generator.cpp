@@ -48,6 +48,7 @@ generate_synthetic_fra_instrument(utility::generation::generation_context& ctx) 
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("FRA");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.end_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.currency = std::string("USD");

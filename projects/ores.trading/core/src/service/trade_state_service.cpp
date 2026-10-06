@@ -95,7 +95,7 @@ messaging::trade_state_key key_from(const domain::trade_state& v) {
 domain::trade_state to_domain(const messaging::trade_state_write& write) {
     domain::trade_state v;
     v.trade_id = write.trade_id;
-    v.activity_type_code = write.activity_type_code;
+    v.trade_activity_id = write.trade_activity_id;
     v.status_id = write.status_id;
     return v;
 }

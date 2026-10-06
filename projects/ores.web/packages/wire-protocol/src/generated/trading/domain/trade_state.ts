@@ -34,8 +34,8 @@ export interface TradeState {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     party_id: string;
-    activity_type_code: string;
     status_id: string;
     modified_by: string;
     performed_by: string;

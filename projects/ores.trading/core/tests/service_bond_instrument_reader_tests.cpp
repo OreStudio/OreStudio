@@ -113,6 +113,7 @@ struct stamps final {
     boost::uuids::uuid party_id;
     ores::utility::uuid::tenant_id tenant_id;
     std::string user;
+    boost::uuids::uuid activity_id;
 };
 
 // An instrument is keyed by its trade, and a test writes several instruments,
@@ -134,7 +135,8 @@ stamps make_stamps(database_helper& h) {
     return stamps{.h = &h,
                   .party_id = boost::uuids::random_generator()(),
                   .tenant_id = h.tenant_id(),
-                  .user = h.db_user()};
+                  .user = h.db_user(),
+                  .activity_id = ores::trading::tests::write_parent_activity(h)};
 }
 
 auto make_context(database_helper& h, const stamps& s) {
@@ -158,6 +160,7 @@ bond_instrument make_instrument(const stamps& s,
                                 const std::string& trade_type_code) {
     bond_instrument r;
     r.identity.trade_id = mint_trade(s);
+    r.identity.trade_activity_id = s.activity_id;
     r.identity.tenant_id = s.tenant_id;
     r.identity.party_id = s.party_id;
     r.identity.trade_type_code = trade_type_code;
@@ -198,6 +201,7 @@ bond_option make_option(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_option r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.option_type = "Call";
     return r;
 }
@@ -206,6 +210,7 @@ instrument_option make_instrument_option(const stamps& s, const boost::uuids::uu
     instrument_option r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.long_short = "Long";
     return r;
 }
@@ -215,6 +220,7 @@ make_premium(const stamps& s, const boost::uuids::uuid& trade_id, int sequence_n
     instrument_option_premium r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.sequence_number = sequence_number;
     r.amount = ores::utility::decimal::decimal::from_string("1000").value();
     r.currency = "EUR";
@@ -227,6 +233,7 @@ make_exercise_fee(const stamps& s, const boost::uuids::uuid& trade_id, int seque
     instrument_option_exercise_fee r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.sequence_number = sequence_number;
     r.amount = ores::utility::decimal::decimal::from_string("25").value();
     return r;
@@ -239,6 +246,7 @@ instrument_option_payment_date make_payment_date(const stamps& s,
     instrument_option_payment_date r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.sequence_number = sequence_number;
     r.payment_date = ores::platform::time::datetime::from_iso8601_date(payment_date);
     return r;
@@ -248,6 +256,7 @@ instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& trade_i
     instrument_strike r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.price_value = ores::utility::decimal::decimal::from_string("101.5").value();
     r.price_currency = "EUR";
     return r;
@@ -257,6 +266,7 @@ bond_forward make_forward(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_forward r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     return r;
 }
 
@@ -264,6 +274,7 @@ bond_trs make_trs(const stamps& s, const boost::uuids::uuid& trade_id) {
     bond_trs r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.return_type = "Total";
     r.funding_leg_type = "Fixed";
     r.funding_rate = 3.0;
@@ -278,6 +289,7 @@ bond_leg make_leg(const stamps& s,
     bond_leg r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.leg_role = leg_role;
     r.leg_number = leg_number;
     r.payer = true;
@@ -297,6 +309,7 @@ instrument_schedule make_schedule(const stamps& s,
     instrument_schedule r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.owner_role = owner_role;
     r.owner_number = owner_number;
     r.schedule_role = schedule_role;
@@ -316,6 +329,7 @@ instrument_schedule_date make_schedule_date(const stamps& s,
     instrument_schedule_date r;
     stamp(r, s);
     r.trade_id = trade_id;
+    r.trade_activity_id = s.activity_id;
     r.owner_role = owner_role;
     r.owner_number = owner_number;
     r.schedule_role = schedule_role;

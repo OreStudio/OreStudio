@@ -39,6 +39,8 @@ render_bond_future_fields(const domain::bond_future& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Contract Name", .value = v.contract_name});
     fields.push_back({.name = "Contract Notional", .value = v.contract_notional.to_string()});
     fields.push_back({.name = "Long Short", .value = v.long_short});

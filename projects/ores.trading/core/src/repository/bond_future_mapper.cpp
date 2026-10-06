@@ -47,6 +47,7 @@ domain::bond_future bond_future_mapper::map(const bond_future_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.contract_name = v.contract_name;
     r.contract_notional = ores::utility::decimal::decimal::from_string(v.contract_notional).value();
     r.long_short = v.long_short;
@@ -69,6 +70,7 @@ bond_future_entity bond_future_mapper::map(const domain::bond_future& v) {
     r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.contract_name = v.contract_name;
     r.contract_notional = v.contract_notional.to_string();
     r.long_short = v.long_short;

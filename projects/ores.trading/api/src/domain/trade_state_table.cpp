@@ -36,8 +36,8 @@ std::string convert_to_table(const std::vector<trade_state>& v) {
     table << fort::header << "Trade Id" << "Activity" << "Status" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ts : v) {
-        table << ts.trade_id << ts.activity_type_code << boost::uuids::to_string(ts.status_id)
-              << ts.version << fort::endr;
+        table << ts.trade_id << boost::uuids::to_string(ts.trade_activity_id)
+              << boost::uuids::to_string(ts.status_id) << ts.version << fort::endr;
     }
     return table.to_string();
 }

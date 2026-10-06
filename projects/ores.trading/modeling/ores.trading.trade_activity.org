@@ -63,6 +63,10 @@ isolation reads it, as it reads the trade's.
 
 What kind of event this was.
 
+#+begin_src cpp :name generator
+std::string("new_booking")
+#+end_src
+
 ** actor
 :PROPERTIES:
 :type:     text
@@ -80,6 +84,10 @@ Who did it: an account username, or the service that acted for one.
 :END:
 
 When the event happened. The time it was recorded is the row's own.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
 
 ** comment
 :PROPERTIES:

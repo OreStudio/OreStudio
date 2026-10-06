@@ -39,6 +39,8 @@ std::vector<ores::diff::domain::field_value> render_bond_leg_fields(const domain
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
+    fields.push_back(
         {.name = "Payer", .value = v.payer ? (*v.payer ? "true" : "false") : std::string{}});
     fields.push_back({.name = "Leg Type", .value = v.leg_type.value_or(std::string{})});
     fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});

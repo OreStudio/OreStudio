@@ -90,6 +90,11 @@ struct equity_position_option_underlying final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Name of the underlying equity this entry names.
      *
      * The ORE document states it in the Underlying/Name element; the column refuses an empty name.

@@ -46,6 +46,7 @@ struct trade_party_role_entity {
     sqlgen::PrimaryKey<std::string> role;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string party_id;
     std::string counterparty_id;
     std::string modified_by;

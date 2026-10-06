@@ -4132,16 +4132,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 or any(item.get('use_system_tenant')
                        for item in fk.get('parent_required_fks') or [])
                 for fk in fks)
-            # The amending activity is declared by column name; resolve it
-            # to the member path the test must assign through, which for a
-            # grouped entity sits inside one of the groups.
-            amend = domain_entity.get('amend_activity')
-            if amend:
-                amend['group_prefix'] = next(
-                    (c.get('group_prefix', '') or ''
-                     for c in domain_entity.get('columns', []) or []
-                     if c.get('name') == amend.get('column')),
-                    '')
             domain_entity['seed_party'] = any(
                 fk.get('parent_is_party') or fk.get('parent_requires_party')
                 or any(item.get('requires_party')
@@ -4306,12 +4296,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             sql_name_base = sql_name_base[:63 - longest_suffix]
         domain_entity['sql_name_base'] = sql_name_base
         for fk in domain_entity.get('enforced_foreign_keys') or []:
-            fk['constraint_name'] = f"{sql_name_base}_{fk['column']}_fk"
+            # A model names the constraint with :constraint_name: when the
+            # composed name would run past PostgreSQL's identifier limit.
+            fk['constraint_name'] = (fk.get('constraint_name')
+                                     or f"{sql_name_base}_{fk['column']}_fk")
             if len(fk['constraint_name']) > 63:
                 raise ValueError(
                     f"{model_path}: constraint {fk['constraint_name']} is "
                     "longer than 63 characters and PostgreSQL would truncate "
-                    "it; shorten the table name or the column name.")
+                    "it; set :constraint_name: on the foreign key, or shorten "
+                    "the table name or the column name.")
         _resolve_pinned_keys(domain_entity, model_path)
         _resolve_routed_check(domain_entity, model_path)
         # RLS policy names are composed from the short table base

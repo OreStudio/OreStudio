@@ -41,6 +41,7 @@ struct bond_forward_key {
 
 struct bond_forward_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::optional<std::string> long_in_forward;
     std::optional<std::string> forward_maturity_date;
     std::optional<std::string> forward_settlement_date;

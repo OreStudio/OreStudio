@@ -142,24 +142,26 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <sequence_number> <underlying_name> <strike> <weight> <long_short> "
-        "<option_type> <exercise_type> <settlement_type> <reason> <commentary>");
+        "add <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
+        "<long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <sequence_number> <underlying_name> <strike> <weight> <long_short> "
-        "<option_type> <exercise_type> <settlement_type> <reason> <commentary> [--version <n>]");
+        "set <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
+        "<long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <sequence_number> <underlying_name> <strike> <weight> "
-        "<long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>");
+        "put-many --count <n> <trade_id> <sequence_number> <trade_activity_id> <underlying_name> "
+        "<strike> <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -355,14 +357,16 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.strike, parsed->positionals[next++], "strike");
@@ -414,14 +418,16 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.strike, parsed->positionals[next++], "strike");
@@ -484,8 +490,8 @@ void equity_position_option_underlying_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -494,6 +500,8 @@ void equity_position_option_underlying_commands::process_put_many(
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(
                 change.write.underlying_name, parsed->positionals[next++], "underlying_name");
             read_token(change.write.strike, parsed->positionals[next++], "strike");

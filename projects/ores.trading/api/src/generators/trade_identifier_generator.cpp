@@ -46,6 +46,7 @@ generate_synthetic_trade_identifier(utility::generation::generation_context& ctx
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.id_type = std::string("Internal");
+    r.trade_activity_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.id_value = std::string("ID-") + std::string(faker::string::alphanumeric(10));
     r.issuing_party_id = std::nullopt;

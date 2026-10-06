@@ -95,6 +95,7 @@ messaging::bond_trs_key key_from(const domain::bond_trs& v) {
 domain::bond_trs to_domain(const messaging::bond_trs_write& write) {
     domain::bond_trs v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.return_type = write.return_type;
     v.funding_leg_type = write.funding_leg_type;
     v.funding_rate = write.funding_rate;

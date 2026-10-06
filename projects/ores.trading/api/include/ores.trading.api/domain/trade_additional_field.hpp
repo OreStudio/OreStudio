@@ -70,6 +70,11 @@ struct trade_additional_field final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The trade's party, copied from the anchor.
      */
     boost::uuids::uuid party_id;

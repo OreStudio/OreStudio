@@ -49,6 +49,7 @@ generate_synthetic_bond_leg_amortization(utility::generation::generation_context
     r.leg_role = std::string(faker::word::noun());
     r.leg_number = 0;
     r.sequence_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.amortization_type = std::string("FixedAmount");
     r.value = ores::utility::decimal::decimal::from_string(
                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))

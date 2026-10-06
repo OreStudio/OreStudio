@@ -42,6 +42,7 @@ struct composite_leg_key {
 struct composite_leg_write {
     boost::uuids::uuid id;
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     int leg_sequence;
     std::string constituent_trade_id;
 };

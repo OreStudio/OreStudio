@@ -182,19 +182,19 @@ begin
     values (v_activity_id, v_tenant_id, p_party_id, p_activity_type_code, p_modified_by,
         coalesce(p_execution_timestamp, now()), coalesce(p_change_commentary, ''));
 
-    insert into ores_trading_trade_bookings_tbl (trade_id, tenant_id, version, party_id,
-        counterparty_id, book_id, netting_set_id, counterparty_identifier_id,
-        netting_set_identifier_id, trade_date, execution_timestamp,
-        modified_by, performed_by, change_reason_code, change_commentary)
-    values (p_id, v_tenant_id, 0, p_party_id, p_counterparty_id, p_book_id,
+    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, counterparty_id, book_id, netting_set_id,
+        counterparty_identifier_id, netting_set_identifier_id, trade_date,
+        execution_timestamp, modified_by, performed_by, change_reason_code, change_commentary)
+    values (p_id, v_activity_id, v_tenant_id, 0, p_party_id, p_counterparty_id, p_book_id,
         p_netting_set_id, p_counterparty_identifier_id, p_netting_set_identifier_id,
         p_trade_date, p_execution_timestamp, p_modified_by,
         p_modified_by, p_change_reason_code, p_change_commentary);
 
-    insert into ores_trading_trade_states_tbl (trade_id, tenant_id, version, party_id,
-        activity_type_code, status_id, modified_by, performed_by, change_reason_code,
+    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, status_id, modified_by, performed_by, change_reason_code,
         change_commentary)
-    values (p_id, v_tenant_id, 0, p_party_id, p_activity_type_code,
+    values (p_id, v_activity_id, v_tenant_id, 0, p_party_id,
         ores_utility_nil_uuid_fn(), p_modified_by, p_modified_by, p_change_reason_code,
         p_change_commentary);
 

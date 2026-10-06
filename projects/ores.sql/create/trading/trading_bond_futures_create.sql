@@ -54,6 +54,7 @@ create table if not exists "ores_trading_bond_futures_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "contract_name" text not null,
     "contract_notional" numeric(28, 10) not null,
     "long_short" text not null,
@@ -73,7 +74,8 @@ create table if not exists "ores_trading_bond_futures_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("long_short" in ('Long', 'Short'))
+    check ("long_short" in ('Long', 'Short')),
+    constraint ores_trading_bond_futures_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

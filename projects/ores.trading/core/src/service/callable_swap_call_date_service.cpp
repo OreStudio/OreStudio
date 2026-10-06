@@ -98,6 +98,7 @@ domain::callable_swap_call_date to_domain(const messaging::callable_swap_call_da
     domain::callable_swap_call_date v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.call_date = write.call_date;
     return v;
 }

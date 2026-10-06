@@ -98,6 +98,7 @@ to_domain(const messaging::fx_accumulator_instrument_write& write) {
     domain::fx_accumulator_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.currency = write.currency;
     v.fixing_amount = write.fixing_amount;
     v.strike = write.strike;

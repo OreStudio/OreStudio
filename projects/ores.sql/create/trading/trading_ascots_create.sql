@@ -40,6 +40,7 @@ create table if not exists "ores_trading_ascots_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "ascot_option_type" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -55,7 +56,8 @@ create table if not exists "ores_trading_ascots_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("ascot_option_type" in ('Call', 'Put'))
+    check ("ascot_option_type" in ('Call', 'Put')),
+    constraint ores_trading_ascots_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

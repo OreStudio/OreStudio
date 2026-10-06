@@ -46,6 +46,7 @@ create table if not exists "ores_trading_composite_legs_tbl" (
     "version" integer not null,
     "party_id" uuid not null,
     "trade_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "leg_sequence" integer not null default 1,
     "constituent_trade_id" text not null,
     "modified_by" text not null,
@@ -63,7 +64,8 @@ create table if not exists "ores_trading_composite_legs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("leg_sequence" >= 1),
-    check ("constituent_trade_id" <> '')
+    check ("constituent_trade_id" <> ''),
+    constraint ores_trading_composite_legs_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

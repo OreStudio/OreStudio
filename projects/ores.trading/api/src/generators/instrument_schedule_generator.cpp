@@ -49,6 +49,7 @@ generate_synthetic_instrument_schedule(utility::generation::generation_context& 
     r.owner_number = 0;
     r.schedule_role = std::string(faker::word::noun());
     r.sequence_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.schedule_kind = std::string("rules");
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.end_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};

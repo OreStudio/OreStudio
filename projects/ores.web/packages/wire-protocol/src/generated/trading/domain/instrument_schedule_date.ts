@@ -39,6 +39,7 @@ export interface InstrumentScheduleDate {
     schedule_role: string;
     schedule_sequence_number: number;
     sequence_number: number;
+    trade_activity_id: string;
     schedule_date: string;
     modified_by: string;
     performed_by: string;

@@ -36,6 +36,7 @@ export interface TradePartyRoleKey {
 export interface TradePartyRoleWrite {
     trade_id: string;
     role: string;
+    trade_activity_id: string;
     counterparty_id: string;
 }
 

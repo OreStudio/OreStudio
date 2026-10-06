@@ -49,6 +49,7 @@ struct instrument_schedule_write {
     int owner_number;
     std::string schedule_role;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::string schedule_kind;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> end_date;

@@ -51,6 +51,7 @@ fx_variance_swap_instrument make_instrument(database_helper& h) {
     fx_variance_swap_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
+    r.identity.trade_activity_id = ores::trading::tests::write_parent_activity(h);
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "FxVarianceSwap";
     r.start_date = ores::platform::time::datetime::from_iso8601_date("2025-10-22");

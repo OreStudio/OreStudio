@@ -45,6 +45,7 @@ struct bond_leg_write {
     boost::uuids::uuid trade_id;
     std::string leg_role;
     int leg_number;
+    boost::uuids::uuid trade_activity_id;
     std::optional<bool> payer;
     std::optional<std::string> leg_type;
     std::optional<std::string> currency;

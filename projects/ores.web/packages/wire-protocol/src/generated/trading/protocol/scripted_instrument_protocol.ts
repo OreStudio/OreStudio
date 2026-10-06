@@ -35,6 +35,7 @@ export interface ScriptedInstrumentKey {
 export interface ScriptedInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     script_name: string;
     script_body: string;
     events_json: string;

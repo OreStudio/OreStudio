@@ -107,6 +107,7 @@ domain::bond_leg_amount to_domain(const messaging::bond_leg_amount_write& write)
     v.leg_number = write.leg_number;
     v.amount_role = write.amount_role;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.value = write.value;
     v.start_date = write.start_date;
     return v;

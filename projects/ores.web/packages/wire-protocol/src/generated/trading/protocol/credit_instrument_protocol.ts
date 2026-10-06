@@ -35,6 +35,7 @@ export interface CreditInstrumentKey {
 export interface CreditInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     reference_entity: string;
     currency: string;
     notional: string;

@@ -557,7 +557,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
         // Rewriting the row is an amendment, not a booking: the booking
         // activity names a transition that starts the state machine and is
         // rejected on a row that already has a state.
-        v.{{{group_prefix}}}{{column}} = "{{code}}";
+{{{snippet}}}
 {{/amend_activity}}
         repo.write(crud_ctx, v);
 

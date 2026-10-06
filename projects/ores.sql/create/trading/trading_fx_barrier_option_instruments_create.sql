@@ -35,6 +35,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "bought_currency" text not null,
     "bought_amount" numeric(28, 10) not null,
     "sold_currency" text not null,
@@ -68,7 +69,8 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("sold_currency" <> ''),
     check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
     check ("lower_barrier" > 0),
-    check ("option_type" is null or "option_type" in ('Call', 'Put'))
+    check ("option_type" is null or "option_type" in ('Call', 'Put')),
+    constraint ores_trading_fx_barrier_option_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

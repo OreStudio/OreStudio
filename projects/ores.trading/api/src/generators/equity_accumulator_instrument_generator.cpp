@@ -48,6 +48,7 @@ generate_synthetic_equity_accumulator_instrument(utility::generation::generation
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("EquityAccumulator");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string(".STOXX50");
     r.currency = std::string("EUR");
     r.strike = ores::utility::decimal::decimal::from_string("4000").value();

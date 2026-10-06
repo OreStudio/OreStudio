@@ -46,6 +46,7 @@ generate_synthetic_trade_additional_field(utility::generation::generation_contex
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.sequence_number = 1;
+    r.trade_activity_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.name = std::string("MyField");
     r.value = std::string("MyValue");

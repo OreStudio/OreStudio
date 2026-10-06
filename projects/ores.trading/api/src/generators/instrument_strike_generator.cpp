@@ -46,6 +46,7 @@ generate_synthetic_instrument_strike(utility::generation::generation_context& ct
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
+    r.trade_activity_id = ctx.generate_uuid();
     r.price_value = ores::utility::decimal::decimal::from_string(
                         std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                         .value();

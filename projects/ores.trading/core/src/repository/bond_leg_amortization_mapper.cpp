@@ -53,6 +53,7 @@ bond_leg_amortization_mapper::map(const bond_leg_amortization_entity& v) {
     r.leg_role = v.leg_role.value();
     r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.amortization_type = v.amortization_type;
     r.value = v.value.has_value() ?
                   std::optional(ores::utility::decimal::decimal::from_string(*v.value).value()) :
@@ -82,6 +83,7 @@ bond_leg_amortization_mapper::map(const domain::bond_leg_amortization& v) {
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.amortization_type = v.amortization_type;
     r.value = v.value.has_value() ? std::optional(v.value->to_string()) : std::nullopt;
     r.start_date = v.start_date;

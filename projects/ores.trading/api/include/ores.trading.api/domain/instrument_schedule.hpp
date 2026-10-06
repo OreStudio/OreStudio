@@ -134,6 +134,11 @@ struct instrument_schedule final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Which arm of the schema's choice the document stated: rules or dates.
      *
      * The arm decides which members are meaningful. A rules row carries the rule block's scalars

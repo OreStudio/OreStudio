@@ -35,6 +35,7 @@ export interface FxAsianForwardInstrumentKey {
 export interface FxAsianForwardInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     fx_index: string;
     reference_currency: string;
     reference_notional: string | null;

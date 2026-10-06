@@ -36,6 +36,7 @@ export interface SwapLegKey {
 export interface SwapLegWrite {
     id: string;
     trade_id: string;
+    trade_activity_id: string;
     leg_number: number;
     leg_type_code: string;
     day_count_fraction_code: string;

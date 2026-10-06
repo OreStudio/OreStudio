@@ -44,11 +44,16 @@
 // Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+// Parent-seed snippet includes (ores_trading_trade_activities_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/generators/trade_generator.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
@@ -152,6 +157,12 @@ TEST_CASE("write_fx_vanilla_option_instrument_publishes_an_event", tags) {
         anchor.party_id = *party_ctx.party_id();
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
         v.identity.trade_id = anchor.id;
+    }
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.identity.trade_activity_id = activity.id;
     }
     const auto id_str = boost::uuids::to_string(v.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "FX Vanilla Option Instrument: " << v;

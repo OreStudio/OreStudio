@@ -45,6 +45,7 @@ struct bond_future_entity {
     sqlgen::PrimaryKey<std::string> trade_id;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string contract_name;
     std::string contract_notional;
     std::string long_short;

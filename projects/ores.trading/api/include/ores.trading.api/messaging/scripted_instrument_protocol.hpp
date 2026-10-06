@@ -42,6 +42,7 @@ struct scripted_instrument_key {
 struct scripted_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string script_name;
     std::string script_body;
     std::string events_json;

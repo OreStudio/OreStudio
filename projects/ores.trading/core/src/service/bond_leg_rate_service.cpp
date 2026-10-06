@@ -99,6 +99,7 @@ domain::bond_leg_rate to_domain(const messaging::bond_leg_rate_write& write) {
     v.trade_id = write.trade_id;
     v.leg_role = write.leg_role;
     v.leg_number = write.leg_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.rate_kind = write.rate_kind;
     v.index = write.index;
     v.is_in_arrears = write.is_in_arrears;

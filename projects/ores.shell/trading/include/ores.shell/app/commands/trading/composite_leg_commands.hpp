@@ -87,23 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
+     * @brief add <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason>
+     * <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason>
+     * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_sequence>
+     * <constituent_trade_id> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

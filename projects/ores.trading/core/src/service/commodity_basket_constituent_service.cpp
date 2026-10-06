@@ -100,6 +100,7 @@ to_domain(const messaging::commodity_basket_constituent_write& write) {
     domain::commodity_basket_constituent v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.underlying_code = write.underlying_code;
     v.weight = write.weight;
     return v;

@@ -34,6 +34,7 @@ export interface BondForwardKey {
 
 export interface BondForwardWrite {
     trade_id: string;
+    trade_activity_id: string;
     long_in_forward: string | null;
     forward_maturity_date: string | null;
     forward_settlement_date: string | null;

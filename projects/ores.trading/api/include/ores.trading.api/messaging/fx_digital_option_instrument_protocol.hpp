@@ -42,6 +42,7 @@ struct fx_digital_option_instrument_key {
 struct fx_digital_option_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string foreign_currency;
     std::string domestic_currency;
     std::string payoff_currency;

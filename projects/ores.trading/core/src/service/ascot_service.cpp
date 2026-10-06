@@ -95,6 +95,7 @@ messaging::ascot_key key_from(const domain::ascot& v) {
 domain::ascot to_domain(const messaging::ascot_write& write) {
     domain::ascot v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.ascot_option_type = write.ascot_option_type;
     return v;
 }

@@ -106,6 +106,11 @@ struct instrument_schedule_date final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The date (ISO 8601 date string).
      */
     std::chrono::year_month_day schedule_date;

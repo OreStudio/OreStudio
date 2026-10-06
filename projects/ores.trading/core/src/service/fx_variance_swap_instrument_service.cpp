@@ -98,6 +98,7 @@ to_domain(const messaging::fx_variance_swap_instrument_write& write) {
     domain::fx_variance_swap_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.start_date = write.start_date;
     v.end_date = write.end_date;
     v.currency = write.currency;

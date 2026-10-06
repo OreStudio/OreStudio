@@ -36,6 +36,7 @@ export interface InstrumentOptionPaymentDateKey {
 export interface InstrumentOptionPaymentDateWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     payment_date: string;
 }
 

@@ -96,6 +96,7 @@ domain::fra_instrument to_domain(const messaging::fra_instrument_write& write) {
     domain::fra_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.start_date = write.start_date;
     v.end_date = write.end_date;
     v.currency = write.currency;

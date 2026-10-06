@@ -46,6 +46,7 @@ struct trade_additional_field_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string party_id;
     std::string name;
     std::string value;

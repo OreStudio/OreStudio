@@ -48,6 +48,7 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.price_value =
         v.price_value.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.price_value).value()) :
@@ -77,6 +78,7 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
     r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.price_value =
         v.price_value.has_value() ? std::optional(v.price_value->to_string()) : std::nullopt;
     r.price_currency = v.price_currency;

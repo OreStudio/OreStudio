@@ -95,6 +95,7 @@ messaging::bond_repo_key key_from(const domain::bond_repo& v) {
 domain::bond_repo to_domain(const messaging::bond_repo_write& write) {
     domain::bond_repo v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.repo_type = write.repo_type;
     v.repo_rate = write.repo_rate;
     v.repo_index = write.repo_index;

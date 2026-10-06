@@ -345,12 +345,14 @@ std::string close_bookings(Nats& nats, const std::vector<boost::uuids::uuid>& tr
 template <typename Nats>
 std::string write_imported_components(Nats& nats,
                                       const ores::ore::xml::trade_import_item& item,
-                                      const resolved_envelope& resolved) {
+                                      const resolved_envelope& resolved,
+                                      const boost::uuids::uuid& activity_id) {
     using ores::utility::domain::outcome;
 
     std::string error;
     ores::trading::messaging::put_trade_identifier_request id_req;
     id_req.change.write.trade_id = item.anchor.id;
+    id_req.change.write.trade_activity_id = activity_id;
     id_req.change.write.id_type = "ORE";
     id_req.change.write.id_value = item.ore_id;
     auto identified = nats_call(nats, id_req, error);
@@ -362,6 +364,7 @@ std::string write_imported_components(Nats& nats,
         error.clear();
         ores::trading::messaging::put_trade_portfolio_request portfolio_req;
         portfolio_req.change.write.trade_id = item.anchor.id;
+        portfolio_req.change.write.trade_activity_id = activity_id;
         portfolio_req.change.write.sequence_number = ++portfolio_sequence;
         portfolio_req.change.write.portfolio_id = portfolio_id;
         auto saved = nats_call(nats, portfolio_req, error);
@@ -375,6 +378,7 @@ std::string write_imported_components(Nats& nats,
             error.clear();
             ores::trading::messaging::put_trade_additional_field_request field_req;
             field_req.change.write.trade_id = item.anchor.id;
+            field_req.change.write.trade_activity_id = activity_id;
             field_req.change.write.sequence_number = ++sequence_number;
             field_req.change.write.name = field.name;
             field_req.change.write.value = field.value;
@@ -393,13 +397,14 @@ std::string write_imported_components(Nats& nats,
  * identifier under the ORE scheme, and each envelope portfolio and additional
  * field a row of its own, in the document's order. When one of those later
  * writes fails, the booking is closed again, so a half-written trade is in
- * no book.
+ * no book. On success the instrument is stamped with the booking's activity,
+ * so every instrument version names the activity that wrote it.
  *
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
 std::string book_imported_trade(Nats& nats,
-                                const ores::ore::xml::trade_import_item& item,
+                                ores::ore::xml::trade_import_item& item,
                                 const resolved_envelope& resolved) {
     using namespace ores::trading::domain;
     using ores::utility::domain::outcome;
@@ -419,12 +424,15 @@ std::string book_imported_trade(Nats& nats,
     book_req.booking.change_reason_code = "system.external_data_import";
     book_req.activity_type_code = item.activity_type_code;
     auto booked = nats_call(nats, book_req, error);
-    if (!booked || booked->result.outcome != outcome::ok)
+    if (!booked || booked->result.outcome != outcome::ok || !booked->activity_id)
         return error.empty() ? "book_trade failed" : error;
 
-    const auto written = write_imported_components(nats, item, resolved);
-    if (written.empty())
+    const auto activity_id = *booked->activity_id;
+    const auto written = write_imported_components(nats, item, resolved, activity_id);
+    if (written.empty()) {
+        stamp_ids(item.instrument, item.anchor.id, activity_id);
         return {};
+    }
     const auto closed = close_bookings(nats, {item.anchor.id});
     return closed.empty() ? written : written + " The booking could not be closed: " + closed;
 }
@@ -477,6 +485,7 @@ read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
 template <typename Nats>
 std::string save_schedule(Nats& nats,
                           const boost::uuids::uuid& trade_id,
+                          const boost::uuids::uuid& trade_activity_id,
                           const std::string& owner_role,
                           int owner_number,
                           const std::string& schedule_role,
@@ -489,6 +498,7 @@ std::string save_schedule(Nats& nats,
     for (const auto& rule : schedule.rules) {
         put_instrument_schedule_request req;
         req.change.write.trade_id = trade_id;
+        req.change.write.trade_activity_id = trade_activity_id;
         req.change.write.owner_role = owner_role;
         req.change.write.owner_number = owner_number;
         req.change.write.schedule_role = schedule_role;
@@ -517,6 +527,7 @@ std::string save_schedule(Nats& nats,
     for (const auto& dates : schedule.dates) {
         put_instrument_schedule_request req;
         req.change.write.trade_id = trade_id;
+        req.change.write.trade_activity_id = trade_activity_id;
         req.change.write.owner_role = owner_role;
         req.change.write.owner_number = owner_number;
         req.change.write.schedule_role = schedule_role;
@@ -535,6 +546,7 @@ std::string save_schedule(Nats& nats,
         for (const auto& date : dates.dates) {
             put_instrument_schedule_date_request date_req;
             date_req.change.write.trade_id = trade_id;
+            date_req.change.write.trade_activity_id = trade_activity_id;
             date_req.change.write.owner_role = owner_role;
             date_req.change.write.owner_number = owner_number;
             date_req.change.write.schedule_role = schedule_role;
@@ -559,6 +571,7 @@ std::string save_schedule(Nats& nats,
 template <typename Nats>
 std::string save_leg_amounts(Nats& nats,
                              const boost::uuids::uuid& trade_id,
+                             const boost::uuids::uuid& trade_activity_id,
                              const std::string& leg_role,
                              int leg_number,
                              const std::string& amount_role,
@@ -570,6 +583,7 @@ std::string save_leg_amounts(Nats& nats,
     for (const auto& amount : amounts) {
         put_bond_leg_amount_request req;
         req.change.write.trade_id = trade_id;
+        req.change.write.trade_activity_id = trade_activity_id;
         req.change.write.leg_role = leg_role;
         req.change.write.leg_number = leg_number;
         req.change.write.amount_role = amount_role;
@@ -597,6 +611,7 @@ std::string save_leg_amounts(Nats& nats,
 template <typename Nats>
 std::string save_leg(Nats& nats,
                      const boost::uuids::uuid& trade_id,
+                     const boost::uuids::uuid& trade_activity_id,
                      const std::string& leg_role,
                      int leg_number,
                      const ores::trading::domain::bond_leg_data& leg) {
@@ -610,6 +625,7 @@ std::string save_leg(Nats& nats,
     std::string error;
     put_bond_leg_request leg_req;
     leg_req.change.write.trade_id = trade_id;
+    leg_req.change.write.trade_activity_id = trade_activity_id;
     leg_req.change.write.leg_role = leg_role;
     leg_req.change.write.leg_number = leg_number;
     leg_req.change.write.payer = leg.payer;
@@ -631,14 +647,19 @@ std::string save_leg(Nats& nats,
     if (!leg_resp || leg_resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_leg failed" : error;
 
-    if (auto failure =
-            save_leg_amounts(nats, trade_id, leg_role, leg_number, "notional", leg.notionals);
+    if (auto failure = save_leg_amounts(
+            nats, trade_id, trade_activity_id, leg_role, leg_number, "notional", leg.notionals);
         !failure.empty())
         return failure;
 
     if (leg.rate && leg.rate->fixed) {
-        if (auto failure = save_leg_amounts(
-                nats, trade_id, leg_role, leg_number, "rate", leg.rate->fixed->rates);
+        if (auto failure = save_leg_amounts(nats,
+                                            trade_id,
+                                            trade_activity_id,
+                                            leg_role,
+                                            leg_number,
+                                            "rate",
+                                            leg.rate->fixed->rates);
             !failure.empty())
             return failure;
     }
@@ -651,14 +672,15 @@ std::string save_leg(Nats& nats,
                        {"floor", &floating.floors},
                        {"gearing", &floating.gearings}};
         for (const auto& [role, amounts] : lists) {
-            if (auto failure =
-                    save_leg_amounts(nats, trade_id, leg_role, leg_number, role, *amounts);
+            if (auto failure = save_leg_amounts(
+                    nats, trade_id, trade_activity_id, leg_role, leg_number, role, *amounts);
                 !failure.empty())
                 return failure;
         }
 
         put_bond_leg_rate_request rate_req;
         rate_req.change.write.trade_id = trade_id;
+        rate_req.change.write.trade_activity_id = trade_activity_id;
         rate_req.change.write.leg_role = leg_role;
         rate_req.change.write.leg_number = leg_number;
         rate_req.change.write.rate_kind = "floating";
@@ -696,18 +718,29 @@ std::string save_leg(Nats& nats,
         if (!rate_resp || rate_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_leg_rate failed" : error;
 
-        if (auto failure = save_schedule(
-                nats, trade_id, leg_role, leg_number, "fixing_schedule", floating.fixing_schedule);
+        if (auto failure = save_schedule(nats,
+                                         trade_id,
+                                         trade_activity_id,
+                                         leg_role,
+                                         leg_number,
+                                         "fixing_schedule",
+                                         floating.fixing_schedule);
             !failure.empty())
             return failure;
-        if (auto failure = save_schedule(
-                nats, trade_id, leg_role, leg_number, "reset_schedule", floating.reset_schedule);
+        if (auto failure = save_schedule(nats,
+                                         trade_id,
+                                         trade_activity_id,
+                                         leg_role,
+                                         leg_number,
+                                         "reset_schedule",
+                                         floating.reset_schedule);
             !failure.empty())
             return failure;
     } else if (leg.rate && leg.rate->formula_based) {
         const auto& formula = *leg.rate->formula_based;
         put_bond_leg_rate_request rate_req;
         rate_req.change.write.trade_id = trade_id;
+        rate_req.change.write.trade_activity_id = trade_activity_id;
         rate_req.change.write.leg_role = leg_role;
         rate_req.change.write.leg_number = leg_number;
         rate_req.change.write.rate_kind = "formula_based";
@@ -721,6 +754,7 @@ std::string save_leg(Nats& nats,
     } else if (leg.rate && leg.rate->fixed) {
         put_bond_leg_rate_request rate_req;
         rate_req.change.write.trade_id = trade_id;
+        rate_req.change.write.trade_activity_id = trade_activity_id;
         rate_req.change.write.leg_role = leg_role;
         rate_req.change.write.leg_number = leg_number;
         rate_req.change.write.rate_kind = "fixed";
@@ -733,6 +767,7 @@ std::string save_leg(Nats& nats,
     for (const auto& amortization : leg.amortizations) {
         put_bond_leg_amortization_request req;
         req.change.write.trade_id = trade_id;
+        req.change.write.trade_activity_id = trade_activity_id;
         req.change.write.leg_role = leg_role;
         req.change.write.leg_number = leg_number;
         req.change.write.sequence_number = ++sequence_number;
@@ -753,12 +788,17 @@ std::string save_leg(Nats& nats,
             return error.empty() ? "save_bond_leg_amortization failed" : error;
     }
 
-    if (auto failure =
-            save_schedule(nats, trade_id, leg_role, leg_number, "schedule", leg.schedule);
+    if (auto failure = save_schedule(
+            nats, trade_id, trade_activity_id, leg_role, leg_number, "schedule", leg.schedule);
         !failure.empty())
         return failure;
-    if (auto failure = save_schedule(
-            nats, trade_id, leg_role, leg_number, "payment_schedule", leg.payment_schedule);
+    if (auto failure = save_schedule(nats,
+                                     trade_id,
+                                     trade_activity_id,
+                                     leg_role,
+                                     leg_number,
+                                     "payment_schedule",
+                                     leg.payment_schedule);
         !failure.empty())
         return failure;
 
@@ -767,8 +807,8 @@ std::string save_leg(Nats& nats,
         ores::trading::domain::bond_schedule_dates block;
         block.dates = leg.payment_dates;
         dates.dates.push_back(std::move(block));
-        if (auto failure =
-                save_schedule(nats, trade_id, leg_role, leg_number, "payment_dates", dates);
+        if (auto failure = save_schedule(
+                nats, trade_id, trade_activity_id, leg_role, leg_number, "payment_dates", dates);
             !failure.empty())
             return failure;
     }
@@ -1089,6 +1129,7 @@ std::string save_issue_leg(Nats& nats,
 template <typename Nats>
 std::string save_option_block(Nats& nats,
                               const boost::uuids::uuid& trade_id,
+                              const boost::uuids::uuid& trade_activity_id,
                               const ores::trading::domain::bond_instrument_data& data) {
     using ores::trading::messaging::put_instrument_option_exercise_fee_request;
     using ores::trading::messaging::put_instrument_option_payment_date_request;
@@ -1100,6 +1141,7 @@ std::string save_option_block(Nats& nats,
         const auto& block = *data.option_data;
         put_instrument_option_request req;
         req.change.write.trade_id = trade_id;
+        req.change.write.trade_activity_id = trade_activity_id;
         req.change.write.long_short = block.long_short;
         req.change.write.option_type = block.option_type;
         req.change.write.payoff_type = block.payoff_type;
@@ -1157,6 +1199,7 @@ std::string save_option_block(Nats& nats,
         for (const auto& premium : block.premiums) {
             put_instrument_option_premium_request child;
             child.change.write.trade_id = trade_id;
+            child.change.write.trade_activity_id = trade_activity_id;
             child.change.write.sequence_number = ++sequence_number;
             child.change.write.amount =
                 ores::utility::decimal::decimal::from_double(premium.amount).value();
@@ -1178,6 +1221,7 @@ std::string save_option_block(Nats& nats,
         for (const auto& fee : block.exercise_fees) {
             put_instrument_option_exercise_fee_request child;
             child.change.write.trade_id = trade_id;
+            child.change.write.trade_activity_id = trade_activity_id;
             child.change.write.sequence_number = ++sequence_number;
             child.change.write.amount =
                 ores::utility::decimal::decimal::from_double(fee.amount).value();
@@ -1194,6 +1238,7 @@ std::string save_option_block(Nats& nats,
             for (const auto& date : block.payment_data->dates) {
                 put_instrument_option_payment_date_request child;
                 child.change.write.trade_id = trade_id;
+                child.change.write.trade_activity_id = trade_activity_id;
                 child.change.write.sequence_number = ++payment_number;
                 child.change.write.payment_date =
                     ores::platform::time::datetime::from_iso8601_date(date);
@@ -1209,14 +1254,20 @@ std::string save_option_block(Nats& nats,
         ores::trading::domain::bond_schedule_dates dates;
         dates.dates = data.option_exercise_dates;
         schedule.dates.push_back(std::move(dates));
-        if (auto failure = save_schedule(nats, trade_id, "option", 1, "exercise_dates", schedule);
+        if (auto failure = save_schedule(
+                nats, trade_id, trade_activity_id, "option", 1, "exercise_dates", schedule);
             !failure.empty())
             return failure;
     }
 
     if (data.option_exercise_schedule) {
-        if (auto failure = save_schedule(
-                nats, trade_id, "option", 1, "exercise_schedule", *data.option_exercise_schedule);
+        if (auto failure = save_schedule(nats,
+                                         trade_id,
+                                         trade_activity_id,
+                                         "option",
+                                         1,
+                                         "exercise_schedule",
+                                         *data.option_exercise_schedule);
             !failure.empty())
             return failure;
     }
@@ -1232,11 +1283,13 @@ std::string save_option_block(Nats& nats,
 template <typename Nats>
 std::string save_strike(Nats& nats,
                         const boost::uuids::uuid& trade_id,
+                        const boost::uuids::uuid& trade_activity_id,
                         const ores::trading::domain::bond_strike_data& strike) {
     using ores::trading::messaging::put_instrument_strike_request;
 
     put_instrument_strike_request req;
     req.change.write.trade_id = trade_id;
+    req.change.write.trade_activity_id = trade_activity_id;
     req.change.write.price_value =
         strike.price_value ?
             std::optional(
@@ -1270,6 +1323,7 @@ std::string save_strike(Nats& nats,
 template <typename Nats>
 std::string save_forward(Nats& nats,
                          const boost::uuids::uuid& trade_id,
+                         const boost::uuids::uuid& trade_activity_id,
                          const ores::trading::domain::bond_instrument_data& data) {
     using ores::trading::messaging::put_bond_forward_request;
 
@@ -1278,6 +1332,7 @@ std::string save_forward(Nats& nats,
 
     put_bond_forward_request req;
     req.change.write.trade_id = trade_id;
+    req.change.write.trade_activity_id = trade_activity_id;
     req.change.write.long_in_forward = data.forward_long_in_forward;
     if (data.forward_settlement) {
         const auto& settlement = *data.forward_settlement;
@@ -1381,6 +1436,7 @@ save_bond_instrument(Nats& nats,
 
     put_bond_instrument_request instrument_req;
     instrument_req.change.write.trade_id = instrument.identity.trade_id;
+    instrument_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
     instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
     instrument_req.change.write.issue_id = instrument.issue_id;
     instrument_req.change.write.notional = instrument.notional;
@@ -1416,6 +1472,7 @@ save_bond_instrument(Nats& nats,
     }
 
     const auto trade_id = instrument.identity.trade_id;
+    const auto trade_activity_id = instrument.identity.trade_activity_id;
 
     // The security owns its legs, so they are written once, when the
     // issue row is minted: a second trade on the same ISIN would collide
@@ -1430,27 +1487,32 @@ save_bond_instrument(Nats& nats,
                 return failure;
         }
     }
-    if (auto failure = save_leg(nats, trade_id, "trs_funding", 1, data.trs_funding_leg);
+    if (auto failure =
+            save_leg(nats, trade_id, trade_activity_id, "trs_funding", 1, data.trs_funding_leg);
         !failure.empty())
         return failure;
-    if (auto failure = save_leg(nats, trade_id, "repo", 1, data.repo_leg); !failure.empty())
+    if (auto failure = save_leg(nats, trade_id, trade_activity_id, "repo", 1, data.repo_leg);
+        !failure.empty())
         return failure;
-    if (auto failure = save_leg(nats, trade_id, "ascot_swap", 1, data.ascot_swap_leg);
+    if (auto failure =
+            save_leg(nats, trade_id, trade_activity_id, "ascot_swap", 1, data.ascot_swap_leg);
         !failure.empty())
         return failure;
 
-    if (auto failure = save_option_block(nats, trade_id, data); !failure.empty())
+    if (auto failure = save_option_block(nats, trade_id, trade_activity_id, data); !failure.empty())
         return failure;
 
     if (data.strike_data) {
-        if (auto failure = save_strike(nats, trade_id, *data.strike_data); !failure.empty())
+        if (auto failure = save_strike(nats, trade_id, trade_activity_id, *data.strike_data);
+            !failure.empty())
             return failure;
     }
 
-    if (auto failure = save_forward(nats, trade_id, data); !failure.empty())
+    if (auto failure = save_forward(nats, trade_id, trade_activity_id, data); !failure.empty())
         return failure;
 
-    if (auto failure = save_schedule(nats, trade_id, "trs", 1, "schedule", data.trs_schedule);
+    if (auto failure = save_schedule(
+            nats, trade_id, trade_activity_id, "trs", 1, "schedule", data.trs_schedule);
         !failure.empty())
         return failure;
 
@@ -1458,12 +1520,14 @@ save_bond_instrument(Nats& nats,
     if (ttc == "BondOption" && data.option) {
         put_bond_option_request fact_req;
         fact_req.change.write.trade_id = (*data.option).trade_id;
+        fact_req.change.write.trade_activity_id = (*data.option).trade_activity_id;
         fact_req.change.write.option_type = (*data.option).option_type;
         fact_req.change.write.option_strike = (*data.option).option_strike;
         fact_req.change.write.redemption = (*data.option).redemption;
         fact_req.change.write.price_type = (*data.option).price_type;
         fact_req.change.write.knocks_out = (*data.option).knocks_out;
         fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         fact_req.change.write.redemption = data.option_redemption;
         fact_req.change.write.price_type = data.option_price_type;
         fact_req.change.write.knocks_out = data.option_knocks_out;
@@ -1473,6 +1537,7 @@ save_bond_instrument(Nats& nats,
     } else if (ttc == "BondTRS" && data.trs) {
         put_bond_trs_request fact_req;
         fact_req.change.write.trade_id = (*data.trs).trade_id;
+        fact_req.change.write.trade_activity_id = (*data.trs).trade_activity_id;
         fact_req.change.write.return_type = (*data.trs).return_type;
         fact_req.change.write.funding_leg_type = (*data.trs).funding_leg_type;
         fact_req.change.write.funding_rate = (*data.trs).funding_rate;
@@ -1481,6 +1546,7 @@ save_bond_instrument(Nats& nats,
         fact_req.change.write.price_type = (*data.trs).price_type;
         fact_req.change.write.initial_price = (*data.trs).initial_price;
         fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         fact_req.change.write.payer = data.trs_payer;
         fact_req.change.write.initial_price =
             data.trs_initial_price ?
@@ -1495,16 +1561,19 @@ save_bond_instrument(Nats& nats,
     } else if (ttc == "BondRepo" && data.repo) {
         put_bond_repo_request fact_req;
         fact_req.change.write.trade_id = (*data.repo).trade_id;
+        fact_req.change.write.trade_activity_id = (*data.repo).trade_activity_id;
         fact_req.change.write.repo_type = (*data.repo).repo_type;
         fact_req.change.write.repo_rate = (*data.repo).repo_rate;
         fact_req.change.write.repo_index = (*data.repo).repo_index;
         fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_bond_repo failed" : error;
     } else if (ttc == "BondFuture" && data.future) {
         put_bond_future_request fact_req;
         fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         fact_req.change.write.contract_name = (*data.future).contract_name;
         fact_req.change.write.contract_notional = (*data.future).contract_notional;
         fact_req.change.write.long_short = (*data.future).long_short;
@@ -1516,8 +1585,10 @@ save_bond_instrument(Nats& nats,
     } else if (ttc == "Ascot" && data.ascot_row) {
         put_ascot_request fact_req;
         fact_req.change.write.trade_id = (*data.ascot_row).trade_id;
+        fact_req.change.write.trade_activity_id = (*data.ascot_row).trade_activity_id;
         fact_req.change.write.ascot_option_type = (*data.ascot_row).ascot_option_type;
         fact_req.change.write.trade_id = instrument.identity.trade_id;
+        fact_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || fact_resp->result.outcome != ores::utility::domain::outcome::ok)
             return error.empty() ? "save_ascot failed" : error;
@@ -1948,6 +2019,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             if constexpr (std::is_same_v<InstrT, fra_instrument>) {
                                 put_fra_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.end_date = instr.end_date;
@@ -1963,6 +2036,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
                                 put_vanilla_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -1975,6 +2050,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
                                 put_cap_floor_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -1985,6 +2062,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
                                 put_swaption_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.expiry_date = instr.expiry_date;
                                 req.change.write.exercise_type = instr.exercise_type;
@@ -2001,6 +2080,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                      balance_guaranteed_swap_instrument>) {
                                 put_balance_guaranteed_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -2012,6 +2093,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
                                 put_callable_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -2024,6 +2107,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 for (const auto& call_date : r.call_dates) {
                                     put_callable_swap_call_date_request date_req;
                                     date_req.change.write.trade_id = instr.identity.trade_id;
+                                    date_req.change.write.trade_activity_id =
+                                        instr.identity.trade_activity_id;
                                     date_req.change.write.sequence_number = ++sequence_number;
                                     date_req.change.write.call_date = call_date.call_date;
                                     auto date_resp =
@@ -2037,6 +2122,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 knock_out_swap_instrument>) {
                                 put_knock_out_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -2051,6 +2138,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 inflation_swap_instrument>) {
                                 put_inflation_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
@@ -2064,6 +2153,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
                                 put_rpa_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.maturity_date = instr.maturity_date;
                                 req.change.write.reference_counterparty =
@@ -2087,6 +2178,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
                                 put_fx_forward_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.bought_currency = instr.bought_currency;
                                 req.change.write.bought_amount = instr.bought_amount;
@@ -2102,6 +2195,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_vanilla_option_instrument>) {
                                 put_fx_vanilla_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.bought_currency = instr.bought_currency;
                                 req.change.write.bought_amount = instr.bought_amount;
@@ -2119,6 +2214,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_barrier_option_instrument>) {
                                 put_fx_barrier_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.bought_currency = instr.bought_currency;
                                 req.change.write.bought_amount = instr.bought_amount;
@@ -2139,6 +2236,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_digital_option_instrument>) {
                                 put_fx_digital_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.foreign_currency = instr.foreign_currency;
                                 req.change.write.domestic_currency = instr.domestic_currency;
@@ -2159,6 +2258,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_asian_forward_instrument>) {
                                 put_fx_asian_forward_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.fx_index = instr.fx_index;
                                 req.change.write.reference_currency = instr.reference_currency;
@@ -2179,6 +2280,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_accumulator_instrument>) {
                                 put_fx_accumulator_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.currency = instr.currency;
                                 req.change.write.fixing_amount = instr.fixing_amount;
@@ -2195,6 +2298,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 fx_variance_swap_instrument>) {
                                 put_fx_variance_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.start_date = instr.start_date;
                                 req.change.write.end_date = instr.end_date;
@@ -2226,6 +2331,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 } else if constexpr (std::is_same_v<T, credit_instrument>) {
                     put_credit_instrument_request req;
                     req.change.write.trade_id = r.identity.trade_id;
+                    req.change.write.trade_activity_id = r.identity.trade_activity_id;
                     req.change.write.trade_type_code = r.identity.trade_type_code;
                     req.change.write.reference_entity = r.reference_entity;
                     req.change.write.currency = r.currency;
@@ -2252,14 +2358,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                     boost::uuids::uuid equity_trade_id{};
+                    boost::uuids::uuid equity_trade_activity_id{};
                     const auto equity_saved = std::visit(
                         [&](const auto& instr) -> bool {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
                             equity_trade_id = instr.identity.trade_id;
+                            equity_trade_activity_id = instr.identity.trade_activity_id;
                             if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
                                 put_equity_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2279,6 +2389,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_digital_option_instrument>) {
                                 put_equity_digital_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2298,6 +2410,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_barrier_option_instrument>) {
                                 put_equity_barrier_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2320,6 +2434,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_asian_option_instrument>) {
                                 put_equity_asian_option_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2340,6 +2456,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_forward_instrument>) {
                                 put_equity_forward_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2356,6 +2474,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_variance_swap_instrument>) {
                                 put_equity_variance_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2371,6 +2491,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
                                 put_equity_swap_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.basket_json = instr.basket_json;
@@ -2390,6 +2512,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_accumulator_instrument>) {
                                 put_equity_accumulator_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2411,6 +2535,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                                                 equity_position_instrument>) {
                                 put_equity_position_instrument_request req;
                                 req.change.write.trade_id = instr.identity.trade_id;
+                                req.change.write.trade_activity_id =
+                                    instr.identity.trade_activity_id;
                                 req.change.write.trade_type_code = instr.identity.trade_type_code;
                                 req.change.write.underlying_name = instr.underlying_name;
                                 req.change.write.currency = instr.currency;
@@ -2436,6 +2562,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     for (const auto& underlying : r.underlyings) {
                         put_equity_position_option_underlying_request underlying_req;
                         underlying_req.change.write.trade_id = equity_trade_id;
+                        underlying_req.change.write.trade_activity_id = equity_trade_activity_id;
                         underlying_req.change.write.sequence_number = ++equity_sequence_number;
                         underlying_req.change.write.underlying_name = underlying.underlying_name;
                         underlying_req.change.write.strike = underlying.strike;
@@ -2455,6 +2582,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     const auto& instr = r.instrument;
                     put_commodity_instrument_request req;
                     req.change.write.trade_id = instr.identity.trade_id;
+                    req.change.write.trade_activity_id = instr.identity.trade_activity_id;
                     req.change.write.trade_type_code = instr.identity.trade_type_code;
                     req.change.write.commodity_code = instr.commodity_code;
                     req.change.write.currency = instr.currency;
@@ -2489,6 +2617,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     for (const auto& constituent : r.constituents) {
                         put_commodity_basket_constituent_request constituent_req;
                         constituent_req.change.write.trade_id = instr.identity.trade_id;
+                        constituent_req.change.write.trade_activity_id =
+                            instr.identity.trade_activity_id;
                         constituent_req.change.write.sequence_number = ++sequence_number;
                         constituent_req.change.write.underlying_code = constituent.underlying_code;
                         constituent_req.change.write.weight = constituent.weight;
@@ -2508,6 +2638,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 } else if constexpr (std::is_same_v<T, scripted_instrument>) {
                     put_scripted_instrument_request req;
                     req.change.write.trade_id = r.identity.trade_id;
+                    req.change.write.trade_activity_id = r.identity.trade_activity_id;
                     req.change.write.trade_type_code = r.identity.trade_type_code;
                     req.change.write.script_name = r.script_name;
                     req.change.write.script_body = r.script_body;

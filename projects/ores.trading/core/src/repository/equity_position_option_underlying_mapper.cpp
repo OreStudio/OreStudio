@@ -51,6 +51,7 @@ equity_position_option_underlying_mapper::map(const equity_position_option_under
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
     r.strike = ores::utility::decimal::decimal::from_string(v.strike).value();
     r.weight = v.weight.has_value() ?
@@ -79,6 +80,7 @@ equity_position_option_underlying_mapper::map(const domain::equity_position_opti
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
     r.strike = v.strike.to_string();
     r.weight = v.weight.has_value() ? std::optional(v.weight->to_string()) : std::nullopt;

@@ -43,6 +43,7 @@ struct trade_portfolio_key {
 struct trade_portfolio_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid portfolio_id;
 };
 

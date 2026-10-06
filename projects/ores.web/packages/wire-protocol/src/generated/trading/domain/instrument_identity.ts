@@ -34,4 +34,5 @@ export interface InstrumentIdentity {
     trade_type_code: string;
     party_id: string;
     trade_id: string;
+    trade_activity_id: string;
 }

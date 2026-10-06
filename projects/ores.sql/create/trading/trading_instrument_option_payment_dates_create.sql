@@ -37,6 +37,7 @@ create table if not exists "ores_trading_instrument_option_payment_dates_tbl" (
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "payment_date" date not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -53,7 +54,8 @@ create table if not exists "ores_trading_instrument_option_payment_dates_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("sequence_number" > 0)
+    check ("sequence_number" > 0),
+    constraint ores_trading_instrument_option_payment_dates_activity_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

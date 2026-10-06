@@ -35,6 +35,7 @@ export interface CallableSwapInstrumentKey {
 export interface CallableSwapInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     start_date: string;
     maturity_date: string;
     description: string;

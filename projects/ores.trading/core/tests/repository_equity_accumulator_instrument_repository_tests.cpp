@@ -47,6 +47,7 @@ equity_accumulator_instrument make_instrument(database_helper& h) {
     equity_accumulator_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
+    r.identity.trade_activity_id = ores::trading::tests::write_parent_activity(h);
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "EquityAccumulator";
     r.underlying_name = ".STOXX50";

@@ -142,26 +142,27 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <start_date> <end_date> <currency> <underlying_code> "
-        "<long_short> <strike> <notional> <moment_type> <description> <reason> <commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date> <currency> "
+        "<underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <start_date> <end_date> <currency> <underlying_code> "
-        "<long_short> <strike> <notional> <moment_type> <description> <reason> <commentary> "
-        "[--version <n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date> <currency> "
+        "<underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_type_code> <start_date> <end_date> <currency> "
-        "<underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date> "
+        "<end_date> <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,14 +357,16 @@ void fx_variance_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.end_date, parsed->positionals[next++], "end_date");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
@@ -416,14 +419,16 @@ void fx_variance_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(req.change.write.end_date, parsed->positionals[next++], "end_date");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
@@ -488,8 +493,8 @@ void fx_variance_swap_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -498,6 +503,8 @@ void fx_variance_swap_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(change.write.end_date, parsed->positionals[next++], "end_date");
             read_token(change.write.currency, parsed->positionals[next++], "currency");

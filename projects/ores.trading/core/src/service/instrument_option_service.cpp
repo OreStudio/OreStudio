@@ -95,6 +95,7 @@ messaging::instrument_option_key key_from(const domain::instrument_option& v) {
 domain::instrument_option to_domain(const messaging::instrument_option_write& write) {
     domain::instrument_option v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.long_short = write.long_short;
     v.option_type = write.option_type;
     v.payoff_type = write.payoff_type;

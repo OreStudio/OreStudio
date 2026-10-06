@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import compass
+import compass_claude
 import systemctl_bus
 
 
@@ -115,3 +116,52 @@ class TestEveryConsumerAdopts:
         assert offenders == [], (
             "these modules call systemctl_bus.run without adopting the .env "
             "transport choice: " + ", ".join(offenders))
+
+
+class TestScopeProbeHonoursTransport:
+    """systemd-run ignores the busctl transport, so the probe must too.
+
+    Inside a sandbox the busctl probe succeeds while systemd-run is refused
+    the manager's private socket, so answering yes wrapped the build and the
+    Claude session in a scope that could not start. The probe decides
+    whether the callers may run systemd-run, not whether the manager answers
+    some other client."""
+
+    def setup_method(self):
+        systemctl_bus.set_use_busctl(None)
+
+    def teardown_method(self):
+        systemctl_bus.set_use_busctl(None)
+
+    def _systemd_run_present(self, monkeypatch):
+        monkeypatch.setattr(compass_claude.shutil, "which",
+                            lambda _name: "/usr/bin/systemd-run")
+
+    def test_the_busctl_transport_reports_no_scope(self, monkeypatch):
+        self._systemd_run_present(monkeypatch)
+        systemctl_bus.set_use_busctl(True)
+        assert compass_claude._has_user_systemd() is False
+
+    def test_no_busctl_and_a_reachable_manager_reports_a_scope(
+            self, monkeypatch):
+        self._systemd_run_present(monkeypatch)
+        monkeypatch.setattr(compass_claude.systemctl_bus, "run",
+                            lambda *a, **k: None)
+        systemctl_bus.set_use_busctl(False)
+        assert compass_claude._has_user_systemd() is True
+
+    def test_no_busctl_and_an_unreachable_manager_reports_no_scope(
+            self, monkeypatch):
+        self._systemd_run_present(monkeypatch)
+
+        def unreachable(*a, **k):
+            raise OSError("no bus")
+
+        monkeypatch.setattr(compass_claude.systemctl_bus, "run", unreachable)
+        systemctl_bus.set_use_busctl(False)
+        assert compass_claude._has_user_systemd() is False
+
+    def test_no_systemd_run_binary_reports_no_scope(self, monkeypatch):
+        monkeypatch.setattr(compass_claude.shutil, "which", lambda _name: None)
+        systemctl_bus.set_use_busctl(False)
+        assert compass_claude._has_user_systemd() is False

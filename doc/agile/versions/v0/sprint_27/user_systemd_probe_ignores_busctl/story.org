@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 1621610D-032C-400F-B842-92B99FD63972
+:END:
+#+title: Story: Hotfix: The user systemd probe ignores the busctl transport
+#+description: compass decides whether to wrap a build in a systemd-run scope from a probe that goes through the busctl transport, so inside a sandbox it wraps the build in a scope that systemd-run cannot start.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:compass:sprint_27:v0:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A sandboxed checkout builds, and starts a Claude session, without a
+=systemd-run= scope the sandbox refuses. compass takes the unscoped path
+whenever it drives systemd over busctl.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Done. The probe answers for systemd-run; a sandboxed build runs unscoped. |
+| Waiting on    | Nothing.                               |
+| Next          | PR.            |
+| Last touched  | 2026-10-06                               |
+
+* Acceptance
+
+- =_has_user_systemd()= is False when the busctl transport is selected.
+- =compass build= prints =cmake --build ...= and no =systemd-run= prefix
+  in a sandbox.
+- The transport tests cover the busctl case, the reachable-manager case,
+  the unreachable-manager case and the missing-binary case.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5F16628F-3192-4465-AD25-1E76790BC00D][Scaffold story: Hotfix: The user systemd probe ignores the busctl transport]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F8F3E286-8D51-4F41-BC57-3072E6CC21FB][Implement Hotfix: The user systemd probe ignores the busctl transport]] | DONE | 2026-10-06 | 2026-10-06 | Answer for systemd-run in the scope probe, so build and claude run unscoped when only busctl can reach the manager. |
+
+* Decisions
+
+- *The probe answers for systemd-run, not for the manager.* The busctl
+  transport exists because the sandbox refuses sd-bus clients on the user
+  manager's private socket, and systemd-run is one of those clients. A
+  probe that goes through busctl therefore proves the manager answers
+  =busctl=, not that a scope can start.
+- *The scope is a resource cap, not a correctness requirement.* Losing the
+  =app-build-= slice cgroup inside a sandbox is acceptable, because the
+  sandbox is the boundary. The unscoped fallback already existed for a
+  manager that does not answer.
+
+* Out of scope
+
+- The other systemd binaries the services pillar shells out to for =tree=
+  and =top= (=systemd-cgls=, =systemd-cgtop=). They read cgroup files
+  rather than the manager bus, so the transport does not apply.

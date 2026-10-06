@@ -109,6 +109,13 @@ def _env_name(project_root, env_file=None) -> str:
 def _has_user_systemd() -> bool:
     if shutil.which("systemd-run") is None:
         return False
+    if systemctl_bus.use_busctl():
+        # systemd-run opens the user manager's private socket, the very path
+        # the busctl transport exists to avoid. The probe below goes through
+        # busctl, so inside a sandbox it succeeds while systemd-run is
+        # refused: the caller would then wrap its command in a scope that
+        # cannot start. Answer for the tool the callers actually run.
+        return False
     try:
         systemctl_bus.run(["show-environment"],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)

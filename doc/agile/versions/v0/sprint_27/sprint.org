@@ -76,7 +76,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:1621610D-032C-400F-B842-92B99FD63972][Hotfix: The user systemd probe ignores the busctl transport]] | DONE | 2026-10-06 | 2026-10-06 | compass decides whether to wrap a build in a systemd-run scope from a probe that goes through the busctl transport, so inside a sandbox it wraps the build in a scope that systemd-run cannot start. |
 
 * Achievements
 

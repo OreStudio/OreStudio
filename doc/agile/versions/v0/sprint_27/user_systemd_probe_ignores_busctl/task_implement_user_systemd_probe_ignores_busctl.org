@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: F8F3E286-8D51-4F41-BC57-3072E6CC21FB
+:END:
+#+title: Task: Implement Hotfix: The user systemd probe ignores the busctl transport
+#+description: Initial task for: Hotfix: The user systemd probe ignores the busctl transport
+#+type: task
+#+level: s1
+#+filetags: :user_systemd_probe_ignores_busctl:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/user-systemd-probe-ignores-busctl
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1621610D-032C-400F-B842-92B99FD63972][Hotfix: The user systemd probe ignores the busctl transport]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =compass_claude._has_user_systemd()= answer whether =systemd-run= can
+start a scope, so =compass build= and =compass claude= fall back to running
+unscoped when the busctl transport is the only way to reach the manager.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1621610D-032C-400F-B842-92B99FD63972][Hotfix: The user systemd probe ignores the busctl transport]] |
+| Now          | Done. A sandboxed build prints the cmake command with no systemd-run prefix.                       |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- =_has_user_systemd()= returns False when =systemctl_bus.use_busctl()= is
+  True, whatever the probe would have answered.
+- =compass build= prints =cmake --build --preset ... --target ...= with no
+  =systemd-run= prefix under =ORES_USE_BUSCTL=1=.
+- =test_compass_transport.py= covers the busctl case, a reachable manager,
+  an unreachable manager and a missing =systemd-run= binary.
+
+* Plan
+
+Diagnosis. =compass build= (=compass.py:7141=) and =compass claude= wrap
+their command in =systemd-run --user --scope= when
+=compass_claude._has_user_systemd()= is true. That function probes through
+=systemctl_bus.run(["show-environment"])=, which honours =ORES_USE_BUSCTL=1=
+and goes over the D-Bus session bus. Inside a sandbox the probe succeeds,
+but =systemd-run= opens the manager's private socket and is refused at
+authentication, so the wrapped command cannot start. Measured here:
+=use_busctl()= True, =_has_user_systemd()= True, =systemd-run= "Failed to
+connect to user scope bus".
+
+Fix. Return False from =_has_user_systemd()= when the busctl transport is
+selected, before the probe. The transport is selected precisely because the
+sd-bus client path is refused, and =systemd-run= is an sd-bus client, so no
+scope can start. Both callers already have an unscoped fallback.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =_has_user_systemd()= under the busctl transport | False | `ORES_USE_BUSCTL=1 python3 -c "import compass_claude; print(compass_claude._has_user_systemd())"` | this commit |
+| =compass build= command prefix | =cmake --build --preset linux-clang-debug-make --target ores.nats.lib -j 3= | `compass build ores.nats.lib` | this commit |
+| transport, bus and services tests | 59 passed | `python -m pytest projects/ores.compass/tests/test_compass_transport.py projects/ores.compass/tests/test_systemctl_bus.py projects/ores.compass/tests/test_compass_services.py -q` | this commit |
+
+* Notes
+
+- Measured before the fix: =use_busctl()= True, =_has_user_systemd()= True,
+  and =systemd-run --user --scope ... true= failed with "Failed to connect
+  to user scope bus via local transport: No data available".
+- The probe in =_has_user_systemd()= uses =systemctl_bus.run= and so honours
+  the transport; =systemd-run= does not, which is the whole defect.
+- A real =compass build ores.nats.lib= after the fix printed the bare cmake
+  command and exited 0, while the fleet stayed at 25/25 running.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The scope probe answers for =systemd-run=, the tool the callers run. Under
+the busctl transport it reports no scope, so a sandboxed =compass build= and
+=compass claude= take their existing unscoped path. The transport tests pin
+all four cases.

@@ -40,13 +40,15 @@
 #include "ores.refdata.core/messaging/registrar.hpp"
 #include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
-#include "ores.service/service/domain_service_runner_impl.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/impl/co_spawn.hpp>
+// co_spawn is defined in asio/impl/co_spawn.hpp, an internal header that
+// asio/co_spawn.hpp includes; the include check would name the internal one.
+#include <boost/asio/co_spawn.hpp> // IWYU pragma: keep.
 #include <boost/asio/io_context.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <cstddef>

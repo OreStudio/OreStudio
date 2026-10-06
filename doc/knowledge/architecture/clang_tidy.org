@@ -87,6 +87,24 @@ A component with a precompiled header confuses the check: it suggests
 =ores.workflow= is one. Ignore its findings, or check it with the
 precompiled header turned off.
 
+** Internal headers
+
+The check suggests the header that defines a symbol, which is not always the
+header to include. A template whose definitions live in an =_impl.hpp=
+beside its public header is the common case: the check named
+=domain_service_runner_impl.hpp= instead of =domain_service_runner.hpp=, and
+the call that relied on a default argument stated only in the public header
+no longer compiled. Two guards stop it:
+
+- An internal header of ours names its public header with
+  =// IWYU pragma: private, include "<public header>"=, which the check
+  honours.
+- A library header we cannot mark, such as asio's =boost/asio/impl/=, is
+  listed in =misc-include-cleaner.IgnoreHeaders= in =.clang-tidy=, and the
+  public header is kept with =// IWYU pragma: keep.=.
+
+A fix the tool proposes is a proposal: build it before it merges.
+
 ** CMake integration: the options considered
 
 Three ways to run clang-tidy from CMake were weighed.

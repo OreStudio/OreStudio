@@ -65,4 +65,8 @@ CheckOptions:
     value: 1
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value: true
+  # asio defines its functions in internal impl/ headers that its public
+  # headers include; never suggest including one of those directly.
+  - key: misc-include-cleaner.IgnoreHeaders
+    value: 'boost/asio/impl/.*'
 ...

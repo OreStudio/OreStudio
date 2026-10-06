@@ -20,6 +20,8 @@
 #ifndef ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 
+// IWYU pragma: private, include "ores.service/service/host_runner.hpp"
+
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/exception/diagnostic_information.hpp>

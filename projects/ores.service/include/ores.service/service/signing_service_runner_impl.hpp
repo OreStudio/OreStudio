@@ -20,6 +20,8 @@
 #ifndef ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 
+// IWYU pragma: private, include "ores.service/service/signing_service_runner.hpp"
+
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/service/service_lifecycle.hpp"
 #include <boost/asio/io_context.hpp>

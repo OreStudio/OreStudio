@@ -23,7 +23,9 @@
 #include "ores.service/service/exit_codes.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/impl/co_spawn.hpp>
+// co_spawn is defined in asio/impl/co_spawn.hpp, an internal header that
+// asio/co_spawn.hpp includes; the include check would name the internal one.
+#include <boost/asio/co_spawn.hpp> // IWYU pragma: keep.
 #include <boost/asio/io_context.hpp>
 #include <cstdlib>
 #include <exception>

@@ -58,10 +58,13 @@ begin
     end if;
 
     -- The state the instance is moving to, and what the machine says about it.
+    -- The machine is seeded once, under the system tenant, and is shared by
+    -- every tenant's instances, so the state is read there and not from the
+    -- instance's own tenant.
     select s.machine_id, s.name, s.is_initial
       into v_to_machine, v_to_name, v_to_initial
       from ores_dq_fsm_states_tbl s
-     where s.tenant_id = NEW.tenant_id
+     where s.tenant_id = ores_utility_system_tenant_id_fn()
        and s.id = NEW.fsm_state_id
        and s.valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -103,14 +106,14 @@ begin
 
     select s.name into v_old_name
       from ores_dq_fsm_states_tbl s
-     where s.tenant_id = NEW.tenant_id
+     where s.tenant_id = ores_utility_system_tenant_id_fn()
        and s.id = v_old_state
        and s.valid_to = ores_utility_infinity_timestamp_fn();
 
     if not exists (
         select 1
         from ores_dq_fsm_transitions_tbl tr
-        where tr.tenant_id = NEW.tenant_id
+        where tr.tenant_id = ores_utility_system_tenant_id_fn()
           and tr.machine_id = v_to_machine
           and tr.from_state_id = v_old_state
           and tr.to_state_id = NEW.fsm_state_id

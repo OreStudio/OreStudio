@@ -31,11 +31,11 @@ build, and guards the rule so a second way cannot grow back.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Ports in progress; inventory, method and guard are done. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Integrate the ports, delete the React prototype tree, raise the PR. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -50,8 +50,8 @@ build, and guards the rule so a second way cannot grow back.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:07D963B4-9F76-4A02-B56E-217E96C71C4F][Scaffold story: One way to keep a prototype]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:04D34A61-3D69-42E0-852C-ADDE2C64B89A][Implement One way to keep a prototype]] | STARTED | 2026-10-06 | | Port the eleven React journey prototypes to static pages under doc/prototypes/, make index.org the only inventory, publish them, remove the React prototype tree, and add the inventory guard. |
+| [[id:07D963B4-9F76-4A02-B56E-217E96C71C4F][Scaffold story: One way to keep a prototype]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:04D34A61-3D69-42E0-852C-ADDE2C64B89A][Implement One way to keep a prototype]] | DONE | 2026-10-06 | 2026-10-06 | Port the eleven React journey prototypes to static pages under doc/prototypes/, make index.org the only inventory, publish them, remove the React prototype tree, and add the inventory guard. |
 
 * Decisions
 
@@ -70,3 +70,9 @@ build, and guards the rule so a second way cannot grow back.
 * Out of scope
 
 - The application's own React components. Only the prototype tree is removed.
+
+* Result
+
+Shipped in PR #2696. Every prototype is a static page under
+=doc/prototypes/=, listed in one inventory, published by the site build and
+guarded in CI, and no prototype is a React route.

@@ -20,22 +20,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story and its tasks, wire them into sprint 27, and raise the PR
+that carries the work.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E85DFD5F-6C33-4EA7-AEC5-0346B5E70260][One way to keep a prototype]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
 
--
+- The story, scaffold task and implement task exist and are wired into sprint 27.
+- PR #2696 carries the work.
 
 * Plan
 
@@ -83,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story and its two tasks exist and sprint 27 carries the story. PR #2696
+carries the work on =feature/one-way-to-keep-prototypes=.

@@ -28,11 +28,11 @@ route.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E85DFD5F-6C33-4EA7-AEC5-0346B5E70260][One way to keep a prototype]] |
-| Now          | Ports in progress; inventory, method and guard are done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Integrate the ports, delete the React tree, raise the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -71,9 +71,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Prototypes in the inventory | 18 (7 pre-existing, 11 ported) | =python3 build/scripts/check_prototype_inventory.py= | this branch |
+| React prototype source removed | 18 files | =git show --stat bcdd5fb4e1= | this branch |
+| Ported pages | 11, each self-contained and passing =node --check= | =node --check doc/prototypes/*/prototype.js= | this branch |
+| Web package typecheck | passes | =npm run typecheck= | this branch |
+| Org lint | passes | =./compass.sh lint= | this branch |
 
 * Notes
+
+Root cause: two prototype mechanisms grew and both were documented. The
+static one was plain files under =doc/prototypes/=, listed in =index.org=. The
+React one was routes in =ores.web=, listed only by the =/prototype= hub. The
+React form needed the application's shell, build and types, so a prototype
+could not open without the app and could not deploy with the documentation.
+
+Fix: static pages are the one way. The eleven journey prototypes are ported to
+self-contained pages under =doc/prototypes/=, =index.org= is the only
+inventory, =ores-build-site.el= publishes each one, the React tree and route
+are gone, and =check_prototype_inventory.py= fails CI when a prototype is
+missing from the inventory or when a React prototype tree returns.
+
+A verification agent wrote a Chromium profile and screenshots into a prototype
+folder while checking its output. All such scratch was removed before the
+commit, and no prototype folder carries a file whose name starts with =_=.
 
 * Test Scenarios
 
@@ -99,3 +119,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every prototype is now a static page under =doc/prototypes/=, listed in
+=doc/prototypes/index.org= and published by =ores-build-site.el=. The eleven
+journey prototypes are ported, the React prototype tree and its route are
+gone, and =check_prototype_inventory.py= guards the inventory in CI. Merging
+PR #2696 leaves one way to keep a prototype.

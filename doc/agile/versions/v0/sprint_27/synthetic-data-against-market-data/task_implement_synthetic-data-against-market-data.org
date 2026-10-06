@@ -7,30 +7,36 @@
 #+level: s1
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-synthetic-data-against-market-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Make the synthetic feeds first-class producers in the new market data model. A feed already speaks oresmd and can auto-create a feed_binding, but nothing yet proves the whole path end to end: that its series is registered under the oresmd identity, that each observation it publishes carries per-point provenance and is marked generated rather than observed, that the ingest loop lands it in market_observation under the right tenant and source, and that a consumer such as the curve bootstrap reads it and says where it came from. This story proves that path, fixes the gaps it finds, and leaves the synthetic feeds able to drive the curve and surface work with data that can be plotted.
+Prove and complete the path from a synthetic feed's tick to a row the new
+market data model owns, and fix what does not hold. The feed already speaks
+oresmd and can auto-create a =feed_binding=; the work is to show, end to end,
+that its series is registered under the oresmd series identity, that each
+observation lands under the right tenant, party, source and point identity,
+that a reader can tell the data was generated rather than observed, and that a
+consumer such as the curve bootstrap reads it and says where it came from.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Reconnaissance done; the ingest path is traced and two gaps are named. The provenance axis needs a decision before it is implemented. |
+| Waiting on   | The provenance decision in =* Decisions= below. |
+| Next         | Prove the persist path with a test, then implement the chosen provenance. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -43,9 +49,53 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What exists today, traced
+
+- A feed publishes a =market_tick= (=oresmd_uri= quote URI, =value=,
+  =observation_time=, =source=) on =synthetic.v1.tick.<source>= (or the
+  sandbox prefix).
+- =ores::marketdata::service::app::feed_ingest_loop= subscribes to every
+  producer's ticks. =refresh()= caches the enabled =feed_binding=s by source;
+  each binding is one consumer. =persist()= runs per binding:
+  - derives the series URI with =oresmd_uri_codec::write(series_of(datum))=;
+  - creates the =market_series= row if the tenant+party+series URI has none,
+    with =series_subclass= from =series_classifier= and
+    =market_series_asset_class= rows;
+  - writes one =market_observation= with =series_id=, =observation_datetime=,
+    =value=, =source= and the point =oresmd_uri=;
+  - drops a tick from a source with no enabled binding, one warning per source.
+- The synthetic =feed_controller= auto-creates the =feed_binding= for a bound
+  feed, and a sandboxed feed never gets one.
+
+So acceptance 1 and most of 2 already hold on paper. What is missing is proof
+and the provenance axis.
+
+** Gaps
+
+1. *Nothing says generated.* =market_series.derivation_kind= defaults to
+   =OBSERVED=, and the =OBSERVED= seed's own description says it is the default
+   "for every existing producer (synthetic, vendor feeds)". The model therefore
+   treats a synthetic series as observed, because *observed* currently means
+   "directly published, not derived", not "real". There is no axis that says
+   real versus generated. =market_observation= carries only =source=.
+2. *No test proves the persist path.* =app_tick_plan_tests= covers routing, and
+   =feed_controller_tests= covers start/stop, but nothing drives a tick through
+   =persist()= and reads back the rows.
+
+** Decisions
+
+**D1. Provenance is a second axis, not =derivation_kind=.** =derivation_kind=
+answers "was this published or computed?" (=OBSERVED= vs =IR_CURVE_BOOTSTRAP=,
+=CRM_DERIVATION=), and a synthetic feed is genuinely published, so calling it a
+derivation would break that meaning. Real-versus-generated is a separate axis
+about the *producer*, and belongs where the producer is known: the
+=feed_binding='s producer kind, propagated to the series (and readable per
+observation). Recommended: a =producer_kind= code (=VENDOR= / =SYNTHETIC=) on
+the binding, stamped on the series and the observation.
+
+**D2. Work in slices.** (1) an integration test that drives =persist()= and
+asserts the series and observation, and that an unbound source is dropped;
+(2) the provenance axis from D1; (3) the curve bootstrap consumer check.
 
 * Measurements
 

@@ -41,7 +41,7 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:ABEC9FC0-A354-4AC7-9982-B5AAC1292614][Scaffold story: Implement synthetic data generation against the new market data model]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement Implement synthetic data generation against the new market data model]] | BACKLOG | | | Initial task for: Implement synthetic data generation against the new market data model |
+| [[id:2178AA83-4A4C-4734-8837-33F158FA5A3C][Implement Implement synthetic data generation against the new market data model]] | STARTED | 2026-10-06 | | Initial task for: Implement synthetic data generation against the new market data model |
 
 * Decisions
 

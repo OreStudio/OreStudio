@@ -8,7 +8,7 @@
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
 #+branch: feature/book-trade-through-repositories
-#+pr:
+#+pr: 2718
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -227,7 +227,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2718][#2718]] | [database,trading] Book a trade through the repositories |
 
 * Review
 

@@ -62,7 +62,7 @@ std::vector<domain::run_grant> read_one(repository::run_grant_repository& repo,
     return repo.read_latest_by_resource(ctx, key.resource);
 }
 
-} // namespace
+}
 
 messaging::list_run_grants_response
 run_grant_service::list_run_grants(const messaging::list_run_grants_request& request) {

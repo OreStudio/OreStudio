@@ -38,7 +38,7 @@ inline auto& run_grant_operations_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.run_grant_operations_handler");
     return instance;
 }
-} // namespace
+}
 
 /**
  * @brief Hand-written NATS handler for creating and revoking run grants.
@@ -110,6 +110,6 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
-} // namespace ores::iam::messaging
+}
 
 #endif

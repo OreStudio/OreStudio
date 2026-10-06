@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-05T22:43:40.685495Z
+' Generated: 2026-10-06T09:10:58.147069Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -473,6 +473,47 @@ package "iam" #E8F4FD {
     prefix -- iam.v1.roles.assign, .revoke, .by-account,
     .permissions and .suggest-commands -- so the two coexist rather than
     compete, and no handler is suppressed here.
+    end note
+
+    entity ores_iam_run_grants_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * resource : text
+        * grantor_account_id : uuid <<FK>>
+        * role_id : uuid <<FK>>
+        * audience : text
+          max_runs : integer
+          not_after : timestamptz
+          revoked_at : timestamptz
+          revoked_by : text
+          revoke_reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_run_grants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Run Grant Table
+    A run grant records that a person allows the runs of one resource, such as a
+    scheduled report definition, to act in one tenant and one party with one role.
+    It holds no secret: using it needs a step service's own token and the token
+    exchange, and IAM re-checks the grant and its grantor at every use. It is IAM's
+    form of the Grant Management pattern, and
+    [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+    its checks and its lifecycle.
+    The table is readable over the wire and written only by IAM's own create and
+    revoke operations, which check that the grantor holds the role in the party:
+    :client_read_only: removes the generic write verbs from the wire and keeps
+    the repository writable for those operations.
     end note
 
     entity ores_iam_seed_profile_parameters_tbl <<temporal>> #C6F0D8 {
@@ -7856,6 +7897,31 @@ package "variability" #E8F5E9 {
 ' ==================== telemetry (Telemetry & Logging) ====================
 '
 package "telemetry" #FCE4EC {
+    entity ores_telemetry_expected_services_tbl  #F7E5FF {
+        * service_name : text <<PK>>
+        --
+        * replicas : integer
+        * display_name : text
+        * description : text
+          service_account : text
+    }
+
+    note right of ores_telemetry_expected_services_tbl
+    Expected Services
+    The services the installation runs and how many instances of each it
+    expects. The rows are generated from the service registry
+    (projects/modeling/service_registry.org) into
+    populate/telemetry/telemetry_expected_services_populate.sql, so the registry
+    stays the one source. The services roster joins these rows with the last
+    heartbeat of each instance, so an expected instance that never reports
+    still has a row.
+    The display name is the name a person reads, such as Analytics Service,
+    and the description says what the service does. The service account is the
+    IAM account the process signs in as, null for a process that signs in as
+    no account of its own.
+    Installation-level, like the heartbeat samples: no tenant owns a service.
+    end note
+
     entity ores_telemetry_logs_tbl  #F7E5FF {
         * id : uuid <<PK>>
         * timestamp : timestamptz <<PK>>

@@ -48,7 +48,8 @@ namespace ores::compute::messaging {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
-                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             ores::nats::service::nats_client outbound_nats) {
     std::vector<ores::nats::service::subscription> subs;
 
     // Generated per-entity registrars (hosts, apps, app versions, the
@@ -109,7 +110,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report execution: submit to compute grid (workflow step handler).
     // ----------------------------------------------------------------
-    auto rsh = std::make_shared<report_submit_handler>(nats, ctx);
+    auto rsh = std::make_shared<report_submit_handler>(nats, ctx, outbound_nats);
     subs.push_back(nats.queue_subscribe(
         std::string(ores::reporting::messaging::submit_compute_request::nats_subject),
         "ores.compute.service",

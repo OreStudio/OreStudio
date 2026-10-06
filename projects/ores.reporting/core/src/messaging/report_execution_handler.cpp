@@ -79,23 +79,7 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
  * Nothing the cache holds outlives the step, so no token sits in memory between
  * steps. The destructor runs on every return, including the failure paths.
  */
-class step_token_scope final {
-public:
-    step_token_scope(ores::service::service::cache::run_token_cache& cache, std::string run_id)
-        : cache_(cache)
-        , run_id_(std::move(run_id)) {}
-
-    ~step_token_scope() { cache_.evict_run(run_id_); }
-
-    step_token_scope(const step_token_scope&) = delete;
-    step_token_scope& operator=(const step_token_scope&) = delete;
-    step_token_scope(step_token_scope&&) = delete;
-    step_token_scope& operator=(step_token_scope&&) = delete;
-
-private:
-    ores::service::service::cache::run_token_cache& cache_;
-    std::string run_id_;
-};
+using run_token_step_scope = ores::service::service::cache::run_token_step_scope;
 
 } // namespace
 
@@ -189,7 +173,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
-    step_token_scope step_tokens(run_tokens_, req.report_instance_id);
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_trades starting | instance=" << req.report_instance_id
                               << " definition=" << req.definition_id;
@@ -296,7 +280,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
-    step_token_scope step_tokens(run_tokens_, req.report_instance_id);
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_market_data starting | instance="
                               << req.report_instance_id;

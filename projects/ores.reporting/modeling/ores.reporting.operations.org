@@ -380,6 +380,22 @@ The report definition whose run document and configuration the package holds.
 :cpp_type: std::string
 :END:
 
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party the run acts as, copied from the definition. The packaging step scopes
+its read of the run document and its configuration to this party.
+
+*** run_grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The grant the run was admitted under. The step exchanges it for a run token; the
+id is not a credential.
+
 *** correlation_id
 :PROPERTIES:
 :cpp_type: std::string
@@ -431,6 +447,22 @@ Step 4: submit tarballs to the compute grid. Served by ores.compute.service.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party the run acts as, copied from the definition. The submission scopes the
+batch and its workunits to this party.
+
+*** run_grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The grant the run was admitted under. The step exchanges it for a run token; the
+id is not a credential.
 
 *** correlation_id
 :PROPERTIES:
@@ -603,6 +635,22 @@ on a subject of its own.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party the run acts as, copied from the definition. Every step builder states
+it to the step that follows, so a step service scopes its own work to it.
+
+*** run_grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The grant the run was admitted under, recorded on the instance. A step builder
+states it to each step that exchanges it for a run token.
 
 *** correlation_id
 :PROPERTIES:

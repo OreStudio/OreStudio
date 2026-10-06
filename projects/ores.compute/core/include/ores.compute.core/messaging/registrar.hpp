@@ -23,6 +23,7 @@
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
@@ -35,7 +36,8 @@ public:
     static std::vector<ores::nats::service::subscription> register_handlers(
         ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        ores::nats::service::nats_client outbound_nats);
 };
 
 }

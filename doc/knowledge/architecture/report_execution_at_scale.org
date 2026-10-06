@@ -271,15 +271,16 @@ instance for that firing and returns it.
 
 Reporting creates the instance and publishes =workflow.v1.start=. The workflow
 instance id is created by reporting and recorded on the instance. A repeated
-start therefore opens the same run. The instance also records the grant id it was
-admitted under, and every step reads that id from the instance. The request
-carries:
+start therefore opens the same run. The instance records the grant id it was
+admitted under, and the workflow request carries that same id, so a step service
+exchanges it for a run token without reading reporting. The request carries:
 
 #+ATTR_HTML: :class hug-leading
 | Field | Why the run needs it |
 |-------+----------------------|
 | the report instance id | the run id; the =run_id= claim of the token |
-| the tenant and the party | the step headers; the check at exchange |
+| the tenant and the party | the step request; the check at exchange, and the scope of the step's own reads and writes |
+| the grant id | the exchange |
 | the as-of instant | the instant of the firing; every bitemporal read of the run uses it |
 | the run configuration | the chain the engine builds |
 | the definition id | the run document to read |

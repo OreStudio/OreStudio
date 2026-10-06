@@ -26,6 +26,7 @@
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
@@ -54,9 +55,12 @@ std::string assignment_subject(const std::string& tenant_id) {
 } // namespace
 
 report_submit_handler::report_submit_handler(ores::nats::service::client& nats,
-                                             ores::database::context ctx)
+                                             ores::database::context ctx,
+                                             ores::nats::service::nats_client service_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(std::move(ctx))
+    , service_nats_(std::move(service_nats))
+    , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
 void report_submit_handler::submit(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
@@ -80,7 +84,19 @@ void report_submit_handler::submit(ores::nats::message msg) {
             return;
         }
 
-        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
+        ores::service::service::cache::run_token_step_scope step_tokens(run_tokens_,
+                                                                       req.report_instance_id);
+        const ores::service::service::cache::run_token_key key{
+            .grant_id = req.run_grant_id, .run_id = req.report_instance_id};
+        if (run_tokens_.token_for(key, req.tenant_id).empty()) {
+            wf->fail("submit_compute: the run has no run token; its grant is missing or IAM "
+                     "refused the exchange");
+            return;
+        }
+
+        auto tenant_ctx = ores::service::messaging::for_requested_party(
+            ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id),
+            req.party_id);
 
         const auto batch_uuid = boost::uuids::random_generator()();
         const auto batch_id = boost::uuids::to_string(batch_uuid);

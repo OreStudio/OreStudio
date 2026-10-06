@@ -143,20 +143,20 @@ report_operations assemble-bundle __none__ __none__ __none__ __none__ __none__ _
 :ID: FAA80C51-0DFB-50B6-B78F-DFC4025F0F26
 :END:
 
-Sends =prepare_ore_package_request= and prints =prepare_ore_package_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =bundle_id=, =tenant_id=, =correlation_id=, =trades_storage_key=, =market_data_storage_key=, in that order. The caller must have established a session first.
+Sends =prepare_ore_package_request= and prints =prepare_ore_package_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =bundle_id=, =tenant_id=, =party_id=, =run_grant_id=, =correlation_id=, =trades_storage_key=, =market_data_storage_key=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
+report_operations prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id> <party_id> <run_grant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
 #+end_example
 
 It is addressed at =ore.v1.report.prepare-package=.
 
 #+name: report_operations-prepare-ore-package
 #+begin_src ores-shell :tangle report_operations-prepare-ore-package.ores :exports none
-report_operations prepare-ore-package __none__ __none__ __none__ __none__ __none__ __none__ __none__
+report_operations prepare-ore-package __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
 ** =submit-compute=
@@ -164,20 +164,20 @@ report_operations prepare-ore-package __none__ __none__ __none__ __none__ __none
 :ID: 6BC90285-5367-5771-A1F1-228AF637CA23
 :END:
 
-Sends =submit_compute_request= and prints =submit_compute_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =tarball_uris=, in that order. The caller must have established a session first.
+Sends =submit_compute_request= and prints =submit_compute_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =party_id=, =run_grant_id=, =correlation_id=, =tarball_uris=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations submit-compute <report_instance_id> <tenant_id> <correlation_id> <tarball_uris>
+report_operations submit-compute <report_instance_id> <tenant_id> <party_id> <run_grant_id> <correlation_id> <tarball_uris>
 #+end_example
 
 It is addressed at =compute.v1.report.submit=.
 
 #+name: report_operations-submit-compute
 #+begin_src ores-shell :tangle report_operations-submit-compute.ores :exports none
-report_operations submit-compute __none__ __none__ __none__ __none__
+report_operations submit-compute __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
 ** =collect-compute-results=

@@ -209,6 +209,30 @@ private:
     std::list<run_token_key> recency_;
 };
 
+/**
+ * @brief Drops a run's cached tokens when the scope ends.
+ *
+ * A step wraps its work in one of these, so nothing the cache holds outlives
+ * the step on any return path, including a failure.
+ */
+class run_token_step_scope final {
+public:
+    run_token_step_scope(run_token_cache& cache, std::string run_id)
+        : cache_(&cache)
+        , run_id_(std::move(run_id)) {}
+
+    ~run_token_step_scope() { cache_->evict_run(run_id_); }
+
+    run_token_step_scope(const run_token_step_scope&) = delete;
+    run_token_step_scope& operator=(const run_token_step_scope&) = delete;
+    run_token_step_scope(run_token_step_scope&&) = delete;
+    run_token_step_scope& operator=(run_token_step_scope&&) = delete;
+
+private:
+    run_token_cache* cache_;
+    std::string run_id_;
+};
+
 }
 
 #endif

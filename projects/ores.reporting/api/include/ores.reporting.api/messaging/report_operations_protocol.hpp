@@ -199,6 +199,8 @@ struct prepare_ore_package_request {
     std::string definition_id;
     std::string bundle_id;
     std::string tenant_id;
+    std::string party_id;
+    std::string run_grant_id;
     std::string correlation_id;
     std::string trades_storage_key;
     std::string market_data_storage_key;
@@ -222,6 +224,8 @@ struct submit_compute_request {
     static constexpr bool requires_session = true;
     std::string report_instance_id;
     std::string tenant_id;
+    std::string party_id;
+    std::string run_grant_id;
     std::string correlation_id;
     std::vector<std::string> tarball_uris;
 };
@@ -298,6 +302,8 @@ struct report_execution_request {
     std::string report_instance_id;
     std::string definition_id;
     std::string tenant_id;
+    std::string party_id;
+    std::string run_grant_id;
     std::string correlation_id;
     std::string pre_processing;
     std::string prepared_input_key;

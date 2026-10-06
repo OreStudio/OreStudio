@@ -112,9 +112,13 @@ task and name that file in the Command column.
   definition is later re-scheduled or unscheduled. An earlier cut read the
   definition's =run_grant_id= at step time and shared the definition's current
   consent across every run; the instance field removes that.
-- Two of the owners the design names are not wired yet. =ores.ore= reads the
-  configuration documents through its own steps, and =ores.compute= obtains the
-  run token to create its batch. Those follow the same shape.
+- The other two step services are wired. The workflow request carries the run's
+  party and grant id, and the chain builders state them to the
+  =prepare_ore_package= and =submit_compute= steps. =ores.ore= exchanges the
+  grant for a run token, calls storage with it, and scopes its export of the run
+  document and configuration to the party. =ores.compute= exchanges the grant and
+  scopes the batch and its workunits to the party, so the run's authority is
+  checked before the grid sees the work.
 - Eviction is wired for the reporting steps. A step-scoped guard drops the run's
   entries when the step ends, on every return, and the terminal handlers drop
   them again when the run completes or fails. The bounded LRU remains the

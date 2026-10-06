@@ -381,6 +381,11 @@ private:
         report_execution_request exec_req{.report_instance_id = instance_id,
                                           .definition_id = boost::uuids::to_string(def.id),
                                           .tenant_id = boost::uuids::to_string(req.tenant_id),
+                                          .party_id = boost::uuids::to_string(def.party_id),
+                                          .run_grant_id = def.run_grant_id ?
+                                                              boost::uuids::to_string(
+                                                                  *def.run_grant_id) :
+                                                              std::string{},
                                           .correlation_id = instance_id,
                                           .pre_processing = def.pre_processing,
                                           .prepared_input_key = def.prepared_input_key,

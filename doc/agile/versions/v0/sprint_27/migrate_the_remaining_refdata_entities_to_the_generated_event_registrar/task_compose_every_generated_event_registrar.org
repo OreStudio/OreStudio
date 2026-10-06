@@ -2,7 +2,7 @@
 :ID: 85908C64-31A3-4899-8EF8-7DC1C5D5A70D
 :END:
 #+title: Task: Compose every generated event registrar
-#+description: Twenty-three refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path.
+#+description: Eighty-five refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path.
 #+type: task
 #+level: s1
 #+filetags: :migrate_the_remaining_refdata_entities_to_the_generated_event_registrar:sprint_27:v0:

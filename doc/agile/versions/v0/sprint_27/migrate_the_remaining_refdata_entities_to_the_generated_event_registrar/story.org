@@ -2,7 +2,7 @@
 :ID: BA5BCF3B-8953-455D-85F9-1E05A49D9623
 :END:
 #+title: Story: Migrate the remaining refdata entities to the generated event registrar
-#+description: Twenty-three refdata entities generate an event-mapping registrar that nothing composes, so their changes reach no consumer; eight still publish through the hand-wired path in application.cpp. Compose every generated registrar and retire the hand-wired path, so one composition point carries every entity's events.
+#+description: Eighty-five refdata entities generate an event-mapping registrar that nothing composes, so their changes reach no consumer; eight still publish through the hand-wired path in application.cpp. Compose every generated registrar and retire the hand-wired path, so one composition point carries every entity's events.
 #+type: story
 #+level: s2
 #+filetags: :codegen:eventing:refdata:sprint_27:v0:
@@ -44,7 +44,7 @@ events, and a gate keeps it that way.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:85908C64-31A3-4899-8EF8-7DC1C5D5A70D][Compose every generated event registrar]] | STARTED | 2026-10-06 | | Twenty-three refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path. |
+| [[id:85908C64-31A3-4899-8EF8-7DC1C5D5A70D][Compose every generated event registrar]] | STARTED | 2026-10-06 | | Eighty-five refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path. |
 
 * Decisions
 

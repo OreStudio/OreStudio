@@ -147,3 +147,41 @@ TEST_CASE("build_tree_keeps_first_occurrence_of_duplicate_ids", tags) {
     REQUIRE(root.children.size() == 1);
     CHECK(root.children[0].name == "First");
 }
+
+TEST_CASE("build_tree_keeps_every_row_of_a_parent_cycle", tags) {
+    auto firstId = boost::uuids::random_generator()();
+    auto secondId = boost::uuids::random_generator()();
+
+    // A ring with no entry: the first's parent is the second, and the
+    // second's parent is the first, so neither is a root.
+    std::vector<ores::utility::domain::hierarchy_flat_row> rows{
+        make_row(firstId, secondId, "First"),
+        make_row(secondId, firstId, "Second"),
+    };
+
+    auto forest = ores::utility::domain::build_tree(rows);
+
+    // A ring is reached by no root, so without the guard its rows would be
+    // dropped. The first row is promoted to a root, and the ring closes on
+    // itself without recursing forever.
+    REQUIRE(forest.size() == 1);
+    CHECK(forest[0].name == "First");
+    REQUIRE(forest[0].children.size() == 1);
+    CHECK(forest[0].children[0].name == "Second");
+    CHECK(forest[0].children[0].children.empty());
+}
+
+TEST_CASE("build_tree_breaks_a_self_parented_row", tags) {
+    auto selfId = boost::uuids::random_generator()();
+
+    // A row whose parent is itself: a ring of one, with no root.
+    std::vector<ores::utility::domain::hierarchy_flat_row> rows{
+        make_row(selfId, selfId, "Self"),
+    };
+
+    auto forest = ores::utility::domain::build_tree(rows);
+
+    REQUIRE(forest.size() == 1);
+    CHECK(forest[0].name == "Self");
+    CHECK(forest[0].children.empty());
+}

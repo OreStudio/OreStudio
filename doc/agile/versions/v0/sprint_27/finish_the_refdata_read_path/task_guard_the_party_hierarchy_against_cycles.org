@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :finish_the_refdata_read_path:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-tenant-and-party-search-order-and-history
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

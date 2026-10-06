@@ -93,6 +93,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:B30B52D7-E6C9-438B-8F38-DA776F0C86A9][Hotfix: Continuous Linux red and the site build cancelled on every push]] | DONE | | 2026-10-06 | Continuous Linux fails the Boost port check on a header Boost.ContainerHash owns, and the site build fires on every push so its runs cancel each other. |
 | [[id:5684FD21-4381-4940-9858-65C81907EB88][Hotfix: Windows MSVC build treats an unused catch parameter as an error]] | DONE | | 2026-10-06 | MSVC stops the Windows build at publish_service.cpp:196 with C4101 'e': unreferenced local variable, promoted to error C2220 by /W4 /WX. |
 | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] | BACKLOG | | | An installation brings itself up from a bundle that is the whole set of datasets it is read from, and the leftovers the first pass of that fix exposed are closed: the remaining system-tenant datasets swept in, the ER diagram image matched to its source, the web service's account settled, and the fpml dependency generator made to run. |
+| [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] | BACKLOG | | | GitHub CI makes every pull request wait for checks a workstation can run faster. Give the repo one command that reads the change, classifies it, runs exactly the checks that class needs, and prints one report that names every failure and its fix. Ship the decision tree with the runner, so a documentation change never pays for a C++ build. |
 
 * Achievements
 

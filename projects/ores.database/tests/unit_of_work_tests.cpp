@@ -178,15 +178,14 @@ TEST_CASE("a failed insert leaves no earlier row in the unit of work", tags) {
 }
 
 /**
- * @brief Records a defect in sqlgen, not a property of the unit of work.
+ * @brief A read joins the unit of work's transaction without ending it.
  *
- * sqlgen's postgres iterator wraps every read in its own transaction and ends
- * it with END, which PostgreSQL reads as COMMIT. A read inside a unit of work
- * therefore commits it. This test pins that behaviour so the day an overlay
- * for sqlgen lands, the failure here is the signal to invert the assertion and
- * drop the read-free claims the booking service states.
+ * The read runs through sqlgen's postgres iterator, which the overlay patch
+ * stops from running its own BEGIN and END around a transaction it joined. The
+ * insert that follows the read is therefore still part of the unit of work,
+ * and destroying the unit of work without commit rolls it back.
  */
-TEST_CASE("a read inside a unit of work commits the transaction", tags) {
+TEST_CASE("a read inside a unit of work does not commit it", tags) {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto code =
@@ -215,5 +214,5 @@ TEST_CASE("a read inside a unit of work commits the transaction", tags) {
         lg,
         "probe");
     REQUIRE(rows.size() == 1);
-    CHECK(rows[0][0].value_or("?") == "1");
+    CHECK(rows[0][0].value_or("?") == "0");
 }

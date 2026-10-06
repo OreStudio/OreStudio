@@ -53,8 +53,14 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     messaging::book_trade_response response;
 
+    // One transaction writes the anchor, the activity, the booking and the
+    // state, so a failure in any of them leaves none of them. A read made
+    // through the transaction joins it without ending it.
+    unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
     repository::trade_repository trades;
-    if (!trades.read_latest(ctx_, boost::uuids::to_string(anchor.id)).empty()) {
+    if (!trades.read_latest(ctx, boost::uuids::to_string(anchor.id)).empty()) {
         response.result.outcome = outcome::conflict;
         response.result.code = "already_exists";
         response.result.message =
@@ -90,19 +96,9 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     state.party_id = anchor.party_id;
     state.status_id = boost::uuids::uuid{};
 
-    // The read helpers hand out a cursor wrapped in BEGIN/END, and PostgreSQL
-    // reads END as COMMIT, so a write that reads commits this unit of work
-    // before the next one runs. The four writes below therefore state a claim
-    // that reads nothing. The anchor and the activity are current-state
-    // tables, and a claim of 'any' leaves them unread; the booking and the
-    // state are versioned, and a claim of must-not-exist states version zero
-    // without a read.
-    unit_of_work uow(ctx_);
-    const auto& ctx = uow.ctx();
-    const precondition any_claim{precondition_kind::any, std::nullopt};
     const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};
-    trades.write(ctx, anchor, any_claim);
-    repository::trade_activity_repository{}.write(ctx, activity, any_claim);
+    trades.write(ctx, anchor, must_not_exist);
+    repository::trade_activity_repository{}.write(ctx, activity, must_not_exist);
     repository::trade_booking_repository{}.write(ctx, booking, must_not_exist);
     repository::trade_state_repository{}.write(ctx, state, must_not_exist);
 

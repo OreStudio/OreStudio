@@ -24,6 +24,34 @@
 -- These policies enforce strict tenant isolation for trade tables.
 
 -- -----------------------------------------------------------------------------
+-- Trade activities
+-- -----------------------------------------------------------------------------
+alter table ores_trading_trade_activities_tbl enable row level security;
+
+drop policy if exists trade_activities_tenant_isolation_policy
+    on ores_trading_trade_activities_tbl;
+
+create policy trade_activities_tenant_isolation_policy on ores_trading_trade_activities_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement, as on trades. FOR SELECT only, so the
+-- booking write is checked by its own party validation.
+drop policy if exists trade_activities_party_isolation_policy
+    on ores_trading_trade_activities_tbl;
+
+create policy trade_activities_party_isolation_policy
+on ores_trading_trade_activities_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- Trades
 -- -----------------------------------------------------------------------------
 alter table ores_trading_trades_tbl enable row level security;

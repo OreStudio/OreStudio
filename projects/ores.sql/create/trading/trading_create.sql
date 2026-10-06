@@ -290,6 +290,10 @@
 \ir ./trading_scripted_instruments_create.sql
 \ir ./trading_scripted_instruments_notify_trigger_create.sql
 
+-- Trade activities (depend on the activity types above)
+\ir ./trading_trade_activities_create.sql
+\ir ./trading_trade_activities_notify_trigger_create.sql
+
 -- Trades (depend on the classification lookups above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

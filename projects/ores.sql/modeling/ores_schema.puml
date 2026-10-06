@@ -11015,6 +11015,34 @@ package "trading" #E8F5E9 {
     Bermudan, or American.
     end note
 
+    entity ores_trading_trade_activities_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+        * activity_type_code : text
+        * actor : text
+        * occurred_at : timestamptz
+        * comment : text
+        * is_operational_error : boolean
+    }
+
+    note right of ores_trading_trade_activities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Activity Table
+    One business event on a trade: what kind of event it was, who did it, when
+    it happened, why, and whether it corrects an operational error. An
+    activity is written once and never changed. Every component version names
+    the activity that caused it, so a version's cause is a row rather than a
+    code copied onto each table, and the axes the
+    [[id:9695568B-0A54-4DEE-952A-EC284ED635C7][activity type]] states (economic, confirmable, real, priority) are read
+    from one place.
+    A null amend is an activity like any other: it is recorded, and because
+    its type is not real it versions nothing.
+    end note
+
     entity ores_trading_trade_additional_fields_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>

@@ -79,6 +79,11 @@ struct book_trade_response {
      * the trade id is already booked.
      */
     ores::utility::domain::result result;
+    /**
+     * @brief The activity that booked the trade; absent when the booking was
+     * refused.
+     */
+    std::optional<boost::uuids::uuid> activity_id;
 };
 
 /**

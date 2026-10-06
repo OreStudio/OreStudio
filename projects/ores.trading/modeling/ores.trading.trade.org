@@ -247,8 +247,8 @@ counterparty to: a database pin can only name a key, and the primary key
 :PROPERTIES:
 :entity_singular_short: trade
 :entity_plural_short:   trades
-:entity_singular_words: trade anchor
-:entity_plural_words:   trade anchors
+:entity_singular_words: trade
+:entity_plural_words:   trades
 :END:
 
 ** Domain includes

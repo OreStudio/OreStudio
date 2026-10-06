@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: 6B361413-828D-4F84-8AD7-58DA1442580B
+:END:
+#+title: ores.trading.trade_activity
+#+description: Codegen entity model for the trading trade_activity table: the append-only record of one business event on the trades it touches.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One business event on a trade, recorded once and never changed.
+#+entity_singular: trade_activity
+#+entity_plural: trade_activities
+#+entity_title: Trade Activity
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+One business event on a trade: what kind of event it was, who did it, when
+it happened, why, and whether it corrects an operational error. An
+activity is written once and never changed. Every component version names
+the activity that caused it, so a version's cause is a row rather than a
+code copied onto each table, and the axes the
+[[id:9695568B-0A54-4DEE-952A-EC284ED635C7][activity type]] states (economic, confirmable, real, priority) are read
+from one place.
+
+A null amend is an activity like any other: it is recorded, and because
+its type is not real it versions nothing.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       read-only-current-state
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The activity id.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The firm's legal entity on whose trades the activity happened. Party
+isolation reads it, as it reads the trade's.
+
+** activity_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What kind of event this was.
+
+** actor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Who did it: an account username, or the service that acted for one.
+
+** occurred_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the event happened. The time it was recorded is the row's own.
+
+** comment
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why it happened, in the actor's words.
+
+** is_operational_error
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default:       false
+:default_value: false
+:END:
+
+True when the activity corrects a mistake made in operating the trade
+rather than a change the business asked for.
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** activity_type_code
+:PROPERTIES:
+:table:             ores_trading_activity_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid activity_type_code: %. No active activity type found with this code.
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_trade_activities_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+** Indexes
+
+| name          | columns                          | unique | current_only | where_extra |
+|---------------+----------------------------------+--------+--------------+-------------|
+| party         | tenant_id, party_id              | false  | false        |             |
+| activity_type | tenant_id, activity_type_code    | false  | false        |             |
+| occurred_at   | tenant_id, occurred_at           | false  | false        |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: activity
+:entity_plural_short:   activities
+:entity_singular_words: trade activity
+:entity_plural_words:   trade activities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: act
+:END:
+
+** Table display
+
+| column             | header        |
+|--------------------+---------------|
+| id                 | Activity Id   |
+| activity_type_code | Activity Type |
+| actor              | Actor         |
+| occurred_at        | Occurred At   |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the taxonomy of what can happen to a trade.

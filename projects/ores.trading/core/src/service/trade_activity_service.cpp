@@ -22,10 +22,10 @@
  * Template: cpp_service.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.trading.core/service/trade_service.hpp"
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/service/trade_activity_service.hpp"
+#include "ores.trading.api/domain/trade_activity.hpp"
+#include "ores.trading.api/messaging/trade_activity_protocol.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -48,7 +48,7 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_service::trade_service(context ctx)
+trade_activity_service::trade_activity_service(context ctx)
     : ctx_(std::move(ctx)) {}
 namespace {
 
@@ -63,23 +63,23 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::trade> read_one(repository::trade_repository& repo,
-                                    const ores::database::context& ctx,
-                                    const messaging::trade_key& key) {
+std::vector<domain::trade_activity> read_one(repository::trade_activity_repository& repo,
+                                             const ores::database::context& ctx,
+                                             const messaging::trade_activity_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 }
 
-messaging::list_trades_response
-trade_service::list_trades(const messaging::list_trades_request& request) {
-    messaging::list_trades_response response;
+messaging::list_trade_activities_response trade_activity_service::list_trade_activities(
+    const messaging::list_trade_activities_request& request) {
+    messaging::list_trade_activities_response response;
     if (!request.order.field.empty() &&
-        !repository::trade_repository::is_sortable(request.order.field)) {
+        !repository::trade_activity_repository::is_sortable(request.order.field)) {
         response.result.outcome = ores::utility::domain::outcome::invalid;
         response.result.code = "order_not_supported";
         response.result.message =
-            "A list of trades cannot be ordered by " + request.order.field + ".";
+            "A list of trade activities cannot be ordered by " + request.order.field + ".";
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
@@ -88,97 +88,101 @@ trade_service::list_trades(const messaging::list_trades_request& request) {
         response.result.message = "The filter lists more than 1000 values in id_one_of.";
         return response;
     }
-    response.trades =
+    response.activities =
         repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_trade_count(ctx_, request.filter);
+    response.total = repo_.get_total_activity_count(ctx_, request.filter);
     return response;
 }
 
-messaging::get_trade_response
-trade_service::get_trade(const messaging::get_trade_request& request) {
-    messaging::get_trade_response response;
+messaging::get_trade_activity_response
+trade_activity_service::get_trade_activity(const messaging::get_trade_activity_request& request) {
+    messaging::get_trade_activity_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result.outcome = ores::utility::domain::outcome::missing;
         response.result.code = "not_found";
         return response;
     }
-    response.trade = std::move(found.front());
+    response.trade_activity = std::move(found.front());
     return response;
 }
 
-messaging::get_many_trades_response
-trade_service::get_many_trades(const messaging::get_many_trades_request& request) {
-    messaging::get_many_trades_response response;
+messaging::get_many_trade_activities_response trade_activity_service::get_many_trade_activities(
+    const messaging::get_many_trade_activities_request& request) {
+    messaging::get_many_trade_activities_response response;
     // One entry per requested key, in the order asked for, so the reply is
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
     for (const auto& k : request.keys) {
-        messaging::trade_lookup entry;
+        messaging::trade_activity_lookup entry;
         entry.key = k;
         auto found = read_one(repo_, ctx_, k);
         if (!found.empty())
-            entry.trade = std::move(found.front());
+            entry.trade_activity = std::move(found.front());
         response.entries.push_back(std::move(entry));
     }
     return response;
 }
 
 
-std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all trades";
+std::vector<domain::trade_activity> trade_activity_service::list_activities(std::uint32_t offset,
+                                                                            std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all trade activities";
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::uint32_t trade_service::count_trades() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total trades count";
-    return repo_.get_total_trade_count(ctx_);
+std::uint32_t trade_activity_service::count_activities() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trade activities count";
+    return repo_.get_total_activity_count(ctx_);
 }
 
 
-std::optional<domain::trade> trade_service::get_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting trade. " << "id: " << id;
+std::optional<domain::trade_activity>
+trade_activity_service::get_activity(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade activity. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-std::vector<domain::trade> trade_service::get_trades(const std::vector<std::string>& ids) {
+std::vector<domain::trade_activity>
+trade_activity_service::get_activities(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 
-void trade_service::save_trade(const domain::trade& v) {
+void trade_activity_service::save_activity(const domain::trade_activity& v) {
     if (v.id.is_nil())
-        throw std::invalid_argument("Trade id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade. " << "id: " << v.id;
+        throw std::invalid_argument("Trade Activity id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade activity. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved trade activity. " << "id: " << v.id;
 }
 
-void trade_service::save_trades(const std::vector<domain::trade>& trades) {
-    for (const auto& e : trades) {
+void trade_activity_service::save_activities(
+    const std::vector<domain::trade_activity>& activities) {
+    for (const auto& e : activities) {
         if (e.id.is_nil())
-            throw std::invalid_argument("Trade id cannot be empty.");
+            throw std::invalid_argument("Trade Activity id cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
-    auto ts = trades;
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << activities.size() << " trade activities";
+    auto ts = activities;
     for (auto& e : ts) {
         stamp(e, ctx_);
     }
     repo_.write(ctx_, ts);
 }
 
-void trade_service::delete_trade(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade. " << "id: " << id;
+void trade_activity_service::delete_activity(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade activity. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed trade. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade activity. " << "id: " << id;
 }
 
-void trade_service::delete_trades(const std::vector<std::string>& ids) {
+void trade_activity_service::delete_activities(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
 

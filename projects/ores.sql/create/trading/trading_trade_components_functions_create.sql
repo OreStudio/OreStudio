@@ -132,16 +132,17 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
 -- Book a trade
 -- =============================================================================
 
--- Books a trade: writes its anchor, its booking and its first state in one
--- statement, so a failure in any of them writes none. The booking and the
--- state take their trade id and party from the anchor, and the booking its
--- counterparty. The booking is written before the state, so a draft may sit in
--- a virtual book and a live actual trade may not.
+-- Books a trade: writes its anchor, the activity that books it, its booking
+-- and its first state in one statement, so a failure in any of them writes
+-- none. The activity, the booking and the state take their party from the
+-- anchor, and the booking its counterparty. The booking is written before the
+-- state, so a draft may sit in a virtual book and a live actual trade may not.
 --
--- Returns false, and writes nothing, when the trade id is already booked: the
--- anchor is written once, and a second booking of it is a conflict for the
--- caller to report rather than a key violation. Runs as the caller, so the
--- caller's grants and row-level security apply to every write.
+-- Returns the activity's id. Returns null, and writes nothing, when the trade
+-- id is already booked: the anchor is written once, and a second booking of
+-- it is a conflict for the caller to report rather than a key violation. Runs
+-- as the caller, so the caller's grants and row-level security apply to every
+-- write.
 create or replace function ores_trading_book_trade_fn(
     p_id                  uuid,
     p_party_id            uuid,
@@ -161,9 +162,10 @@ create or replace function ores_trading_book_trade_fn(
     p_change_reason_code  text,
     p_change_commentary   text
 )
-returns boolean as $$
+returns uuid as $$
 declare
     v_tenant_id uuid := ores_iam_current_tenant_id_fn();
+    v_activity_id uuid := gen_random_uuid();
 begin
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
         trade_type, counterparty_scope, booking_nature, entry_channel)
@@ -172,8 +174,13 @@ begin
     on conflict (tenant_id, id) do nothing;
 
     if not found then
-        return false;
+        return null;
     end if;
+
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    values (v_activity_id, v_tenant_id, p_party_id, p_activity_type_code, p_modified_by,
+        coalesce(p_execution_timestamp, now()), coalesce(p_change_commentary, ''));
 
     insert into ores_trading_trade_bookings_tbl (trade_id, tenant_id, version, party_id,
         counterparty_id, book_id, netting_set_id, counterparty_identifier_id,
@@ -191,7 +198,7 @@ begin
         ores_utility_nil_uuid_fn(), p_modified_by, p_modified_by, p_change_reason_code,
         p_change_commentary);
 
-    return true;
+    return v_activity_id;
 end;
 $$ language plpgsql set search_path = public, pg_temp;
 

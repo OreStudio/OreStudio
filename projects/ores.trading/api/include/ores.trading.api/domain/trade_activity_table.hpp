@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,24 +19,24 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_domain_type_table.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_ACTIVITY_TABLE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_ACTIVITY_TABLE_HPP
+
+#include "ores.trading.api/domain/trade_activity.hpp"
+#include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::trading::domain {
+
 /**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
+ * @brief Converts trade_activities to the table format.
  */
-export interface Trade {
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
+ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<trade_activity>& v);
+
 }
+
+#endif

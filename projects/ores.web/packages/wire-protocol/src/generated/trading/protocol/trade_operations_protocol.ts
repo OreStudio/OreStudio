@@ -62,6 +62,11 @@ export interface BookTradeResponse {
      * the trade id is already booked.
      */
     result: Result;
+    /**
+     * @brief The activity that booked the trade; absent when the booking was
+     * refused.
+     */
+    activity_id: string | null;
 }
 
 /**

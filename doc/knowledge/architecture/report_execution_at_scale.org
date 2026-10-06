@@ -359,6 +359,8 @@ serves many tenants. The node uses its own identity. That identity reads only
 =compute/packages/= and =ore/inputs/= and writes only =compute/output/=. Each
 assignment names the exact keys. The node runs the engine and writes the output
 archive, then submits the result on =compute.v1.results.submit=.
+[[proj:doc/knowledge/security/run_token_long_run.png][The long run token
+diagram]] draws this path beside a step service that keeps exchanging.
 [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes the
 node's work.
 

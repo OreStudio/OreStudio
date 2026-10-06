@@ -1,3 +1,6 @@
+# The port version, 0.8.0, is this project's own label for the commit below.
+# Upstream's tags stop at v0.6.0 and its CMakeLists.txt still declares 0.6.0,
+# so the commit, not the version, is the thing to track.
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO getml/sqlgen

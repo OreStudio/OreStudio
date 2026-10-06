@@ -200,9 +200,10 @@ invert the unit-of-work case that records the defect. The memory
 [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] carries the rule.
 
 Raised upstream as https://github.com/munich-data-engineering/sqlgen/issues/140.
-The release tags also lag: the last is =v0.6.0=, while the overlay pins a
-=main= commit and labels it =0.8.0=. Raised as
-https://github.com/munich-data-engineering/sqlgen/issues/141.
+The port's =0.8.0= is this project's own label for the pinned commit;
+upstream's tags stop at =v0.6.0= and its =CMakeLists.txt= still declares
+=0.6.0=. The portfile records that the commit is the thing to track. Raised
+as https://github.com/munich-data-engineering/sqlgen/issues/141.
 
 ** Next
 

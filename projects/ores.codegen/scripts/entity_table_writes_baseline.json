@@ -15,6 +15,12 @@
     {
       "kind": "cpp",
       "name": "",
+      "file": "projects/ores.iam/core/src/service/role_grant_applier.cpp",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
       "file": "projects/ores.scheduler/core/src/repository/job_instance_repository.cpp",
       "reason": "predates the check"
     },
@@ -244,6 +250,12 @@
       "kind": "sql_function",
       "name": "ores_iam_account_roles_insert_fn",
       "file": "projects/ores.sql/create/iam/iam_account_roles_create.sql",
+      "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_iam_accounts_give_member_fn",
+      "file": "projects/ores.sql/create/iam/iam_member_role_create.sql",
       "reason": "predates the check"
     },
     {

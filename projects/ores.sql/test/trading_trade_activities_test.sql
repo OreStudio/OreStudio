@@ -22,8 +22,8 @@
  * pgTAP tests for the trade activity.
  *
  * Tests cover:
- * - Booking a trade writes one activity and returns its id
- * - The booking and the state it writes name that activity
+ * - A booking's four rows name one activity
+ * - The booking and the state name the activity that booked them
  * - A version naming no activity is refused
  * - A refused second booking writes no activity
  * - An activity is never updated or deleted
@@ -68,13 +68,44 @@ select '00000000-0000-0000-0000-0000000ab000', ores_utility_system_tenant_id_fn(
     'Trading', false, 'GBLO', null, owner_name, owner_name, 'system.new_record', 'test'
 from t_ctx;
 
+-- A booking writes the four rows the service writes, so this test exercises
+-- the schema the service writes against. The service is tested in
+-- service_trade_operations_service_tests.cpp.
 create or replace function pg_temp.book_trade(p_id uuid)
 returns uuid as $$
-    select ores_trading_book_trade_fn(p_id, party_id, null, 'Swap', 'intra_entity',
-        'actual', 'manual', '00000000-0000-0000-0000-0000000ab000'::uuid, null, null, null,
-        current_date, null, 'new_booking', owner_name, 'system.new_record', 'booked by test')
+declare
+    v_activity_id uuid := gen_random_uuid();
+begin
+    insert into ores_trading_trades_tbl (id, tenant_id, party_id, trade_type,
+        counterparty_scope, booking_nature, entry_channel)
+    select p_id, ores_utility_system_tenant_id_fn(), party_id, 'Swap',
+        'intra_entity', 'actual', 'manual'
     from t_ctx;
-$$ language sql;
+
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    select v_activity_id, ores_utility_system_tenant_id_fn(), party_id,
+        'new_booking', owner_name, now(), 'booked by test'
+    from t_ctx;
+
+    insert into ores_trading_trade_bookings_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, book_id, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+        '00000000-0000-0000-0000-0000000ab000', owner_name, owner_name,
+        'system.new_record', 'booked by test'
+    from t_ctx;
+
+    insert into ores_trading_trade_states_tbl (trade_id, trade_activity_id, tenant_id,
+        version, party_id, status_id, modified_by, performed_by, change_reason_code,
+        change_commentary)
+    select p_id, v_activity_id, ores_utility_system_tenant_id_fn(), 0, party_id,
+        ores_utility_nil_uuid_fn(), owner_name, owner_name, 'system.new_record', 'test'
+    from t_ctx;
+
+    return v_activity_id;
+end;
+$$ language plpgsql;
 
 create temp table t_booked on commit drop as
 select pg_temp.book_trade('00000000-0000-0000-0000-0000000aa001'::uuid) as activity_id;
@@ -106,10 +137,11 @@ select throws_ok(
     null,
     'a version naming no activity is refused');
 
-select is(
-    pg_temp.book_trade('00000000-0000-0000-0000-0000000aa001'::uuid),
-    null::uuid,
-    'a second booking of the same trade returns no activity');
+select throws_ok(
+    $$select pg_temp.book_trade('00000000-0000-0000-0000-0000000aa001'::uuid)$$,
+    '23505',
+    null,
+    'a second booking of the same trade is refused');
 
 select is(
     (select count(*) from ores_trading_trade_activities_tbl

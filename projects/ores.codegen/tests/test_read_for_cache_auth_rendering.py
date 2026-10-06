@@ -56,7 +56,7 @@ def test_the_handler_serves_no_bulk_read_for_cache_warming():
 def test_cache_header_supports_token_provider():
     rendered = render_template(
         TEMPLATES_DIR / "cpp_nats_event_cache.hpp.mustache", FIXTURE_ENTITY)
-    assert "std::function<std::string(bool)> token_provider" in rendered
+    assert "partition_token_provider token_provider" in rendered
     assert "void set_token_provider(" in rendered
     assert "ores::nats::headers::authorization" in rendered
     assert "ores::nats::headers::bearer_prefix" in rendered

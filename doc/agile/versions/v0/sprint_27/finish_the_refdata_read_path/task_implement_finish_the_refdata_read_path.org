@@ -26,11 +26,11 @@ Every refdata list the record-screen standard names searches and sorts on the se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -87,3 +87,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The party model marks six columns sortable and three searchable, so the server
+fills is_sortable, adds parties_filter.search and searches the code, the name
+and the codename. The party and tenant lists carry the caller's search and
+order from the page through the BFF to the server, and the tenant page gained
+its History tab. The tenant roster defaults to code order.
+
+Verified: refdata codegen drift clean at every address; web typecheck clean;
+670 web tests pass; the build is clean and the six refdata suites pass. The
+record screen standard's tenant and party rows now say where each stands.

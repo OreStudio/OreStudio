@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T20:42:11.830179Z
+' Generated: 2026-10-06T20:48:10.352844Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -537,6 +537,20 @@ package "iam" #E8F4FD {
     :client_read_only: removes the generic write verbs from the wire and keeps
     the repository writable for those operations.
     end note
+
+    entity ores_iam_run_token_issues_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * issued_at : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * run_id : text <<FK>>
+        * service : text
+        * grantor_account_id : text <<FK>>
+        * outcome : text
+        * reason : text
+    }
 
     entity ores_iam_seed_profile_parameters_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>

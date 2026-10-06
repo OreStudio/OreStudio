@@ -93,8 +93,9 @@ struct run_grant final {
     boost::uuids::uuid role_id;
 
     /**
-     * @brief The service names that may exchange the grant, separated by commas, for example
-     * ores.reporting.service,ores.ore.service,ores.compute.service.
+     * @brief The service names that may exchange the grant, separated by commas, named by the
+     * service role each one's account holds, for example
+     * ReportingService,OreService,ComputeService.
      */
     std::string audience;
 

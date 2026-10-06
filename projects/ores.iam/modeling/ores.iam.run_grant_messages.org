@@ -192,6 +192,74 @@ rules.
 :cpp_type: std::string
 :END:
 
+** exchange_run_grant_request
+:PROPERTIES:
+:subject: iam.v1.run_grants.exchange
+:response: exchange_run_grant_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks IAM for a run token, presenting a grant and a run.
+ *
+ * Sent by a step service in the grant's audience, with its own token. The
+ * tenant is the one the run acts in, and must be the grant's. The run id
+ * names the run the token serves, so two runs under one grant never share a
+ * token.
+ */
+#+end_src
+
+*** grant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** run_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** exchange_run_grant_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The run token, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expires_at
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the token stops working, in seconds since the epoch.
+ */
+#+end_src
+
 * See also
 
 - [[id:F3789B6F-042A-4F44-BCFC-E3BB2CA0E274][ores.iam.run_grant]] — the table these operations write.

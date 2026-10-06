@@ -24,6 +24,7 @@ set(files
     "handler_helpers_tests.cpp"
     "host_runner_tests.cpp"
     "main.cpp"
+    "rate_limiter_tests.cpp"
     "request_context_tests.cpp"
     "standard_service_options_tests.cpp"
     "systemd_notify_tests.cpp"

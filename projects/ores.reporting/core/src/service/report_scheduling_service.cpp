@@ -57,11 +57,13 @@ struct report_trigger_action_payload {
     std::string tenant_id;
 };
 
-// The role a report run acts with, and the services that exchange its grant:
-// reporting for collection and finalisation, ORE for the input, compute for
-// submission.
+// The role a report run acts with, and the services that exchange its grant,
+// named by the service role each one's account holds: reporting for collection
+// and finalisation, ORE for the input, compute for submission. IAM's exchange
+// reads the caller's service name from that role, so the audience carries role
+// names and not host names.
 constexpr std::string_view run_role = "ReportRun";
-constexpr std::string_view run_audience = "ores.reporting.service,ores.ore.service,ores.compute.service";
+constexpr std::string_view run_audience = "ReportingService,OreService,ComputeService";
 
 template <typename Request>
 std::expected<typename Request::response_type, std::string>

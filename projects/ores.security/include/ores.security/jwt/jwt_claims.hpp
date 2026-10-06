@@ -134,6 +134,28 @@ struct jwt_claims final {
     std::optional<std::string> acting_from_tenant_id;
 
     /**
+     * @brief The service a run token acts for, when the token is not a person's.
+     *
+     * The actor claim of RFC 8693. A run token names the step service that
+     * exchanged the run grant, so a reader can tell which service acted and
+     * the issue log can name it. Empty for a person's token.
+     */
+    std::optional<std::string> act;
+
+    /**
+     * @brief The run grant a run token was exchanged for.
+     */
+    std::optional<std::string> grant_id;
+
+    /**
+     * @brief The run a run token serves.
+     *
+     * The pair of grant and run keys the step services' run token cache, so
+     * two runs under one grant never share a token.
+     */
+    std::optional<std::string> run_id;
+
+    /**
      * @brief Create a claims object with issued_at set to now and
      *        expires_at set to now + ttl.
      *

@@ -29,9 +29,10 @@ The design has three parts:
    credential.
 2. *A run token.* A step service exchanges its own token and the grant id for
    a short-lived token. The token carries the tenant, the party and the
-   =ReportRun= permissions. The service keeps it in a memory cache, and the
-   workflow state never holds it. The owners read and write as that tenant and
-   that party, and their handlers do not change.
+   =ReportRun= permissions. The service keeps it in a memory cache and
+   exchanges again while the work continues, so a run of hours lives through
+   many tokens, and the workflow state never holds it. The owners read and
+   write as that tenant and that party, and their handlers do not change.
 3. *Fair shares.* Three queues hold the work of many tenants: admission in
    reporting, step concurrency in each step service, and dispatch in the
    compute grid. Each queue gives every tenant a share, so one tenant with many
@@ -358,6 +359,8 @@ serves many tenants. The node uses its own identity. That identity reads only
 =compute/packages/= and =ore/inputs/= and writes only =compute/output/=. Each
 assignment names the exact keys. The node runs the engine and writes the output
 archive, then submits the result on =compute.v1.results.submit=.
+[[proj:doc/knowledge/security/run_token_long_run.png][The long run token
+diagram]] draws this path beside a step service that keeps exchanging.
 [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes the
 node's work.
 

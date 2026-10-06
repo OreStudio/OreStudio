@@ -40,6 +40,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/heartbeat_publisher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/host_runner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/host_runner_impl.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/rate_limiter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/request_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/service_lifecycle.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/signing_service_runner.hpp"

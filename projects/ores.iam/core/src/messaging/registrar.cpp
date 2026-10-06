@@ -517,8 +517,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(aci_subs.end()));
 
     // --- Run grants ---
-    // Reads only on the wire: IAM's own create and revoke operations write
-    // the table after their checks.
+    // Reads only on the wire: IAM's own create, revoke and exchange operations
+    // write the table after their checks. The exchange is the one that mints a
+    // run token, so the handler is given the signer.
     for (auto& sub : register_run_grant_handlers(nats, ctx, signer))
         subs.push_back(std::move(sub));
     auto rgh = std::make_shared<run_grant_operations_handler>(nats, ctx, signer);
@@ -529,6 +530,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         revoke_run_grant_request::nats_subject, qg, [rgh](ores::nats::message msg) {
             rgh->revoke(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        exchange_run_grant_request::nats_subject, qg, [rgh](ores::nats::message msg) {
+            rgh->exchange(std::move(msg));
         }));
 
     // --- Seed profiles, their steps and their parameters ---

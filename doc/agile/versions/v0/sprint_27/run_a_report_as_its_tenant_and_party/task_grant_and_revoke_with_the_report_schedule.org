@@ -8,7 +8,7 @@
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
 #+branch: feature/grant-and-revoke-with-the-report-schedule
-#+pr: 2685
+#+pr: 2691
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -117,6 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2691][#2691]] | [agile] Close the grant and revoke schedule task |
 | [[https://github.com/OreStudio/OreStudio/pull/2685][#2685]] | [reporting] Grant and revoke runs with the report schedule |
 
 * Review

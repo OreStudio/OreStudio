@@ -32,7 +32,7 @@ stored as a series.
 | State         | BACKLOG (paused)                     |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
 | Now           | The journey documents and their prototypes are written; the curve work itself is paused on purpose. |
-| Waiting on    | The synthetic data generation story (Sprint 27, =synthetic-data-against-market-data=) — a curve cannot be argued without data to plot, and the synthetic feeds are where the data comes from. |
+| Waiting on    | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] (Sprint 27) — a curve cannot be argued without data to plot, and the synthetic feeds are where the data comes from. |
 | Next          | Once the synthetic feeds drive the new model, check the data model against the journeys and start the representation. |
 | Last touched  | 2026-10-06                               |
 

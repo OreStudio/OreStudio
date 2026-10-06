@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :v0:marketdata:curves:product_backlog:inbox:
 #+created: 2026-09-27
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -31,10 +31,10 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Not started. Scoped by a read-only investigation on 2026-09-27, recorded below. |
-| Waiting on    | [[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]. That story replaces the datum identity this one builds on, so this one starts when it closes. |
-| Next          | A deeper analysis: decide whether a curve becomes an entity of its own or stays a derived series with an explicit shape. |
-| Last touched  | 2026-09-27                               |
+| Now           | Deeper analysis done on 2026-10-06, recorded below. Its recommendation is to let the curve journeys pick the representation. |
+| Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
+| Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
+| Last touched  | 2026-10-06                               |
 
 * What exists today
 
@@ -149,6 +149,180 @@ The curve ground in that tree, for whoever picks this up:
 Any deeper analysis of what a curve is, or of what a lossless ORE export
 would have to reproduce, should read that tree rather than the vendored copy.
 
+* Deeper analysis, 2026-10-06
+
+A second read-only pass, at =d02032a18c=. It answers the open questions far
+enough to choose a direction. It is a snapshot, not a description of the
+system. Two facts the first investigation stated are corrected here, because
+they change the shape of the answer.
+
+** What a curve is made of
+
+Four things, and the tree already holds three of them under other names.
+
+- *Identity*: which curve this is. =market_series= is already the identity of
+  a term structure; the oresmd URI is the name. The seeded example is
+  =oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-FOMC=
+  (=(marketdata_market_series_fomc_populate.sql)=). There is no
+  =instrument_type::curve= in code: the only =instrument_type= enum is ORE's
+  own MarketDatum list (=api/include/ores.marketdata.api/datum/ore_types.hpp=),
+  and the ={fixing, curve, quote, vol}= enum is a design-file fiction. A curve
+  is named by =curve_id= in the URI today, not by an instrument type.
+- *Points*: the pillar-to-value map. These are =market_observation= rows. The
+  point identity is the =oresmd_uri=; **the observation table has no
+  =point_id= column** (the design file draws one; the model does not). The
+  pillar's tenor lives inside the URI.
+- *Build*: when the curve was built against which source, and by which recipe.
+  This is the part that is only half present. =market_series= carries
+  =derivation_kind= and =derivation_config_id/version=; =observation_lineage=
+  carries, per point, =derivation_config_id/version=, =source_as_of= and
+  =source_series_ids=. What is missing is a *reference date* and a *build
+  kind*, and a build identity that groups the points of one build.
+- *Recipe*: how to build it. This lives in =ores.refdata= as
+  =ir_curve_bootstrap_config= (family role, discount curve for a projection,
+  interpolation, day count, tenor convention, split tenor) plus
+  =ir_curve_bootstrap_pillar= rows. Its =output_series_id= and the pillars'
+  tenor codes are *soft* references into other components.
+
+** The correction that matters: lineage is most of the build
+
+The first investigation read the build as entirely absent. It is not:
+=observation_lineage= is written by =republish()= beside every output
+observation (=curve_republish_service.cpp:365-366=) and already answers "what
+was this built from, by which recipe, and against what as-of". A build header
+therefore does not have to invent provenance; it has to *group* the points of
+one build and add the two facts lineage lacks, =reference_date= and
+=build_kind=. That is a much smaller table than the sprint 25 design assumed.
+
+** The second correction: the point identity is the URI
+
+The sprint 25 =curve_point= design draws a =point_id= column. The shipped
+observation table has none; the point identity is the whole =oresmd_uri=. Any
+curve design either reads the pillar identity out of the URI or adds a real
+=point_id=/tenor column. The first is free; the second must be justified.
+
+** How each part maps onto the existing infrastructure
+
+| Curve part | Existing home | State |
+|------------+---------------+-------|
+| Identity | =market_series= + oresmd URI =curve_id= | Exists; the curve is not *marked* as a curve beyond =derivation_kind= and =series_subclass= |
+| Points | =market_observation= (=oresmd_uri=, =value=, =observation_datetime=) | Exists, bitemporal, versioned, RLS, evented |
+| Point provenance | =observation_lineage= | Exists per point |
+| Build identity and reference date | none | Missing |
+| Build kind (bootstrap / derived / imported) | none | Missing (=IR_CURVE_BOOTSTRAP= sits on the series, not the build) |
+| Recipe | =ir_curve_bootstrap_config= + =_pillar= in =ores.refdata= | Exists, cross-component soft refs |
+| Recipe editing | refdata shell CRUD units | Exists for the recipe; no curve verb |
+| Compute / publish | =marketdata.v1.curve_bootstrap.compute= / =.republish= | Exists server-side; no sender anywhere |
+| Read back | =marketdata.v1.curve-snapshot.get= / =.buckets= | Exists; the handler checks no permission and no code is seeded |
+| Consumer | none | Missing |
+
+** The modelling decision
+
+Three shapes are available. The recommendation is the first, with the third
+held open until a journey proves it.
+
+1. *Keep the series as the identity, add a build header, keep the points as
+   observations.* A =curve_build= row names the output series, the
+   =reference_date=, the =build_kind=, the recipe (=config id + version=) and
+   the =source_as_of=; the points stay =market_observation= rows whose
+   =observation_datetime= is the reference date and whose =oresmd_uri= is the
+   pillar. This reuses bitemporality, versioning, row-level security,
+   eventing, shell units, the protocol and the TypeScript twin, and adds one
+   small table. It matches what =republish()= already writes, so no data has
+   to move.
+2. *A =curve_point= table beside =curve_build=.* The sprint 25 design. It buys
+   an explicit point-to-build link and a place to hang point-level
+   trustworthiness fields, and it pays for it with a second bitemporal,
+   versioned, evented, shell-served table that duplicates the observation
+   stack. Justified only if a consumer needs point sets that are independent
+   of the series' own history, such as two builds compared point by point.
+3. *A =curve= entity distinct from =market_series=.* Rejected as the starting
+   point: it duplicates the identity, versioning and history the series
+   already owns. The series is the term structure; a curve is a series whose
+   points are pillars.
+
+The deciding input is *what a consumer does with a curve*, which is what the
+journeys are for. The design deliberately stops before =curve_point= and lets
+the journey work decide whether it is earned.
+
+** Curves and tenors
+
+The relation is real but undeclared today, in three places.
+
+- *The recipe side.* =ir_curve_bootstrap_pillar.start_tenor_code= and
+  =.end_tenor_code= are undeclared soft references to =refdata_tenors=: no
+  foreign key, and the only database check validates =curve_role_code=, not
+  the tenors. The engine resolves a pillar by
+  =end_tenor_code -> tenors_by_code -> resolution(convention) -> anchor +
+  offset [+ schedule steps] -> date= (=tenor_resolution.cpp:151-222=), and the
+  end tenor doubles as the =point_id= the resolver reads the quote under
+  (=curve_republish_resolver.cpp:90-92=). A typo in a tenor code is a
+  runtime throw, not a save-time refusal.
+- *The point side.* The observation's =oresmd_uri= carries the term
+  coordinate (=datum::term=: period, date, fx_tenor or continuation), and the
+  oresmd =term= field is the canonical datum-side name for a tenor. The two
+  vocabularies join only by string at the pillar bridge; nothing checks that
+  the URI's term is the pillar's tenor.
+- *The gaps.* Tenor resolution never rolls for a business day (the
+  conventions carry no calendar column), so a pillar that lands on a holiday
+  is not adjusted; =split_tenor_code= is stored but read by no consumer logic;
+  and =dataset_family_role=FUNDING/PROJECTION= is the one role vocabulary that
+  is live, while refdata's =curve_role= is hard-coded in the engine and
+  oresmd's =curve_role= is inert outside the synthetic feed's conflict check.
+
+The recommendation is to make the pillar's tenor a checked reference to
+=refdata_tenors=, and to carry that same tenor code on the curve's points so a
+reader can group by tenor without parsing the URI. The business-day gap and
+the split tenor are separate defects, not part of the representation.
+
+** The user journeys are the input that decides this
+
+The tree has no market-data journey group and no journey that owns a curve;
+the closest analogues are =journey_keep_a_holiday_calendar_right= (rules, then
+a derived artefact consumers read) and =journey_add_or_correct_a_currency=
+(entity with owned child panels and history). Curve creation, review and
+consumption have no owner, and the journey-extraction task for marketdata is
+still =BACKLOG=. The candidates a journey pass should settle, one person and
+one goal each, are:
+
+| Candidate journey | Person | First consumer it creates |
+|-------------------+--------+---------------------------|
+| Build a curve for a currency and a date | Rates quant or market data engineer | The =republish= sender the server has never had |
+| Keep a curve recipe right | Market data engineer | The recipe editor the desktop client took away |
+| Read a curve and trust it | Rates quant | The curve read-back: points, shape, provenance |
+| Correct a curve point | Market data engineer | Point-level override and re-publish |
+| See how a curve changed | Risk reviewer or auditor | Build history and build-to-build comparison |
+| Take a curve to ORE, and bring one back | Platform | The lossless =curveconfig= / =market= round trip |
+
+They settle the model because each names an operation the server must serve:
+a build journey needs a build, a comparison journey is what earns
+=curve_point=, and a provenance journey decides which of
+=curve_point_provenance='s fields are worth storing. They also force the
+vocabulary question, because the actor classes in the journeys are
+=TenantAdmin= and =Operations= today and neither is a rates quant.
+
+** Defects found on the way, independent of the representation
+
+- The curve-snapshot reads are unauthenticated: =curve_snapshot_handler= checks
+  no permission and no =curve-snapshot= code is seeded
+  (=iam_permissions_populate.sql=). This is a W02-class defect and belongs in
+  its own capture.
+- The recipe's tenors are unvalidated at save time, as above.
+- =CUBIC_SPLINE= is recognised by the engine and throws; =IMM_ROLL= is
+  superseded and throws.
+
+** Recommended next steps
+
+1. Agree the journey catalogue above with the owner (J08 of the extraction
+   standard), then run the marketdata journey extraction, reading the legacy
+   =CurveBuilderWorkbench= from =git show af67db3062^:projects/ores.qt/...=.
+2. Let the journeys choose between build-header-only and =curve_point=, and
+   write the chosen shape into the target model before any table is added.
+3. File the curve-snapshot permission defect and the tenor-validation defect
+   as captures; neither waits on the representation decision.
+4. Keep the ORE handoff out of this story, as it already is; the lossless
+   export is the second journey's consumer and its own story.
+
 * Acceptance
 
 - A curve is identifiable as a curve without knowing which strings to
@@ -197,6 +371,9 @@ model that is still in motion would mean doing it twice.
   a producer, not a representation.
 
 * Open questions for the deeper analysis
+
+Answered by the =Deeper analysis, 2026-10-06= section above; the questions
+are kept as the record of what was asked.
 
 - **How does a curve read its points?** The grammar story keeps the 45-way
   variation in the datum identity, which is cold, and leaves the hot side

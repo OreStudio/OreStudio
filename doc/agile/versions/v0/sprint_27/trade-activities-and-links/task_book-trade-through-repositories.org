@@ -28,9 +28,9 @@ Every application write to an entity table goes through its generated repository
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Design chat on the unit-of-work seam.  |
-| Waiting on   | The seam decision (chat with owner).   |
-| Next         | Write the unit of work, then move booking onto the repositories. |
+| Now          | Implementing the unit of work.         |
+| Waiting on   | Nothing.                               |
+| Next         | Route the read and write helpers through the active transaction. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -55,15 +55,34 @@ repositories and keeps them atomic.
 Every repository write calls =execute_write_query=, defined once in
 =projects/ores.database/include/ores.database/repository/bitemporal_operations.hpp=.
 The helper calls =session(ctx.connection_pool())=, begins a transaction,
-writes, and commits. A shared transaction therefore needs one seam, not
-343. The read helper opens its own session in the same way.
+writes, and commits. The read helper opens its own session in the same
+way. Current-state entities are a second shape: 33 generated repositories
+inline the same session/begin/commit in the template at
+=cpp_domain_type_repository.cpp.mustache=, and current-state reads use the
+same read helper.
+
+** The chosen seam: a transaction bound to the context
+
+The unit of work binds one transaction to the =context= that every
+repository already takes. This is the shape sqlc uses with
+=WithTx=. The service opens the boundary; the repositories join it.
+
+- =ores::database::unit_of_work= owns one pooled session and one
+  =sqlgen::Transaction=. It yields a =context= bound to that transaction.
+  =commit()= ends it; the destructor rolls back when the caller forgets.
+- =context= carries the transaction as an owning =rfl::Ref=, so a copy
+  carries it too and no lifetime rule is needed.
+- =execute_read_query=, =execute_write_query= and the current-state
+  template path use the active transaction when the context carries one.
+  Without one they open a session as they do today.
+- Repository signatures and all 343 call sites stay.
+- Reads must join, because =replace_claim= reads before it writes.
+- A service sets the tenant and the party before it opens the unit of
+  work. A held connection cannot change tenant inside a transaction.
 
 ** Phases
 
-1. Unit of work in =ores.database=. One type owns one pooled session and
-   one transaction, and yields a =context= that carries it. The helpers
-   use the active transaction when the context carries one. Repository
-   signatures and codegen templates stay unchanged.
+1. Unit of work in =ores.database=, as above.
 2. Booking onto the repositories. =trade_operations_service::book_trade=
    opens one unit of work and writes the trade with a =must_not_exist=
    claim, the activity, the booking and the state. A second booking still
@@ -111,13 +130,22 @@ task and name that file in the Command column.
   are seed data, not application code. The check excludes them.
 - =ores_trading_book_trade_fn= has one C++ caller
   (=trade_operations_service.cpp=), two pgTAP callers and the drop file.
-- 343 files call =execute_write_query=.
+- 343 files call =execute_write_query=. 33 generated repositories instead
+  inline the session/begin/commit in the repository template, because
+  they are current-state entities.
 
-** Open decision: the unit-of-work seam
+** Decision: a transaction bound to the context
 
-The owner wants the architecturally correct and idiomatic shape, so churn
-does not decide it. The candidates and the outcome are recorded here once
-the design chat settles them.
+Taken 2026-10-06 with the owner. The unit of work binds one transaction to
+the =context= the repositories already take. This is the sqlc =WithTx=
+shape. The alternatives were an ambient thread-local transaction (rejected:
+no DI framework, hidden control flow) and an explicit =unit_of_work&=
+parameter on every repository (rejected: it forces every single-statement
+write to open a transaction, and it changes 343 call sites).
+
+The binding fact: =rfl::Ref= is an owning, copyable handle, so a =context=
+copy carries the transaction safely. No raw pointer and no lifetime rule
+are needed.
 
 * Test Scenarios
 

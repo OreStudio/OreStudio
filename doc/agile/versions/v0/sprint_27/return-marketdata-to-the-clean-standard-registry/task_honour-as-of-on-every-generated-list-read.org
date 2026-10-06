@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-06
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ An entity that sets :has_as_of_lookup: answers a list request carrying as_of wit
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-05                               |
+| Last touched | 2026-10-06                               |
 
 * Acceptance
 
@@ -145,9 +145,15 @@ via its "Verifies task" field.
 
 * Review
 
+Round of 2026-10-06, the @claude review of PR #2683 (conversation-level, no
+line comments). All four points were non-blocking.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The =+00= and =+00:00= offset forms have no test | [[proj:projects/ores.refdata/core/tests/repository_currency_repository_tests.cpp][repository_currency_repository_tests.cpp]] | Applied | The list is now asked at one instant in all four UTC forms the parser takes (=fc09c3bbea=). |
+| 2 | The mustache branches repeat; a computed =list_extra_condition= would cut the nesting | codegen templates | Deferred | The review calls it not needed for this PR; the templates work as they are. |
+| 3 | The two gaps must have tracked follow-ups | inbox | Applied | Filed as captures (=51d52d1d1f=): [[id:949C2A80-533A-461D-B92C-C7B37CACA662][scheduler and synthetic lists]] and [[id:9382EC38-7BB8-456A-AA23-D26C62B9C231][the web list registries]]. |
+| 4 | Review size: read the templates, =core.py= and =valid_at.hpp=, not the generated files | the diff | Noted | The PR body and the task's Notes say the same. |
 
 * Result
 

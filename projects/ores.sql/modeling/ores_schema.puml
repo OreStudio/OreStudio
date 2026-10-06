@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-06T09:10:58.147069Z
+' Generated: 2026-10-06T10:24:58.548404Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11803,6 +11803,7 @@ package "reporting" #E0F7FA {
         * schedule_expression : text
         * concurrency_policy : text
           scheduler_job_id : uuid <<FK>>
+          run_grant_id : uuid <<FK>>
         * pre_processing : text
           prepared_input_key : text
         * post_processing : text

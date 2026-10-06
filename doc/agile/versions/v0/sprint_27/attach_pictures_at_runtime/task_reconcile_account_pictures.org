@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,7 +28,7 @@ The =attach_photos= step delegates to it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C045EB53-9FC2-490B-AAD2-689D1EB9F35D][Attach pictures at runtime through one seam]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

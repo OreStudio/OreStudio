@@ -54,7 +54,7 @@ and =ores.web= can run it.
 |------+-------+-------+-----+-------------|
 | [[id:AA7E5CCF-BE50-40E1-8B00-16F21964EADE][Scaffold story: Attach pictures at runtime through one seam]] | STARTED | 2026-10-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6E40EE56-4297-4FBE-9B8E-327A14D2FA0A][Add the ensure-image operation]] | DONE | 2026-10-06 | 2026-10-06 | One assets operation copies a system-tenant template image into a tenant and returns its id, idempotently; the three existing copiers use it. |
-| [[id:A66E10E1-D60A-4545-904C-99B0853F133A][Reconcile account pictures]] | BACKLOG | | | One IAM operation reconciles each account's picture from a scope; attach_photos delegates to it. |
+| [[id:A66E10E1-D60A-4545-904C-99B0853F133A][Reconcile account pictures]] | STARTED | 2026-10-06 | | One IAM operation reconciles each account's picture from a scope; attach_photos delegates to it. |
 | [[id:0AE594AB-8474-49A0-A169-CFE062F0D331][Model the picture code on the account]] | BACKLOG | | | The wanted picture code rides the account API, so the handler stops reading the DQ artefact table. |
 | [[id:635C5F3E-CE1D-4623-B8FA-4065D13FEC2E][Attach the service account pictures]] | BACKLOG | | | Reconcile the service accounts from the service registry at installation bring-up, expose it to both clients, and delete the build-time script. |
 

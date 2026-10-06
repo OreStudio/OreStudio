@@ -66,12 +66,12 @@ tr.click{cursor:pointer}tr.click:hover{background:var(--panel-2)}</style>
   composer, the managed-URL list, a blueprint dialog that opens the editor in a
   modal and writes the URI back, or the field-source view. ?state=NAME seeds a
   state, ?url=URI parses a URI, ?embed=1 renders only the editor.
-  The consts below are embedded from tmp/: SCHEMA from the schema table and
-  codes_of, ORIGIN from the field-to-source map, OPTIONS from the mock reads of
-  the refdata tables and the ORE catalogue. The extract holds no power index
-  fields where market_index.hpp names delivery/start/end; the mock list uses the
-  schema's zc_inflation_swap, not the record's zc_inflationswap. Both gaps are
-  reported, not patched here.
+  The consts below were embedded by a throwaway generator: SCHEMA from the
+  schema table and codes_of, ORIGIN from the field-to-source map, OPTIONS from
+  the refdata populate scripts and the ORE catalogue. The extract holds no power
+  index fields where market_index.hpp names delivery/start/end; the mock list
+  uses the schema's zc_inflation_swap, not the record's zc_inflationswap. Both
+  gaps are reported, not patched here.
 -->
 
 <div class="proto-note" id="note"></div>

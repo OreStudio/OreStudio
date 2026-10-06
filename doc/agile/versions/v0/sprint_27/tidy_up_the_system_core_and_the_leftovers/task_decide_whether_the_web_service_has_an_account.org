@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 73106ABC-2210-415E-836D-E3DE46A61557
+:END:
+#+title: Task: Decide whether the web service has an account
+#+description: Every enabled service in the registry names an account_var except ores.web.service. It serves the browser bundle and reaches the bus on the browser's behalf, and it opens no database connection. It carries no IAM account, no credentials and no environment variables, yet an avatar is published for it that nothing references. Decide whether the service needs its own identity or the avatar goes.
+#+type: task
+#+level: s1
+#+filetags: :tidy_up_the_system_core_and_the_leftovers:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web service either has an identity of its own, declared and provisioned
+like every other service's, or it has none and carries no picture.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+- The registry entry, the environment, the database roles, the IAM accounts
+  and the avatars all agree on the answer.
+- If the service needs an identity, it is declared the way =ores.http.server='s
+  is and reaches the bus as itself.
+- If it does not, =ores_web_service.svg= and the image published from it are
+  gone, and the record states how the BFF reaches the services instead.
+- Either way, something fails when the next change makes the five disagree.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

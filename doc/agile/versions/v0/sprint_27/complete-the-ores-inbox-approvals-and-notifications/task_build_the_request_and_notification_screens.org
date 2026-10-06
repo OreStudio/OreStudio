@@ -8,7 +8,7 @@
 #+filetags: :web:approval:notification:complete-the-ores-inbox-approvals-and-notifications:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/build-the-request-and-notification-screens
-#+pr: 2707
+#+pr: 2715
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -83,6 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2715][#2715]] | [agile] Close the inbox approvals and notifications story |
 | [[https://github.com/OreStudio/OreStudio/pull/2707][#2707]] | [web] Ask for a role and read the answer in the browser |
 
 * Review

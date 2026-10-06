@@ -31,9 +31,9 @@ stored as a series.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | Deeper analysis, the curve data model and a requirements revision done on 2026-10-06. The composite object — a term structure or a surface — and its evolution are now the primary requirement, with a declared shape (axes and their ordered values), typed axes, components and manually keyed points. The point values reuse the existing tables; the shape and the point provenance are cold additions. |
+| Now           | Candidate journey catalogue written on 2026-10-06, for owner sign-off. |
 | Waiting on    | Nothing. The oresmd grammar story closed, so the datum identity this one builds on is settled. |
-| Next          | Agree the journey catalogue, run the marketdata journey extraction, then choose the representation. |
+| Next          | The owner signs the journey catalogue off; then the journey documents are written; then the data model is checked against them. |
 | Last touched  | 2026-10-06                               |
 
 * What exists today
@@ -756,6 +756,90 @@ can show the manual segment with its actor and its reason.
    point, stated as a policy and covered by a test.
 9. Guard the curve-snapshot reads (capture =D9258D1F=).
 10. Only then decide the =curve_builds= table, from the agreed journeys.
+
+* Candidate journey catalogue, 2026-10-06 -- for sign-off
+
+J08 of the [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][user journey extraction
+standard]] says the catalogue is agreed with the product owner before any
+journey document is written. This is that catalogue. No journey document
+exists yet, and its group is not yet created.
+
+** The model the journeys assume: observations are not curves
+
+The distinction the whole catalogue turns on:
+
+- *A market observation* is what the market sends. It arrives per point, from
+  a feed or an import, and nobody signs it off. It is the evidence.
+- *A published curve or surface* is what the system uses. A responsible
+  person -- the market data manager -- owns it, updates it from what they see
+  in the market or keys a point by hand, and *publishes* it. Only the
+  published object is visible to pricing, reporting and every other consumer.
+
+So a derived curve is a *candidate* until it is published, and publishing is a
+named, attributable act, not a side effect of a build. Nothing a feed writes
+is a curve the system uses until the manager publishes it, and every journey
+below respects that boundary.
+
+** Actors
+
+The existing journey actor classes are =TenantAdmin= and =Operations= only.
+These journeys add two classes and raise one question.
+
+| Actor | Who they are | New? |
+|-------+--------------+------|
+| Market data manager | The person responsible for a currency's curves, or a desk's surfaces | New |
+| Market data consumer | Any user who reads published market data | New |
+| Operations | The installation's feeds and services | Exists |
+| Approver | A second person who signs a publish off | Proposed, not assumed; see journey 9 |
+
+** The catalogue
+
+One new group, =market_data=, under =doc/knowledge/journeys/=, unless the
+owner prefers it split by desk.
+
+| # | Journey | Actor | Trigger | Starts, ends |
+|---+---------+-------+---------+--------------|
+| 1 | See what the market is sending | Market data manager | A curve looks wrong, or a feed alerts | From a scope (a currency, a curve or a surface) to the raw points with their source, age and any rejection |
+| 2 | Keep the feeds running | Operations | A feed stops, or a service starts | From the feed roster to a started or stopped feed and its last tick |
+| 3 | Author a curve recipe | Market data manager | A currency or a curve family is new | From the currency to a saved bootstrap config and its ordered pillars |
+| 4 | Amend a curve recipe | Market data manager | A market convention changes | From an existing recipe to a saved change, with its effect on the curve shown |
+| 5 | Author a surface's convention | Market data manager | A vol surface is new | From the pair or underlying to a saved surface convention: its axes and how it is quoted |
+| 6 | Bootstrap or refresh a curve | Market data manager | The day's market, or a feed update | From a recipe and an as-of to a candidate curve: its points, its health and its provenance, not yet published |
+| 7 | Build or refresh a surface | Market data manager | The day's market, or a feed update | From the surface and an as-of to a candidate surface, not yet published |
+| 8 | Key a point by hand | Market data manager | A quote is wrong or missing | From a node to a manual point with a reason, which survives later feed updates until it is cleared |
+| 9 | Review and sign off | Market data manager, optionally an approver | The candidates are ready to publish | From the day's candidates to accepted or rejected ones, with what changed against the last published |
+| 10 | Publish a curve set | Market data manager | The sign-off is complete | From the signed-off candidates to the published curves the system now uses |
+| 11 | Withdraw or replace a published curve | Market data manager | An error is found after a publish | From a published curve to a withdrawn or superseded one, with the reason recorded |
+| 12 | See a curve or surface at an instant | Market data consumer | A valuation, or a question | From an object and a date to its nodes, its chart and its provenance |
+| 13 | Watch a curve or surface evolve | Market data consumer | A review, or a market move | From an object and a range to the aligned evolution: instants by nodes, with added and dropped nodes named |
+| 14 | Compare the market to the published curve | Market data manager | Suspicion that a published curve is stale | From an object to the raw observations overlaid on the published curve |
+| 15 | See what the system is using | Market data consumer | Before a run, or during an incident | From a scope to the published curve set for a date, with its staleness and its consumers |
+| 16 | See who changed a curve, and when | Auditor or reviewer | An incident, or an audit | From a curve to its trail: recipe changes, builds, manual points and publishes, each with its actor |
+
+** Notes for the sign-off
+
+- *Journeys 3 and 4 may be one.* Authoring and amending a recipe are the same
+  screen over the same operations; they are apart because the triggers differ.
+  Merge them if you prefer.
+- *Journey 8 has a companion.* Clearing a manual point is the reverse act and
+  could be a step of journey 8 rather than a journey of its own.
+- *Journeys 6 and 7 may be one.* A curve and a surface are the same object
+  kind with a different number of axes, so the workbench may be one screen.
+  They are apart because the surface brings its quoting convention with it.
+- *Journey 9 assumes the sign-off is the manager's own act.* The abandoned
+  review and sign-off task suggests a second person; settle whether the
+  approver exists before that journey is written.
+- *Journey 2 belongs to Operations*, and the feed bindings already exist. It is
+  in the catalogue because a curve manager depends on it, not because it is
+  new.
+- *Journey 15's consumers are the first real consumer* the earlier analysis
+  asked for: the run or report that reads a published curve.
+
+** Sign-off
+
+Agree, amend or drop any row above. The journey documents are written only
+after the list is settled, and the data model is checked against them
+afterwards.
 
 * Acceptance
 

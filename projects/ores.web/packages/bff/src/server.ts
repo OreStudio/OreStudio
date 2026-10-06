@@ -2234,10 +2234,15 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return sendImage(reply, image);
     });
 
+    /*
+     * The cache is minutes, not a year. An image keeps its identifier when a
+     * seed or a migration rewrites its bytes, so a long immutable cache would
+     * hide the new picture until the browser's site data was cleared.
+     */
     function sendImage(reply: FastifyReply, image: ImageContent): FastifyReply {
         return reply
             .header('content-type', image.mimeType)
-            .header('cache-control', 'private, max-age=31536000, immutable')
+            .header('cache-control', 'private, max-age=300')
             .header('x-content-type-options', 'nosniff')
             .header('content-security-policy', "default-src 'none'; sandbox")
             .send(image.bytes);

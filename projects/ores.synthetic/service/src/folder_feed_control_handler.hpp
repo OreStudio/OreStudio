@@ -204,8 +204,10 @@ public:
                     bctx,
                     fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
                 std::string conflicting_source_name;
-                if (ctrl_->add(
-                        std::move(feed), container->second.binding_mode, &conflicting_source_name))
+                if (ctrl_->add(std::move(feed),
+                               container->second.binding_mode,
+                               bearer,
+                               &conflicting_source_name))
                     ++fx_counts.started;
                 else if (conflicting_source_name.empty())
                     // A concurrent cascade started the same config between
@@ -281,8 +283,10 @@ public:
                                                            *refctx,
                                                            container->second.binding_mode});
                 std::string conflicting_source_name;
-                if (ctrl_->add(
-                        std::move(feed), container->second.binding_mode, &conflicting_source_name))
+                if (ctrl_->add(std::move(feed),
+                               container->second.binding_mode,
+                               bearer,
+                               &conflicting_source_name))
                     ++ir_counts.started;
                 else if (conflicting_source_name.empty())
                     // A concurrent cascade started the same config between

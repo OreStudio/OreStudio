@@ -150,7 +150,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
 
     // Persistent random_device so the OS entropy pool is not re-seeded between rapid
     // successive calls (which can produce equal values on some platforms when called on
-    // separate temporaries) -- same note as feed_controller::start().
+    // separate temporaries).
     static std::random_device rd;
     const std::uint32_t seed = rd();
     BOOST_LOG_SEV(lg(), ores::logging::info)

@@ -22,7 +22,9 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,10 +32,117 @@ namespace {
 
 const std::string tags("[feed_controller]");
 
+using ores::marketdata::domain::IFeed;
 using ores::synthetic::domain::binding_mode;
 using ores::synthetic::feed::producer_subject;
+using ores::synthetic::service::feed_binding_store;
+using ores::synthetic::service::feed_controller;
 using ores::synthetic::service::feeds_conflict;
-using ores::synthetic::service::should_ensure_feed_binding;
+
+const std::string test_bearer("test-session-token");
+
+// A feed whose only job is to carry an identity into the controller: it
+// publishes nothing and its start() returns at once, so a controller can be
+// driven without a process, a NATS subject, or a tick thread that outlives
+// the test.
+class stub_feed final : public IFeed {
+public:
+    stub_feed(std::string kind, std::string source, std::string qualifier, std::string role)
+        : kind_(std::move(kind))
+        , source_(std::move(source))
+        , qualifier_(std::move(qualifier))
+        , role_(std::move(role)) {}
+
+    const std::string& source_name() const override {
+        return source_;
+    }
+    const std::string& qualifier() const override {
+        return qualifier_;
+    }
+    const std::string& role() const override {
+        return role_;
+    }
+    const std::string& nats_subject() const override {
+        return subject_;
+    }
+    std::string_view kind() const override {
+        return kind_;
+    }
+    std::string conflict_key() const override {
+        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
+    }
+    void start() override {}
+    void stop() override {}
+    std::uint64_t publish_count() const override {
+        return 0;
+    }
+
+private:
+    std::string kind_;
+    std::string source_;
+    std::string qualifier_;
+    std::string role_;
+    std::string subject_;
+};
+
+// In-memory feed_binding store. Mirrors the real store's one rule -- bind a
+// source unless it is already bound -- so a second start of the same source
+// is observable as a single recorded row rather than a second write.
+class fake_binding_store final : public feed_binding_store {
+public:
+    std::expected<void, std::string>
+    save_if_absent(const std::string& source_name, const std::string&) override {
+        for (const auto& b : bindings_)
+            if (b.source_name == source_name)
+                return {};
+        ores::marketdata::domain::feed_binding b;
+        b.source_name = source_name;
+        b.enabled = true;
+        b.change_reason_code = "system.new_record";
+        b.change_commentary = "Auto-created by feed_controller on feed start.";
+        bindings_.push_back(b);
+        return {};
+    }
+
+    std::vector<ores::marketdata::domain::feed_binding> bindings_;
+};
+
+// A controller wired to a fake store. The raw client is never connected: a
+// stub feed publishes nothing, and the fake store never reaches NATS.
+struct controller_fixture {
+    ores::nats::service::client nats;
+    ores::nats::service::nats_client auth_nats;
+    std::shared_ptr<fake_binding_store> store = std::make_shared<fake_binding_store>();
+    std::shared_ptr<feed_controller> ctrl;
+
+    controller_fixture()
+        : nats(ores::testing::make_nats_options())
+        , auth_nats(nats, [](bool) { return std::string(); }) {
+        ctrl = std::make_shared<feed_controller>(nats, auth_nats, store);
+    }
+
+    std::shared_ptr<IFeed> feed(const std::string& kind,
+                                const std::string& source,
+                                const std::string& qualifier,
+                                const std::string& role = {}) {
+        return std::make_shared<stub_feed>(kind, source, qualifier, role);
+    }
+};
+
+// One producer kind's identity: an FX feed carries no role, an IR curve feed
+// carries one. Everything the controller does with them is identical, which
+// is the point of the two rows.
+struct producer_kinds {
+    std::string fx_kind = "fx_spot";
+    std::string fx_source = "EUR_USD_GBM_1";
+    std::string fx_qualifier = "EUR/USD";
+    std::string fx_role;
+
+    std::string ir_kind = "ir_curve";
+    std::string ir_source = "usd.sofr";
+    std::string ir_qualifier = "USD/SOFR";
+    std::string ir_role = "self_discounting";
+};
 
 }
 
@@ -77,25 +186,87 @@ TEST_CASE("producer_subject: unsafe characters are still replaced under sandboxe
           "synthetic.v1.sandbox.tick.weird_name___");
 }
 
-TEST_CASE("should_ensure_feed_binding: a brand-new feed is gated on the requested binding mode",
-          tags) {
-    CHECK(should_ensure_feed_binding(false, binding_mode::bound, binding_mode::sandboxed));
-    CHECK_FALSE(should_ensure_feed_binding(false, binding_mode::sandboxed, binding_mode::bound));
+TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike", tags) {
+    producer_kinds kinds;
+    controller_fixture f;
+
+    const std::vector<std::shared_ptr<IFeed>> feeds{
+        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role)};
+    REQUIRE(f.ctrl->start(feeds[0], binding_mode::bound, test_bearer) ==
+            feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(feeds[1], binding_mode::bound, test_bearer) ==
+            feed_controller::start_result::started);
+
+    REQUIRE(f.store->bindings_.size() == 2);
+    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
+    CHECK(f.store->bindings_[0].enabled == true);
+    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
+    CHECK(f.store->bindings_[1].enabled == true);
 }
 
-TEST_CASE("should_ensure_feed_binding: an already-running feed is gated on its stored binding "
-          "mode, not the requested one -- an unaware caller restarting an already-sandboxed "
-          "feed must not create a bound feed_binding for it",
-          tags) {
-    CHECK_FALSE(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::sandboxed));
-    CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));
+TEST_CASE("starting a sandboxed feed never creates a feed_binding, for FX and IR alike", tags) {
+    producer_kinds kinds;
+    controller_fixture f;
+
+    REQUIRE(f.ctrl->start(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+                          binding_mode::sandboxed,
+                          test_bearer) == feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role),
+                          binding_mode::sandboxed,
+                          test_bearer) == feed_controller::start_result::started);
+
+    CHECK(f.store->bindings_.empty());
+    CHECK(f.ctrl->running_count() == 2);
 }
 
-TEST_CASE("should_ensure_feed_binding: an already-running bound feed still gets its binding "
-          "ensured on every restart, regardless of what this call requested",
+TEST_CASE("starting a bound feed twice does not duplicate its feed_binding, for FX and IR alike",
           tags) {
-    CHECK(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::bound));
-    CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));
+    producer_kinds kinds;
+    controller_fixture f;
+
+    const std::vector<std::shared_ptr<IFeed>> feeds{
+        f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+        f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role)};
+    for (const auto& feed : feeds) {
+        REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
+                feed_controller::start_result::started);
+        REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
+                feed_controller::start_result::already_running);
+    }
+
+    REQUIRE(f.store->bindings_.size() == 2);
+    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
+    CHECK(f.store->bindings_[1].source_name == kinds.ir_source);
+}
+
+TEST_CASE("an already-running sandboxed feed is not bound by a re-start, whatever mode it requests",
+          tags) {
+    producer_kinds kinds;
+    controller_fixture f;
+
+    const auto feed = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role);
+    REQUIRE(f.ctrl->start(feed, binding_mode::sandboxed, test_bearer) ==
+            feed_controller::start_result::started);
+    REQUIRE(f.ctrl->start(feed, binding_mode::bound, test_bearer) ==
+            feed_controller::start_result::already_running);
+
+    CHECK(f.store->bindings_.empty());
+}
+
+TEST_CASE("add() binds a feed of every kind through the same gate start() uses", tags) {
+    producer_kinds kinds;
+    controller_fixture f;
+
+    CHECK(f.ctrl->add(f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_qualifier, kinds.fx_role),
+                      binding_mode::bound,
+                      test_bearer));
+    CHECK(f.ctrl->add(f.feed(kinds.ir_kind, kinds.ir_source, kinds.ir_qualifier, kinds.ir_role),
+                      binding_mode::sandboxed,
+                      test_bearer));
+
+    REQUIRE(f.store->bindings_.size() == 1);
+    CHECK(f.store->bindings_[0].source_name == kinds.fx_source);
 }
 
 TEST_CASE("feeds_conflict: same qualifier and same role is a conflict — a second feed "

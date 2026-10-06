@@ -277,7 +277,11 @@ private:
                              bctx,
                              ores::synthetic::feed::fx_spot_feed_build_input{
                                  cfg, std::move(components), containers.front().binding_mode});
-            reply_start_outcome(msg, resp, std::move(feed));
+            reply_start_outcome(msg,
+                                resp,
+                                std::move(feed),
+                                containers.front().binding_mode,
+                                bearer);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = std::string("Failed to start FX feed: ") + e.what();
@@ -369,7 +373,11 @@ private:
                                                                  definitions,
                                                                  *refctx,
                                                                  containers.front().binding_mode});
-            reply_start_outcome(msg, resp, std::move(feed));
+            reply_start_outcome(msg,
+                                resp,
+                                std::move(feed),
+                                containers.front().binding_mode,
+                                bearer);
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();
@@ -389,10 +397,12 @@ private:
     // the dispatch needs no per-kind branching.
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
-                             std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
+                             std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+                             ores::synthetic::domain::binding_mode binding_mode,
+                             const std::string& bearer) {
         const auto source_name = feed->source_name();
         const auto conflict_key = feed->conflict_key();
-        const auto result = ctrl_->start(std::move(feed));
+        const auto result = ctrl_->start(std::move(feed), binding_mode, bearer);
 
         switch (result) {
             case feed_controller::start_result::started:

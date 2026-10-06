@@ -225,6 +225,7 @@ void auto_start_feeds(feed_controller& ctrl,
             std::string conflicting_source_name;
             if (ctrl.add(factory.make(c.kind, bctx, c.input),
                          c.binding_mode,
+                         bctx.caller_bearer_token,
                          &conflicting_source_name)) {
                 ++started;
             } else if (!conflicting_source_name.empty()) {

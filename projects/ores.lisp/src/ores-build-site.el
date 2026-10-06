@@ -441,6 +441,29 @@ with the site chrome."
   ;; validator for an oresmd URI, mock data only.
   (ores-deploy-web-app
    "./doc/prototypes/oresmd-url-editor" site-dir "doc/prototypes/oresmd-url-editor"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Synthetic data generation prototypes: the same body reset. The ores.qt
+  ;; Synthetic plugin's screens as plain HTML, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/synthetic-market-simulator" site-dir "doc/prototypes/synthetic-market-simulator"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/author-an-fx-price-feed" site-dir "doc/prototypes/author-an-fx-price-feed"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/author-an-ir-curve-feed" site-dir "doc/prototypes/author-an-ir-curve-feed"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/manage-synthetic-collections" site-dir "doc/prototypes/manage-synthetic-collections"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/manage-gmm-components" site-dir "doc/prototypes/manage-gmm-components"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/manage-yield-curve-process-types" site-dir "doc/prototypes/manage-yield-curve-process-types"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/synthetic-yield-curve-bootstrap" site-dir "doc/prototypes/synthetic-yield-curve-bootstrap"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

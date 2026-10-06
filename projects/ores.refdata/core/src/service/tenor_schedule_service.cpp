@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/tenor_schedule_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/tenor_schedule.hpp"
+#include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
+#include "ores.refdata.core/repository/tenor_schedule_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/zero_inflation_index_convention_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/zero_inflation_index_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/service/zero_inflation_index_convention_service.hpp"
 

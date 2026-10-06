@@ -23,12 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/party_country_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/domain/party_country.hpp"
+#include "ores.refdata.api/messaging/party_country_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

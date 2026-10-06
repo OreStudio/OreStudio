@@ -18,11 +18,21 @@
  *
  */
 #include "ores.refdata.core/messaging/calendar_adjustment_handler.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.core/service/calendar_adjustment_export_service.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <exception>
+#include <optional>
+#include <utility>
 
 namespace ores::refdata::messaging {
 

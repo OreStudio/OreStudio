@@ -25,7 +25,9 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
 #include <fstream>
 #include <iterator>
 #include <map>

@@ -23,9 +23,16 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/overnight_index_convention_service.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

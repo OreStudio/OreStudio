@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/messaging/party_contact_information_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/party_contact_information_history_field_mapper.hpp"
 #include "ores.refdata.core/service/party_contact_information_service.hpp"
 

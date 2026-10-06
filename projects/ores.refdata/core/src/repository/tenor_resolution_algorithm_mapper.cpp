@@ -24,7 +24,12 @@
  */
 #include "ores.refdata.core/repository/tenor_resolution_algorithm_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/tenor_resolution_algorithm_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 

@@ -24,9 +24,14 @@
  */
 #include "ores.refdata.core/repository/future_convention_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/future_convention.hpp"
 #include "ores.refdata.api/domain/future_convention_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/future_convention_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::refdata::repository {
 

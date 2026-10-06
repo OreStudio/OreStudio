@@ -63,7 +63,9 @@ BEGIN
 
     -- Run grant permissions. Any person may create a grant for a role they
     -- hold in full, and its grantor may revoke it; this permission lets an
-    -- administrator revoke any grant of the tenant.
+    -- administrator revoke any grant of the tenant. The generated reads check
+    -- the read code, which the tenant administrators hold through '*'.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:read', 'View run grants of the tenant');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:revoke', 'Revoke any run grant of the tenant');
 
     -- Permission catalogue permissions. The generated permission CRUD checks

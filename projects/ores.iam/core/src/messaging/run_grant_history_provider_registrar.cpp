@@ -32,6 +32,7 @@ namespace ores::iam::messaging {
 void register_run_grant_history_provider(ores::history::service::dispatch_registry& registry) {
     registry.register_history_provider(
         "ores.iam.run_grant",
+        "iam::run_grants:read",
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::run_grant_service svc(scoped_ctx);
             auto versions = svc.get_grant_history(entity_id);

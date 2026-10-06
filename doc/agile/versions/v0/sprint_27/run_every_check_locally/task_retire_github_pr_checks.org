@@ -1,32 +1,32 @@
 :PROPERTIES:
-:ID: 0829AF20-92A5-4497-983F-A15B4D8C3871
+:ID: A932B4F2-DE97-4348-83E1-DBF22B0B89CB
 :END:
-#+title: Task: Build the local check runner, its report and its decision tree
-#+description: Initial task for: Run every check locally in one report
+#+title: Task: Retire the GitHub pull-request checks
+#+description: Delete every workflow that gates a pull request, once the local runner covers it. GitHub keeps only the builds that are not pull-request checks.
 #+type: task
 #+level: s1
 #+filetags: :run_every_check_locally:sprint_27:v0:
 #+owner: marco
-#+branch: feature/implement-run-every-check-locally
+#+branch: feature/retire-github-pr-checks
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment: festive_dijkstra
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-One local command replaces the GitHub pull-request wait. The command classifies the change against a documented decision tree, runs only the checks that class needs, and writes one report that names each failing check and the fix. A docs-only change runs no C++ build and no C++ test.
+No GitHub workflow gates a pull request. The local check runner is the only pull-request gate.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,10 +35,9 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 
 * Acceptance
 
-- One command classifies the change and runs every check the change needs.
-- The report names each failing check, the evidence, and the command that fixes it.
-- The decision tree maps each change class to its checks and lives in the repo.
-- A documents-only change runs no C++ build and no C++ test.
+- No workflow runs on pull_request.
+- The retired checks all have a local equivalent the runner executes.
+- The knowledge document and the raise-a-PR skill name the runner, not the retired workflows.
 
 * Plan
 

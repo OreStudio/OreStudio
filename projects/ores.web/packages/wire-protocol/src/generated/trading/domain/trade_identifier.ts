@@ -35,6 +35,7 @@ export interface TradeIdentifier {
     tenant_id: string;
     trade_id: string;
     id_type: string;
+    trade_activity_id: string;
     party_id: string;
     id_value: string;
     issuing_party_id: string | null;

@@ -95,6 +95,7 @@ messaging::bond_future_key key_from(const domain::bond_future& v) {
 domain::bond_future to_domain(const messaging::bond_future_write& write) {
     domain::bond_future v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.contract_name = write.contract_name;
     v.contract_notional = write.contract_notional;
     v.long_short = write.long_short;

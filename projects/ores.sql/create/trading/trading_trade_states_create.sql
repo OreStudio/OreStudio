@@ -44,8 +44,8 @@ create table if not exists "ores_trading_trade_states_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "party_id" uuid not null,
-    "activity_type_code" text not null,
     "status_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -62,6 +62,7 @@ create table if not exists "ores_trading_trade_states_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     constraint ores_trading_trade_states_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_states_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
     constraint ores_trading_trade_states_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
 );
 
@@ -88,20 +89,10 @@ declare
     current_version integer;
     v_transition record;
     v_prior_status_id uuid;
+    v_activity_type_code text;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate activity_type_code (soft FK to ores_trading_activity_types_tbl)
-    if not exists (
-        select 1 from ores_trading_activity_types_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and code = NEW.activity_type_code
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid activity_type_code: %. No active activity type found with this code.', NEW.activity_type_code
-            using errcode = '23503';
-    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -142,20 +133,23 @@ begin
           and trade_id = NEW.trade_id
           and valid_to = ores_utility_infinity_timestamp_fn();
 
-        v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+        select activity_type_code into v_activity_type_code
+        from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.trade_activity_id;
+        v_transition := ores_trading_resolve_trade_transition_fn(v_activity_type_code);
 
         if not v_transition.has_transition then
             NEW.status_id = v_prior_status_id;
         else
             if v_transition.from_state_id is null then
                 raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
-                    NEW.activity_type_code, v_transition.transition_name, v_prior_status_id
+                    v_activity_type_code, v_transition.transition_name, v_prior_status_id
                     using errcode = '23514';
             end if;
 
             if v_prior_status_id is distinct from v_transition.from_state_id then
                 raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
-                    NEW.activity_type_code, v_transition.transition_name,
+                    v_activity_type_code, v_transition.transition_name,
                     v_transition.from_state_id, v_prior_status_id
                     using errcode = '23514';
             end if;
@@ -165,8 +159,8 @@ begin
 
         if ores_trading_trade_booked_virtual_fn(NEW.tenant_id, NEW.trade_id)
            and not ores_trading_status_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id, NEW.status_id) then
-            raise exception 'Invalid activity_type_code: %. An actual trade in a virtual book can only be a draft; book it into a real book first.',
-                NEW.activity_type_code
+            raise exception 'Invalid activity: %. An actual trade in a virtual book can only be a draft; book it into a real book first.',
+                v_activity_type_code
                 using errcode = '23514';
         end if;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
@@ -182,24 +176,27 @@ begin
           and valid_from < clock_timestamp();
     else
         NEW.version = 1;
-    v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+    select activity_type_code into v_activity_type_code
+    from ores_trading_trade_activities_tbl
+    where tenant_id = NEW.tenant_id and id = NEW.trade_activity_id;
+    v_transition := ores_trading_resolve_trade_transition_fn(v_activity_type_code);
 
     if not v_transition.has_transition then
         raise exception 'Activity % cannot book a trade: it names no transition to start the machine.',
-            NEW.activity_type_code
+            v_activity_type_code
             using errcode = '23514';
     end if;
     if v_transition.from_state_id is not null then
         raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
-            NEW.activity_type_code, v_transition.transition_name, v_transition.from_state_id
+            v_activity_type_code, v_transition.transition_name, v_transition.from_state_id
             using errcode = '23514';
     end if;
     NEW.status_id = v_transition.to_state_id;
 
     if ores_trading_trade_booked_virtual_fn(NEW.tenant_id, NEW.trade_id)
        and not ores_trading_status_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id, NEW.status_id) then
-        raise exception 'Invalid activity_type_code: %. An actual trade in a virtual book can only be a draft.',
-            NEW.activity_type_code
+        raise exception 'Invalid activity: %. An actual trade in a virtual book can only be a draft.',
+            v_activity_type_code
             using errcode = '23514';
     end if;
     end if;

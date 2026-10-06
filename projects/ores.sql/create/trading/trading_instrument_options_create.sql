@@ -51,6 +51,7 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "long_short" text not null,
     "option_type" text null,
     "payoff_type" text null,
@@ -100,7 +101,8 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     check ("long_short" in ('Long', 'Short')),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("payoff_type" is null or "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
-    check ("payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla'))
+    check ("payoff_type_2" is null or "payoff_type_2" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla')),
+    constraint ores_trading_instrument_options_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

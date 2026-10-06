@@ -96,6 +96,7 @@ domain::composite_leg to_domain(const messaging::composite_leg_write& write) {
     domain::composite_leg v;
     v.identity.id = write.id;
     v.identity.trade_id = write.trade_id;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.identity.leg_sequence = write.leg_sequence;
     v.constituent_trade_id = write.constituent_trade_id;
     return v;

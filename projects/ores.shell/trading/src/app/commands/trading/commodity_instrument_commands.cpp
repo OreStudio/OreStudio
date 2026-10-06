@@ -141,11 +141,11 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <commodity_code> <currency> <quantity> <unit> "
-        "<start_date> <maturity_date> <fixed_price> <option_type> <strike_price> <exercise_type> "
-        "<average_type> <averaging_start_date> <averaging_end_date> <spread_commodity_code> "
-        "<spread_amount> <strip_frequency_code> <variance_strike> <accumulation_amount> "
-        "<knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
+        "add <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency> "
+        "<quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price> "
+        "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
+        "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
+        "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
         "<reason> <commentary>");
 
@@ -154,11 +154,11 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <commodity_code> <currency> <quantity> <unit> "
-        "<start_date> <maturity_date> <fixed_price> <option_type> <strike_price> <exercise_type> "
-        "<average_type> <averaging_start_date> <averaging_end_date> <spread_commodity_code> "
-        "<spread_amount> <strip_frequency_code> <variance_strike> <accumulation_amount> "
-        "<knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
+        "set <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency> "
+        "<quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price> "
+        "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
+        "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
+        "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
         "<reason> <commentary> [--version <n>]");
 
@@ -167,9 +167,9 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_type_code> <commodity_code> <currency> <quantity> "
-        "<unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price> "
-        "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
+        "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> "
+        "<currency> <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> "
+        "<strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
@@ -368,14 +368,16 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 28 + 2) {
-            fail(out) << "Expected " << (28 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 29 + 2) {
+            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         read_token(req.change.write.quantity, parsed->positionals[next++], "quantity");
@@ -461,14 +463,16 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 28 + 2) {
-            fail(out) << "Expected " << (28 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 29 + 2) {
+            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.commodity_code, parsed->positionals[next++], "commodity_code");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         read_token(req.change.write.quantity, parsed->positionals[next++], "quantity");
@@ -566,8 +570,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 28 + 2) {
-            fail(out) << "Expected " << (change_count * 28 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 29 + 2) {
+            fail(out) << "Expected " << (change_count * 29 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -576,6 +580,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.commodity_code, parsed->positionals[next++], "commodity_code");
             read_token(change.write.currency, parsed->positionals[next++], "currency");
             read_token(change.write.quantity, parsed->positionals[next++], "quantity");

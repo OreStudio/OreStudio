@@ -119,7 +119,11 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     CHECK(bookings.front().party_id == *f.ctx.party_id());
     REQUIRE(bookings.front().execution_timestamp.has_value());
     CHECK(*bookings.front().execution_timestamp == executed_at);
-    REQUIRE(ores::trading::repository::trade_state_repository().read_latest(f.ctx, id).size() == 1);
+    const auto states = ores::trading::repository::trade_state_repository().read_latest(f.ctx, id);
+    REQUIRE(states.size() == 1);
+    REQUIRE(response.activity_id.has_value());
+    CHECK(bookings.front().trade_activity_id == *response.activity_id);
+    CHECK(states.front().trade_activity_id == *response.activity_id);
 }
 
 TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", tags) {

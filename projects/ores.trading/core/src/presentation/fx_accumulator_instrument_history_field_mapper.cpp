@@ -41,6 +41,8 @@ render_fx_accumulator_instrument_fields(const domain::fx_accumulator_instrument&
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Fixing Amount", .value = v.fixing_amount.to_string()});
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});

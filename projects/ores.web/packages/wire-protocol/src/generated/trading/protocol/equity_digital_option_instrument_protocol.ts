@@ -35,6 +35,7 @@ export interface EquityDigitalOptionInstrumentKey {
 export interface EquityDigitalOptionInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     underlying_name: string;
     currency: string;
     notional: string;

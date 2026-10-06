@@ -87,34 +87,35 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <commodity_code> <currency> <quantity> <unit>
-     * <start_date> <maturity_date> <fixed_price> <option_type> <strike_price> <exercise_type>
-     * <average_type> <averaging_start_date> <averaging_end_date> <spread_commodity_code>
-     * <spread_amount> <strip_frequency_code> <variance_strike> <accumulation_amount>
-     * <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> <day_count_fraction_code>
-     * <payment_frequency_code> <swaption_expiry_date> <description> <reason> <commentary>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency>
+     * <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price>
+     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
+     * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
+     * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
+     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <commodity_code> <currency> <quantity> <unit>
-     * <start_date> <maturity_date> <fixed_price> <option_type> <strike_price> <exercise_type>
-     * <average_type> <averaging_start_date> <averaging_end_date> <spread_commodity_code>
-     * <spread_amount> <strip_frequency_code> <variance_strike> <accumulation_amount>
-     * <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> <day_count_fraction_code>
-     * <payment_frequency_code> <swaption_expiry_date> <description> <reason> <commentary>
-     * [--version <n>]
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <commodity_code> <currency>
+     * <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price>
+     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
+     * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
+     * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
+     * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <commodity_code> <currency>
-     * <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type> <strike_price>
-     * <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <commodity_code>
+     * <currency> <quantity> <unit> <start_date> <maturity_date> <fixed_price> <option_type>
+     * <strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date>
      * <spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike>
      * <accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier>
      * <day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description>

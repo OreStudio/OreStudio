@@ -34,6 +34,7 @@ export interface BondRepo {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     repo_type: string;
     repo_rate: number;
     repo_index: string;

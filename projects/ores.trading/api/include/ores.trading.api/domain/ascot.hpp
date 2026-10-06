@@ -65,6 +65,11 @@ struct ascot final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Option type of the conversion option (Call, Put).
      *
      * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,

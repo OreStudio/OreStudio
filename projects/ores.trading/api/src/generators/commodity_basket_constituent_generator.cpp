@@ -47,6 +47,7 @@ generate_synthetic_commodity_basket_constituent(utility::generation::generation_
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.sequence_number = 0;
+    r.trade_activity_id = ctx.generate_uuid();
     r.underlying_code = std::string(faker::word::noun());
     r.weight = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))

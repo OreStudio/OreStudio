@@ -42,6 +42,7 @@ struct equity_swap_instrument_key {
 struct equity_swap_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     std::string basket_json;
     std::string currency;

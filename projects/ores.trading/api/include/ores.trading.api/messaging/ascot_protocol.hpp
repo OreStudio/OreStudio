@@ -41,6 +41,7 @@ struct ascot_key {
 
 struct ascot_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::string ascot_option_type;
 };
 

@@ -52,6 +52,7 @@ create table if not exists "ores_trading_instrument_schedule_dates_tbl" (
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "schedule_date" date not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -77,7 +78,8 @@ create table if not exists "ores_trading_instrument_schedule_dates_tbl" (
     check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
     check ("owner_number" > 0),
     check ("schedule_sequence_number" > 0),
-    check ("sequence_number" > 0)
+    check ("sequence_number" > 0),
+    constraint ores_trading_instrument_schedule_dates_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

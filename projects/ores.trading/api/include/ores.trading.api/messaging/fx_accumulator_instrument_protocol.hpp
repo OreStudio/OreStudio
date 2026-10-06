@@ -42,6 +42,7 @@ struct fx_accumulator_instrument_key {
 struct fx_accumulator_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string currency;
     ores::utility::decimal::decimal fixing_amount;
     double strike;

@@ -47,6 +47,7 @@ struct knock_out_swap_instrument_entity {
     int version = 0;
     std::string trade_type_code;
     std::string party_id;
+    std::string trade_activity_id;
     std::string start_date;
     std::string maturity_date;
     std::string barrier_start_date;

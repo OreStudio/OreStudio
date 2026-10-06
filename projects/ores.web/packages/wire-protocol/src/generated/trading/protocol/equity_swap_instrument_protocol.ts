@@ -35,6 +35,7 @@ export interface EquitySwapInstrumentKey {
 export interface EquitySwapInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     underlying_name: string;
     basket_json: string;
     currency: string;

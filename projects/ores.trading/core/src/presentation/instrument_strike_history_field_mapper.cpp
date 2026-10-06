@@ -39,6 +39,8 @@ render_instrument_strike_fields(const domain::instrument_strike& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Price Value",
                       .value = v.price_value ? v.price_value->to_string() : std::string{}});
     fields.push_back({.name = "Price Currency", .value = v.price_currency.value_or(std::string{})});

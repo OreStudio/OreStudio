@@ -34,6 +34,7 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "start_date" date not null,
     "end_date" date not null,
     "currency" text not null,
@@ -64,7 +65,8 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     check ("currency" <> ''),
     check ("underlying_code" <> ''),
     check ("long_short" in ('Long', 'Short')),
-    check ("moment_type" in ('Variance', 'Volatility'))
+    check ("moment_type" in ('Variance', 'Volatility')),
+    constraint ores_trading_fx_variance_swap_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

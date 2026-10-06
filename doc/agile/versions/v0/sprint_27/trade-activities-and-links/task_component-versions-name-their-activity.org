@@ -41,9 +41,26 @@ Every component version names the activity that caused it through a real foreign
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Every model whose =trade_id= references the trade gets a
+  =trade_activity_id= column beside it (in the identity group where
+  =trade_id= is grouped) and an enforced foreign key to
+  =ores_trading_trade_activities_tbl=, with a parent seed that writes an
+  activity: 58 models, by =scratchpad/add_activity_fk.py=. The three
+  identity field groups gain the field.
+- Nine composed constraint names run past PostgreSQL's 63-character limit;
+  the codegen now takes =:constraint_name:= on a foreign key, and those
+  models name theirs =<table base>_activity_fk=.
+- The trade state drops =activity_type_code=: its transition trigger reads
+  the type through the activity. The generated round-trip test's amendment
+  becomes a model snippet (=amend_activity=) that writes an amendment
+  activity, replacing the column-and-code pair only the state used.
+- Booking writes the activity id into the booking and the state. The ORE
+  import stamps the instrument with the booking's activity after booking
+  (=stamp_ids= takes the activity id), passes it to the identifier,
+  portfolio and additional-field writes, and sets it beside every
+  =trade_id= on the instrument writes.
+- The activities are created before every table that references them and
+  dropped after.
 
 * Measurements
 
@@ -57,7 +74,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Models given an enforced activity key | 58 (9 with a named constraint) | =scratchpad/add_activity_fk.py= | 128c74fc7f + working tree |
+| pgTAP, every trading file, under the test DDL role | 6 files, 81 tests, pass | =pg_prove test/trading_*_test.sql= | 128c74fc7f + working tree |
+| Imported rows naming their booking's activity | states 16/16, identifiers 16/16, additional fields 24/24, vanilla swaps 12/12, bonds 1/1 | psql join on the booking's activity | 128c74fc7f + working tree |
+| Round trip, merged portfolio | 16 of 16, in scope lost 0 | =reset_and_roundtrip.sh rtx= | 128c74fc7f + working tree |
+| codegen pytest | 1155 passed | =pytest projects/ores.codegen/tests= | 128c74fc7f + working tree |
 
 * Notes
 

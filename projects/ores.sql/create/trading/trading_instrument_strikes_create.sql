@@ -39,6 +39,7 @@ create table if not exists "ores_trading_instrument_strikes_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "price_value" numeric(28, 10) null,
     "price_currency" text null,
     "yield_value" numeric(28, 10) null,
@@ -58,7 +59,8 @@ create table if not exists "ores_trading_instrument_strikes_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("trade_id" <> ores_utility_nil_uuid_fn())
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    constraint ores_trading_instrument_strikes_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

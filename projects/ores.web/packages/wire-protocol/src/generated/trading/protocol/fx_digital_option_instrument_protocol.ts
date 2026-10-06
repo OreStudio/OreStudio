@@ -35,6 +35,7 @@ export interface FxDigitalOptionInstrumentKey {
 export interface FxDigitalOptionInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     foreign_currency: string;
     domestic_currency: string;
     payoff_currency: string;

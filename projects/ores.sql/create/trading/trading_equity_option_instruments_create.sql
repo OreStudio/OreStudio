@@ -38,6 +38,7 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "currency" text not null,
     "notional" numeric(28, 10) not null,
@@ -71,7 +72,8 @@ create table if not exists "ores_trading_equity_option_instruments_tbl" (
     check (("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null) or ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null)),
     check ("option_type" in ('Call', 'Put')),
     check ("exercise_type" in ('European', 'Bermudan', 'American')),
-    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash'))
+    check ("settlement_type" is null or "settlement_type" in ('Physical', 'Cash')),
+    constraint ores_trading_equity_option_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

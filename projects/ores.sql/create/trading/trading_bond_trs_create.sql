@@ -47,6 +47,7 @@ create table if not exists "ores_trading_bond_trs_tbl" (
     "trade_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "return_type" text not null,
     "funding_leg_type" text not null,
     "funding_rate" numeric(28, 10) null,
@@ -70,7 +71,8 @@ create table if not exists "ores_trading_bond_trs_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("return_type" in ('Total', 'Price')),
     check ("funding_leg_type" in ('Fixed', 'Floating')),
-    check ("price_type" is null or "price_type" in ('Clean', 'Dirty'))
+    check ("price_type" is null or "price_type" in ('Clean', 'Dirty')),
+    constraint ores_trading_bond_trs_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

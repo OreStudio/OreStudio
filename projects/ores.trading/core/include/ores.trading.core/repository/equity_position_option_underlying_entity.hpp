@@ -46,6 +46,7 @@ struct equity_position_option_underlying_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string underlying_name;
     std::string strike;
     std::optional<std::string> weight;

@@ -98,6 +98,7 @@ domain::trade_additional_field to_domain(const messaging::trade_additional_field
     domain::trade_additional_field v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.name = write.name;
     v.value = write.value;
     return v;

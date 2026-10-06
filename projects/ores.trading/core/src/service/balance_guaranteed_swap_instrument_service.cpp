@@ -99,6 +99,7 @@ to_domain(const messaging::balance_guaranteed_swap_instrument_write& write) {
     domain::balance_guaranteed_swap_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
     v.lockout_days = write.lockout_days;

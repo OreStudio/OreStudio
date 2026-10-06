@@ -23,6 +23,8 @@
  *
  * Tests cover:
  * - Booking a trade writes one activity and returns its id
+ * - The booking and the state it writes name that activity
+ * - A version naming no activity is refused
  * - A refused second booking writes no activity
  * - An activity is never updated or deleted
  * - A null amend is recorded and versions nothing
@@ -33,7 +35,7 @@
 
 begin;
 
-select plan(8);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
@@ -83,6 +85,26 @@ select results_eq(
       where a.id = b.activity_id$$,
     $$values ('new_booking'::text, true, true, 'booked by test'::text)$$,
     'booking writes the activity it returns, with its type, actor, party and comment');
+
+select results_eq(
+    $$select (select trade_activity_id from ores_trading_trade_bookings_tbl
+              where trade_id = '00000000-0000-0000-0000-0000000aa001'),
+             (select trade_activity_id from ores_trading_trade_states_tbl
+              where trade_id = '00000000-0000-0000-0000-0000000aa001')$$,
+    $$select activity_id, activity_id from t_booked$$,
+    'the booking and the state name the activity that booked them');
+
+select throws_ok(
+    $$insert into ores_trading_trade_identifiers_tbl (trade_id, trade_activity_id, id_type,
+          tenant_id, version, party_id, id_value, modified_by, performed_by,
+          change_reason_code, change_commentary)
+      select '00000000-0000-0000-0000-0000000aa001', '00000000-0000-0000-0000-0000000ad0ff',
+          'UTI', ores_utility_system_tenant_id_fn(), 0, party_id, 'UTI-ACTTEST', owner_name,
+          owner_name, 'system.new_record', 'test'
+      from t_ctx$$,
+    '23503',
+    null,
+    'a version naming no activity is refused');
 
 select is(
     pg_temp.book_trade('00000000-0000-0000-0000-0000000aa001'::uuid),

@@ -111,6 +111,7 @@ domain::instrument_schedule_date to_domain(const messaging::instrument_schedule_
     v.schedule_role = write.schedule_role;
     v.schedule_sequence_number = write.schedule_sequence_number;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.schedule_date = write.schedule_date;
     return v;
 }

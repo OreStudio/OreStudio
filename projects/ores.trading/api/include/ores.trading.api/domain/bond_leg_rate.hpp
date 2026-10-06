@@ -95,6 +95,11 @@ struct bond_leg_rate final {
     int leg_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Which arm of the schema's rate group the document engaged: fixed, floating or
      * formula_based.
      */

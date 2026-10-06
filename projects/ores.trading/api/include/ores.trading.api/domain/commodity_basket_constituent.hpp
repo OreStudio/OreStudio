@@ -79,6 +79,11 @@ struct commodity_basket_constituent final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Code or name of the underlying this constituent names.
      *
      * The ORE document states it in the Underlying/Name element; the column refuses an empty name.

@@ -34,6 +34,7 @@ create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "start_date" date not null,
     "maturity_date" date not null,
     "description" text null,
@@ -52,7 +53,8 @@ create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('CapFloor')),
-    check ("maturity_date" > "start_date")
+    check ("maturity_date" > "start_date"),
+    constraint ores_trading_cap_floor_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

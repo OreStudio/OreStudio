@@ -35,6 +35,7 @@ export interface EquityBarrierOptionInstrumentKey {
 export interface EquityBarrierOptionInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     underlying_name: string;
     currency: string;
     notional: string;

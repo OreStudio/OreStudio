@@ -107,6 +107,7 @@ domain::instrument_schedule to_domain(const messaging::instrument_schedule_write
     v.owner_number = write.owner_number;
     v.schedule_role = write.schedule_role;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.schedule_kind = write.schedule_kind;
     v.start_date = write.start_date;
     v.end_date = write.end_date;

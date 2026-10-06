@@ -34,6 +34,7 @@ export interface TradeBooking {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     party_id: string;
     counterparty_id: string | null;
     book_id: string;

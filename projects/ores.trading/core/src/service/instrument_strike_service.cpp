@@ -95,6 +95,7 @@ messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
 domain::instrument_strike to_domain(const messaging::instrument_strike_write& write) {
     domain::instrument_strike v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.price_value = write.price_value;
     v.price_currency = write.price_currency;
     v.yield_value = write.yield_value;

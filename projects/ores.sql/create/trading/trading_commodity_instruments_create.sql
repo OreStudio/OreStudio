@@ -44,6 +44,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "commodity_code" text not null,
     "currency" text not null,
     "quantity" numeric(28, 10) not null,
@@ -93,7 +94,8 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     check ("exercise_type" is null or "exercise_type" in ('European', 'American')),
     check ("average_type" is null or "average_type" in ('Arithmetic', 'Geometric')),
     check ("barrier_type" is null or "barrier_type" in ('UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut')),
-    check ("payment_frequency_code" is null or "payment_frequency_code" in ('Once', 'Annual', 'Semiannual', 'Quarterly', 'Bimonthly', 'Monthly', 'Lunarmonth', 'Weekly', 'Daily'))
+    check ("payment_frequency_code" is null or "payment_frequency_code" in ('Once', 'Annual', 'Semiannual', 'Quarterly', 'Bimonthly', 'Monthly', 'Lunarmonth', 'Weekly', 'Daily')),
+    constraint ores_trading_commodity_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -44,6 +44,7 @@ domain::ascot generate_synthetic_ascot(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
+    r.trade_activity_id = ctx.generate_uuid();
     r.ascot_option_type = std::string("Call");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

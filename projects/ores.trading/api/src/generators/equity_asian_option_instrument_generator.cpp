@@ -48,6 +48,7 @@ generate_synthetic_equity_asian_option_instrument(utility::generation::generatio
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("EquityAsianOption");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string("RIC:.SPX");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1").value();

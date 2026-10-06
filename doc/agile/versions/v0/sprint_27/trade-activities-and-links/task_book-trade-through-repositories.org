@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: DD3DC229-6358-41B6-A9B5-9C0937439111
+:END:
+#+title: Task: Book a trade through the repositories
+#+description: Booking a trade writes the trade, its activity, its booking and its state with SQL inserts in ores_trading_book_trade_fn, bypassing the generated repositories. Give ores.database a unit of work so several repository writes share one transaction, move booking onto the repositories, and add an architectural rule, enforced by a check, that application code writes entity tables only through repositories.
+#+type: task
+#+level: s1
+#+filetags: :trade-activities-and-links:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every application write to an entity table goes through its generated repository, booking included, and a check refuses code that writes an entity table any other way.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-05                               |
+
+* Acceptance
+
+- ores.database offers a unit of work: repository writes made through it share one connection and one transaction, and commit or roll back together.
+- book_trade writes the trade, the activity, the booking and the state through their repositories inside one unit of work; a failure in any write leaves none, and a second booking of the same trade is still reported as a conflict.
+- ores_trading_book_trade_fn is deleted; no SQL function or hand-written C++ inserts into, updates or deletes from an entity table outside the generated repositories and the sanctioned purge.
+- An architectural rule states the policy, and a check run locally and in CI fails on a direct entity-table write outside the repositories, with the purge and test fixtures as its stated exceptions.
+- The round trip stays at in-scope lost 0; build, ctest, pgTAP under RLS and the local check set pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

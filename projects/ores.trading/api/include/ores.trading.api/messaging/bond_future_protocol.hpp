@@ -41,6 +41,7 @@ struct bond_future_key {
 
 struct bond_future_write {
     boost::uuids::uuid trade_id;
+    boost::uuids::uuid trade_activity_id;
     std::string contract_name;
     ores::utility::decimal::decimal contract_notional;
     std::string long_short;

@@ -66,6 +66,11 @@ struct bond_forward final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Flag saying the holder is long the forward.
      *
      * The schema declares the member required, so an unengaged value means the container came from

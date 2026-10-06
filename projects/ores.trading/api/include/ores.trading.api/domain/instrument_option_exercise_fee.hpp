@@ -70,6 +70,11 @@ struct instrument_option_exercise_fee final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Amount of the exercise fee.
      */
     ores::utility::decimal::decimal amount;

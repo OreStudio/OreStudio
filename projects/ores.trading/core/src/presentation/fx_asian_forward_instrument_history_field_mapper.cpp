@@ -41,6 +41,8 @@ render_fx_asian_forward_instrument_fields(const domain::fx_asian_forward_instrum
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Trade Type Code", .value = v.identity.trade_type_code});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "FX Index", .value = v.fx_index});
     fields.push_back({.name = "Reference Currency", .value = v.reference_currency});
     fields.push_back(

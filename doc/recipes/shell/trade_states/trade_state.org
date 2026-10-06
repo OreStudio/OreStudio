@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-trade_states add <activity_type_code> <status_id> <reason> <commentary>
+trade_states add <trade_activity_id> <status_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =trading.v1.trade_states.put=.
 
 #+name: trade_states-add
 #+begin_src ores-shell :tangle trade_states-add.ores :exports none
-trade_states add __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+trade_states add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-trade_states set <trade_id> <activity_type_code> <status_id> <reason> <commentary> [--version <n>]
+trade_states set <trade_id> <trade_activity_id> <status_id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =trading.v1.trade_states.put=.
 
 #+name: trade_states-set
 #+begin_src ores-shell :tangle trade_states-set.ores :exports none
-trade_states set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+trade_states set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-trade_states put-many --count <n> <trade_id> <activity_type_code> <status_id> <reason> <commentary>
+trade_states put-many --count <n> <trade_id> <trade_activity_id> <status_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =trading.v1.trade_states.put_many=.
 
 #+name: trade_states-put-many
 #+begin_src ores-shell :tangle trade_states-put-many.ores :exports none
-trade_states put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+trade_states put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 system.new_record generated_script
 #+end_src
 
 ** =delete=

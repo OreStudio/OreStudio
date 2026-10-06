@@ -142,27 +142,28 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <underlying_name> <currency> <notional> <option_type> "
-        "<strike> <expiry_date> <exercise_type> <long_short> <settlement_type> <cliquet_frequency> "
-        "<description> <reason> <commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
+        "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
+        "<settlement_type> <cliquet_frequency> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <underlying_name> <currency> <notional> <option_type> "
-        "<strike> <expiry_date> <exercise_type> <long_short> <settlement_type> <cliquet_frequency> "
-        "<description> <reason> <commentary> [--version <n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
+        "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
+        "<settlement_type> <cliquet_frequency> <description> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <trade_type_code> <underlying_name> <currency> <notional> "
-        "<option_type> <strike> <expiry_date> <exercise_type> <long_short> <settlement_type> "
-        "<cliquet_frequency> <description> <reason> <commentary>");
+        "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
+        "<currency> <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
+        "<settlement_type> <cliquet_frequency> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,14 +358,16 @@ void equity_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
@@ -421,14 +424,16 @@ void equity_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(
             req.change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
@@ -497,8 +502,8 @@ void equity_option_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -507,6 +512,8 @@ void equity_option_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(
                 change.write.trade_type_code, parsed->positionals[next++], "trade_type_code");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(
                 change.write.underlying_name, parsed->positionals[next++], "underlying_name");
             read_token(change.write.currency, parsed->positionals[next++], "currency");

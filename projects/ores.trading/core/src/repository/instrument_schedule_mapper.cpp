@@ -54,6 +54,7 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     r.owner_number = boost::lexical_cast<int>(v.owner_number.value());
     r.schedule_role = v.schedule_role.value();
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.schedule_kind = v.schedule_kind;
     r.start_date =
         v.start_date.has_value() ?
@@ -102,6 +103,7 @@ instrument_schedule_entity instrument_schedule_mapper::map(const domain::instrum
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.schedule_kind = v.schedule_kind;
     r.start_date =
         v.start_date.has_value() ?

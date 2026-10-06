@@ -34,6 +34,7 @@ export interface AscotKey {
 
 export interface AscotWrite {
     trade_id: string;
+    trade_activity_id: string;
     ascot_option_type: string;
 }
 

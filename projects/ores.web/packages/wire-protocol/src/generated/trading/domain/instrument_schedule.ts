@@ -38,6 +38,7 @@ export interface InstrumentSchedule {
     owner_number: number;
     schedule_role: string;
     sequence_number: number;
+    trade_activity_id: string;
     schedule_kind: string;
     start_date: string | null;
     end_date: string | null;

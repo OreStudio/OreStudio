@@ -95,6 +95,7 @@ messaging::bond_forward_key key_from(const domain::bond_forward& v) {
 domain::bond_forward to_domain(const messaging::bond_forward_write& write) {
     domain::bond_forward v;
     v.trade_id = write.trade_id;
+    v.trade_activity_id = write.trade_activity_id;
     v.long_in_forward = write.long_in_forward;
     v.forward_maturity_date = write.forward_maturity_date;
     v.forward_settlement_date = write.forward_settlement_date;

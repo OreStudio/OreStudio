@@ -87,26 +87,27 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <start_date> <end_date> <currency> <underlying_code>
-     * <long_short> <strike> <notional> <moment_type> <description> <reason> <commentary>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date>
+     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <description>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <start_date> <end_date> <currency> <underlying_code>
-     * <long_short> <strike> <notional> <moment_type> <description> <reason> <commentary> [--version
-     * <n>]
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date>
+     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <description>
+     * <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_type_code> <start_date> <end_date> <currency>
-     * <underlying_code> <long_short> <strike> <notional> <moment_type> <description> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date>
+     * <end_date> <currency> <underlying_code> <long_short> <strike> <notional> <moment_type>
+     * <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

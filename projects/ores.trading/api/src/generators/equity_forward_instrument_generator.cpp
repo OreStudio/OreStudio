@@ -48,6 +48,7 @@ generate_synthetic_equity_forward_instrument(utility::generation::generation_con
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("EquityForward");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.quantity = 100.0;

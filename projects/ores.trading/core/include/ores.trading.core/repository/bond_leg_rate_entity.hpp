@@ -47,6 +47,7 @@ struct bond_leg_rate_entity {
     sqlgen::PrimaryKey<std::string> leg_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string rate_kind;
     std::optional<std::string> index;
     std::optional<bool> is_in_arrears;

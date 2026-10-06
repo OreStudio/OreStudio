@@ -35,6 +35,7 @@ export interface InflationSwapInstrumentKey {
 export interface InflationSwapInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     start_date: string;
     maturity_date: string;
     inflation_index_code: string;

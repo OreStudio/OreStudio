@@ -100,6 +100,7 @@ to_domain(const messaging::equity_position_option_underlying_write& write) {
     domain::equity_position_option_underlying v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.underlying_name = write.underlying_name;
     v.strike = write.strike;
     v.weight = write.weight;

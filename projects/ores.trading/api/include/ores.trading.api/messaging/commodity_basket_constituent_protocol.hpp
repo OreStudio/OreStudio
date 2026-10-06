@@ -43,6 +43,7 @@ struct commodity_basket_constituent_key {
 struct commodity_basket_constituent_write {
     boost::uuids::uuid trade_id;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::string underlying_code;
     std::optional<ores::utility::decimal::decimal> weight;
 };

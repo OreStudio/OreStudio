@@ -35,6 +35,7 @@ create table if not exists "ores_trading_swaption_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "expiry_date" date not null,
     "exercise_type" text not null,
     "settlement_type" text not null,
@@ -60,7 +61,8 @@ create table if not exists "ores_trading_swaption_instruments_tbl" (
     check ("exercise_type" in ('European', 'Bermudan', 'American')),
     check ("settlement_type" in ('Cash', 'Physical')),
     check ("long_short" in ('Long', 'Short')),
-    check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date")
+    check ("maturity_date" is null or "start_date" is null or "maturity_date" > "start_date"),
+    constraint ores_trading_swaption_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

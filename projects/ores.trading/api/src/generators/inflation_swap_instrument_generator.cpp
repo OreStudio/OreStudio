@@ -47,6 +47,7 @@ generate_synthetic_inflation_swap_instrument(utility::generation::generation_con
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("ZeroCouponInflationSwap");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2034} / 1 / 15};
     r.inflation_index_code = std::string("UKRPI");

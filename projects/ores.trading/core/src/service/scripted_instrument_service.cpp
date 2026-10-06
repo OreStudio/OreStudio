@@ -96,6 +96,7 @@ domain::scripted_instrument to_domain(const messaging::scripted_instrument_write
     domain::scripted_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.script_name = write.script_name;
     v.script_body = write.script_body;
     v.events_json = write.events_json;

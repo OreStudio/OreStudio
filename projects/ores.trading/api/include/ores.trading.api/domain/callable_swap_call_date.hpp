@@ -78,6 +78,11 @@ struct callable_swap_call_date final {
     int sequence_number;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The date on which the call may be exercised.
      *
      * The ORE document states it as an ISO 8601 date string; the column's type refuses any other

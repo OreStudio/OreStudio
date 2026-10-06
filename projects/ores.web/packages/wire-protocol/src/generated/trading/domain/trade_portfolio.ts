@@ -35,6 +35,7 @@ export interface TradePortfolio {
     tenant_id: string;
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     party_id: string;
     portfolio_id: string;
     modified_by: string;

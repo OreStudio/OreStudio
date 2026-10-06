@@ -48,6 +48,7 @@ generate_synthetic_bond_instrument(utility::generation::generation_context& ctx)
     r.identity.trade_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("Bond");
     r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.issue_id = ctx.generate_uuid();
     r.notional =
         std::make_optional(ores::utility::decimal::decimal::from_string("1000000").value());

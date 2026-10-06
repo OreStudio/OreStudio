@@ -52,6 +52,15 @@ The trade this state belongs to.
 ctx.generate_uuid()
 #+end_src
 
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
 ** party_id
 :PROPERTIES:
 :type:     uuid
@@ -63,19 +72,6 @@ The trade's party, copied from the anchor.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
-#+end_src
-
-** activity_type_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-The activity that cut this version of the state.
-
-#+begin_src cpp :name generator
-std::string("new_booking")
 #+end_src
 
 ** status_id
@@ -108,10 +104,6 @@ boost::uuids::uuid{}
 | anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The state's party must be the trade's. |
 
 ** Status transition
-:PROPERTIES:
-:amend_activity_column: activity_type_code
-:amend_activity_code:   amendment
-:END:
 
 The guard is the wide trade's, keyed by the trade id. A status other than
 draft also checks the booking: an actual trade cannot go live while its
@@ -120,30 +112,47 @@ booking names a virtual book.
 #+begin_src sql :name status_transition_declarations :implements B9428A09-3610-4CAD-A200-E6CDE53B7C8D
     v_transition record;
     v_prior_status_id uuid;
+    v_activity_type_code text;
+#+end_src
+
+The transition is the one the activity's type names, read through the
+activity that wrote this version.
+
+#+begin_src cpp :name amend_activity
+        {
+            auto amendment = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+            amendment.party_id = v.party_id;
+            amendment.activity_type_code = "amendment";
+            ores::trading::repository::trade_activity_repository().write(crud_ctx, amendment);
+            v.trade_activity_id = amendment.id;
+        }
 #+end_src
 
 The booking case: the machine has not started, so the transition must be
 one that starts it.
 
 #+begin_src sql :name status_transition_on_insert :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
-    v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+    select activity_type_code into v_activity_type_code
+    from ores_trading_trade_activities_tbl
+    where tenant_id = NEW.tenant_id and id = NEW.trade_activity_id;
+    v_transition := ores_trading_resolve_trade_transition_fn(v_activity_type_code);
 
     if not v_transition.has_transition then
         raise exception 'Activity % cannot book a trade: it names no transition to start the machine.',
-            NEW.activity_type_code
+            v_activity_type_code
             using errcode = '23514';
     end if;
     if v_transition.from_state_id is not null then
         raise exception 'Activity % cannot book a trade: transition % leaves state %, but a new trade has no state to leave.',
-            NEW.activity_type_code, v_transition.transition_name, v_transition.from_state_id
+            v_activity_type_code, v_transition.transition_name, v_transition.from_state_id
             using errcode = '23514';
     end if;
     NEW.status_id = v_transition.to_state_id;
 
     if ores_trading_trade_booked_virtual_fn(NEW.tenant_id, NEW.trade_id)
        and not ores_trading_status_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id, NEW.status_id) then
-        raise exception 'Invalid activity_type_code: %. An actual trade in a virtual book can only be a draft.',
-            NEW.activity_type_code
+        raise exception 'Invalid activity: %. An actual trade in a virtual book can only be a draft.',
+            v_activity_type_code
             using errcode = '23514';
     end if;
 #+end_src
@@ -158,20 +167,23 @@ status read here cannot race another writer.
           and trade_id = NEW.trade_id
           and valid_to = ores_utility_infinity_timestamp_fn();
 
-        v_transition := ores_trading_resolve_trade_transition_fn(NEW.activity_type_code);
+        select activity_type_code into v_activity_type_code
+        from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.trade_activity_id;
+        v_transition := ores_trading_resolve_trade_transition_fn(v_activity_type_code);
 
         if not v_transition.has_transition then
             NEW.status_id = v_prior_status_id;
         else
             if v_transition.from_state_id is null then
                 raise exception 'Activity % can only book a trade: transition % starts the machine, but this trade is already at %.',
-                    NEW.activity_type_code, v_transition.transition_name, v_prior_status_id
+                    v_activity_type_code, v_transition.transition_name, v_prior_status_id
                     using errcode = '23514';
             end if;
 
             if v_prior_status_id is distinct from v_transition.from_state_id then
                 raise exception 'Activity % is not legal here: transition % must be taken from %, but the trade is at %.',
-                    NEW.activity_type_code, v_transition.transition_name,
+                    v_activity_type_code, v_transition.transition_name,
                     v_transition.from_state_id, v_prior_status_id
                     using errcode = '23514';
             end if;
@@ -181,8 +193,8 @@ status read here cannot race another writer.
 
         if ores_trading_trade_booked_virtual_fn(NEW.tenant_id, NEW.trade_id)
            and not ores_trading_status_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id, NEW.status_id) then
-            raise exception 'Invalid activity_type_code: %. An actual trade in a virtual book can only be a draft; book it into a real book first.',
-                NEW.activity_type_code
+            raise exception 'Invalid activity: %. An actual trade in a virtual book can only be a draft; book it into a real book first.',
+                v_activity_type_code
                 using errcode = '23514';
         end if;
 
@@ -223,20 +235,28 @@ A database foreign key: the anchor is immutable.
     }
 #+end_src
 
-** activity_type_code
+** trade_activity_id
 :PROPERTIES:
-:table:             ores_trading_activity_types_tbl
-:target_column:     code
-:use_system_tenant: true
-:nullable:          false
-:error_message:     Invalid activity_type_code: %. No active activity type found with this code.
+:table:    ores_trading_trade_activities_tbl
+:enforce:  true
+:nullable: false
 :END:
 
-The activity catalogue is system reference data. The seed names the
-activity that books a trade, because a new state must start the machine.
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
 
 #+begin_src cpp :name parent_seed
-    v.activity_type_code = "new_booking";
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
 #+end_src
 
 ** status_id
@@ -283,7 +303,7 @@ caller.
 | column             | header   |
 |--------------------+----------|
 | trade_id           | Trade Id |
-| activity_type_code | Activity |
+| trade_activity_id  | Activity |
 | status_id          | Status   |
 | version            | Version  |
 

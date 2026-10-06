@@ -34,6 +34,7 @@ export interface TradeBookingKey {
 
 export interface TradeBookingWrite {
     trade_id: string;
+    trade_activity_id: string;
     counterparty_id: string | null;
     book_id: string;
     netting_set_id: string | null;

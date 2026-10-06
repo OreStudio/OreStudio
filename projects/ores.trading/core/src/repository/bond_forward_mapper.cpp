@@ -48,6 +48,7 @@ domain::bond_forward bond_forward_mapper::map(const bond_forward_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.long_in_forward = v.long_in_forward;
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;
@@ -80,6 +81,7 @@ bond_forward_entity bond_forward_mapper::map(const domain::bond_forward& v) {
     r.trade_id = boost::uuids::to_string(v.trade_id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.long_in_forward = v.long_in_forward;
     r.forward_maturity_date = v.forward_maturity_date;
     r.forward_settlement_date = v.forward_settlement_date;

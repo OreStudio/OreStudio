@@ -51,6 +51,11 @@
 // repository headers are named by the org rather than derived.
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+// Parent-seed snippet includes (ores_trading_trade_activities_tbl): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
 // Soft-FK parent seeding (ores_dq_fsm_states_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -165,7 +170,12 @@ TEST_CASE("write_trade_state_publishes_an_event", tags) {
         v.trade_id = anchor.id;
         v.party_id = party_id;
     }
-    v.activity_type_code = "new_booking";
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
     // fsm_state is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, so the shared system
     // catalogue keeps exactly the rows the populate scripts put there. The
@@ -247,7 +257,13 @@ TEST_CASE("write_trade_state_publishes_an_event", tags) {
         // Rewriting the row is an amendment, not a booking: the booking
         // activity names a transition that starts the state machine and is
         // rejected on a row that already has a state.
-        v.activity_type_code = "amendment";
+        {
+            auto amendment = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+            amendment.party_id = v.party_id;
+            amendment.activity_type_code = "amendment";
+            ores::trading::repository::trade_activity_repository().write(crud_ctx, amendment);
+            v.trade_activity_id = amendment.id;
+        }
         repo.write(crud_ctx, v);
 
         auto versions = svc.get_trade_state_history(id_str);

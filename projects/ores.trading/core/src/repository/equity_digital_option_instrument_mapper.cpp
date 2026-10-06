@@ -53,6 +53,7 @@ equity_digital_option_instrument_mapper::map(const equity_digital_option_instrum
     r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
@@ -92,6 +93,7 @@ equity_digital_option_instrument_mapper::map(const domain::equity_digital_option
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.notional = v.notional.to_string();

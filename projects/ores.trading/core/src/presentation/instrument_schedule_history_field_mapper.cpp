@@ -39,6 +39,8 @@ render_instrument_schedule_fields(const domain::instrument_schedule& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Schedule Kind", .value = v.schedule_kind});
     fields.push_back({.name = "Start Date",
                       .value = v.start_date ?

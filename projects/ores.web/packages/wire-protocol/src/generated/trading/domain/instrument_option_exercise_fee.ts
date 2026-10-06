@@ -35,6 +35,7 @@ export interface InstrumentOptionExerciseFee {
     tenant_id: string;
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     amount: string;
     type: string | null;
     start_date: string | null;

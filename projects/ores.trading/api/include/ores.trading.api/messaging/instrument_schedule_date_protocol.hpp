@@ -51,6 +51,7 @@ struct instrument_schedule_date_write {
     std::string schedule_role;
     int schedule_sequence_number;
     int sequence_number;
+    boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day schedule_date;
 };
 

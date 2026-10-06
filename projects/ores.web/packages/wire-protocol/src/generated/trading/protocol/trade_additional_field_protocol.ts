@@ -36,6 +36,7 @@ export interface TradeAdditionalFieldKey {
 export interface TradeAdditionalFieldWrite {
     trade_id: string;
     sequence_number: number;
+    trade_activity_id: string;
     name: string;
     value: string;
 }

@@ -34,6 +34,7 @@ export interface BondTrs {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     return_type: string;
     funding_leg_type: string;
     funding_rate: number;

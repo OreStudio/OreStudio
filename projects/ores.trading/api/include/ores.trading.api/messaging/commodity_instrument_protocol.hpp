@@ -42,6 +42,7 @@ struct commodity_instrument_key {
 struct commodity_instrument_write {
     boost::uuids::uuid trade_id;
     std::string trade_type_code;
+    boost::uuids::uuid trade_activity_id;
     std::string commodity_code;
     std::string currency;
     double quantity;

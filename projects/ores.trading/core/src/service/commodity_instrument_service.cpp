@@ -97,6 +97,7 @@ domain::commodity_instrument to_domain(const messaging::commodity_instrument_wri
     domain::commodity_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.commodity_code = write.commodity_code;
     v.currency = write.currency;
     v.quantity = write.quantity;

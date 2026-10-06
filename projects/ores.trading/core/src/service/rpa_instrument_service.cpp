@@ -95,6 +95,7 @@ messaging::rpa_instrument_key key_from(const domain::rpa_instrument& v) {
 domain::rpa_instrument to_domain(const messaging::rpa_instrument_write& write) {
     domain::rpa_instrument v;
     v.identity.trade_id = write.trade_id;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.start_date = write.start_date;
     v.maturity_date = write.maturity_date;
     v.reference_counterparty = write.reference_counterparty;

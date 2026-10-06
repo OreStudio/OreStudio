@@ -47,6 +47,7 @@ generate_synthetic_composite_leg(utility::generation::generation_context& ctx) {
     r.identity.id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.identity.leg_sequence = faker::number::integer(1, 5);
     r.constituent_trade_id = std::string(faker::word::noun());
     r.audit.modified_by = modified_by;

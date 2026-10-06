@@ -40,6 +40,8 @@ render_rpa_instrument_fields(const domain::rpa_instrument& v) {
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
+    fields.push_back({.name = "Trade Activity ID",
+                      .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Start Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",

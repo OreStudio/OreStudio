@@ -43,6 +43,7 @@ create table if not exists "ores_trading_trade_additional_fields_tbl" (
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "party_id" uuid not null,
     "name" text not null,
     "value" text not null,
@@ -63,6 +64,7 @@ create table if not exists "ores_trading_trade_additional_fields_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("sequence_number" > 0),
     constraint ores_trading_trade_additional_fields_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_additional_fields_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
     constraint ores_trading_trade_additional_fields_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
 );
 

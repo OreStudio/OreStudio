@@ -64,6 +64,11 @@ struct instrument_strike final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief The strike stated as a price.
      */
     std::optional<ores::utility::decimal::decimal> price_value;

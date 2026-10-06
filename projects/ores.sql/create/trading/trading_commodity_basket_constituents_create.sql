@@ -45,6 +45,7 @@ create table if not exists "ores_trading_commodity_basket_constituents_tbl" (
     "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_activity_id" uuid not null,
     "underlying_code" text not null,
     "weight" numeric(28, 10) null,
     "modified_by" text not null,
@@ -63,7 +64,8 @@ create table if not exists "ores_trading_commodity_basket_constituents_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("sequence_number" > 0),
-    check ("underlying_code" <> '')
+    check ("underlying_code" <> ''),
+    constraint ores_trading_commodity_basket_constituents_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

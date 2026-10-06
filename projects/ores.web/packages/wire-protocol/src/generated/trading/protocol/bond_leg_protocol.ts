@@ -38,6 +38,7 @@ export interface BondLegWrite {
     trade_id: string;
     leg_role: string;
     leg_number: number;
+    trade_activity_id: string;
     payer: boolean | null;
     leg_type: string | null;
     currency: string | null;

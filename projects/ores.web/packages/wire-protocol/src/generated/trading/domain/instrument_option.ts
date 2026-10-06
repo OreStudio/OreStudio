@@ -34,6 +34,7 @@ export interface InstrumentOption {
     version: number;
     tenant_id: string;
     trade_id: string;
+    trade_activity_id: string;
     long_short: string;
     option_type: string | null;
     payoff_type: string | null;

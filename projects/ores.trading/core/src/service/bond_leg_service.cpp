@@ -99,6 +99,7 @@ domain::bond_leg to_domain(const messaging::bond_leg_write& write) {
     v.trade_id = write.trade_id;
     v.leg_role = write.leg_role;
     v.leg_number = write.leg_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.payer = write.payer;
     v.leg_type = write.leg_type;
     v.currency = write.currency;

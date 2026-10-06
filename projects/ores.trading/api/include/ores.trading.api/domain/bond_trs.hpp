@@ -74,6 +74,11 @@ struct bond_trs final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief The activity that wrote this version.
+     */
+    boost::uuids::uuid trade_activity_id;
+
+    /**
      * @brief Return type of the total return side (Total, Price).
      *
      * Soft FK to ores_trading_return_types_tbl: ORE states EquityLegData.ReturnType as a bare

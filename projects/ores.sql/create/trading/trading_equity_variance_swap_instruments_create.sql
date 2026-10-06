@@ -33,6 +33,7 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "underlying_name" text not null,
     "currency" text not null,
     "notional" numeric(28, 10) not null,
@@ -59,7 +60,8 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("variance_strike" >= 0)
+    check ("variance_strike" >= 0),
+    constraint ores_trading_equity_variance_swap_instruments_activity_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

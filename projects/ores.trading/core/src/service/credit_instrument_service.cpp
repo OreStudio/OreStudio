@@ -96,6 +96,7 @@ domain::credit_instrument to_domain(const messaging::credit_instrument_write& wr
     domain::credit_instrument v;
     v.identity.trade_id = write.trade_id;
     v.identity.trade_type_code = write.trade_type_code;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.reference_entity = write.reference_entity;
     v.currency = write.currency;
     v.notional = write.notional;

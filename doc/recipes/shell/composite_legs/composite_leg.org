@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-composite_legs add <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
+composite_legs add <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =trading.v1.composite_legs.put=.
 
 #+name: composite_legs-add
 #+begin_src ores-shell :tangle composite_legs-add.ores :exports none
-composite_legs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
+composite_legs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-composite_legs set <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary> [--version <n>]
+composite_legs set <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =trading.v1.composite_legs.put=.
 
 #+name: composite_legs-set
 #+begin_src ores-shell :tangle composite_legs-set.ores :exports none
-composite_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
+composite_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-composite_legs put-many --count <n> <id> <trade_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
+composite_legs put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_sequence> <constituent_trade_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =trading.v1.composite_legs.put_many=.
 
 #+name: composite_legs-put-many
 #+begin_src ores-shell :tangle composite_legs-put-many.ores :exports none
-composite_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
+composite_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

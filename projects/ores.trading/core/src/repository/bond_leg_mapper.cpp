@@ -49,6 +49,7 @@ domain::bond_leg bond_leg_mapper::map(const bond_leg_entity& v) {
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.leg_role = v.leg_role.value();
     r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.payer = v.payer;
     r.leg_type = v.leg_type;
     r.currency = v.currency;
@@ -81,6 +82,7 @@ bond_leg_entity bond_leg_mapper::map(const domain::bond_leg& v) {
     r.leg_number = std::to_string(v.leg_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.payer = v.payer;
     r.leg_type = v.leg_type;
     r.currency = v.currency;

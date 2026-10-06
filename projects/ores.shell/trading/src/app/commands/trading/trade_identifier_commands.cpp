@@ -141,23 +141,23 @@ void trade_identifier_commands::register_commands(cli::Menu& root_menu, nats_cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <id_type> <id_value> <issuing_party_id> <reason> <commentary>");
+        "add <id_type> <trade_activity_id> <id_value> <issuing_party_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <id_type> <id_value> <issuing_party_id> <reason> <commentary> [--version "
-        "<n>]");
+        "set <trade_id> <id_type> <trade_activity_id> <id_value> <issuing_party_id> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <id_type> <id_value> <issuing_party_id> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <id_type> <trade_activity_id> <id_value> "
+        "<issuing_party_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,13 +353,15 @@ void trade_identifier_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         req.change.write.trade_id = boost::uuids::random_generator()();
         read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
         read_token(
             req.change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");
@@ -405,13 +407,15 @@ void trade_identifier_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
         read_token(req.change.write.id_type, parsed->positionals[next++], "id_type");
+        read_token(
+            req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         read_token(req.change.write.id_value, parsed->positionals[next++], "id_value");
         read_token(
             req.change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");
@@ -469,8 +473,8 @@ void trade_identifier_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -478,6 +482,8 @@ void trade_identifier_commands::process_put_many(std::ostream& out,
             messaging::trade_identifier_change change;
             read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
             read_token(change.write.id_type, parsed->positionals[next++], "id_type");
+            read_token(
+                change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             read_token(change.write.id_value, parsed->positionals[next++], "id_value");
             read_token(
                 change.write.issuing_party_id, parsed->positionals[next++], "issuing_party_id");

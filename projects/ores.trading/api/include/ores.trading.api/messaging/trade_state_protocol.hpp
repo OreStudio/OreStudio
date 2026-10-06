@@ -41,7 +41,7 @@ struct trade_state_key {
 
 struct trade_state_write {
     boost::uuids::uuid trade_id;
-    std::string activity_type_code;
+    boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid status_id;
 };
 

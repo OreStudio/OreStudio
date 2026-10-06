@@ -49,6 +49,7 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     "version" integer not null,
     "trade_type_code" text not null,
     "party_id" uuid not null,
+    "trade_activity_id" uuid not null,
     "reference_entity" text not null,
     "currency" text not null,
     "notional" numeric(28, 10) not null,
@@ -90,7 +91,8 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),
     check ("reference_entity" <> ''),
     check ("tenor" <> ''),
-    check ("option_type" is null or "option_type" in ('Call', 'Put'))
+    check ("option_type" is null or "option_type" in ('Call', 'Put')),
+    constraint ores_trading_credit_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency

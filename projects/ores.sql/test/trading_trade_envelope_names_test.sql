@@ -170,12 +170,22 @@ select results_eq(
     $$values ('CPTY'::text)$$,
     'a deleted identifier falls back to the entity''s remaining ORE alias');
 
+create or replace function pg_temp.activity(p_party uuid, p_type text default 'new_booking')
+returns uuid as $$
+    insert into ores_trading_trade_activities_tbl (id, tenant_id, party_id,
+        activity_type_code, actor, occurred_at, comment)
+    values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), p_party, p_type, 'test',
+        now(), 'test')
+    returning id;
+$$ language sql;
+
 create or replace function pg_temp.report_in(p_trade uuid, p_sequence int, p_portfolio uuid)
 returns void as $$
-    insert into ores_trading_trade_portfolios_tbl (trade_id, sequence_number, tenant_id,
-        version, party_id, portfolio_id, modified_by, performed_by, change_reason_code,
-        change_commentary)
-    select p_trade, p_sequence, ores_utility_system_tenant_id_fn(), 0, party_id, p_portfolio,
+    insert into ores_trading_trade_portfolios_tbl (trade_id, trade_activity_id, sequence_number,
+        tenant_id, version, party_id, portfolio_id, modified_by, performed_by,
+        change_reason_code, change_commentary)
+    select p_trade, pg_temp.activity(party_id), p_sequence, ores_utility_system_tenant_id_fn(), 0,
+        party_id, p_portfolio,
         owner_name, owner_name, 'system.new_record', 'test'
     from t_ctx;
 $$ language sql;

@@ -39,6 +39,8 @@ render_bond_leg_rate_fields(const domain::bond_leg_rate& v) {
     std::vector<field_value> fields;
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
+    fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Rate Kind", .value = v.rate_kind});
     fields.push_back({.name = "Index", .value = v.index.value_or(std::string{})});
     fields.push_back(

@@ -36,6 +36,7 @@ export interface CompositeInstrumentKey {
 export interface CompositeInstrumentWrite {
     trade_id: string;
     trade_type_code: string;
+    trade_activity_id: string;
     description: string;
 }
 

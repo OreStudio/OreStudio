@@ -40,6 +40,8 @@ render_bond_forward_fields(const domain::bond_forward& v) {
 
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
+        {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
+    fields.push_back(
         {.name = "Long In Forward", .value = v.long_in_forward.value_or(std::string{})});
     fields.push_back({.name = "Forward Maturity Date",
                       .value = v.forward_maturity_date.value_or(std::string{})});

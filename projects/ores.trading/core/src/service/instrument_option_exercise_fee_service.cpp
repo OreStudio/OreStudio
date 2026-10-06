@@ -100,6 +100,7 @@ to_domain(const messaging::instrument_option_exercise_fee_write& write) {
     domain::instrument_option_exercise_fee v;
     v.trade_id = write.trade_id;
     v.sequence_number = write.sequence_number;
+    v.trade_activity_id = write.trade_activity_id;
     v.amount = write.amount;
     v.type = write.type;
     v.start_date = write.start_date;

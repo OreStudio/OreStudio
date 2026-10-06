@@ -34,6 +34,7 @@ export interface RpaInstrumentKey {
 
 export interface RpaInstrumentWrite {
     trade_id: string;
+    trade_activity_id: string;
     start_date: string;
     maturity_date: string;
     reference_counterparty: string;

@@ -46,6 +46,7 @@ struct instrument_option_payment_date_entity {
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
+    std::string trade_activity_id;
     std::string payment_date;
     std::string modified_by;
     std::string performed_by;

@@ -28,11 +28,11 @@ every tenant.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Reconciliation fixed; re-running the live schedule/unschedule cycle. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run the live test, then open the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

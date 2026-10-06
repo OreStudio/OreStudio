@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 85908C64-31A3-4899-8EF8-7DC1C5D5A70D
+:END:
+#+title: Task: Compose every generated event registrar
+#+description: Eighty-five refdata entities generate an event-mapping registrar that event_registrar.cpp never calls, and eight of them still publish through the hand-wired blocks in application.cpp. Compose every generated registrar and delete the hand-wired path.
+#+type: task
+#+level: s1
+#+filetags: :migrate_the_remaining_refdata_entities_to_the_generated_event_registrar:sprint_27:v0:
+#+owner: marco
+#+branch: feature/compose-every-generated-event-registrar
+#+pr: 2706
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-06
+#+updated: 2026-10-06
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate the remaining refdata entities to the generated event registrar]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA5BCF3B-8953-455D-85F9-1E05A49D9623][Migrate the remaining refdata entities to the generated event registrar]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2706][#2706]] | [refdata,codegen] Compose every generated refdata event registrar |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every generated refdata event registrar is composed. 85 of 127 were not, so
+those entities published nothing and their consumers followed stale records.
+application.cpp no longer registers an entity mapping or subscribes to a
+changed event, and the namespace alias and publish helper that only those
+blocks used are gone.
+
+Verified: the service builds clean and starts with 127 canonical event
+mappings and 127 entity subscriptions and no errors; the six refdata suites
+pass; the codegen suite passes 1181 tests; the new composition gate and its
+five tests pass. A census found the same defect outside refdata, which this
+task does not cover.

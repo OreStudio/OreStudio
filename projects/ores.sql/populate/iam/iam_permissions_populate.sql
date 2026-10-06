@@ -61,6 +61,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:assign', 'Assign roles to accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:revoke', 'Revoke roles from accounts');
 
+    -- Run grant permissions. Any person may create a grant for a role they
+    -- hold in full, and its grantor may revoke it; this permission lets an
+    -- administrator revoke any grant of the tenant.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:revoke', 'Revoke any run grant of the tenant');
+
     -- Permission catalogue permissions. The generated permission CRUD checks
     -- these two; the catalogue itself is seeded, so a screen picks from it
     -- rather than creating a code nothing would enforce.

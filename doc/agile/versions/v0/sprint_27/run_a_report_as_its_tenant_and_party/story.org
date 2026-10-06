@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 423962A1-8381-4CC3-A0D7-8391A53C4C8D
+:END:
+#+title: Story: Run a report as its tenant and party
+#+description: A scheduled report run acts as the tenant and the party of its definition: IAM holds run grants and exchanges them for short-lived run tokens, step services cache those tokens, and reporting grants and revokes them with the schedule.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A scheduled report run acts as the tenant and the party of its definition, with
+no caller present. The steps of the run read and write the owners' data through
+their operations, and row-level security applies as it does for a person.
+
+Today a step calls the owners with its own service identity, which acts for the
+system tenant and sees no party rows. This story builds the
+[[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] pattern as [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] specifies it, and wires it into reporting as
+[[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] describes. It unblocks the backlog task "Package the run input
+through the owners' operations", in the story Complete the ORE report
+configuration, which needs a run token to call the owners.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-05                               |
+
+* Acceptance
+
+- IAM stores run grants and serves =iam.v1.run_grants.create=, =revoke=, =get=
+  and =exchange=, with the checks and claims the IAM page states.
+- A run token carries the grant's tenant and one party, the role's permissions
+  intersected with the grantor's, and the =act=, =grant_id= and =run_id= claims;
+  every issue is logged.
+- Every step service obtains run tokens through one shared cache in
+  =ores.service=.
+- Reporting creates, revokes and re-creates grants with the schedule, and
+  suspends a definition whose grant lapses.
+- A live test: a scheduled run's step reads a party's configuration document
+  through its owner with a run token, and the same read with the service token
+  returns nothing.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0F9B325F-8812-423B-969C-B9A7C0E9D28B][Store run grants in IAM]] | DONE | 2026-10-05 | 2026-10-06 | The run grant entity, its create, revoke and get operations, the checks at create, and the permission codes and seeds. |
+| [[id:A148F6BA-3EDE-4CF9-80C4-FCF1B6BB681C][Exchange a run grant for a run token]] | BACKLOG | | | The exchange operation with its five checks, the actor, grant and run claims, the computed permissions, the issue log, and the per-service and per-tenant limits. |
+| [[id:FAAE99F3-0C98-4265-BFD6-4BD8A052B2F2][Cache run tokens in the step services]] | BACKLOG | | | One shared run token cache in ores.service, keyed by grant and run, with refresh at 80 percent, one retry on token_expired, eviction at the end of a run and a bounded size. |
+| [[id:DBE4A3A1-8A4F-470B-A9B0-4573940C04E8][Grant and revoke with the report schedule]] | BACKLOG | | | Reporting creates a grant when a person schedules or triggers a definition, revokes it on unschedule, delete or change of party, and suspends the definition on grant_lapsed; the ReportRun role is seeded across the owners. |
+
+* Decisions
+
+- *The design is settled.* [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] and [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] state the entity, the checks, the
+  claims and the cache rules; this story implements them and records only
+  departures from them here.
+
+* Out of scope
+
+- The admission quotas, the step concurrency limits and fair dispatch in compute:
+  the scale half of the reporting design.
+- Packaging the run input, which is its own task in the backlog story and
+  follows this one.

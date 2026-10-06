@@ -70,6 +70,11 @@
 \ir ./iam_account_roles_create.sql
 \ir ./iam_rbac_functions_create.sql
 
+-- Run grants (a person's consent for scheduled runs; depends on accounts and
+-- roles)
+\ir ./iam_run_grants_create.sql
+\ir ./iam_run_grants_notify_trigger_create.sql
+
 -- Account-party association (depends on accounts and refdata.parties)
 \ir ./iam_account_party_create.sql
 \ir ./iam_account_party_functions_create.sql

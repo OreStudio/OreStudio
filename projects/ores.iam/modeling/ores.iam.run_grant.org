@@ -1,0 +1,290 @@
+:PROPERTIES:
+:ID: F3789B6F-042A-4F44-BCFC-E3BB2CA0E274
+:END:
+#+title: ores.iam.run_grant
+#+description: Codegen entity model for the IAM run_grant table: a person's consent that runs of one resource act in one tenant and one party with one role.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:
+#+entity_singular: run_grant
+#+entity_plural: run_grants
+#+entity_title: Run Grant
+#+brief: A person's consent that runs of one resource act in one tenant and one party with one role.
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+A run grant records that a person allows the runs of one resource, such as a
+scheduled report definition, to act in one tenant and one party with one role.
+It holds no secret: using it needs a step service's own token and the token
+exchange, and IAM re-checks the grant and its grantor at every use. It is IAM's
+form of the Grant Management pattern, and
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+its checks and its lifecycle.
+
+The table is readable over the wire and written only by IAM's own create and
+revoke operations, which check that the grantor holds the role in the party:
+=:client_read_only:= removes the generic write verbs from the wire and keeps
+the repository writable for those operations.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        iam
+:profile:          uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this run grant.
+
+The grant id. It is random, and it is not a credential.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+The party the runs act in. Enforced by row level security, so a party sees only
+its own grants.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** resource
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+What the grant serves, as =<component>.<entity>/<id>=, for example
+=reporting.report_definition/2d6fee63-...=.
+
+#+begin_src cpp :name generator
+std::string("reporting.report_definition/") + boost::uuids::to_string(ctx.generate_uuid())
+#+end_src
+
+** grantor_account_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The account that gave the consent. A second create for the same party, resource
+and grantor returns this grant rather than a new one.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** role_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The role a run token carries. At create and at every exchange, the grantor must
+hold every permission of this role in the party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** audience
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The service names that may exchange the grant, separated by commas, for example
+=ores.reporting.service,ores.ore.service,ores.compute.service=.
+
+#+begin_src cpp :name generator
+std::string("ores.reporting.service")
+#+end_src
+
+** max_runs
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: true
+:default_value: 0
+:END:
+
+The number of runs the grant serves; zero for a standing grant. A manual run's
+grant serves one.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** not_after
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:default_value: {}
+:END:
+
+The instant after which the grant serves no run; empty for a standing grant.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+** revoked_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:default_value: {}
+:END:
+
+When the grant was revoked; empty while it is active.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+** revoked_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Who revoked the grant: a username, or a service account.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** revoke_reason
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Why the grant was revoked: =unscheduled=, =deleted=, =party_changed= or a
+person's reason.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_run_grants_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** grantor_account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:parent_entity: account
+:error_message: Invalid grantor_account_id: %. No active account found with this id.
+:list_by:       true
+:END:
+
+** role_id
+:PROPERTIES:
+:table:         ores_iam_roles_tbl
+:target_column: id
+:parent_entity: role
+:error_message: Invalid role_id: %. No active role found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: grant
+:entity_plural_short:   grants
+:entity_singular_words: run grant
+:entity_plural_words:   run grants
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rg
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| resource    | Resource    |
+| audience    | Audience    |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  grants
+:key_field:        resource
+:END:
+
+*** Detail fields
+
+| field    | label    | widget       | type      | is_key | is_required | placeholder |
+|----------+----------+--------------+-----------+--------+-------------+-------------|
+| resource | Resource | resourceEdit | line_edit | true   | true        |             |
+| audience | Audience | audienceEdit | line_edit |        | true        |             |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Resource   | resource    | Resource    | string    | 300   |
+| Audience   | audience    | Audience    | string    | 300   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — the checks, the claims and the lifecycle this table serves.
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — the pattern a run grant implements.

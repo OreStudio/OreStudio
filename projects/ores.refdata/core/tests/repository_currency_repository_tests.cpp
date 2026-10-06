@@ -373,7 +373,9 @@ TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
     repo.write(h.context(), {ccy});
 
     std::this_thread::sleep_for(50ms);
-    const auto between = instant(std::chrono::system_clock::now());
+    const auto between_tp =
+        std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::system_clock::now());
+    const auto between = instant(between_tp);
     std::this_thread::sleep_for(50ms);
 
     auto v2 = ccy;
@@ -395,6 +397,22 @@ TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
 
     CHECK(repo.read_latest(h.context(), 0, 100, {}, filter, before_any).empty());
     CHECK(repo.get_total_currency_count(h.context(), filter, before_any) == 0);
+
+    // Every UTC form the service accepts reaches the database as written and
+    // names the same instant.
+    const auto bare = std::format("{:%Y-%m-%d %H:%M:%S}", between_tp);
+    ores::refdata::service::currency_service svc(h.context());
+    for (const auto& form : {between, bare + "Z", bare + "+00", bare + "+00:00"}) {
+        INFO("as_of: " << form);
+        ores::refdata::messaging::list_currencies_request request;
+        request.filter = filter;
+        request.as_of = form;
+        const auto response = svc.list_currencies(request);
+        REQUIRE(response.result.outcome == ores::utility::domain::outcome::ok);
+        REQUIRE(response.currencies.size() == 1);
+        CHECK(response.currencies.front().name == name + " v1");
+        CHECK(response.total == 1);
+    }
 }
 
 TEST_CASE("list_currencies_refuses_an_as_of_that_is_not_a_timestamp", tags) {

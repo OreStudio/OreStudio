@@ -653,7 +653,6 @@ def run(argv, project_root: Path) -> int:
     ro_role = f"ores_{label_lower}_ro"
     service_role = f"ores_{label_lower}_service"
     ddl_user = f"ores_{label_lower}_ddl_user"
-    cli_user = f"ores_{label_lower}_cli_user"
     http_user = f"ores_{label_lower}_http_user"
     shell_user = f"ores_{label_lower}_shell_user"
     compute_wrapper_user = f"ores_{label_lower}_compute_wrapper_user"
@@ -700,7 +699,6 @@ def run(argv, project_root: Path) -> int:
 
     print("Resolving passwords...")
     ddl_pw = _get_or_gen(existing, "ORES_DB_DDL_PASSWORD")
-    cli_pw = _get_or_gen(existing, "ORES_DB_CLI_PASSWORD")
     http_pw = _get_or_gen(existing, "ORES_DB_HTTP_PASSWORD")
     shell_pw = _get_or_gen(existing, "ORES_DB_SHELL_PASSWORD")
     readonly_pw = _get_or_gen(existing, "ORES_DB_READONLY_PASSWORD")
@@ -874,7 +872,6 @@ ORES_DB_RW_ROLE={rw_role}
 ORES_DB_RO_ROLE={ro_role}
 ORES_DB_SERVICE_ROLE={service_role}
 ORES_DB_DDL_USER={ddl_user}
-ORES_DB_CLI_USER={cli_user}
 ORES_DB_HTTP_USER={http_user}
 ORES_DB_SHELL_USER={shell_user}
 ORES_DB_READONLY_USER={readonly_user}
@@ -884,7 +881,6 @@ ORES_TEST_DB_DDL_USER={test_ddl_user}
 # Script / DDL passwords (used by compass db recreate)
 # ---------------------------------------------------------------------------
 ORES_DB_DDL_PASSWORD={ddl_pw}
-ORES_DB_CLI_PASSWORD={cli_pw}
 ORES_DB_HTTP_PASSWORD={http_pw}
 ORES_DB_SHELL_PASSWORD={shell_pw}
 ORES_DB_READONLY_PASSWORD={readonly_pw}
@@ -931,7 +927,6 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
     # client analogue of the backend service registry, which only catalogues
     # DB-writing NATS services.
     client_apps = [
-        {"mapper": "CLI", "user": cli_user, "pw": cli_pw, "uses_db": True},
         {"mapper": "SHELL", "user": shell_user, "pw": shell_pw, "uses_db": False},
         {"mapper": "HTTP_SERVER", "user": http_user, "pw": http_pw, "uses_db": True},
     ]

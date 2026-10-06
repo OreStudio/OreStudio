@@ -28,7 +28,7 @@
  * USAGE:
  *   psql -U <ddl_user> -d <db_name> \
  *     -v owner_role=<owner_role> -v rw_role=<rw_role> -v ro_role=<ro_role> \
- *     -v ddl_user=<ddl_user> -v cli_user=<cli_user> ... \
+ *     -v ddl_user=<ddl_user> ... \
  *     -f setup_schema.sql
  *
  *   -- With skip_validation (faster for development):

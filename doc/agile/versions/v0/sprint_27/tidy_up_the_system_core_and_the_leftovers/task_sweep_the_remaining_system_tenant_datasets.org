@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ read from, not only the ones a provisioning failure happened to expose.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5805CBB0-3077-4449-8E90-759D0836C6DE][Tidy up the system core and the leftovers]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -92,3 +92,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The sweep found nothing to add. The bundle already holds every dataset that
+must be published into the system tenant.
+
+Method, so it can be repeated. Of the 45 tables the DQ publisher writes, twelve
+carry a system-tenant predicate on themselves:
+
+- =countries= and =currencies= read the system tenant as a shared overlay
+  (Ctenant_id in (p_tenant_id, system)=). Both are in =system_core=.
+- =business_unit_types=, =payment_frequencies=, =tenor_schedules=,
+  =calendars=, =calendar_types= and the rest of the hard reads are seeded
+  directly at build time with the system tenant, so no dataset publishes them
+  and none belongs in the bundle. =trading.trade_types=, =trading.activity_types=
+  and the inbox lookups are the same shape.
+- =currency_pairs=, =currency_pair_conventions= and the three CRM tables read
+  the system tenant as an optional overlay, and the =base= bundle gives each
+  tenant its own copy, so the overlay is satisfied either way.
+
+Trading, marketdata and inbox resolve against the system tenant for machinery
+rather than reference data: =marketdata_feed_bindings=' predicate is an RLS
+policy that lets the system tenant see every tenant's bindings, and
+=marketdata_publish_from_dq= reads the artefact table it staged itself.
+
+The only hard requirements remain the coding schemes, which a validator resolves
+against the system tenant, and the template images, which a security-definer
+function reads across the isolation policy. Both are in the bundle.
+
+One correction to the first pass: =fpml.asset_class= and =ore.asset_class= are
+not required. The validator that reads the system tenant is
+Cores_refdata_validate_asset_class_code_fn=, and it reads
+=ores_refdata_asset_class_codes_tbl=, which is seeded at build time, not
+=ores_refdata_asset_classes_tbl= which is what those datasets write. They are
+left in the bundle because the removed build-time bootstrap published them to
+the system tenant and this sweep did not prove nothing else reads them.

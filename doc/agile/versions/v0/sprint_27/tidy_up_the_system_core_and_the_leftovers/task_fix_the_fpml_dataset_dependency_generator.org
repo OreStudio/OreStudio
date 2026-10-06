@@ -41,6 +41,16 @@ edited by hand.
 - The manifest is the only place a dependency is declared; the generated file
   says so and nothing contradicts it.
 
+* Notes
+
+Scoped on 2026-10-06 and deferred. The generator does not call one stale
+function: it calls Cores_iam_system_tenant_id_fn()= seven times, at the
+coding-scheme, catalog, methodology, dataset and dependency writers. It is
+stale throughout rather than at the one line this task was filed for, so
+repairing it is a pass over the whole generator and a careful comparison of
+the output it produces against the file that is checked in. That is not work
+to land beside a merge.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions

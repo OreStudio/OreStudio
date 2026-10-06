@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :finish_the_refdata_read_path:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-tenant-and-party-search-order-and-history
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:23A93147-E669-4F3B-A756-18632A489122][Finish the refdata read path]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-06                               |
 
 * Acceptance
@@ -83,3 +83,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Party is off the hand-wired application.cpp path and onto the generated
+event-mapping registrar. The trigger's created, updated and deleted
+notifications now publish a party_event on refdata.v1.parties_events.<action>,
+which is the subject IAM's party cache subscribes to; the hand-wired
+party_changed_event registration and subscriber are gone.
+
+Verified: the service builds clean; its startup log registers the canonical
+mapping on channel ores_refdata_parties with prefix refdata.v1.parties_events,
+subscribes the party_event handler, and listens on the channel; a notification
+posted on the channel is received and dispatched. The full insert path was not
+driven live: the hand-written party insert trigger refuses a copied fixture
+row, and the party table announces changes on insert, not on the version-closing
+update.

@@ -23,12 +23,14 @@
 //
 // Not every ores.refdata domain_entity is wired here yet:
 // counterparty_contact_information, counterparty_identifier,
-// currency_market_tier, monetary_nature, party, party_contact_information,
+// currency_market_tier, monetary_nature, party_contact_information,
 // and party_identifier have stale nats-eventing output (their
 // changed_event's id field would rename from `ids` to `<entity>_ids` on
 // regeneration) — pre-existing drift unrelated to this registrar, tracked
-// separately. Those seven stay hand-wired in application.cpp until that drift
-// is resolved; see the migrate-remaining-entities capture. business_unit was
+// separately. Those six stay hand-wired in application.cpp until that drift
+// is resolved; see the migrate-remaining-entities capture. party was migrated
+// here once its changed_event carried party_ids, so the created, updated and
+// deleted events now reach the caches that follow them. business_unit was
 // migrated here (its own such drift resolved) while moving it, business_unit_type,
 // and party_id_scheme onto full codegen — see the "Migrate all entities onto the
 // generic HistoryDialog" story. portfolio was migrated here the same way while
@@ -61,6 +63,7 @@
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/leg_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/monetary_nature_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/payment_frequency_event_registrar.hpp"
@@ -117,6 +120,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_leg_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_monetary_nature_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_id_scheme_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_payment_frequency_event_mapping(event_source, event_bus, nats));

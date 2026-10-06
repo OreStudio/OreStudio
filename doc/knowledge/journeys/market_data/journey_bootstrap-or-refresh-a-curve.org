@@ -74,9 +74,12 @@ person sees here reaches pricing: pricing reads only a published curve.
 
 * Screens and wireframes
 
-One screen. The blueprint and the as-of sit at the top, the computed points sit
-in the middle, and the health of the build sits at the bottom, so the person
-reads what was built, then how well it was built.
+Three screens, one build. *Result* shows the observations the build read and
+the pillars it solved; *Curves* shows the input rate, the zero rate, the
+discount factor and the forward; *Checks* shows the reprice residual, the
+convergence, and the missing or stale inputs. All three read the same build,
+so the curve never differs between them — only the question the reader is
+asking does. The blueprint and the as-of sit above all three.
 
 #+caption: Curve bootstrap: the blueprint and as-of, the candidate points, and the health of the build, with the candidate unpublished.
 #+attr_html: :width 100%
@@ -85,9 +88,10 @@ reads what was built, then how well it was built.
 * Prototype
 
 A static page at =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=: mock data only, no backend,
-no build step and no session. It argues that a build produces a candidate, not a curve the system uses: the points, their provenance and the health read together, unpublished.
+no build step and no session. It argues that a build produces a candidate, not a curve the system uses: the observations, their provenance and the health read together, unpublished.
 
-- Variants :: a the points table, b the discount-factor chart, c the health beside the points
+- Screens :: =?variant=a= Result (observations and solved pillars), =?variant=b= Curves (the four curves), =?variant=c= Checks (residual, convergence, missing and stale)
+- Input source :: =?source=real= market observations, =?source=synthetic= a generated feed; the same bootstrap either way, so only the provenance differs
 - States :: clean, missing (inputs absent), projection (a projection whose discount curve is absent)
 - Source :: =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=
 - Open :: =/OreStudio/doc/prototypes/bootstrap-or-refresh-a-curve/= once the site is built, or the

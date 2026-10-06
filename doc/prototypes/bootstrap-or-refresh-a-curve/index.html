@@ -62,9 +62,14 @@ td.num{text-align:right;font-family:var(--mono)}
   synthetic rates differ slightly, because a feed generates them from its
   process; the shape and the bootstrap are identical.
 
-  Variants with ?variant=a|b|c: a is the observations and the bootstrapped
-  pillars, b is the four curves (input rate, zero, discount factor, forward),
-  c is the diagnostics (reprice residual, convergence) and the observations.
+  The build is one, but it is read on three screens and all three are needed.
+  ?variant=a|b|c names them: *Result* (the observations the build read and the
+  pillars it solved, short to long), *Curves* (the input rate, the zero rate,
+  the discount factor and the forward), and *Checks* (the reprice residual,
+  the convergence, and the missing or stale inputs). Each screen is
+  self-contained and reads the same build, so the curve never differs between
+  them; only the question the reader is asking differs.
+
   The charts use the shared PC helper. A pillar named in health.missing breaks
   its line instead of plotting a value.
   ?state=clean|missing|projection switches the mock market. Nothing reads a
@@ -81,6 +86,15 @@ const variant = params.get('variant') || 'a';
 const state = params.get('state') || 'clean';
 
 const source = params.get('source') || 'real';
+// The build is one, but it is read on three screens, and all three are needed:
+// the numbers it produced, the shape it produced, and whether it can be
+// trusted. They are named here rather than left as A/B/C.
+const SCREENS = {
+  a: {name:'Result', purpose:'What the build produced: the observations it read and the pillars it solved, short to long.'},
+  b: {name:'Curves', purpose:'The shape the build produced: the input rate, the zero rate, the discount factor and the forward.'},
+  c: {name:'Checks', purpose:'Whether the build can be trusted: the reprice residual, the convergence, and the missing or stale inputs.'}
+};
+const SCREEN = SCREENS[variant] || SCREENS.a;
 const TENORS = ['1M','3M','6M','1Y','2Y','3Y','5Y','7Y','10Y','20Y','30Y'];
 const YEARS = [1/12, 0.25, 0.5, 1, 2, 3, 5, 7, 10, 20, 30];
 const MARKET = [4.3120,4.3450,4.3760,4.4020,4.3550,4.3110,4.2480,4.2110,4.1850,4.0220,3.9110];
@@ -193,9 +207,11 @@ function header(){
   return `
   <div class="top">
     <h1>Curve bootstrap / USD SOFR FOMC</h1>
+    <span class="tag">${SCREEN.name}</span>
     <span class="muted">candidate · not published</span>
     <a class="grow" style="text-align:right" href="../../knowledge/journeys/market_data/journey_bootstrap-or-refresh-a-curve.html">the journey &rarr;</a>
   </div>
+  <div class="notice">${SCREEN.purpose} <span class="faint">The build is one; these three screens read it, so any of them shows the same curve.</span></div>
   <div class="panel">
     <h2>Curve, source and as-of</h2>
     <div class="row">
@@ -504,10 +520,10 @@ function render(){
   else if (variant === 'c') app.innerHTML = head + sourcePanel() + diagnostics() + pointsTable();
   else app.innerHTML = head + sourcePanel() + pointsTable() + bootstrapTable();
   document.getElementById('note').textContent =
-    `Prototype · curve bootstrap · variant ${variant.toUpperCase()} · source: ${SRC.label} · market: ${state} · candidate, nothing published`;
+    `Prototype · curve bootstrap · ${SCREEN.name} · source: ${SRC.label} · market: ${state} · candidate, nothing published`;
   document.getElementById('bar').innerHTML =
-    `<span class="label">Variant</span>` +
-    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="label">Screen</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${SCREENS[v].name}</button>`).join('') +
     `<span class="sep">|</span><span class="label">Input source</span>` +
     [['real','market'],['synthetic','synthetic']].map(([s, t]) =>
       `<button data-src="${s}" class="${s===source?'on':''}">${t}</button>`).join('') +

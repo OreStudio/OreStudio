@@ -36,7 +36,7 @@ namespace ores::iam::client {
  *
  * The client must carry the calling service's identity, so build it with
  * @ref make_service_token_provider. The returned minter calls
- * =iam.v1.storage_capabilities.mint= and answers the signed token, or nothing
+ * =iam.v1.ops.mint_storage_capability= and answers the signed token, or nothing
  * when IAM refuses or does not answer.
  */
 using storage_capability_minter = std::function<std::optional<std::string>(

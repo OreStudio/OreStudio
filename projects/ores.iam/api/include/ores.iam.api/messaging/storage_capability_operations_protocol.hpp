@@ -41,7 +41,7 @@ namespace ores::iam::messaging {
  */
 struct mint_storage_capability_request {
     using response_type = struct mint_storage_capability_response;
-    static constexpr std::string_view nats_subject = "iam.v1.storage_capabilities.mint";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.mint_storage_capability";
     /**
      * @brief Whether the caller must have established a session first.
      *

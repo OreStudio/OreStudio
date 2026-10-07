@@ -39,7 +39,7 @@ shape has to be kept in step.
 
 ** mint_storage_capability_request
 :PROPERTIES:
-:subject: iam.v1.storage_capabilities.mint
+:subject: iam.v1.ops.mint_storage_capability
 :response: mint_storage_capability_response
 :END:
 

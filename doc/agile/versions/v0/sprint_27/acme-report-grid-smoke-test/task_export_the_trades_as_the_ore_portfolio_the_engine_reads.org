@@ -33,6 +33,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-07                               |
 
+* Relationship to the redesign
+
+This task is the near-term unblock: it maps the trades blob the run gathers
+*today* so ORE proceeds past "Build Portfolio". The shape of that blob is
+about to change — [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] replaces the
+one export with a trade set's archive at an as-of, and gives the mapping its own
+task there ([[id:18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82][Map a book's archive into the ORE portfolio]]).
+
+Whichever lands first, the same thing is built underneath both: the reverse of
+=trade_mapper= and of the instrument mappers. Build that once. If the redesign
+lands first, this task dissolves into it and should be abandoned rather than
+carried.
+
 * Acceptance
 
 -

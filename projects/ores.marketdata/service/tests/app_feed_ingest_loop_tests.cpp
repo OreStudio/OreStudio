@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
@@ -119,12 +120,16 @@ struct fixture {
     /**
      * The subject the service republishes a stored tick on is covered by the
      * stream the service provisions at startup, so a test that stores through
-     * the loop provisions it the same way.
+     * the loop provisions it the same way. The consumer subject carries the
+     * tenant, the party and the key below the tick prefix, so the stream must
+     * cover the prefix's children: a stream on the bare prefix matches nothing
+     * the loop publishes, and the publish finds no responder.
      */
     void connect() {
         nats.connect();
-        nats.make_admin().ensure_stream(nats.make_stream_name("marketdata_ticks"),
-                                        {nats.make_subject(market_tick::nats_subject)});
+        nats.make_admin().ensure_stream(
+            nats.make_stream_name("marketdata_ticks"),
+            {nats.make_subject(ores::marketdata::domain::market_tick_wildcard())});
         REQUIRE(nats.is_connected());
     }
 

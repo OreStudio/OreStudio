@@ -82,6 +82,12 @@ function buildTestServer(tenantId: string, tenantName: string): ReturnType<typeo
                 tenantId,
                 tenantName,
                 version: 'v0.0.25 (test)',
+                database: {
+                    fingerprint: 'e4803181e989327c',
+                    environment: 'test',
+                    commit: 'abc1234',
+                    created: '2026-10-07 21:17:00+00',
+                },
                 username: 'tenant_admin',
                 email: 'admin@northwind.example.com',
                 party,

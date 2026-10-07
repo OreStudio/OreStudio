@@ -55,9 +55,9 @@ from the accepted design.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The scaffold, the heartbeat, the roster, the access model, the whole-grid read and the failure fields on the node summary are done. |
+| Now           | The scaffold, the heartbeat, the roster, the access model, the whole-grid read, the failure fields on the node summary and the database on the login answer are done. |
 | Waiting on    | Nothing.                               |
-| Next          | The last data-model linkage, the database on the login answer, then the screens. |
+| Next          | Build the operations screens.          |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -91,7 +91,7 @@ from the accepted design.
 | [[id:F9E6587E-30DD-4C39-9107-FE01A577E1C8][Scaffold story: Implement the operations journeys in ores.web]] | DONE | 2026-10-04 | 2026-10-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]] | DONE | 2026-10-04 | 2026-10-04 | Initial task for: Implement the operations journeys in ores.web |
 | [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]] | DONE | 2026-10-06 | 2026-10-06 | Serve the installation's expected services and their replica counts, and the last report of every instance at any age, so the roster keeps every expected row with a state: running, stopped or missing. |
-| [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]] | BACKLOG | | | Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own. |
+| [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]] | DONE | | 2026-10-07 | Read the database row at login and carry it on the login answer beside the build it states already: fingerprint, environment, commit and created. No subject of its own. |
 | [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]] | DONE | | 2026-10-07 | Drop the session-tenant filter from the grid reads, keep the stored tenant id as attribution, and guard the read with the permission the journey records, so the whole grid comes back. |
 | [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]] | DONE | | 2026-10-07 | Carry the failed task count and the longest task into the node summary, so a node failing every task stops reading as idle. |
 | [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] | BACKLOG | | | The five journeys as screens on the journey runtime, against the real server: services, grid, bus, logs and versions, with the Operations area, the BFF routes and the footer. |
@@ -179,6 +179,17 @@ from the accepted design.
   The handler has no test seam — a header-only class with an injected NATS
   client and repositories built inline — so the mapping is proved on the live
   fleet, not by an automated test, and the task says so.
+- *The database row rides the login answer, refusals included.* The answer
+  already states the deployment's build, so it gains a nested =database_info=
+  beside it — fingerprint, environment, commit and created — read once per
+  login from =ores_database_info_tbl=. The handler fills it on every reply
+  path, both successes and both refusals, because the row rides with the build
+  and a refusal still says what it talked to; a read that fails leaves the row
+  empty rather than failing the sign-in. No subject, permission, BFF route or
+  second read appears. The BFF keeps the row on the session record and
+  =GET /api/session= repeats it, so the versions panel adds no request. The
+  read is a hand-authored repository helper so it can be tested against the
+  real table; the header-only login handler has no seam and is not unit-tested.
 
 * Out of scope
 

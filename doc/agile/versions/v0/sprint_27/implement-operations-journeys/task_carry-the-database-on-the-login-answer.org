@@ -8,11 +8,11 @@
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/carry-the-database-on-the-login-answer
-#+pr:
+#+pr: 2778
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-07
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,29 +35,56 @@ own.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- =login_response= carries the database row: fingerprint, environment, commit
-  and created.
-- The iam service reads =ores_database_info_tbl= at login and fills the
-  fields; no new subject and no new permission appear.
-- The session keeps the row, so the versions panel reads it from the answer
-  that opened the session.
+- =login_response= carries a nested =database_info= with four fields —
+  =fingerprint=, =environment=, =commit= and =created= — read once per login
+  from the newest row of =ores_database_info_tbl=.
+- The iam service fills the struct on every reply path: the one-party success,
+  the multi-party answer that opens the party picker, and both refusals (the
+  =login_error= catch and the catch for any other exception). A read that fails
+  leaves the struct empty and the login answers as it did before, because
+  build forensics must not fail a sign-in.
+- No new subject, no new permission, no new BFF route and no second table read
+  appear: the login answer states the deployment's build already, and the row
+  rides beside it.
+- The row reaches the browser the way the build it states already travels: the
+  BFF keeps it on the session record, =GET /api/session= states it beside
+  =version=, and a party-choice login carries it into the session when the
+  person picks a party.
+- The row's audience is the server build's audience, so no separate audience
+  is defined for it.
+- The read is a hand-authored repository helper, tested against the real table
+  so the test fails when the helper stops returning the row; the header-only
+  login handler itself has no seam and is not unit-tested.
 - The capture [[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]
   moves out of the inbox with this task's evidence.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Declare a nested =database_info= in the =iam= login model and give
+   =login_response= a =database= field of it, with the doc comment that says
+   why the row travels with the build.
+2. Regenerate the =iam= component, so the C++ and TypeScript protocol types
+   carry the struct; the component file lists follow from the new
+   hand-authored repository and test sources.
+3. Add a hand-authored =read_database_info= helper in =ores.iam.core=, a second
+   reader beside the startup fingerprint check, and a repository test that
+   fails when it stops returning the row.
+4. Read the row once at the top of =auth_handler::login= and place it on all
+   four reply paths.
+5. Carry the row through the BFF session store and the wire-protocol session
+   view, the same way =version= already travels, and test that the login
+   answer and =GET /api/session= both state it.
+6. File the capture as discarded with this task's evidence, and correct the
+   journey's * What is missing to say the answer carries the row now.
 
 * Measurements
 
@@ -71,7 +98,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build | exit 0 | =./compass.sh build= | =9d12f82b8c= |
+| Full suite | 94/94 targets passed, 0 failed | =./compass.sh test run= | =9d12f82b8c= |
+| Codegen unit tests | 2 failed, 1288 passed (both pre-existing: the =storage_capability_messages.org= subject-conformance failures) | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | =9d12f82b8c= |
+| Web workspace | typecheck exit 0; 716 tests passed (bff 243, web 333, wire-protocol 140) | =npm run typecheck=; =npm run test= | =9d12f82b8c= |
+| Component drift | clean (dry run) | =projects/ores.codegen/scripts/check_component_drift.py --all --dry-run= | =9d12f82b8c= |
+| Documentation | 42/42 components pass | =./projects/ores.codegen/validate_docs.sh= | =9d12f82b8c= |
 
 * Notes
 
@@ -94,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2778][#2778]] | [iam,web] Carry the database on the login answer |
 
 * Review
 
@@ -103,3 +135,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The login answer carries the database row. =login_response= gained a nested
+=database_info= — fingerprint, environment, commit and created — declared in
+=ores.iam.login_messages.org= beside the =version= field it already states.
+=auth_handler::login= reads the newest row of =ores_database_info_tbl= once per
+login, through a hand-authored =read_database_info= helper, and places it on
+all four reply paths: the one-party success, the multi-party answer that opens
+the party picker, and both refusals. A read that fails leaves the struct empty
+and the sign-in still answers, because build forensics must not fail a sign-in.
+No new subject, permission or BFF route appears.
+
+The row reaches the browser the way the build already travels. The wire
+protocol's =loginResponseSchema= parses it, the BFF keeps it on the session
+record, =GET /api/session= states it beside =version=, and a party-choice login
+carries it into the session when the person picks a party. The versions panel
+now reads it from the answer that opened the session.
+
+The read is tested against the real table
+(=ores.iam.core.tests: read_database_info_carries_the_recorded_build=), and the
+session carry is tested through the BFF routes (=login-database.test.ts=). The
+header-only login handler has no seam, so the placement of the row on the four
+reply paths is proved on the built binary and the live fleet, not by a unit
+test that would pass with the field unfilled.
+
+Gates: build exit 0; =compass test run= 94/94 targets pass; codegen pytest 2
+failed / 1288 passed, the 2 unchanged pre-existing
+=storage_capability_messages.org= subject-conformance failures; =ores.web=
+typecheck exit 0 and 716 tests pass; component drift clean; =validate_docs.sh=
+42/42; prototype inventory clean. The fleet was restarted afterwards.

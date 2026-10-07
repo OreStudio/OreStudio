@@ -37,6 +37,27 @@ struct party_summary {
     std::string business_center_code;
 };
 
+/**
+ * @brief The database row the deployment was built against.
+ *
+ * The four values =ores_database_info_tbl= records when the database is
+ * created or recreated: the hash of the schema it was built from, the build
+ * environment, the commit, and when the database was created. The table holds
+ * exactly one row. It is declared by hand and owes nothing to the generators,
+ * because it records the checkout that built the database before any service
+ * runs.
+ */
+struct database_info {
+    /** @brief The hash of the SQL scripts the database was built from. */
+    std::string fingerprint;
+    /** @brief The build environment the database was built in. */
+    std::string environment;
+    /** @brief The git commit the database was built from. */
+    std::string commit;
+    /** @brief When the database was created or recreated. */
+    std::string created;
+};
+
 struct login_request {
     using response_type = struct login_response;
     static constexpr std::string_view nats_subject = "iam.v1.ops.login";
@@ -66,6 +87,16 @@ struct login_response {
      * answers agree.
      */
     std::string version;
+    /**
+     * @brief The database the deployment stores into, in full.
+     *
+     * The row travels with the build the answer already states, because the two
+     * answer one question — what am I talking to — and the database is its third.
+     * Its audience is the build's audience: everyone who may open a session may
+     * read it, so it needs no subject, no permission and no read of its own. The
+     * iam service reads it once per login from =ores_database_info_tbl=.
+     */
+    database_info database;
     std::string username;
     std::string email;
     bool password_reset_required = false;

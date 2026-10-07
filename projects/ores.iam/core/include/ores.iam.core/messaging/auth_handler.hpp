@@ -34,6 +34,7 @@
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/database_info_lookups.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
@@ -630,6 +631,13 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
+        /*
+         * The database row rides with the build every reply states, so it is
+         * read once here and placed on every reply path below, refusals
+         * included. The login answer is the row's second reader: each
+         * service's startup check is the first.
+         */
+        const auto db_info = repository::read_database_info(ctx_);
         try {
             // The hostname routes the request to a tenant; the username is what
             // the account row is stored under.
@@ -739,6 +747,7 @@ public:
                  * opens one says which build it was opened against.
                  */
                 resp.version = utility::version::full_version_string();
+                resp.database = db_info;
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
@@ -809,6 +818,7 @@ public:
                  * opens one says which build it was opened against.
                  */
                 resp.version = utility::version::full_version_string();
+                resp.database = db_info;
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
@@ -859,6 +869,7 @@ public:
              * the deployment's version without having signed in at all.
              */
             resp.version = utility::version::full_version_string();
+            resp.database = db_info;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
@@ -874,6 +885,7 @@ public:
              * the deployment's version without having signed in at all.
              */
             resp.version = utility::version::full_version_string();
+            resp.database = db_info;
             reply(nats_, msg, resp);
         }
     }

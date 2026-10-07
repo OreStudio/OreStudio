@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
 #+branch: feature/collapse-synthetic-control-plane-forks
-#+pr: 2757
+#+pr: 2766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
@@ -157,7 +157,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2766][#2766]] | [synthetic] Collapse three control-plane forks onto one pipeline |
 
 * Review
 

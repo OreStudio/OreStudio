@@ -65,7 +65,7 @@ component user journeys]] for the component-level account.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8D9A80D7-3DDC-48DB-B67A-28E653542C76][Scaffold story: Write the refdata party, book, convention and tenor journeys]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:3CAA0C52-5049-4FC7-9967-96863D2E46BC][Prototype the refdata party, book, convention and tenor journeys]] | STARTED | 2026-10-07 | | Draw all five journeys as plain-HTML prototypes under =doc/prototypes/=, one directory each, listed in the inventory and published by the site build. |
+| [[id:3CAA0C52-5049-4FC7-9967-96863D2E46BC][Prototype the refdata party, book, convention and tenor journeys]] | DONE | 2026-10-07 | 2026-10-07 | Draw all five journeys as plain-HTML prototypes under =doc/prototypes/=, one directory each, listed in the inventory and published by the site build. |
 
 * Decisions
 

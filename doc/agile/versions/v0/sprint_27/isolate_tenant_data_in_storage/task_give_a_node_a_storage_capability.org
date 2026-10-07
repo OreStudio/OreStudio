@@ -30,11 +30,11 @@ presents it; storage enforces it and holds no database lookup on the path.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | The token carries the grants, IAM mints them, and both verifiers read them back. Storage enforcement and the dispatcher are next. |
+| Now          | All four slices are landed and proven end to end: a tenant's report run reached a shared wrapper, the node downloaded its package and its input with the capability, ran the engine, uploaded the output, and the result came back Done. Two defects blocked it on the way and are fixed — see Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Enforce the grants in the storage route, then carry the capability through the dispatcher and the wrapper. |
+| Next         | The tenant-bucket work moves each tenant into its own bucket, which is what makes the bucket-ownership bullet in Acceptance true. Until then the key prefix is the whole tenant scope. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -62,12 +62,16 @@ Four slices, each built and verified before the next:
    from them — bucket, key prefix and operation — instead of the account's
    permissions. A token with no grants keeps today's permission path. The
    tenant check arrives when a tenant owns its own bucket; until then the
-   prefix is the whole scope.
+   prefix is the whole scope. *Landed*: =capability_allows= admits only a
+   granted bucket, a key inside that grant's prefix and the grant's operation;
+   two cases in =ores.storage.api.tests= pin =split_object_path= and 38
+   assertions pass.
 4. *The assignment carries it.* The dispatcher asks IAM for a capability for
    the package, the input and the output, and puts it in
    =work_assignment_event=; the wrapper presents it in place of its empty
    bearer. Until the tenant-bucket work lands, the grants name the =ores=
-   bucket and the keys the tree uses today.
+   bucket and the keys the tree uses today. *Landed and proven live*: see
+   Result.
 
 * Measurements
 
@@ -81,10 +85,47 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| | | | |
-
+| Storage objects the run moved | 3 | =ls publish/storage/ores/{ore/packages,reporting/runs,compute/output}/...= | 5ea98d6271 |
+| Capability round-trip assertions | 13 | =ores.security.tests "round trips a storage capability"= | 5ea98d6271 |
+| =split_object_path= assertions | 38 | =ores.storage.api.tests= | 5ea98d6271 |
+| Schema fingerprint after the host fix | 741993f7328c8de0 | =compass db recreate -y -k= | work in progress |
 
 * Notes
+
+*Result methods.* The run is driven from =ores.shell=: provision the tenant,
+import the ORE example, schedule the definition (which is what mints the run
+grant), trigger it, then read the result row.
+
+*Two defects had to be fixed before the capability could pay off.* Both are the
+same mistake in different places: the compute service ran a trusted
+wrapper-facing write under its own system-tenant context, so a tenant's row was
+invisible to it.
+
+- The =results.submit= handler looked the result up with the service context.
+  RLS scoped the read to the system tenant, the row belongs to the reporting
+  tenant, and the handler answered "Result not found" with the job already
+  finished on the node. Fixed by carrying =tenant_id= on the assignment and on
+  the submit, and scoping the write with =tenant_context::with_tenant= — the
+  convention =submit_compute_request= already follows.
+- The results soft-FK check demanded the host live in the result's tenant. A
+  compute host is a deployment-level registry row: a node registers on first
+  heartbeat under the system tenant, and one shared fleet serves every tenant.
+  Fixed with =:system_tenant_visible: true= on the =host_id= soft FK, the same
+  relation =app_version_id= already declares.
+
+*Left open by this task.* The engine printed
+=Error: Error in ORE analytics: error opening file Input/market_20160205_flat.txt=
+and still exited 0, so the wrapper recorded a success for a run that produced
+no analytics. The input archive holds =market_data.msgpack= and
+=trades.msgpack= where the ORE run configuration wants
+=Input/market_20160205_flat.txt=. That is the input-shape half of
+[[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][the reporting-compute handoff]], but the
+wrapper trusting an exit code over the engine's own log is a new finding and is
+captured separately: [[id:8E55B78D-0928-45D9-B61F-7A5D3619A381][treat an engine error as a failed result]].
+
+*The same tenant-context mistake is still in the reaper.* =reap()= lists
+InProgress results with the service context, so it can never see a tenant's
+rows. It is captured as [[id:85B38AFE-2388-4436-B620-07B351B8F4E9][scope the reaper to each tenant]].
 
 * Test Scenarios
 
@@ -110,3 +151,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done, proven on a recreated database (fingerprint =741993f7328c8de0=) with a
+live ACME tenant.
+
+The run is report instance =0b6d9908-d699-49ae-b633-cbc363d4b8e6= of the
+"Intercompany Exposure Matrix" definition, triggered through
+=ores.shell=. It reached the terminal =completed= state with the message
+"Report execution completed.", and its workunit's result came back:
+
+| Field | Value |
+|-------+-------|
+| Result | =9fd17163-d2a4-43d8-83ef-0b25edb84069= |
+| Server state | 5 (Done) |
+| Outcome | 1 (Success) |
+| Host | =ed10ef0f-ed48-5b3f-96ab-49e5eca325d7=, a system-tenant host row |
+| Received at | 2026-10-07 18:24:42+01 |
+
+The node ran on replica 3 and the objects it moved are on disk:
+
+- =storage/ores/ore/packages/0b6d9908-.../ore_package.tar.gz= — the report package.
+- =storage/ores/reporting/runs/0b6d9908-.../{market_data,trades}.msgpack= — the run's inputs.
+- =storage/ores/compute/output/9fd17163-....tar.gz= — the output, 3531 bytes,
+  byte-for-byte the =output.tar.gz= the node packed.
+
+Every one of those three transfers went through the capability: the same URLs
+answer =401= with no bearer token and =401= with a bogus one, so the download
+was authorised by the grant and not by open access.
+
+What is *not* claimed: the engine's own log for that job says
+"Error: Error in ORE analytics: error opening file
+Input/market_20160205_flat.txt". The wrapper called it a success because the
+process exited 0. The capability path this task owns is fully exercised; the
+engine's input shape is the other task's, and the false success is the third.

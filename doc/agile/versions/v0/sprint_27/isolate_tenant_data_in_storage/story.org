@@ -27,9 +27,9 @@ ones, and every caller reaches only the objects its credential names.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The policy is stated. Its acceptance is not yet built. |
+| Now           | The policy is stated, and the capability is built and proven: a tenant's report run reached a shared node, the node downloaded its package and input and uploaded its output through a per-assignment capability, and the result came back Done. Tenant buckets are not built yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Cut the implementation tasks: tenant buckets and provisioning, capability minting, the storage check, the call-site migration, and the node's assignment capability. |
+| Next          | Cut the tenant-bucket tasks: a bucket per tenant per data class, provisioning it, deriving the tenant from the bucket in the storage check, the transient-object lifecycle, and the call-site migration onto the run token. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -47,7 +47,8 @@ ones, and every caller reaches only the objects its credential names.
 |------+-------+-------+-----+-------------|
 | [[id:A26895DD-A991-4A69-8E40-058BA62CAACE][Scaffold story: Isolate tenant data in object storage and the compute grid]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:466DC2F4-C981-4205-BBAA-9C47F3973732][State the storage policy]] | DONE | 2026-10-07 | 2026-10-07 | The architecture page that settles object ownership, the bucket set, the key grammar, the object capability and the storage checks. |
-| [[id:8784C136-7B08-4650-BAE5-C90637ADEA41][Give a worker node a capability to reach its assignment's objects]] | STARTED | 2026-10-07 | | A worker node holds no storage credential at all: the wrapper passes an empty bearer token, so storage answers 401 and no job can download its package or input. IAM mints a short-lived object capability naming the tenant's bucket and the assignment's exact key prefixes; the compute dispatcher puts it in the assignment; the wrapper presents it; storage verifies it and checks the bucket's owner, the prefix and the operation. |
+| [[id:8784C136-7B08-4650-BAE5-C90637ADEA41][Give a worker node a capability to reach its assignment's objects]] | DONE | 2026-10-07 | 2026-10-07 | A worker node holds no storage credential at all: the wrapper passes an empty bearer token, so storage answers 401 and no job can download its package or input. IAM mints a short-lived object capability naming the tenant's bucket and the assignment's exact key prefixes; the compute dispatcher puts it in the assignment; the wrapper presents it; storage verifies it and checks the bucket's owner, the prefix and the operation. |
+| [[id:85B38AFE-2388-4436-B620-07B351B8F4E9][Scope the reaper to each tenant]] | BACKLOG | | | The compute service's reap() lists InProgress results and hosts with the service's own system-tenant context. Results are tenant rows and the RLS policy scopes each tenant to its own, so the reaper sees nothing and a stale host's work is never requeued. It needs the same tenant scoping the submit path now uses: act inside each tenant, or iterate the tenants that have work in flight. |
 
 * Decisions
 

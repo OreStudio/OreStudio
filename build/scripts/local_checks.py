@@ -403,6 +403,15 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("modeling", "codegen"),
     ),
     Check(
+        id="subject-conformance",
+        title="Every declared subject is inside the entity protocol",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_subject_conformance.py"),
+        classes=("modeling", "codegen"),
+        fix="Rename the verb to one of the closed set of eight, or move the"
+            " operation to the reserved ops namespace. A genuine exception goes"
+            " in subject_conformance_baseline.json with its reason.",
+    ),
+    Check(
         id="handler-permissions",
         title="Every handler permission code is seeded",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_handler_permissions.py"),

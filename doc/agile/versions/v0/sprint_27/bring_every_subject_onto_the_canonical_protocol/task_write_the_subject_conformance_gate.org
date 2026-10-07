@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One command enumerates every subject the tree declares and fails on any that is 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

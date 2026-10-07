@@ -32,9 +32,9 @@ failed rather than the database's words or a bare error.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | The shape is found and the change located; the template edit is not written. |
+| Now          | The shape is emitted for every refdata write and verified end to end; the store's own refusals are not yet translated. |
 | Waiting on   | Nothing.                               |
-| Next         | Edit =prepare_change= in the two template bodies, tangle, regenerate ores.refdata, build and run the refdata suites. |
+| Next         | Translate the store's own refusals, then add a regression test for the shape. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -103,7 +103,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Refdata services carrying the shape | 135 | =grep -rl describe_key projects/ores.refdata/core/src/service | wc -l= | =2841500a89= |
+| Refdata suites | 6 of 6 pass | =compass test run -- -R refdata= | =2841500a89= |
+| Build | exit 0, 0 errors, 0 warnings | =cmake --build --preset linux-clang-debug-make= | =2841500a89= |
 
 * Notes
 
@@ -131,3 +133,45 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The shape is emitted from the template and reaches all 135 refdata
+services.
+
+=describe_key= renders the key as =field=value= pairs and joins them, so
+a message names the row even where the key has several columns. The
+collision, the missing record and the version conflict each carry a
+sentence, and each pushes a =field_failure=.
+
+Seen through the shell against the live fleet, on a currency that
+exists:
+
+#+begin_example
+{"result":{"outcome":"conflict","code":"already_exists",
+ "message":"A currency with iso_code=USD already exists. State the
+ version you read to replace it, or ask for a version replace.",
+ "fields":[{"field":"iso_code","code":"already_exists",
+ "message":"This value is already taken."}]}}
+#+end_example
+
+and a write stating the wrong version:
+
+#+begin_example
+{"result":{"outcome":"conflict","code":"version_conflict",
+ "message":"The currency with iso_code=USD is at version 2, and the
+ write states 99.",
+ "fields":[{"field":"version","code":"version_conflict",
+ "message":"The record moved since it was read. Read it again and state
+ the version you read."}]}}
+#+end_example
+
+The whole tree builds with no error and no warning, and the six refdata
+suites pass.
+
+** What remains
+
+The store's own refusals still throw, so a trigger's text can still
+reach a client unshaped. And the shape has no regression test: the
+refdata suites are eventing integration tests, so a test belongs in the
+generated service test template, which is its own increment.

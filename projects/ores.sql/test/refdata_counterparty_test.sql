@@ -26,7 +26,7 @@
  * - party_type validation (invalid value rejected)
  * - status validation (invalid value rejected)
  * - Parent counterparty validation (invalid parent rejected)
- * - Natural key uniqueness (full_name, short_code)
+ * - Unique short_code for active records
  * - First insert gets version 1
  * - Soft delete via DELETE rule
  *
@@ -51,7 +51,7 @@ insert into ores_refdata_counterparties_tbl (
 ) values (
     'b0000000-0000-0000-0000-000000000001'::uuid,
     ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation', 'ACME', 'Corporate',
-    NULL, NULL, 'Active',
+    NULL, 'WRLD', 'Active',
     current_user, current_user, 'system.test', 'Test counterparty insert'
 );
 
@@ -117,12 +117,12 @@ select throws_ok(
 -- Test 5: Insert child counterparty with valid parent succeeds
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id,
+    parent_counterparty_id, business_center_code,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-000000000002'::uuid,
     ores_utility_system_tenant_id_fn(), 0, 'Acme UK Ltd', 'ACUK', 'Corporate',
-    'b0000000-0000-0000-0000-000000000001'::uuid,
+    'b0000000-0000-0000-0000-000000000001'::uuid, 'WRLD',
     current_user, current_user, 'system.test', 'Test child counterparty'
 );
 
@@ -155,19 +155,21 @@ select throws_ok(
 -- Test: Natural key uniqueness
 -- =============================================================================
 
--- Test 7: Duplicate full_name is rejected
+-- Test 7: Duplicate short_code is rejected
 select throws_ok(
     $$insert into ores_refdata_counterparties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
+        business_center_code,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000096'::uuid,
-        ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation', 'UNIQUE', 'Corporate',
+        ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation Two', 'ACME', 'Corporate',
+        'WRLD',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23505',
     NULL,
-    'counterparty insert: duplicate full_name raises unique_violation'
+    'counterparty insert: duplicate short_code raises unique_violation'
 );
 
 -- =============================================================================

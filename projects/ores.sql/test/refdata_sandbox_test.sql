@@ -42,10 +42,37 @@ select plan(24);
 -- =============================================================================
 
 -- Row-level security applies to the test user too: state the tenant and the
--- visible parties before reading anything.
+-- visible parties before writing anything, because the fixture below reads
+-- the parties table and the policies then filter.
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
+
+-- A recreated database carries the system party and no book, and the context
+-- below reads a book. The suite rolls the fixture back.
+insert into ores_refdata_portfolios_tbl (
+    id, tenant_id, version, party_id, name, parent_portfolio_id, purpose_type,
+    is_virtual, status, modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf201'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    id, 'SANDBOX-FIXTURE-PORTFOLIO', null, 'Risk', false, 'Active',
+    current_user, current_user, 'system.test', 'Sandbox pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_refdata_books_tbl (
+    id, tenant_id, version, party_id, name, parent_portfolio_id, functional_currency,
+    book_status, regulatory_book_type, is_sweepable, rates_centre_code, sandbox_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf202'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    party_id, 'SANDBOX-FIXTURE-BOOK', '00000000-0000-0000-0000-0000000cf201'::uuid,
+    'USD', 'Active', 'Trading', false, 'WRLD', null,
+    current_user, current_user, 'system.test', 'Sandbox pgTAP fixture'
+from ores_refdata_portfolios_tbl
+where id = '00000000-0000-0000-0000-0000000cf201'::uuid
+  and valid_to = ores_utility_infinity_timestamp_fn();
 
 create temp table t_ctx on commit drop as
 select (select tenant_id from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as tenant_id, (select party_id from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id, (select functional_currency from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as ccy, (select regulatory_book_type from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as rbt, (select rates_centre_code from ores_refdata_books_tbl where valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as rc,

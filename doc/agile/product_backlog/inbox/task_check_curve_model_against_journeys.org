@@ -48,9 +48,110 @@ Settle the shape the curve story's journeys demand against the tables that exist
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The reconciliation is in the parent story under =* Journey to model
+reconciliation, 2026-10-07=. This plan starts the representation. It adds one
+column and one read predicate; it adds no table. Every "today" claim below is
+grounded there with a path and a line.
+
+** Scope and the one decision that shapes it
+
+A curve stays a =market_series= whose points are =market_observation= rows; a
+build stays the =(series, observation_datetime)= slice; identity stays the
+oresmd URI. No =curve=, =curve_build= or =curve_point= table. The reason is
+recorded: no production consumer reads a curve today, so a shape chosen now
+would be speculative, and the existing observation stack already gives the
+points bitemporality, versioning, eventing and row-level security.
+
+** Step 1. Point provenance on the cold annex
+
+Extend =projects/ores.marketdata/modeling/ores.marketdata.observation_lineage.org=:
+
+- Add =point_source_kind=, text, not null, validated to the acceptance's three
+  values. The wider proposal in =doc/knowledge/domain/curve_point_provenance.org=
+  waits on a journey; the column's shape does not change if it is widened.
+- Make =derivation_config_id= and =source_as_of= nullable, and relax the
+  =jsonb_array_length(source_series_ids) > 0= check to allow an empty array, so
+  a manual row can exist without a derivation config or a source series.
+- Keep the entity name for now. A rename to =observation_provenance= is a
+  separate mechanical codegen change and is not needed for the acceptance.
+
+Quoted is the absence of a row, so the hot tick path is unchanged. A manual
+point's author, time and reason reuse =modified_by=, =change_reason_code=,
+=change_commentary= and the annex's own =valid_from=. Regenerate; do not edit
+the generated SQL or header by hand.
+
+** Step 2. The shared manual write path
+
+Add the write operation the adjust-by-hand journey needs, so a manual point and
+its provenance row are written in one transaction:
+
+- a repository or service call that writes the observation through the existing
+  =market_observation_repository::insert= and then the annex row with
+  =point_source_kind='manual'=;
+- a clear operation that closes the annex row and releases the coordinate;
+- one change reason taken from =dq.v1.change_reasons.list=.
+
+The ingest loop (=feed_ingest_loop.cpp:264=) keeps its direct insert. The
+precedence rule does not live there.
+
+** Step 3. The precedence rule, as one predicate
+
+State the rule once, as a free function over the latest automatic value's kind
+and the active manual value: *an active manual point owns its coordinate for
+reading until it is cleared.* Apply it in =read_as_of= and
+=read_as_of_buckets= as a small overlay over the cold annex, not a join in the
+hot loop.
+
+Read-time is chosen over a write-time guard because the manual write is an
+ordinary bitemporal write and the history must keep the fed value and the later
+feed values the acceptance requires. A write-time skip would discard them.
+
+** Step 4. The test that fails when the rule is reversed
+
+In =projects/ores.marketdata/core/tests/repository_market_observation_repository_tests.cpp=,
+beside the existing =read_as_of= cases:
+
+- feed point, manual point for the same coordinate, later feed point; assert
+  =read_as_of= returns the manual value and =read_as_of_buckets= shows it in
+  every bucket at or after the manual write;
+- a second case that flips the predicate's preference and asserts the feed
+  value wins, so the suite fails when the rule is reversed.
+
+** Step 5. The first consumer: the aligned evolution read
+
+Build journey 13's one bounded read before any table. It returns the aligned
+matrix of instants by nodes for one series, with coordinate labels and the
+manual overlay, over the existing rows. This is the first production consumer;
+until it exists the story's record says none does. The single-instant and slice
+reads then share its object definition.
+
+** Step 6. Deferred, with the gap recorded
+
+- The declared shape tables (=series_axes=, =series_axis_values=) are needed for
+  "a hole is a hole" and for added/dropped/persistent nodes. They are not part
+  of this task's acceptance and are added with the evolution read's shape-change
+  requirement.
+- =curve_build= waits on the approval and review journeys (9-12), which have no
+  owner.
+- Surface models, calibration, strike-label vocabulary and the ORE handoff stay
+  their own stories.
+
+** Verification
+
+- The generated SQL and header carry =point_source_kind= and the relaxed checks
+  after a regenerate, with no hand edit.
+- The precedence test fails when the preference is flipped.
+- The evolution read is called by a real caller, not only a test: the first
+  consumer is named in the task's Result.
+- Every journey in the reconciliation table keeps its recorded decision; the
+  five join hops are as corrected (curve-to-points is soft).
+
+** Measurement to take at the first commit
+
+The generated SQL column list for =ores_marketdata_observation_lineages_tbl=,
+the number of lineage rows before and after the manual-write test, and the
+=read_as_of= query plan. Record each with its command and commit in the
+=* Measurements= table.
 
 * Measurements
 

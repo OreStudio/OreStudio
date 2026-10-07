@@ -757,6 +757,258 @@ can show the manual segment with its actor and its reason.
 9. Guard the curve-snapshot reads (capture =D9258D1F=).
 10. Only then decide the =curve_builds= table, from the agreed journeys.
 
+* Journey to model reconciliation, 2026-10-07
+
+A third read-only pass, at =44b4fa36a4= (=origin/main=). It reconciles the
+curve data model against the signed-off journey catalogue, reads the tables,
+the generated repositories and the SQL directly, and corrects the two earlier
+passes where the tree has moved. Nothing here writes code, SQL or a generated
+file.
+
+** What the tree has moved since the earlier passes
+
+- *The curve-snapshot reads are now authenticated and their permission is
+  seeded.* =curve_snapshot_handler.hpp:81-85= and =:121-125= check
+  =marketdata::curve_snapshots:read=, and
+  =projects/ores.sql/populate/iam/iam_permissions_populate.sql:1519= seeds it.
+  The =D9258D1F= defect is closed. The deeper analysis's "the handler checks no
+  permission and no curve-snapshot code is seeded" (story :306-309) is stale.
+- *=instrument_type::curve= and =to_curve_key()= no longer exist.* The only
+  =instrument_type= is ORE's MarketDatum list (=ore_types.hpp:38-84=), which
+  has no =curve= member. The generated grammar that held them was retired, so
+  the open question that assumed them is moot.
+- *=curve_republish_service.cpp= has moved.* The story's citations (=:182=,
+  =:224=, =:296=, =:299=) are from =d02032a18c=. Today the stamp is
+  =:171-187=, the =bootstrap()= call is =:256=, the observation write is
+  =:324-333= with the insert at =:363=, and the lineage write is =:344-359=
+  with the save at =:365-366=.
+- *The database holds no built curve.* One bootstrap config exists; its output
+  series is still =derivation_kind='OBSERVED'= and has zero observations. Three
+  lineage rows exist in total and none is current. A republish has never run
+  outside the tests, so every "today" statement below about a built curve is a
+  statement about code paths the tests exercise, not about data.
+
+** Every journey, what serves it, and the gap
+
+The gap counts are the journey documents' own "What is missing" items under
+=doc/knowledge/journeys/market_data/=, except journey 15, which is under
+=.../operations/=. "Serves it today" names the table, read or code that exists
+now, with a file and a line.
+
+| # | Journey | Serves it today | Gap | Decision |
+|---+---------+-----------------+-----+----------|
+| 1 | Manage a curve's blueprint | refdata config and pillar CRUD (=ir_curve_bootstrap_config_protocol.hpp:95,118,155=; =ir_curve_bootstrap_pillar_protocol.hpp:93,116,153=); read in =curve_republish_service.cpp:131-152= | 7: no name column; tenors unvalidated (=pillars create:108= validates only =curve_role_code=); config plus pillars not atomic; no web page; no approval kind | No blueprint table. The only schema worth adding here is the tenor reference, and it lands as the axis validation below. |
+| 2 | Author a surface's framework | =market_series= plus the asset-class junction; generic snapshot read | 7: no surface model; no axis or grid storage; no strike-label vocabulary; no quoting convention; no parametric model | Deferred. A surface needs a model and an axis vocabulary the curve task does not add. Named gap with its own story. |
+| 3 | Watch the market and clear its exceptions | =market_observation= and =feed_binding= rows; =feed_ingest_loop.cpp:264= writes ticks | 7: no quality or rejection; no exception entity; no typed scope; no resolution record; =source= is free text | The exception entity is out of scope. The point source kind below is the only representation touch, so a view can tell a feed point from a manual one. |
+| 4 | Bootstrap or refresh a curve | =curve_republish_service::compute()= (:276-284=) and =republish()= (:286-370=); engine (=curve_bootstrap_engine.cpp:111-262=); wire handlers registered at =application.cpp:199-210= | 7: nothing sends the subjects; no candidate object or state; no approval; no candidate marker (=:171-187= stamps only on first republish); no per-pillar diagnostics; reads have no as-of; no typed curve identity | The build stays the (series, observation_datetime) slice. No build table until the review/approval journey is agreed. The compute/preview web operation is the first consumer to build. |
+| 5 | Calibrate or refresh a surface | Nothing. Only the generic snapshot read | 7: no surface model, engine, quoting convention or calibration read | Deferred with journey 2. No schema in this task. |
+| 6 | Adjust a curve or surface by hand | =put_market_observation= (=market_observation_service.hpp:85-88=); the shared insert at =market_observation_repository.cpp:114-116=, used by ingest (=feed_ingest_loop.cpp:264=) and republish (=curve_republish_service.cpp:363=) | 7: no source kind; no actor; no reason; no override or clear operation; no precedence; no history for the point | The core of this task. Extend the cold point annex with a source kind; reuse its record provenance for who, when and why; state and test the precedence rule. No new table. |
+| 7 | Check a curve's fit | =compute()=; lineage read; recipe reads | 6: no diagnostics subject; =curve_health_checker= has no production caller; quotes and candidate not joined; resolved pillar date not stored; no as-of read | Diagnostics are a wire and read addition. The resolved date is derived, not stored: the recipe plus the build as-of determine it, so a stored copy would be a second source of truth. |
+| 8 | Inspect a surface's slices | Nothing; only the series and observation reads | 6: no surface, slice or mesh read; no arbitrage check; no typed identity; no as-of | A slice is a filtered view of the same points over an axis, not a table. Deferred with journeys 2 and 5. |
+| 9 | Ask for a publish to be approved | Generic inbox raise and decide (=approval_operations_protocol.hpp:44,107,144=; =approval_kind_protocol.hpp:95=) | 6: no market-data approval kind; no candidate set; no diff; no apply operation; no notification kind | No schema here. The candidate set and the apply operation are the publish journey's work. |
+| 10 | Decide a publish | Generic inbox queue, read and decide | 6: same kind gap; no diff; no validation operation; no kind detail table | No schema here. |
+| 11 | Publish the approved set | =republish()= writes derived observations unconditionally (=:286-370=); =market_series= history provider | 6: no publish operation; no published marker; no notification kind; no publisher name; no candidate set | If a published marker is needed, it belongs on =market_series= as an ordinary state stamp. The series already carries bitemporal history and record provenance; no build table. |
+| 12 | Withdraw or replace a published curve | Nothing. The only write is =republish()= | 7: no withdraw or replace operation; no published state; no supersession link; no notification kind; no consumer map; no diff | Supersession is the series' existing bitemporal history plus a state stamp. A publish record is deferred with the publish journey. |
+| 13 | Watch a curve or surface evolve | =read_as_of= (=market_observation_repository.cpp:418-451=) and =read_as_of_buckets= (:453-516=) behind the snapshot handler (=curve_snapshot_handler.hpp:73-164=, registered at =registrar.cpp:96-109=) | 6: no as-of or range; no set of instants; no alignment; no declared shape; no typed identity; no published marker | The aligned read is the first consumer work. It overlays the point source kind on the existing rows. The declared shape is a named gap, not part of this task's minimal representation. |
+| 14 | See who changed a curve, and when | Generic =history.get= (=history_protocol.hpp=) with providers for =market_series=, =observation_lineage=, =feed_binding= and =series_classification_rule= (=registrar.cpp=); =market_series_versions.list= (=market_series_protocol.hpp:227=) | 7: =market_observation= registers no history provider; no publish acts; no market-data approval kind; no candidate distinction; lineage read keyed by id; manual points unmarked; no auditor role | The manual point's author and reason live on the annex, which already registers a history provider, so the auditor trail exists once the annex row is written. No new table. |
+| 15 | Keep the market data feeds running | =feed_binding= CRUD; =feed_ingest_loop.cpp=; synthetic start and stop subjects | 7: no last-tick read; no source-to-series mapping; IR configs not listable; start and stop are shell-only; no silence threshold; no status history; enabled differs from running | Unchanged. The ingest insert is not the precedence choke point, because the chosen rule is read-time. |
+
+** The five join hops, confirmed and corrected
+
+The story's "Curve data model" table (story :341-347) claims five hops. Four
+hold; one is wrong about its key.
+
+| Hop | Story's claim | Verified today | Verdict |
+|-----+---------------+----------------+---------|
+| Recipe to curve | =ir_curve_bootstrap_configs.output_series_id= to =market_series.id=, soft, no FK, verified one row | The column is =output_series_id= on =ores_refdata_ir_curve_bootstrap_configs_tbl= (=refdata_ir_curve_bootstrap_configs_create.sql:85=), with no FK; the one config's output series resolves (=create.sql:118-119= holds it unique per tenant) | Correct |
+| Curve to points | =market_series.id= to =market_observations.series_id=, *hard FK*, indexed | The observations table has no =references= clause (=marketdata_market_observations_create.sql:41-56=), and =pg_constraint= holds *zero* foreign keys on any =ores_marketdata_*= table | *Corrected: soft, not hard.* The index exists (=create.sql:64-65=), so the join is fast, but nothing enforces it |
+| Points to inputs | =(series_id, observation_datetime, oresmd_uri)= to =observation_lineage=, soft natural key | The lineage table's current-row unique index is that triple (=marketdata_observation_lineages_create.sql:84-86=), with no FK; the lookup is =read_latest_by_observation= (=observation_lineage_repository.cpp:369=) | Correct, but the annex exists only for *derived* points; a quoted point has no row |
+| Pillars to tenors | =end_tenor_code= to =refdata_tenors.code=, soft, no FK | No FK, and the pillar trigger validates only =curve_role_code= (=refdata_ir_curve_bootstrap_pillars_create.sql:107-108=), not the tenors | Correct and unvalidated |
+| Point to tenor | the =oresmd_uri= coordinate to =refdata_tenors.code= by code through the codec | =republish()= passes the engine's =point.point_id=, which is the pillar's end tenor, into =datum_for()= (=curve_republish_service.cpp:306-307= and =curve_bootstrap_engine.cpp:257-258=); the stored discount point reads its term back (=:103-109=) | Correct. The coordinate equals the pillar by construction; no column is needed |
+
+Two further facts the hops table should state: =market_observations= carries no
+=point_id= and no tenor column (columns at =create.sql:42-51=), and
+=observation_lineage= is not written for observed points, so "points to inputs"
+is a hop that exists only for derived points.
+
+** Open questions, answered
+
+1. *How does a curve read its points?* Today =read_as_of= returns an array of
+   =market_observation= objects whose value is text and whose coordinate is
+   inside a URI (=market_observation_repository.cpp:418-451=). *Decision:* add
+   the =read_curve= projection returning parallel arrays, as the story's
+   data-oriented layout asks (:445-463=). It is a read over the same rows, not
+   a table, and it matches the Regime 1 criteria for SoA and stride-1 access
+   (=data_oriented_design.org:162-167=). The engine already consumes a
+   =vector<bootstrapped_point>=, so the kernel is one parse away from the
+   projection.
+2. *An entity or a shaped series?* *Decision:* a shaped series plus the cold
+   point annex, not a =curve_point= table. The points must be bitemporal,
+   versioned, evented and hypertable-backed exactly as observations already are
+   (=create.sql:118-138=); a second point table duplicates that stack, and the
+   story already priced it (:233-238=).
+3. *Does a curve need its own table when it is one series plus points?* *No.*
+   Identity is =market_series.oresmd_uri= (=marketdata_market_series_create.sql:61=),
+   and the series already carries a validated taxonomy in =series_subclass=
+   (18 seeded codes at =refdata_series_subclass_codes_populate.sql:43-96=,
+   including =yield= and =volatility=) and a derivation marker
+   (=create.sql:64-66=). A curve-vs-surface kind is the coordinate shape, which
+   the read derives from the URI's declared coordinate fields
+   (=schema.hpp:304-386=). Reviving a =curve= enum is not needed.
+4. *What consumes a curve?* *Nothing in production.* The only caller of
+   =curve_republish_service= is its own wire handler
+   (=curve_republish_handler.hpp:67-145=, registered at =application.cpp:199-210=),
+   and no web route, HTTP route or shell verb sends either subject. The client
+   package has no curve call and the shell has no curve command. The engine's
+   other callers are its tests, and =curve_health_checker= has no production
+   caller at all. *Decision:* record that there is no consumer and keep the
+   representation minimal and reversible; the first consumer is the compute or
+   the evolution read, built before any table is added.
+5. *Does the oresmd =curve= vocabulary become load-bearing?* *Moot.*
+   =instrument_type::curve= and =to_curve_key()= were deleted with the
+   generated grammar; the URI is the identity. No enum is revived.
+6. *Is =IR_CURVE_BOOTSTRAP= the whole story?* *No.* =CRM_DERIVATION= is seeded
+   and unused (=refdata_derivation_kinds_populate.sql:44=). *Decision:* put the
+   point source kind on the generic annex so CRM and any later derived kind
+   reuse it unchanged, which is what that table's own doc says it is for
+   (=ores.marketdata.observation_lineage.org:25-30=).
+7. *Where does the recipe belong?* *Leave it in =ores.refdata=.* Its config
+   already owns CRUD, history and row-level security there
+   (=refdata_ir_curve_bootstrap_configs_create.sql:29-33=), and
+   =market_series.derivation_config_id= is the established soft reference. A
+   move would duplicate refdata and break the soft-reference principle.
+   *Decision:* keep it, and close the tenor-validation gap on the recipe side.
+8. *How does a curve relate to =feed_binding= and =observation_lineage=?*
+   =feed_binding= maps a producer channel name to a party
+   (=feed_binding.hpp:65,93=); lineage records the *series* a derivation read
+   (=observation_lineage.org:166-177=). *Decision:* a derived curve has no feed
+   binding; its inputs are series ids, and =republish()= already writes those
+   into =source_series_ids= (=curve_republish_service.cpp:311,354=). No change.
+
+** The smallest representation that satisfies the acceptance
+
+The acceptance demands four things the model lacks: a point's source kind, a
+manual point's author/time/reason, a precedence rule, and one read that returns
+a component's ladder over time. Three are provenance and one is a read. None
+needs a new table.
+
+*Where the point's provenance lives.* On the existing cold per-point annex,
+=ores_marketdata_observation_lineages_tbl=. A point with no annex row is
+*quoted*: absence is the default, and quoted ticks keep writing one row to the
+hypertable and nothing else, which preserves the hot/cold split the model
+already has (=marketdata_observations_create.sql:37-38=). A point with an annex
+row is *derived* or *manual*, named by one new column:
+
+#+begin_example
+point_source_kind   text   not null   -- 'derived' | 'manual', validated
+#+end_example
+
+Everything else the manual point must name is already on that annex: =modified_by=
+is who keyed it, =change_reason_code= with =change_commentary= is why, and the
+annex's bitemporal =valid_from= is when (=marketdata_observation_lineages_create.sql:66-71=).
+The annex already registers a history provider
+(=observation_lineage_history_provider_registrar.cpp=, fields at
+=observation_lineage_history_field_mapper.cpp:41-62=), so the auditor trail and
+the per-point provenance read exist for free once the row is written. Adding a
+second cold table keyed by the same triple would be a smell, exactly as the
+story says (:682-685=).
+
+Two constraints have to move so a manual row can exist: =derivation_config_id=
+and =source_as_of= must become nullable, and the
+=jsonb_array_length(source_series_ids) > 0= check must allow an empty array,
+because a manual point has no derivation config and no source series
+(=create.sql:62-65,80=). These are edits to the entity model
+(=ores.marketdata.observation_lineage.org:52-204=) followed by a regenerate,
+never a hand edit of the generated SQL or header.
+
+This is the smallest representation that works. It is also the most
+data-oriented: cold provenance stays in a cold annex keyed by the point, the
+hot observation row is untouched, and no value is duplicated.
+
+*How the precedence rule is enforced and tested.* *Decision: read-time
+precedence.* A current annex row with =point_source_kind='manual'= owns its
+=(series_id, oresmd_uri)= coordinate for reading until it is cleared. The rule
+is one pure predicate over the kind of the latest automatic value and the
+active manual value, applied by =read_as_of= and =read_as_of_buckets=
+(=market_observation_repository.cpp:418-516=) as a small overlay over the cold
+annex, not a join in the hot loop. Read-time is chosen over a write-time guard
+because the manual write is an ordinary bitemporal write
+(=create.sql:77-99= closes the prior row and inserts the new one), so the
+history keeps the fed value *and* the later feed values, which the acceptance
+requires; a write-time skip would discard them. The overlay is over tens of
+manual points, not over every tick, so the aligned read stays contiguous.
+
+The test lives in =projects/ores.marketdata/core/tests/repository_market_observation_repository_tests.cpp=,
+beside the existing =read_as_of= cases (=:135-226=). It writes a feed point,
+writes a manual point for the same coordinate, writes a later feed point, and
+asserts =read_as_of= returns the manual value and =read_as_of_buckets= shows it
+in every bucket at or after the manual write. A second case flips the
+predicate's preference and asserts the feed value wins, so the test fails when
+the rule is reversed, which is the acceptance's own wording.
+
+*What is deliberately not added.* No =curve_build=, no =curve_point=, no
+=curve= entity, and no shape table in this task. The build stays the slice
+=republish()= already writes (=:324-333=), and identity stays the series. The
+declared shape and the aligned read are the first consumer's work; the shape
+tables are a named gap with a decision (journey 13) and can be added when the
+evolution read's added/dropped/persistent requirement is implemented.
+
+** The first production consumer
+
+*None exists today, and the acceptance allows the record to say so.* The
+bootstrap engine is called by the republish service and by its own tests; the
+health checker by its own tests; the snapshot reads by their own handler; and
+no sender, page, route or verb reaches the handler. The consequence for the
+representation is direct: because no consumer exists, the representation must
+stay minimal, reversible and cold, and the first unit of work is the consumer,
+not a table. The cheapest real consumer is journey 13's aligned evolution read
+over one series, because it needs only the rows and the provenance overlay
+above, and it proves the object definition that the single-instant and slice
+reads will then share. The compute preview of journey 4 is the second, because
+it needs no storage at all.
+
+** Decisions taken here
+
+1. Keep the series as the identity; add no curve, build or point table.
+2. Put the point's source kind on the existing cold annex; quoted is the
+   absence of a row.
+3. Reuse the annex's record provenance for a manual point's author, time and
+   reason; add no fields for them.
+4. Enforce the manual precedence at read time with one pure predicate, and test
+   it in the existing repository test file so a reversed rule fails.
+5. Build the aligned evolution read first; it is the first consumer and the
+   first user of the point source kind.
+6. Correct the joins record: the curve-to-points hop is soft, not a hard FK.
+7. Treat the snapshot-permission defect as closed and the oresmd curve
+   vocabulary as deleted; strike both from the open questions.
+
+** What this pass could not determine
+
+- Whether a consumer wants the *raw* feed value beside an active manual value
+  at the same instant. Read-time precedence can return both in one response; a
+  journey has to say whether it should. Its answer decides whether the overlay
+  is a filter or a second field, not whether a table is needed.
+- Whether =curve_build= is earned. That turns on the approval and review
+  journey (9-12), which has no owner and no prototype beyond the wireframe. The
+  decision to defer it is recorded, not derived from a consumer.
+- The rename question: whether the annex should be renamed to say it now
+  carries a point's provenance and not only a derivation's lineage. It is a
+  mechanical codegen rename with no behavioural effect, and it is left to the
+  task that adds the column.
+- The exact vocabulary for =point_source_kind=. Settled: the column carries
+  =derived= or =manual=, and *quoted is the absence of an annex row*. The
+  acceptance's three kinds are all answerable, because a reader classifies a
+  point in one step: no annex row means quoted, and a row names the other two.
+  Absence carries quoted rather than a third stored value because of the
+  hot/cold split. A quoted tick is the common case and writes one row to the
+  hot hypertable and nothing else; storing 'quoted' explicitly would write a
+  cold annex row for every tick in the system, which is the cost the split
+  exists to avoid. The invariant this rests on is that a point a derivation
+  created always has an annex row, so absence cannot mean derived. The wider
+  set the provenance proposal carries -- interpolated, extrapolated, flattened,
+  back-filled -- stays open, and adding it later changes no representation,
+  only the check on this one column.
+
 * Journey catalogue, signed off 2026-10-06
 
 The catalogue was agreed with the owner on 2026-10-06. The journey documents

@@ -92,6 +92,18 @@ the reply, so it would be a second command for one read.
  */
 #+end_src
 
+*** tasks_failed
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Failed tasks the grid summary attributes to the node.
+ */
+#+end_src
+
 *** tasks_since_last
 :PROPERTIES:
 :cpp_type: int
@@ -113,6 +125,18 @@ the reply, so it would be a second command for one read.
 #+begin_src cpp :name comment
 /**
  * @brief Mean task duration over the tasks since the last sample.
+ */
+#+end_src
+
+*** max_task_duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The node's slowest task in the interval the summary covers.
  */
 #+end_src
 

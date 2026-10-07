@@ -8,7 +8,7 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr: 2673
+#+pr: 2747
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-30
@@ -89,6 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2747][#2747]] | [agile] Re-scope the role request journey onto what remains |
 | [[https://github.com/OreStudio/OreStudio/pull/2673][#2673]] | [iam] Land the role request as the first approval kind |
 | [[https://github.com/OreStudio/OreStudio/pull/2707][#2707]] | [web] Ask for a role and read the answer in the browser |
 | [[https://github.com/OreStudio/OreStudio/pull/2715][#2715]] | [agile] Close the inbox approvals and notifications story |

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160
+:END:
+#+title: Story: Rework the rates instruments to the instrument table rule
+#+description: Apply the bond pattern to the rates family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
+#+type: story
+#+level: s2
+#+filetags: :trading:data-model:codegen:data-oriented:instrument:rates:sprint_27:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]], promoted from the product backlog's =next= bucket where it was scaffolded on 2026-10-02. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The family's data model is being analysed; the ER proposal is not yet written. |
+| Waiting on    | Nothing.                               |
+| Next          | Finish the analysis, then break the rework into tasks. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
+- Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
+- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
+- The ORE round trip stays lossless across the family's corpus.
+- The blotter's common-date view is generated, mapping each family's dates to common names; this first family creates it and each later family adds to it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1FBC8267-A81F-40A5-A3CE-46ACA3250C52][Analyse the rates family and propose its relational data model]] | STARTED | 2026-10-08 | | Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks. |
+
+* Decisions
+
+* Out of scope
+
+-

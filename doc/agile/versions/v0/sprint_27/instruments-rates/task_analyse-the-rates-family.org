@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 1FBC8267-A81F-40A5-A3CE-46ACA3250C52
+:END:
+#+title: Task: Analyse the rates family and propose its relational data model
+#+description: Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:rates:data-model:trading:codegen:sprint_27:v0:
+#+owner: marco
+#+branch: feature/analyse-the-rates-family
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every rates surface and propose the relational entity-relationship model that reworks the family to the instrument table rule of the trade shape investigation section 14, following the bond pilot.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Surveying the rates surfaces.          |
+| Waiting on   | Nothing.                               |
+| Next         | Enumerate the family's tables and write the ER proposal. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- Every rates-related type and subtype is inventoried across the modeling orgs, SQL, domain C++, mappers, repositories, services, messaging and the ores.ore mapping.
+- The current model's divergences from the instrument table rule are recorded as findings, each with its evidence.
+- The proposed entity-relationship model is recorded as a diagram and table set: family header, product facts, shared children and securities.
+- The rework is staged into verifiable units; no code changes land on this task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

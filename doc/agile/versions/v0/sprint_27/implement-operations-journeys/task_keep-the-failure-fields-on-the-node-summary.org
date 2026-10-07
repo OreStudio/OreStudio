@@ -105,7 +105,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The new doc comments restate the sample's fields | =ores.compute.telemetry.org= | Accepted | Re-phrased to the summary's voice and regenerated. |
+| 2 | The capture carried no Resolution section | =discarded/the_node_summary_drops_the_failure_fields.org= | Accepted | Added a Resolution naming the task and its evidence. |
+| 3 | The journey's missing-failures item is now stale | =journey_watch_the_compute_grid.org= | Declined | Journey documents are the extraction pass's, per the story's Out of scope; the grid-read task left item 1 in the same state. |
+| 4 | The STARTED commit lands after the implementation | — | Declined | Bookkeeping order only; the code commit is the change and the history stands. |
+| 5 | The header row is raw snake_case and unaligned | =compute_commands.cpp= | Declined | The preliminary table is space-separated with no alignment to break. |
 
 * Result
 
@@ -129,6 +133,14 @@ Verified:
   grid-stats= returned
   =11111111-2222-4333-8444-555555555555 3 7 3 111 9876 4096 2048 5= under the
   header row; the row was then deleted.
+
+A local review round re-phrased the two summary doc comments, which had restated
+the sample's fields, and added a Resolution section to the capture; both were
+regenerated. The change's other class checks also pass: =site page= publishes
+998 files with 0 failures, tangle leaves =projects/ores.shell/scripts/library=
+clean, and the cmake-sources, paste-block, handler-permission,
+test-case-reachability, populate-reference, pattern-uses and catalogue-sweep
+checks are clean. The four declined review findings sit in the Review table.
 
 What is not tested: the handler has no automated test. It is header-only, holds
 an injected NATS client and a database context, constructs its repositories

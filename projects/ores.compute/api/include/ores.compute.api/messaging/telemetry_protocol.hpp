@@ -63,7 +63,7 @@ struct node_stats_summary {
      */
     int tasks_completed = 0;
     /**
-     * @brief Tasks the node failed since its wrapper started.
+     * @brief Failed tasks the grid summary attributes to the node.
      */
     int tasks_failed = 0;
     /**
@@ -75,7 +75,7 @@ struct node_stats_summary {
      */
     std::int64_t avg_task_duration_ms = 0;
     /**
-     * @brief Longest task the node ran since its previous sample.
+     * @brief The node's slowest task in the interval the summary covers.
      */
     std::int64_t max_task_duration_ms = 0;
     /**

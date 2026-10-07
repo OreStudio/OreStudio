@@ -100,7 +100,7 @@ the reply, so it would be a second command for one read.
 
 #+begin_src cpp :name comment
 /**
- * @brief Tasks the node failed since its wrapper started.
+ * @brief Failed tasks the grid summary attributes to the node.
  */
 #+end_src
 
@@ -136,7 +136,7 @@ the reply, so it would be a second command for one read.
 
 #+begin_src cpp :name comment
 /**
- * @brief Longest task the node ran since its previous sample.
+ * @brief The node's slowest task in the interval the summary covers.
  */
 #+end_src
 

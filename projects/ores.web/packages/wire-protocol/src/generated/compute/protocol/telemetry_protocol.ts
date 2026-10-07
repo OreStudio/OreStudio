@@ -43,7 +43,7 @@ export interface NodeStatsSummary {
      */
     tasks_completed: number;
     /**
-     * @brief Tasks the node failed since its wrapper started.
+     * @brief Failed tasks the grid summary attributes to the node.
      */
     tasks_failed: number;
     /**
@@ -55,7 +55,7 @@ export interface NodeStatsSummary {
      */
     avg_task_duration_ms: number;
     /**
-     * @brief Longest task the node ran since its previous sample.
+     * @brief The node's slowest task in the interval the summary covers.
      */
     max_task_duration_ms: number;
     /**

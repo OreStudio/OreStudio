@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 23880D72-201E-49D9-94F9-07960425067A
 :ores.ts.protocol.enabled: nil
+:ores.cpp.shell-command.enabled: nil
 :END:
 #+title: ores.iam.storage_capability_messages
 #+description: Codegen operation model for minting a storage capability, the short-lived object-scoped token a worker node presents to reach the objects of one assignment.

@@ -439,8 +439,18 @@ class TestTheRealModels:
 
     def test_every_iam_operation_model_projects_without_a_gap(self):
         # The gate the facet relies on: a model may only opt in when every
-        # field of every command has a token form.
+        # field of every command has a token form. A model that has not opted
+        # in renders no unit, so its fields are none of this gate's business:
+        # the loader leaves it alone, and so does this test. The storage
+        # capability's mint carries a list of grant rows, which no command line
+        # can type, so it opts out.
         for path in sorted(IAM_MODELING.glob("*.org")):
+            properties = parse_org(path.read_text(encoding="utf-8")).file_properties
+            enabled = str(
+                properties.get("ores.cpp.shell-command.enabled", "")
+            ).strip().lower()
+            if enabled not in ("true", "yes", "1"):
+                continue
             try:
                 operation = load_org_operation_model(path)["operation"]
             except ValueError:

@@ -33,7 +33,7 @@ The installation owns a class of data the schema does not name: the facts about 
 - The codegen can express installation-scoped data, so a model declares its owner instead of hand-writing a policy.
 - The samples, the roster, the logs, the bus and the versions carry the installation's policy shape and are read whole by a session the permission admits.
 - The Operations grid reads the fleet whole under compute::grid_samples:read, and every claim it makes about the work counts is true.
-- Installation-wide work totals are either built on the audit's token exchange or stated on the screen as out of reach, with the capture that records it.
+- The grid's global view, including which tenant is using what, comes from what the installation observed about its own operation, with no policy exception and no cross-tenant read.
 
 * Tasks
 
@@ -43,6 +43,25 @@ The installation owns a class of data the schema does not name: the facts about 
 | [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | BACKLOG | | | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
 
 * Decisions
+
+- *The installation records what it did; it does not read across tenants.* A
+  super administrator needs to know which tenant is using the grid. The work
+  that answers it, the batches, workunits, results, reports and schedules, is
+  tenant-owned, so reading it across tenants is the widening the guard exists
+  to stop. The answer is not a read at all: the compute service is already
+  inside each tenant when it dispatches that tenant's work and when it takes
+  the result back, so it records what it did as an installation fact. The
+  grid's global view is a ledger the installation keeps about its own
+  operation, not a view over its tenants' tables.
+- *A usage row carries the operation, not the tenant's content.* The tenant,
+  the host, the app version, the duration, the cores and the outcome. It does
+  not carry the input bundle, the config, the output, the stderr or the report
+  definition. Those stay tenant-owned, and a row that copied them would be a
+  cross-tenant leak under another name.
+- *The grid's global view needs no exception from the tenancy audit.* This
+  supersedes the earlier framing of the global view as a cross-tenant
+  aggregate, which was wrong. What the installation observes about itself is
+  installation data from the moment it is written, so the guard never applies.
 
 * Out of scope
 

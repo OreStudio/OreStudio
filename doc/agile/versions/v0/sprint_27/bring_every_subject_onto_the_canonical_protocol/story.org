@@ -21,11 +21,11 @@ One gate refuses a subject that is not {component}.v1.{resource}.{verb} with a v
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The census is taken and the defects are classified. Nothing is fixed yet. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the gate first, so the fix cannot regress. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * The census
@@ -111,11 +111,11 @@ gate is a migration that grows back.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2B1BC0F5-0E33-4E24-A212-FD20EB3BFE78][Scaffold story: Bring every subject onto the canonical entity protocol]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:84E1C8E9-3E32-4866-AF73-D8BBD95DF6E0][Implement Bring every subject onto the canonical entity protocol]] | BACKLOG | | | Initial task for: Bring every subject onto the canonical entity protocol |
-| [[id:8E18E56D-6288-4DF1-B40A-2C4DA9D01FA1][Write the subject conformance gate]] | STARTED | 2026-10-07 | | There is no conformance gate in the tree today, and the specification's own Conformance section says every checkable clause is checked mechanically. The census found 129 non-conforming subjects precisely because nothing checks. |
-| [[id:02756820-A373-4E59-84C7-BA2CB0E7B69B][Bring the renamed common verbs onto the closed set]] | BACKLOG | | | Six subjects use save or update where the specification's closed set has put. iam.v1.accounts.save, iam.v1.accounts.update and iam.v1.accounts.update-email are the clearest; the rest are the same defect under a different component. |
-| [[id:6596D066-5050-475A-BA3B-6EF0F3E01E10][Move the entity operations into the reserved ops namespace]] | BACKLOG | | | About forty subjects act on an entity without being one of the eight verbs and were never moved to the reserved namespace: iam.v1.accounts.{lock,unlock,change-password,reset-password,update-self,select-party,switch-party,set-default-party,attach-pictures,publish-from-dq} among them. The specification's discriminator is explicit, and the models that already comply -- ores.variability.operations and ores.reporting.operations -- show the shape and the justification each message owes. |
-| [[id:4F84DD5B-FC4E-4E02-BC1B-7CA6EF72448F][Give each resource one spelling and publish the adopted-components list]] | BACKLOG | | | Three subject-parts exist twice, once snake_case and once kebab-case: dq.v1.lei-entities and dq.v1.lei_entities, inbox.v1.approval-requests and inbox.v1.approval_requests, reporting.v1.report-definitions and reporting.v1.report_definitions. Separately, the specification's Conformance section says the components that have adopted it are named by one list, and no such list exists anywhere in the tree. |
+| [[id:84E1C8E9-3E32-4866-AF73-D8BBD95DF6E0][Implement Bring every subject onto the canonical entity protocol]] | DONE | | 2026-10-07 | Initial task for: Bring every subject onto the canonical entity protocol |
+| [[id:8E18E56D-6288-4DF1-B40A-2C4DA9D01FA1][Write the subject conformance gate]] | DONE | 2026-10-07 | 2026-10-07 | There is no conformance gate in the tree today, and the specification's own Conformance section says every checkable clause is checked mechanically. The census found 129 non-conforming subjects precisely because nothing checks. |
+| [[id:02756820-A373-4E59-84C7-BA2CB0E7B69B][Bring the renamed common verbs onto the closed set]] | DONE | | 2026-10-07 | Six subjects use save or update where the specification's closed set has put. iam.v1.accounts.save, iam.v1.accounts.update and iam.v1.accounts.update-email are the clearest; the rest are the same defect under a different component. |
+| [[id:6596D066-5050-475A-BA3B-6EF0F3E01E10][Move the entity operations into the reserved ops namespace]] | DONE | | 2026-10-07 | About forty subjects act on an entity without being one of the eight verbs and were never moved to the reserved namespace: iam.v1.accounts.{lock,unlock,change-password,reset-password,update-self,select-party,switch-party,set-default-party,attach-pictures,publish-from-dq} among them. The specification's discriminator is explicit, and the models that already comply -- ores.variability.operations and ores.reporting.operations -- show the shape and the justification each message owes. |
+| [[id:4F84DD5B-FC4E-4E02-BC1B-7CA6EF72448F][Give each resource one spelling and publish the adopted-components list]] | DONE | | 2026-10-07 | Three subject-parts exist twice, once snake_case and once kebab-case: dq.v1.lei-entities and dq.v1.lei_entities, inbox.v1.approval-requests and inbox.v1.approval_requests, reporting.v1.report-definitions and reporting.v1.report_definitions. Separately, the specification's Conformance section says the components that have adopted it are named by one list, and no such list exists anywhere in the tree. |
 | [[id:63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9][State the stream wildcard once]] | BACKLOG | | | A nats_subject constant names a prefix, but a stream or a subscription needs the prefix and its children. Four sites spell that three ways, and a test that passed the bare constant failed only against an empty JetStream. |
 
 * Decisions
@@ -139,6 +139,34 @@ gate is a migration that grows back.
   anyway, and will move them onto the grammar while it is there. What it does
   not take is the rest of =iam=: =save=, =update=, the =iam.v1.system= and
   =iam.v1.auth= parts, and the account operations it does not touch.
+
+* Result
+
+No subject in the tree is outside the specification. The gate reads every
+=:subject:= a model declares -- 159 of them -- and finds none that violates the
+grammar, and the baseline that excused the 133 that did is empty. The census
+above is the record of the state before the fix, kept because it is what the
+work was scoped from.
+
+The migration rewrote the 133 from a reviewed mapping, regenerated every
+affected component, and fixed the fallout across 270 hand-written files: the
+SQL populate seeds, the HTTP recipe scripts whose routes moved with their
+subjects, the shell scripts, the documentation, the diagrams, and one runtime
+request literal in =ores.nats=.
+
+Three defects the work exposed, fixed here:
+
+- =ensure_stream= returned as soon as a stream existed, without checking that
+  its subject filter still matched. A renamed subject left a stream that no
+  longer covered what its own service published, and every publish failed with
+  "no responders". The filter is now reconciled.
+- =publish_from_dq_function= parsed a suffix the migration removed, so every
+  expansion function came back unnamed.
+- The local runner ran =npm ci= and two regenerating checks in parallel with
+  the checks that read what they write.
+
+Verified at =2f80858540=: the local gate passes 44 of 44 checks, including the
+full build, the database recreation and all 94 ctest suites.
 
 * Out of scope
 

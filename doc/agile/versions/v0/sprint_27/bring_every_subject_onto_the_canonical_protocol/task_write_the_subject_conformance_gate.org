@@ -26,11 +26,11 @@ One command enumerates every subject the tree declares and fails on any that is 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -87,3 +87,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.codegen/scripts/check_subject_conformance.py= fails on any
+subject a model declares outside the grammar: four lower snake_case segments,
+a literal =v1=, a verb from the closed set of eight (=list_by_<relation>= by
+prefix), an event action from its own three, and the reserved =ops= namespace
+exempt from the verb set. It reads the models, not the generated headers.
+
+The generator already refuses a bad verb when it *derives* a subject, so a
+violation enters the tree exactly one way: a model that declares it by hand
+with a =:subject:= property. The check reads those 159 declarations.
+
+Accepted violations lived in =subject_conformance_baseline.json= with their
+reason, and the file was a ratchet: a violation not in it failed, and an entry
+that no longer violated, or named a subject the tree no longer declares, also
+failed. It is now *empty*: the other tasks emptied it, and a test asserts the
+tree declares no violation at all.
+
+32 cases hold the gate, registered in the local runner under the =modeling=
+and =codegen= classes so it runs on every change that can add a subject.
+

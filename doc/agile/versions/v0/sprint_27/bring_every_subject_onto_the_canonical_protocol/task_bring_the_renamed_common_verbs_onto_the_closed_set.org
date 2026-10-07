@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A create or a replace is a put and nothing else, on every resource the tree decl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -85,3 +85,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The writes under another name are gone. =save=, =update= and =create= became
+=put=, which the closed set defines as create or replace: ten subjects across
+analytics, iam, refdata and reporting.
+
+One pair needed a decision rather than a rule. =iam.v1.accounts.save= creates
+an account and =iam.v1.accounts.update= partially updates one; both would have
+landed on =iam.v1.accounts.put=, which is two declarations on one address. The
+create-or-replace keeps =put= and the partial update became
+=iam.v1.ops.update_account=.
+

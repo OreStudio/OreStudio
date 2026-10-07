@@ -379,6 +379,12 @@ with the site chrome."
   (ores-deploy-web-app
    "./doc/prototypes/compute-grid" site-dir "doc/prototypes/compute-grid"
    "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Compute screens prototype: the same body reset. The grid's work read as
+  ;; use cases -- the load, one job, a failure, the capacity and what it may
+  ;; run -- with the node heatmap and the other grid charts, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/compute" site-dir "doc/prototypes/compute"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
   ;; Message bus prototype: the same body reset. The streams and their samples,
   ;; mock data only.
   (ores-deploy-web-app

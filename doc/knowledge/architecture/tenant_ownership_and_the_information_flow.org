@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2
+:END:
+#+title: Tenant ownership and the information flow
+#+description: Who owns each row: the installation, the system tenant, or a tenant. The three ownership classes, the mechanism each deserves, and the holes that come from not naming them.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:tenancy:security:rls:information_flow:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+Every row belongs to one of three owners, and the schema names only two. A
+*tenant* owns its own business data; *the system tenant* owns the
+installation's registers and the shared datasets every tenant reads; *the
+installation* owns the facts about the deployment itself — which services
+run, which nodes report, what the bus is doing. Because the third owner has
+no name, its rows are stored under the system tenant and read through
+policies written for tenant data, so every read of them is a workaround.
+This page names the three owners, states the mechanism each deserves, and
+lists where the missing third class already bites.
+
+* Detail
+
+** The three owners
+
+| Owner              | What it owns                                          | Examples |
+|--------------------+-------------------------------------------------------+----------|
+| A tenant           | Its own business data                                  | parties, portfolios, books, trades, workunits, batches, results, market data, synthetic configuration |
+| The system tenant  | The installation's registers, and the datasets every tenant reads | the tenants registry, service accounts, permissions, roles, seed profiles; countries, currencies, coding schemes, asset classes, avatars, calendars |
+| The installation   | Facts about the deployment itself, owned by nobody in particular | the services roster and its instances, hosts and wrapper nodes, grid and node samples, telemetry logs, message-bus samples, the database and build row, the expected-services registry |
+
+The third row is the one the schema does not name. Its rows have no tenant
+in any meaningful sense: a node sample describes a machine, and the machine
+runs whatever work the installation gives it.
+
+** What the schema does today
+
+Measured across =projects/ores.sql/create= on 2026-10-07, by a throwaway
+script that matched every =create policy= statement and classified its body
+by the tenant functions it names: a widening compares the session to the
+system tenant, a system-owned policy compares =tenant_id= to the system
+tenant, an own-tenant policy names the current tenant and no system
+function, and a policy that names neither is scoped by party, sandbox or
+role. The same run reproduced the guard's count of
+=check_rls_system_tenant_widenings.py=:
+
+| Policy shape                                        | Count | Meaning |
+|-----------------------------------------------------+-------+---------|
+| Own tenant only                                     |   353 | =tenant_id = ores_iam_current_tenant_id_fn()= |
+| Party or sandbox scoping                            |   152 | keyed on =party_id= or a sandbox, with no tenant predicate |
+| A system-tenant session sees every tenant           |    10 | =current = system=; every one is listed as under audit by the guard |
+| System-owned rows readable by every tenant          |    14 | =tenant_id = system=; the shared-reference idiom |
+| A role-scoped cross-tenant read                     |     3 | =using (true)= granted to the market-data service role, keyed on neither tenant nor party |
+| *Total*                                             |   532 | every policy in =projects/ores.sql/create= |
+
+The guarded shape is the third. =check_rls_system_tenant_widenings.py=
+fails any new one, and its message is the rule: *"A service that needs a
+tenant's data acts inside that tenant, with a token for it (Token Exchange),
+instead."*
+
+** The four mechanisms, and what each is for
+
+| Mechanism | What it does | Correct use |
+|-----------+--------------+-------------|
+| Own-tenant policy | Scopes every read to the session's tenant. | A tenant's data. |
+| System-owned policy (=tenant_id = system=) | Every session sees the system's rows. | Shared reference data. |
+| =:tenant_read_scope: shared= | The read states no tenant predicate; the policy decides. | A read whose rows the policy already admits. |
+| =tenant_context::with_tenant=, or internal impersonation | Acts inside a tenant. | Reaching a tenant's data from outside it. |
+
+The last row has two forms because it serves two layers: =with_tenant= sets
+=app.current_tenant_id= for SQL, and
+[[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]]
+mints a JWT so a service can drive another tenant's NATS handlers. Both are
+the [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] pattern.
+
+** The hole
+
+Installation-scoped data is stored in tenant-scoped tables. Every read of it
+must therefore answer "which tenant?", and there is no right answer — only
+four workarounds: write it under the system tenant and hope the policy
+admits it; widen the policy, which the guard exists to stop; state no
+predicate and let a policy written for tenant data decide; or loop over
+tenants and impersonate each.
+
+** Where it bites today
+
+1. *The grid summary counts the wrong thing.*
+   =ores_compute_grid_stats_fn= takes a tenant, and the poller that calls it
+   holds the system tenant, so the stored summary is that one tenant's
+   slice. Measured on the running fleet: the stored sample reported
+   =total_workunits = 0= while the installation held one workunit and two
+   batches under another tenant.
+2. *The node and grid samples carry a constant, not attribution.* Every
+   sample is written under the system tenant, because the launcher bakes the
+   system tenant into every wrapper's =--tenant-id=. The =tenant_id= on
+   those rows says nothing about the node or the work; it holds the same
+   value in every row.
+3. *A wrapper consumes one tenant's work.* A wrapper subscribes to the
+   system tenant's assignment subject, while the dispatcher publishes every
+   workunit to its own tenant's subject. Other tenants' work is dispatched
+   and never picked up
+   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one tenant's work]]).
+4. *The roster works by accident.* The services roster reads every expected
+   instance and every instance's last report. It works only because every
+   process that reports is a service account, and service accounts live in
+   the system tenant — so no policy had to be widened. The same read over a
+   tenant-owned subject would not work.
+5. *The compute service cannot enumerate tenants.* The tenants registry is
+   owned by the system tenant, so a system-tenant session may read it — but
+   the only C++ that reads that table is =ores.iam.core=, and
+   =ores.compute.service= has no dependency on it. The one cross-tenant read
+   the design blesses is unreachable from a component that needs it.
+
+** The design
+
+Name the third owner, and give it the mechanism it has earned.
+
+- *Class I — the installation.* Rows that describe the deployment. Services
+  write them, and they carry the system tenant as a *constant* rather than
+  as an owner. Their policy is the shared-reference shape —
+  =tenant_id = current or tenant_id = system= — which the guard does not
+  flag, because it admits no tenant's data to anyone: the rows it exposes
+  are the installation's own. The *permission* decides who may call the
+  read, exactly as =compute::grid_samples:read= does today.
+- *Class R — shared reference.* Already right: system-owned rows every
+  tenant reads, with writes tenant-scoped.
+- *Class T — a tenant.* Already right: an own-tenant policy, with
+  cross-tenant access only by acting inside the tenant.
+- *A cross-tenant aggregate is Class T, not Class I.* A count of every
+  tenant's workunits is not a fact about the installation; it is a fact
+  about several tenants at once, and no single tenant owns it. The
+  sanctioned way to compute one is to act inside each tenant. If the
+  Operations area needs installation-wide work totals, the aggregate needs
+  an owner allowed to enter tenants — the mechanism
+  [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache
+  partition inside its tenant]] is building, and the decision belongs with
+  [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let
+  the system tenant read every tenant]].
+
+** What follows for the grid
+
+The fleet is Class I: hosts, wrappers, node samples and the services roster
+describe the installation, and every session the permission admits should
+read them whole. The work counts are Class T: workunits, batches and results
+belong to the tenant that owns them.
+
+So the two questions the screen raises — "is the grid healthy?" and "what is
+my tenant running?" — are the same problem seen from two sides, and both
+want the same answer: read the fleet as the installation, and enter a tenant
+for its work. That makes the Operations grid a read-only screen over the
+fleet, and moves *installation-wide work totals* to the audit, where the
+cross-tenant mechanism is being decided.
+
+* See also
+
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — the pattern both forms of "act inside a tenant" apply.
+- [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]] — the handler-layer form.
+- [[id:C3D570EF-468D-427D-B355-30C0443BCDDF][Read another tenant's data from inside it]] — the memory that states the rule.
+- [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let the system tenant read every tenant]] — where the existing widenings are being removed.
+- [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] — the first cross-tenant read rebuilt on token exchange.
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen whose counters this page explains.
+- [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]] — the capture that started this study.

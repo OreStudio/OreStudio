@@ -15,3 +15,5 @@ A system administrator who needs a tenant's data enters the tenant visibly, with
 *Why:* The tenant detail screen got a hand-written refdata.v1.parties.list-of-tenant read. The user pointed out that the tenant is already in the JWT and RLS scopes the plain read, and chose a visible switch into the tenant.
 
 *How to apply:* When a system administration screen needs a tenant's own data, use the Act inside a tenant session; when designing a read, never add a tenant field.
+
+This rule is about a *tenant's* data. Before widening a policy to reach it, check which of the three owners the row actually belongs to: a tenant, the system tenant, or the installation. Rows the installation owns — the services roster, hosts and wrapper nodes, grid and node samples, telemetry logs, the database row — carry no tenant's data and want the shared-reference policy shape, not a widening and not a token. [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] states the classes and the mechanism each deserves; =check_rls_system_tenant_widenings.py= enforces the one rule that has a guard.

@@ -41,6 +41,7 @@ not to the folder the code happens to live in.
 | [[id:BEE7132B-C76F-4373-B776-13262F267ECE][Directory]] | The account roster, and bringing accounts in |
 | [[id:A7E0190A-0EFE-4D6F-B9C0-778AF1F9A816][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things |
 | [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them |
+| [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run |
 | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs |
 | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce |
 | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] | The short code lists that classify reference data |

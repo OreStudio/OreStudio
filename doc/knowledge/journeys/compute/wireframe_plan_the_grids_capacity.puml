@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - COMPUTE: PLAN CAPACITY</b>
+  --
+  Horizon: (next day) | next week
+  --
+  <b>HOST CAPACITY</b>
+  {#
+    Node | cpu_count | ram_mb | gpu_type | location | last heartbeat
+    grid-01 | 16 | 65536 | none | london | 8 s
+    grid-02 | 16 | 65536 | none | london | 12 s
+    grid-03 | 32 | 131072 | a100 | frankfurt | 21 s
+    grid-04 | 8 | 32768 | none | london | 9 s
+    grid-05 | 64 | 262144 | a100 | frankfurt | (3 h 12 m)
+  }
+  [ First ] [ Previous ] [ Next ] [ Last ] | page 1 of 4 | size 25 | [ Load all ]
+  --
+  <b>CAPACITY HEADROOM</b> | used against total, per interval
+  {#
+    Interval | Used | Total | Headroom
+    14:00 | XXXXXXXXXX | 51 % | 49 %
+    14:30 | XXXXXXXXXXXX | 62 % | 38 %
+    15:00 | XXXXXXXX | 41 % | 59 %
+    15:30 | XXXXXXXXXXXXXX | 74 % | 26 %
+  }
+  --
+  <b>REQUIREMENTS MATRIX</b> | jobs against resources
+  {#
+    Requirement | Jobs | Resources
+    memory above ram_mb | 3 | grid-03, grid-05
+    platform linux | 41 | all nodes
+    GPU a100 | 7 | grid-03, grid-05
+  }
+  --
+  <b>UPCOMING ARRIVALS</b>
+  {#
+    Job name | Schedule | Next fire | Last run status | Running
+    report_daily_uk | 0 6 * * * | 2026-07-15 06:00 | success | 0
+    report_monthly | 0 2 1 * * | 2026-08-01 02:00 | success | 0
+    curve_build_gbp | 0 */4 * * * | 2026-07-14 16:00 | client error | 1
+    risk_grid_eu | 30 7 * * 1-5 | 2026-07-15 07:30 | success | 2
+  }
+  --
+  Read-only. Capacity headroom is the only load figure the plan screen reports.
+}
+
+@enduml

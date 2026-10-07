@@ -1,0 +1,80 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - COMPUTE: KEEP WHAT THE GRID RUNS</b>
+  --
+  <b>APPS</b>
+  {#
+    Name | Description
+    ore-engine | Pricing and curve engine
+    ore-report | Report generator
+    ore-loader | Market data loader
+  }
+  [ First ] [ Previous ] [ Next ] [ Last ] | page 1 of 2 | size 25 | [ Load all ]
+  --
+  <b>VERSIONS OF THE SELECTED APP</b> | ore-engine
+  {#
+    wrapper_version | engine_version | min_ram_mb
+    v0.0.25 | 12.4.1 | 4096
+    v0.0.24 | 12.3.0 | 2048
+  }
+  --
+  <b>PLATFORMS AND PACKAGES</b>
+  {#
+    Platform | OS family | CPU arch | Active | Package URI | sha256
+    linux-x86_64 | linux | x86_64 | yes | s3://ore/pkg/v0.0.25.deb | 9f2c...c41a
+    linux-arm64 | linux | aarch64 | yes | s3://ore/pkg/v0.0.25-arm.deb | 1a4b...77de
+    win-x86_64 | windows | x86_64 | no | s3://ore/pkg/v0.0.24.msi | 55cd...0e19
+  }
+  [ First ] [ Previous ] [ Next ] | page 1 of 3
+  --
+  <b>VERSIONS IN FLIGHT</b> | node by version, newest is v0.0.25
+  {#
+    Node | v0.0.25 | v0.0.24 | v0.0.23
+    grid-01 | running | - | -
+    grid-02 | running | - | -
+    grid-04 | - | older | -
+    grid-05 | - | - | older
+  }
+  --
+  <b>JOBS PER RELEASE</b>
+  {#
+    App version | Jobs | Bar
+    v0.0.25 (newest) | 412 | XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    v0.0.24 (older) | 38 | XXXXX
+    v0.0.23 (older) | 7 | XX
+    Older release total | 45 | jobs still on an older release
+  }
+  <b>CONCURRENCY</b>
+  {#
+    Measure | Value
+    in-flight work | XXXXXXXXXXXXXXXXXXXX 61 of a cap the screen cannot cite
+  }
+  --
+  <b>WRITE CONTROLS</b> | super administrator only
+  {
+    [ Publish package ] [ Retire platform ] (withheld from a reader)
+  }
+  --
+  Read-only for a reader. The write controls stay hidden until the role allows them.
+}
+
+@enduml

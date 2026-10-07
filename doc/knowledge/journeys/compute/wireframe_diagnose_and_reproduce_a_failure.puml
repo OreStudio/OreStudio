@@ -1,0 +1,95 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - COMPUTE: DIAGNOSE A FAILURE</b>
+  --
+  <b>FAILURE RATE OVER TIME</b> | failures per thousand results
+  {#
+    Interval | Rate
+    14:00 | X
+    14:05 | XXXX
+    14:10 | XX
+    14:15 | XXXXXXXX
+    14:20 | XXX
+  }
+  <b>FAILURES BY NODE</b>
+  {#
+    Node | Failures | Bar
+    grid-04 | 8 | XXXXXXXX
+    grid-02 | 2 | XX
+    grid-05 | 1 | X
+  }
+  <b>FAILURES BY APP VERSION</b>
+  {#
+    Version | Failures | Bar
+    v0.0.25 | 5 | XXXXX
+    v0.0.24 | 3 | XXX
+    v0.0.23 | 1 | X
+  }
+  --
+  <b>LOAD HEATMAP BY FAILURES</b> | . none  - few  + some  X many
+  {#
+    Node | 14:00 | 14:05 | 14:10 | 14:15 | 14:20
+    grid-01 | . | . | . | - | .
+    grid-02 | . | - | . | . | .
+    grid-03 | . | . | - | . | .
+    grid-04 | + | X | X | + | -
+    grid-05 | . | . | . | . | .
+  }
+  --
+  <b>JOB DETAIL</b>
+  {#
+    Field | Value
+    batch | batch_2026_07_14_a
+    external ref | 6f2c19a1
+    app_version_id | v0.0.25
+    input_uri | s3://ore/in/6f2c19a1.zip
+    config_uri | s3://ore/cfg/6f2c19a1.yaml
+    server_state | failed
+    outcome | client error
+    error_message | wrapper: engine exited with code 1
+    received_at | 2026-07-14 14:15:07
+    node name | grid-04.example.com
+  }
+  --
+  <b>COMMAND AND STDERR</b>
+  {#
+    Field | Value
+    command | ore-engine --input bundle.zip --config cfg.yaml
+    exit code | 1
+    stderr tail | error: no curve set for currency GBP
+    stderr tail | error: run aborted after 3 s
+  }
+  <b>NODE LOGS</b> | [ Node logs ] (withheld) | Reason: node logs need the super administrator role; your role is reader.
+  --
+  <b>REPRODUCE</b>
+  {#
+    Field | Value
+    input bundle | s3://ore/in/6f2c19a1.zip | [ Download ]
+    package URI | s3://ore/pkg/ore-engine-v0.0.25.deb
+    sha256 | 9f2c1d7a...e0f2c41a
+    Run it locally | unpack the bundle, then run the same command with the same config.
+  }
+  --
+  Read-only. The node logs stay withheld; the file panel carries the inputs.
+}
+
+@enduml

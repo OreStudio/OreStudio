@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 84345A75-CCE4-4C6B-80EA-A5857E01730B
+:END:
+#+title: Story: Account for the grid's usage
+#+description: A super administrator needs to know which tenant is using the grid, and the work that answers it is tenant-owned, so reading it across tenants is the widening the guard forbids. The installation records what it did instead: the compute service, already inside each tenant as it dispatches that tenant's work and takes the result back, writes a usage row. This story builds that ledger and the global view it feeds.
+#+type: story
+#+level: s2
+#+filetags: :architecture:compute:tenancy:security:operations:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The grid's global view answers which tenant is using what, from what the installation observed about its own operation. No policy is widened, no cross-tenant read is added, and no tenant's content leaves its tenant.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- The compute service writes a usage row per completed result, carrying the tenant, the host, the app version, the duration, the cores and the outcome, at the moment it already acts inside that tenant.
+- A usage row carries no tenant content: not the input bundle, the config, the output, the stderr or the report definition.
+- The super administrator reads the whole ledger under a permission, and can answer which tenant used what over any window the retention keeps.
+- The grid's load and capacity screens draw per-tenant usage from the ledger, and the work counts they state are true rather than a slice.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E997D24-8C39-41EA-AF25-B2703E850B48][Record a usage row as the service works]] | BACKLOG | | | The compute service already enters each tenant to dispatch its work and to take its result back. Record what it did there as installation data. |
+| [[id:35F715F8-27D1-4C3F-B8B8-06E9976F10F0][Serve the usage ledger to the super administrator]] | BACKLOG | | | The ledger answers the global question, but nothing reads it yet. Serve it whole to the operator, and draw per-tenant usage on the grid's load and capacity screens. |
+
+* Decisions
+
+* Out of scope
+
+-

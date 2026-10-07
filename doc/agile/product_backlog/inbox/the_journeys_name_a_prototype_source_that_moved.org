@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 75C40388-29BB-4EC3-B688-38594417C6A9
+:END:
+#+title: The journeys name a prototype source that moved
+#+description: Fourteen journey documents point their Prototype section at projects/ores.web/packages/web/src/prototype/, which no longer exists: the prototypes now live under doc/prototypes/ with the hub at doc/prototypes/index.org. Both the Source line and the /prototype route are stale.
+#+type: capture
+#+level: cross
+#+filetags: :web:ux:journeys:docs:defect:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Fourteen journey documents carry a Prototype section that names where the
+accepted prototype lives:
+
+: Source :: =projects/ores.web/packages/web/src/prototype/= on =main=; the hub at =/prototype= lists every prototype route
+
+Both parts are stale. That directory no longer exists. The prototypes moved
+to =doc/prototypes/=, one directory per prototype, with the hub at
+=doc/prototypes/index.org= and no =/prototype= route.
+
+* Why
+
+The Prototype section is the design record's pointer to the artefact the
+user accepted. A reader who follows it finds nothing, and cannot tell
+whether the prototype was deleted or moved. The credentials and operations
+journeys were written before the move and were not updated with it.
+
+* References
+
+- =doc/prototypes/index.org= — the hub that replaced the route
+- =doc/knowledge/journeys/operations/journey_watch_the_compute_grid.org= — one of the fourteen
+- =doc/knowledge/journeys/credentials/journey_rescue_access.org= — another
+
+* See also
+
+- [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Prototype the operations journeys]] — where these sections came from

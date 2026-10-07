@@ -1,0 +1,299 @@
+:PROPERTIES:
+:ID: 0169FDD7-9B88-4766-9AE9-93FE87200700
+:END:
+#+title: Compute journeys
+#+description: What a person wants to do with the compute grid — the fleet, the load, one job, a failure, the capacity, what it can run — stated as use cases first, with a journey splitting only where a security boundary forces it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:compute:grid:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Overview
+
+The compute grid is not one screen. It is a set of things a person wants to
+find out and do, and the [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]
+give exactly one of them a journey: the fleet survey. Everything about the
+*work* the grid does — how much is in flight, how busy it is, where the time
+goes, why a job failed, what is about to arrive, what capacity it needs — has
+no journey at all.
+
+This page states those use cases, decides how few journeys can carry them, and
+is the input to prototyping them.
+
+* The rule: a journey splits only for security
+
+A journey fragments only when the *activity itself* cannot be the same for two
+people, and narrowing the rows cannot make it the same. Everything else is one
+journey whose rows the session decides.
+
+Two forces push against fragmenting, and both are stronger than they look.
+
+- *The common deployment is one tenant.* In it the tenant administrator and
+  the super administrator are the same person. Forcing them into a mode to see
+  their own grid is friction bought for nothing.
+- *Row scoping already exists.* A member, their tenant administrator and the
+  super administrator asking "where is this job" are one activity over three
+  visible sets, which permissions and row-level security already describe. Two
+  journeys would duplicate every step, every screen and every model to express
+  one difference the database already knows.
+
+So the burden of proof sits on the fragment: name the data that would leak, and
+show that narrowing cannot withhold it. Where a boundary is real, the first
+answer is still one journey with one control withheld — a whole second journey
+is the last resort, not the first.
+
+* The use cases
+
+** 1. Is the grid healthy right now?
+
+How many nodes, are they reporting, which is behind, what the wrappers are
+doing, how much work is in flight, and how that load moved over the last day
+and week.
+
+*Security:* the fleet is the installation's and carries no tenant's data, so
+everyone the permission admits may read it whole. The work counts are the
+installation's own observed ledger: the service is already inside each tenant
+when it dispatches that tenant's work and when it takes the result back, so it
+records what it did as a fact about its own operation. They need no
+cross-tenant read — the ledger is installation data — and no second journey.
+
+** 2. Where is one job?
+
+One job end to end: its state, its node, its timings, its inputs and outputs,
+and where its time went.
+
+*Security:* rows. A member sees their own job, a tenant administrator their
+tenant's, the super administrator all of them. One journey.
+
+** 3. Why did it fail, and can I run it again?
+
+A job's full detail — its app version, package, command, inputs, exit code and
+stderr — plus the node's own logs, so the work can be reproduced locally.
+
+*Security:* this is the one genuine boundary, and it is a capability rather
+than a journey. The job's own detail is rows and narrows as in use case 2. A
+*node's* logs are installation logs and may carry another tenant's inputs, so
+pulling them is a capability the super administrator holds and another tenant
+administrator does not. Same screen, one control withheld.
+
+** 4. What is coming, and can the grid take it?
+
+What capacity the nodes have, what a job needs, what is scheduled to kick in
+soon, and whether the grid can absorb it.
+
+*Security:* rows again. A tenant sees its own arrivals and its own share; the
+installation's totals are the installation's.
+
+** 5. What may the grid run, and how much at once?
+
+The apps, their versions and packages, and the concurrency policy that caps
+how many of a thing run together.
+
+*Security:* writing the catalogue is the super administrator's; reading it is
+everyone's, because a tenant needs to know what it may submit. A permission on
+the write, one journey.
+
+** 6. Keep the grid running
+
+Drain a node for maintenance, requeue stuck work, stop a runaway.
+
+*Deferred.* This is control, not observation, and the Operations area's mode
+is reading. It may belong with the scheduler journeys.
+
+* The charts a grid needs
+
+A grid read as tables is a grid nobody can read. The house wants the *Data &
+Analysis* direction here — chart-optimised, numbers first-class — and most of
+these charts are the grid's idioms rather than inventions: every cluster
+dashboard has a node heatmap and a job timeline, and an operator expects them.
+
+Each is named with the question it answers, so a screen can omit a chart only
+by deciding the question does not matter.
+
+** Watching the grid
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Node load heatmap* | Which node was hot, and when? | one row per node, one column per interval, colour = work done in that interval |
+| *Node state ribbon* | Which node was quiet, lost or draining? | one row per node, bands over time |
+| *Load over time* | How much work is in flight, and of what sort? | stacked area over the result states |
+| *Fleet size* | How many nodes do I have, and how many are up? | area over total, online and idle |
+| *Throughput* | How much is finishing? | bar per interval |
+| *Outcomes* | Is it succeeding? | stacked bar over success, client error, no reply |
+| *Queue depth* | Is the grid keeping up? | line over unsent and in-progress work |
+| *Per-node sparklines* | Which row of this table is the problem? | a mini trend in each node row |
+
+The watch screen's Usage tab carries one more chart, from the installation's
+own ledger rather than from the fleet's samples:
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Allocation by tenant* | Who is using the grid? | stacked area or treemap — the usage ledger the installation keeps about its own operation |
+
+** Following a job
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Job timeline* | What ran when, and what overlapped? | one row per job, a bar per run — the cluster Gantt |
+| *Job waterfall* | Where did this job's time go? | its phases: queued, dispatched, downloaded, running, uploaded, validated |
+| *Duration distribution* | Is this job normal? | histogram, with p50/p90/p99 over time |
+| *Duration by node* | Is one node slow? | box or scatter per node |
+
+** The lineage of a job
+
+The job is the anchor of a chain that spans three components: the scheduler
+holds the job that fires, reporting holds the definition and the run it fired,
+and compute holds the batch, the workunits and the results that run produced.
+The chain is one picture, because the question "what caused this job, and what
+else ran with it" cannot be answered inside any one of the three.
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Job lineage* | What report caused this job, and what ran with it? | the scheduled job, the report definition, the report run, the batch, the workunit and the result, as one chain with the selected job highlighted and its siblings in the same batch beside it |
+
+The chart belongs to the *Follow a job* screen, because a person reaches the
+chain from a job and the compute rows are where the chain is read.
+[[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]
+reuses the same chart from the failed run, which is the same chain with one
+result chosen. The reporting run screen and the scheduler monitor read the
+chain from their own ends and reuse the same chart rather than inventing a
+parallel one. The chain is the answer to the open question "jobs versus
+reports" below, and
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] is where
+its middle is confirmed.
+
+** Diagnosing a failure
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Failure rate over time* | When did it start? | line per interval |
+| *Failures by node* | Is one node bad? | bar per node |
+| *Failures by app version* | Is one release bad? | bar per version |
+| *The load heatmap, on failures* | Where is it failing? | the first chart, a different metric |
+
+** Planning capacity
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Capacity headroom* | Can the grid take more? | stacked area of used against total cores, memory and GPU per interval |
+| *Upcoming arrivals* | What kicks in soon? | a timeline of scheduled runs ahead of now, with their requirements |
+| *Requirements matrix* | What does each job need? | jobs against resources, as a heat or bubble |
+
+Allocation left this use case for the Usage view; the planning capacity use
+case no longer claims it.
+
+** Keeping what the grid runs
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Versions in flight* | Which release is running where? | a node-by-version matrix |
+| *Jobs per release* | Is the grid on one release, or half upgraded? | the jobs grouped by the release they pinned, each app version marked newest or older, with the jobs still on an older release counted |
+| *Concurrency in flight* | Is work piling up behind a policy? | in-flight work per reporting concurrency policy. The policy is a behaviour, skip or queue or fail, and not a number, so there is no cap to draw against; the chart shows the pile-up |
+
+** What the charts ask of the data
+
+- *A time range, not the newest row.* Every chart above spans time, and the
+  grid's read serves one stored sample today. This is
+  [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]],
+  and the charts are the demand for that read, not a nice-to-have on top of it.
+  [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
+  is the same gap on the telemetry logs' side rather than on the grid's.
+- *A range selector and one shared axis.* The poller keeps thirty days, so
+  last hour, day and week are all answerable; the panels must share one time
+  axis so a spike lines up across them.
+- *A metric per panel, not a chart type per panel.* The heatmap is the same
+  chart whether it is coloured by work, failures or bytes.
+- *Almost nothing here needs a new write.* =grid_sample= and =node_sample=
+  carry the load, throughput, outcome and queue series, and =host= carries the
+  capacity, so those gaps are reads and not collection. The capacity headroom
+  series is the exception: it wants a used-against-total figure, and =host=
+  states only the total (=cpu_count=, =ram_mb=, =gpu_type=). No row states the
+  cores, memory or GPU in use, so that one series needs collection as well as
+  a read.
+
+** The prototype must show them.** A prototype of these screens with empty
+frames would not answer the question the walk is for. The charts are drawn
+from mock series in the prototype's own idiom, at the sizes the real screen
+would give them, so the walk can judge whether a heatmap of nodes is legible
+and whether the timeline earns its space.
+
+* The journeys proposed
+
+The five are now written:
+
+1. [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load, and how it moved.
+2. [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one job end to end, and where its time went.
+3. [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: a job's full detail, its node's logs,
+   and enough to run it again locally.
+4. [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: what the nodes have, what a job needs, and
+   what is arriving.
+5. [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: apps, versions, packages and concurrency.
+
+Five written, one deferred. Not nine: the actor split I first proposed was not
+a security boundary, and expressing it as journeys would have duplicated five
+screens to say what the session already says.
+
+* Where the actor dimension actually bites
+
+| Use case | Single-tenant deployment | Multi-tenant deployment | Fragment? |
+|----------+---------------------------+--------------------------+-----------|
+| Watch the grid | The operator sees it whole | The super administrator sees the fleet and the installation's ledger whole; a tenant administrator sees the fleet and the tenant's own work rows | No — one journey, a permission on the ledger read |
+| Follow a job | Everyone sees every job | Rows: own, tenant's, all | No — rows |
+| Diagnose a failure | The operator sees everything | The job's detail narrows; the node's logs are withheld | No — one control withheld |
+| Plan capacity | The operator sees it whole | Own arrivals; the fleet and its ceiling are the installation's | No — rows |
+| Keep what the grid runs | The operator reads and writes | Everyone reads; the super administrator writes | No — a permission on the write |
+| Keep the grid running | The operator acts | Super administrator only | Deferred |
+
+Every "fragment" column is empty, which is the finding: the grid has use cases,
+not actor-segregated screens.
+
+* Open questions
+
+- *Jobs versus the scheduler.* "What is scheduled to kick in soon" is the
+  scheduler's question, answered by =ores.scheduler=; the grid's is what those
+  arrivals do to the load. The two journeys must not both own it.
+- *Jobs versus reports.* A report run submits a batch of workunits; the
+  [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] is the
+  flow between them. Each journey must say which end it starts from.
+- *Where does the mode boundary belong?* The Operations area is offered in
+  system administration mode alone. If the common deployment is one tenant,
+  that boundary is itself a fragmentation the journeys did not ask for, and
+  the area's reach is worth re-deciding separately from the journeys.
+
+* How the use cases are reached today
+
+| Use case | Journey today |
+|----------+---------------|
+| Watch the grid | [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the summary, the node table and the wrappers; the load and its history are absent |
+| The rest | None. [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]] records one of the gaps, and [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] searches the installation's logs rather than pulling one node's |
+
+** The legacy surface agrees.** The retired =ores.qt/compute= client carried
+=HostMdiWindow=, =BatchMdiWindow=, =WorkunitMdiWindow=, =ResultMdiWindow=,
+=QueueMonitorMdiWindow=, =QueueChartWindow=, =ComputeConsoleWindow=,
+=ComputeDashboardMdiWindow=, =ConcurrencyPolicyController=, =AppMdiWindow=,
+=AppVersionMdiWindow=, =TransferProgressDelegate= and the =Report*= family.
+Not one of them has a journey behind it. The legacy client is not the target —
+the journeys are — but its breadth measures what is missing.
+
+* Where the legacy screens went
+
+| Legacy | Use case |
+|--------+----------|
+| =HostMdiWindow=, =ComputeDashboardMdiWindow= | Watch the grid |
+| =QueueMonitorMdiWindow=, =QueueChartWindow=, =ComputeTaskView=, =ComputeTransferModel= | Watch the grid |
+| =BatchMdiWindow=, =WorkunitMdiWindow=, =ResultMdiWindow= | Follow a job |
+| =ResultDetailDialog=, =WorkunitDetailDialog=, =BatchDetailDialog= | Diagnose and reproduce a failure |
+| =ConcurrencyPolicyController= | Keep what the grid runs |
+| =AppMdiWindow=, =AppVersionMdiWindow=, =AppProvisionerWizard=, =Client*Model=, =UploadEnginesDialog= | Keep what the grid runs |
+| =ReportDefinitionMdiWindow=, =ReportInstanceMdiWindow=, =ReportTypeMdiWindow= | Reporting's own journeys, not these |
+| =ComputeConsoleWindow=, =ComputePlugin= | The group as a whole; no single journey |
+
+* Related
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the installation's own life, and the fleet survey's home.
+- [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Extract the ores.compute user journeys]] — the story that owns this work. Its method reads the legacy screens in =ores.qt/compute=, which left =main= on 2026-09-19; the screens survive only before that commit, so the method needs restating.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — which rows are the installation's and which are a tenant's, which is what decides where the rows narrow.
+- [[id:7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A][Compute Grid Telemetry Design]] — the telemetry behind the load.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — how a report run becomes workunits and results.
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist each journey is written against.

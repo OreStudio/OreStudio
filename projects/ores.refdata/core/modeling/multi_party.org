@@ -85,7 +85,9 @@ desks, subsidiaries. They:
 
 * Data Ownership Patterns
 
-Data within a tenant falls into two categories based on ownership scope.
+Within a tenant, data falls into two categories based on ownership scope. A
+third owner sits above the tenant, and *Installation-Scoped Data* below states
+it.
 
 ** Tenant-Scoped Data (Shared Reference Data)
 
@@ -121,6 +123,19 @@ Entities in this category:
 Party-level visibility is controlled through junction tables (e.g.
 =party_currencies=) that define which currencies a given party can see and use.
 The underlying currency definitions remain shared.
+
+** Installation-Scoped Data
+
+The two categories above are the ones inside a tenant, and they are not the
+whole ownership model. The *installation* owns the deployment's own facts — the
+services roster, the hosts and wrapper nodes, the grid and node samples, the
+telemetry logs, the message-bus samples and the database row. Those rows carry
+no tenant's data and belong to no party, so neither a tenant's isolation nor a
+party's should narrow them: they want the policy shape that admits the
+installation's own rows to every session, with the *permission* deciding who may
+call the read. Naming the owner is the first step of designing a table, and the
+three owners and their shapes are stated in
+[[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]].
 
 ** Counterparty Identity vs Relationship
 

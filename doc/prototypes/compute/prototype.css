@@ -1,0 +1,498 @@
+/* Compute: the five grid screens prototype. Self-contained: published by the
+ * site build through its existing css project, so there is no import to wire.
+ *
+ * The design tokens are the application's own, copied from
+ * projects/ores.web/packages/web/src/styles.css, so the screen reads in the
+ * colours the real one uses. The prototype's own chrome -- the banner and the
+ * variant bar -- is deliberately unlike the design on trial.
+ *
+ * The charts are the "Data & Analysis" direction from
+ * doc/knowledge/ui/ui_design_principles.org: chart-optimised, technical but
+ * accessible, numbers first-class. Series colours are the Okabe-Ito
+ * colour-blind safe set, and the heatmap ramp is viridis, perceptually
+ * ordered from dark (no work) to light (most work). */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --line-strong: #4a5568;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --radius: 0.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 var(--sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-bright); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.01em; font-weight: 600; }
+p { margin: 0; }
+
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hint { color: var(--ink-faint); font-size: 12px; }
+
+/* -------------------------------------------------------------- chrome */
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    background: #0b0e13;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.55);
+    font-size: 12px;
+    max-height: 78vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.proto-bar .bar-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.proto-bar button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--ink-dim);
+    font-size: 12px;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 999px;
+    font-family: inherit;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar button.on { background: var(--accent-dim); color: var(--ink); border-color: var(--line); }
+.proto-bar .label { padding: 0 6px; color: var(--ink-dim); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+.proto-bar .sep { color: var(--line); padding: 0 2px; }
+.proto-bar .tag-prototype {
+    border: 1px solid #4a3a17;
+    color: var(--warn);
+    background: #2a2113;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.proto-bar .gist {
+    flex: 1 1 260px;
+    min-width: 0;
+    color: var(--ink-dim);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 6px;
+}
+.proto-bar .screen-buttons, .proto-bar .variant-buttons { display: flex; gap: 2px; flex-wrap: wrap; }
+.proto-bar .state-panel {
+    border-top: 1px solid var(--line-soft);
+    overflow-y: auto;
+    max-height: 50vh;
+    padding: 10px 14px 14px;
+}
+.proto-bar .state-panel .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 2px 24px;
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+.proto-bar .state-panel .state-grid b { color: var(--ink); font-family: var(--mono); font-weight: 400; }
+.proto-bar .state-panel .state-note { color: var(--ink-faint); margin-top: 6px; font-size: 12px; }
+.proto-bar .state-panel ol {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+/* --------------------------------------------------------------- shell */
+
+.shell { padding-top: 28px; padding-bottom: 12rem; min-height: 100vh; display: flex; flex-direction: column; }
+
+.appheader { border-bottom: 1px solid var(--line); background: var(--bg); }
+.appheader-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-width: 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.brand .mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(140deg, var(--accent), #2f6fbf);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #06121f;
+}
+.brand .name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+.appnav { display: flex; align-items: center; gap: 2px; margin-left: 8px; min-width: 0; overflow-x: auto; }
+.appnav button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.appnav button:hover { background: var(--panel-2); color: var(--ink); }
+.appnav button.here { background: var(--panel-2); color: var(--ink); }
+/* Sub-tabs divide one screen's panels so a dashboard does not become a
+   scroll. They span the chart grid and sit directly under the hero. */
+.subtabs {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin: 4px 0 -6px;
+}
+.subtabs button {
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.subtabs button:hover { background: var(--panel-2); color: var(--ink); }
+.subtabs button.on { color: var(--ink); border-bottom-color: var(--ink); }
+.subtabs .count { font-size: 12px; color: var(--ink-dim); margin-left: auto; }
+/* Who the panel is for. The scope toggle says which rows you are looking at;
+   this says whose rows they are, which is a different question and the one a
+   reader needs on a screen that mixes the installation's panels with a
+   tenant's. */
+.subtabs .reach {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+}
+.modechip {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    color: var(--ink-dim);
+    white-space: nowrap;
+}
+
+main { flex: 1; max-width: 1400px; width: 100%; margin: 0 auto; padding: 28px 20px 0; display: grid; gap: 22px; align-content: start; }
+
+/* --------------------------------------------------------------- page */
+
+.pagehead { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.pagehead h1 { font-size: 22px; }
+.pagehead .lede { color: var(--ink-dim); margin-top: 4px; max-width: 78ch; font-size: 14px; }
+.pagehead .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pagehead .updated { color: var(--ink-faint); font-size: 12px; }
+
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+
+.sectionhead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.sectionhead h2 { font-size: 17px; }
+.sectionhead .meta { display: flex; align-items: center; gap: 8px; color: var(--ink-faint); font-size: 12px; flex-wrap: wrap; }
+
+.notice {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--ink-dim);
+}
+.notice.warn { border-color: #6b4e12; background: #2a2008; color: #f2cc60; }
+.notice.err { border-color: #7a2a28; background: #2a1414; color: #ffb4ad; }
+
+.tag {
+    display: inline-block;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 1px 8px;
+    font-size: 11px;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+.tag.accent { border-color: rgba(88, 166, 255, 0.5); background: rgba(88, 166, 255, 0.1); color: var(--accent-bright); }
+.tag.warn { border-color: rgba(210, 153, 34, 0.5); background: rgba(210, 153, 34, 0.1); color: var(--warn); }
+.tag.bad { border-color: rgba(248, 81, 73, 0.5); background: rgba(248, 81, 73, 0.1); color: #ff9d95; }
+.tag.ok { border-color: rgba(63, 185, 80, 0.5); background: rgba(63, 185, 80, 0.1); color: #6ee787; }
+.tag.muted { border-color: var(--line-soft); color: var(--ink-faint); }
+
+.btn {
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn:hover { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn.ghost { background: none; border-color: transparent; color: var(--ink-dim); }
+.btn.ghost:hover { color: var(--ink); background: var(--panel-2); }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.btn.linklike { background: none; border-color: var(--line); text-decoration: none; display: inline-block; }
+.btn.small { padding: 4px 10px; font-size: 12px; }
+.btn.on { background: var(--accent-dim); border-color: var(--line-strong); color: var(--ink); }
+
+/* -------------------------------------------------------------- tables */
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--ink-faint);
+    font-size: 12px;
+    padding: 6px 12px 6px 0;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+td {
+    padding: 8px 12px 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+}
+td:last-child, th:last-child { padding-right: 0; }
+td.code { font-family: var(--mono); font-size: 12px; }
+td.wrap { white-space: normal; }
+.cellgroup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rowfoot { color: var(--ink-faint); font-size: 12px; margin-top: 14px; max-width: 100ch; }
+
+/* A row that opens the record below it. The row keeps the table's own look and
+   gains a pointer, which is the one affordance the table has for it. */
+tr.rowlink { cursor: pointer; }
+tr.rowlink:hover td { background: var(--panel-2); }
+tr.rowlink.on td { background: rgba(88, 166, 255, 0.08); }
+tr.rowlink.on td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* A column heading that orders the list, the button behind a th. */
+.thbtn {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.thbtn:hover { color: var(--ink); }
+.thbtn.on { color: var(--accent-bright); }
+
+/* --------------------------------------------------------------- pager */
+/* The shared Pager of record_screen_standard.org, by hand: the count first,
+   then First, Previous, Next and Last, the page size and Load all. */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+    color: var(--ink-dim);
+    font-size: 13px;
+}
+.pager .pager-count { white-space: nowrap; color: var(--ink-dim); }
+.pager .pager-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager .pager-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    color: var(--ink-dim);
+    font-size: 13px;
+}
+.pager select.btn { padding: 4px 6px; }
+.pager .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* --------------------------------------------------------- job detail */
+/* The job's own detail, beside its row in the list. The two panels sit side by
+   side when the width allows and stack when it does not. */
+.detailcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 0 28px; }
+.detailhead {
+    margin: 20px 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+}
+.jobdetail .statgrid { margin-top: 4px; }
+
+/* ---------------------------------------------------------- the lineage */
+.lineagebar {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.lineagebar select.btn { max-width: 34rem; }
+
+.chart .lnode { fill: #22262d; stroke: var(--line-strong); stroke-width: 1; }
+.chart .lnode.bgsel { fill: rgba(204, 121, 167, 0.22); stroke: #CC79A7; stroke-width: 2; }
+.chart .lkicker {
+    fill: var(--ink-faint);
+    font: 9px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.chart .llabel { fill: var(--ink); font: 11px var(--mono); }
+.chart .lsub { fill: var(--ink-dim); font: 10px var(--mono); }
+.chart .ledge { stroke: var(--accent-bright); stroke-width: 1.6; fill: none; }
+.chart .ledge .larrow { fill: var(--accent-bright); stroke: none; }
+.chart .ledge.unmodelled { stroke: var(--warn); stroke-dasharray: 5 4; }
+.chart .ledge.unmodelled .larrow { fill: var(--warn); }
+.chart .ledge.latch { stroke: var(--warn); stroke-width: 1.4; }
+.chart .ledge.latch .lenv { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+
+/* --------------------------------------------------------------- grid */
+
+.statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 12px 32px; }
+.statgrid .lbl { display: block; color: var(--ink-faint); font-size: 12px; margin-bottom: 4px; }
+.statgrid .val { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
+.statgrid .val .big { font-size: 19px; font-family: var(--mono); }
+
+.gaps dl { margin: 0; display: grid; gap: 14px; font-size: 13px; }
+.gaps dt { color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+.gaps dd { margin: 0; color: var(--ink-dim); }
+
+/* -------------------------------------------------------------- charts */
+
+.chartgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr)); gap: 22px; }
+.chart-card.wide { grid-column: 1 / -1; }
+.charthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px 14px;
+    margin-bottom: 6px;
+}
+.charthead h2 { font-size: 15px; }
+.charthead .meta { display: block; color: var(--ink-faint); font-size: 12px; margin-top: 2px; }
+.charthead .controls { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.chart { display: block; width: 100%; height: auto; margin-top: 10px; overflow: visible; }
+.chart text { fill: var(--ink-faint); font: 11px var(--mono); }
+.chart text.tick { text-anchor: end; }
+.chart text.mid { text-anchor: middle; }
+.chart text.start { text-anchor: start; }
+.chart text.rowlabel { fill: var(--ink-dim); }
+.chart text.strong { fill: var(--ink); }
+.chart .grid { stroke: var(--line-soft); stroke-width: 1; }
+.chart .axis-label { fill: var(--ink-faint); font-size: 10px; letter-spacing: 0.04em; }
+.chart .marker { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .cell { stroke: var(--panel); stroke-width: 0.5; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; color: var(--ink-dim); }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+.kv { width: 100%; border-collapse: collapse; font-size: 13px; }
+.kv td { padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+.kv tr:last-child td { border-bottom: none; }
+.kv td:first-child { color: var(--ink-faint); width: 46%; }
+
+pre.stderr {
+    margin: 10px 0 0;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: #ffb4ad;
+    font: 12px/1.6 var(--mono);
+    overflow-x: auto;
+}
+
+@media (max-width: 900px) {
+    .appheader-inner { padding: 12px 14px; }
+    .appnav { display: none; }
+    .chartgrid { grid-template-columns: 1fr; }
+}

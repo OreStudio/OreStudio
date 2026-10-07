@@ -133,6 +133,7 @@ subset:
 | Authorisation               | Server-side checks on privileged operations.         |
 | No client-provided identity | Identity from session, not request fields.           |
 | Secure hashing              | Scrypt / argon2 for passwords (see [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]).      |
+| Row ownership named         | Every new table or policy states which of the three owners its rows belong to — a tenant, the system tenant, or the installation — and takes that owner's policy. A policy that lets *a system-tenant session* see every tenant is a widening: =check_rls_system_tenant_widenings.py= lists every one. See [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]. |
 
 * Component-only checks
 

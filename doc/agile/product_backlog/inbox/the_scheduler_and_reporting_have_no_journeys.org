@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 210AB813-8ED6-439E-BDEA-1B1286E02B34
+:END:
+#+title: The scheduler and reporting have no journeys
+#+description: The grid's lineage crosses three areas: the scheduler that fires a run, the report that defines it, and the grid that executes it. The compute group now names the chain, but the scheduler and reporting groups do not exist, so the lineage points at screens no journey describes.
+#+type: capture
+#+level: cross
+#+filetags: :scheduler:reporting:web:ux:journeys:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

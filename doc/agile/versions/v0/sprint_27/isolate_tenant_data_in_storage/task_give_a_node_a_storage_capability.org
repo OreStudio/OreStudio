@@ -20,7 +20,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A worker node holds no storage credential, so it cannot download its package
+or its input, and no job can run. IAM mints a short-lived object capability
+naming the tenant, the bucket and the assignment's exact key prefixes. The
+compute dispatcher asks for it and puts it in the assignment; the wrapper
+presents it; storage enforces it and holds no database lookup on the path.
 
 * Status
 
@@ -28,9 +32,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | Not yet started.                       |
+| Now          | The token carries the grants and both verifiers read them back. IAM, storage and the dispatcher are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Mint the capability in IAM, then enforce it in storage, then carry it through the dispatcher and the wrapper. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -43,9 +47,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four slices, each built and verified before the next:
+
+1. *The claims.* =jwt_claims= carries a list of =storage_grant= values, and the
+   signer and both verifiers round-trip them. *Landed*: 13 assertions pass in
+   =ores.security.tests=.
+2. *IAM mints.* A =iam.v1.storage_capabilities.mint= operation, held by the
+   services that dispatch work, that signs a capability naming a tenant and its
+   grants. The signer is the one IAM already holds, so storage keeps one
+   verifier.
+3. *Storage enforces.* The HTTP route reads the capability's grants and answers
+   from them — bucket, key prefix and operation — instead of the account's
+   permissions. A token with no grants keeps today's permission path. The
+   tenant check arrives when a tenant owns its own bucket; until then the
+   prefix is the whole scope.
+4. *The assignment carries it.* The dispatcher asks IAM for a capability for
+   the package, the input and the output, and puts it in
+   =work_assignment_event=; the wrapper presents it in place of its empty
+   bearer. Until the tenant-bucket work lands, the grants name the =ores=
+   bucket and the keys the tree uses today.
 
 * Measurements
 
@@ -59,7 +79,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| | | | |
+
 
 * Notes
 

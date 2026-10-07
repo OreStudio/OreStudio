@@ -21,26 +21,25 @@ The installation owns a class of data the schema does not name: the facts about 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. The remaining migration is the successor story [[id:FB6B7C30-FA9B-4897-817B-06F2298B548A][Move the installation's remaining reads onto its own class]]. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
 
 - The codegen can express installation-scoped data, so a model declares its owner instead of hand-writing a policy.
-- The samples, the roster, the logs, the bus and the versions carry the installation's policy shape and are read whole by a session the permission admits.
-- The Operations grid reads the fleet whole under compute::grid_samples:read, and every claim it makes about the work counts is true.
-- The grid's global view, including which tenant is using what, comes from what the installation observed about its own operation, with no policy exception and no cross-tenant read.
+- The grid and node samples carry that shape and are read whole by a session the permission admits.
+- The work counts are superseded by story 84345A75 (the usage ledger); this story no longer claims them.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:89F76CAA-6EE6-4E1B-96EA-05502824C1E8][Give installation-scoped data its policy shape]] | BACKLOG | | | A model cannot say that its rows belong to the installation, so such a table hand-writes the shared-reference policy: own tenant or system-tenant rows. This task adds the codegen feature that states it, and moves the grid and node samples onto it. |
-| [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | BACKLOG | | | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
+| [[id:89F76CAA-6EE6-4E1B-96EA-05502824C1E8][Give installation-scoped data its policy shape]] | DONE | | 2026-10-07 | A model cannot say that its rows belong to the installation, so such a table hand-writes the shared-reference policy: own tenant or system-tenant rows. This task adds the codegen feature that states it, and moves the grid and node samples onto it. |
+| [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | DONE | | 2026-10-07 | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
 
 * Decisions
 
@@ -62,6 +61,21 @@ The installation owns a class of data the schema does not name: the facts about 
   supersedes the earlier framing of the global view as a cross-tenant
   aggregate, which was wrong. What the installation observes about itself is
   installation data from the moment it is written, so the guard never applies.
+- *The policy flag is named for the rows it admits, not the session it
+  serves.* =:rls_own_or_system_tenant_rows:= states both comparisons on the
+  =tenant_id= side -- the session's own tenant's rows, or the system
+  tenant's -- so no reader can mistake it for
+  =:rls_system_tenant_visible:=, which names the session and emits the
+  guarded =current = system= widening. Shared reference and installation
+  data want the same rows and the same write rule, so one flag serves both,
+  and the two flags are mutually exclusive.
+- *The story was re-scoped on 2026-10-07.* Its acceptance was wider than its
+  two tasks: it named the roster, the logs, the bus and the versions, which
+  the tasks do not touch, so it could never close as written. The remaining
+  migration moved to the successor story [[id:FB6B7C30-FA9B-4897-817B-06F2298B548A][Move the installation's remaining
+  reads onto its own class]], and the work counts are story 84345A75 (the
+  usage ledger). The acceptance now claims only what the work in PR #2761
+  delivers.
 
 * Out of scope
 

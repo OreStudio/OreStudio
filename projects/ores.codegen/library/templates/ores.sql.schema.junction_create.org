@@ -21,8 +21,10 @@ See [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] for the 
 Row level security is opt-in. A junction turns it on with
 =:rls_tenant_isolation:= in its =* SQL / ** Flags= drawer, and
 =:rls_system_tenant_visible:= widens the policy to the system tenant.
-=:rls_party_isolation:= adds the restrictive party policy over the
-junction's =party_id= column, the same policy the domain entity
+=:rls_own_or_system_tenant_rows:= is the other, non-widening shape: a
+session reads its own tenant's rows and the system tenant's, and writes
+stay its own. =:rls_party_isolation:= adds the restrictive party policy
+over the junction's =party_id= column, the same policy the domain entity
 archetype emits, so a junction of party-scoped rows is filtered by the
 session's visible parties too.
 
@@ -231,6 +233,10 @@ do instead
 {{#junction.sql.rls_system_tenant_visible}}
 -- System-tenant sessions may also read every tenant's rows.
 {{/junction.sql.rls_system_tenant_visible}}
+{{#junction.sql.rls_own_or_system_tenant_rows}}
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
+{{/junction.sql.rls_own_or_system_tenant_rows}}
 -- =============================================================================
 alter table "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl" enable row level security;
 
@@ -241,7 +247,8 @@ create policy {{junction.name}}_tbl_tenant_isolation_policy
 on "{{junction.product}}_{{junction.component}}_{{junction.name}}_tbl"
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_system_tenant_visible}}{{#junction.sql.rls_own_or_system_tenant_rows}}
+    or tenant_id = ores_utility_system_tenant_id_fn(){{/junction.sql.rls_own_or_system_tenant_rows}}
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn(){{#junction.sql.rls_system_tenant_visible}}

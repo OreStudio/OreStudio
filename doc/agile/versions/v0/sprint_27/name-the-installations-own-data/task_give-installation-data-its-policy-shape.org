@@ -8,12 +8,12 @@
 #+filetags: :name-the-installations-own-data:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2761
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58F3FC7C-2E73-4D7B-945B-18AEB9238B4A][Story: Name the installation's own data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,32 @@ Add a row-level-security feature to the entity meta-model that emits the install
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58F3FC7C-2E73-4D7B-945B-18AEB9238B4A][Story: Name the installation's own data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- The entity meta-model has a row-level-security feature that emits the
+  installation's policy shape -- =for all using (tenant_id =
+  ores_iam_current_tenant_id_fn() or tenant_id =
+  ores_utility_system_tenant_id_fn()) with check (tenant_id =
+  ores_iam_current_tenant_id_fn())= -- so a model states its owner
+  instead of hand-writing the policy.
+- The feature's name and doc comment cannot be confused with
+  =:rls_system_tenant_visible:=, which emits the guarded =current =
+  system= widening. A codegen test proves the emitted shape and that it
+  carries no widening.
+- The =ores.compute.grid_sample= and =ores.compute.node_sample= models
+  declare the feature and =:tenant_read_scope: shared=, so their generated
+  reads carry no tenant predicate and the policy decides.
+- The guard reports the same 10 listed widenings and no new one, and the
+  codegen suite passes.
+- The regenerated compute SQL carries the shape, and the component drift
+  gate reports no drift.
 
 * Plan
 
@@ -55,7 +71,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Codegen suite | 1281 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | 67854ba50e |
+| Widening guard | 10 widenings, 0 new | =projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py= | 67854ba50e |
+| Full build | exit 0 | =./compass.sh build= | 77ad089668 |
+| Full suite | 94/94 targets pass | =./compass.sh test run= | 77ad089668 |
+| Doc validation | 42 components pass | =projects/ores.codegen/validate_docs.sh= | 77ad089668 |
 
 * Notes
 
@@ -74,12 +94,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2761][#2761]] | [compute,codegen] Name the installation's own data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junctions parse the same =* SQL / ** Flags= drawer and were wired to the new flag, but no validator ran for them: own-or-system without tenant isolation emitted no policy, and both flags together emitted the widening | core.py, junction template | Accepted | Ran =validate_rls_isolation= on junctions; kept the flag wired because a real system-tenant-readable junction needs the shape; added three junction tests |
+| 2 | The story Status still said BACKLOG and its Next still said "Break the story into tasks" while both tasks were DONE, and its acceptance named work the tasks do not do | story.org | Accepted | Story re-scoped, marked DONE once the trimmed acceptance was met, and the remaining migration carried into a successor story |
 
 * Result
+
+=ores.sql.schema= gained =:rls_own_or_system_tenant_rows:=. It emits the
+installation's policy shape -- own tenant or system-tenant rows for reads,
+the current tenant for writes -- in the tangled domain-entity and junction
+create templates. It refuses to appear without =:rls_tenant_isolation:= and
+refuses to sit beside =:rls_system_tenant_visible:=, so a model cannot ask
+for both shapes at once. The name states the rows the policy admits on the
+=tenant_id= side, not the session, so it cannot be confused with the guarded
+=current = system= widening; the justification is a comment in the entity
+meta-model.
+
+=ores.compute.grid_sample= and =ores.compute.node_sample= declare it with
+=:tenant_read_scope: shared=, so their generated reads state no tenant
+predicate and the policy decides. The regenerated SQL emits the shape for
+both samples, and the ER =.puml= is refreshed.
+
+Gates: =check_rls_system_tenant_widenings.py= reports 10 widenings, all
+listed, and no new one; the codegen suite passes 1281 tests;
+=check_component_drift.py --all= reports no drift; =validate_docs.sh= passes
+all 42 components; the full build and the 94-target suite are clean.

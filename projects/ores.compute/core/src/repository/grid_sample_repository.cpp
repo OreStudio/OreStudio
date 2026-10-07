@@ -166,9 +166,8 @@ void grid_sample_repository::write(context ctx,
 }
 
 std::vector<domain::grid_sample> grid_sample_repository::read_latest(context ctx) {
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | where("tenant_id"_c == tid) |
-                       order_by("id"_c, "sampled_at"_c);
+    const auto query =
+        sqlgen::read<std::vector<grid_sample_entity>> | order_by("id"_c, "sampled_at"_c);
 
     return execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
@@ -182,9 +181,8 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(
     context ctx, const std::string& id, const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "id: " << id
                                << " sampled_at: " << sampled_at;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "sampled_at"_c == sampled_at);
+                       where("id"_c == id && "sampled_at"_c == sampled_at);
 
     return execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
@@ -200,9 +198,8 @@ std::vector<domain::grid_sample> grid_sample_repository::read_all(context ctx,
                                                                   const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "id: " << id
                                << " sampled_at: " << sampled_at;
-    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "sampled_at"_c == sampled_at) |
+                       where("id"_c == id && "sampled_at"_c == sampled_at) |
                        order_by("id"_c, "sampled_at"_c);
 
     return execute_read_query<grid_sample_entity, domain::grid_sample>(
@@ -249,9 +246,8 @@ grid_sample_repository::read_latest(context ctx,
                                     const ores::utility::domain::order& order) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest grid samples with offset: " << offset
                                << " and limit: " << limit;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | where("tenant_id"_c == tid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
     return execute_ordered_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
@@ -265,8 +261,7 @@ grid_sample_repository::read_latest(context ctx,
 
 std::optional<domain::grid_sample> grid_sample_repository::read_newest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading newest sample";
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | where("tenant_id"_c == tid) |
+    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
                        order_by("sampled_at"_c.desc()) | sqlgen::limit(1);
     const auto rows = execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
@@ -282,8 +277,7 @@ std::optional<domain::grid_sample> grid_sample_repository::read_newest(context c
 std::uint32_t grid_sample_repository::get_total__count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<grid_sample_entity>> | where("tenant_id"_c == tid);
+    const auto query = sqlgen::read<std::vector<grid_sample_entity>>;
 
     return execute_count_query<grid_sample_entity>(
         ctx, query, std::nullopt, lg(), "Counting grid samples");
@@ -293,10 +287,8 @@ std::vector<domain::grid_sample> grid_sample_repository::read_latest(
     context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& sampled_ats) {
     if (ids.empty() || sampled_ats.empty())
         return {};
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::read<std::vector<grid_sample_entity>> |
-        where("tenant_id"_c == tid && "id"_c.in(ids) && "sampled_at"_c.in(sampled_ats));
+    const auto query = sqlgen::read<std::vector<grid_sample_entity>> |
+                       where("id"_c.in(ids) && "sampled_at"_c.in(sampled_ats));
     auto result = execute_read_query<grid_sample_entity, domain::grid_sample>(
         ctx,
         query,

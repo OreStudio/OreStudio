@@ -44,9 +44,15 @@ namespace ores::compute::domain {
  * meaning on it.
  *
  * The per-node newest read stays hand-written. It is a
- * DISTINCT ON (host_id) over the tenant's rows, which no generated read
+ * DISTINCT ON (host_id) over the installation's rows, which no generated read
  * expresses: a read by host_id returns one node's rows, and a read of the
  * newest returns the grid's newest and not one row per node.
+ *
+ * A sample describes the installation's own fleet, not one tenant's slice of
+ * it, so the table carries :rls_own_or_system_tenant_rows:: every session
+ * reads the system tenant's rows, and writes stay the current tenant's. The
+ * C++ read states :tenant_read_scope: shared, so it adds no tenant
+ * predicate and the policy decides.
  */
 struct node_sample final {
     /**

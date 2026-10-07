@@ -8,12 +8,12 @@
 #+filetags: :name-the-installations-own-data:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2761
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58F3FC7C-2E73-4D7B-945B-18AEB9238B4A][Story: Name the installation's own data]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,27 @@ latest_node_samples and the newest grid sample carry no tenant predicate, and a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:58F3FC7C-2E73-4D7B-945B-18AEB9238B4A][Story: Name the installation's own data]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- =compute_telemetry_repository::latest_node_samples= carries no =WHERE
+  tenant_id = $1= and no parameter for it: the policy decides which rows
+  the session reads.
+- The newest grid sample comes from the generated repository and carries
+  no tenant predicate through =:tenant_read_scope: shared=.
+- A Catch2 test under =projects/ores.compute/core/tests/= proves a session
+  the permission admits reads every node the installation reports, and
+  states honestly that a sample written under a third tenant is not
+  visible.
+- The work counts are stated as out of reach, and their ownership is
+  recorded as superseded by story 84345A75 (the usage ledger) in the
+  Result. This half is not implemented here.
 
 * Plan
 
@@ -55,7 +66,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Full build | exit 0 | =./compass.sh build= | 77ad089668 |
+| Full suite | 94/94 targets pass, 0 failed | =./compass.sh test run= | 77ad089668 |
+| Compute core tests | pass, incl. the two new cases | =ctest --preset linux-clang-debug-make -R ores.compute.core.tests= | 77ad089668 |
 
 * Notes
 
@@ -74,12 +87,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2761][#2761]] | [compute,codegen] Name the installation's own data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two new Catch2 cases logged only at debug, against the convention's one info log per case | repository_compute_telemetry_repository_tests.cpp | Accepted | One =BOOST_LOG_SEV(lg, info)= added per case |
+| 2 | The membership checks used =std::ranges::find(...) != hosts.end()= | repository_compute_telemetry_repository_tests.cpp | Accepted | Switched to =std::ranges::contains= |
+| 3 | =#+pr:= and the PRs table were empty although PR #2761 exists | task_read-the-fleet-whole-in-the-grid-handler.org | Accepted | =#+pr: 2761= and the PRs row added |
 
 * Result
+
+=compute_telemetry_repository::latest_node_samples= lost its =WHERE tenant_id
+= $1= and the parameter it fed, so the per-node newest read states no tenant
+predicate and the row-level-security policy decides. The generated
+=read_newest= for the grid sample already lost its predicate through
+=:tenant_read_scope: shared=.
+
+=repository_compute_telemetry_repository_tests= writes one node sample under
+the session's own tenant, one under the system tenant and one under a freshly
+provisioned third tenant, and proves =latest_node_samples= returns its own and
+the system tenant's nodes and not the third's. A second case proves the
+generated newest grid-sample read ignores a newer third-tenant row and returns
+a system row. The test uses the existing generators and states the policy's
+real admission -- the session's own tenant plus the system tenant -- rather
+than a wider claim.
+
+The work-counts half of the story's acceptance is superseded by story
+84345A75 (the usage ledger) and is not implemented here.
+
+The full build is clean and all 94 test targets pass, including
+=ores.compute.core.tests=.

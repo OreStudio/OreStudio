@@ -57,10 +57,12 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Return the most recent sample per node for the context's tenant.
+     * @brief Return the most recent sample per node the policy admits.
      *
      * Uses DISTINCT ON (host_id) to return exactly one row per host, the one
-     * with the most recent sampled_at, in a single database query.
+     * with the most recent sampled_at, in a single database query. The read
+     * states no tenant predicate: the row-level-security policy decides,
+     * admitting the session's own tenant's rows and the system tenant's.
      */
     std::vector<domain::node_sample> latest_node_samples(context ctx);
 

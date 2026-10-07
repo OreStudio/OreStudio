@@ -2,12 +2,12 @@
 :ID: EB8380F8-89BD-41EE-86AC-EE4152DB9FC8
 :END:
 #+title: Task: Carry a typed refusal with the record, the version and the field
-#+description: Initial task for: Implement the refdata party, book, convention and tenor journeys
+#+description: One refusal shape that names the record, the version and the field it refused, served by every refdata operation the five journeys read, so a screen shows why a write failed rather than a bare error.
 #+type: task
 #+level: s1
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/carry-a-typed-refusal
 #+pr:
 #+blocked_on:
 #+blocked_since:

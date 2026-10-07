@@ -420,15 +420,14 @@ public:
      * each person who asked.
      *
      * The scheduler fires this operation, so the caller is the service rather
-     * than a person and the sweep reaches every tenant.
+     * than a person and the sweep reaches every tenant. A firing is a plain
+     * publish that carries no token, so the service's own context is what
+     * holds the work: there is no session to read one from.
      */
     void expire_overdue(ores::nats::message msg) {
         using ores::utility::domain::outcome;
-        auto ctx = context_for(msg);
-        if (!ctx)
-            return;
         try {
-            service::approval_lifecycle lifecycle(*ctx);
+            service::approval_lifecycle lifecycle(ctx_);
             const auto expired = lifecycle.expire_overdue();
             std::vector<std::string> ids;
             ids.reserve(expired.size());

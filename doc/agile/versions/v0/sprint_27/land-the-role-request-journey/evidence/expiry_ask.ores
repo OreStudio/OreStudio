@@ -1,2 +1,6 @@
-role_request_operations ask-for-roles a5cfcbb6-12f0-45ab-b647-75187f19c092 "I cover the trading desk next week"
+logout
+login ashley.moore@acme_corporation Ashley-Pass-123
+role_request_operations ask-for-roles 75aee72a-04cb-4052-8de1-852cc4755073 "I cover the trading desk next week"
 approval_operations list-my-approval-requests
+logout
+exit

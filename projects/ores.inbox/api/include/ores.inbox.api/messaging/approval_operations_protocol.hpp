@@ -193,6 +193,11 @@ struct list_my_approval_requests_response {
  * and reaches requests no tenant-scoped caller could read. Each person who
  * asked is told; a request already closed is not open, so a repeated call
  * changes nothing.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it is trusted at the transport, as the compute reaper is. That is
+ * affordable here because it takes no input and closes only what is already
+ * past its deadline, which a caller could reach by waiting.
  */
 struct expire_overdue_approvals_request {
     using response_type = struct expire_overdue_approvals_response;
@@ -203,7 +208,7 @@ struct expire_overdue_approvals_request {
      * An operation that produces the session cannot present one, so a client
      * reads this rather than assuming every call carries a token.
      */
-    static constexpr bool requires_session = true;
+    static constexpr bool requires_session = false;
 };
 
 struct expire_overdue_approvals_response {

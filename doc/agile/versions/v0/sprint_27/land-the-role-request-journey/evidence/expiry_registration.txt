@@ -1,0 +1,46 @@
+What the service does at start, read from its own log. The first block is a
+start against a database that holds no expiry job; the second is a restart
+against one that does.
+
+First start -- the setting is read, the job list is read, and the job is
+written:
+
+  NATS request: ...variability.v1.ops.get_setting
+  NATS request: ...scheduler.v1.job_definitions.list
+  NATS request: ...scheduler.v1.job_definitions.put
+  [ores.inbox.service.app.approval_expiry_schedule] Registered the approval
+    expiry job 'ores.inbox.approval_expiry' from
+    inbox.approval_expiry.schedule.
+
+Restart -- nothing is written, because the job already holds the schedule the
+setting states:
+
+  NATS request: ...variability.v1.ops.get_setting
+  NATS request: ...scheduler.v1.job_definitions.list
+  [ores.inbox.service.app.approval_expiry_schedule] Registered the approval
+    expiry job 'ores.inbox.approval_expiry' from
+    inbox.approval_expiry.schedule.
+
+The row those two runs left behind:
+
+  select job_name, version, schedule_expression, is_active, valid_from,
+         modified_by, performed_by
+  from ores_scheduler_job_definitions_tbl
+  where job_name = 'ores.inbox.approval_expiry'
+    and valid_to = ores_utility_infinity_timestamp_fn();
+
+          job_name          | version | schedule_expression | is_active |          valid_from           |           modified_by            |             performed_by
+----------------------------+---------+---------------------+-----------+-------------------------------+----------------------------------+--------------------------------------
+ ores.inbox.approval_expiry |       1 | */5 * * * *         | t         | 2026-10-08 00:47:24.195715+01 | ores_eager_maxwell_inbox_service | ores_eager_maxwell_scheduler_service
+(1 row)
+
+One live row at version 1 is what idempotence looks like here: the restart
+found the job by name and left it alone, so valid_from is still the first
+write's and the schedule's history holds only the writes the setting has
+actually had. The write names the inbox service as the modifier, and the
+scheduler stamps itself as the performer, because the scheduler is what wrote
+the row.
+
+The registration is the reason the job exists at all: nothing seeds it, so a
+build that did not write it would have no sweep, and the service would refuse
+to start rather than run without one.

@@ -191,11 +191,15 @@ approval_lifecycle::raised_by(const boost::uuids::uuid& account_id, int offset, 
 }
 
 std::vector<expired_request> approval_lifecycle::expire_overdue() {
+    // The sweep runs from the scheduler, so no person is asking and there is no
+    // actor to name. The store still requires one, because the row it writes
+    // records who closed the request, and the honest answer is the service that
+    // ran the sweep.
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text"
         " from ores_inbox_expire_approval_requests_fn($1)",
-        {ctx_.actor()},
+        {ctx_.service_account()},
         lg(),
         "Closing the approval requests nobody answered");
 
@@ -221,10 +225,14 @@ void approval_lifecycle::tell_expired(const expired_request& expired) {
         const auto tenant = utility::uuid::tenant_id::from_string(expired.tenant_id);
         if (!tenant)
             throw std::runtime_error("bad tenant " + expired.tenant_id);
-        const auto ctx = ctx_.with_tenant(*tenant, ctx_.actor());
-
-        notification_center center(ctx);
-        const auto raiser = center.actor_account_id();
+        // The service account that runs the sweep lives in the system tenant,
+        // while the person to tell lives in theirs. The raiser is resolved
+        // where it lives, and the notice is raised where the person is, so a
+        // sweep of one tenant's request does not need the service to have an
+        // account in that tenant.
+        const auto system_ctx =
+            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
+        const auto raiser = notification_center(system_ctx).actor_account_id();
         if (!raiser)
             throw std::runtime_error("the service account was not found");
 
@@ -239,7 +247,8 @@ void approval_lifecycle::tell_expired(const expired_request& expired) {
                                                                           : expired.kind_code}},
                                                 .account_ids = {expired.requested_by},
                                                 .audience_permission_code = ""};
-        center.raise(n, n.account_ids, *raiser);
+        notification_center(ctx_.with_tenant(*tenant, ctx_.service_account()))
+            .raise(n, n.account_ids, *raiser);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Request " << expired.request_id
                                   << " expired, but the person who asked was not told: "

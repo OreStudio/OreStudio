@@ -87,11 +87,21 @@ subject are therefore fixed in code and are not configurable.
 is worth sweeping depends on how many requests a deployment raises and how
 long its administrators take to answer, and neither the component nor the
 person writing it can know that. So the schedule is a
-[[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][system setting]], read by name from
-[[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] and carrying a
-default that suits a small installation. The setting is the same mechanism
+[[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][system setting]], carrying a default
+that suits a small installation. The setting is the same mechanism
 =iam.token.access_lifetime_seconds= and =system.signup_requires_authorization=
 already use, and the sweep is its first non-variability consumer.
+
+The inbox reads that setting over the wire, through
+=variability.v1.ops.get_setting=, and it holds the
+=variability::system_settings:read= permission to do it. Reading the table
+directly would have been shorter and is what this page argues against: a
+setting is spoken about by name everywhere, the entity read is addressed by an
+identifier no caller outside variability holds, and a component that reads
+another's tables has taken a dependency its owner cannot see. The operation
+answers with the value and its declared type, or says the setting does not
+exist, so the caller decides what to do about absence rather than discovering
+it as an empty string.
 
 The split is the point. A component that hardcodes its own schedule is
 asserting something about somebody else's deployment, and it will be wrong; a
@@ -103,11 +113,25 @@ to say how often.
 
 Registering at start makes the scheduler a startup dependency, and the failure
 mode is the one this page exists to prevent: a job that is not there, and
-nothing saying so. So the registration is idempotent by =job_name= — a retry
-replaces the row rather than adding a second one — and a registration that
-cannot be made is an error the service reports, not a warning it swallows. A
-sweep that is not scheduled is a queue that rots, which is exactly the state
-before this work.
+nothing saying so. So the service refuses to start when it cannot register the
+job, and the operator sees why. An installation whose inbox is up but whose
+requests never expire is worse than one whose inbox is down and says so.
+
+Not every failure is the same, and the two are handled differently. A
+dependency that is not answering yet — the scheduler has not started, or
+variability has not — is waited out, because a later attempt can cure it. A
+setting that is absent, a value that is not a cron expression, or a scheduler
+that refuses the write are decisions, and repeating them cannot change them, so
+the service reports the decision at once instead of retrying a mistake twelve
+times.
+
+The job is recognised by =job_name=, which is the key the store holds it
+under, and the registration reuses the identifier of the job already carrying
+that name. This matters more than it looks: the store keeps one live row per
+name, so a registration that invented a fresh identifier on every restart would
+fail against that uniqueness rather than quietly adding a second sweep. A job
+that already holds the wanted schedule and is active is left alone, so a
+restart writes no new version of a row nothing changed.
 
 ** The close is one statement across every tenant
 
@@ -177,6 +201,9 @@ Source: [[proj:doc/knowledge/architecture/approval_request_expiry_interaction.pu
   variability.
 - [[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] — component
   group overview, and the installation-level knobs it carries.
+- [[id:D4A00A97-BD2C-4871-B1A5-318EFDAFD907][ores.variability.operations]] —
+  the =get_setting= operation the schedule is read through, and why a setting
+  is asked for by name rather than listed.
 - [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]]
   — the operations a request is raised, decided and swept through.
 - [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]] — component group

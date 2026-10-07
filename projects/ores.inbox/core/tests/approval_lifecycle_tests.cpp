@@ -47,6 +47,14 @@ ores::database::context acting(ores::testing::scoped_database_helper& h) {
     return h.context().with_tenant(h.tenant_id(), h.db_user());
 }
 
+// The context the sweep runs under. It comes from the scheduler, so nobody is
+// signed in and there is no actor; the service account is the only name the
+// write has. A sweep that reached for the actor instead of the service account
+// would name nobody and be refused by the store.
+ores::database::context sweeping(ores::testing::scoped_database_helper& h) {
+    return h.context().with_tenant(h.tenant_id(), "");
+}
+
 }
 
 using ores::inbox::service::approval_lifecycle;
@@ -198,7 +206,8 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
 
     // Neither is due: the fortnight has not passed, so the sweep closes
     // nothing and both requests stay in front of a decider.
-    const auto first = lifecycle.expire_overdue();
+    approval_lifecycle sweep(sweeping(h));
+    const auto first = sweep.expire_overdue();
     CHECK_FALSE(closed(first, overdue_id));
     CHECK(lifecycle.request(overdue_id)->state_code == "waiting");
 
@@ -210,7 +219,7 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     ores::inbox::repository::approval_request_repository repo;
     repo.write(acting(h), lapsed);
 
-    const auto second = lifecycle.expire_overdue();
+    const auto second = sweep.expire_overdue();
     CHECK(closed(second, overdue_id));
     CHECK_FALSE(closed(second, in_time_id));
 
@@ -218,9 +227,11 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     REQUIRE(after);
     CHECK(after->state_code == "expired");
     CHECK(lifecycle.request(in_time_id)->state_code == "waiting");
+    // The closed row names the service, which is who ran the sweep.
+    CHECK(after->modified_by == sweeping(h).service_account());
 
     // A request it already closed is no longer open, so the next sweep is a
     // no-op rather than a second closure.
-    CHECK_FALSE(closed(lifecycle.expire_overdue(), overdue_id));
+    CHECK_FALSE(closed(sweep.expire_overdue(), overdue_id));
     CHECK(lifecycle.request(overdue_id)->version == after->version);
 }

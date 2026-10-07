@@ -23,6 +23,7 @@ participant "Member" as member
 participant "IAM" as iam
 participant "Scheduler" as sched
 participant "Inbox" as inbox
+participant "Variability" as var
 participant "Administrator" as admin
 database "Postgres" as db
 
@@ -46,18 +47,32 @@ end note
 
 == The inbox declares the job and reads when to fire it ==
 
-inbox -> db : read system setting\ninbox.approval_expiry.schedule
-db --> inbox : the cron expression, or its default
-inbox -> sched : inbox.v1.ops.put_job_definition\n(name inbox.expire_overdue_approvals,\naction_type nats_publish, this subject)
+inbox -> var : variability.v1.ops.get_setting\n(inbox.approval_expiry.schedule)
+var -> db : read the setting
+db --> var : the cron expression
+var --> inbox : the value and its declared type
 note right of inbox
   That the sweep recurs is the inbox's
   own behaviour, so the inbox registers
   the job. How often is the installation's
   answer, so the schedule is a system
-  setting. The registration is idempotent
-  by job name, and a failure to make it is
-  an error the service reports rather than
-  a warning it swallows.
+  setting. The inbox asks variability for
+  it by name, over the wire and with the
+  permission to read it, rather than
+  reaching into variability's tables.
+end note
+inbox -> sched : scheduler.v1.job_definitions.list
+sched --> inbox : the jobs, so the inbox\nfinds the one it registered last time
+inbox -> sched : scheduler.v1.job_definitions.put\n(name ores.inbox.approval_expiry,\naction_type nats_publish, this subject)
+note right of inbox
+  The job is recognised by name and the
+  registration reuses the identifier of
+  the job already carrying it, so a
+  restart replaces the row instead of
+  colliding with it. A registration that
+  cannot be made stops the service: an
+  inbox that is up with no expiry job is
+  worse than one that is down and says so.
 end note
 
 == The scheduled sweep ==

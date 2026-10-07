@@ -141,6 +141,11 @@ export interface ListMyApprovalRequestsResponse {
  * and reaches requests no tenant-scoped caller could read. Each person who
  * asked is told; a request already closed is not open, so a repeated call
  * changes nothing.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it is trusted at the transport, as the compute reaper is. That is
+ * affordable here because it takes no input and closes only what is already
+ * past its deadline, which a caller could reach by waiting.
  */
 export interface ExpireOverdueApprovalsRequest {}
 
@@ -171,5 +176,5 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
-    expire_overdue_approvals_request: true,
+    expire_overdue_approvals_request: false,
 } as const;

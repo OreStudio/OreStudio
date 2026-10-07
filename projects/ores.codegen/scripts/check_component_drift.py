@@ -81,6 +81,28 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
+# The codegen package this script imports needs this checkout's virtualenv, and
+# the shebang names the system interpreter. A caller who runs the script by
+# path, as every document does, would otherwise get a ModuleNotFoundError for
+# pystache and no clue that a virtualenv is what was wanted. So re-exec under
+# the sibling virtualenv when this interpreter cannot import it.
+#
+# The test is the prefix, not the executable: a virtualenv's `bin/python` is a
+# symlink chain back to the system interpreter, so resolving both paths says
+# they are the same file when they are very much not the same environment.
+_VENV_DIR = Path(__file__).resolve().parents[1] / "venv"
+_VENV_PYTHON = _VENV_DIR / "bin" / "python"
+try:
+    import pystache  # noqa: F401
+except ImportError:
+    if _VENV_PYTHON.exists() and Path(sys.prefix).resolve() != _VENV_DIR.resolve():
+        import os
+
+        os.execv(
+            str(_VENV_PYTHON),
+            [str(_VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]],
+        )
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CODEGEN_DIR = REPO_ROOT / "projects" / "ores.codegen"
 SCRIPTS_DIR = Path(__file__).resolve().parent

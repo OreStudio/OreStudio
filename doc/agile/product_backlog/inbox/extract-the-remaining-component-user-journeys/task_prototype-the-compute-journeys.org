@@ -26,11 +26,11 @@ Five compute journeys are written against the use cases, with the charts each on
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Story: Extract the ores.compute user journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -78,8 +78,57 @@ via its "Verifies task" field.
 
 * Review
 
+The local review is the review coverage, because the GitHub pull-request
+checks are retired.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | D03 requires a salt wireframe per journey; all five said "not drawn yet" | compute journeys | Accepted | Five drawn, rendered and embedded |
+| 2 | The census claims 17 system-tenant widenings; the guard reports 10 | tenant_ownership_and_the_information_flow | Accepted | Recounted from a script; 353 own-tenant, 152 party, 10 widening, 14 system-owned, 3 role-scoped |
+| 3 | Four journeys claim a handler checks no permission | compute journeys | Accepted | Every generated compute handler checks a code, on main; the false gaps deleted |
+| 4 | Two journeys claim the heartbeat carries no host | follow, keep | Accepted | It carries host_id since Carry the host on the heartbeat landed |
+| 5 | engine.log holds the command line; output_uri is empty on failure; packages have no HTTP path | diagnose, keep, compute.org | Accepted | All four corrected against application.cpp and the shell |
+| 6 | compute.org still calls the work counts a cross-tenant aggregate | compute.org, plan | Accepted | They are the installation's ledger; Allocation moved to Usage |
+| 7 | Four panels disagree on cores, failures and jobs | prototype | Accepted | One source of truth per figure |
+| 8 | The tenant variant leaks other tenants in the arrivals legend | prototype | Accepted | Narrowed; the whole prototype swept by render, not by reading |
+| 9 | The lineage calls the run-to-schedule hop unmodelled, and attaches results to the wrong workunit | prototype | Accepted | trigger_run_id is that row; results now attach to the workunit they belong to |
+| 10 | The checker passes 351 of 351 with all of the above wrong | verify-compute-prototype.js | Accepted | Extended to 457; it now checks legends, every tab and tenant, prose and cross-panel agreement |
+| 11 | Prose carries em dashes, against a house rule | all | Declined | No document bans them and the reference journey carries 13; the constraint came from the brief, not the repo |
 
 * Result
+
+The five compute journeys are written and walked. The grid had one journey,
+the fleet survey, and nothing for the work it does; it now has five, one per
+use case, each naming the charts it composes and the owner it serves.
+
+A prototype covers all five screens, twenty charts hand-rolled as inline SVG
+with no library and no build step, tabbed by the question each tab answers:
+the load, one job, a failure, the capacity, and what the grid may run. Every
+table pages by the Record screen standard, a job opens to its full detail, and
+the lineage runs from the scheduled job through the report to the batch and its
+results. A tenant variant narrows every row, every legend and every footnote,
+and withholds the node logs, which are the installation's.
+
+The design work behind it is recorded too: the three ownership classes in the
+target-state tenancy pages, and the decision that reframed the whole exercise,
+that the installation records what it did about its own operation rather than
+reading across tenants, so the global view needs no policy exception.
+
+The review found more than the build did, which is the point. It caught four
+panels whose figures contradicted each other, a tenant leak in a legend, two
+lineage errors, and a checker that passed 351 of 351 while all of it was wrong.
+Eleven findings were accepted and fixed; one was declined, because the em-dash
+rule it cited does not exist and the corpus uses them freely.
+
+Verified: the documentation validator passes all 42 components; the prototype
+inventory lists and publishes all 41; the RLS guard reports 10 widenings, all
+listed, which is the baseline; the prototype's checker passes 457 of 457; and
+the branch merges with main a3d65e6eb7 with no conflict.
+
+Not verified: the prototype is mock data and reaches no server, and the
+journeys have not been walked with the operator. The grid read fix and the
+usage ledger are storied, not built, so nothing here changes the running
+system.
+
+Left behind: doc/knowledge/journeys/operations/wireframe_watch_the_compute_grid.puml
+still asserts the old heartbeat shape, outside this task's reach.

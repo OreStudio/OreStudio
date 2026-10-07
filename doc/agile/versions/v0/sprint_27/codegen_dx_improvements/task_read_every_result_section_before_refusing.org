@@ -25,7 +25,7 @@ single section with prose.
 #+filetags: :codegen_dx_improvements:sprint_27:v0:
 #+owner: marco
 #+branch: feature/collapse-synthetic-control-plane-forks
-#+pr:
+#+pr: 2772
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2772][#2772]] | [compass] Read every result section before refusing a merge |
 
 * Review
 

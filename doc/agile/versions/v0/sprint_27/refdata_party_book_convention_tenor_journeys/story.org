@@ -89,5 +89,12 @@ component user journeys]] for the component-level account.
 - Curve configuration, the =crm_*= entities and the volatility configs.
   The extraction assigned those to the marketdata and analytics
   journeys.
-- Sandboxes and sandbox members, which wait on the workspace removal,
-  and =portfolio_right=, which belongs to the Access group.
+- Sandboxes and sandbox members, and =portfolio_right=, which the
+  refdata catalogue assigned to the Access group.
+
+Note: the catalogue recorded that journey 8 waited on the workspace
+removal, because the conventions then bound the
+=workspace-scoped-lookup= profile. That is no longer true. Commit
+=d0de221445= dropped the =workspace= column, no refdata entity binds
+that profile, and no =workspace= reference is left in the refdata
+models. Journey 8 waits on nothing.

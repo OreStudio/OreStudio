@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Define how tenors resolve — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Reference data, journey 9 of the agreed catalogue: Define how tenors
+  resolve, for a tenant administrator. A flat step rail on the left, one step
+  on the right, the same journey page the other refdata prototypes use. The
+  states come from the query string:
+
+    ?state=list|tenor|convention|schedule|resolve|review|outcome|refused|history
+                        the screen, by id (?state=failure is an alias for refused)
+    ?tenor=3M           the tenor the walk is about
+    ?query=ON           the list search, as typed
+    ?kind=PERIOD|SPECIAL|           the list filter on tenor kind
+    ?convention=RATES_SPOT_FORWARD  the tenor convention in force
+    ?cal=GB.LOIOB       the named calendar the resolved dates roll on
+    ?horizon=2026-03-16 the "as of" date every anchor is relative to
+    ?roll=Following     the roll rule: Following|ModifiedFollowing|Preceding|Unadjusted
+    ?schedule=ROLL_QUARTER          the schedule axis the schedule step shows
+    ?rollcount=12       the number of rolls a swap needs
+    ?rollstart=spot|horizon         where the ladder starts
+    ?fail=              the refusal to draw; ?fail=1 picks the first kind
+    ?version=2          the version the history step opens
+
+  The bar at the foot mirrors the same states as buttons, and carries the
+  refusal kind and the convention as toggles a reviewer can click.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

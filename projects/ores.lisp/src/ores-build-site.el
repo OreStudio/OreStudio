@@ -322,6 +322,23 @@ with the site chrome."
   (ores-deploy-web-app
    "./doc/prototypes/refdata" site-dir "doc/prototypes/refdata"
    "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Refdata journey prototypes: the same body reset. Journeys 5 to 9 of the
+  ;; agreed refdata catalogue, mock data only.
+  (ores-deploy-web-app
+   "./doc/prototypes/onboard-a-counterparty" site-dir "doc/prototypes/onboard-a-counterparty"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/keep-a-partys-details-current" site-dir "doc/prototypes/keep-a-partys-details-current"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/shape-the-book-structure" site-dir "doc/prototypes/shape-the-book-structure"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/define-the-conventions-for-an-instrument" site-dir "doc/prototypes/define-the-conventions-for-an-instrument"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  (ores-deploy-web-app
+   "./doc/prototypes/define-how-tenors-resolve" site-dir "doc/prototypes/define-how-tenors-resolve"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
   ;; First run prototype: the same body reset. The welcome and the first-run
   ;; steps before any session exists, mock data only.
   (ores-deploy-web-app

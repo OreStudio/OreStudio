@@ -1,0 +1,456 @@
+/* Define-how-tenors-resolve prototype. Self-contained: plain CSS, no build
+ * step, no import to wire.
+ *
+ * The tokens are the application's own, copied verbatim from
+ * new-party/prototype.css (which took them from
+ * projects/ores.web/packages/web/src/styles.css), so a reviewer sees this
+ * journey in the colours the real screens use. The furniture follows the
+ * prototypes beside this one: the journey rail is JourneyPage.tsx's grid, the
+ * card is `card p-6`, the footer is `mt-6 border-t pt-4` split by
+ * justify-between. Only the rules this journey needs are added below. */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --line-strong: #4a5568;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --radius: 0.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { min-height: 100vh; }
+
+/* The prototype's own chrome, deliberately unlike the design on trial. */
+.proto-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    padding: 6px 14px;
+    background: repeating-linear-gradient(45deg, #2a2113, #2a2113 10px, #241d11 10px, #241d11 20px);
+    border-bottom: 1px solid #4a3a17;
+    color: var(--warn);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.proto-bar {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 7px;
+    background: #0b0e13;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    font-size: 12px;
+    max-width: 96vw;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.proto-bar button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 12px;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 999px;
+}
+
+.proto-bar button:hover { background: var(--panel-2); color: var(--ink); }
+.proto-bar button.on { background: var(--accent-dim); color: var(--ink); }
+.proto-bar .label { padding: 0 8px; color: var(--ink); white-space: nowrap; }
+.proto-bar .label b { color: var(--accent); }
+.proto-bar .sep { color: var(--line); padding: 0 2px; }
+
+/* ------------------------------------------------------------------ */
+/* Shared page furniture                                              */
+/* ------------------------------------------------------------------ */
+
+.page { padding: 78px 24px 110px; max-width: 1240px; margin: 0 auto; }
+.page.narrow { max-width: 720px; }
+
+.brand { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); }
+.tenant { margin-top: 6px; color: var(--ink-dim); font-size: 13px; }
+.tenant b { color: var(--ink); font-weight: 600; }
+
+.page > h1 { font-size: 22px; margin: 0 0 18px; letter-spacing: -0.01em; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+h3 { font-size: 13px; margin: 18px 0 8px; }
+.lede { color: var(--ink-dim); margin: 0 0 24px; max-width: 62ch; }
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+.card h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem; }
+.card .lead { margin: 0 0 1.25rem; color: var(--ink-dim); font-size: 0.875rem; }
+
+.panel-soft {
+    background: var(--panel-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+}
+
+/* The step header: what stands above every step and does not change while the
+   steps do. JourneyPage wraps it in `mb-5 border-b border-line pb-4`. */
+.stepheader {
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+.stepheader .nm { font-weight: 500; }
+.stepheader .sub { font-size: 0.75rem; color: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* The flat step rail, as JourneyPage.tsx draws it                     */
+/* ------------------------------------------------------------------ */
+
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 900px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent-bright); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+
+/* ------------------------------------------------------------------ */
+/* Fields and controls                                                */
+/* ------------------------------------------------------------------ */
+
+.field { display: block; margin-bottom: 16px; }
+.field > .lbl { display: block; font-size: 12px; color: var(--ink-dim); margin-bottom: 6px; }
+.field input,
+.field select {
+    width: 100%;
+    background: #0e1218;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 13px;
+}
+.field select { cursor: pointer; }
+.field input:focus,
+.field select:focus { outline: none; border-color: var(--accent); }
+.field input:disabled { color: var(--ink-faint); background: #101014; border-style: dashed; }
+.field input::placeholder { color: var(--ink-faint); }
+.hint { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+.hint b { color: var(--ink-dim); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+@media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+.span2 { grid-column: 1 / -1; }
+
+fieldset { border: none; margin: 0 0 22px; padding: 0; }
+legend { font-size: 13px; font-weight: 600; margin-bottom: 10px; padding: 0; }
+
+.btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+.btn.ghost { background: none; border-color: transparent; color: var(--ink-dim); }
+.btn.danger { background: none; border-color: var(--line); color: var(--bad); }
+.btn.small { padding: 5px 11px; font-size: 12px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.ghost:hover:not(:disabled) { color: var(--ink); background: var(--panel-2); }
+
+.notice { border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-bottom: 18px; }
+.notice.info { background: #12161f; border: 1px solid #24344d; color: var(--ink); }
+.notice.success { background: #12281d; border: 1px solid #23543a; color: #a8e6c4; }
+.notice.warn { background: #2a2113; border: 1px solid #4a3a17; color: #efd39a; }
+.notice.error { background: #2b1614; border: 1px solid #5c2a24; color: #f0b7ae; }
+.notice .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ------------------------------------------------------------------ */
+/* The code beside its resolution: the point of this journey          */
+/* ------------------------------------------------------------------ */
+
+.duo {
+    display: grid;
+    grid-template-columns: 13rem 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 0 0 20px;
+}
+@media (max-width: 760px) { .duo { grid-template-columns: 1fr; } }
+.duo .side {
+    padding: 16px 18px;
+    background: var(--panel-2);
+    border-right: 1px solid var(--line);
+}
+@media (max-width: 760px) { .duo .side { border-right: none; border-bottom: 1px solid var(--line); } }
+.duo .side .cap,
+.duo .main .cap {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+}
+.duo .code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+}
+.duo .side .name { margin-top: 6px; font-size: 13px; color: var(--ink-dim); }
+.duo .main { padding: 16px 18px; }
+.duo .resolve {
+    font-size: 17px;
+    line-height: 1.45;
+    margin: 0 0 10px;
+    max-width: 56ch;
+}
+.duo .resolve .op { color: var(--ink-faint); }
+.duo .resolve b { font-weight: 600; }
+.duo .formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--ink-dim);
+    border-top: 1px dashed var(--line);
+    padding-top: 10px;
+    margin-top: 10px;
+    word-break: break-word;
+}
+.duo.tall .code { font-size: 26px; }
+
+/* ------------------------------------------------------------------ */
+/* Tables: the list, the schedule, the turns, the history diff         */
+/* ------------------------------------------------------------------ */
+
+.tablewrap { overflow-x: auto; margin: 0 0 18px; }
+table.grid { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.grid th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+table.grid td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+}
+table.grid tr.pick { cursor: pointer; }
+table.grid tr.pick:hover td { background: var(--panel-2); }
+table.grid tr.on td { background: var(--panel-2); }
+table.grid tr.dim td { color: var(--ink-faint); }
+table.grid td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.grid td.nowrap { white-space: nowrap; }
+table.grid td .sub { display: block; font-size: 11px; color: var(--ink-faint); }
+table.grid tr.here td { color: var(--accent-bright); }
+table.grid tr.here td .sub { color: var(--ink-faint); }
+
+/* ------------------------------------------------------------------ */
+/* The resolution timeline: horizon to resolved date, one turn each    */
+/* ------------------------------------------------------------------ */
+
+.turns { list-style: none; margin: 0 0 18px; padding: 0; }
+.turn {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+}
+.turn:last-child { border-bottom: none; }
+.turn .mark {
+    width: 18px;
+    flex: 0 0 18px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.turn .what { flex: 1; min-width: 0; color: var(--ink-dim); }
+.turn .what b { color: var(--ink); font-weight: 500; }
+.turn .date {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: nowrap;
+    color: var(--ink);
+}
+.turn.done .mark { color: var(--ok); }
+.turn.step .mark { color: var(--accent-bright); }
+.turn.rolled .date { color: var(--warn); }
+.turn.final { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 12px; }
+.turn.final .date { font-size: 15px; font-weight: 600; }
+
+/* ------------------------------------------------------------------ */
+/* Pickers: a row of small controls, and the convention cards          */
+/* ------------------------------------------------------------------ */
+
+.pickrow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 6px; }
+@media (max-width: 820px) { .pickrow { grid-template-columns: 1fr 1fr; } }
+.pickrow .field { margin-bottom: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; }
+.chip {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    cursor: pointer;
+}
+.chip:hover { border-color: var(--line-strong); }
+.chip.on { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-bright); }
+
+.convcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 20px; }
+@media (max-width: 820px) { .convcards { grid-template-columns: 1fr; } }
+.convcard {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.convcard:hover { border-color: var(--line-strong); }
+.convcard.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2); }
+.convcard .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; font-weight: 600; }
+.convcard .sum { margin: 6px 0 0; font-size: 12px; color: var(--ink-dim); }
+.convcard .kv { margin: 8px 0 0; font-size: 12px; color: var(--ink-faint); }
+.convcard .kv b { color: var(--ink-dim); font-weight: 500; }
+
+/* ------------------------------------------------------------------ */
+/* The review list, as the Review steps draw it                       */
+/* ------------------------------------------------------------------ */
+
+.reviewgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin: 0 0 18px; }
+@media (max-width: 640px) { .reviewgrid { grid-template-columns: 1fr; } }
+.reviewgrid dt { color: var(--ink-faint); }
+.reviewgrid dd { margin: 0; color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
+/* Outcome and history                                                */
+/* ------------------------------------------------------------------ */
+
+.donegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 760px) { .donegrid { grid-template-columns: 1fr; } }
+.donecard {
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+.donecard:hover { border-color: var(--accent); }
+.donecard .nm { font-weight: 600; }
+.donecard p { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
+
+.diffrow td { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.diffrow .add { color: var(--ok); }
+.diffrow .del { color: var(--bad); }
+.diffrow .chg { color: var(--warn); }
+.diffrow .nul { color: var(--ink-faint); }
+.versionline { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 14px; flex-wrap: wrap; }
+
+.failtoggle { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #e879f9; margin-top: 16px; flex-wrap: wrap; }
+.failtoggle input { width: auto; }
+
+/* A note the prototype adds where the real screen would leave the page. */
+.proto-hint { margin-top: 12px; font-size: 12px; color: var(--warn); }
+.gapnote {
+    border-left: 2px solid var(--warn);
+    background: #1d1912;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #efd39a;
+    margin: 16px 0 0;
+}
+.gapnote b { color: var(--warn); }

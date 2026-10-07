@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shape the book structure journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Shape the book structure: a tenant administrator walks the portfolio
+  tree, opens or creates a book, classifies it, sets the portfolio
+  rights, and reviews the write. The states are chosen from the query
+  string, the same way the new-party and refdata prototypes choose
+  their own:
+
+    ?state=tree|portfolio|book|classify|rights|review|outcome|refused|history
+    ?query=EUR                            the search, as typed
+    ?portfolio=RATES.EUR                  the portfolio node already chosen
+    ?book=EUR_SWAPS_01                    the book already open
+    ?new=1                                author a new book, not an existing one
+    ?status=Active|Frozen|Closed          the book status being set
+    ?purpose=Trading|Reserve|Funding|Wash|WriteOff|Test|Sales|SweepTarget|RemittanceTarget
+    ?regulatory=Trading|Banking           the Basel book classification
+    ?ledger=None|Automatic|Manual         how the ledger balance is fed
+    ?sweepable=0|1                        the spot-sweep eligibility flag
+    ?account=m.okafor                     the account whose rights are shown
+    ?right=read|open_sandbox|none         the right being considered
+    ?fail=open_activity|transition|1      which refusal the server returns
+                                          (1 selects the first kind)
+    ?version=2                            the history version under review
+
+  The bar at the foot mirrors the same states as buttons, plus the two
+  refusals.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

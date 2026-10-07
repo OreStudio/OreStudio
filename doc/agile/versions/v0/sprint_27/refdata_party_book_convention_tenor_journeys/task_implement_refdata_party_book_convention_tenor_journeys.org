@@ -20,7 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Each of the five journeys the agreed refdata catalogue still lacks is
+drawn as a plain-HTML prototype under =doc/prototypes/=, one directory
+each, listed in the prototype inventory and published by the site
+build, so the product owner can accept the screen before the journey is
+written or implemented.
+
+The five are Onboard a counterparty, Keep a party's details current,
+Shape the book structure, Define the conventions for an instrument, and
+Define how tenors resolve. See
+[[id:93E2D898-6098-4C1C-9C4E-0E8BFDF4E799][Write the refdata party,
+book, convention and tenor journeys]].
 
 * Status
 
@@ -28,20 +38,32 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:93E2D898-6098-4C1C-9C4E-0E8BFDF4E799][Write the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | All five prototypes are drawn and render; awaiting the product owner's review. |
+| Waiting on   | The product owner's review of the five screens. |
+| Next         | Fold the review into the prototypes, then write each journey document. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- Five prototype directories exist under =doc/prototypes/=, one per
+  journey, each with =index.html=, =prototype.css= and =prototype.js=,
+  plain HTML, CSS and JavaScript with no framework and no backend.
+- Each prototype walks its journey: a landing list, the authoring
+  screen with every field the model carries, a review, the refusal, and
+  the history step with a field diff.
+- Each prototype renders from =file://= with no uncaught error, and
+  every state is reachable from the foot bar and from =?state=.
+- =build/scripts/check_prototype_inventory.py= passes: every prototype
+  is listed and published.
+- The product owner has reviewed the five screens.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Five prototypes were drawn in parallel, one per journey, each from the
+journey's own entities and their generated protocol headers. They were
+then normalised so a reviewer meets the same affordances in all five:
+the refusal is the parameter =?fail=<kind>=, =?fail=1= selects the first
+kind, and =refused= is a state reachable from the foot bar.
 
 * Measurements
 
@@ -55,9 +77,65 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Prototype directories | 5 | =ls -d doc/prototypes/{onboard-a-counterparty,keep-a-partys-details-current,shape-the-book-structure,define-the-conventions-for-an-instrument,define-how-tenors-resolve}= | =3f880b1e3e= |
+| Prototypes in the inventory | 45 | =python3 build/scripts/check_prototype_inventory.py= | =3f880b1e3e= |
+| Uncaught errors while rendering | 0 | headless Chrome, =--dump-dom=, over default, =?state=refused= and =?fail=1= for each of the five | =3f880b1e3e= |
 
 * Notes
+
+** The five prototypes
+
+| Journey | Directory | Group it will join |
+|---------+-----------+--------------------|
+| 5 Onboard a counterparty | =doc/prototypes/onboard-a-counterparty/= | Parties |
+| 6 Keep a party's details current | =doc/prototypes/keep-a-partys-details-current/= | Parties |
+| 7 Shape the book structure | =doc/prototypes/shape-the-book-structure/= | Books and portfolios |
+| 8 Define the conventions for an instrument | =doc/prototypes/define-the-conventions-for-an-instrument/= | Conventions |
+| 9 Define how tenors resolve | =doc/prototypes/define-how-tenors-resolve/= | Tenors |
+
+The inventory rows carry the journey name as plain text for now,
+because no journey document exists to link to. Each row gains its
+=[[id:...]]= link when its journey document is written.
+
+** Gaps the prototypes found
+
+Every one is drawn on the screen and marked as a gap. They are the
+material for the implementation tasks.
+
+- Journey 5. No authoritative-identifier flag exists; a counterparty
+  carries one business centre rather than the centres it deals through;
+  no counterparty-protocol call reads the party-counterparty junction
+  from the counterparty side; the confirming act spans eight subjects
+  with no composite write and no rollback; and no reply carries a
+  field-level diff.
+- Journey 6. =party_contact_information= has no primary flag, so "one
+  contact is primary" is a client convention; the membership junctions
+  have no versions read, so a closed membership leaves no record of when
+  or by whom it closed; and a refusal arrives as the trigger's text
+  rather than a typed refusal naming the field and the rule.
+- Journey 7. The book model and =refdata.v1.books.put= carry neither
+  =book_purpose_type= nor =ledger_feed_type=, though both lookup tables
+  exist; nothing refuses closing a book with open activity, and no
+  status transition rule exists beyond "the code is known".
+- Journey 8. The convention list filters by =id_one_of= only, so it
+  cannot be searched by a term; history has no draft version, so the
+  history step shows a version the server does not hold; and only the
+  swap and deposit terms steps are drawn in full, the other 23 families
+  naming their entity and stating that their terms step is not drawn.
+- Journey 9. No operation resolves a tenor over the wire, so the
+  =resolve= step draws the reply it would need; =tenor_convention= has
+  no roll-rule column, and the =business_day_convention_type= lookup has
+  nothing pointing at it; =tenor_convention_resolutions= is read-only;
+  and the refusal is a thrown exception with no message on the wire.
+
+** A catalogue note that is now wrong
+
+The agreed catalogue recorded that journey 8 waited on the workspace
+removal, because the conventions then bound the
+=workspace-scoped-lookup= profile. Commit =d0de221445= dropped the
+=workspace= column, no refdata entity binds that profile, and no
+=workspace= reference is left in the refdata models. The prototype
+states this on screen, and the story records it.
 
 * Test Scenarios
 
@@ -83,3 +161,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The five journeys are drawn. Each is a directory of =index.html=,
+=prototype.css= and =prototype.js= under =doc/prototypes/=, plain HTML,
+CSS and JavaScript with no framework and no backend, driven from the
+query string and walkable from the foot bar. Each renders from
+=file://= with no uncaught error, and each draws the refusal as its own
+state and the history step with a field diff.
+
+The prototypes are listed in =doc/prototypes/index.org= and published by
+=projects/ores.lisp/src/ores-build-site.el=, and
+=build/scripts/check_prototype_inventory.py= passes.
+
+Awaiting the product owner's review. The journey documents and the
+implementation tasks follow it.

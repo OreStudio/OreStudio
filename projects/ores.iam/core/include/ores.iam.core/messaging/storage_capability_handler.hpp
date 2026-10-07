@@ -64,7 +64,7 @@ public:
         , signer_(std::move(signer)) {}
 
     /**
-     * @brief Serves iam.v1.storage_capabilities.mint.
+     * @brief Serves iam.v1.ops.mint_storage_capability.
      */
     void mint(ores::nats::message msg) {
         using namespace ores::logging;

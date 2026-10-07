@@ -2507,6 +2507,7 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
     "ores::trading::domain::instrument_payload": ("InstrumentPayload", "trading/payload"),
     "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
+    "ores::security::jwt::storage_grant": ("StorageGrant", "security/payload"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

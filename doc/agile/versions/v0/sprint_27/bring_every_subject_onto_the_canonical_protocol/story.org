@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 8A963327-DDFA-4C9F-B063-F4C7BB28E7AA
+:END:
+#+title: Story: Bring every subject onto the canonical entity protocol
+#+description: A census of every nats_subject in the tree finds 129 of 2455 outside the specification's grammar: common verbs renamed, operations that never went to the reserved ops namespace, and three resources spelled twice, once snake_case and once kebab-case.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One gate refuses a subject that is not {component}.v1.{resource}.{verb} with a verb from the closed set of eight, so the rule is enforced rather than remembered.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The census is taken and the defects are classified. Nothing is fixed yet. |
+| Waiting on    | Nothing.                               |
+| Next          | Write the gate first, so the fix cannot regress. |
+| Last touched  | 2026-10-07                               |
+
+* The census
+
+The rule is written down and normative:
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]].
+Its subject grammar is ={component}.v1.{resource}.{verb}=, every segment is
+lower snake_case, the resource is a plural noun, all four segments are
+mandatory, and the verb is one of a closed set of eight: =get=, =get_many=,
+=list=, =list_by_<relation>=, =put=, =put_many=, =delete=, =delete_many=. "A
+component's resource may support any subset, but it may not invent a verb
+outside this set." Operations that are not entity verbs go to a reserved
+namespace, ={component}.v1.ops.{operation}=, whose discriminator is stated:
+"an operation that acts on an entity the common way belongs in the common set,
+and an operation that merely has an unusual name does not qualify as a domain
+operation."
+
+The tree does not match it. Every =nats_subject= literal in the headers, 2455
+distinct, against the grammar:
+
+| Finding | Count | Example |
+|---------+-------+---------|
+| Conforming | 2328 | =refdata.v1.currencies.put= |
+| Not conforming | 127 | |
+| — an operation that never moved to the =ops= namespace | 73 | =iam.v1.accounts.lock=, =trading.v1.trades.book=, =workflow.v1.instances.steps= |
+| — a verb in kebab-case, where every segment must be snake_case | 31 | =iam.v1.accounts.change-password= |
+| — a common verb renamed | 10 | =iam.v1.accounts.update=, =workspace.v1.trade-scope.set= |
+| — five segments instead of four | 8 | =iam.v1.roles.permissions.put=, =ore.v1.ore.import.execute= |
+| — three segments instead of four | 5 | =workflow.v1.start=, =marketdata.v1.tick= |
+| A subject-part spelled twice, snake_case and kebab | 3 pairs | =inbox.v1.approval_requests= (8 subjects) / =inbox.v1.approval-requests= (5) |
+
+(=*.v1.ops.*= is the reserved namespace for domain operations and is exempt
+from the verb set. Five subjects already live there and conform.)
+
+The raw census and the full classification are in =evidence/subject_census.txt=
+beside this story, produced by reading every =nats_subject = "..."= literal in
+the tree.
+
+Three of the findings are worth naming separately because they are not the
+same defect as the rest:
+
+- *Five segments.* =iam.v1.roles.permissions.put= is a sub-resource spelled
+  with a dot. The specification says a collection that belongs to an entity is
+  named ={resource}_{collection}=, so that one subject is
+  =iam.v1.roles_permissions.put=. The same shape appears at
+  =telemetry.v1.nats.server-samples.list= and in the =*.import.execute= pair.
+- *Three segments.* =workflow.v1.start=, =marketdata.v1.tick=,
+  =marketdata.v1.export=, =marketdata.v1.import= and =scheduler.v1.status=
+  have no resource segment at all.
+- *Two spellings of one resource.* =dq.v1.lei-entities= and
+  =dq.v1.lei_entities= are 1 and 8 subjects; =inbox.v1.approval-requests= and
+  =inbox.v1.approval_requests= are 1 and 8; =reporting.v1.report-definitions=
+  and =reporting.v1.report_definitions= are 1 and 8. In each pair the kebab
+  spelling is the operation-only one, which means the resource was named twice
+  rather than the operation being misplaced.
+
+* Why this happened, and what stops it
+
+Nothing checks. The specification's own § Conformance says "Every clause above
+that can be checked mechanically is checked mechanically, and a generated
+message that violates one fails the check rather than passing review", and then
+says the components that have adopted it are named by one list -- and neither
+the gate nor the list exists in the tree. The checks that do exist,
+=check_protocol_twin_coverage.py= and =check_handler_permissions.py=, ask
+whether a twin was generated and whether a code is seeded; neither reads a
+subject.
+
+So the gate comes first and the migration follows it. A migration without the
+gate is a migration that grows back.
+
+* Acceptance
+
+- Every subject has four segments, is lower snake_case, and its verb is one of get, get_many, list, list_by_<relation>, put, put_many, delete, delete_many.
+- An event subject is ={component}.v1.{resource}_events.{action}= with the action =created=, =updated= or =deleted=.
+- No resource is spelled twice: no subject-part exists in both snake_case and kebab-case.
+- A sub-resource is named ={resource}_{collection}=, never ={resource}.{collection}=.
+- An operation that is not an entity verb lives in ={component}.v1.ops.{operation}=, and its model states why it is not one.
+- A gate runs the census and fails a non-conforming subject, with the accepted exceptions recorded in one file beside their reason.
+- The specification's Conformance section names a list of adopted components; that list exists as an artefact.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2B1BC0F5-0E33-4E24-A212-FD20EB3BFE78][Scaffold story: Bring every subject onto the canonical entity protocol]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:84E1C8E9-3E32-4866-AF73-D8BBD95DF6E0][Implement Bring every subject onto the canonical entity protocol]] | BACKLOG | | | Initial task for: Bring every subject onto the canonical entity protocol |
+| [[id:8E18E56D-6288-4DF1-B40A-2C4DA9D01FA1][Write the subject conformance gate]] | BACKLOG | | | There is no conformance gate in the tree today, and the specification's own Conformance section says every checkable clause is checked mechanically. The census found 129 non-conforming subjects precisely because nothing checks. |
+| [[id:02756820-A373-4E59-84C7-BA2CB0E7B69B][Bring the renamed common verbs onto the closed set]] | BACKLOG | | | Six subjects use save or update where the specification's closed set has put. iam.v1.accounts.save, iam.v1.accounts.update and iam.v1.accounts.update-email are the clearest; the rest are the same defect under a different component. |
+| [[id:6596D066-5050-475A-BA3B-6EF0F3E01E10][Move the entity operations into the reserved ops namespace]] | BACKLOG | | | About forty subjects act on an entity without being one of the eight verbs and were never moved to the reserved namespace: iam.v1.accounts.{lock,unlock,change-password,reset-password,update-self,select-party,switch-party,set-default-party,attach-pictures,publish-from-dq} among them. The specification's discriminator is explicit, and the models that already comply -- ores.variability.operations and ores.reporting.operations -- show the shape and the justification each message owes. |
+| [[id:4F84DD5B-FC4E-4E02-BC1B-7CA6EF72448F][Give each resource one spelling and publish the adopted-components list]] | BACKLOG | | | Three subject-parts exist twice, once snake_case and once kebab-case: dq.v1.lei-entities and dq.v1.lei_entities, inbox.v1.approval-requests and inbox.v1.approval_requests, reporting.v1.report-definitions and reporting.v1.report_definitions. Separately, the specification's Conformance section says the components that have adopted it are named by one list, and no such list exists anywhere in the tree. |
+
+* Decisions
+
+- *The gate comes before the migration.* A migration without a check grows
+  back, and this one had 129 violations to grow from. The gate reads the
+  models, so a defect is named at its source rather than in generated output
+  that the next regeneration would rewrite.
+- *This is one story and not a per-component sweep.* The defect is the rule
+  being unenforced, not any one subject, and the same four classes appear in
+  six components. Fixing them component by component would leave each
+  component's rule as its own opinion.
+- *The existing compliant models show the shape.*
+  =ores.variability.operations= and =ores.reporting.operations= already declare
+  domain operations in the reserved namespace, and each states in its own prose
+  why the operation is not an entity verb. That justification is what the
+  specification asks for, so it is copied rather than reinvented.
+- *The IAM migration is shared with the credentials story.*
+  [[id:117140A2-19CE-41EC-8734-A5648312385A][Separate the account's credentials from its profile]]
+  has to move =iam.v1.accounts.{change-password,reset-password}= and friends
+  anyway, and will move them onto the grammar while it is there. What it does
+  not take is the rest of =iam=: =save=, =update=, the =iam.v1.system= and
+  =iam.v1.auth= parts, and the account operations it does not touch.
+
+* Out of scope
+
+- The encoding, the transport, and which subjects a component owns. The
+  specification puts those outside itself.
+- Renaming a subject that already conforms. A subject in the closed set with a
+  four-segment snake_case name is left alone even where a better name exists,
+  because the point is conformance and not taste.

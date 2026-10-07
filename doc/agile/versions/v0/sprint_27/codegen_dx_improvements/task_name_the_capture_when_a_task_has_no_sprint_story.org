@@ -8,7 +8,7 @@
 #+filetags: :codegen_dx_improvements:sprint_27:v0:
 #+owner: marco
 #+branch: feature/collapse-synthetic-control-plane-forks
-#+pr:
+#+pr: 2771
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2771][#2771]] | [compass] Name the capture when a task has no sprint story |
 
 * Review
 

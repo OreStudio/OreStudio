@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 466DC2F4-C981-4205-BBAA-9C47F3973732
+:END:
+#+title: Task: State the storage policy
+#+description: Initial task for: Isolate tenant data in object storage and the compute grid
+#+type: task
+#+level: s1
+#+filetags: :isolate_tenant_data_in_storage:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Settle what the story has to enforce before any of it is built: who owns an
+object, how a caller addresses one, what credential it presents, and what the
+storage service checks before it moves a byte. The story's acceptance cannot be
+implemented until these are stated.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
+| Now          | Closed. The policy is stated and its open questions recorded. |
+| Waiting on   | Nothing.                               |
+| Next         | Break the story's implementation into tasks. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- An architecture page states object ownership, the bucket set, the key
+  grammar, the object capability and the checks the storage service makes.
+- The page records what separates the tree from it, and the questions it does
+  not settle.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] points at the
+  policy instead of leaving tenancy open, and the two pages cannot contradict.
+
+* Plan
+
+Write the policy on a page of its own, because the tenancy question needs more
+room than the Object Storage page gives it and that page explicitly refuses to
+settle it. State the target, not the tree, and put the distance from today and
+the open questions at the end so a reader cannot mistake one for the other.
+Then point the owning page at it and wire the pattern links both ways.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] states the
+  target: the owner is the bucket, a tenant owns an inputs bucket and an
+  outputs bucket, the platform owns the package and artefact buckets, and
+  access is an object capability naming the exact keys a caller may touch.
+- It records the four checks the storage service makes, the lifecycle, the
+  narrow capability a worker node holds for one assignment, the seven gaps
+  between the tree and the target, and four open questions.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] now points at
+  the policy rather than leaving tenancy open, and the policy is linked
+  bidirectionally with the Claim Check and Access Token patterns.
+- The repo's doc gates pass: =compass lint=, the emacs org-link check, the
+  pattern-uses check and the structure-note check.
+- The story's acceptance remains unimplemented; the tasks that build it are
+  still to be cut.
+

@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 0B573887-5101-4D91-9288-38F0C0AE3E06
+:END:
+#+title: Story: Isolate tenant data in object storage and the compute grid
+#+description: Give every object one owner: a tenant owns a bucket per data class, the platform owns the shared buckets, and access is an object capability scoped to exact keys. A step service presents its run token and a worker node presents a capability for one assignment, so no tenant can reach another tenant's bytes.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One deployment runs one grid and one object store for many tenants. No tenant
+may see another tenant's bytes, on the grid or in storage. This story settles
+who owns an object and what a caller must present to reach it, then makes the
+tree enforce it: a tenant owns buckets of its own, the platform owns the shared
+ones, and every caller reaches only the objects its credential names.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The policy is stated. Its acceptance is not yet built. |
+| Waiting on    | Nothing.                               |
+| Next          | Cut the implementation tasks: tenant buckets and provisioning, capability minting, the storage check, the call-site migration, and the node's assignment capability. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- Object ownership is the bucket: a tenant owns an inputs bucket and outputs bucket, and the platform owns the package and artefact buckets.
+- The storage service verifies an object capability and checks the bucket's owner, so a caller reaches only the objects its capability names.
+- A worker node holds a capability for one assignment and no standing storage credential.
+- A step service reaches its tenant's buckets with its run token.
+- A run's inputs are pruned when the run ends, and a tenant's data leaves with its buckets.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A26895DD-A991-4A69-8E40-058BA62CAACE][Scaffold story: Isolate tenant data in object storage and the compute grid]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:466DC2F4-C981-4205-BBAA-9C47F3973732][State the storage policy]] | DONE | 2026-10-07 | 2026-10-07 | The architecture page that settles object ownership, the bucket set, the key grammar, the object capability and the storage checks. |
+
+* Decisions
+
+- *The owner is the bucket, not the prefix.* A bucket cannot hold another
+  tenant's object, so the boundary does not rest on a parse of every key.
+- *A tenant owns a bucket per data class.* Inputs and outputs differ in
+  retention and in who touches them. Reports do not: their identity is a key
+  prefix, because a bucket is an administrative unit and a report is not.
+- *Access is an object capability,* minted per caller and naming the exact
+  buckets and key prefixes. A step service presents its run token; a worker
+  node presents a capability for one assignment.
+- *Storage derives the tenant from the bucket,* never from a request field.
+
+* Out of scope
+
+- The grid's routing key and its dedicated pools, and the dispatcher's fair
+  share across tenants: [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report
+  execution at scale]] owns them. This story owns what a caller may reach,
+  not where the work is sent.
+- The engine's own sandboxing, beyond the node holding one assignment at a
+  time and removing a job's directory when the job ends.

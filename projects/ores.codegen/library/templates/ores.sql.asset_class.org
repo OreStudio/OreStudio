@@ -35,7 +35,9 @@ by an entity. The generated script replaces the hand-written
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:79ffcd83-0b9d-46da-ab39-bd0648432e52][ores.sql.asset_class.codes_populate]] | The refdata product taxonomy seed. Output =projects/ores.sql/populate/refdata/refdata_asset_class_codes_populate.sql=. |
+| [[id:79ffcd83-0b9d-46da-ab39-bd0648432e52][ores.sql.asset_class.codes_populate]] | The refdata product taxonomy seed, generated from the asset-class catalogue. |
+| [[id:10d22d7a-7dec-4d8d-b383-6d6d9ff55d27][ores.sql.asset_class.dq_artefact_populate]] | The asset-class DQ rows in the staging tables a tenant is published from, generated from the catalogue. |
+| [[id:5bc36895-c547-4a75-b9b9-56a378b86cd3][ores.sql.asset_class.dq_system_populate]] | The asset-class badge definitions, code domain and mappings for the system tenant, generated from the catalogue. |
 
 * See also
 

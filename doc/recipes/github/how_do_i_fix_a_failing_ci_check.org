@@ -1,72 +1,92 @@
 :PROPERTIES:
 :ID: 62D39F43-5D91-4A82-B1C3-62C2AF21BEFC
 :END:
-#+title: How do I fix a failing CI check?
-#+description: Identify the failing check via gh, read the run log, apply the fix as a new commit, and push.
+#+title: How do I fix a failing local check?
+#+description: Read build/output/local_checks/report.md, re-run the one failing check with compass check --only, read its log, fix, and re-run the whole gate.
 #+type: recipe
 #+level: cross
-#+filetags: :github:pr:ci:gh:recipe:
+#+filetags: :github:pr:ci:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-05
+#+updated: 2026-10-06
 
 This is one branch of the [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][PR monitoring loop]]. The other branch is
 [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]].
 
 * Question
 
-A check on my PR has gone red. How do I find what failed, fix it,
-and push the fix?
+A check failed. How do I find what it was, fix it, and prove the fix?
 
 * Answer
 
-1. /Identify the failing check/. =compass pr checks= shows the overall
-   status; =gh run list= drills into the runs for the branch:
+1. /Read the report/. =compass check= writes
+   =build/output/local_checks/report.md=. Its *Fix these first* section
+   names each failing check, the command that reproduces it, the command
+   that fixes it, and the tail of the check's own log:
 
    #+begin_src sh :results verbatim
-   ./compass.sh pr checks
-   gh run list --branch "$(git branch --show-current)"
+   ./compass.sh check
+   sed -n '/## Fix these first/,/## Every check/p' build/output/local_checks/report.md
    #+end_src
 
-2. /Read the failure log/. The =--log-failed= flag prints only the
-   failing step's output:
+2. /Re-run just the failing check/. Every check has an id, printed in the
+   report's *Every check* table:
 
    #+begin_src sh :results verbatim
+   ./compass.sh check --only component-drift
+   #+end_src
+
+3. /Read the full log/ when the tail is not enough. Each check writes one
+   file, named after its id:
+
+   #+begin_src sh :results verbatim
+   less build/output/local_checks/logs/component-drift.log
+   #+end_src
+
+4. /Diagnose by category/:
+
+   - /Drift/ (=component-drift=, =model-drift=, =tangle-*=) → regenerate
+     the artefacts the check names, then commit them.
+   - /Compilation/ → fix the source file.
+   - /Test failure/ → fix or update the failing test, then run
+     =./compass.sh test run -R <name>= for a single suite.
+   - /Formatting/ → =clang-format -i= on the files the report names.
+   - /Documentation/ → fix the page or the link; =site-page= names the page.
+   - /Cross-platform/ (=enum-attributes=, =exported-types=) → the defect is
+     one only MSVC reports; fix the header, no Windows build needed.
+
+5. /Re-run the whole gate/ and confirm it is green:
+
+   #+begin_src sh :results verbatim
+   ./compass.sh check
+   #+end_src
+
+6. /If the failure is on main instead/. The twelve retired pull-request
+   workflows kept their =push= to =main= trigger, so a defect that escaped
+   the runner shows there. Find the run and read the failing step:
+
+   #+begin_src sh :results verbatim
+   gh run list --branch main
    gh run view <run-id> --log-failed
    #+end_src
 
-3. /Diagnose by category/:
-
-   - /Compilation error/ → fix the source file.
-   - /Test failure/ → fix or update the failing test.
-   - /Linting / formatting/ → apply the required formatting.
-   - /Schema or doc validation/ → run the local validator
-     ([[proj:projects/ores.codegen/validate_docs.sh][=projects/ores.codegen/validate_docs.sh=]]) and fix what it flags.
-
-4. /Apply the fix as a new commit/:
-
-   #+begin_src sh :results verbatim
-   git add <modified-files>
-   git commit -m "[component] Fix CI failure: <brief description>"
-   git push
-   #+end_src
-
-   *Never amend* — preserves review history.
-
-5. /Wait for the rerun/. CI re-triggers on push; return to [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][monitor
-   until green]].
+   The fix is the same, and the local check then reproduces it:
+   =./compass.sh check --only <id>=.
 
 * Script
 
-Bare =gh= CLI plus the language-specific local validators that
-mirror what CI runs.
+=compass check= and the report it writes. The GitHub fallback is the bare
+=gh= CLI.
 
 * Tested by
 
-Manual. Validators that ship with the repo are exercised in CI;
-running them locally is the fastest way to reproduce.
+The runner's own suite, =projects/ores.codegen/tests/test_local_checks.py=,
+pins the decision tree: a documentation change must not reach the compiler,
+a header change must, and a path nobody classified must ask for everything.
 
 * See also
 
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — the decision tree and the check catalogue.
+- [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]] — the skill that runs the gate before raising.
 - [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the surrounding loop.
 - [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] — sibling branch.
 - =PR Shepherd=.

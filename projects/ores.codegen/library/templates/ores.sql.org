@@ -41,9 +41,11 @@ do not edit by hand.
 
 | Facet | Archetypes | Description |
 |-------+------------+-------------|
+| [[id:68b2099c-905e-496c-a1c7-94f12bca60ba][ores.sql.asset_class]] | 3 | Asset-class catalogue SQL: the refdata product taxonomy and the rows derived from it. |
 | [[id:80890D97-2BDA-4EF7-80F5-C96021A8E537][ores.sql.populate]] | 10 | Reference-data population scripts. |
 | [[id:E39C0E47-768F-4DE2-8436-08C4A8A06CFA][ores.sql.schema]] | 8 | Bi-temporal schema: table create/drop, insert triggers, notify triggers. |
-| [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]] | 4 | Service-registry SQL: service users, grants, accounts, roles. |
+| [[id:CD3FF923-9471-428F-BB9E-CB9BE1388A0C][ores.sql.service]] | 5 | Service-registry SQL: service users, grants, accounts, roles. |
+| [[id:a476651f-1e28-4606-9543-fa5ac8e64f1c][ores.sql.trade_type]] | 1 | Trade-type catalogue SQL: the trade types seed, generated from the catalogue. |
 
 * See also
 

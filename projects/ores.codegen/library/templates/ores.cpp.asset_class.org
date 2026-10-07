@@ -36,7 +36,7 @@ entity.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:6a6560d4-bfc2-4017-bba6-0ef26ba8dea5][ores.cpp.asset_class.authorities]] | The authority-to-class mapping and the identifier lookup. Output =projects/ores.marketdata/api/include/ores.marketdata.api/domain/asset_class_authorities.hpp=. |
+| [[id:6a6560d4-bfc2-4017-bba6-0ef26ba8dea5][ores.cpp.asset_class.authorities]] | The oresmd-authority-to-refdata-class mapping the classifier reads. |
 
 * See also
 

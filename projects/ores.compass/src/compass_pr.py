@@ -62,7 +62,18 @@ def _cmd_checks(args, project_root):
     try:
         # Stream straight through so --watch updates live; gh's exit
         # code (0 green, non-zero otherwise) is the gating signal.
-        return subprocess.run(cmd, cwd=str(project_root)).returncode
+        if args.watch:
+            return subprocess.run(cmd, cwd=str(project_root)).returncode
+        proc = subprocess.run(cmd, cwd=str(project_root),
+                              capture_output=True, text=True)
+        out = (proc.stdout or "") + (proc.stderr or "")
+        if out:
+            print(out, end="" if out.endswith("\n") else "\n")
+        # No workflow triggers on a pull request any more, so "no checks
+        # reported" is the green state rather than a pending one.
+        if proc.returncode != 0 and "no checks reported" in out:
+            return 0
+        return proc.returncode
     except FileNotFoundError:
         print("❌ gh CLI not found on PATH.", file=sys.stderr)
         return 127
@@ -416,7 +427,10 @@ def _cmd_merge(args, project_root):
     ci = subprocess.run(["gh", "pr", "checks", str(number)],
                         capture_output=True, text=True,
                         cwd=str(project_root))
-    if ci.returncode != 0:
+    ci_output = (ci.stdout or "") + (ci.stderr or "")
+    # No workflow triggers on a pull request any more, so a pull request with
+    # no checks at all is green rather than pending.
+    if ci.returncode != 0 and "no checks reported" not in ci_output:
         blocked.append(f"CI is not green — compass pr checks {number}")
     if task_id and task_result_empty:
         blocked.append(

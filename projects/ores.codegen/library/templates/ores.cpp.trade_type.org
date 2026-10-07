@@ -25,7 +25,7 @@ routing in hand-written conditions.
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:1ddf3fc1-a3f6-44d8-936e-b9a5efcae9d0][ores.cpp.trade_type.routing]] | The trade type to instrument table routing. Output =projects/ores.trading/api/include/ores.trading.api/domain/trade_type_routing.hpp=. |
+| [[id:1ddf3fc1-a3f6-44d8-936e-b9a5efcae9d0][ores.cpp.trade_type.routing]] | The routing from a trade type to the instrument table that holds it, generated from the trade-type catalogue. |
 
 * See also
 

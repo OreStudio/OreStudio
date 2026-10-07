@@ -19,9 +19,10 @@ Task/story bookkeeping happens *before* the PR is raised, not after
 review approves: the work is done as far as the developer is
 concerned by the time review starts, and review is a post-done
 validation activity. This ordering exists specifically so that once
-CI goes green after the final review round, merge is the only
-remaining action — no bookkeeping-only commit forces one more,
-otherwise-avoidable CI cycle.
+the final review round is approved, merge is the only remaining
+action — no bookkeeping-only commit forces another, otherwise-avoidable
+round. GitHub runs no check on a pull request, so the gate is the local
+=compass check= run in step 5.
 
 * Preconditions
 
@@ -63,16 +64,18 @@ In execution order:
 
 4. /Commit./ Use [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][ORE Studio commit conventions]]: =[component] Imperative summary= with a =Co-Authored-By:= trailer. One logical change per commit. Never amend commits on a branch under review.
 
-5. /Build and test locally./ Same preset the CI would use:
+5. /Run the local check gate./ One command classifies the change and runs
+   the checks it needs — the build, the database and the suites included
+   when the change reaches compiled code:
 
    #+begin_src sh :results verbatim
-   cmake --build --preset <preset>
-   ctest --preset <preset>
+   ./compass.sh check
    #+end_src
 
-   Do not proceed until both are clean — this is the only full
-   build/test verification the change gets before review, since CI no
-   longer runs one.
+   Do not proceed until it is green. This is the only gate the change
+   gets: GitHub runs no check on a pull request. The report at
+   =build/output/local_checks/report.md= names every failure and its fix;
+   see [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]].
 
 5a. /Run the local code review./ The automatic GitHub review
    (=claude-code-review.yml=) is retired; the local review is the
@@ -111,7 +114,10 @@ In execution order:
    step-5 build/test result as an explicit =--change= bullet so it's
    visible in the PR description.
 
-8. /Monitor CI./ Wait for checks to pass. If a check fails, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]].
+8. /Watch for review comments./ No check runs on the pull request, so
+   there is nothing to wait for on the check side. If a check fails on the
+   main push after the merge, follow [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing local check?]]
+   — the same check reproduces locally.
 
 9. /Handle review./ When review comments arrive, follow [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]]:
    - Sync with =main= first (rebase).
@@ -125,20 +131,19 @@ In execution order:
 
    Repeat step 9 for each review round until the PR is approved.
 
-10. /Merge — immediately once CI is green post-approval./ Nothing
-    should be pushed between the last green CI run and the merge:
+10. /Merge once the review is approved./ Nothing should be pushed
+    between the last green =compass check= run and the merge:
     task/story bookkeeping already rode in with step 6, and review-
     round bookkeeping already rode in with each round's fixes (step
-    9). The only things that legitimately delay a merge after green
-    CI are a real merge conflict with =main= (rebase and let CI run
-    once more) or a genuinely new review round.
+    9). The only things that legitimately delay a merge are a real
+    merge conflict with =main= (rebase, re-run =compass check=, then
+    merge) or a genuinely new review round.
 
     #+begin_src sh :results verbatim
     ./projects/ores.compass/compass.sh pr merge
     #+end_src
 
-    The guards refuse while threads are unresolved or CI is not
-    green; merge never touches task state (a STARTED task is a hard
+    The guards refuse while threads are unresolved; merge never touches task state (a STARTED task is a hard
     stop, not a warning — see [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][compass-pr-merge]]), retries GitHub's transient
     base-branch-modified race, and deletes the remote branch. See
     [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
@@ -147,8 +152,8 @@ In execution order:
 
 - Task is =DONE= with =* Result= filled, and the close-out commit rode
   in with the *first* push of the PR, not a late one.
-- PR is merged into =main= with no commits after the last green CI
-  run other than genuine review-round fixes or a rebase.
+- PR is merged into =main= with no commits after the last green
+  =compass check= run other than genuine review-round fixes or a rebase.
 - Review rounds are recorded in the task's =* Review= table, each
   entry committed together with that round's fixes.
 - Parent story reflects any decisions from the task's =* Plan=.
@@ -157,7 +162,8 @@ In execution order:
 * See also
 
 - [[id:DA003A23-1604-43E7-A98F-A305148FBCF4][How do I start work on a story?]] — branch creation and STARTED transition.
-- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the CI waiting loop.
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — the decision tree and the check catalogue the step-5 gate uses.
+- [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] — the review waiting loop, now that no check runs on a pull request.
 - [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]] — close it out.
 - [[id:4F01E2FF-69AB-4839-88D1-4D8C21D99D3C][Start work on a new story]] — the preceding runbook for the story-scaffold phase.
 - [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbook glossary entry]] — what a runbook is and how to create one.

@@ -8,7 +8,7 @@
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
 #+branch: feature/clear-the-local-check-failures
-#+pr:
+#+pr: 2749
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2749][#2749]] | [shell] Clear the shell recipe drift and the DSH plugin versions |
 
 * Review
 

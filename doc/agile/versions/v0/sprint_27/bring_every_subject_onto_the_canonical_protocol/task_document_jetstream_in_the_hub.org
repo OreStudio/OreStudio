@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: feature/document-jetstream-in-the-nats-hub
-#+pr:
+#+pr: 2764
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2764][#2764]] | [nats] Document JetStream in the hub |
 
 * Review
 

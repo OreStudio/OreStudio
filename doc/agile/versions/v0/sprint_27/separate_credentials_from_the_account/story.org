@@ -43,19 +43,47 @@ A profile write can never change a credential, and the history says which of the
 
 * Decisions
 
-- *The credential entity is internal.* It renders the SQL schema, the domain
-  type, the generator and the repository, and nothing else. Every wire facet
-  is withdrawn in its * Physical space table, so "no credential column
-  travels on the wire" is structural: there is no wire surface to carry one.
-  =:no_wire:= on each secret column is kept anyway, so a later facet that
-  turns a wire surface back on still cannot serialise one.
-- *There is no credential read code.* No caller reads a credential; a caller
-  proves one it already holds. The paths that touch credential material are
-  the unauthenticated service and password login, and the session-owned
-  change-password, so the only code the resource has is the write. That is
-  the one gating =iam.v1.accounts.reset-password=, and it is deliberately
-  separate from =iam::accounts:reset_password=: a role that may edit a
-  profile cannot thereby change what an account signs in with.
+- *The credential entity is projected across the whole stack*, exactly as the
+  account is. The first cut withdrew every wire facet and left only the SQL
+  schema, the domain type, the generator and the repository. That was wrong.
+  "No credential column travels on the wire" is what =:no_wire:= is for: it
+  keeps the member in C++ and skips it when the struct is serialised, so the
+  entity can be projected like any other and still carry nothing. Removing
+  the surface sidestepped the mechanism rather than using it. See the task's
+  * Not done, and why.
+- *The credential's generated half is reads-only, and that is the
+  specification's answer, not ours.* =:read_only: true=, because the resource
+  has no write record: the spec says a write carries "the fields the user owns,
+  and no others", and that a server-owned field never appears in one, so "a
+  read-only resource simply declares no write verb". A generated update would
+  also deserialise a record whose =:no_wire:= secrets were skipped and replace
+  the row whole, which is the blanking bug this story exists to kill.
+- *The messages are addressed where the specification says.* Reads are common
+  entity operations on the resource's own grammar, =iam.v1.account_credentials.*=
+  with a verb from the closed set of eight. The writes are not common entity
+  operations, so they go in the reserved domain-operation namespace,
+  =iam.v1.ops.*=, whose discriminator the spec states outright: "an operation
+  that acts on an entity the common way belongs in the common set, and an
+  operation that merely has an unusual name does not qualify as a domain
+  operation." A password write fails both tests. This is why
+  =iam.v1.accounts.change-password= moves, and it settles the question without
+  a per-entity judgement.
+- *The resource carries both codes.* =iam::account_credentials:read= is what
+  the generated reads check, so an administrator may ask which accounts hold
+  a credential and when it changed, and may not see one.
+  =iam::account_credentials:write= gates the administrative password reset,
+  deliberately separate from =iam::accounts:reset_password=: a role that may
+  edit a profile cannot thereby change what an account signs in with.
+- *Writes stay hand-written.* A credential write is a service method over
+  =account_credential_repository::write=, declared in =ores.iam.operations.org=
+  so its messages generate from the model the way the specification's P04
+  requires. Change-password and reset-password are built; TOTP enrolment,
+  verification and disable are not.
+- *A secret that must cross the wire travels on a purpose-built message.*
+  TOTP enrolment hands the person a secret to scan, and =:no_wire:= skips the
+  member in both directions, so it cannot be a field of the credential
+  record. It is its own operation field, as =password= is on
+  =save_account_request=.
 - *=password_salt= is gone.* The stored hash embeds its own salt, nothing
   read the column, and every writer wrote it empty. It is not carried into
   the new entity.
@@ -72,3 +100,7 @@ A profile write can never change a credential, and the history says which of the
 
 - =account_type= and =account_status=. They are not secrets, they round-trip
   through the generated domain type, and moving them is a separate story.
+
+* See also
+
+- [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] — the census of every subject in the tree against the same specification, and the gate that will hold it. This story takes the IAM subjects it has to move anyway; the rest of the component is that story's.

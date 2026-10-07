@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 0072F772-F879-4DDB-8944-96433843CE17
+:END:
+#+title: The wrapper consumes one tenant's work
+#+description: A wrapper subscribes to the system tenant's assignment subject, while the dispatcher routes each workunit to its own tenant's subject. Every other tenant's work is dispatched and never picked up.
+#+type: capture
+#+level: cross
+#+filetags: :compute:telemetry:dispatch:defect:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A wrapper subscribes to exactly one assignment subject, and the launcher
+bakes the system tenant into it:
+=compute.v1.work.assignments.ffffffff-ffff-ffff-ffff-ffffffffffff.{platform}=.
+The dispatcher routes each workunit to the subject of the tenant that owns
+it — =workunit_dispatcher.cpp= publishes to
+=assignments.{tenant_ctx.tenant_id()}.{platform_code}=. A workunit owned by
+any other tenant is therefore dispatched to a subject no wrapper listens
+on, and no result is ever produced for it.
+
+Measured on the live fleet on 2026-10-07: one workunit and two batches sit
+under tenant =1365492c-4583-403d-bc4b-46433980a79f=, while the five
+registered hosts sit under the system tenant. The wrapper consumes the
+system tenant's stream alone.
+
+* Why
+
+Silent and wrong: the work is accepted, stored and dispatched, and nothing
+reports that it was never picked up. The grid's own counters exposed the
+gap — the poller's summary read =0= workunits while the installation held
+one — which is how this was found.
+
+The fix is a design decision, not a one-line change, and it has two
+candidates. A wrapper could consume every tenant's assignment subject, which
+matches the grid's ownership: one set of hosts runs every tenant's work. Or
+the dispatcher could route to the single tenant the launcher already names,
+which matches the fleet as deployed. The chosen one belongs on the compute
+grid design page, because it settles what a wrapper is: an installation
+actor or a per-tenant one.
+
+* References
+
+- =projects/ores.compute/service/src/app/workunit_dispatcher.cpp= — =tenant_uuid=, the subject an assignment is published to
+- =projects/ores.compute/wrapper/src/app/application.cpp= — =work_subject=, the single subject a wrapper consumes
+- =projects/ores.compass/src/systemd_generate.py= — =SYSTEM_TENANT_UUID=, baked into every wrapper unit's =--tenant-id=
+- =projects/ores.sql/create/compute/compute_grid_stats_fn_create.sql= — the installation's summary, which reported the gap
+
+* See also
+
+- [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]] — the read fix that exposed this
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen that shows the work
+- [[id:7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A][Compute Grid Telemetry Design]] — where the routing decision belongs

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: E7035C69-EB6E-4158-B384-825A8CDACA8A
+:END:
+#+title: The grid has no usage history
+#+description: The grid read answers with the newest stored sample alone, so no screen can show the grid's usage over time. The poller keeps writing samples that no read returns and the operations story states the gap rather than building the charts.
+#+type: capture
+#+level: cross
+#+filetags: :compute:telemetry:web:ux:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The grid read answers with the newest stored grid sample alone. The poller
+writes a sample every interval, and no read returns more than the last one,
+so no screen can show the grid's usage over time: a batch's progress, a
+node's busy periods, or a trend in outcomes.
+
+The operations group states this on the screen rather than building it. Its
+grid journey records the gap as "No history", and the story puts the charts
+over the stored telemetry aggregates out of scope, leaving them with the
+capture Expose the telemetry stats surface.
+
+* Why
+
+An operator watching a batch wants to know whether the grid is speeding up
+or falling behind, and one sample cannot say. The data is already stored:
+grid samples are a TimescaleDB hypertable with a thirty-day retention, so a
+read over a time range is the whole of the missing piece, and the poller
+already writes more than anything reads.
+
+* References
+
+- =doc/knowledge/journeys/operations/journey_watch_the_compute_grid.org= — "What is missing", the no-history gap
+- =projects/ores.compute/modeling/ores.compute.grid_sample.org= — the hypertable and its retention
+- =projects/ores.compute/core/src/repository/compute_telemetry_repository.cpp= — =read_newest=, the only grid-sample read
+
+* See also
+
+- [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]] — the charts this depends on
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen that cannot show a trend

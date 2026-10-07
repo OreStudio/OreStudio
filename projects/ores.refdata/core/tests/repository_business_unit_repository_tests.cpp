@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/business_unit_json_io.hpp" // IWYU pragma: keep.
@@ -27,12 +28,17 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace {
 

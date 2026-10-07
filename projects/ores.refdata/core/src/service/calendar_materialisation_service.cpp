@@ -18,21 +18,36 @@
  *
  */
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
+#include "ores.analytics.quant/domain/calendar_rule.hpp"
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
+#include "ores.refdata.api/domain/calendar_date.hpp"
+#include "ores.refdata.api/domain/calendar_exception.hpp"
+#include "ores.refdata.api/domain/calendar_rule.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <array>
+#include <bits/chrono.h>
 #include <bitset>
+#include <chrono>
+#include <cstddef>
+#include <exception>
 #include <functional>
 #include <map>
+#include <optional>
 #include <set>
 #include <stdexcept>
+#include <string>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace ores::refdata::service {
 

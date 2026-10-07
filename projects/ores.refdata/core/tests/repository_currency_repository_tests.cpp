@@ -17,23 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <bits/chrono.h>
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <format>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 namespace {
 

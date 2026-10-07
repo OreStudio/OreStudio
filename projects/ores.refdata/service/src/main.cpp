@@ -22,11 +22,15 @@
 #include "ores.refdata.service/config/parser_exception.hpp"
 #include "ores.service/service/exit_codes.hpp"
 #include <boost/asio/awaitable.hpp>
-#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/impl/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
+#include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <openssl/crypto.h>
+#include <string>
+#include <vector>
 
 namespace {
 

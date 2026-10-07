@@ -18,15 +18,25 @@
  *
  */
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
+#include <cstdint>
+#include <exception>
 #include <format>
-#include <rfl/json.hpp>
+#include <rfl/json/read.hpp>
+#include <rfl/json/write.hpp>
 #include <string>
+#include <string_view>
+#include <utility>
 
 namespace ores::refdata::messaging {
 

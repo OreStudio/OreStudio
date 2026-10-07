@@ -19,11 +19,16 @@
  */
 #include "ores.refdata.core/service/calendar_adjustment_export_service.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
+#include "ores.refdata.api/domain/calendar_exception.hpp"
+#include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include <functional>
 #include <stdexcept>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace ores::refdata::service {
 

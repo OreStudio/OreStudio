@@ -45,7 +45,7 @@ this client's own state. The shell renders the =workspace= entity's unit.
 
 ** resolve_workspace_request
 :PROPERTIES:
-:subject:  workspace.v1.workspaces.resolve
+:subject:  workspace.v1.ops.resolve_workspace
 :response: resolve_workspace_response
 :END:
 
@@ -93,7 +93,7 @@ this client's own state. The shell renders the =workspace= entity's unit.
 
 ** set_trade_scope_request
 :PROPERTIES:
-:subject:  workspace.v1.trade-scope.set
+:subject:  workspace.v1.ops.set_trade_scope
 :response: set_trade_scope_response
 :END:
 
@@ -151,7 +151,7 @@ this client's own state. The shell renders the =workspace= entity's unit.
 
 ** clear_trade_scope_request
 :PROPERTIES:
-:subject:  workspace.v1.trade-scope.clear
+:subject:  workspace.v1.ops.clear_trade_scope
 :response: clear_trade_scope_response
 :END:
 

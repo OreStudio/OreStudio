@@ -221,7 +221,7 @@ struct publish_log_entry_item {
  * store. It carries no response, so the publisher does not wait for one.
  */
 struct publish_log_entries_request {
-    static constexpr std::string_view nats_subject = "telemetry.v1.logs.publish";
+    static constexpr std::string_view nats_subject = "telemetry.v1.ops.publish_log_entries";
     /**
      * @brief Whether the caller must have established a session first.
      *

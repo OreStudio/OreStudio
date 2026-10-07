@@ -57,11 +57,11 @@ not resumable across a reload — only the request is.
 
 1. *Open my access.* The member opens *My access*. The system reads the roles
    they hold, and beside them the roles the tenant offers that they do not hold.
-   The first list is =iam.v1.roles.by-account= and the second is
+   The first list is =iam.v1.ops.get_account_roles= and the second is
    =iam.v1.roles.list=.
 2. *Read what a role grants.* The member opens a role and reads the permissions
    it bundles, so the ask is an informed one. The read is
-   =iam.v1.roles.permissions=.
+   =iam.v1.ops.get_role_permissions=.
 3. *Ask for the role.* The member picks a role and writes why they need it. The
    system opens a request that names the requester, the role and the reason, and
    puts it in front of the tenant's administrators. This is the step that leaves
@@ -146,20 +146,20 @@ stay on the server.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open my access | Read the roles on my account | =iam.v1.roles.by-account= | exists |
+| Open my access | Read the roles on my account | =iam.v1.ops.get_account_roles= | exists |
 | Open my access | List the roles the tenant offers | =iam.v1.roles.list= | exists |
-| Read what a role grants | Read the permissions one role bundles | =iam.v1.roles.permissions= | exists |
+| Read what a role grants | Read the permissions one role bundles | =iam.v1.ops.get_role_permissions= | exists |
 | Ask for the role | Submit a request for a role | =iam.v1.roles.request= | missing |
 | Wait | Read my own requests and their answers | =iam.v1.roles.requests-by-me= | missing |
 | Wait | Withdraw my request | =iam.v1.roles.withdraw-request= | missing |
 | Read the queue | List the requests waiting in the tenant | =iam.v1.roles.requests= | missing |
 | Decide | Refuse a request, with a reason | =iam.v1.roles.refuse-request= | missing |
-| Decide | Grant the role the request asks for | =iam.v1.roles.assign= | exists |
-| Either end | Follow the request's state | =workflow.v1.instances.steps= | exists |
+| Decide | Grant the role the request asks for | =iam.v1.ops.assign_role= | exists |
+| Either end | Follow the request's state | =workflow.v1.ops.get_workflow_steps= | exists |
 
 The existing subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
-=iam.v1.roles.assign= checks =iam::roles:assign= before it writes, so the
+=iam.v1.ops.assign_role= checks =iam::roles:assign= before it writes, so the
 administrator's decision carries the check the member's ask must not. The three
 reads prove that the caller has a session and check no further permission —
 which is what the handlers in =ores.iam.core/messaging/role_handler.hpp= and
@@ -172,7 +172,7 @@ holding an administrator's read.
    =mine=, =by-account=, =permissions=, =suggest-commands= and
    the registrar's CRUD; nothing submits, lists, withdraws or refuses a request.
    The candidates are the five request subjects in the table above. The approval
-   itself needs no new write: =iam.v1.roles.assign= already grants the role and
+   itself needs no new write: =iam.v1.ops.assign_role= already grants the role and
    already checks =iam::roles:assign=.
 2. *The workflow engine cannot wait on a person.* The seeded =workflow_instance=
    states are =pending=, =in_progress=, =completed=, =failed=, =compensating=

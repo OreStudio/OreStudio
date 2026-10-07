@@ -31,7 +31,7 @@ scheduler -> record : record the firing as starting\n(the job, the point, the mo
 scheduler -> owner : publish the trigger\n(the subject the run's owner declares;\nthe firing's identity travels in it)
 activate owner
 owner -> domain : create the row the run acts on
-owner -> engine : publish the start message\n(workflow.v1.start; the run's identity\nis named here; no reply subject)
+owner -> engine : publish the start message\n(workflow.v1.ops.start_workflow; the run's identity\nis named here; no reply subject)
 owner --> scheduler : answer
 deactivate owner
 

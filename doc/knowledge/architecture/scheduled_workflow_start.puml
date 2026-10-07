@@ -19,7 +19,7 @@
 
 title The scheduled start: the message one firing publishes
 
-class "scheduled start\n(workflow.v1.start)" as scheduled_start <<message>> #E1F5FF {
+class "scheduled start\n(workflow.v1.ops.start_workflow)" as scheduled_start <<message>> #E1F5FF {
     {field} +workflow type : name
     {field} +tenant : tenant id
     {field} +request payload : text

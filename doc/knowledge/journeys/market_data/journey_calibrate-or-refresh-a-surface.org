@@ -131,13 +131,13 @@ rows have no entity to compose; see /What is missing/.
 | Find the surface | List the series that may be a surface | =marketdata.v1.market_series.list= | exists |
 | Choose the surface | Read one series | =marketdata.v1.market_series.get= | exists |
 | Read the market | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Read the slices | Read the curve/grid snapshot for an =oresmd_uri= | =marketdata.v1.curve-snapshot.get= | partial |
+| Read the slices | Read the curve/grid snapshot for an =oresmd_uri= | =marketdata.v1.curve_snapshot.get= | partial |
 | Confirm the parameterisation | Read the derivation config | =refdata.v1.ir_curve_bootstrap_configs.get= | partial |
 | Fit the quotes | Calibrate the surface | =marketdata.v1.surface.calibrate= | missing |
 | Read the calibration error | Read the fit error | =marketdata.v1.surface.calibration.get= | missing |
 | Read the slices | Read one smile | =marketdata.v1.surface-slice.get= | missing |
-| Refresh the surface | Re-read the observations over a range | =marketdata.v1.curve-snapshot.buckets= | partial |
-| Leave unpublished | Arrange the approval later | =inbox.v1.approval-requests.raise= | exists |
+| Refresh the surface | Re-read the observations over a range | =marketdata.v1.ops.get_curve_snapshot_buckets= | partial |
+| Leave unpublished | Arrange the approval later | =inbox.v1.ops.raise_approval= | exists |
 | Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
 
 The generic history read is the one with =entity_type=
@@ -171,7 +171,7 @@ surface publish needs and which group decides it does not exist yet.
    =marketdata.v1.surface.calibration.get= would have to be added to return
    the residual per quote and the error per slice. Until then the calibration
    error panel is empty and labelled.
-5. *There is no surface or slice read.* =marketdata.v1.curve-snapshot.get=
+5. *There is no surface or slice read.* =marketdata.v1.curve_snapshot.get=
    reconstructs curve or grid points at one instant and has no surface shape,
    and there is no slice subject. The candidate is a surface read, with a
    slice subject such as =marketdata.v1.surface-slice.get=, on top of the

@@ -39,7 +39,7 @@ struct party_summary {
 
 struct login_request {
     using response_type = struct login_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.login";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.login";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -116,7 +116,7 @@ struct login_response {
 
 struct logout_request {
     using response_type = struct logout_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.logout";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.logout";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -132,7 +132,7 @@ struct logout_response {
 };
 
 struct public_key_request {
-    static constexpr std::string_view nats_subject = "iam.v1.auth.public-key";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.public_key";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -150,7 +150,7 @@ struct public_key_request {
  */
 struct refresh_request {
     using response_type = struct refresh_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.refresh";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.refresh";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -190,7 +190,7 @@ struct refresh_response {
  */
 struct service_login_request {
     using response_type = struct service_login_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.service-login";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.service_login";
     /**
      * @brief Whether the caller must have established a session first.
      *

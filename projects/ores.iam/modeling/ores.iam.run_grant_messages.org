@@ -30,7 +30,7 @@ rules.
 
 ** create_run_grant_request
 :PROPERTIES:
-:subject: iam.v1.run_grants.create
+:subject: iam.v1.run_grants.put
 :response: create_run_grant_response
 :END:
 
@@ -142,7 +142,7 @@ rules.
 
 ** revoke_run_grant_request
 :PROPERTIES:
-:subject: iam.v1.run_grants.revoke
+:subject: iam.v1.ops.revoke_run_grant
 :response: revoke_run_grant_response
 :END:
 
@@ -194,7 +194,7 @@ rules.
 
 ** exchange_run_grant_request
 :PROPERTIES:
-:subject: iam.v1.run_grants.exchange
+:subject: iam.v1.ops.exchange_run_grant
 :response: exchange_run_grant_response
 :END:
 

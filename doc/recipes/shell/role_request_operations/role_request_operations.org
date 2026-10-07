@@ -26,7 +26,7 @@ The command is shaped like this:
 role_request_operations ask-for-roles <role_ids> <reason>
 #+end_example
 
-It is addressed at =iam.v1.role-requests.ask=.
+It is addressed at =iam.v1.ops.ask_for_roles=.
 
 #+name: role_request_operations-ask-for-roles
 #+begin_src ores-shell :tangle role_request_operations-ask-for-roles.ores :exports none

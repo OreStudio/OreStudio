@@ -27,7 +27,7 @@ protocol-relevant subset as JSON, so any target language can consume the
 entity's message shape without re-parsing C++.
 
 Scope: entity CRUD messages only (list/save/delete/history), which is what the
-meta-model defines. Hand-written protocols such as `iam.v1.auth.login` are not
+meta-model defines. Hand-written protocols such as `iam.v1.ops.login` are not
 entity-derived and are out of scope here; they need a reflection-based emitter
 that produces the same IR shape.
 

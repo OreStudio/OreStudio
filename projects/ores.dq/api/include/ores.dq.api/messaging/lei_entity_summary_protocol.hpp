@@ -58,7 +58,7 @@ struct lei_entity_summary {
  */
 struct get_lei_entities_summary_request {
     using response_type = struct get_lei_entities_summary_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei-entities.summary";
+    static constexpr std::string_view nats_subject = "dq.v1.ops.get_lei_entities_summary";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -139,7 +139,7 @@ struct lei_entity_match {
  */
 struct search_lei_entities_request {
     using response_type = struct search_lei_entities_response;
-    static constexpr std::string_view nats_subject = "dq.v1.lei-entities.search";
+    static constexpr std::string_view nats_subject = "dq.v1.ops.search_lei_entities";
     /**
      * @brief Whether the caller must have established a session first.
      *

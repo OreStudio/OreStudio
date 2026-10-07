@@ -24,7 +24,7 @@ later step may read, and the positional end of the instance. See
 ** The caller opens an instance with one start message
 
 The caller starts an instance by publishing =start_workflow_message= to
-=workflow.v1.start=. The message is fire-and-forget, and the fields it carries are
+=workflow.v1.ops.start_workflow=. The message is fire-and-forget, and the fields it carries are
 drawn below.
 
 #+caption: The start message and the fields that carry meaning: the workflow type, the tenant, the request payload, the correlation identifier and the optional instance identifier.
@@ -98,7 +98,7 @@ the actor stays on the step's record as its last modifier.
 
 ** The handler answers with a completion event
 
-The handler publishes =step_completed_event= to =workflow.v1.events.step-completed=,
+The handler publishes =step_completed_event= to =workflow.v1.ops.step_completed=,
 and the step identifier it carries echoes the one on the command. The three headers
 on the command tell it which run it serves and which step it answers for.
 

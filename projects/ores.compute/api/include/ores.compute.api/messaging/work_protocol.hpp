@@ -38,7 +38,7 @@ namespace ores::compute::messaging {
  */
 struct pull_work_request {
     using response_type = struct pull_work_response;
-    static constexpr std::string_view nats_subject = "compute.v1.work.pull";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.pull_work";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -99,7 +99,7 @@ struct pull_work_response {
  * could not run.
  */
 struct work_assignment_event {
-    static constexpr std::string_view nats_subject = "compute.v1.work.assignments";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.work_assignment";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -148,7 +148,7 @@ struct work_assignment_event {
  * with the service context, and registers the host on its first heartbeat.
  */
 struct heartbeat_message {
-    static constexpr std::string_view nats_subject = "compute.v1.work.heartbeat";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.heartbeat";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -168,7 +168,7 @@ struct heartbeat_message {
  * It carries no fields, because the stale threshold is the service's own.
  */
 struct reap_work_message {
-    static constexpr std::string_view nats_subject = "compute.v1.work.reap";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.reap_work";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -188,7 +188,7 @@ struct reap_work_message {
  */
 struct submit_result_request {
     using response_type = struct submit_result_response;
-    static constexpr std::string_view nats_subject = "compute.v1.results.submit";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.submit_result";
     /**
      * @brief Whether the caller must have established a session first.
      *

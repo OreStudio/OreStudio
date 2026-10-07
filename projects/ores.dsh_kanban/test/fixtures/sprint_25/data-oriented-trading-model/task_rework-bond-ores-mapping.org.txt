@@ -39,7 +39,7 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 - Flattening stops: the call schedule, the conversion terms, the full exercise date list, the funding leg with its schedule and the repo leg with its rate and dates map to their table destinations. The coupon frequency corruption in forward_bond_repo and the hardcoded TRS values disappear, with tests that assert it.
 - Product coverage spans the ten bond codes per the deliverable's coverage findings, with a recorded decision for any product the import path does not cover.
 - A document survives the round trip at the new shape for every covered product: the golden and mapper roundtrip suites pass, and the ores.cli XML roundtrip (exporter::roundtrip) roundtrips the portfolio XML through the mapper with trades_mapped counting the coverage.
-- The DB-bound import path stays the workflow.v1.ore.import service with its existing drivers; no new import or export verb surface is added anywhere.
+- The DB-bound import path stays the workflow.v1.ops.ore_import service with its existing drivers; no new import or export verb surface is added anywhere.
 
 * Plan
 
@@ -152,7 +152,7 @@ Each wave ends green and is a commit.
 ** Boundaries
 
 No new verb surface. The DB-bound import path stays
-=workflow.v1.ore.import= with its existing drivers, and the resolver
+=workflow.v1.ops.ore_import= with its existing drivers, and the resolver
 seam is internal to the mapper. The container's full rework (one view
 per product, the wire protocol, the qt form) belongs to unit 3, which
 the parent plan sequences over the container grammar work. This task
@@ -792,7 +792,7 @@ Acceptance, item by item.
   plan assigns to the parent story's shared tables. The domain path
   (=save_data(load_data(document))=) does round trip at zero loss over
   the 132 documents, per wave 2.4.
-- *The DB-bound import path stays the workflow.v1.ore.import service
+- *The DB-bound import path stays the workflow.v1.ops.ore_import service
   with its existing drivers; no new import or export verb surface is
   added anywhere.* Met. No verb, service or driver changed in this
   task.

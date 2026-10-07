@@ -344,7 +344,7 @@ public:
      * @brief Sets a new password without proving the current one.
      *
      * The administrator reset path, reached only through
-     * iam.v1.accounts.reset-password, whose handler checks
+     * iam.v1.ops.reset_password, whose handler checks
      * iam::accounts:reset_password first. Validates password strength, hashes
      * the new password, updates the account, and clears the
      * password_reset_required flag.

@@ -139,8 +139,8 @@ export interface DeleteRunDocumentResponse {
 }
 
 export const subjects = {
-    save_run_document_request: 'reporting.v1.run_documents.save',
-    bind_configuration_request: 'reporting.v1.run_documents.bind',
+    save_run_document_request: 'reporting.v1.run_documents.put',
+    bind_configuration_request: 'reporting.v1.ops.bind_configuration',
     get_run_document_request: 'reporting.v1.run_documents.get',
     delete_run_document_request: 'reporting.v1.run_documents.delete',
 } as const;

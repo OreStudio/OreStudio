@@ -253,7 +253,7 @@ Every service (~iam~, ~refdata~, ~compute~, …) starts as its dedicated DB
 user and:
 
 1. Connects to NATS.
-2. Logs in to IAM at ~ores.<env>.<inst>.iam.v1.auth.service-login~ using its
+2. Logs in to IAM at ~ores.<env>.<inst>.iam.v1.ops.service_login~ using its
    service-account credentials, receiving a JWT.
 3. Caches the JWT, attaches it as ~Authorization: Bearer ...~ on every
    outbound request, and renews on expiry.
@@ -265,7 +265,7 @@ with the same private key it uses to verify others.
 *** Phase 3 — Initial admin (bootstrap mode only)
 
 While ~system.bootstrap_mode = true~, IAM exposes
-~ores.<env>.<inst>.iam.v1.bootstrap.create-admin~ which:
+~ores.<env>.<inst>.iam.v1.ops.create_initial_admin~ which:
 
 1. Hashes the password in C++ (scrypt).
 2. Calls SQL function ~ores_iam_create_initial_admin_fn(...)~ as

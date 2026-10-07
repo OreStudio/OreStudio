@@ -158,7 +158,7 @@ runtime does not deduplicate, and it does not claim to.
 ** The bootstrap gate
 
 The installation is in bootstrap mode while =system.bootstrap_mode= is
-set. The BFF reads it through =iam.v1.bootstrap.status=, and while it is
+set. The BFF reads it through =iam.v1.ops.bootstrap_status=, and while it is
 set:
 
 - the only page is */setup*, which runs the first run journey;

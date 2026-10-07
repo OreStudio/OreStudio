@@ -38,8 +38,8 @@ salt
     Terminate | All data is kept. The tenant can no longer be used. | SQL only
     Deprovision | Every session ends. All tenant data is hidden. | SQL only
     Purge | Every row is deleted, the tenant included. Cannot be undone. | SQL only
-    Reset tenant | The tenant returns to bootstrapping. | iam.v1.system.reset-tenant
-    Reset system | Every non-system tenant is purged. Cannot be undone. | iam.v1.system.reset
+    Reset tenant | The tenant returns to bootstrapping. | iam.v1.ops.reset_tenant
+    Reset system | Every non-system tenant is purged. Cannot be undone. | iam.v1.ops.reset_system
   }
   --
   <b>CONFIRMATION - ACME BANK (acme)</b>

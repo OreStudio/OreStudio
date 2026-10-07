@@ -72,7 +72,7 @@ beside the entity they annotate.
 
 ** get_active_sessions_request
 :PROPERTIES:
-:subject: iam.v1.sessions.active
+:subject: iam.v1.ops.get_active_sessions
 :response: get_active_sessions_response
 :http_route: true
 :END:

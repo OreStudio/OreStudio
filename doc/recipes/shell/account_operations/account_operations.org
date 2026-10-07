@@ -26,7 +26,7 @@ The command is shaped like this:
 account_operations save-account <principal> <password> <email> <account_type>
 #+end_example
 
-It is addressed at =iam.v1.accounts.save=.
+It is addressed at =iam.v1.accounts.put=.
 
 #+name: account_operations-save-account
 #+begin_src ores-shell :tangle account_operations-save-account.ores :exports none
@@ -47,7 +47,7 @@ The command is shaped like this:
 account_operations update-account <account_id> <email> <full_name> <default_party_id> <job_title> <reports_to_account_id> <image_id> <change_reason_code> <change_commentary>
 #+end_example
 
-It is addressed at =iam.v1.accounts.update=.
+It is addressed at =iam.v1.ops.update_account=.
 
 #+name: account_operations-update-account
 #+begin_src ores-shell :tangle account_operations-update-account.ores :exports none
@@ -89,7 +89,7 @@ The command is shaped like this:
 account_operations lock-account <account_ids>
 #+end_example
 
-It is addressed at =iam.v1.accounts.lock=.
+It is addressed at =iam.v1.ops.lock_account=.
 
 #+name: account_operations-lock-account
 #+begin_src ores-shell :tangle account_operations-lock-account.ores :exports none
@@ -110,7 +110,7 @@ The command is shaped like this:
 account_operations unlock-account <account_ids>
 #+end_example
 
-It is addressed at =iam.v1.accounts.unlock=.
+It is addressed at =iam.v1.ops.unlock_account=.
 
 #+name: account_operations-unlock-account
 #+begin_src ores-shell :tangle account_operations-unlock-account.ores :exports none
@@ -131,7 +131,7 @@ The command is shaped like this:
 account_operations reset-password <account_ids> <new_password>
 #+end_example
 
-It is addressed at =iam.v1.accounts.reset-password=.
+It is addressed at =iam.v1.ops.reset_password=.
 
 #+name: account_operations-reset-password
 #+begin_src ores-shell :tangle account_operations-reset-password.ores :exports none
@@ -152,7 +152,7 @@ The command is shaped like this:
 account_operations update-my-email <email>
 #+end_example
 
-It is addressed at =iam.v1.accounts.update-email=.
+It is addressed at =iam.v1.ops.update_my_email=.
 
 #+name: account_operations-update-my-email
 #+begin_src ores-shell :tangle account_operations-update-my-email.ores :exports none
@@ -173,7 +173,7 @@ The command is shaped like this:
 account_operations set-my-default-party <party_id>
 #+end_example
 
-It is addressed at =iam.v1.accounts.set-default-party=.
+It is addressed at =iam.v1.ops.set_my_default_party=.
 
 #+name: account_operations-set-my-default-party
 #+begin_src ores-shell :tangle account_operations-set-my-default-party.ores :exports none
@@ -194,7 +194,7 @@ The command is shaped like this:
 account_operations select-party <party_id>
 #+end_example
 
-It is addressed at =iam.v1.accounts.select-party=.
+It is addressed at =iam.v1.ops.select_party=.
 
 #+name: account_operations-select-party
 #+begin_src ores-shell :tangle account_operations-select-party.ores :exports none
@@ -215,7 +215,7 @@ The command is shaped like this:
 account_operations switch-party <party_id>
 #+end_example
 
-It is addressed at =iam.v1.accounts.switch-party=.
+It is addressed at =iam.v1.ops.switch_party=.
 
 #+name: account_operations-switch-party
 #+begin_src ores-shell :tangle account_operations-switch-party.ores :exports none
@@ -236,7 +236,7 @@ The command is shaped like this:
 account_operations change-password <current_password> <new_password>
 #+end_example
 
-It is addressed at =iam.v1.accounts.change-password=.
+It is addressed at =iam.v1.ops.change_password=.
 
 #+name: account_operations-change-password
 #+begin_src ores-shell :tangle account_operations-change-password.ores :exports none
@@ -257,7 +257,7 @@ The command is shaped like this:
 account_operations update-self-account <full_name> <job_title> <image_id> <email> <default_party_id> <reports_to_account_id> <change_reason_code> <change_commentary>
 #+end_example
 
-It is addressed at =iam.v1.accounts.update-self=.
+It is addressed at =iam.v1.ops.update_self_account=.
 
 #+name: account_operations-update-self-account
 #+begin_src ores-shell :tangle account_operations-update-self-account.ores :exports none
@@ -278,7 +278,7 @@ The command is shaped like this:
 account_operations update-self-account-contact-information <street_line_1> <street_line_2> <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <change_reason_code> <change_commentary>
 #+end_example
 
-It is addressed at =iam.v1.account_contact_informations.update-self=.
+It is addressed at =iam.v1.ops.update_self_account_contact_information=.
 
 #+name: account_operations-update-self-account-contact-information
 #+begin_src ores-shell :tangle account_operations-update-self-account-contact-information.ores :exports none
@@ -299,7 +299,7 @@ The command is shaped like this:
 account_operations get-my-account-contact-information
 #+end_example
 
-It is addressed at =iam.v1.account_contact_informations.mine=.
+It is addressed at =iam.v1.ops.get_my_account_contact_information=.
 
 #+name: account_operations-get-my-account-contact-information
 #+begin_src ores-shell :tangle account_operations-get-my-account-contact-information.ores :exports none
@@ -320,7 +320,7 @@ The command is shaped like this:
 account_operations attach-account-pictures
 #+end_example
 
-It is addressed at =iam.v1.accounts.attach-pictures=.
+It is addressed at =iam.v1.ops.attach_account_pictures=.
 
 #+name: account_operations-attach-account-pictures
 #+begin_src ores-shell :tangle account_operations-attach-account-pictures.ores :exports none

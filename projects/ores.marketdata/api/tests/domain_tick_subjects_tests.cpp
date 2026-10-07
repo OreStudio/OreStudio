@@ -34,7 +34,7 @@ TEST_CASE("a_producer_publishes_on_its_source_subject", tags) {
 
 TEST_CASE("a_consumer_reads_a_datum_under_its_lower_cased_ore_key", tags) {
     CHECK(ores::marketdata::domain::market_tick_subject("t", "p", "FX/RATE/EUR/USD") ==
-          "marketdata.v1.tick.t.p.fx.rate.eur.usd");
+          "marketdata.v1.ops.market_tick.t.p.fx.rate.eur.usd");
 }
 
 TEST_CASE("the_consumer_subject_starts_with_the_market_tick_subject", tags) {

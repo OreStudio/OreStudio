@@ -42,7 +42,7 @@ namespace ores::workflow::messaging {
  *
  * Handles:
  *  - workflow.v1.instances.list  — list workflow instances for the tenant
- *  - workflow.v1.instances.steps — list steps for a specific instance
+ *  - workflow.v1.ops.get_workflow_steps — list steps for a specific instance
  *
  * Both handlers validate the Bearer JWT, scope the database query to the
  * authenticated tenant via RLS, and return JSON responses.

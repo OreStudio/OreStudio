@@ -54,7 +54,7 @@ struct trigger_report_instance_response {
 
 struct schedule_report_definitions_request {
     using response_type = struct schedule_report_definitions_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.schedule";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.schedule_report_definitions";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -74,7 +74,8 @@ struct schedule_report_definitions_response {
 
 struct unschedule_report_definitions_request {
     using response_type = struct unschedule_report_definitions_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.unschedule";
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.unschedule_report_definitions";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -103,7 +104,7 @@ struct unschedule_report_definitions_response {
  */
 struct publish_report_definitions_from_dq_request {
     static constexpr std::string_view nats_subject =
-        "reporting.v1.report-definitions.publish-from-dq";
+        "reporting.v1.ops.publish_report_definitions_from_dq";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -115,7 +116,7 @@ struct publish_report_definitions_from_dq_request {
 
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.gather-trades";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_trades";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -138,7 +139,7 @@ struct gather_trades_result {
 
 struct gather_market_data_request {
     using response_type = struct gather_market_data_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.gather-market-data";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_market_data";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -161,7 +162,7 @@ struct gather_market_data_result {
 
 struct assemble_bundle_request {
     using response_type = struct assemble_bundle_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.assemble-bundle";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.assemble_bundle";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -187,7 +188,7 @@ struct assemble_bundle_result {
 
 struct prepare_ore_package_request {
     using response_type = struct prepare_ore_package_result;
-    static constexpr std::string_view nats_subject = "ore.v1.report.prepare-package";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.prepare_ore_package";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -214,7 +215,7 @@ struct prepare_ore_package_result {
 
 struct submit_compute_request {
     using response_type = struct submit_compute_result;
-    static constexpr std::string_view nats_subject = "compute.v1.report.submit";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.submit_compute";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -238,7 +239,7 @@ struct submit_compute_result {
 
 struct collect_compute_results_request {
     using response_type = struct collect_compute_results_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.collect-compute-results";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.collect_compute_results";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -259,7 +260,7 @@ struct collect_compute_results_result {
 
 struct finalise_report_request {
     using response_type = struct finalise_report_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.finalise";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.finalise_report";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -279,7 +280,7 @@ struct finalise_report_result {
 
 struct fail_report_request {
     using response_type = struct fail_report_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.fail";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.fail_report";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -312,7 +313,7 @@ struct report_execution_request {
 
 struct resolve_prepared_input_request {
     using response_type = struct prepare_ore_package_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.resolve-prepared-input";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.resolve_prepared_input";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -328,7 +329,7 @@ struct resolve_prepared_input_request {
 
 struct ignore_compute_results_request {
     using response_type = struct collect_compute_results_result;
-    static constexpr std::string_view nats_subject = "reporting.v1.report.ignore-compute-results";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.ignore_compute_results";
     /**
      * @brief Whether the caller must have established a session first.
      *

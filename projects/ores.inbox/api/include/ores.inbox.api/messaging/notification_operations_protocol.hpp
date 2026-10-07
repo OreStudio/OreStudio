@@ -79,7 +79,7 @@ struct inbox_notification {
  */
 struct raise_notification_request {
     using response_type = struct raise_notification_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.notifications.raise";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.raise_notification";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -116,7 +116,7 @@ struct raise_notification_response {
  */
 struct list_my_notifications_request {
     using response_type = struct list_my_notifications_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.notifications.mine";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.list_my_notifications";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -141,7 +141,7 @@ struct list_my_notifications_response {
  */
 struct count_unread_notifications_request {
     using response_type = struct count_unread_notifications_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.notifications.unread-count";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.count_unread_notifications";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -161,7 +161,7 @@ struct count_unread_notifications_response {
  */
 struct mark_notifications_read_request {
     using response_type = struct mark_notifications_read_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.notifications.mark-read";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.mark_notifications_read";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -186,7 +186,7 @@ struct mark_notifications_read_response {
  */
 struct clear_notifications_request {
     using response_type = struct clear_notifications_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.notifications.clear";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.clear_notifications";
     /**
      * @brief Whether the caller must have established a session first.
      *

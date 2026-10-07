@@ -84,7 +84,7 @@ std::string to_iso8601(std::chrono::system_clock::time_point tp) {
  * @brief Accumulates per-node execution metrics and publishes them to NATS
  *        at a fixed interval.
  *
- * Publishes node_sample_message to compute.v1.telemetry.node_samples every
+ * Publishes node_sample_message to compute.v1.ops.node_sample every
  * telemetry_interval_seconds. Cumulative counters (tasks_completed,
  * tasks_failed) increase monotonically; interval counters (tasks_since_last,
  * durations, bytes) are reset after each publish.
@@ -258,7 +258,7 @@ private:
 /**
  * @brief Sends heartbeat messages on a background thread while a job is running.
  *
- * Publishes to compute.v1.work.heartbeat every heartbeat_interval_seconds.
+ * Publishes to compute.v1.ops.heartbeat every heartbeat_interval_seconds.
  * Optionally notifies a node_stats_reporter each time a heartbeat is sent,
  * so the reporter can track seconds_since_hb accurately.
  * Stops when stop_ is set to true.
@@ -331,7 +331,7 @@ private:
 /**
  * @brief Submit a finished job back to the compute service.
  *
- * Sent over the trusted wrapper channel (compute.v1.results.submit), which
+ * Sent over the trusted wrapper channel (compute.v1.ops.submit_result), which
  * the service handles without a user session — wrapper nodes hold no JWT.
  * The generated save_result flow is gated on the request session and would
  * reject this call. The service-side handler stamps the audit fields and
@@ -673,11 +673,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     }
 
     // Idle heartbeat — compute-domain signal; tells the compute service this
-    // worker is alive even when no job is running (subject: compute.v1.work.heartbeat).
+    // worker is alive even when no job is running (subject: compute.v1.ops.heartbeat).
     heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
 
     // Node telemetry reporter — publishes per-node metrics to
-    // compute.v1.telemetry.node_samples at the configured interval.
+    // compute.v1.ops.node_sample at the configured interval.
     std::unique_ptr<node_stats_reporter> reporter;
     if (cfg.telemetry_interval_seconds > 0) {
         reporter = std::make_unique<node_stats_reporter>(
@@ -686,13 +686,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     node_stats_reporter* raw_reporter = reporter.get();
 
     // Subject routing is per-triplet: the compute orchestrator publishes each
-    // assignment on compute.v1.work.assignments.{tenant_id}.{platform_code}
+    // assignment on compute.v1.ops.work_assignment.{tenant_id}.{platform_code}
     // with the package URI already resolved for that platform. The deployment's
     // wrapper fleet is the shared pool, so it consumes every tenant's
     // assignments for its own platform; the tenant segment stays in the subject
     // as the routing key a tenant's own pool will filter on. --tenant-id is
     // this node's own identity for its host row and telemetry, not a filter on
-    // the work it takes.
+    // the work it takes. Wrappers subscribe only to their own triplet so they
+    // never see assignments they couldn't run.
+    std::string sanitised_tenant = cfg.tenant_id;
+    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
     const std::string my_triplet(ores::utility::version::platform_triplet());
     const std::string assignment_prefix(compute::messaging::work_assignment_event::nats_subject);
     const std::string work_subject = assignment_prefix + ".*." + my_triplet;
@@ -726,7 +729,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         },
         [&](boost::asio::io_context& ioc) {
             // Service-health heartbeat — standard subject used by the service
-            // dashboard (telemetry.v1.services.heartbeat).
+            // dashboard (telemetry.v1.ops.service_heartbeat).
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats, cfg.host_id);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);

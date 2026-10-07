@@ -102,11 +102,11 @@ and desks rather than people, and the account carries no business unit at all.
 |------+-----------+---------+--------|
 | Open the reporting view | Read the tenant roster and every account's manager | =iam.v1.accounts.list= | exists |
 | Read the shape | Read the party each person works in | =iam.v1.account_parties.list_by_account_id= | exists |
-| Set the manager | Set =reports_to_account_id= | =iam.v1.accounts.update= | partial |
+| Set the manager | Set =reports_to_account_id= | =iam.v1.ops.update_account= | partial |
 | Set the manager | Read the change reasons for the picker | =dq.v1.change_reasons.list= | exists |
-| Clear a line | Clear =reports_to_account_id= | =iam.v1.accounts.update= | partial |
+| Clear a line | Clear =reports_to_account_id= | =iam.v1.ops.update_account= | partial |
 
-=iam.v1.accounts.update= is the only writer of the field, and it is declared in
+=iam.v1.ops.update_account= is the only writer of the field, and it is declared in
 =ores.iam.account_messages.org=: =reports_to_account_id= must be empty or name
 another account in the same tenant. =partial= here means the operation exists
 but covers more than this step: it needs =iam::accounts:update=, and its body

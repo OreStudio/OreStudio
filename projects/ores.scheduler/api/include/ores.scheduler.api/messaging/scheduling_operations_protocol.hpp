@@ -41,7 +41,7 @@ namespace ores::scheduler::messaging {
  */
 struct get_job_instances_request {
     using response_type = struct get_job_instances_response;
-    static constexpr std::string_view nats_subject = "scheduler.v1.job-instances.list";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job_instances.list";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -120,7 +120,7 @@ struct get_job_instances_response {
  */
 struct get_scheduler_status_request {
     using response_type = struct get_scheduler_status_response;
-    static constexpr std::string_view nats_subject = "scheduler.v1.status";
+    static constexpr std::string_view nats_subject = "scheduler.v1.ops.get_scheduler_status";
     /**
      * @brief Whether the caller must have established a session first.
      *

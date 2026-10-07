@@ -155,7 +155,7 @@ struct workflow_step_summary {
 struct get_workflow_steps_request {
     using response_type = get_workflow_steps_response;
     static constexpr std::string_view nats_subject =
-        "workflow.v1.instances.steps";
+        "workflow.v1.ops.get_workflow_steps";
     std::string workflow_instance_id;
 };
 
@@ -643,7 +643,7 @@ Used in both =WorkflowMdiWindow= and =WorkflowInstanceDetailDialog=:
 
 * Phase 2 (Out of Scope for this Branch)
 
-- Retry action: =workflow.v1.instances.retry= NATS endpoint + =[RETRY]= button.
+- Retry action: =workflow.v1.ops.retry_workflow_instance= NATS endpoint + =[RETRY]= button.
 - Terminate action: =workflow.v1.instances.terminate= NATS endpoint + =[X]= button.
 - Throughput chart: QChart widget on the Dashboard tab.
 - Pagination: cursor-based or offset paging in =list_workflow_instances_request=.

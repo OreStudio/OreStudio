@@ -80,7 +80,7 @@ The journey holds a request as a waiting workflow instance, and the workflow
 engine cannot wait on a person. The prototype argues for a simpler shape: a
 request is its own IAM record, holding who asked, which role, why, its state,
 and who answered, when and why. It needs no engine change, and giving the role
-reuses =iam.v1.roles.assign=, so the grant carries the same audit tail as any
+reuses =iam.v1.ops.assign_role=, so the grant carries the same audit tail as any
 other. What it still lacks, as the journey records, is a notice to either
 person and a deadline after which an unanswered request closes.
 
@@ -99,8 +99,8 @@ grants and the reasons are mock.
 
 The server does not yet support everything drawn:
 
-- *A reason on giving and taking away.* =iam.v1.roles.assign= and
-  =iam.v1.roles.revoke= carry an account and a role only. The grant row has the
+- *A reason on giving and taking away.* =iam.v1.ops.assign_role= and
+  =iam.v1.ops.revoke_role= carry an account and a role only. The grant row has the
   columns; the requests need the reason and the commentary.
 - *A guard on taking away one's own administration, and on deleting a held
   role.* Neither exists on the server.

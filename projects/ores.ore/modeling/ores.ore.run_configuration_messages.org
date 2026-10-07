@@ -82,7 +82,7 @@ reaches them through its =import-run= and =export-run= verbs.
 
 ** import_run_configuration_request
 :PROPERTIES:
-:subject: ore.v1.run_configuration.import
+:subject: ore.v1.ops.import_run_configuration
 :response: import_run_configuration_response
 :END:
 
@@ -145,7 +145,7 @@ reaches them through its =import-run= and =export-run= verbs.
 
 ** run_configuration_import_execute_request
 :PROPERTIES:
-:subject: ore.v1.run_configuration.import.execute
+:subject: ore.v1.ops.run_configuration_import_execute
 :END:
 
 #+begin_src cpp :name comment
@@ -268,7 +268,7 @@ reaches them through its =import-run= and =export-run= verbs.
 
 ** run_configuration_import_rollback_request
 :PROPERTIES:
-:subject: ore.v1.run_configuration.import.rollback
+:subject: ore.v1.ops.run_configuration_import_rollback
 :END:
 
 #+begin_src cpp :name comment
@@ -320,7 +320,7 @@ reaches them through its =import-run= and =export-run= verbs.
 
 ** export_run_configuration_request
 :PROPERTIES:
-:subject: ore.v1.run_configuration.export
+:subject: ore.v1.ops.export_run_configuration
 :response: export_run_configuration_response
 :END:
 

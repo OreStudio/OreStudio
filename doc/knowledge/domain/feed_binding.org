@@ -49,7 +49,7 @@ A tick arrives on the producer subject. The loop looks the tick's =source=
 up in that cache, plans the tick against every binding the source has, and
 for each binding writes the observation under the binding's tenant and
 party and republishes the tick on
-=marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>=, where the key is the
+=marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<ore_key>=, where the key is the
 datum's canonical ORE key.
 
 A tick whose source has no enabled binding is dropped with the

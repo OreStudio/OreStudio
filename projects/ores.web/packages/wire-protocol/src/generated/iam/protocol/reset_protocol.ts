@@ -49,8 +49,8 @@ export interface ResetSystemResult {
 }
 
 export const subjects = {
-    reset_tenant_command: 'iam.v1.system.reset-tenant',
-    reset_system_command: 'iam.v1.system.reset',
+    reset_tenant_command: 'iam.v1.ops.reset_tenant',
+    reset_system_command: 'iam.v1.ops.reset_system',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

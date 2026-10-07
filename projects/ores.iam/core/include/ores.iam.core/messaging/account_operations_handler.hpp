@@ -705,7 +705,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.accounts.update-self.
+     * @brief Serves iam.v1.ops.update_self_account.
      *
      * The adapter decides nothing: it reads the account from the validated
      * token -- an account identifier is not among the request context's
@@ -743,7 +743,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.account_contact_informations.update-self.
+     * @brief Serves iam.v1.ops.update_self_account_contact_information.
      *
      * Served from this handler rather than the contact-information handler
      * because the contact handler is generated from the entity's CRUD
@@ -777,7 +777,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.account_contact_informations.mine.
+     * @brief Serves iam.v1.ops.get_my_account_contact_information.
      *
      * The account comes from the validated token, so the read can answer only
      * the caller's own record and needs no permission. It is a self read on

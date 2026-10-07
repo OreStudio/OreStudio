@@ -77,7 +77,7 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.bundles.publish= | Publish all datasets in a bundle |
+| =dq.v1.ops.publish_bundle= | Publish all datasets in a bundle |
 
 * Catalogs
 
@@ -215,7 +215,7 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.datasets.put_many= | Create or update several datasets |
 | =dq.v1.datasets.delete= | Delete one or more datasets |
 | =dq.v1.datasets.delete_many= | Delete several datasets by key |
-| =dq.v1.datasets.publish= | Publish one or more datasets |
+| =dq.v1.ops.publish_datasets= | Publish one or more datasets |
 | =dq.v1.datasets_versions.list= | Retrieve version history for a dataset |
 | =dq.v1.datasets_versions.get= | Retrieve one version of a dataset |
 
@@ -260,7 +260,7 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 | =dq.v1.lei_entities.list= | Retrieve all LEI entities |
 | =dq.v1.lei_entities.get= | Retrieve one LEI entity |
 | =dq.v1.lei_entities.get_many= | Retrieve several LEI entities by key |
-| =dq.v1.lei-entities.summary= | Retrieve the LEI entity summary projection |
+| =dq.v1.ops.get_lei_entities_summary= | Retrieve the LEI entity summary projection |
 
 * LEI Relationships
 
@@ -339,7 +339,7 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.report-definition-templates.list= | Retrieve all report definition templates |
+| =dq.v1.report_definition_templates.list= | Retrieve all report definition templates |
 
 * Report Definitions
 

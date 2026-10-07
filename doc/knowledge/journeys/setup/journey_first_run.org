@@ -156,38 +156,38 @@ read returns a hash.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Welcome | Read whether the system is in bootstrap mode | =iam.v1.bootstrap.status= | exists |
-| Create the administrator | Create the system administrator | =iam.v1.bootstrap.create-admin= | exists |
+| Welcome | Read whether the system is in bootstrap mode | =iam.v1.ops.bootstrap_status= | exists |
+| Create the administrator | Create the system administrator | =iam.v1.ops.create_initial_admin= | exists |
 | Choose a starting point | List the seed profiles, their steps and their parameters | =iam.v1.seed_profiles.list= | exists |
-| Describe the tenant | Provision a tenant from a seed profile, the first tenant included | =iam.v1.tenants.provision= | exists |
-| Provisioning | Follow the workflow instance's progress | =workflow.v1.instances.steps= | exists |
-| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
-| Hand off | Sign out | =iam.v1.auth.logout= | exists |
-| Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
+| Describe the tenant | Provision a tenant from a seed profile, the first tenant included | =iam.v1.ops.provision_tenant= | exists |
+| Provisioning | Follow the workflow instance's progress | =workflow.v1.ops.get_workflow_steps= | exists |
+| Provisioning | Retry from the failed step | =workflow.v1.ops.retry_workflow_instance= | exists |
+| Hand off | Sign out | =iam.v1.ops.logout= | exists |
+| Hand off | Sign in as the tenant administrator | =iam.v1.ops.login= | exists |
 | Hand off | Re-ask the deployment when the administrator was created | none | exists |
-| First sign-in | Set a new password | =iam.v1.accounts.change-password= | exists |
-| First sign-in | Choose the party to start in | =iam.v1.accounts.select-party= | exists |
-| Registration | Read the policy the door reports: the switch and the defaults | =iam.v1.auth.registration-policy= | exists |
+| First sign-in | Set a new password | =iam.v1.ops.change_password= | exists |
+| First sign-in | Choose the party to start in | =iam.v1.ops.select_party= | exists |
+| Registration | Read the policy the door reports: the switch and the defaults | =iam.v1.ops.registration_policy= | exists |
 | Registration | Set whether the deployment accepts self-registration | a settings write | missing |
 | Registration | Confirm the first tenant as the tenant a registration lands in | =iam.v1.tenants.put= | exists |
 | First sign-in | Nominate the party a new account joins | =refdata.v1.parties.put= | exists |
 | First sign-in | Nominate the role a new account receives | =iam.v1.roles.put= | exists |
 
-=iam.v1.bootstrap.status= and =iam.v1.bootstrap.create-admin= are declared in
+=iam.v1.ops.bootstrap_status= and =iam.v1.ops.create_initial_admin= are declared in
 [[id:4B98E2D0-8FE3-4321-8CFD-90A4C13422EA][ores.iam.bootstrap_messages]] and
 need no session, because the system is in bootstrap mode.
-=iam.v1.bootstrap.status= answers whether the deployment still needs an
+=iam.v1.ops.bootstrap_status= answers whether the deployment still needs an
 administrator and whether it has a tenant of its own: it is set up when it has
 both. The account and tenant subjects need a session. The starting point is
 answered by the three reads =iam.v1.seed_profiles.list=,
 =iam.v1.seed_profile_steps.list-by-seed-profile-id= and
 =iam.v1.seed_profile_parameters.list-by-seed-profile-id=, which the browser
-composes into one card per profile. =workflow.v1.instances.steps= and
-=workflow.v1.instances.retry= are not in the generated web protocol: the
+composes into one card per profile. =workflow.v1.ops.get_workflow_steps= and
+=workflow.v1.ops.retry_workflow_instance= are not in the generated web protocol: the
 generator emits no =workflow= package for the browser, so the BFF adds a route
 for each and the wire client parses the reply.
 
-The one verb that provisions a tenant is =iam.v1.tenants.provision=. It takes
+The one verb that provisions a tenant is =iam.v1.ops.provision_tenant=. It takes
 the profile code, the tenant fields, the administrator fields and the profile's
 parameter values, creates the tenant and its administrator, and answers at once
 with the id of the run that executes the steps the profile orders. It serves
@@ -198,7 +198,7 @@ every tenant, the first one included.
 One thing the journey reaches for is not in place:
 
 - The registration step has nothing to write to yet. The read that reports the
-  switch and the defaults exists — =iam.v1.auth.registration-policy= — but no
+  switch and the defaults exists — =iam.v1.ops.registration_policy= — but no
   interface sets the switch outside SQL, so the step and the two nominations are
   design-only until the settings write and the screen land. The defaults the
   nominations point at are settable now, as =is_registration_default= on the
@@ -228,7 +228,7 @@ record of what each part turned out to be.
    *Operational*, *GLEIF entity* and *ACME demo* are rows, so a third profile is
    a row and a new step kind is code. The page builds each card and its form
    from the rows and holds no profile of its own.
-3. *One provision request serves every tenant.* =iam.v1.tenants.provision=
+3. *One provision request serves every tenant.* =iam.v1.ops.provision_tenant=
    takes the profile code, the tenant fields, the administrator fields and the
    profile's parameter values, and returns the instance id of the run it starts,
    the first tenant included. The tenant and its administrator exist by the time
@@ -238,10 +238,10 @@ record of what each part turned out to be.
    step it is executing, and one line per step. The engine's
    =workflow_instance_changed= event is not the progress contract: its payload
    is an =entity_change_event= that no one schema can read for every entity.
-5. *A retry resumes a stopped run.* =workflow.v1.instances.retry= re-dispatches
+5. *A retry resumes a stopped run.* =workflow.v1.ops.retry_workflow_instance= re-dispatches
    the step a run stopped on and leaves the completed steps and their results
    alone. Discard stays a separate administrator action,
-   =iam.v1.system.reset-tenant=, because the contract keeps completed work.
+   =iam.v1.ops.reset_tenant=, because the contract keeps completed work.
 6. *A forced change fires when a profile asks for one.* The profile's
    =force_password_change= reaches the account the provisioner creates, and the
    login answer carries the account record's flag, so a profile that asks for

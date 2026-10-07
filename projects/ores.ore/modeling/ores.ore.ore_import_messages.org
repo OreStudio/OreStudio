@@ -77,7 +77,7 @@ the trading protocol's portfolio export.
 
 ** ore_import_request
 :PROPERTIES:
-:subject: workflow.v1.ore.import
+:subject: workflow.v1.ops.ore_import
 :response: ore_import_response
 :END:
 
@@ -156,7 +156,7 @@ the trading protocol's portfolio export.
 
 ** ore_import_execute_request
 :PROPERTIES:
-:subject: ore.v1.ore.import.execute
+:subject: ore.v1.ops.ore_import_execute
 :END:
 
 #+begin_src cpp :name comment
@@ -254,7 +254,7 @@ the trading protocol's portfolio export.
 
 ** ore_import_rollback_request
 :PROPERTIES:
-:subject: ore.v1.ore.import.rollback
+:subject: ore.v1.ops.ore_import_rollback
 :END:
 
 #+begin_src cpp :name comment

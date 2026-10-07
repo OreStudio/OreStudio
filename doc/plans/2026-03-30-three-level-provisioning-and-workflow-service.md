@@ -33,7 +33,7 @@ longer fires a wizard at sign-in.
 
 The rest of the plan stands. Phase 3's `ores.workflow` service is real and
 carries the provisioning sagas today; the provisioning that the wizards drove
-on the client moves to the server and to the generic `iam.v1.tenants.provision`
+on the client moves to the server and to the generic `iam.v1.ops.provision_tenant`
 request.
 
 ---
@@ -355,7 +355,7 @@ For each party_spec:
     Response: { success, party_id }
     Compensation: refdata.v1.parties.delete { ids: [party_id] }
 
-  Step N.2 — NATS → iam.v1.accounts.save
+  Step N.2 — NATS → iam.v1.accounts.put
     Request:  { principal: <username_base>_<short_code>, password, email }
     Response: { success, account_id }
     Compensation: iam.v1.accounts.delete { account_id }
@@ -643,7 +643,7 @@ Build backend infrastructure first, then wire the UI to it at the end.
 
 3. **`provision_parties_workflow` executor**:
    - Implement `workflow_executor` base interface
-   - Step sequence: `refdata.v1.parties.save` → `iam.v1.accounts.save` → `iam.v1.accounts.add-party`
+   - Step sequence: `refdata.v1.parties.save` → `iam.v1.accounts.put` → `iam.v1.accounts.add-party`
    - Compensation logic (reverse order on failure)
    - Correlation ID propagation via NATS headers
 

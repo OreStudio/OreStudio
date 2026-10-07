@@ -26,8 +26,8 @@ to is [[id:9700E01F-B582-4984-AF2F-81E2BA880544][analysing the sign-up process]]
 |-------+------------+--------------|
 | =ores.web= | The browser application | The screens. It holds an opaque cookie and never a token, so it cannot decide by itself whether it is signed in: it asks. |
 | The BFF | The browser's only HTTP surface, and one NATS connection per session | The token, the party the session is scoped to, and the translation of a cookie into an authenticated NATS call. It forwards the address the request arrived at, so the service can resolve the tenant. |
-| NATS subjects | =iam.v1.auth.*=, =iam.v1.accounts.select-party=, and the entity writes the defaults use | The contract. A step reaches the server through one subject, and the browser names none of them directly: the BFF has one route per step. |
-| The IAM auth handler | =iam.v1.auth.login=, =.signup=, =.logout=, =.refresh= and the policy read | The door: resolving the tenant, reading the flags and the defaults, taking the branch, issuing the token, and stating the refusal. |
+| NATS subjects | =iam.v1.auth.*=, =iam.v1.ops.select_party=, and the entity writes the defaults use | The contract. A step reaches the server through one subject, and the browser names none of them directly: the BFF has one route per step. |
+| The IAM auth handler | =iam.v1.ops.login=, =.signup=, =.logout=, =.refresh= and the policy read | The door: resolving the tenant, reading the flags and the defaults, taking the branch, issuing the token, and stating the refusal. |
 | The account service | The credential check and the security state | The password comparison, the failed-attempt counter, the lock at five, the last sign-in, and the session row. |
 | The authorization service | Roles and assignments | Granting the nominated role at registration, and the role assignments the access journeys read. |
 | PostgreSQL, with RLS | Tenant and party isolation, and the settings | The account, login record, session and account-party rows; the settings; and the flags the defaults live on. |
@@ -59,7 +59,7 @@ whether to offer a form before anybody types.
 Source: [[proj:doc/knowledge/journeys/entry/entry_registration_policy_sequence.puml][=entry_registration_policy_sequence.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/journeys/entry/entry_registration_policy_sequence.puml=.
 
-The read is separate from =iam.v1.bootstrap.status=. The bootstrap read answers
+The read is separate from =iam.v1.ops.bootstrap_status=. The bootstrap read answers
 whether the deployment has been set up; this one answers what it offers a person
 who is not in it yet, and they change for different reasons.
 
@@ -150,10 +150,10 @@ The change table is [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][registration and 
 page, the parts that touch the interaction are these, and every one of them has
 landed:
 
-- =iam.v1.auth.registration-policy= is a new read, and the door asks it first.
-- =iam.v1.auth.signup= gains the flag reads, the tenant resolution, the status
+- =iam.v1.ops.registration_policy= is a new read, and the door asks it first.
+- =iam.v1.ops.signup= gains the flag reads, the tenant resolution, the status
   write and the codes, and stops creating an account in the system tenant.
-- =iam.v1.auth.login= gains =error_code=, the pending refusal, and the tenant
+- =iam.v1.ops.login= gains =error_code=, the pending refusal, and the tenant
   resolved from the address rather than typed into the username.
 - The BFF gains two routes, =GET /api/registration-policy= and
   =POST /api/signup=, the second under the same limiter family as the first, and

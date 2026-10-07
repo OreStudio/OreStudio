@@ -20,7 +20,7 @@
 title The life of a step: what the engine decides when a step completes
 
 start
-:step_completed_event arrives on\nworkflow.v1.events.step-completed;
+:step_completed_event arrives on\nworkflow.v1.ops.step_completed;
 
 if (is the step still in_progress?) then (no)
     :ignore the duplicate completion;

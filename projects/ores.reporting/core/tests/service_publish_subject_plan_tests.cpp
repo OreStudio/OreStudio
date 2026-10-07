@@ -32,7 +32,7 @@ const std::string tags("[service][publish]");
 }
 
 TEST_CASE("a report definitions subject names its expansion function", tags) {
-    CHECK(publish_from_dq_function("reporting.v1.report-definitions.publish-from-dq") ==
+    CHECK(publish_from_dq_function("reporting.v1.ops.publish_report_definitions_from_dq") ==
           "ores_reporting_publish_report_definitions_from_dq_fn");
 }
 

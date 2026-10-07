@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 struct get_password_policy_request {
     using response_type = struct get_password_policy_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.password-policy";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_password_policy";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -30,7 +30,7 @@ database "PostgreSQL\n(tenant and party RLS)" as db
 Person -> web : username, email and password,\nagainst the rules the policy read stated
 web -> bff : POST /api/signup
 bff -> bff : rate limit the attempt
-bff -> auth : iam.v1.auth.signup {principal, email, hostname}
+bff -> auth : iam.v1.ops.signup {principal, email, hostname}
 
 auth -> db : read system.user_signups at system scope
 alt sign-ups are closed, or need an approval nothing performs

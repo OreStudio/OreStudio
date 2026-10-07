@@ -159,8 +159,8 @@ export interface SearchLeiEntitiesResponse {
 }
 
 export const subjects = {
-    get_lei_entities_summary_request: 'dq.v1.lei-entities.summary',
-    search_lei_entities_request: 'dq.v1.lei-entities.search',
+    get_lei_entities_summary_request: 'dq.v1.ops.get_lei_entities_summary',
+    search_lei_entities_request: 'dq.v1.ops.search_lei_entities',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

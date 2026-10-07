@@ -38,7 +38,7 @@ enum with no model, so a generated TypeScript twin cannot import it.
 
 ** publish_datasets_request
 :PROPERTIES:
-:subject:  dq.v1.datasets.publish
+:subject:  dq.v1.ops.publish_datasets
 :response: publish_datasets_response
 :END:
 

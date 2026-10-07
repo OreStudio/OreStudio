@@ -40,7 +40,7 @@ namespace ores::iam::messaging {
  */
 struct create_run_grant_request {
     using response_type = struct create_run_grant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.run_grants.create";
+    static constexpr std::string_view nats_subject = "iam.v1.run_grants.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -93,7 +93,7 @@ struct create_run_grant_response {
  */
 struct revoke_run_grant_request {
     using response_type = struct revoke_run_grant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.run_grants.revoke";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.revoke_run_grant";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -127,7 +127,7 @@ struct revoke_run_grant_response {
  */
 struct exchange_run_grant_request {
     using response_type = struct exchange_run_grant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.run_grants.exchange";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.exchange_run_grant";
     /**
      * @brief Whether the caller must have established a session first.
      *

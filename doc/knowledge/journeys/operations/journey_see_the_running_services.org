@@ -137,7 +137,7 @@ say where an instance is.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Before the screen: every service reports on a timer | Publish that an instance is alive | =telemetry.v1.services.heartbeat= | exists |
+| Before the screen: every service reports on a timer | Publish that an instance is alive | =telemetry.v1.ops.service_heartbeat= | exists |
 | Open the screen | List the latest sample of every reporting instance | =telemetry.v1.services.list= | exists |
 | Read the roster | Read the services the installation expects and their replica counts | — | missing |
 | Read the rows | Read state, instance, version and sample time per expected instance | carried by the reads above | partial |
@@ -145,7 +145,7 @@ say where an instance is.
 | An installation with none | Answer one missing row per expected instance | carried by both reads | partial |
 | Refresh, or watch | Read the list again | =telemetry.v1.services.list= | exists |
 
-=telemetry.v1.services.heartbeat= is ingested. Every service that embeds the
+=telemetry.v1.ops.service_heartbeat= is ingested. Every service that embeds the
 =ores.service= heartbeat publisher sends it on a timer with its name, its
 instance id and its version, and the telemetry service timestamps the receipt
 and stores it. The message is declared with auth =none=, because the heartbeat

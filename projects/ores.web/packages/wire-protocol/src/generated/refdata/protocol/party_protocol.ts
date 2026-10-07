@@ -211,7 +211,7 @@ export const subjects = {
     delete_many_parties_request: 'refdata.v1.parties.delete_many',
     list_party_versions_request: 'refdata.v1.parties_versions.list',
     get_party_version_request: 'refdata.v1.parties_versions.get',
-    get_party_composite_as_of_request: 'refdata.v1.parties.composite_as_of',
+    get_party_composite_as_of_request: 'refdata.v1.ops.get_party_composite_as_of',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

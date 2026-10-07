@@ -119,7 +119,7 @@ The name of the CRM that produced this rate.
 
 ** get_crm_rate_request
 :PROPERTIES:
-:subject: marketdata.v1.crm.rate
+:subject: marketdata.v1.ops.get_crm_rate
 :response: get_crm_rate_response
 :END:
 
@@ -185,7 +185,7 @@ pair can resolve to a different rate in each.
 
 ** get_crm_rates_request
 :PROPERTIES:
-:subject: marketdata.v1.crm.rates
+:subject: marketdata.v1.ops.get_crm_rates
 :response: get_crm_rates_response
 :END:
 
@@ -254,7 +254,7 @@ CRM the party has, each item tagged with the CRM it came from.
 
 ** republish_curve_request
 :PROPERTIES:
-:subject: marketdata.v1.curve_bootstrap.republish
+:subject: marketdata.v1.ops.republish_curve
 :response: republish_curve_response
 :END:
 
@@ -302,7 +302,7 @@ The snapshot whose market observations the bootstrap reads.
 
 ** compute_curve_request
 :PROPERTIES:
-:subject: marketdata.v1.curve_bootstrap.compute
+:subject: marketdata.v1.ops.compute_curve
 :response: compute_curve_response
 :END:
 
@@ -383,7 +383,7 @@ Unlike a published market observation, it never touches the database.
 
 ** get_curve_snapshot_request
 :PROPERTIES:
-:subject: marketdata.v1.curve-snapshot.get
+:subject: marketdata.v1.curve_snapshot.get
 :response: get_curve_snapshot_response
 :END:
 
@@ -433,7 +433,7 @@ The series identity every market_series row is keyed by.
 
 ** get_curve_snapshot_buckets_request
 :PROPERTIES:
-:subject: marketdata.v1.curve-snapshot.buckets
+:subject: marketdata.v1.ops.get_curve_snapshot_buckets
 :response: get_curve_snapshot_buckets_response
 :END:
 
@@ -490,7 +490,7 @@ Requests a curve-evolution view: =bucket_count= as-of snapshots, one every
 
 ** import_market_data_request
 :PROPERTIES:
-:subject: marketdata.v1.import
+:subject: marketdata.v1.ops.import_market_data
 :response: import_market_data_response
 :END:
 
@@ -673,7 +673,7 @@ asset class: a new producer kind appears as a new map key.
 
 ** start_feeds_under_folder_request
 :PROPERTIES:
-:subject: marketdata.v1.market_feed_configs.start_folder
+:subject: marketdata.v1.ops.start_feeds_under_folder
 :response: start_feeds_under_folder_response
 :END:
 
@@ -746,7 +746,7 @@ through the producer factory.
 
 ** stop_feeds_under_folder_request
 :PROPERTIES:
-:subject: marketdata.v1.market_feed_configs.stop_folder
+:subject: marketdata.v1.ops.stop_feeds_under_folder
 :response: stop_feeds_under_folder_response
 :END:
 
@@ -826,7 +826,7 @@ against market_observation rather than stored.
 
 ** get_vintage_validity_request
 :PROPERTIES:
-:subject: marketdata.v1.market_feed_configs.vintage_validity
+:subject: marketdata.v1.ops.get_vintage_validity
 :response: get_vintage_validity_response
 :END:
 
@@ -864,7 +864,7 @@ rows, only new market observation ones.
 
 ** export_market_data_to_storage_request
 :PROPERTIES:
-:subject: marketdata.v1.series.export-to-storage
+:subject: marketdata.v1.ops.export_market_data_to_storage
 :response: export_market_data_to_storage_response
 :END:
 
@@ -918,7 +918,7 @@ with gzip, and uploads the result.
 
 ** export_market_data_request
 :PROPERTIES:
-:subject: marketdata.v1.export
+:subject: marketdata.v1.ops.export_market_data
 :response: export_market_data_response
 :END:
 
@@ -1010,7 +1010,7 @@ bodies are what the round-trip test compares against the file it imported.
 
 ** market_tick
 :PROPERTIES:
-:subject: marketdata.v1.tick
+:subject: marketdata.v1.ops.market_tick
 :auth: none
 :END:
 

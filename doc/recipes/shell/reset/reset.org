@@ -30,7 +30,7 @@ The command is shaped like this:
 reset reset-tenant <tenant_code>
 #+end_example
 
-It is addressed at =iam.v1.system.reset-tenant=.
+It is addressed at =iam.v1.ops.reset_tenant=.
 
 #+name: reset-reset-tenant
 #+begin_src ores-shell :tangle reset-reset-tenant.ores :exports none
@@ -56,7 +56,7 @@ The command is shaped like this:
 reset reset-system
 #+end_example
 
-It is addressed at =iam.v1.system.reset=.
+It is addressed at =iam.v1.ops.reset_system=.
 
 #+name: reset-reset-system
 #+begin_src ores-shell :tangle reset-reset-system.ores :exports none

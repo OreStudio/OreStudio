@@ -28,8 +28,8 @@ Each entity follows the standard pattern: =list=, =save=, =delete=, =history=.
 | =reporting.v1.report-definitions.save= | Create or update a report definition |
 | =reporting.v1.report-definitions.delete= | Delete one or more report definitions |
 | =reporting.v1.report-definitions.history= | Retrieve version history for a report definition |
-| =reporting.v1.report-definitions.schedule= | Activate scheduled execution for a report definition |
-| =reporting.v1.report-definitions.unschedule= | Deactivate scheduled execution for a report definition |
+| =reporting.v1.ops.schedule_report_definitions= | Activate scheduled execution for a report definition |
+| =reporting.v1.ops.unschedule_report_definitions= | Deactivate scheduled execution for a report definition |
 
 * Report Instances
 

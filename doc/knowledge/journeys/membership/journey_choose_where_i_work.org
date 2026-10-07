@@ -94,21 +94,21 @@ junction; it is not a column on either side.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Sign in | Read the parties the account works in, and the default | =iam.v1.auth.login= | exists |
+| Sign in | Read the parties the account works in, and the default | =iam.v1.ops.login= | exists |
 | See where I work | Read the account's party associations | =iam.v1.account_parties.list_by_account_id= | exists |
-| Set the default party | Set my own default party | =iam.v1.accounts.set-default-party= | exists |
-| Switch the party I act for | Re-scope the session to another party | =iam.v1.accounts.switch-party= | exists |
+| Set the default party | Set my own default party | =iam.v1.ops.set_my_default_party= | exists |
+| Switch the party I act for | Re-scope the session to another party | =iam.v1.ops.switch_party= | exists |
 
 All four subjects come from the generated protocol:
-=ores.iam.login_messages.org= defines =iam.v1.auth.login=,
+=ores.iam.login_messages.org= defines =iam.v1.ops.login=,
 =ores.iam.account_messages.org= defines the three account subjects, and the
 =account_parties= subjects are rendered by the junction model
 =ores.iam.account_party_junction.org=.
 
-=iam.v1.accounts.set-default-party= is self-service: the handler takes the
+=iam.v1.ops.set_my_default_party= is self-service: the handler takes the
 account id from the caller's own token, so no permission is needed and the
 operation cannot be aimed at somebody else. It also validates membership, and
-it is idempotent when the party is already the default. =iam.v1.accounts.update=
+it is idempotent when the party is already the default. =iam.v1.ops.update_account=
 carries the same field =default_party_id=, but that subject needs
 =iam::accounts:update=, which is a tenant-administrator permission, so it is not
 the member's path.
@@ -117,7 +117,7 @@ the member's path.
 
 1. *No readable party list outside sign-in.* The protocol exposes the
    =account_parties= association, which carries =party_id= alone, and no party
-   read that turns an id into a name. =iam.v1.auth.login= is the only place that
+   read that turns an id into a name. =iam.v1.ops.login= is the only place that
    returns party names today, and it belongs to the sign-in step. The screen can
    show the party it is acting for; the rest of the list has nothing to display.
    The candidate is a party lookup the member may call, for example

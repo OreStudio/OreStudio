@@ -91,7 +91,7 @@ Landed on main in PRs #745 and #746:
 - *Phase 5.2* (~feature/workflow-iam-refdata-write-apis~): Removed dead
   ~ores_iam_*~ and ~ores_refdata_parties~ DML grants from the workflow service
   registry. The ~provision_parties~ workflow already routes all writes
-  through NATS (~refdata.v1.parties.save~, ~iam.v1.accounts.save~,
+  through NATS (~refdata.v1.parties.save~, ~iam.v1.accounts.put~,
   ~iam.v1.account-parties.save~). The grants were dead leftovers.
 
 - *Phase 5.3* (~feature/ore-workflow-write-decoupling~): Removed dead
@@ -144,8 +144,8 @@ Phases 1 (engine infrastructure), 2 (~provision_parties~ and
   ~workflow_registry~ /
   ~workflow_engine~ implemented in
   ~projects/ores.workflow/include/ores.workflow/service/~.
-- JetStream subscriptions for ~workflow.v1.events.step-completed~ and
-  ~workflow.v1.start~ wired in ~ores.workflow/src/messaging/registrar.cpp~.
+- JetStream subscriptions for ~workflow.v1.ops.step_completed~ and
+  ~workflow.v1.ops.start_workflow~ wired in ~ores.workflow/src/messaging/registrar.cpp~.
 - DB columns (~current_step_index~, ~step_count~, ~command_subject~,
   ~command_json~, ~command_published_at~, ~idempotency_key~,
   ~compensation_subject~, ~compensation_json~) and the 6-state FSM
@@ -346,7 +346,7 @@ Every workflow-command handler executes the following sequence:
 
 1. Extract ~X-Workflow-Step-Id~ from the message headers.
 2. Query the workflow engine for the step's current state via a new
-   NATS request/reply subject ~workflow.v1.steps.get-result~
+   NATS request/reply subject ~workflow.v1.ops.get_step_result~
    ~{step_id} → {found, success, result_json, error_message}~.
 3. If ~found = true~: publish the same completion event again and
    return. The engine deduplicates on the engine side too (it already
@@ -367,7 +367,7 @@ if (auto cached = check_step_idempotency(nats_, step_id)) {
 publish_step_completion(nats_, step_id, inst_id, success, result, err);
 #+end_src
 
-The ~workflow.v1.steps.get-result~ subject is served by a new
+The ~workflow.v1.ops.get_step_result~ subject is served by a new
 handler in the workflow service (cheap: one ~workflow_step~ lookup by
 step_id).
 
@@ -518,7 +518,7 @@ Single PR. Touching:
 - ~projects/ores.sql/create/workflow/workflow_workflow_instances_create.sql~ —
   add ~materialised_steps_json text not null default ''~.
 - ~projects/ores.workflow.api/include/ores.workflow.api/messaging/~ —
-  new ~steps_query_protocol.hpp~ for ~workflow.v1.steps.get-result~.
+  new ~steps_query_protocol.hpp~ for ~workflow.v1.ops.get_step_result~.
 - ~projects/ores.workflow/include/ores.workflow/messaging/~,
   ~src/messaging/~ — add a handler for the new subject.
 - [[proj:projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp][~projects/ores.service/include/ores.service/messaging/workflow_helpers.hpp~]] —

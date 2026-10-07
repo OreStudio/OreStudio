@@ -119,7 +119,7 @@ function loginReply(overrides: Record<string, unknown> = {}): Record<string, unk
 describe('OresClient bootstrap status', () => {
     it('reports the deployment as unprovisioned before any credential is used', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.bootstrap.status': [{ body: { is_in_bootstrap_mode: true, message: '' } }],
+            'iam.v1.ops.bootstrap_status': [{ body: { is_in_bootstrap_mode: true, message: '' } }],
         });
         const client = new OresClient({ transport });
 
@@ -131,7 +131,7 @@ describe('OresClient bootstrap status', () => {
 
     it('reads a provisioned deployment as one a login may proceed against', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.bootstrap.status': [{ body: { is_in_bootstrap_mode: false, message: '' } }],
+            'iam.v1.ops.bootstrap_status': [{ body: { is_in_bootstrap_mode: false, message: '' } }],
         });
         const client = new OresClient({ transport });
 
@@ -141,7 +141,7 @@ describe('OresClient bootstrap status', () => {
 
 describe('OresClient login', () => {
     it('sends the credential in the principal field', async () => {
-        const transport = new ScriptedTransport({ 'iam.v1.auth.login': [{ body: loginReply() }] });
+        const transport = new ScriptedTransport({ 'iam.v1.ops.login': [{ body: loginReply() }] });
         const client = new OresClient({ transport });
 
         await client.login({ principal: 'probe', password: 'secret' });
@@ -150,7 +150,7 @@ describe('OresClient login', () => {
     });
 
     it('sends no headers on the unauthenticated login call', async () => {
-        const transport = new ScriptedTransport({ 'iam.v1.auth.login': [{ body: loginReply() }] });
+        const transport = new ScriptedTransport({ 'iam.v1.ops.login': [{ body: loginReply() }] });
         const client = new OresClient({ transport });
 
         await client.login({ principal: 'probe', password: 'secret' });
@@ -160,7 +160,7 @@ describe('OresClient login', () => {
 
     it('classifies a rejected login without throwing', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [
+            'iam.v1.ops.login': [
                 {
                     body: loginReply({
                         success: false,
@@ -183,7 +183,7 @@ describe('OresClient login', () => {
 
     it('asks for a party when the server selected none', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply({ selected_party_id: '' }) }],
+            'iam.v1.ops.login': [{ body: loginReply({ selected_party_id: '' }) }],
         });
         const client = new OresClient({ transport });
 
@@ -194,7 +194,7 @@ describe('OresClient login', () => {
     });
 
     it('activates the session when the server already selected a party', async () => {
-        const transport = new ScriptedTransport({ 'iam.v1.auth.login': [{ body: loginReply() }] });
+        const transport = new ScriptedTransport({ 'iam.v1.ops.login': [{ body: loginReply() }] });
         const client = new OresClient({ transport });
 
         const outcome = await client.login({ principal: 'probe', password: 'secret' });
@@ -223,7 +223,7 @@ describe('OresClient authenticated calls', () => {
 
     it('carries the bearer token and a correlation id on each call', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
         });
         const client = new OresClient({ transport });
@@ -240,7 +240,7 @@ describe('OresClient authenticated calls', () => {
 
     it('sends offset, limit and an order even when the caller omits them', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
         });
         const client = new OresClient({ transport });
@@ -262,12 +262,12 @@ describe('OresClient authenticated calls', () => {
 
     it('refreshes once and retries when the server reports an expired token', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.accounts.list': [
                 { headers: { 'X-Error': 'token_expired' } },
                 { body: accountsReply },
             ],
-            'iam.v1.auth.refresh': [
+            'iam.v1.ops.refresh': [
                 {
                     body: {
                         success: true,
@@ -285,9 +285,9 @@ describe('OresClient authenticated calls', () => {
 
         const subjects = transport.calls.map((call) => call.subject);
         expect(subjects).toEqual([
-            'iam.v1.auth.login',
+            'iam.v1.ops.login',
             'iam.v1.accounts.list',
-            'iam.v1.auth.refresh',
+            'iam.v1.ops.refresh',
             'iam.v1.accounts.list',
         ]);
         // The retry must use the fresh token, not the expired one.
@@ -298,9 +298,9 @@ describe('OresClient authenticated calls', () => {
 
     it('fails the call when the refresh is refused', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.accounts.list': [{ headers: { 'X-Error': 'token_expired' } }],
-            'iam.v1.auth.refresh': [
+            'iam.v1.ops.refresh': [
                 { body: { success: false, token: '', message: 'max_session_exceeded' } },
             ],
         });
@@ -337,7 +337,7 @@ describe('OresClient reading inside a tenant', () => {
 
     it('reads with the tenant token, leaves with it, and keeps its own', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
             'iam.v1.ops.leave_tenant': [{ body: left }],
@@ -350,7 +350,7 @@ describe('OresClient reading inside a tenant', () => {
         );
 
         expect(transport.calls.map((call) => call.subject)).toEqual([
-            'iam.v1.auth.login',
+            'iam.v1.ops.login',
             'iam.v1.ops.enter_tenant',
             'iam.v1.accounts.list',
             'iam.v1.ops.leave_tenant',
@@ -368,7 +368,7 @@ describe('OresClient reading inside a tenant', () => {
      */
     it('leaves a call the session makes meanwhile with its own token', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.accounts.list': [{ body: accountsReply }],
             'iam.v1.tenants.list': [{ body: {} }],
@@ -388,7 +388,7 @@ describe('OresClient reading inside a tenant', () => {
 
     it('reads nothing and leaves nothing when the server refuses the entry', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [
                 {
                     body: {
@@ -417,7 +417,7 @@ describe('OresClient reading inside a tenant', () => {
 
     it('leaves the tenant when the read fails', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.ops.leave_tenant': [{ body: left }],
         });
@@ -439,7 +439,7 @@ describe('OresClient reading inside a tenant', () => {
      */
     it('fails a read whose tenant session lapsed, without refreshing', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.ops.enter_tenant': [{ body: entered }],
             'iam.v1.accounts.list': [{ headers: { 'X-Error': 'token_expired' } }],
             'iam.v1.ops.leave_tenant': [{ headers: { 'X-Error': 'token_expired' } }],
@@ -457,7 +457,7 @@ describe('OresClient reading inside a tenant', () => {
         await expect(read).rejects.toThrow(OperationFailedError);
         await expect(read).rejects.not.toThrow(SessionExpiredError);
         expect(exitFailures).toHaveLength(1);
-        expect(transport.calls.map((call) => call.subject)).not.toContain('iam.v1.auth.refresh');
+        expect(transport.calls.map((call) => call.subject)).not.toContain('iam.v1.ops.refresh');
         expect(client.token).toBe('token-one');
     });
 });

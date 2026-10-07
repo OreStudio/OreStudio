@@ -300,7 +300,7 @@ Each message carries these:
 |------------------+----------------------------------------------------------+--------------------------|
 | =name=           | Message name.                                            | =login_request=          |
 | =name_pascal=    | Message name in PascalCase, for a TypeScript interface.  | =LoginRequest=           |
-| =subject=        | NATS subject. Absent on a plain payload struct.          | =iam.v1.auth.login=      |
+| =subject=        | NATS subject. Absent on a plain payload struct.          | =iam.v1.ops.login=      |
 | =response_type=  | Response this request pairs with. Absent on a broadcast. | =login_response=         |
 | =comment=        | Documentation block, verbatim.                           | =/** ... */=             |
 | =fields=         | List of fields (loop section).                           | (list)                   |

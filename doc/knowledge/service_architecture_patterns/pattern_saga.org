@@ -93,7 +93,7 @@ adds no authority.
 * In ORE Studio
 
 - [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation and retry]] — the compensate policy walks completed steps in reverse; a deadline stops the run instead.
-- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — every step compensates through =reporting.v1.report.fail=, which marks the instance failed.
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — every step compensates through =reporting.v1.ops.fail_report=, which marks the instance failed.
 - [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][Identity]] — the fixture compensates the steps that declared a compensation.
 
 * Related patterns

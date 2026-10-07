@@ -73,14 +73,14 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/bootstrap/status — Bootstrap status.
+     * @brief POST /api/v1/iam/ops/bootstrap_status — Bootstrap status.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_bootstrap_status(const ores::http::domain::http_request& req,
                             ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/bootstrap/create-admin — Create initial admin.
+     * @brief POST /api/v1/iam/ops/create_initial_admin — Create initial admin.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_create_initial_admin(const ores::http::domain::http_request& req,

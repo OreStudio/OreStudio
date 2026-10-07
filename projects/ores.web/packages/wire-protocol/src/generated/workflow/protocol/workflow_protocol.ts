@@ -39,7 +39,7 @@ export interface StepLogEntry {
 /**
  * @brief Fire-and-forget event published by domain services on step completion.
  *
- * Published to workflow.v1.events.step-completed by any domain service that
+ * Published to workflow.v1.ops.step_completed by any domain service that
  * participates in a workflow. The workflow engine subscribes to this subject
  * (queue-group) and advances or compensates the workflow accordingly.
  *
@@ -423,13 +423,13 @@ export interface RetryWorkflowInstanceResponse {
 }
 
 export const subjects = {
-    step_completed_event: 'workflow.v1.events.step-completed',
-    start_workflow_message: 'workflow.v1.start',
-    get_step_result_request: 'workflow.v1.steps.get-result',
+    step_completed_event: 'workflow.v1.ops.step_completed',
+    start_workflow_message: 'workflow.v1.ops.start_workflow',
+    get_step_result_request: 'workflow.v1.ops.get_step_result',
     list_workflow_instance_summaries_request: 'workflow.v1.instances.list',
-    get_workflow_steps_request: 'workflow.v1.instances.steps',
+    get_workflow_steps_request: 'workflow.v1.ops.get_workflow_steps',
     list_workflow_definitions_request: 'workflow.v1.definitions.list',
-    retry_workflow_instance_request: 'workflow.v1.instances.retry',
+    retry_workflow_instance_request: 'workflow.v1.ops.retry_workflow_instance',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

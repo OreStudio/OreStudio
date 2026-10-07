@@ -463,7 +463,7 @@ struct WorkspaceContext {
 #+end_src
 
 The =resolution_order= vector is populated at activation time by calling the
-=workspace.v1.workspaces.resolve= NATS endpoint, which runs the recursive CTE
+=workspace.v1.ops.resolve_workspace= NATS endpoint, which runs the recursive CTE
 and returns the ancestor chain.
 
 =ClientManager= holds a =WorkspaceContext= and injects =X-Workspace-Id= into

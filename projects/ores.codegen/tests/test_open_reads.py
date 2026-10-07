@@ -66,10 +66,10 @@ def test_the_allow_list_is_read_from_its_own_section():
     allowed = check.allow_list(check.ALLOW_LIST_DOC.read_text(encoding="utf-8"))
 
     assert "iam.v1.roles.list" in allowed
-    assert "inbox.v1.notifications.mine" in allowed
+    assert "inbox.v1.ops.list_my_notifications" in allowed
     # The access reads table further down names guarded subjects; it is not
     # the allow-list.
-    assert "iam.v1.roles.by-account" not in allowed
+    assert "iam.v1.ops.get_account_roles" not in allowed
 
 
 INJECTED_HANDLER = """\
@@ -88,13 +88,13 @@ INJECTED_HANDLER = """\
     }
 """
 
-SUBJECTS = {"get_party_composite_as_of_request": "refdata.v1.parties.composite_as_of"}
+SUBJECTS = {"get_party_composite_as_of_request": "refdata.v1.ops.get_party_composite_as_of"}
 
 
 def test_a_method_named_unlike_a_read_is_found_by_its_decoded_request():
     found = dict(check.open_reads(INJECTED_HANDLER, SUBJECTS))
 
-    assert found["composite_as_of"] == "refdata.v1.parties.composite_as_of"
+    assert found["composite_as_of"] == "refdata.v1.ops.get_party_composite_as_of"
     assert "guarded_composite_as_of" not in found
 
 

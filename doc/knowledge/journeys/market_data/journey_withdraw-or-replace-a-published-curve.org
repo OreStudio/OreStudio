@@ -131,15 +131,15 @@ No entity holds the published state a withdrawal would change. There is no
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Find the published curve | List and read the series | =marketdata.v1.market_series.list=, =.get= | exists |
-| Read what is published | Read the latest snapshot of the curve | =marketdata.v1.curve-snapshot.get= | partial |
+| Read what is published | Read the latest snapshot of the curve | =marketdata.v1.curve_snapshot.get= | partial |
 | Read the trail | Read every version with its diff | =marketdata.v1.history.get= | exists |
 | Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
-| Raise the request | Raise the withdrawal or replacement request | =inbox.v1.approval-requests.raise= | exists |
-| Watch for the decision | Read the queue and decide | =inbox.v1.approval-requests.queue=, =inbox.v1.approval-requests.decide= | exists |
+| Raise the request | Raise the withdrawal or replacement request | =inbox.v1.ops.raise_approval= | exists |
+| Watch for the decision | Read the queue and decide | =inbox.v1.ops.list_approval_queue=, =inbox.v1.ops.decide_approval= | exists |
 | Apply the withdrawal | Take the published curve out of use | =marketdata.v1.curve_bootstrap.withdraw= | missing |
 | Apply the replacement | Publish a corrected version in its place, linked to the one it supersedes | =marketdata.v1.curve_bootstrap.replace= | missing |
 | See the consumers change | Announce the change on the series' own event | =marketdata.v1.market_series_events.updated=, =marketdata.v1.market_observations_events.updated= | partial |
-| See the consumers change | Raise a notice to the consumers | =inbox.v1.notifications.raise= | partial |
+| See the consumers change | Raise a notice to the consumers | =inbox.v1.ops.raise_notification= | partial |
 
 The history read is the generic one,
 =marketdata.v1.history.get=, with =entity_type=
@@ -155,7 +155,7 @@ changed".
    =marketdata.v1.curve_bootstrap.withdraw= and
    =marketdata.v1.curve_bootstrap.replace=. Until they exist the action
    controls are disabled, and the only write,
-   =marketdata.v1.curve_bootstrap.republish=, would silently write a new set
+   =marketdata.v1.ops.republish_curve=, would silently write a new set
    with nothing withdrawn and nothing linked.
 2. *There is no published state to withdraw.* Nothing marks a version
    published, so there is nothing to change on withdrawal and nothing to find

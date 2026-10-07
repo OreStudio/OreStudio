@@ -59,7 +59,7 @@ struct saved_document {
  */
 struct import_run_configuration_request {
     using response_type = struct import_run_configuration_response;
-    static constexpr std::string_view nats_subject = "ore.v1.run_configuration.import";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.import_run_configuration";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -89,7 +89,7 @@ struct import_run_configuration_response {
  * Carries the caller's token so the step stores each document as the caller.
  */
 struct run_configuration_import_execute_request {
-    static constexpr std::string_view nats_subject = "ore.v1.run_configuration.import.execute";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.run_configuration_import_execute";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -135,7 +135,7 @@ struct run_configuration_import_execute_result {
  * already gone succeeds, so it can run twice.
  */
 struct run_configuration_import_rollback_request {
-    static constexpr std::string_view nats_subject = "ore.v1.run_configuration.import.rollback";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.run_configuration_import_rollback";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -158,7 +158,7 @@ struct run_configuration_import_rollback_request {
  */
 struct export_run_configuration_request {
     using response_type = struct export_run_configuration_response;
-    static constexpr std::string_view nats_subject = "ore.v1.run_configuration.export";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.export_run_configuration";
     /**
      * @brief Whether the caller must have established a session first.
      *

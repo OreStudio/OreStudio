@@ -223,7 +223,7 @@ export const subjects = {
     get_account_contact_information_version_request:
         'iam.v1.account_contact_informations_versions.get',
     publish_account_contact_informations_from_dq_request:
-        'iam.v1.account-contact-informations.publish-from-dq',
+        'iam.v1.ops.publish_account_contact_informations_from_dq',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

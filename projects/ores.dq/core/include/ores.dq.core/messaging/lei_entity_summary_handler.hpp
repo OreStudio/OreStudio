@@ -47,7 +47,7 @@ inline auto& dq_lei_entity_summary_handler_lg() {
 } // namespace
 
 /**
- * @brief Serves dq.v1.lei-entities.summary and dq.v1.lei-entities.search.
+ * @brief Serves dq.v1.ops.get_lei_entities_summary and dq.v1.ops.search_lei_entities.
  *
  * The operation model generates no handler, so this handler is hand-written
  * beside it, as report_definition_template_handler.hpp is. Every read goes

@@ -106,7 +106,7 @@ function partyRow(shortCode: string, parentPartyId: string | null): Record<strin
 describe('OresClient list parties', () => {
     it('reads every page the tenant holds and carries the parent through', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.list': [
                 {
                     result: { outcome: 'ok', code: '', message: '' },
@@ -139,7 +139,7 @@ describe('OresClient list parties', () => {
 
     it('stops at one page when the tenant holds no more', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.list': [
                 {
                     result: { outcome: 'ok', code: '', message: '' },
@@ -158,7 +158,7 @@ describe('OresClient list parties', () => {
 
     it('reports a refused read rather than answering with no parties', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.list': [
                 { result: { outcome: 'denied', code: 'forbidden', message: 'Not permitted' } },
             ],
@@ -178,7 +178,7 @@ describe('OresClient create party', () => {
 
     it('writes a party that exists only once, born inactive', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.put': [created],
         });
         const client = new OresClient({ transport });
@@ -217,7 +217,7 @@ describe('OresClient create party', () => {
 
     it('hangs the party under the one it was given', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.put': [created],
         });
         const client = new OresClient({ transport });
@@ -237,7 +237,7 @@ describe('OresClient create party', () => {
 
     it('answers with the refusal the server stated rather than throwing', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
+            'iam.v1.ops.login': [loginReply()],
             'refdata.v1.parties.put': [
                 {
                     result: {
@@ -269,8 +269,8 @@ describe('OresClient create party', () => {
 describe('OresClient provision party', () => {
     it('names the party and the starting point and reads the run it started', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
-            'iam.v1.parties.provision': [
+            'iam.v1.ops.login': [loginReply()],
+            'iam.v1.ops.provision_party': [
                 {
                     success: true,
                     message: '',
@@ -303,8 +303,8 @@ describe('OresClient provision party', () => {
 
     it('answers with the refusal the server stated rather than throwing', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [loginReply()],
-            'iam.v1.parties.provision': [
+            'iam.v1.ops.login': [loginReply()],
+            'iam.v1.ops.provision_party': [
                 {
                     success: false,
                     message:

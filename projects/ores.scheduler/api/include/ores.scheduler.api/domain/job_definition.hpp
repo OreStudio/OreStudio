@@ -117,7 +117,7 @@ struct job_definition final {
 
     /**
      * @brief Payload for the nats_publish action type. The scheduler seed writes an empty object;
-     * the compute seed writes {"subject":"compute.v1.work.reap"}.
+     * the compute seed writes {"subject":"compute.v1.ops.reap_work"}.
      */
     std::string action_payload = "{}";
 

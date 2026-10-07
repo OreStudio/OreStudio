@@ -44,7 +44,7 @@ namespace ores::iam::messaging {
  * fields.
  */
 struct publish_accounts_from_dq_request {
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.publish-from-dq";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.publish_accounts_from_dq";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -56,7 +56,7 @@ struct publish_accounts_from_dq_request {
 
 struct save_account_request {
     using response_type = struct save_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.save";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -80,7 +80,7 @@ struct save_account_request {
 
 struct update_account_request {
     using response_type = struct update_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.update";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.update_account";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -155,7 +155,7 @@ struct account_operation_result {
 
 struct lock_account_request {
     using response_type = struct lock_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.lock";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.lock_account";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -172,7 +172,7 @@ struct lock_account_response {
 
 struct unlock_account_request {
     using response_type = struct unlock_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.unlock";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.unlock_account";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -189,7 +189,7 @@ struct unlock_account_response {
 
 struct reset_password_request {
     using response_type = struct reset_password_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.reset-password";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.reset_password";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -219,7 +219,7 @@ struct change_password_response {
 
 struct update_my_email_request {
     using response_type = struct update_my_email_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.update-email";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.update_my_email";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -237,7 +237,7 @@ struct update_my_email_response {
 
 struct set_my_default_party_request {
     using response_type = struct set_my_default_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.set-default-party";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.set_my_default_party";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -255,7 +255,7 @@ struct set_my_default_party_response {
 
 struct select_party_request {
     using response_type = struct select_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.select-party";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.select_party";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -282,7 +282,7 @@ struct select_party_request {
  */
 struct switch_party_request {
     using response_type = struct select_party_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.switch-party";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.switch_party";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -321,7 +321,7 @@ struct select_party_response {
 
 struct change_password_request_typed {
     using response_type = struct change_password_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.change-password";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.change_password";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -347,7 +347,7 @@ struct change_password_request_typed {
  */
 struct update_self_account_request {
     using response_type = struct update_self_account_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.update-self";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.update_self_account";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -418,7 +418,7 @@ struct update_self_account_response {
 struct update_self_account_contact_information_request {
     using response_type = struct update_self_account_contact_information_response;
     static constexpr std::string_view nats_subject =
-        "iam.v1.account_contact_informations.update-self";
+        "iam.v1.ops.update_self_account_contact_information";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -464,7 +464,8 @@ struct update_self_account_contact_information_response {
  */
 struct get_my_account_contact_information_request {
     using response_type = struct get_my_account_contact_information_response;
-    static constexpr std::string_view nats_subject = "iam.v1.account_contact_informations.mine";
+    static constexpr std::string_view nats_subject =
+        "iam.v1.ops.get_my_account_contact_information";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -496,7 +497,7 @@ struct get_my_account_contact_information_response {
  */
 struct attach_account_pictures_request {
     using response_type = struct attach_account_pictures_response;
-    static constexpr std::string_view nats_subject = "iam.v1.accounts.attach-pictures";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.attach_account_pictures";
     /**
      * @brief Whether the caller must have established a session first.
      *

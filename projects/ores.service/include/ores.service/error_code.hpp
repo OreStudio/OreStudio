@@ -38,7 +38,7 @@ enum class error_code {
      * @brief The JWT token has expired.
      *
      * The credential was well-formed but has passed its expiry time.
-     * The client may attempt a token refresh (iam.v1.auth.refresh) and
+     * The client may attempt a token refresh (iam.v1.ops.refresh) and
      * then retry the original request.
      */
     token_expired,

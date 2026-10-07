@@ -44,7 +44,7 @@ check the maker runs before the candidate goes to a second pair of eyes.
    its =derivation_kind=/config/version, which says the surface is derived and
    by which recipe.
 2. *Read the surface.* The person chooses *Read surface*. There is no surface
-   read: =marketdata.v1.curve-snapshot.get= is keyed by an =oresmd_uri= and
+   read: =marketdata.v1.curve_snapshot.get= is keyed by an =oresmd_uri= and
    reconstructs curve or grid points, and it has no surface shape. The system
    lists the surface series row and the quotes it holds, and marks the surface
    itself as not served. See /What is missing/.

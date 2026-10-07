@@ -130,38 +130,38 @@ accounts work in the party; the accounts themselves are created elsewhere.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find the legal entity | Search the legal entities the deployment holds, by name or LEI | =dq.v1.lei-entities.search= | exists |
+| Find the legal entity | Search the legal entities the deployment holds, by name or LEI | =dq.v1.ops.search_lei_entities= | exists |
 | Describe the party | List the accounts that may work in the party | =iam.v1.accounts.list= | exists |
 | Describe the party | Read the existing account-party associations | =iam.v1.account_parties.list= | exists |
-| Review | Add the party and start its run | =iam.v1.parties.provision= | exists |
+| Review | Add the party and start its run | =iam.v1.ops.provision_party= | exists |
 | Review | Create the party row, under the tenant's own party | =refdata.v1.parties.put= | exists |
-| Provisioning | Publish the party's essential data | =iam.v1.parties.provision= | exists |
+| Provisioning | Publish the party's essential data | =iam.v1.ops.provision_party= | exists |
 | Provisioning | Record the legal entity it was built from | =refdata.v1.party_identifiers.put= | exists |
 | Provisioning | Activate the party | =refdata.v1.parties.put= | exists |
-| Provisioning | Mark the party provisioning complete | =iam.v1.parties.provision= | exists |
-| Provisioning | Join the caller to the party | =iam.v1.parties.provision= | exists |
-| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
-| Next steps | Switch to the new party | =iam.v1.accounts.switch-party= | exists |
+| Provisioning | Mark the party provisioning complete | =iam.v1.ops.provision_party= | exists |
+| Provisioning | Join the caller to the party | =iam.v1.ops.provision_party= | exists |
+| Provisioning | Retry from the failed step | =workflow.v1.ops.retry_workflow_instance= | exists |
+| Next steps | Switch to the new party | =iam.v1.ops.switch_party= | exists |
 | Next steps | Read the party's books | =refdata.v1.books.list= | exists |
 
 The two =iam.v1.account_parties= subjects are declared in
 [[id:D96E6889-A53B-41AF-A7F5-A3497A188BA0][ores.iam.account_party]], and
 =iam.v1.account_parties.put_many= is what writes the accounts that work in a
 party; the run the provision request starts joins the caller on its own.
-=iam.v1.accounts.switch-party= is declared in
+=iam.v1.ops.switch_party= is declared in
 [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]], and
 =iam.v1.accounts.list= is generated from
 [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]]. The
 =refdata.v1.parties= and =refdata.v1.books= subjects are generated from their
 entity models. All of them exist in the generated web protocol.
-=dq.v1.lei-entities.search= matches a name or an LEI over the legal entities the
+=dq.v1.ops.search_lei_entities= matches a name or an LEI over the legal entities the
 deployment holds and states, per match, how many parties the hierarchy would
 create; the BFF adds a route to it and the wire client parses the reply.
-=workflow.v1.instances.steps= and =workflow.v1.instances.retry= are not in the
+=workflow.v1.ops.get_workflow_steps= and =workflow.v1.ops.retry_workflow_instance= are not in the
 generated web protocol: the generator emits no =workflow= package for the
 browser, so the BFF adds a route for each and the wire client parses the reply.
 
-The party stage is one request, =iam.v1.parties.provision=. It takes a party,
+The party stage is one request, =iam.v1.ops.provision_party=. It takes a party,
 by its identifier or its exact full name, the starting point whose party stage
 runs, and the legal entity the party was built from; it resolves the party in
 the caller's own tenant, and answers at once with the id of a run that publishes
@@ -184,7 +184,7 @@ party works in another one, so the run is the only client that can record it: it
 writes it with a client scoped to the party it is provisioning.
 
 Every subject in the table exists on the wire, and the shell's =provision party=
-sends =iam.v1.parties.provision= and follows the same progress read. The browser
+sends =iam.v1.ops.provision_party= and follows the same progress read. The browser
 reaches the search and the request that starts a party's run through the BFF, and
 =POST /api/provision-party= is that request: it adds the party row, places it
 under the tenant's own party, and starts the run.
@@ -206,7 +206,7 @@ under the tenant's own party, and starts the run.
    payload is an =entity_change_event= that carries =entity_ids=, and the schema
    the browser decodes reads =alpha2_codes= with every field defaulted, so the
    browser receives an empty identifier list. The reads
-   =workflow.v1.instances.steps= and =workflow.v1.instances.retry= exist and are
+   =workflow.v1.ops.get_workflow_steps= and =workflow.v1.ops.retry_workflow_instance= exist and are
    what a page follows a run with. That mismatch is owned by
    [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
 4. *A party hangs under the tenant's own party, and the person does not choose
@@ -221,7 +221,7 @@ The rest of the journey is in place, and the list below is the record of what
 each part turned out to be.
 
 1. *The legal-entity search reads the deployment's own data.*
-   =dq.v1.lei-entities.search= matches a name or an LEI over the legal entities
+   =dq.v1.ops.search_lei_entities= matches a name or an LEI over the legal entities
    the deployment holds, and states, per match, how many parties the hierarchy
    would create. The deployment's records are the ones a tenant is built from;
    no live proxy to the public register is needed. The browser reaches the
@@ -233,7 +233,7 @@ each part turned out to be.
    followed by the id the request answers with. Only the server-side workflow
    resumes, so the human steps around it do not survive a reload. The retired
    =iam.v1.journeys.get-active= candidate is dropped.
-3. *The provision-party request is one stage.* =iam.v1.parties.provision= takes
+3. *The provision-party request is one stage.* =iam.v1.ops.provision_party= takes
    a party, by its identifier or its exact full name, a starting point and the
    entity the party was built from, resolves the party in the caller's tenant,
    and returns a workflow instance id at once. The run publishes the bundles the
@@ -249,7 +249,7 @@ each part turned out to be.
    data is therefore the profile's, and the step the tenant run carries is the
    one the party stage runs. There is no separate publish request for a party on
    its own.
-5. *A retry resumes a stopped run.* =workflow.v1.instances.retry= resumes a run
+5. *A retry resumes a stopped run.* =workflow.v1.ops.retry_workflow_instance= resumes a run
    that stopped on its failed step: it re-dispatches that step under its own
    identity, clears the run's error, and leaves every completed step and its
    result alone. The engine's =recover_in_progress()= stays for runs that were

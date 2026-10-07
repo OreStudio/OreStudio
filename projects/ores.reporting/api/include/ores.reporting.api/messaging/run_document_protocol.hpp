@@ -80,7 +80,7 @@ struct run_document {
  */
 struct save_run_document_request {
     using response_type = struct save_run_document_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.run_documents.save";
+    static constexpr std::string_view nats_subject = "reporting.v1.run_documents.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -106,7 +106,7 @@ struct save_run_document_response {
  */
 struct bind_configuration_request {
     using response_type = struct bind_configuration_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.run_documents.bind";
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.bind_configuration";
     /**
      * @brief Whether the caller must have established a session first.
      *

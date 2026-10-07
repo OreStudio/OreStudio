@@ -174,8 +174,8 @@ Three protocols carry no entity, because no table backs them.
 | Protocol | Subject | Payload |
 |----------+---------+---------|
 | =asset_class= | =refdata.v1.asset-classes.list= | =asset_class_info=, a joined catalogue row |
-| =calendar_adjustment= | =refdata.v1.calendar_adjustments.export= | =calendar_adjustment=, a transient DTO built from calendar and calendar_exception rows |
-| =calendar_materialisation= | =refdata.v1.calendar_dates.regenerate= | A command with no payload type |
+| =calendar_adjustment= | =refdata.v1.ops.get_calendar_adjustments= | =calendar_adjustment=, a transient DTO built from calendar and calendar_exception rows |
+| =calendar_materialisation= | =refdata.v1.ops.regenerate_calendar_dates= | A command with no payload type |
 
 * Useful Pages
 

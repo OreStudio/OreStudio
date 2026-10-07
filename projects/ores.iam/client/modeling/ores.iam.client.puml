@@ -84,8 +84,8 @@ note right of "ores::iam::client::token_state"
 Declared in an anonymous namespace in service_token_provider.cpp, so it is
 internal to that translation unit and appears in no header. It is the state the
 returned callable captures in a shared_ptr, and it carries the behaviour the
-header documents: authenticate() posts iam.v1.auth.service-login and caches the
-JWT with its expiry, refresh() posts iam.v1.auth.refresh carrying the cached
+header documents: authenticate() posts iam.v1.ops.service_login and caches the
+JWT with its expiry, refresh() posts iam.v1.ops.refresh carrying the cached
 JWT as an Authorization bearer header, and refresh_if_needed() calls refresh()
 once now is within refresh_margin of expires_at.
 end note
@@ -109,7 +109,7 @@ note right of "ores::iam::messaging::service_login_request"
 The subject the provider's first login goes to. The source never spells the
 string: it takes service_login_request::nats_subject, so a rename in the
 protocol model moves this component's target with it. The value is
-"iam.v1.auth.service-login".
+"iam.v1.ops.service_login".
 end note
 
 class ores::iam::messaging::refresh_request <<struct>> {
@@ -117,7 +117,7 @@ class ores::iam::messaging::refresh_request <<struct>> {
 }
 note right of "ores::iam::messaging::refresh_request"
 The subject a proactive refresh goes to, taken the same way from
-refresh_request::nats_subject. The value is "iam.v1.auth.refresh".
+refresh_request::nats_subject. The value is "iam.v1.ops.refresh".
 end note
 
 class ores::nats::service::client

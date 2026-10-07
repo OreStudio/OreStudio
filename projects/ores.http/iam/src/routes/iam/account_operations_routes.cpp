@@ -218,9 +218,9 @@ void account_operations_routes::register_routes(
     nats_client& session) {
     BOOST_LOG_SEV(lg(), info) << "Registering account_operations routes";
 
-    auto save_account_route = router->post("/api/v1/iam/accounts/save")
+    auto save_account_route = router->post("/api/v1/iam/accounts/put")
                                   .summary("Save account")
-                                  .description("Forwards to the iam.v1.accounts.save operation.")
+                                  .description("Forwards to the iam.v1.accounts.put operation.")
                                   .tags({"iam"})
                                   .auth_required()
                                   .body<messaging::save_account_request>()
@@ -233,9 +233,9 @@ void account_operations_routes::register_routes(
     registry->register_route(save_account_built);
 
     auto update_account_route =
-        router->post("/api/v1/iam/accounts/update")
+        router->post("/api/v1/iam/ops/update_account")
             .summary("Update account")
-            .description("Forwards to the iam.v1.accounts.update operation.")
+            .description("Forwards to the iam.v1.ops.update_account operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::update_account_request>()
@@ -262,9 +262,9 @@ void account_operations_routes::register_routes(
     router->add_route(delete_account_built);
     registry->register_route(delete_account_built);
 
-    auto lock_account_route = router->post("/api/v1/iam/accounts/lock")
+    auto lock_account_route = router->post("/api/v1/iam/ops/lock_account")
                                   .summary("Lock account")
-                                  .description("Forwards to the iam.v1.accounts.lock operation.")
+                                  .description("Forwards to the iam.v1.ops.lock_account operation.")
                                   .tags({"iam"})
                                   .auth_required()
                                   .body<messaging::lock_account_request>()
@@ -277,9 +277,9 @@ void account_operations_routes::register_routes(
     registry->register_route(lock_account_built);
 
     auto unlock_account_route =
-        router->post("/api/v1/iam/accounts/unlock")
+        router->post("/api/v1/iam/ops/unlock_account")
             .summary("Unlock account")
-            .description("Forwards to the iam.v1.accounts.unlock operation.")
+            .description("Forwards to the iam.v1.ops.unlock_account operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::unlock_account_request>()
@@ -292,9 +292,9 @@ void account_operations_routes::register_routes(
     registry->register_route(unlock_account_built);
 
     auto reset_password_route =
-        router->post("/api/v1/iam/accounts/reset-password")
+        router->post("/api/v1/iam/ops/reset_password")
             .summary("Reset password")
-            .description("Forwards to the iam.v1.accounts.reset-password operation.")
+            .description("Forwards to the iam.v1.ops.reset_password operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::reset_password_request>()
@@ -307,9 +307,9 @@ void account_operations_routes::register_routes(
     registry->register_route(reset_password_built);
 
     auto update_my_email_route =
-        router->post("/api/v1/iam/accounts/update-email")
+        router->post("/api/v1/iam/ops/update_my_email")
             .summary("Update my email")
-            .description("Forwards to the iam.v1.accounts.update-email operation.")
+            .description("Forwards to the iam.v1.ops.update_my_email operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::update_my_email_request>()
@@ -322,9 +322,9 @@ void account_operations_routes::register_routes(
     registry->register_route(update_my_email_built);
 
     auto change_password_route =
-        router->post("/api/v1/iam/accounts/change-password")
+        router->post("/api/v1/iam/ops/change_password")
             .summary("Change password")
-            .description("Forwards to the iam.v1.accounts.change-password operation.")
+            .description("Forwards to the iam.v1.ops.change_password operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::change_password_request_typed>()

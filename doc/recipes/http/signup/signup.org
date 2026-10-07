@@ -8,28 +8,28 @@
 #+level: cross
 #+filetags: :recipe:http:signup:
 
-This file documents the signup resource over HTTP. Its one endpoint is =POST /api/v1/iam/auth/signup=, and the section below exports it as a Hurl file into =projects/ores.http/scripts/library/=, which the harness runs.
+This file documents the signup resource over HTTP. Its one endpoint is =POST /api/v1/iam/ops/signup=, and the section below exports it as a Hurl file into =projects/ores.http/scripts/library/=, which the harness runs.
 
 * Endpoints
 
-** =POST /api/v1/iam/auth/signup=
+** =POST /api/v1/iam/ops/signup=
 :PROPERTIES:
 :ID: 69F081CD-081B-5DF5-8B1E-1057089E116F
 :END:
 
 Signup. It needs no session.
 
-It forwards to =iam.v1.auth.signup=.
+It forwards to =iam.v1.ops.signup=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/auth/signup
+POST /api/v1/iam/ops/signup
 #+end_example
 
 #+name: signup-signup
 #+begin_src hurl :tangle signup-signup.hurl :exports none
-POST {{base_url}}/api/v1/iam/auth/signup
+POST {{base_url}}/api/v1/iam/ops/signup
 Accept: application/json
 HTTP 200
 #+end_src

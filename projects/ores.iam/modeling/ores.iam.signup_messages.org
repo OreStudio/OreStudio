@@ -24,7 +24,7 @@ settled in
 defaults]], and the path the call takes is
 [[id:504863AB-C45A-47E8-BB77-AADCB620A305][the entry journeys]]. The read that
 tells a screen whether to offer the form at all is a separate subject,
-=iam.v1.auth.registration-policy=.
+=iam.v1.ops.registration_policy=.
 
 * Includes
 
@@ -36,7 +36,7 @@ tells a screen whether to offer the form at all is a separate subject,
 
 ** signup_request
 :PROPERTIES:
-:subject: iam.v1.auth.signup
+:subject: iam.v1.ops.signup
 :auth: none
 :response: signup_response
 :http_route: true

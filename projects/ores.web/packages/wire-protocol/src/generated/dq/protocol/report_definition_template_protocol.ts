@@ -81,7 +81,7 @@ export interface ListDqReportDefinitionTemplatesResponse {
 }
 
 export const subjects = {
-    list_dq_report_definition_templates_request: 'dq.v1.report-definition-templates.list',
+    list_dq_report_definition_templates_request: 'dq.v1.report_definition_templates.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

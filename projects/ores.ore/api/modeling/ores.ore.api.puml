@@ -84,10 +84,10 @@ namespace ores #F2F2F2 {
 '
 ' The part publishes three subjects:
 '
-'   workflow.v1.ore.import                the import workflow trigger
+'   workflow.v1.ops.ore_import                the import workflow trigger
 '   ore.v1.ore.import.{execute,rollback}  the import saga steps
 '
-' The saga subjects double the component name: ore.v1.ore.import.execute
+' The saga subjects double the component name: ore.v1.ops.ore_import_execute
 ' says "ore" twice.
 
 ores::ore::messaging::ore_import_request --> ores::ore::messaging::ore_import_response : response_type

@@ -141,36 +141,36 @@ a hash server-side; no read returns one.
 |------+-----------+---------+--------|
 | Choose a starting point | List the seed profiles | =iam.v1.seed_profiles.list= | exists |
 | Choose a starting point | Read a profile's steps and its parameter schema | =iam.v1.seed_profile_steps.list-by-seed-profile-id= | exists |
-| Describe the tenant | Submit the tenant and its administrator | =iam.v1.tenants.provision= | exists |
-| Provisioning | Follow the workflow instance's progress | =workflow.v1.instances.steps= | exists |
-| Provisioning | Retry from the failed step | =workflow.v1.instances.retry= | exists |
-| Provisioning | Discard a failed tenant | =iam.v1.system.reset-tenant= | exists |
-| Hand off | Sign out | =iam.v1.auth.logout= | exists |
-| Hand off | Sign in as the tenant administrator | =iam.v1.auth.login= | exists |
-| Hand off | Choose the party to start in | =iam.v1.accounts.select-party= | exists |
+| Describe the tenant | Submit the tenant and its administrator | =iam.v1.ops.provision_tenant= | exists |
+| Provisioning | Follow the workflow instance's progress | =workflow.v1.ops.get_workflow_steps= | exists |
+| Provisioning | Retry from the failed step | =workflow.v1.ops.retry_workflow_instance= | exists |
+| Provisioning | Discard a failed tenant | =iam.v1.ops.reset_tenant= | exists |
+| Hand off | Sign out | =iam.v1.ops.logout= | exists |
+| Hand off | Sign in as the tenant administrator | =iam.v1.ops.login= | exists |
+| Hand off | Choose the party to start in | =iam.v1.ops.select_party= | exists |
 
-=iam.v1.tenants.provision= is declared in
+=iam.v1.ops.provision_tenant= is declared in
 [[id:E37DCAAC-30A3-4E7E-890D-EBD226538690][ores.iam.tenant_provisioning_messages]];
-=iam.v1.auth.login= and =iam.v1.auth.logout= are declared in
+=iam.v1.ops.login= and =iam.v1.ops.logout= are declared in
 [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]], and
-=iam.v1.accounts.select-party= in
+=iam.v1.ops.select_party= in
 [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. All of
 them exist in the generated web protocol. Completing the tenant is not a
 request of its own: the last step of the run the provision request starts acts
 on the tenant the run provisions, marks it /active/, clears its bootstrap mode
-and completes its onboarding. =workflow.v1.instances.steps= and
-=workflow.v1.instances.retry= are not in the generated web protocol: the
+and completes its onboarding. =workflow.v1.ops.get_workflow_steps= and
+=workflow.v1.ops.retry_workflow_instance= are not in the generated web protocol: the
 generator emits no =workflow= package for the browser, so the BFF adds a route
 for each and the wire client parses the reply.
 
-=iam.v1.tenants.provision= is the one verb that provisions a tenant. It takes
+=iam.v1.ops.provision_tenant= is the one verb that provisions a tenant. It takes
 the profile code, the tenant fields, the administrator fields and the profile's
 parameter values, creates the tenant and its administrator, and answers at once
 with the id of the run that executes the steps the profile orders. It serves
 every tenant, the first one included, and the shell's =provision tenant= and
 =bootstrap setup= send the same request and follow the same progress read.
 
-=iam.v1.system.reset-tenant= discards a half-provisioned tenant. It soft-deletes
+=iam.v1.ops.reset_tenant= discards a half-provisioned tenant. It soft-deletes
 the admin-created data, turns the operational parties /inactive/, and sets the
 bootstrap flag again. =iam.v1.tenants.delete= is =partial= by comparison: it
 soft-deletes the tenant row and its delete rule sets the status to /terminated/,
@@ -185,7 +185,7 @@ that gap in full.
    =projects/ores.web/scripts/verify-first-run.ts= walks it. What no script
    covers is the standalone route: =/tenants/new= is walked in a browser and
    recorded in =evidence/new_tenant_journey_live.txt=, which is manual.
-2. *No discard that stops the workflow.* =iam.v1.system.reset-tenant= discards
+2. *No discard that stops the workflow.* =iam.v1.ops.reset_tenant= discards
    the tenant, but it does not stop a workflow instance the tenant owns.
    =iam.v1.tenants.delete= closes the row and sets the status to /terminated/,
    and it also leaves a running workflow alone. The missing part is the stop,
@@ -215,14 +215,14 @@ each part turned out to be.
    =iam.v1.seed_profile_parameters.list-by-seed-profile-id= answer its ordered
    steps and its parameter schema. The screen builds its cards from those rows
    and holds none of them in code.
-3. *One provision request serves every tenant.* =iam.v1.tenants.provision= takes
+3. *One provision request serves every tenant.* =iam.v1.ops.provision_tenant= takes
    the profile code, the tenant fields, the administrator fields and the
    profile's parameter values, returns a workflow instance id at once, and is
    what the page follows. The tenant and its administrator exist when it
    answers; the steps run afterwards.
 4. *Progress is read, not pushed.* A step is followed through a read rather
    than a pushed event. A run started through the generic request is followed
-   through =workflow.v1.instances.steps=, which answers the
+   through =workflow.v1.ops.get_workflow_steps=, which answers the
    run's status, the step it is executing and one summary per step, and both
    the browser route and the wire-client method behind it exist, so the page
    renders its rail from the read and asks again while the run is open. The
@@ -232,7 +232,7 @@ each part turned out to be.
    read every entity's own event. That mismatch is owned by
    [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]].
 5. *A retry resumes a stopped run.* The contract keeps completed steps and
-   resumes from the failed one. =workflow.v1.instances.retry= resumes a run that
+   resumes from the failed one. =workflow.v1.ops.retry_workflow_instance= resumes a run that
    stopped on its failed step: it re-dispatches that step under its own identity,
    clears the run's error, and leaves every completed step and its result alone.
    A run whose definition declares the compensate policy still rolls back

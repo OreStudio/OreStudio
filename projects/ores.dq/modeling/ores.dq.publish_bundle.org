@@ -35,7 +35,7 @@ bundle-publish workflow and reads the publishable datasets.
 
 ** publish_bundle_request
 :PROPERTIES:
-:subject:  dq.v1.bundles.publish
+:subject:  dq.v1.ops.publish_bundle
 :response: publish_bundle_response
 :END:
 

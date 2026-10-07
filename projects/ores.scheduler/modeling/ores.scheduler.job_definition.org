@@ -136,7 +136,7 @@ Execution mode: =execute_sql= or =nats_publish=.
 :END:
 
 Payload for the =nats_publish= action type. The scheduler seed writes an empty
-object; the compute seed writes ={"subject":"compute.v1.work.reap"}=.
+object; the compute seed writes ={"subject":"compute.v1.ops.reap_work"}=.
 
 ** is_active
 :PROPERTIES:

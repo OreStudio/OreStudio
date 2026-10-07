@@ -82,7 +82,7 @@ payload on it. Two forms exist, and the payload selects between them.
   the receiver performs is not part of the firing.
 
 The scheduler's stale-result reaper, =compute.v1.reap.stale_results=,
-publishes on =compute.v1.work.reap= every minute in the notification
+publishes on =compute.v1.ops.reap_work= every minute in the notification
 form. The request form belongs to a trigger whose acceptance matters; the
 per-definition trigger that reporting registers is the case in service.
 

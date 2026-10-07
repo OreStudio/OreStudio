@@ -50,7 +50,7 @@ export interface AskForRolesResponse {
 }
 
 export const subjects = {
-    ask_for_roles_request: 'iam.v1.role-requests.ask',
+    ask_for_roles_request: 'iam.v1.ops.ask_for_roles',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

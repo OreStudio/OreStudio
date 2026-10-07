@@ -26,7 +26,7 @@ The command is shaped like this:
 bootstrap status
 #+end_example
 
-It is addressed at =iam.v1.bootstrap.status=.
+It is addressed at =iam.v1.ops.bootstrap_status=.
 
 #+name: bootstrap-status
 #+begin_src ores-shell :tangle bootstrap-status.ores :exports none
@@ -47,7 +47,7 @@ The command is shaped like this:
 bootstrap create-initial-admin <principal> <password> <email>
 #+end_example
 
-It is addressed at =iam.v1.bootstrap.create-admin=.
+It is addressed at =iam.v1.ops.create_initial_admin=.
 
 #+name: bootstrap-create-initial-admin
 #+begin_src ores-shell :tangle bootstrap-create-initial-admin.ores :exports none

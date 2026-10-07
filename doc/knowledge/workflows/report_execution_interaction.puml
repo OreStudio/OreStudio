@@ -35,27 +35,27 @@ participant "storage\n(the HTTP server)" as storage
 caller -> reporting : reporting.v1.ops.trigger_report_instance
 activate reporting
 reporting -> reporting : create the instance, pending then running
-reporting -> engine : workflow.v1.start\n(report_execution_workflow, and the run configuration)
+reporting -> engine : workflow.v1.ops.start_workflow\n(report_execution_workflow, and the run configuration)
 deactivate reporting
 activate engine
 engine -> engine : build the chain from\npre_processing and post_processing
 
 alt pre-processing executes
-    engine -> handlers : reporting.v1.report.gather-trades
+    engine -> handlers : reporting.v1.ops.gather_trades
     handlers --> engine : gather_trades_result
-    engine -> handlers : reporting.v1.report.gather-market-data
+    engine -> handlers : reporting.v1.ops.gather_market_data
     handlers --> engine : gather_market_data_result
-    engine -> handlers : reporting.v1.report.assemble-bundle
+    engine -> handlers : reporting.v1.ops.assemble_bundle
     handlers --> engine : assemble_bundle_result
-    engine -> ore : ore.v1.report.prepare-package
+    engine -> ore : ore.v1.ops.prepare_ore_package
     ore -> storage : write the input archive
     ore --> engine : prepare_ore_package_result
 else pre-processing is substituted
-    engine -> handlers : reporting.v1.report.resolve-prepared-input
+    engine -> handlers : reporting.v1.ops.resolve_prepared_input
     handlers --> engine : prepare_ore_package_result\n(the named archive, unread)
 end
 
-engine -> compute : compute.v1.report.submit
+engine -> compute : compute.v1.ops.submit_compute
 activate compute
 compute -> compute : create the batch and its workunits
 compute -> grid : workunit change event
@@ -67,21 +67,21 @@ compute --> engine : step completed
 deactivate compute
 
 alt post-processing executes
-    engine -> handlers : reporting.v1.report.collect-compute-results
+    engine -> handlers : reporting.v1.ops.collect_compute_results
     handlers --> engine : collect_compute_results_result
 else post-processing is ignored
-    engine -> handlers : reporting.v1.report.ignore-compute-results
+    engine -> handlers : reporting.v1.ops.ignore_compute_results
     handlers --> engine : collect_compute_results_result\n(the batch named, unread)
 end
 
-engine -> handlers : reporting.v1.report.finalise
+engine -> handlers : reporting.v1.ops.finalise_report
 handlers --> engine : finalise_report_result
 engine --> engine : instance completed
 deactivate engine
 
 note over engine, handlers
   On a step failure the engine compensates the steps that completed, in reverse.
-  Every step of this workflow compensates through reporting.v1.report.fail, so
+  Every step of this workflow compensates through reporting.v1.ops.fail_report, so
   compensation marks the report instance failed rather than undoing a phase.
 end note
 

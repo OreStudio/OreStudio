@@ -57,11 +57,11 @@ exit
 =ores= at =ore/imports/{request_id}.tar.gz=, the key the platform's bucket and
 key protocol declares for it. The pack keeps the paths relative to
 the directory it is given, so the import reads the tree back exactly as
-staged. =ore import= sends the request on =workflow.v1.ore.import= and
+staged. =ore import= sends the request on =workflow.v1.ops.ore_import= and
 then waits for the workflow the handler returns. A failed step stops
 the script at that line, so the run cannot carry on past a broken
 import. =ore export= sends =export_portfolio_request= on
-=trading.v1.trades.portfolio.export= and writes what the ORE exporter
+=trading.v1.ops.export_portfolio= and writes what the ORE exporter
 makes of the returned items.
 
 The import uses its default choices and the logged-in account's default

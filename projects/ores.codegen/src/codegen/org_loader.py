@@ -5095,7 +5095,7 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
     nothing to carry, so neither becomes a route.
 
     The route addresses the operation by the subject the protocol already
-    states, transliterated into a path: ``iam.v1.accounts.lock`` becomes
+    states, transliterated into a path: ``iam.v1.ops.lock_account`` becomes
     ``/api/v1/iam/accounts/lock``. There is no verb to derive -- a declared
     operation's meaning is the service's -- so every route is a POST and the
     canonical request travels as the body. The gateway invents no addressing

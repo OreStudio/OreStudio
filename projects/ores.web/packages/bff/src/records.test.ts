@@ -599,7 +599,7 @@ describe('the calendar routes', () => {
 
     it('rebuilds one calendar up to a year', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'refdata.v1.calendar_dates.regenerate': {
+            'refdata.v1.ops.regenerate_calendar_dates': {
                 success: true,
                 message: '',
                 rows_written: 730,

@@ -50,7 +50,7 @@ config {
     system_party_owns_config: Boolean = true
     one_producer_per_source: Boolean = true
     per_party_materialization: Boolean = true
-    republish_subject: String = "marketdata.v1.tick.<tenant>.<party>.<ore_key>"
+    republish_subject: String = "marketdata.v1.ops.market_tick.<tenant>.<party>.<ore_key>"
 }
 
 -- ------------------------------------------------------------
@@ -152,7 +152,7 @@ entity MarketObservation {
 -- The ore_key subject is the ore_key with '/' replaced by '.',
 -- lower-cased (fx_spot_subscription's ore_key_to_subject).
 entity RepublishedTickStream {
-    subject: String  -- marketdata.v1.tick.<tenant>.<party>.<ore_key>
+    subject: String  -- marketdata.v1.ops.market_tick.<tenant>.<party>.<ore_key>
     consumer: `FX_SPOT_SUBSCRIPTION` | `CHART` | ...
 }
 

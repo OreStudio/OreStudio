@@ -77,9 +77,10 @@ TEST_CASE("bootstrap_routes_registers_every_declared_operation", tags) {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             expected_route{http_method::post, std::string{"/api/v1/iam/bootstrap/status"}, false},
              expected_route{
-                 http_method::post, std::string{"/api/v1/iam/bootstrap/create-admin"}, false},
+                 http_method::post, std::string{"/api/v1/iam/ops/bootstrap_status"}, false},
+             expected_route{
+                 http_method::post, std::string{"/api/v1/iam/ops/create_initial_admin"}, false},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -101,9 +102,10 @@ TEST_CASE("bootstrap_routes_requires_a_session_where_the_message_does", tags) {
     // session cannot be registered without one, and one the model declares
     // public is not made unreachable by a flag it never asked for.
     for (const auto& expected : {
-             expected_route{http_method::post, std::string{"/api/v1/iam/bootstrap/status"}, false},
              expected_route{
-                 http_method::post, std::string{"/api/v1/iam/bootstrap/create-admin"}, false},
+                 http_method::post, std::string{"/api/v1/iam/ops/bootstrap_status"}, false},
+             expected_route{
+                 http_method::post, std::string{"/api/v1/iam/ops/create_initial_admin"}, false},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

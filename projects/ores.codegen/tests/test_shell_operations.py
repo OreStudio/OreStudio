@@ -82,7 +82,7 @@ class TestWhichMessagesBecomeCommands:
 
     def test_a_subject_and_a_response_make_a_command(self):
         commands = shell_command_projection([
-            _message("login_request", "iam.v1.auth.login", "login_response"),
+            _message("login_request", "iam.v1.ops.login", "login_response"),
         ])
         assert [c["command"] for c in commands] == ["login"]
 
@@ -95,14 +95,14 @@ class TestWhichMessagesBecomeCommands:
     def test_a_request_with_no_response_is_not_a_command(self):
         # Nothing would be printed, so a command would look like it failed.
         commands = shell_command_projection([
-            _message("public_key_request", "iam.v1.auth.public-key"),
+            _message("public_key_request", "iam.v1.ops.public_key"),
         ])
         assert commands == []
 
     def test_the_declared_order_is_the_registered_order(self):
         commands = shell_command_projection([
-            _message("logout_request", "iam.v1.auth.logout", "logout_response"),
-            _message("login_request", "iam.v1.auth.login", "login_response"),
+            _message("logout_request", "iam.v1.ops.logout", "logout_response"),
+            _message("login_request", "iam.v1.ops.login", "login_response"),
         ])
         assert [c["command"] for c in commands] == ["logout", "login"]
 
@@ -112,7 +112,7 @@ class TestHowFieldsArrive:
 
     def test_a_field_with_no_default_is_a_positional(self):
         commands = shell_command_projection([
-            _message("login_request", "iam.v1.auth.login", "login_response",
+            _message("login_request", "iam.v1.ops.login", "login_response",
                      [_field("principal", "std::string")]),
         ])
         assert [f["name"] for f in commands[0]["positionals"]] == ["principal"]
@@ -133,7 +133,7 @@ class TestHowFieldsArrive:
 
     def test_a_list_field_is_filled_from_one_token(self):
         commands = shell_command_projection([
-            _message("lock_account_request", "iam.v1.accounts.lock",
+            _message("lock_account_request", "iam.v1.ops.lock_account",
                      "lock_account_response",
                      [_field("account_ids", "std::vector<std::string>")]),
         ])
@@ -141,7 +141,7 @@ class TestHowFieldsArrive:
 
     def test_the_required_count_is_the_positional_count(self):
         commands = shell_command_projection([
-            _message("create_initial_admin_request", "iam.v1.bootstrap.create-admin",
+            _message("create_initial_admin_request", "iam.v1.ops.create_initial_admin",
                      "create_initial_admin_response", [
                          _field("principal", "std::string"),
                          _field("password", "std::string"),
@@ -209,20 +209,20 @@ class TestAuthentication:
 
     def test_a_message_without_the_property_requires_a_session(self):
         commands = shell_command_projection([
-            _message("logout_request", "iam.v1.auth.logout", "logout_response"),
+            _message("logout_request", "iam.v1.ops.logout", "logout_response"),
         ])
         assert commands[0]["public"] is False
 
     def test_the_model_states_it_and_the_command_reads_it(self):
         # The projection reads the message's own fact rather than a second
         # derivation, so the shell and the protocol cannot disagree.
-        message = _message("login_request", "iam.v1.auth.login", "login_response")
+        message = _message("login_request", "iam.v1.ops.login", "login_response")
         message["requires_session"] = "false"
         commands = shell_command_projection([message])
         assert commands[0]["public"] is True
 
     def test_a_message_without_the_fact_requires_a_session(self):
-        message = _message("logout_request", "iam.v1.auth.logout", "logout_response")
+        message = _message("logout_request", "iam.v1.ops.logout", "logout_response")
         message["requires_session"] = "true"
         assert shell_command_projection([message])[0]["public"] is False
 
@@ -237,7 +237,7 @@ def _model_body(auth_line):
 
 ** login_request
 :PROPERTIES:
-:subject: iam.v1.auth.login
+:subject: iam.v1.ops.login
 :response: login_response
 {auth_line}:END:
 
@@ -348,7 +348,7 @@ class TestTheCommandVerb:
 
 ** bootstrap_status_request
 :PROPERTIES:
-:subject: iam.v1.bootstrap.status
+:subject: iam.v1.ops.bootstrap_status
 :response: bootstrap_status_response
 :http_route: true
 {verb_line}:END:
@@ -390,7 +390,7 @@ class TestTheCommandVerb:
         operation = self._operation("ores.iam.bootstrap_messages.org")
         status = [c for c in operation["shell_commands"]
                   if c["command"] == "status"]
-        assert [c["subject"] for c in status] == ["iam.v1.bootstrap.status"]
+        assert [c["subject"] for c in status] == ["iam.v1.ops.bootstrap_status"]
 
     def _operation(self, filename):
         return load_org_operation_model(IAM_MODELING / filename)["operation"]
@@ -460,7 +460,7 @@ class TestTheRealModels:
         command = operation["shell_commands"][0]
         assert command["positional_count"] == 1
         assert command["flags"] == []
-        assert command["subject"] == "iam.v1.sessions.samples"
+        assert command["subject"] == "iam.v1.ops.get_session_samples"
         assert operation["shell_command_count"] == 1
 
     def test_the_helper_flags_track_the_fields(self):

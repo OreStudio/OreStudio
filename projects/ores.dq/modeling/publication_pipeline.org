@@ -41,7 +41,7 @@ registration, and any publisher UI config page.
   ┌─────────────────────────────────────────────────────────────────────┐
   │ Librarian UI (went with the removed desktop client)                  │
   │  user picks a bundle, fills per-artefact-type params, clicks Apply  │
-  │  → dq.v1.bundles.publish  {bundle_code, target_tenant_id, params}   │
+  │  → dq.v1.ops.publish_bundle  {bundle_code, target_tenant_id, params}   │
   └───────────────────────────┬─────────────────────────────────────────┘
                               │  NATS request
   ┌───────────────────────────▼─────────────────────────────────────────┐
@@ -199,7 +199,7 @@ per entity.
 bundles ("The Stacks") and their member datasets ("The Registry").
 Selecting *Publish* opened =PublishBundleWizard=, which walked
 the user through per-artefact-type parameter pages before sending
-=dq.v1.bundles.publish=. Parameter pages are hand-coded per artefact
+=dq.v1.ops.publish_bundle=. Parameter pages are hand-coded per artefact
 type today (e.g. =LeiPartyConfigPage= for LEI's =root_lei= etc.) — the
 originally-intended generic =publication_params_schema= (a =jsonb=
 column on =ores_dq_artefact_types_tbl= that would let the wizard render
@@ -253,7 +253,7 @@ pipeline order:
    registers the =report_definitions= artefact type, pointing
    =artefact_table → dq_report_definitions_artefact_tbl=,
    =target_table → reporting_report_definitions_tbl=, and
-   =target_subject → reporting.v1.report-definitions.publish-from-dq=
+   =target_subject → reporting.v1.ops.publish_report_definitions_from_dq=
    — this row is the glue the workflow step uses to know which NATS
    subject to call (stage 1).
 
@@ -302,7 +302,7 @@ pipeline order:
 
 11. Registrar wiring — [[proj:projects/ores.reporting/core/src/messaging/registrar.cpp][~projects/ores.reporting/core/src/messaging/registrar.cpp~]]
     subscribes #10 on the subject
-    =reporting.v1.report-definitions.publish-from-dq= named in #3
+    =reporting.v1.ops.publish_report_definitions_from_dq= named in #3
     (stage 4).
 
 12. Bundle-publish orchestration (generic, not report_definitions-specific)
@@ -317,7 +317,7 @@ pipeline order:
 13. Publish entry point (generic — no bespoke wizard page needed here,
     unlike LEI's =root_lei= parameters). The UI lists the
     =risk_management= bundle for the user to select, then sends
-    =dq.v1.bundles.publish= with =bundle_code = "risk_management"= on
+    =dq.v1.ops.publish_bundle= with =bundle_code = "risk_management"= on
     Apply. No per-entity code is needed, since =report_definitions=
     needs no publish-time parameters (stage 5). The screen that did
     this, =DataLibrarianWindow=, went with the desktop client, so nothing

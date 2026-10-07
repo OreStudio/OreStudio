@@ -566,7 +566,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.roles.suggest-commands.
+     * @brief Serves iam.v1.ops.suggest_role_commands.
      *
      * The answer names an account's id and its tenant's hostname, so it is an
      * administrator's read: the caller needs iam::roles:assign, and naming a

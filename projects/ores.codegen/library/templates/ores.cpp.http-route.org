@@ -155,14 +155,14 @@ so, and a new operation cannot widen the gateway by accident:
 #+begin_src org
 ** lock_account_request
 :PROPERTIES:
-:subject: iam.v1.accounts.lock
+:subject: iam.v1.ops.lock_account
 :response: lock_account_response
 :http_route: true
 :END:
 #+end_src
 
 The route states the address the protocol already agreed on. The subject
-=iam.v1.accounts.lock= reaches =/api/v1/iam/accounts/lock=: the path is the
+=iam.v1.ops.lock_account= reaches =/api/v1/iam/accounts/lock=: the path is the
 subject transliterated, so the URL and the subject cannot disagree and a
 message the model renames moves its route in the same commit. A declared
 operation states no verb, so every route is a =POST= whose body is the

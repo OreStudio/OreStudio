@@ -48,7 +48,7 @@ namespace ores::assets::messaging {
  */
 struct upload_image_request {
     using response_type = struct upload_image_response;
-    static constexpr std::string_view nats_subject = "assets.v1.images.upload";
+    static constexpr std::string_view nats_subject = "assets.v1.ops.upload_image";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -82,7 +82,7 @@ struct upload_image_response {
  */
 struct get_image_upload_policy_request {
     using response_type = struct get_image_upload_policy_response;
-    static constexpr std::string_view nats_subject = "assets.v1.images.upload-policy";
+    static constexpr std::string_view nats_subject = "assets.v1.ops.get_image_upload_policy";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -126,7 +126,7 @@ struct get_image_upload_policy_response {
  */
 struct ensure_image_request {
     using response_type = struct ensure_image_response;
-    static constexpr std::string_view nats_subject = "assets.v1.images.ensure";
+    static constexpr std::string_view nats_subject = "assets.v1.ops.ensure_image";
     /**
      * @brief Whether the caller must have established a session first.
      *

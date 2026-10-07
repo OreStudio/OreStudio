@@ -112,7 +112,7 @@ The command is shaped like this:
 scheduler instances [--job <name>] [--limit <n>]
 #+end_example
 
-It is addressed at =scheduler.v1.job-instances.list=.
+It is addressed at =scheduler.v1.job_instances.list=.
 
 #+name: scheduler-instances
 #+begin_src ores-shell :tangle scheduler-instances.ores :exports none
@@ -135,7 +135,7 @@ The command is shaped like this:
 scheduler status
 #+end_example
 
-It is addressed at =scheduler.v1.status=.
+It is addressed at =scheduler.v1.ops.get_scheduler_status=.
 
 #+name: scheduler-status
 #+begin_src ores-shell :tangle scheduler-status.ores :exports none

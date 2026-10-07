@@ -58,7 +58,7 @@ a subject that nothing handles. This phase fixes both issues.
      - Otherwise → create instance with state =pending=.
 
 3. Replace the raw JSON publish to =workflow.v1.reports.run= with a
-   proper =start_workflow_message= publish to =workflow.v1.start=:
+   proper =start_workflow_message= publish to =workflow.v1.ops.start_workflow=:
    - Type: =report_execution_workflow=
    - =tenant_id=: from trigger message.
    - =request_json=: serialised =report_execution_request= (see 3.2).
@@ -98,7 +98,7 @@ steps and register the workflow definition in the engine.
    // Step 0: gather trades
    struct gather_trades_request {
        static constexpr std::string_view nats_subject =
-           "reporting.v1.report.gather-trades";
+           "reporting.v1.ops.gather_trades";
        std::string report_instance_id;
        std::string definition_id;
        std::string tenant_id;
@@ -115,7 +115,7 @@ steps and register the workflow definition in the engine.
    // Step 1: gather market data
    struct gather_market_data_request {
        static constexpr std::string_view nats_subject =
-           "reporting.v1.report.gather-market-data";
+           "reporting.v1.ops.gather_market_data";
        std::string report_instance_id;
        std::string definition_id;
        std::string tenant_id;
@@ -132,7 +132,7 @@ steps and register the workflow definition in the engine.
    // Step 2: assemble report input bundle
    struct assemble_bundle_request {
        static constexpr std::string_view nats_subject =
-           "reporting.v1.report.assemble-bundle";
+           "reporting.v1.ops.assemble_bundle";
        std::string report_instance_id;
        std::string definition_id;
        std::string tenant_id;
@@ -148,7 +148,7 @@ steps and register the workflow definition in the engine.
    // Step 3: ORE mapping and packaging (ores.ore.service)
    struct prepare_ore_package_request {
        static constexpr std::string_view nats_subject =
-           "ore.v1.report.prepare-package";
+           "ore.v1.ops.prepare_ore_package";
        std::string report_instance_id;
        std::string bundle_ref;
        std::string tenant_id;
@@ -164,7 +164,7 @@ steps and register the workflow definition in the engine.
    // Step 4: submit to compute (ores.compute.service)
    struct submit_compute_request {
        static constexpr std::string_view nats_subject =
-           "compute.v1.report.submit";
+           "compute.v1.ops.submit_compute";
        std::string report_instance_id;
        std::string tenant_id;
        std::string correlation_id;
@@ -180,7 +180,7 @@ steps and register the workflow definition in the engine.
    // Step 5: finalise report instance
    struct finalise_report_request {
        static constexpr std::string_view nats_subject =
-           "reporting.v1.report.finalise";
+           "reporting.v1.ops.finalise_report";
        std::string report_instance_id;
        std::string tenant_id;
        std::string correlation_id;
@@ -268,7 +268,7 @@ service.
    e. Get book scope from junction table.
    f. If book scope is empty, get portfolio scope; for each portfolio,
       query books (via =refdata.v1.books.list= or similar).
-   g. For each book, call =trading.v1.trades.portfolio.export= via
+   g. For each book, call =trading.v1.ops.export_portfolio= via
       outbound NATS to get trades with resolved instruments.
    h. Aggregate all =trade_export_item= vectors.
    i. Build =gather_trades_result= with serialised trades JSON and
@@ -374,7 +374,7 @@ Mark the report instance as completed or failed and record timestamps.
 
 3. Add a separate compensation handler that transitions the report
    instance to =failed= when the workflow compensates:
-   - Subject: =reporting.v1.report.fail=
+   - Subject: =reporting.v1.ops.fail_report=
    - Sets =output_message= from the error, =completed_at = now()=.
 
 *** Acceptance criteria

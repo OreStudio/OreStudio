@@ -28,7 +28,7 @@
 -- =============================================================================
 
 -- =============================================================================
--- Accounts: iam.v1.accounts.publish-from-dq
+-- Accounts: iam.v1.ops.publish_accounts_from_dq
 -- =============================================================================
 
 /**
@@ -219,7 +219,7 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
--- Account Contact Informations: iam.v1.account-contact-informations.publish-from-dq
+-- Account Contact Informations: iam.v1.ops.publish_account_contact_informations_from_dq
 -- =============================================================================
 
 /**

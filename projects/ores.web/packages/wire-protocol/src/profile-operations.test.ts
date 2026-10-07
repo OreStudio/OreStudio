@@ -135,7 +135,7 @@ describe('updateSelfAccount', () => {
             profileWrite,
         );
 
-        expect(sent[0]?.subject).toBe('iam.v1.accounts.update-self');
+        expect(sent[0]?.subject).toBe('iam.v1.ops.update_self_account');
         expect(sent[0]?.body).toEqual({
             full_name: 'Ada Lovelace',
             job_title: 'Chief Analyst',
@@ -199,7 +199,7 @@ describe('updateSelfContactInformation', () => {
             contactWrite,
         );
 
-        expect(sent[0]?.subject).toBe('iam.v1.account_contact_informations.update-self');
+        expect(sent[0]?.subject).toBe('iam.v1.ops.update_self_account_contact_information');
         expect(sent[0]?.body).toEqual({
             street_line_1: '1 Panton Street',
             street_line_2: '',
@@ -281,7 +281,7 @@ describe('updateAccount', () => {
             imageId: '',
         });
 
-        expect(sent[0]?.subject).toBe('iam.v1.accounts.update');
+        expect(sent[0]?.subject).toBe('iam.v1.ops.update_account');
         expect(sent[0]?.body).toEqual({
             account_id: ACCOUNT_ID,
             email: 'ada@example.com',
@@ -322,7 +322,7 @@ describe('readMyContactInformation', () => {
             callerAnswering({ result: okResult, account_contact_information: contactRow }, sent),
         );
 
-        expect(sent[0]?.subject).toBe('iam.v1.account_contact_informations.mine');
+        expect(sent[0]?.subject).toBe('iam.v1.ops.get_my_account_contact_information');
         expect(sent[0]?.body).toEqual({});
         expect(contact?.id).toBe(RECORD_ID);
         expect(contact?.city).toBe('London');

@@ -86,7 +86,7 @@ package "iam" #E8F4FD {
     signed-in caller: iam.v1.account_contact_informations.list, get and
     list_by_account_id require iam::account_contact_informations:read, as every
     generated read requires its resource's read code. A person reads their own
-    record through iam.v1.account_contact_informations.mine, which takes no
+    record through iam.v1.ops.get_my_account_contact_information, which takes no
     account id, and writes it through update-self; both are in
     [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See
     [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
@@ -475,7 +475,7 @@ package "iam" #E8F4FD {
     Who asked for which role is not every member's business, so the generated
     reads require iam::role_grant_requests:read, as every generated read
     requires its resource's read code. The person who asked reads their own requests
-    through the inbox's inbox.v1.approval-requests.mine. See
+    through the inbox's inbox.v1.ops.list_my_approval_requests. See
     [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
@@ -537,7 +537,7 @@ package "iam" #E8F4FD {
     The entity's canonical CRUD subjects are generated: role_registrar owns
     list/get/get-many/put/put-many/delete on iam.v1.roles.*. The
     authorization operation model declares a different set under the same
-    prefix -- iam.v1.roles.assign, .revoke, .by-account,
+    prefix -- iam.v1.ops.assign_role, .revoke, .by-account,
     .permissions and .suggest-commands -- so the two coexist rather than
     compete, and no handler is suppressed here.
     The list and the get are open to every signed-in member: a member reads the
@@ -803,7 +803,7 @@ package "iam" #E8F4FD {
     The entity's canonical CRUD subjects are generated: session_registrar
     owns list/get/get-many/put/put-many/delete on iam.v1.sessions.*. The
     operation models declare a different set under the same prefix --
-    iam.v1.sessions.active and iam.v1.sessions.samples -- so the two
+    iam.v1.ops.get_active_sessions and iam.v1.ops.get_session_samples -- so the two
     coexist rather than compete, and no handler is suppressed here.
     end note
 
@@ -2484,7 +2484,7 @@ package "refdata" #FFF3E0 {
     CRM Enabled Derived Pair Table
     A currency pair that is *not* a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge (see crm_driver_pair)
     but is nonetheless curated as available for on-demand triangulation via
-    marketdata.v1.crm.rate -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast
+    marketdata.v1.ops.get_crm_rate -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast
     the full reachable derived set, only serve a config-driven list on
     request. Owned by a crm_topology_config alongside its driver pairs.
     Scoped to a tenant and a party, matching its parent config.
@@ -6253,7 +6253,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_account_contact_informations_artefact_tbl
-    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.account_contact_informations.mine, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
+    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.ops.get_my_account_contact_information, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
     end note
 
     entity ores_dq_account_types_artefact_tbl  #F7E5FF {
@@ -12562,7 +12562,7 @@ package "compute" #EDE7F6 {
     To modify, update the template and regenerate.
     Node Sample Table
     One wrapper node's report, published fire-and-forget on
-    compute.v1.telemetry.node_samples and written here by the service. The
+    compute.v1.ops.node_sample and written here by the service. The
     rows are append-only, one per node per interval, and the dashboard shows
     the newest row of each node.
     The model states :current_state: for the same reason grid_sample does:
@@ -12856,7 +12856,7 @@ package "marketdata" #E3F2FD {
     tick names its own datum by its oresmd quote URI and its producer by source,
     and the ingest loop stores it once for each enabled binding of that source,
     under the binding's tenant and party, and republishes it on the per-party
-    realtime stream marketdata.v1.tick.<tenant_id>.<party_id>.<ore_key>, where the
+    realtime stream marketdata.v1.ops.market_tick.<tenant_id>.<party_id>.<ore_key>, where the
     key is the datum's canonical ORE key. Bindings are created by provisioning
     against the system party's config, not per office: each party consumes the
     shared stream into its own per-party series.

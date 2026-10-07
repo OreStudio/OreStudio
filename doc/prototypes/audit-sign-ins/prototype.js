@@ -162,7 +162,7 @@
               detail('Address', row.address, true) +
               detail('Started', row.startedAt) + '</div>' +
               '<div class="notice warn">Not available. Nothing serves the samples: ' +
-              'iam.v1.sessions.samples replies with success and no rows, and no route serves them in ' +
+              'iam.v1.ops.get_session_samples replies with success and no rows, and no route serves them in ' +
               'the browser either. The totals above are the session row\u2019s own counters.</div>';
         return '<section class="card">' +
             '<header class="chead"><h2>Session activity</h2>' +
@@ -216,7 +216,7 @@
                 '<span class="tlopen">' + (expanded ? 'Hide' : 'Activity') + '</span></button>' +
                 (expanded ? '<div class="tldetail">' + esc(row.bytesIn) + ' in and ' + esc(row.bytesOut) +
                     ' out over ' + esc(row.duration) + '. The samples that moved those totals have no ' +
-                    'read path: nothing serves iam.v1.sessions.samples.</div>' : '') + '</div>';
+                    'read path: nothing serves iam.v1.ops.get_session_samples.</div>' : '') + '</div>';
         }).join('');
         return '<section class="card tl">' +
             '<h2 style="font-size:1.125rem;font-weight:500">Sessions and their activity</h2>' +

@@ -51,14 +51,14 @@ person -> web : describe the tenant\nand its administrator
 
 person -> web : confirm
 web -> bff : request tenant provisioning
-bff -> iam : provision_tenant_command\n(iam.v1.tenants.provision)
+bff -> iam : provision_tenant_command\n(iam.v1.ops.provision_tenant)
 iam -> db : read the starting point and its declared parameters
 iam -> iam : validate every field and every parameter
 note over iam : a refusal is answered here;\nnothing is created
 iam -> db : create the tenant and its administrator\n(synchronous)
 db --> iam : the tenant identifier, the account identifier
 iam -> iam : mint the instance identifier
-iam -> engine : publish start_workflow_message\n(workflow.v1.start, the instance identifier)
+iam -> engine : publish start_workflow_message\n(workflow.v1.ops.start_workflow, the instance identifier)
 iam --> bff : the instance identifier, the tenant identifier,\nthe account identifier
 bff --> web : the instance identifier, the tenant identifier,\nthe account identifier
 web --> person : the run has started;\nthe tenant and its administrator exist
@@ -68,7 +68,7 @@ web --> person : the run has started;\nthe tenant and its administrator exist
 engine -> engine : look up the definition\n(by the run's workflow type)
 engine -> db : create the run in progress\nwith the ordered operations
 loop for each operation the starting point orders, in order
-    engine -> iam : dispatch the step\n(iam.v1.tenants.provision-step)
+    engine -> iam : dispatch the step\n(iam.v1.ops.provision_tenant-step)
     iam -> db : run the step
     iam --> engine : step completed
 end
@@ -80,7 +80,7 @@ iam --> engine : step completed
 
 loop while the run is in progress
     web -> bff : read the run's progress
-    bff -> engine : read the run's progress\n(workflow.v1.instances.steps)
+    bff -> engine : read the run's progress\n(workflow.v1.ops.get_workflow_steps)
     engine -> db : read the run and its steps
     db --> engine : the status, the steps
     engine --> bff : the status, the steps
@@ -101,7 +101,7 @@ else a step failed
         bff -> engine : resume the run from the failed step
     else the person discards
         web -> bff : discard the run
-        bff -> iam : reset the tenant\n(iam.v1.system.reset-tenant)
+        bff -> iam : reset the tenant\n(iam.v1.ops.reset_tenant)
     end
 end
 

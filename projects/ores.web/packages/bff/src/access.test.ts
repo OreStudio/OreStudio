@@ -121,7 +121,7 @@ function buildTestServer(answers: Record<string, Answer>) {
 describe('access routes', () => {
     it('answers the signed-in person roles with who gave each one and why', async () => {
         const { server, cookies } = buildTestServer({
-            'iam.v1.roles.mine': {
+            'iam.v1.ops.get_my_roles': {
                 result: { outcome: 'ok' },
                 roles: [
                     {
@@ -158,7 +158,7 @@ describe('access routes', () => {
 
     it('gives a role for the reason the person chose', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'iam.v1.roles.assign': { success: true, error_message: '' },
+            'iam.v1.ops.assign_role': { success: true, error_message: '' },
         });
 
         const response = await server.inject({
@@ -199,7 +199,7 @@ describe('access routes', () => {
 
     it('passes on the server words when it refuses to take a role away', async () => {
         const { server, cookies } = buildTestServer({
-            'iam.v1.roles.revoke': {
+            'iam.v1.ops.revoke_role': {
                 success: false,
                 error_message: 'You cannot take a role away from yourself.',
             },
@@ -223,7 +223,7 @@ describe('access routes', () => {
                 roles: [wireRole(TRADING, 'Trading'), wireRole(PRIYA, 'IamService')],
                 total: 2,
             },
-            'iam.v1.roles.permissions': {
+            'iam.v1.ops.get_role_permissions': {
                 result: { outcome: 'ok' },
                 permission_codes: ['refdata::currencies:read'],
             },
@@ -253,7 +253,7 @@ describe('access routes', () => {
                 permissionCodes: [],
             },
         ]);
-        expect(calls.filter((c) => c.subject === 'iam.v1.roles.permissions')).toHaveLength(1);
+        expect(calls.filter((c) => c.subject === 'iam.v1.ops.get_role_permissions')).toHaveLength(1);
     });
 
     it('keeps a role the registration default when it is renamed', async () => {
@@ -285,7 +285,7 @@ describe('access routes', () => {
 
     it('saves exactly the set of permissions the screen sends', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'iam.v1.roles.permissions.put': (body) => ({
+            'iam.v1.roles_permissions.put': (body) => ({
                 result: { outcome: 'ok' },
                 permission_codes: (body as { permission_codes: string[] }).permission_codes,
             }),

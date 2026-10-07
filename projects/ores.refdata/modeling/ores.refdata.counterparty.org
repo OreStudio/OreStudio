@@ -222,7 +222,7 @@ TypeScript twin render it.
 
 ** get_counterparty_composite_as_of_request
 :PROPERTIES:
-:subject: refdata.v1.counterparties.composite_as_of
+:subject: refdata.v1.ops.get_counterparty_composite_as_of
 :response: get_counterparty_composite_as_of_response
 :END:
 

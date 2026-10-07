@@ -418,19 +418,19 @@ export interface MarketTick {
 }
 
 export const subjects = {
-    get_crm_rate_request: 'marketdata.v1.crm.rate',
-    get_crm_rates_request: 'marketdata.v1.crm.rates',
-    republish_curve_request: 'marketdata.v1.curve_bootstrap.republish',
-    compute_curve_request: 'marketdata.v1.curve_bootstrap.compute',
-    get_curve_snapshot_request: 'marketdata.v1.curve-snapshot.get',
-    get_curve_snapshot_buckets_request: 'marketdata.v1.curve-snapshot.buckets',
-    import_market_data_request: 'marketdata.v1.import',
-    start_feeds_under_folder_request: 'marketdata.v1.market_feed_configs.start_folder',
-    stop_feeds_under_folder_request: 'marketdata.v1.market_feed_configs.stop_folder',
-    get_vintage_validity_request: 'marketdata.v1.market_feed_configs.vintage_validity',
-    export_market_data_to_storage_request: 'marketdata.v1.series.export-to-storage',
-    export_market_data_request: 'marketdata.v1.export',
-    market_tick: 'marketdata.v1.tick',
+    get_crm_rate_request: 'marketdata.v1.ops.get_crm_rate',
+    get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
+    republish_curve_request: 'marketdata.v1.ops.republish_curve',
+    compute_curve_request: 'marketdata.v1.ops.compute_curve',
+    get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
+    get_curve_snapshot_buckets_request: 'marketdata.v1.ops.get_curve_snapshot_buckets',
+    import_market_data_request: 'marketdata.v1.ops.import_market_data',
+    start_feeds_under_folder_request: 'marketdata.v1.ops.start_feeds_under_folder',
+    stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
+    get_vintage_validity_request: 'marketdata.v1.ops.get_vintage_validity',
+    export_market_data_to_storage_request: 'marketdata.v1.ops.export_market_data_to_storage',
+    export_market_data_request: 'marketdata.v1.ops.export_market_data',
+    market_tick: 'marketdata.v1.ops.market_tick',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

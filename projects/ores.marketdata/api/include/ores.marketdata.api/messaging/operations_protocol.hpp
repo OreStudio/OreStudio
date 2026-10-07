@@ -75,7 +75,7 @@ struct crm_rate_item {
  */
 struct get_crm_rate_request {
     using response_type = struct get_crm_rate_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.crm.rate";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_crm_rate";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -107,7 +107,7 @@ struct get_crm_rate_response {
  */
 struct get_crm_rates_request {
     using response_type = struct get_crm_rates_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.crm.rates";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_crm_rates";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -142,7 +142,7 @@ struct get_crm_rates_response {
  */
 struct republish_curve_request {
     using response_type = struct republish_curve_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.curve_bootstrap.republish";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.republish_curve";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -170,7 +170,7 @@ struct republish_curve_response {
  */
 struct compute_curve_request {
     using response_type = struct compute_curve_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.curve_bootstrap.compute";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.compute_curve";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -212,7 +212,7 @@ struct compute_curve_response {
  */
 struct get_curve_snapshot_request {
     using response_type = struct get_curve_snapshot_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.get";
+    static constexpr std::string_view nats_subject = "marketdata.v1.curve_snapshot.get";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -235,7 +235,7 @@ struct get_curve_snapshot_response {
  */
 struct get_curve_snapshot_buckets_request {
     using response_type = struct get_curve_snapshot_buckets_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.buckets";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_curve_snapshot_buckets";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -267,7 +267,7 @@ struct get_curve_snapshot_buckets_response {
  */
 struct import_market_data_request {
     using response_type = struct import_market_data_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.import";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.import_market_data";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -363,8 +363,7 @@ struct feed_kind_counts {
  */
 struct start_feeds_under_folder_request {
     using response_type = struct start_feeds_under_folder_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.start_folder";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.start_feeds_under_folder";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -393,8 +392,7 @@ struct start_feeds_under_folder_response {
  */
 struct stop_feeds_under_folder_request {
     using response_type = struct stop_feeds_under_folder_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.stop_folder";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.stop_feeds_under_folder";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -433,8 +431,7 @@ struct vintage_validity_entry {
  */
 struct get_vintage_validity_request {
     using response_type = struct get_vintage_validity_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.market_feed_configs.vintage_validity";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_vintage_validity";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -459,7 +456,8 @@ struct get_vintage_validity_response {
  */
 struct export_market_data_to_storage_request {
     using response_type = struct export_market_data_to_storage_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.series.export-to-storage";
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.ops.export_market_data_to_storage";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -488,7 +486,7 @@ struct export_market_data_to_storage_response {
  */
 struct export_market_data_request {
     using response_type = struct export_market_data_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.export";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.export_market_data";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -532,7 +530,7 @@ struct export_market_data_response {
  * observation time.
  */
 struct market_tick {
-    static constexpr std::string_view nats_subject = "marketdata.v1.tick";
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.market_tick";
     /**
      * @brief Whether the caller must have established a session first.
      *

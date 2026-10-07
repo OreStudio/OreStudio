@@ -121,9 +121,9 @@ void signup_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering signup routes";
 
     auto signup_route =
-        router->post("/api/v1/iam/auth/signup")
+        router->post("/api/v1/iam/ops/signup")
             .summary("Signup")
-            .description("Forwards to the iam.v1.auth.signup operation.")
+            .description("Forwards to the iam.v1.ops.signup operation.")
             .tags({"iam"})
             .auth_optional()
             .body<messaging::signup_request>()

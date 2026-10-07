@@ -213,7 +213,7 @@ const emptyParametersReply = {
 
 function scriptedClient(): { client: OresClient; transport: ScriptedTransport } {
     const transport = new ScriptedTransport({
-        'iam.v1.auth.login': [{ body: loginReply() }],
+        'iam.v1.ops.login': [{ body: loginReply() }],
         'iam.v1.seed_profiles.list': [{ body: profilesReply }],
         'iam.v1.seed_profile_steps.list_by_seed_profile_id': [
             { body: acmeStepsReply },
@@ -308,7 +308,7 @@ describe('OresClient seed profiles', () => {
         ]);
 
         expect(transport.calls.map((call) => call.subject)).toEqual([
-            'iam.v1.auth.login',
+            'iam.v1.ops.login',
             'iam.v1.seed_profiles.list',
             'iam.v1.seed_profile_steps.list_by_seed_profile_id',
             'iam.v1.seed_profile_parameters.list_by_seed_profile_id',
@@ -352,7 +352,7 @@ describe('OresClient seed profiles', () => {
 
     it('refuses a bullet list the row does not hold as a list of strings', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.seed_profiles.list': [
                 {
                     body: {
@@ -388,7 +388,7 @@ describe('OresClient seed profiles', () => {
 
     it('fails rather than answering with the rows a refused read carried', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
             'iam.v1.seed_profiles.list': [
                 {
                     body: {

@@ -18,7 +18,7 @@ This plan introduces:
 
 - Configurable token lifetimes stored in the system settings table (depends on
   the system settings unification PR)
-- A =iam.v1.auth.refresh= NATS subject for token renewal
+- A =iam.v1.ops.refresh= NATS subject for token renewal
 - A fix to the silent fallback bug in =request_context.cpp=
 - Proactive refresh in the Qt =nats_session= (fires at ~80% of token lifetime)
 - Reactive handling of =token_expired= errors returned to the client
@@ -60,7 +60,7 @@ refuses to issue a new token if =original_iat + max_session_seconds < now=.
 ** Refresh model: proactive timer + reactive retry
 
 The Qt client runs a =QTimer= that fires at =lifetime × threshold_fraction=
-seconds after the last token was issued. On fire it calls =iam.v1.auth.refresh=
+seconds after the last token was issued. On fire it calls =iam.v1.ops.refresh=
 with the current token. If the response is a new token the timer is reset; if
 the response is =max_session_exceeded= the session-expired flow is triggered.
 
@@ -68,7 +68,7 @@ Additionally, if any NATS reply carries =X-Error: token_expired= the client
 immediately attempts a refresh. If the refresh also fails (truly expired or
 max session exceeded) the session-expired flow is triggered.
 
-** =iam.v1.auth.refresh= subject
+** =iam.v1.ops.refresh= subject
 
 Request payload: none (the current JWT is in the =Authorization: Bearer= header).
 The handler validates the token (ignoring expiry), checks max session ceiling,
@@ -113,13 +113,13 @@ at startup.
 
 * Phase 2 — IAM: Configurable Lifetimes + Refresh Subject
 
-*PR:* =[iam] Configurable token lifetimes and iam.v1.auth.refresh=
+*PR:* =[iam] Configurable token lifetimes and iam.v1.ops.refresh=
 
 | File | Action |
 |------|--------|
 | =projects/ores.iam/include/ores.iam/messaging/auth_handler.hpp= | *UPDATE* — replace hardcoded durations with =token_settings= values |
 | =projects/ores.iam/src/messaging/auth_handler.cpp= | *UPDATE* — =handle_login=, =handle_select_party=: use settings; add =handle_refresh= |
-| =projects/ores.iam/include/ores.iam/messaging/registrar.hpp/cpp= | *UPDATE* — subscribe to =ores.iam.v1.auth.refresh= |
+| =projects/ores.iam/include/ores.iam/messaging/registrar.hpp/cpp= | *UPDATE* — subscribe to =ores.iam.v1.ops.refresh= |
 
 =handle_refresh= logic:
 
@@ -153,7 +153,7 @@ hardcoded constants.
 The IAM registrar listens on =ores.variability.v1.events.system_setting_changed=
 and reloads =token_settings= when any =iam.token.*= key changes.
 
-*Working state:* =iam.v1.auth.refresh= is live. Login issues 30-min tokens.
+*Working state:* =iam.v1.ops.refresh= is live. Login issues 30-min tokens.
 Shell and Qt clients still use 8h tokens until rebuilt/reconnected.
 
 * Phase 3 — Fix Silent Fallback in =request_context.cpp=
@@ -212,7 +212,7 @@ of wrong data.
 message nats_session::authenticated_request(std::string_view subject, ...) {
     auto reply = client_.request_sync(subject, data, auth_headers());
     if (reply.header("X-Error") == "token_expired") {
-        refresh();  // calls iam.v1.auth.refresh; updates session_.jwt
+        refresh();  // calls iam.v1.ops.refresh; updates session_.jwt
         reply = client_.request_sync(subject, data, auth_headers());
     }
     if (reply.header("X-Error") == "max_session_exceeded") {
@@ -257,7 +257,7 @@ void nats_session::arm_refresh_timer(int lifetime_seconds, int threshold_pct) {
 #+begin_src cpp
 void nats_session::refresh() {
     auto reply = client_.request_sync(
-        "ores.iam.v1.auth.refresh", {}, auth_headers());
+        "ores.iam.v1.ops.refresh", {}, auth_headers());
 
     if (reply.header("X-Error") == "max_session_exceeded") {
         emit sessionExpired();
@@ -322,7 +322,7 @@ short interruptions and gracefully (dialog + re-login) for max-session expiry.
 | Phase | PR Title | Depends On |
 |-------|----------|------------|
 | 1 | =[iam] Register JWT token lifetime settings= | System settings unification PR |
-| 2 | =[iam] Configurable token lifetimes and iam.v1.auth.refresh= | Phase 1 |
+| 2 | =[iam] Configurable token lifetimes and iam.v1.ops.refresh= | Phase 1 |
 | 3 | =[service] Propagate token_expired error instead of silent fallback= | Phase 2 |
 | 4 | =[shell] Handle token_expired: attempt refresh, re-issue command= | Phase 3 |
 | 5 | =[qt] Proactive JWT refresh timer and session-expired dialog= | Phase 3 |

@@ -102,7 +102,7 @@ All domain services publish completion events to a single well-known
 subject:
 
 #+begin_example
-subject:  workflow.v1.events.step-completed
+subject:  workflow.v1.ops.step_completed
 body:
   workflow_instance_id  uuid
   step_id               uuid    ← echoed from X-Workflow-Step-Id header
@@ -210,7 +210,7 @@ bespoke executor class is needed per workflow type.
 * Step-completed handler (the engine core)
 
 #+begin_src
-nats.queue_subscribe("workflow.v1.events.step-completed", "ores.workflow.service"):
+nats.queue_subscribe("workflow.v1.ops.step_completed", "ores.workflow.service"):
 
   1. Decode event: {workflow_instance_id, step_id, success, result_json, error_message}
   2. Load workflow_step by step_id from DB
@@ -275,7 +275,7 @@ be migrated cleanly. ~report_execution~ validates the async wait pattern.
 
 *** 1.2 Step-completed subscription
 
-- Add ~workflow.v1.events.step-completed~ queue subscription in registrar.
+- Add ~workflow.v1.ops.step_completed~ queue subscription in registrar.
 - Implement the step-completed handler as described above.
 - Implement ~begin_compensation~.
 
@@ -294,7 +294,7 @@ be migrated cleanly. ~report_execution~ validates the async wait pattern.
 *** 1.5 ~publish_step_completion~ helper
 
 - A small utility that domain service handlers call to publish the
-  ~workflow.v1.events.step-completed~ event.
+  ~workflow.v1.ops.step_completed~ event.
 - Signature:
   ~publish_step_completion(nats_client, step_id, instance_id, success, result_json, error)~
 - Add to ~ores.service~ (shared service utilities) so all domain services
@@ -314,9 +314,9 @@ be migrated cleanly. ~report_execution~ validates the async wait pattern.
 *** 2.2 Refactor ~ore_import~
 
 - Move saga orchestration from ~ores.ore.service~ to ~ores.workflow~.
-- Add ~ore.v1.ore.import.execute~ handler to ~ores.ore.service~:
+- Add ~ore.v1.ops.ore_import_execute~ handler to ~ores.ore.service~:
   executes the full import, calls ~publish_step_completion~.
-- Add ~ore.v1.ore.import.rollback~ handler: reverses inserts.
+- Add ~ore.v1.ops.ore_import_rollback~ handler: reverses inserts.
 - Register a 1-step (execute + rollback) ~workflow_definition~ in
   ~ores.workflow~.
 

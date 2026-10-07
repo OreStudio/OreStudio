@@ -44,7 +44,7 @@ token and checks the operation's permission. The gateway maps the answer,
 including the error the service names, and never decides access itself.
 
 *Addressing.* The path is the message's own NATS subject transliterated:
-=iam.v1.accounts.lock= reaches =/api/v1/iam/accounts/lock=. The subject is the
+=iam.v1.ops.lock_account= reaches =/api/v1/iam/accounts/lock=. The subject is the
 address the protocol already agreed on, so the URL cannot disagree with it, and
 a message the model renames moves its route in the same commit.
 

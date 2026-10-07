@@ -40,7 +40,7 @@ namespace ores::workspace::messaging {
  */
 struct resolve_workspace_request {
     using response_type = struct resolve_workspace_response;
-    static constexpr std::string_view nats_subject = "workspace.v1.workspaces.resolve";
+    static constexpr std::string_view nats_subject = "workspace.v1.ops.resolve_workspace";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -72,7 +72,7 @@ struct resolve_workspace_response {
  */
 struct set_trade_scope_request {
     using response_type = struct set_trade_scope_response;
-    static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.set";
+    static constexpr std::string_view nats_subject = "workspace.v1.ops.set_trade_scope";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -103,7 +103,7 @@ struct set_trade_scope_response {
  */
 struct clear_trade_scope_request {
     using response_type = struct clear_trade_scope_response;
-    static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.clear";
+    static constexpr std::string_view nats_subject = "workspace.v1.ops.clear_trade_scope";
     /**
      * @brief Whether the caller must have established a session first.
      *

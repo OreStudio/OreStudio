@@ -57,7 +57,7 @@ public:
                      std::shared_ptr<service::workflow_engine> engine);
 
     /**
-     * @brief Handles workflow.v1.instances.retry requests.
+     * @brief Handles workflow.v1.ops.retry_workflow_instance requests.
      *
      * Validates the JWT, checks the permission a write to a run needs,
      * confines the request to the caller's own tenant, and asks the engine to

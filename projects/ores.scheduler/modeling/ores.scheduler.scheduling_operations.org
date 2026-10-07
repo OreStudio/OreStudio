@@ -52,7 +52,7 @@ next unit of the scheduler clean-up.
 
 ** get_job_instances_request
 :PROPERTIES:
-:subject: scheduler.v1.job-instances.list
+:subject: scheduler.v1.job_instances.list
 :response: get_job_instances_response
 :END:
 
@@ -235,7 +235,7 @@ next unit of the scheduler clean-up.
 
 ** get_scheduler_status_request
 :PROPERTIES:
-:subject: scheduler.v1.status
+:subject: scheduler.v1.ops.get_scheduler_status
 :response: get_scheduler_status_response
 :END:
 

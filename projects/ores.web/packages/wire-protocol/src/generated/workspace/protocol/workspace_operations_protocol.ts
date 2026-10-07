@@ -90,9 +90,9 @@ export interface ClearTradeScopeResponse {
 }
 
 export const subjects = {
-    resolve_workspace_request: 'workspace.v1.workspaces.resolve',
-    set_trade_scope_request: 'workspace.v1.trade-scope.set',
-    clear_trade_scope_request: 'workspace.v1.trade-scope.clear',
+    resolve_workspace_request: 'workspace.v1.ops.resolve_workspace',
+    set_trade_scope_request: 'workspace.v1.ops.set_trade_scope',
+    clear_trade_scope_request: 'workspace.v1.ops.clear_trade_scope',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -24,7 +24,7 @@ participant "workflow engine\n(ores.workflow)" as wf
 database PostgreSQL as db
 participant "stage handler\n(ores.reporting, ores.ore\nor ores.compute)" as stage
 
-starter -> wf : workflow.v1.start\n{type, request_json}
+starter -> wf : workflow.v1.ops.start_workflow\n{type, request_json}
 wf -> wf : build_steps(request_json, tenant, correlation_id)\npure function; rebuilt on every dispatch
 note right of wf : the run's configuration is an input here;\nit decides which phases are listed,\nincluding any substitutes.
 wf -> db : persist workflow instance and its steps
@@ -35,10 +35,10 @@ loop each step, in order
     wf -> stage : publish step.command_subject\nheaders: step id, instance id, tenant id\npayload: command_json
     alt the stage completes
         stage -> stage : do the work
-        stage -> wf : workflow.v1.events.step-completed\n{step, result}
+        stage -> wf : workflow.v1.ops.step_completed\n{step, result}
         wf -> db : step state = completed
     else the stage cannot
-        stage -> wf : workflow.v1.events.step-completed\n{step, failed, reason}
+        stage -> wf : workflow.v1.ops.step_completed\n{step, failed, reason}
         wf -> wf : compensation:\nwalk the completed steps in reverse
         wf -> stage : publish step.compensation_subject\n(report.fail)
         wf -> db : instance failed

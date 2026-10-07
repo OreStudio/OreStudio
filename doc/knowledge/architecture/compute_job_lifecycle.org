@@ -229,7 +229,7 @@ three parts:
    work-assignment event onto JetStream, keyed per platform:
 
 #+begin_example
-subject: compute.v1.work.assignments.{tenant_id}.{platform_code}
+subject: compute.v1.ops.work_assignment.{tenant_id}.{platform_code}
 payload: result_id, workunit_id, app_version_id,
          package_uri, package_sha256, input_uri, output_uri
 #+end_example
@@ -256,7 +256,7 @@ startup it ensures the JetStream stream exists and subscribes a
 durable, queue-grouped consumer on its own triplet:
 
 #+begin_example
-subject:    compute.v1.work.assignments.{tenant_id}.{own platform triplet}
+subject:    compute.v1.ops.work_assignment.{tenant_id}.{own platform triplet}
 durable:    compute_wrapper_{tenant_id}_{platform}
 queue:      ores.compute.wrapper.{platform}
 #+end_example
@@ -269,12 +269,12 @@ JetStream holds a message until a node acknowledges completing it — a
 job survives a node that dies mid-run.
 
 Every =heartbeat_interval= (30 seconds by default) the node publishes
-=compute.v1.work.heartbeat= with its host id. The first heartbeat
+=compute.v1.ops.heartbeat= with its host id. The first heartbeat
 auto-registers the host row and gives it a deterministic
 adjective-animal display name (e.g. =clever-echidna=); later ones bump
 =last_rpc_time=, which is what the grid uses to judge the host online.
 When telemetry is enabled the node additionally publishes node samples
-on =compute.v1.telemetry.node_samples=.
+on =compute.v1.ops.node_sample=.
 
 On each assignment the wrapper runs =process_assignment=:
 
@@ -300,12 +300,12 @@ On each assignment the wrapper runs =process_assignment=:
    =Output/log.txt=. The engine logs are published to the telemetry
    log-entry subject for the record.
 5. *Submit* — the node sends a request/reply submit over
-   =compute.v1.results.submit=, the trusted machine channel (wrapper
+   =compute.v1.ops.submit_result=, the trusted machine channel (wrapper
    nodes hold no user JWT, so the user-session-gated CRUD flow cannot
    accept their submissions):
 
 #+begin_example
-subject: compute.v1.results.submit
+subject: compute.v1.ops.submit_result
 payload: result_id, host_id, output_uri,
          outcome (1=Success, 3=ClientError), error_message
 #+end_example

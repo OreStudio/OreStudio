@@ -34,7 +34,7 @@ namespace ores::iam::client {
 /**
  * @brief Create a token provider for NATS-authenticated service accounts.
  *
- * The returned callable performs iam.v1.auth.service-login immediately on
+ * The returned callable performs iam.v1.ops.service_login immediately on
  * construction of the internal state, so the first authenticated request
  * does not incur a login round-trip. On each subsequent invocation the
  * provider returns the cached token, refreshing proactively when the token

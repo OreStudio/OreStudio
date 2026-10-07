@@ -43,7 +43,7 @@ The person then describes the tenant and confirms.
 Source: [[proj:doc/knowledge/architecture/provisioning_request_message.puml][=provisioning_request_message.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/provisioning_request_message.puml=.
 
-Confirmation reaches ores.iam as one request, =iam.v1.tenants.provision=. The request is refused
+Confirmation reaches ores.iam as one request, =iam.v1.ops.provision_tenant=. The request is refused
 before anything is created: an empty field, an unknown starting point, or a parameter the starting
 point refuses. So nothing is created on a refusal, and no run starts.
 
@@ -68,11 +68,11 @@ addresses the same run.
 
 The request is synchronous up to the tenant write and asynchronous from the engine onward.
 
-Creating the tenant is a database write, so its failure arrives as an answer. The request then publishes =start_workflow_message= on =workflow.v1.start= and
+Creating the tenant is a database write, so its failure arrives as an answer. The request then publishes =start_workflow_message= on =workflow.v1.ops.start_workflow= and
 returns.
 
 The engine creates the run in progress with the ordered operations the request declares, and advances
-one operation per completion. Every operation goes to one subject, =iam.v1.tenants.provision-step=,
+one operation per completion. Every operation goes to one subject, =iam.v1.ops.provision_tenant-step=,
 and the payload names the work. The definition appends the completing operation after the starting
 point's operations, so marking the tenant ready is an operation.
 

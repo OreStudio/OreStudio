@@ -85,7 +85,7 @@ with, so a caller reads one result convention across the component.
 
 ** schedule_report_definitions_request
 :PROPERTIES:
-:subject: reporting.v1.report-definitions.schedule
+:subject: reporting.v1.ops.schedule_report_definitions
 :response: schedule_report_definitions_response
 :END:
 
@@ -123,7 +123,7 @@ without anyone asking again.
 
 ** unschedule_report_definitions_request
 :PROPERTIES:
-:subject: reporting.v1.report-definitions.unschedule
+:subject: reporting.v1.ops.unschedule_report_definitions
 :response: unschedule_report_definitions_response
 :END:
 
@@ -160,7 +160,7 @@ The report definitions to stop firing.
 
 ** publish_report_definitions_from_dq_request
 :PROPERTIES:
-:subject: reporting.v1.report-definitions.publish-from-dq
+:subject: reporting.v1.ops.publish_report_definitions_from_dq
 :END:
 
 #+begin_src cpp :name comment
@@ -177,7 +177,7 @@ The report definitions to stop firing.
 
 ** gather_trades_request
 :PROPERTIES:
-:subject: reporting.v1.report.gather-trades
+:subject: reporting.v1.ops.gather_trades
 :response: gather_trades_result
 :END:
 
@@ -230,7 +230,7 @@ Step 0: gather trades from the trading service.
 
 ** gather_market_data_request
 :PROPERTIES:
-:subject: reporting.v1.report.gather-market-data
+:subject: reporting.v1.ops.gather_market_data
 :response: gather_market_data_result
 :END:
 
@@ -283,7 +283,7 @@ Step 1: gather market data series.
 
 ** assemble_bundle_request
 :PROPERTIES:
-:subject: reporting.v1.report.assemble-bundle
+:subject: reporting.v1.ops.assemble_bundle
 :response: assemble_bundle_result
 :END:
 
@@ -352,7 +352,7 @@ Step 2: assemble and persist the report input bundle.
 
 ** prepare_ore_package_request
 :PROPERTIES:
-:subject: ore.v1.report.prepare-package
+:subject: ore.v1.ops.prepare_ore_package
 :response: prepare_ore_package_result
 :END:
 
@@ -432,7 +432,7 @@ id is not a credential.
 
 ** submit_compute_request
 :PROPERTIES:
-:subject: compute.v1.report.submit
+:subject: compute.v1.ops.submit_compute
 :response: submit_compute_result
 :END:
 
@@ -495,7 +495,7 @@ id is not a credential.
 
 ** collect_compute_results_request
 :PROPERTIES:
-:subject: reporting.v1.report.collect-compute-results
+:subject: reporting.v1.ops.collect_compute_results
 :response: collect_compute_results_result
 :END:
 
@@ -537,7 +537,7 @@ Step 5: collect and persist compute results.
 
 ** finalise_report_request
 :PROPERTIES:
-:subject: reporting.v1.report.finalise
+:subject: reporting.v1.ops.finalise_report
 :response: finalise_report_result
 :END:
 
@@ -574,7 +574,7 @@ Final step: mark the report instance as completed.
 
 ** fail_report_request
 :PROPERTIES:
-:subject: reporting.v1.report.fail
+:subject: reporting.v1.ops.fail_report
 :response: fail_report_result
 :END:
 
@@ -684,7 +684,7 @@ produced. Copied from the definition.
 
 ** resolve_prepared_input_request
 :PROPERTIES:
-:subject: reporting.v1.report.resolve-prepared-input
+:subject: reporting.v1.ops.resolve_prepared_input
 :response: prepare_ore_package_result
 :END:
 
@@ -719,7 +719,7 @@ incomplete, and the step fails rather than answering an empty location.
 
 ** ignore_compute_results_request
 :PROPERTIES:
-:subject: reporting.v1.report.ignore-compute-results
+:subject: reporting.v1.ops.ignore_compute_results
 :response: collect_compute_results_result
 :END:
 

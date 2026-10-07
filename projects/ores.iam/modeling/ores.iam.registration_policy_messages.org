@@ -27,7 +27,7 @@ defaults]], and the interactions that read it are
 
 The read needs no session, because the screen that shows the form is the one
 a person who is not in the deployment yet is looking at. It is separate from
-=iam.v1.bootstrap.status=: one answers whether the deployment has been set
+=iam.v1.ops.bootstrap_status=: one answers whether the deployment has been set
 up, the other what it offers a person who is not in it, and they change for
 different reasons.
 
@@ -46,7 +46,7 @@ address names none.
 
 ** registration_policy_request
 :PROPERTIES:
-:subject: iam.v1.auth.registration-policy
+:subject: iam.v1.ops.registration_policy
 :auth: none
 :response: registration_policy_response
 :END:

@@ -49,7 +49,7 @@ result. No person types them, and nothing in the shell sends them.
 
 ** pull_work_request
 :PROPERTIES:
-:subject: compute.v1.work.pull
+:subject: compute.v1.ops.pull_work
 :response: pull_work_response
 :END:
 
@@ -166,7 +166,7 @@ result. No person types them, and nothing in the shell sends them.
 
 ** work_assignment_event
 :PROPERTIES:
-:subject: compute.v1.work.assignments
+:subject: compute.v1.ops.work_assignment
 :auth: none
 :END:
 
@@ -272,7 +272,7 @@ result. No person types them, and nothing in the shell sends them.
 
 ** heartbeat_message
 :PROPERTIES:
-:subject: compute.v1.work.heartbeat
+:subject: compute.v1.ops.heartbeat
 :auth: none
 :END:
 
@@ -298,7 +298,7 @@ result. No person types them, and nothing in the shell sends them.
 
 ** reap_work_message
 :PROPERTIES:
-:subject: compute.v1.work.reap
+:subject: compute.v1.ops.reap_work
 :auth: none
 :END:
 
@@ -312,7 +312,7 @@ result. No person types them, and nothing in the shell sends them.
 
 ** submit_result_request
 :PROPERTIES:
-:subject: compute.v1.results.submit
+:subject: compute.v1.ops.submit_result
 :auth: none
 :response: submit_result_response
 :END:

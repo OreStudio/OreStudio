@@ -55,7 +55,7 @@
  * The entity's canonical CRUD subjects are generated: session_registrar
  * owns list/get/get-many/put/put-many/delete on iam.v1.sessions.*. The
  * operation models declare a different set under the same prefix --
- * iam.v1.sessions.active and iam.v1.sessions.samples -- so the two
+ * iam.v1.ops.get_active_sessions and iam.v1.ops.get_session_samples -- so the two
  * coexist rather than compete, and no handler is suppressed here.
  */
 

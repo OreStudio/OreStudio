@@ -40,13 +40,13 @@ using ores::workflow::service::orchestrating_step_timeout;
 using ores::workflow::service::write_step_timeout;
 
 /// The workflow type a provision tenant run declares in its start message. It is
-/// not the request's subject: =iam.v1.tenants.provision= starts the run, and the
+/// not the request's subject: =iam.v1.ops.provision_tenant= starts the run, and the
 /// run names this type.
 inline constexpr std::string_view provision_tenant_workflow_type = "provision_tenant_workflow";
 
 /// The workflow type a run that provisions one party of an existing tenant
 /// declares in its start message. It is not the request's subject either:
-/// =iam.v1.parties.provision= starts the run, and the run names this type.
+/// =iam.v1.ops.provision_party= starts the run, and the run names this type.
 inline constexpr std::string_view provision_party_workflow_type = "provision_party_workflow";
 
 /**
@@ -69,7 +69,7 @@ inline constexpr std::string_view provision_party_target_kind = "party";
  * The handler on this subject is ores.iam's, which owns the orchestration, so a
  * step kind is code in this component and needs no other component to change.
  */
-inline constexpr std::string_view provision_tenant_step_subject = "iam.v1.tenants.provision-step";
+inline constexpr std::string_view provision_tenant_step_subject = "iam.v1.ops.provision_tenant-step";
 
 /// The step kind that completes the tenant, appended to every run after the
 /// kinds the profile declares. A run finishes only by running its steps out, so

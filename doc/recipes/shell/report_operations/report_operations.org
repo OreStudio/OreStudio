@@ -47,7 +47,7 @@ The command is shaped like this:
 report_operations schedule-report-definitions <ids>
 #+end_example
 
-It is addressed at =reporting.v1.report-definitions.schedule=.
+It is addressed at =reporting.v1.ops.schedule_report_definitions=.
 
 #+name: report_operations-schedule-report-definitions
 #+begin_src ores-shell :tangle report_operations-schedule-report-definitions.ores :exports none
@@ -68,7 +68,7 @@ The command is shaped like this:
 report_operations unschedule-report-definitions <ids>
 #+end_example
 
-It is addressed at =reporting.v1.report-definitions.unschedule=.
+It is addressed at =reporting.v1.ops.unschedule_report_definitions=.
 
 #+name: report_operations-unschedule-report-definitions
 #+begin_src ores-shell :tangle report_operations-unschedule-report-definitions.ores :exports none
@@ -89,7 +89,7 @@ The command is shaped like this:
 report_operations gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>
 #+end_example
 
-It is addressed at =reporting.v1.report.gather-trades=.
+It is addressed at =reporting.v1.ops.gather_trades=.
 
 #+name: report_operations-gather-trades
 #+begin_src ores-shell :tangle report_operations-gather-trades.ores :exports none
@@ -110,7 +110,7 @@ The command is shaped like this:
 report_operations gather-market-data <report_instance_id> <definition_id> <tenant_id> <correlation_id>
 #+end_example
 
-It is addressed at =reporting.v1.report.gather-market-data=.
+It is addressed at =reporting.v1.ops.gather_market_data=.
 
 #+name: report_operations-gather-market-data
 #+begin_src ores-shell :tangle report_operations-gather-market-data.ores :exports none
@@ -131,7 +131,7 @@ The command is shaped like this:
 report_operations assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key> [--trade_count <v>] [--series_count <v>]
 #+end_example
 
-It is addressed at =reporting.v1.report.assemble-bundle=.
+It is addressed at =reporting.v1.ops.assemble_bundle=.
 
 #+name: report_operations-assemble-bundle
 #+begin_src ores-shell :tangle report_operations-assemble-bundle.ores :exports none
@@ -152,7 +152,7 @@ The command is shaped like this:
 report_operations prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id> <party_id> <run_grant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
 #+end_example
 
-It is addressed at =ore.v1.report.prepare-package=.
+It is addressed at =ore.v1.ops.prepare_ore_package=.
 
 #+name: report_operations-prepare-ore-package
 #+begin_src ores-shell :tangle report_operations-prepare-ore-package.ores :exports none
@@ -173,7 +173,7 @@ The command is shaped like this:
 report_operations submit-compute <report_instance_id> <tenant_id> <party_id> <run_grant_id> <correlation_id> <tarball_uris>
 #+end_example
 
-It is addressed at =compute.v1.report.submit=.
+It is addressed at =compute.v1.ops.submit_compute=.
 
 #+name: report_operations-submit-compute
 #+begin_src ores-shell :tangle report_operations-submit-compute.ores :exports none
@@ -194,7 +194,7 @@ The command is shaped like this:
 report_operations collect-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
 #+end_example
 
-It is addressed at =reporting.v1.report.collect-compute-results=.
+It is addressed at =reporting.v1.ops.collect_compute_results=.
 
 #+name: report_operations-collect-compute-results
 #+begin_src ores-shell :tangle report_operations-collect-compute-results.ores :exports none
@@ -215,7 +215,7 @@ The command is shaped like this:
 report_operations finalise-report <report_instance_id> <tenant_id> <correlation_id>
 #+end_example
 
-It is addressed at =reporting.v1.report.finalise=.
+It is addressed at =reporting.v1.ops.finalise_report=.
 
 #+name: report_operations-finalise-report
 #+begin_src ores-shell :tangle report_operations-finalise-report.ores :exports none
@@ -236,7 +236,7 @@ The command is shaped like this:
 report_operations fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>
 #+end_example
 
-It is addressed at =reporting.v1.report.fail=.
+It is addressed at =reporting.v1.ops.fail_report=.
 
 #+name: report_operations-fail-report
 #+begin_src ores-shell :tangle report_operations-fail-report.ores :exports none
@@ -257,7 +257,7 @@ The command is shaped like this:
 report_operations resolve-prepared-input <report_instance_id> <tenant_id> <correlation_id> <prepared_input_key>
 #+end_example
 
-It is addressed at =reporting.v1.report.resolve-prepared-input=.
+It is addressed at =reporting.v1.ops.resolve_prepared_input=.
 
 #+name: report_operations-resolve-prepared-input
 #+begin_src ores-shell :tangle report_operations-resolve-prepared-input.ores :exports none
@@ -278,7 +278,7 @@ The command is shaped like this:
 report_operations ignore-compute-results <report_instance_id> <tenant_id> <correlation_id> <batch_id>
 #+end_example
 
-It is addressed at =reporting.v1.report.ignore-compute-results=.
+It is addressed at =reporting.v1.ops.ignore_compute_results=.
 
 #+name: report_operations-ignore-compute-results
 #+begin_src ores-shell :tangle report_operations-ignore-compute-results.ores :exports none

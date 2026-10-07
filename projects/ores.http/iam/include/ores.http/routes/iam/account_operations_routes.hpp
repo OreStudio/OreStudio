@@ -73,14 +73,14 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/save — Save account.
+     * @brief POST /api/v1/iam/accounts/put — Save account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_save_account(const ores::http::domain::http_request& req,
                         ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/update — Update account.
+     * @brief POST /api/v1/iam/ops/update_account — Update account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_update_account(const ores::http::domain::http_request& req,
@@ -94,35 +94,35 @@ public:
                           ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/lock — Lock account.
+     * @brief POST /api/v1/iam/ops/lock_account — Lock account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_lock_account(const ores::http::domain::http_request& req,
                         ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/unlock — Unlock account.
+     * @brief POST /api/v1/iam/ops/unlock_account — Unlock account.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_unlock_account(const ores::http::domain::http_request& req,
                           ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/reset-password — Reset password.
+     * @brief POST /api/v1/iam/ops/reset_password — Reset password.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_reset_password(const ores::http::domain::http_request& req,
                           ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/update-email — Update my email.
+     * @brief POST /api/v1/iam/ops/update_my_email — Update my email.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_update_my_email(const ores::http::domain::http_request& req,
                            ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/accounts/change-password — Change password.
+     * @brief POST /api/v1/iam/ops/change_password — Change password.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_change_password(const ores::http::domain::http_request& req,

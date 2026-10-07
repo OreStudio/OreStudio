@@ -627,7 +627,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.accounts.attach-pictures.
+     * @brief Serves iam.v1.ops.attach_account_pictures.
      *
      * The reconcile the attach_photos step runs, reachable on its own so an
      * operator can re-run it from a client and so a scope that is not a

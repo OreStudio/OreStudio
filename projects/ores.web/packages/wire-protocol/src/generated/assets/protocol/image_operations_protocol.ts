@@ -111,9 +111,9 @@ export interface EnsureImageResponse {
 }
 
 export const subjects = {
-    upload_image_request: 'assets.v1.images.upload',
-    get_image_upload_policy_request: 'assets.v1.images.upload-policy',
-    ensure_image_request: 'assets.v1.images.ensure',
+    upload_image_request: 'assets.v1.ops.upload_image',
+    get_image_upload_policy_request: 'assets.v1.ops.get_image_upload_policy',
+    ensure_image_request: 'assets.v1.ops.ensure_image',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

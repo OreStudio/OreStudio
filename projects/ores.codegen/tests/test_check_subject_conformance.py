@@ -53,18 +53,15 @@ def test_a_conforming_subject_passes(subject):
 
 
 @pytest.mark.parametrize("subject,expected", [
-    ("workflow.v1.start", "3 segments"),
-    ("marketdata.v1.tick", "3 segments"),
-    ("iam.v1.roles.permissions.put", "5 segments"),
-    ("ore.v1.ore.import.execute", "5 segments"),
-    ("iam.v1.accounts.save", "closed set of eight"),
-    ("iam.v1.accounts.update", "closed set of eight"),
-    ("trading.v1.trades.book", "closed set of eight"),
-    ("iam.v1.accounts.change-password", "snake_case"),
-    ("assets.v1.images.upload-policy", "snake_case"),
-    ("workspace.v1.trade-scope.set", "snake_case"),
-    ("iam.v1.tenants_events.frobnicated", "event action"),
-    ("refdata.v2.currencies.get", "'v1'"),
+    ("x.v1.things", "3 segments"),
+    ("x.v1.things.extra.get", "5 segments"),
+    ("x.v1.things.sub.get", "5 segments"),
+    ("x.v1.things.save", "closed set of eight"),
+    ("x.v1.things.book", "closed set of eight"),
+    ("x.v1.things.change-password", "snake_case"),
+    ("x.v1.things_events.frobnicated", "event action"),
+    ("x.v2.things.get", "'v1'"),
+    ("x.v1.things.get!", "snake_case"),
 ])
 def test_a_non_conforming_subject_is_named_with_its_reason(subject, expected):
     ok, reason = check_subject_conformance.classify(subject)
@@ -102,11 +99,23 @@ def test_the_committed_tree_is_clean_against_its_baseline(capsys):
 def test_every_baseline_entry_is_a_real_violation():
     # A baseline that lists a conforming subject would hide nothing and claim
     # a defect that is not there, so the file could not be trusted to shrink.
-    baseline = check_subject_conformance.load_baseline()
-    assert baseline, "the baseline is empty"
-    for subject in baseline:
+    for subject in check_subject_conformance.load_baseline():
         ok, reason = check_subject_conformance.classify(subject)
         assert not ok, f"{subject} is in the baseline but conforms"
+
+
+def test_no_declared_subject_violates_the_protocol():
+    # The ratchet is fully wound: every subject the models declare is inside
+    # the grammar, so the baseline has nothing left to excuse. This is the end
+    # state the story exists for, and it is asserted so that a regression has
+    # to be deliberate rather than silent.
+    offences = [
+        (path, number, subject, reason)
+        for path, number, subject in check_subject_conformance.declared_subjects()
+        for ok, reason in [check_subject_conformance.classify(subject)]
+        if not ok
+    ]
+    assert not offences, offences
 
 
 def test_the_baseline_has_no_stale_entry():

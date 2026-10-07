@@ -46,7 +46,7 @@ the reply, so it would be a second command for one read.
 
 ** get_grid_stats_request
 :PROPERTIES:
-:subject: compute.v1.telemetry.get_grid_stats
+:subject: compute.v1.ops.get_grid_stats
 :response: get_grid_stats_response
 :END:
 
@@ -368,7 +368,7 @@ the reply, so it would be a second command for one read.
 
 ** node_sample_message
 :PROPERTIES:
-:subject: compute.v1.telemetry.node_samples
+:subject: compute.v1.ops.node_sample
 :auth: none
 :END:
 

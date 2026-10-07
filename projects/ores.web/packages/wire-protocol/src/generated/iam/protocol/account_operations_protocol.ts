@@ -363,23 +363,23 @@ export interface AttachAccountPicturesResponse {
 }
 
 export const subjects = {
-    publish_accounts_from_dq_request: 'iam.v1.accounts.publish-from-dq',
-    save_account_request: 'iam.v1.accounts.save',
-    update_account_request: 'iam.v1.accounts.update',
+    publish_accounts_from_dq_request: 'iam.v1.ops.publish_accounts_from_dq',
+    save_account_request: 'iam.v1.accounts.put',
+    update_account_request: 'iam.v1.ops.update_account',
     delete_account_request: 'iam.v1.accounts.delete',
-    lock_account_request: 'iam.v1.accounts.lock',
-    unlock_account_request: 'iam.v1.accounts.unlock',
-    reset_password_request: 'iam.v1.accounts.reset-password',
-    update_my_email_request: 'iam.v1.accounts.update-email',
-    set_my_default_party_request: 'iam.v1.accounts.set-default-party',
-    select_party_request: 'iam.v1.accounts.select-party',
-    switch_party_request: 'iam.v1.accounts.switch-party',
-    change_password_request_typed: 'iam.v1.accounts.change-password',
-    update_self_account_request: 'iam.v1.accounts.update-self',
+    lock_account_request: 'iam.v1.ops.lock_account',
+    unlock_account_request: 'iam.v1.ops.unlock_account',
+    reset_password_request: 'iam.v1.ops.reset_password',
+    update_my_email_request: 'iam.v1.ops.update_my_email',
+    set_my_default_party_request: 'iam.v1.ops.set_my_default_party',
+    select_party_request: 'iam.v1.ops.select_party',
+    switch_party_request: 'iam.v1.ops.switch_party',
+    change_password_request_typed: 'iam.v1.ops.change_password',
+    update_self_account_request: 'iam.v1.ops.update_self_account',
     update_self_account_contact_information_request:
-        'iam.v1.account_contact_informations.update-self',
-    get_my_account_contact_information_request: 'iam.v1.account_contact_informations.mine',
-    attach_account_pictures_request: 'iam.v1.accounts.attach-pictures',
+        'iam.v1.ops.update_self_account_contact_information',
+    get_my_account_contact_information_request: 'iam.v1.ops.get_my_account_contact_information',
+    attach_account_pictures_request: 'iam.v1.ops.attach_account_pictures',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

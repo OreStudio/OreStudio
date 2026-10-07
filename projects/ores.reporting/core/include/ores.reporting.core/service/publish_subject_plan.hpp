@@ -29,7 +29,7 @@ namespace ores::reporting::service {
 /**
  * @brief The SQL function a publish-from-dq subject expands through.
  *
- * The subject is the input: "reporting.v1.report-definitions.publish-from-dq"
+ * The subject is the input: "reporting.v1.ops.publish_report_definitions_from_dq"
  * expands through "ores_reporting_publish_report_definitions_from_dq_fn". The
  * spelling therefore matters twice -- once as the subject the registrar
  * subscribes and once as the function the handler calls -- which is why it is a

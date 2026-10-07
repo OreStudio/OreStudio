@@ -191,8 +191,7 @@ struct curve_configuration_document {
  */
 struct save_curve_configuration_document_request {
     using response_type = struct save_curve_configuration_document_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.curve_configuration_documents.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.curve_configuration_documents.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -277,7 +276,7 @@ struct delete_curve_configuration_document_response {
  */
 struct save_conventions_document_request {
     using response_type = struct save_conventions_document_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.conventions_documents.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.conventions_documents.put";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -73,35 +73,35 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/assign — Assign role.
+     * @brief POST /api/v1/iam/ops/assign_role — Assign role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_assign_role(const ores::http::domain::http_request& req,
                        ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/revoke — Revoke role.
+     * @brief POST /api/v1/iam/ops/revoke_role — Revoke role.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_revoke_role(const ores::http::domain::http_request& req,
                        ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/by-account — Get account roles.
+     * @brief POST /api/v1/iam/ops/get_account_roles — Get account roles.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_account_roles(const ores::http::domain::http_request& req,
                              ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/permissions — Get role permissions.
+     * @brief POST /api/v1/iam/ops/get_role_permissions — Get role permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_get_role_permissions(const ores::http::domain::http_request& req,
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/roles/permissions/put — Put role permissions.
+     * @brief POST /api/v1/iam/roles_permissions/put — Put role permissions.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_put_role_permissions(const ores::http::domain::http_request& req,

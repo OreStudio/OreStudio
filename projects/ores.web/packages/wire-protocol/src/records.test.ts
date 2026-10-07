@@ -368,7 +368,7 @@ describe('readCalendarYear', () => {
 describe('rebuildCalendar', () => {
     it('asks for one calendar up to a year, and answers the days written', async () => {
         const { caller, calls } = fakeCaller({
-            'refdata.v1.calendar_dates.regenerate': {
+            'refdata.v1.ops.regenerate_calendar_dates': {
                 success: true,
                 message: '',
                 rows_written: 365,
@@ -380,7 +380,7 @@ describe('rebuildCalendar', () => {
 
     it('fails with the server words when the rebuild is refused', async () => {
         const { caller } = fakeCaller({
-            'refdata.v1.calendar_dates.regenerate': {
+            'refdata.v1.ops.regenerate_calendar_dates': {
                 success: false,
                 message: 'Permission denied',
             },

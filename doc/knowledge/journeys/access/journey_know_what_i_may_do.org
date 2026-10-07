@@ -85,14 +85,14 @@ server, and no read in this journey returns them.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open my access | Read the roles I hold, with the permissions each grants and its assignment record | =iam.v1.roles.mine= | exists |
-| Follow a permission back | Read the permissions one role bundles | =iam.v1.roles.permissions= | exists |
-| Another account's access, which this journey does not ask for | Read the same shape for an account the caller names | =iam.v1.roles.by-account= | exists |
+| Open my access | Read the roles I hold, with the permissions each grants and its assignment record | =iam.v1.ops.get_my_roles= | exists |
+| Follow a permission back | Read the permissions one role bundles | =iam.v1.ops.get_role_permissions= | exists |
+| Another account's access, which this journey does not ask for | Read the same shape for an account the caller names | =iam.v1.ops.get_account_roles= | exists |
 
 The reads are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]], and
 [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]] states the rule
-they follow. =iam.v1.roles.mine= takes no account id, so it cannot name anybody
+they follow. =iam.v1.ops.get_my_roles= takes no account id, so it cannot name anybody
 else: the account is the authenticated caller's, and the read needs no
 permission beyond a session. The privileged read still takes an id and now
 requires =iam::roles:read= before it looks the account up.
@@ -109,7 +109,7 @@ Nothing. All three gaps this journey recorded have closed, and the build that
 closed them is recorded on
 [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in ores.web]].
 
-=iam.v1.roles.mine= answers one composed shape: each role the caller holds, the
+=iam.v1.ops.get_my_roles= answers one composed shape: each role the caller holds, the
 permission codes that role grants, and the =account_role= junction's own record
 of who granted it, when and why. So the three gaps close together rather than in
 turn. The read attributes a permission to the role it arrives through, which the
@@ -118,7 +118,7 @@ and it is scoped to the caller by construction rather than by a comparison that
 has to be right.
 
 A refusal is worth stating separately, because it is what the composed read
-needed before it could be honest. =iam.v1.roles.permissions-by-account=
+needed before it could be honest. =iam.v1.ops.get_role_permissions-by-account=
 answered a flat list and nothing else, so an empty list meant both "you may
 read nothing" and "this account holds nothing". The read that replaced it
 carries a =result=, and a caller who may not have what it asked for is told

@@ -28,7 +28,7 @@ the completed steps back, or a stop that parks the run for a retry verb.
 Tenant provisioning begins at the caller, not at the engine. The provisioning
 operation validates the request, creates the tenant and its administrator, mints
 the instance identifier, and publishes =start_workflow_message= to
-=workflow.v1.start=. The message carries that identifier, because the start
+=workflow.v1.ops.start_workflow=. The message carries that identifier, because the start
 message's optional instance identifier lets a caller name the run before the
 engine has seen the message.
 
@@ -64,7 +64,7 @@ produced it, never by position.
 A handler recognises its workflow command from the headers and does its work. It
 reads the three headers and answers with one outcome: success, success with
 warnings, or failure. Each answer publishes a =step_completed_event= to
-=workflow.v1.events.step-completed=, whose step identifier echoes the one on the
+=workflow.v1.ops.step_completed=, whose step identifier echoes the one on the
 command it answers.
 
 The engine turns one completion into one decision. It ignores the event unless the

@@ -50,7 +50,7 @@ shell session signed in as a member asks for a role as they would.
 
 ** ask_for_roles_request
 :PROPERTIES:
-:subject:  iam.v1.role-requests.ask
+:subject:  iam.v1.ops.ask_for_roles
 :response: ask_for_roles_response
 :END:
 

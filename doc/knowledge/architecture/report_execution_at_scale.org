@@ -177,7 +177,7 @@ Source: [[./report_execution_at_scale_sequence.puml][=report_execution_at_scale_
 A person of the party creates the definition in reporting, with their own
 token. The definition holds the report type, the scope, the concurrency policy
 and the cron expression. The engine's configuration lives with its owners. The
-person imports it with =ore.v1.run_configuration.import=. ORE runs that import
+person imports it with =ore.v1.ops.import_run_configuration=. ORE runs that import
 as a saga over the owners: reporting saves the run document, and refdata and
 analytics save the configuration documents. Reporting binds each document to
 the definition. Every write uses the person's token, so every row belongs to
@@ -269,7 +269,7 @@ instance for that firing and returns it.
 
 *** 5. Start the run
 
-Reporting creates the instance and publishes =workflow.v1.start=. The workflow
+Reporting creates the instance and publishes =workflow.v1.ops.start_workflow=. The workflow
 instance id is created by reporting and recorded on the instance. A repeated
 start therefore opens the same run. The instance records the grant id it was
 admitted under, and the workflow request carries that same id, so a step service
@@ -296,15 +296,15 @@ The chain for a run that executes both ends has four steps:
 #+ATTR_HTML: :class hug-leading
 | # | Step | Subject | Service | Deadline |
 |---+------+---------+---------+----------|
-| 1 | =prepare_ore_package= | =ore.v1.report.prepare-package= | ores.ore | =data_step_timeout= |
-| 2 | =submit_compute= | =compute.v1.report.submit= | ores.compute | the grid budget |
-| 3 | =collect_compute_results= | =reporting.v1.report.collect-compute-results= | ores.reporting | =data_step_timeout= |
-| 4 | =finalise= | =reporting.v1.report.finalise= | ores.reporting | =write_step_timeout= |
+| 1 | =prepare_ore_package= | =ore.v1.ops.prepare_ore_package= | ores.ore | =data_step_timeout= |
+| 2 | =submit_compute= | =compute.v1.ops.submit_compute= | ores.compute | the grid budget |
+| 3 | =collect_compute_results= | =reporting.v1.ops.collect_compute_results= | ores.reporting | =data_step_timeout= |
+| 4 | =finalise= | =reporting.v1.ops.finalise_report= | ores.reporting | =write_step_timeout= |
 
 Pre-processing is one step, as the pre-processing page requires. The
 substituted chains replace step 1 or step 3 as
 [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]]
-describes. Every step compensates with =reporting.v1.report.fail=.
+describes. Every step compensates with =reporting.v1.ops.fail_report=.
 
 *** 6. Prepare the input
 
@@ -364,7 +364,7 @@ holds no run token. An engine run can last longer than any token, and a node
 serves many tenants. The node uses its own identity. That identity reads only
 =compute/packages/= and =ore/inputs/= and writes only =compute/output/=. Each
 assignment names the exact keys. The node runs the engine and writes the output
-archive, then submits the result on =compute.v1.results.submit=.
+archive, then submits the result on =compute.v1.ops.submit_result=.
 [[proj:doc/knowledge/security/run_token_long_run.png][The long run token
 diagram]] draws this path beside a step service that keeps exchanging.
 [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] describes the
@@ -483,7 +483,7 @@ design adds or makes specific.
 | A step service restarts | the engine re-dispatches the step | the step converges; the cache refills |
 | A quota is reached | admission | the run is born =queued= |
 
-A failed run compensates through =reporting.v1.report.fail=. The archive, the
+A failed run compensates through =reporting.v1.ops.fail_report=. The archive, the
 batch and the output stay in place. A person reads the failure on the instance
 and triggers another run, which reuses the archive by its digest.
 

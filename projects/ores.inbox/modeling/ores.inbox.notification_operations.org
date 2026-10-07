@@ -140,7 +140,7 @@ units.
 
 ** raise_notification_request
 :PROPERTIES:
-:subject:  inbox.v1.notifications.raise
+:subject:  inbox.v1.ops.raise_notification
 :response: raise_notification_response
 :END:
 
@@ -225,7 +225,7 @@ units.
 
 ** list_my_notifications_request
 :PROPERTIES:
-:subject:  inbox.v1.notifications.mine
+:subject:  inbox.v1.ops.list_my_notifications
 :response: list_my_notifications_response
 :END:
 
@@ -276,7 +276,7 @@ units.
 
 ** count_unread_notifications_request
 :PROPERTIES:
-:subject:  inbox.v1.notifications.unread-count
+:subject:  inbox.v1.ops.count_unread_notifications
 :response: count_unread_notifications_response
 :END:
 
@@ -304,7 +304,7 @@ units.
 
 ** mark_notifications_read_request
 :PROPERTIES:
-:subject:  inbox.v1.notifications.mark-read
+:subject:  inbox.v1.ops.mark_notifications_read
 :response: mark_notifications_read_response
 :END:
 
@@ -342,7 +342,7 @@ units.
 
 ** clear_notifications_request
 :PROPERTIES:
-:subject:  inbox.v1.notifications.clear
+:subject:  inbox.v1.ops.clear_notifications
 :response: clear_notifications_response
 :END:
 

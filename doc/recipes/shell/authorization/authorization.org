@@ -26,7 +26,7 @@ The command is shaped like this:
 authorization assign-role <account_id> <role_id> <change_reason_code> <change_commentary>
 #+end_example
 
-It is addressed at =iam.v1.roles.assign=.
+It is addressed at =iam.v1.ops.assign_role=.
 
 #+name: authorization-assign-role
 #+begin_src ores-shell :tangle authorization-assign-role.ores :exports none
@@ -47,7 +47,7 @@ The command is shaped like this:
 authorization assign-role-by-name <principal> <role_name>
 #+end_example
 
-It is addressed at =iam.v1.roles.assign-by-name=.
+It is addressed at =iam.v1.ops.assign_role_by_name=.
 
 #+name: authorization-assign-role-by-name
 #+begin_src ores-shell :tangle authorization-assign-role-by-name.ores :exports none
@@ -68,7 +68,7 @@ The command is shaped like this:
 authorization revoke-role <account_id> <role_id>
 #+end_example
 
-It is addressed at =iam.v1.roles.revoke=.
+It is addressed at =iam.v1.ops.revoke_role=.
 
 #+name: authorization-revoke-role
 #+begin_src ores-shell :tangle authorization-revoke-role.ores :exports none
@@ -89,7 +89,7 @@ The command is shaped like this:
 authorization revoke-role-by-name <principal> <role_name>
 #+end_example
 
-It is addressed at =iam.v1.roles.revoke-by-name=.
+It is addressed at =iam.v1.ops.revoke_role_by_name=.
 
 #+name: authorization-revoke-role-by-name
 #+begin_src ores-shell :tangle authorization-revoke-role-by-name.ores :exports none
@@ -110,7 +110,7 @@ The command is shaped like this:
 authorization get-account-roles <account_id>
 #+end_example
 
-It is addressed at =iam.v1.roles.by-account=.
+It is addressed at =iam.v1.ops.get_account_roles=.
 
 #+name: authorization-get-account-roles
 #+begin_src ores-shell :tangle authorization-get-account-roles.ores :exports none
@@ -131,7 +131,7 @@ The command is shaped like this:
 authorization get-my-roles
 #+end_example
 
-It is addressed at =iam.v1.roles.mine=.
+It is addressed at =iam.v1.ops.get_my_roles=.
 
 #+name: authorization-get-my-roles
 #+begin_src ores-shell :tangle authorization-get-my-roles.ores :exports none
@@ -152,7 +152,7 @@ The command is shaped like this:
 authorization get-role-permissions <role_id>
 #+end_example
 
-It is addressed at =iam.v1.roles.permissions=.
+It is addressed at =iam.v1.ops.get_role_permissions=.
 
 #+name: authorization-get-role-permissions
 #+begin_src ores-shell :tangle authorization-get-role-permissions.ores :exports none
@@ -173,7 +173,7 @@ The command is shaped like this:
 authorization put-role-permissions <role_id> <permission_codes> <change_reason_code> <change_commentary>
 #+end_example
 
-It is addressed at =iam.v1.roles.permissions.put=.
+It is addressed at =iam.v1.roles_permissions.put=.
 
 #+name: authorization-put-role-permissions
 #+begin_src ores-shell :tangle authorization-put-role-permissions.ores :exports none
@@ -194,7 +194,7 @@ The command is shaped like this:
 authorization suggest-role-commands <username> <tenant_id> <hostname>
 #+end_example
 
-It is addressed at =iam.v1.roles.suggest-commands=.
+It is addressed at =iam.v1.ops.suggest_role_commands=.
 
 #+name: authorization-suggest-role-commands
 #+begin_src ores-shell :tangle authorization-suggest-role-commands.ores :exports none

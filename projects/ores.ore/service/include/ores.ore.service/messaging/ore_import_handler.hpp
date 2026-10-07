@@ -30,7 +30,7 @@
 namespace ores::ore::service::messaging {
 
 /**
- * @brief NATS handler for workflow.v1.ore.import requests.
+ * @brief NATS handler for workflow.v1.ops.ore_import requests.
  *
  * Authenticates the caller JWT, validates the request, then dispatches an
  * asynchronous ore_import_workflow via a start_workflow_message fire-and-forget
@@ -53,7 +53,7 @@ public:
                        ores::security::jwt::jwt_authenticator signer);
 
     /**
-     * @brief Handles a workflow.v1.ore.import NATS request.
+     * @brief Handles a workflow.v1.ops.ore_import NATS request.
      */
     void ore_import(ores::nats::message msg);
 

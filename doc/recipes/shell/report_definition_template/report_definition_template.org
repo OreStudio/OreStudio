@@ -26,7 +26,7 @@ The command is shaped like this:
 report_definition_template list-dq-report-definition-templates [--bundle_code <v>]
 #+end_example
 
-It is addressed at =dq.v1.report-definition-templates.list=.
+It is addressed at =dq.v1.report_definition_templates.list=.
 
 #+name: report_definition_template-list-dq-report-definition-templates
 #+begin_src ores-shell :tangle report_definition_template-list-dq-report-definition-templates.ores :exports none

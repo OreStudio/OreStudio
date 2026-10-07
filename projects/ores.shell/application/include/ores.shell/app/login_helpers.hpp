@@ -39,7 +39,7 @@ namespace ores::shell::app::commands {
  * populated means the account spans several parties: iam issued a
  * single-use token restricted to party selection. Session-scoped
  * commands need the party-scoped access token that
- * iam.v1.accounts.select-party returns for the account's default party,
+ * iam.v1.ops.select_party returns for the account's default party,
  * so exchange the token before storing it. Mirrors the Qt client's
  * ClientManager::selectParty().
  *

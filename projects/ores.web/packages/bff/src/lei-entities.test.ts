@@ -138,7 +138,7 @@ describe('GET /api/lei-entities', () => {
         });
         expect(calls).toEqual([
             {
-                subject: 'dq.v1.lei-entities.search',
+                subject: 'dq.v1.ops.search_lei_entities',
                 request: { search: 'barclays', country_filter: '', offset: 0, limit: 20 },
             },
         ]);

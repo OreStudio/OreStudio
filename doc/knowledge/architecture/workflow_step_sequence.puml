@@ -20,14 +20,14 @@
 title The life of a step: from the start message to the finished run
 
 actor "Tenant\nadministrator" as admin
-participant "iam.v1.tenants.provision\nhandler" as caller
+participant "iam.v1.ops.provision_tenant\nhandler" as caller
 participant "workflow engine" as engine
 database "the run state" as db
 participant "step handler\n(an operation)" as step
 
 admin -> caller : provision tenant
 caller -> caller : create the tenant and its administrator;\nmint the instance identifier
-caller -> engine : publish start_workflow_message\n(workflow.v1.start; the instance identifier\nis set; no reply subject)
+caller -> engine : publish start_workflow_message\n(workflow.v1.ops.start_workflow; the instance identifier\nis set; no reply subject)
 caller --> admin : the provision answer\n(the instance identifier, the tenant identifier\nand the account identifier)
 
 note over caller, engine

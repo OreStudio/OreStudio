@@ -459,21 +459,21 @@ class ores::telemetry::messaging::get_telemetry_logs_request {
     {static} +response_type : get_telemetry_logs_response
 }
 class ores::telemetry::messaging::publish_log_entries_request {
-    {static} +nats_subject : "telemetry.v1.logs.publish"
+    {static} +nats_subject : "telemetry.v1.ops.publish_log_entries"
     {static} +requires_session : bool
 }
 class ores::telemetry::messaging::get_nats_server_samples_request {
-    {static} +nats_subject : "telemetry.v1.nats.server-samples.list"
+    {static} +nats_subject : "telemetry.v1.nats_server_samples.list"
     {static} +requires_session : bool
     {static} +response_type : get_nats_server_samples_response
 }
 class ores::telemetry::messaging::get_nats_stream_samples_request {
-    {static} +nats_subject : "telemetry.v1.nats.stream-samples.list"
+    {static} +nats_subject : "telemetry.v1.nats_stream_samples.list"
     {static} +requires_session : bool
     {static} +response_type : get_nats_stream_samples_response
 }
 class ores::telemetry::messaging::service_heartbeat_message {
-    {static} +nats_subject : "telemetry.v1.services.heartbeat"
+    {static} +nats_subject : "telemetry.v1.ops.service_heartbeat"
     {static} +requires_session : bool
 }
 class ores::telemetry::messaging::get_service_samples_request {

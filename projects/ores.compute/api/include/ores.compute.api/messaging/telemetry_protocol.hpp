@@ -40,7 +40,7 @@ namespace ores::compute::messaging {
  */
 struct get_grid_stats_request {
     using response_type = struct get_grid_stats_response;
-    static constexpr std::string_view nats_subject = "compute.v1.telemetry.get_grid_stats";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.get_grid_stats";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -169,7 +169,7 @@ struct get_grid_stats_response {
  * the message is public rather than claiming a token it never sends.
  */
 struct node_sample_message {
-    static constexpr std::string_view nats_subject = "compute.v1.telemetry.node_samples";
+    static constexpr std::string_view nats_subject = "compute.v1.ops.node_sample";
     /**
      * @brief Whether the caller must have established a session first.
      *

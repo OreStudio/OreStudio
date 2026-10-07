@@ -74,9 +74,9 @@ namespace ores #F2F2F2 {
 
 ' register_handlers binds three handler families and nothing else:
 '
-'   workflow.v1.ore.import               -> ore_import_handler
+'   workflow.v1.ops.ore_import               -> ore_import_handler
 '   ore.v1.ore.import.{execute,rollback} -> ore_import_execute_handler
-'   ore.v1.report.prepare-package        -> report_package_handler
+'   ore.v1.ops.prepare_ore_package        -> report_package_handler
 
 ores::ore::service::messaging::registrar ..> ores::ore::service::messaging::ore_import_handler : binds
 ores::ore::service::messaging::registrar ..> ores::ore::service::messaging::ore_import_execute_handler : binds

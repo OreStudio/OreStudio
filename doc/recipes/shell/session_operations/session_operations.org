@@ -26,7 +26,7 @@ The command is shaped like this:
 session_operations get-active-sessions
 #+end_example
 
-It is addressed at =iam.v1.sessions.active=.
+It is addressed at =iam.v1.ops.get_active_sessions=.
 
 #+name: session_operations-get-active-sessions
 #+begin_src ores-shell :tangle session_operations-get-active-sessions.ores :exports none

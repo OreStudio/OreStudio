@@ -207,7 +207,7 @@ export const subjects = {
     delete_many_counterparties_request: 'refdata.v1.counterparties.delete_many',
     list_counterparty_versions_request: 'refdata.v1.counterparties_versions.list',
     get_counterparty_version_request: 'refdata.v1.counterparties_versions.get',
-    get_counterparty_composite_as_of_request: 'refdata.v1.counterparties.composite_as_of',
+    get_counterparty_composite_as_of_request: 'refdata.v1.ops.get_counterparty_composite_as_of',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

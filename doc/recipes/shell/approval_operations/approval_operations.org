@@ -26,7 +26,7 @@ The command is shaped like this:
 approval_operations raise-approval <kind_code> <reason>
 #+end_example
 
-It is addressed at =inbox.v1.approval-requests.raise=.
+It is addressed at =inbox.v1.ops.raise_approval=.
 
 #+name: approval_operations-raise-approval
 #+begin_src ores-shell :tangle approval_operations-raise-approval.ores :exports none
@@ -47,7 +47,7 @@ The command is shaped like this:
 approval_operations withdraw-approval <request_id> <comment> [--version <v>]
 #+end_example
 
-It is addressed at =inbox.v1.approval-requests.withdraw=.
+It is addressed at =inbox.v1.ops.withdraw_approval=.
 
 #+name: approval_operations-withdraw-approval
 #+begin_src ores-shell :tangle approval_operations-withdraw-approval.ores :exports none
@@ -68,7 +68,7 @@ The command is shaped like this:
 approval_operations decide-approval <request_id> <decision_code> <comment> [--version <v>]
 #+end_example
 
-It is addressed at =inbox.v1.approval-requests.decide=.
+It is addressed at =inbox.v1.ops.decide_approval=.
 
 #+name: approval_operations-decide-approval
 #+begin_src ores-shell :tangle approval_operations-decide-approval.ores :exports none
@@ -89,7 +89,7 @@ The command is shaped like this:
 approval_operations list-approval-queue [--offset <v>] [--limit <v>]
 #+end_example
 
-It is addressed at =inbox.v1.approval-requests.queue=.
+It is addressed at =inbox.v1.ops.list_approval_queue=.
 
 #+name: approval_operations-list-approval-queue
 #+begin_src ores-shell :tangle approval_operations-list-approval-queue.ores :exports none
@@ -110,7 +110,7 @@ The command is shaped like this:
 approval_operations list-my-approval-requests [--offset <v>] [--limit <v>]
 #+end_example
 
-It is addressed at =inbox.v1.approval-requests.mine=.
+It is addressed at =inbox.v1.ops.list_my_approval_requests=.
 
 #+name: approval_operations-list-my-approval-requests
 #+begin_src ores-shell :tangle approval_operations-list-my-approval-requests.ores :exports none

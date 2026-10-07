@@ -228,7 +228,7 @@ class ores::synthetic::service::folder_feed_control_handler {
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
 note right of "ores::synthetic::service::folder_feed_control_handler"
-Serves marketdata.v1.market_feed_configs.start_folder and
+Serves marketdata.v1.ops.start_feeds_under_folder and
 .stop_folder. The single place that turns "start everything
 under this folder" into a sequence of producer starts: it
 resolves the folder subtree once and fans out over every
@@ -247,7 +247,7 @@ class ores::synthetic::service::vintage_validity_handler {
     +list(msg : nats::message)
 }
 note right of "ores::synthetic::service::vintage_validity_handler"
-Serves marketdata.v1.market_feed_configs.vintage_validity.
+Serves marketdata.v1.ops.get_vintage_validity.
 It computes every FX feed's vintage availability live, at
 read time, through feed_controller::validate -- there is no
 stored column and no trigger, so the answer is correct even
@@ -296,8 +296,8 @@ synthetic.v1.feed_configs.start/.stop/.list,
 synthetic.v1.fx_spot.simulate,
 synthetic.v1.ir_curve.simulate_paths,
 synthetic.v1.ir_curve.preview_shape,
-marketdata.v1.market_feed_configs.start_folder/.stop_folder
-and marketdata.v1.market_feed_configs.vintage_validity. Each
+marketdata.v1.ops.start_feeds_under_folder/.stop_folder
+and marketdata.v1.ops.get_vintage_validity. Each
 lambda constructs its handler per message.
 end note
 

@@ -154,7 +154,7 @@
                 : '') +
             '<details class="fallback"><summary>Set a password here instead (fallback)</summary>' +
             '<p>Kept for an account whose mailbox cannot receive. The administrator then knows the ' +
-            'password, so the record has to say so. <span class="mono">iam.v1.accounts.reset-password</span> ' +
+            'password, so the record has to say so. <span class="mono">iam.v1.ops.reset_password</span> ' +
             'exists and no route reaches it. Whether this fallback survives is the open question this ' +
             'prototype raises.</p></details>' +
             '</section>';

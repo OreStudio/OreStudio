@@ -11,8 +11,8 @@
 
 The shell's =ore= menu carries the two verbs
 (=projects/ores.shell/application/src/app/commands/trading/ore_commands.cpp=).
-They send =ore.v1.run_configuration.import= and
-=ore.v1.run_configuration.export= to ~ores.ore~. The import runs as the
+They send =ore.v1.ops.import_run_configuration= and
+=ore.v1.ops.export_run_configuration= to ~ores.ore~. The import runs as the
 =run_configuration_import_workflow=: its step maps the files and stores each
 document through the component that owns it (reporting, refdata, analytics),
 under the logged-in account's session, so the configuration belongs to that

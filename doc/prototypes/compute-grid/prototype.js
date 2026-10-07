@@ -5,7 +5,7 @@
  * doc/knowledge/journeys/operations/journey_watch_the_compute_grid.org.
  *
  * The summary and the node rows are fixtures shaped by the
- * compute.v1.telemetry.get_grid_stats reply: the newest stored grid sample and
+ * compute.v1.ops.get_grid_stats reply: the newest stored grid sample and
  * the latest sample of each node. The wrappers are fixtures shaped by
  * telemetry.v1.services.list; they belong here rather than on the services
  * screen, because a wrapper runs on a node. Nothing here reads the server. */
@@ -26,7 +26,7 @@
         }
     ];
 
-    /* compute.v1.telemetry.get_grid_stats: the summary and one row per node. */
+    /* compute.v1.ops.get_grid_stats: the summary and one row per node. */
     var gridStats = {
         sampledAt: '14:31:02',
         totalHosts: 6,
@@ -338,7 +338,7 @@
 
         var body = pageHead() +
             '<div class="notice warn">PROTOTYPE. Every row below is a fixture shaped by the ' +
-            'compute.v1.telemetry.get_grid_stats and the telemetry.v1.services.list replies. ' +
+            'compute.v1.ops.get_grid_stats and the telemetry.v1.services.list replies. ' +
             'Nothing on this page reads the server.</div>' +
             (S.variant === 'sampled' ? summaryPanel() : noSamplePanel()) +
             nodesPanel() +

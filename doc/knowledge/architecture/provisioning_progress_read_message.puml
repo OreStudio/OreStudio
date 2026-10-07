@@ -19,7 +19,7 @@
 
 title The run progress read: the fields a page follows
 
-class "run progress read\n(workflow.v1.instances.steps)" as progress_read <<message>> #E1F5FF {
+class "run progress read\n(workflow.v1.ops.get_workflow_steps)" as progress_read <<message>> #E1F5FF {
     {field} +status : state
     {field} +step count : count
     {field} +current step : index

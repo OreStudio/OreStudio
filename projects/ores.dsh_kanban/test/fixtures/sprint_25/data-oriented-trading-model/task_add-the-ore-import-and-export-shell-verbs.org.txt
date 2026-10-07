@@ -2,7 +2,7 @@
 :ID: EE79ACE9-3848-4CE0-940A-D0D0B9F12AD4
 :END:
 #+title: Task: Add the ORE import and export verbs to the shell
-#+description: None of the three steps of the XML to database to XML path has a shell verb today: upload the import tarball to the ore-imports bucket, start the ore_import_workflow via workflow.v1.ore.import, and reconstruct the portfolio XML from trading.v1.trades.portfolio.export items. Add the verbs so the full round trip test drives the service layer through ores.shell rather than ores.cli.
+#+description: None of the three steps of the XML to database to XML path has a shell verb today: upload the import tarball to the ore-imports bucket, start the ore_import_workflow via workflow.v1.ops.ore_import, and reconstruct the portfolio XML from trading.v1.ops.export_portfolio items. Add the verbs so the full round trip test drives the service layer through ores.shell rather than ores.cli.
 #+type: task
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
@@ -52,8 +52,8 @@ adds the verbs and nothing else.
 | Step | Service | Subject |
 |------+---------+---------|
 | Upload the tarball | object storage, bucket =ore-imports=, key ={request_id}.tar.gz= | =ores::ore::net::ore_storage= |
-| XML into the database | =ore_import_workflow= step 0 | =workflow.v1.ore.import= |
-| Database back to XML | =export_portfolio_request=, then =exporter::export_portfolio(items)= | =trading.v1.trades.portfolio.export= |
+| XML into the database | =ore_import_workflow= step 0 | =workflow.v1.ops.ore_import= |
+| Database back to XML | =export_portfolio_request=, then =exporter::export_portfolio(items)= | =trading.v1.ops.export_portfolio= |
 
 Each verb follows the shape of the existing shell command units under
 =projects/ores.shell/src/app/commands/=, and each registers in
@@ -63,7 +63,7 @@ Each verb follows the shape of the existing shell command units under
 
 ** The export verb needs the ORE core library
 
-=trading.v1.trades.portfolio.export= returns =items=, a vector of
+=trading.v1.ops.export_portfolio= returns =items=, a vector of
 =trade_export_item= (a trade, its instrument and an optional envelope).
 The XML is not on the wire. The shell must map those items into the
 =ores.ore= container and call =exporter::export_portfolio= itself.
@@ -90,16 +90,16 @@ export verbs belong with the trading group.
 | Step   | Subject                                                                    |
 |--------+----------------------------------------------------------------------------|
 | Upload | =ores::ore::net::ore_storage=, bucket =ore-imports=, key ={request_id}.tar.gz= |
-| Import | =workflow.v1.ore.import=                                                   |
-| Export | =trading.v1.trades.portfolio.export=                                       |
+| Import | =workflow.v1.ops.ore_import=                                                   |
+| Export | =trading.v1.ops.export_portfolio=                                       |
 
 ** The upload is HTTP, and the shell has no HTTP client
 
 Object storage has no NATS subject. =ores.storage= is an HTTP client
 library (=net/http_client.hpp=, =net/storage_paths.hpp=,
 =net/storage_transfer.hpp=), and the two NATS subjects that name storage
-(=marketdata.v1.series.export-to-storage= and
-=trading.v1.trades.export-to-storage=) move data from the server into
+(=marketdata.v1.ops.export_market_data_to_storage= and
+=trading.v1.ops.export_trades_to_storage=) move data from the server into
 storage, which is the opposite direction.
 
 =projects/ores.qt/trading/src/OreImportWizard.cpp= is the working
@@ -173,14 +173,14 @@ Acceptance, item by item.
 - *ores.shell can start the ORE import workflow for an uploaded tarball
   and report the outcome.* Met. =ore import <request_id> [--party-id]
   [--choices-file] [--timeout]= sends the request on
-  =workflow.v1.ore.import= and then waits for the instance it names. The
+  =workflow.v1.ops.ore_import= and then waits for the instance it names. The
   wait is the point. The handler replies with the workflow instance id
   before the work runs, and a =.ores= script cannot capture it, so the
   verb waits itself and reports the terminal step state.
 - *ores.shell can request a portfolio export and write the reconstructed
   XML to a file.* Met. =ore export <output_file> [--node-id] [--limit]=
   sends =export_portfolio_request= on
-  =trading.v1.trades.portfolio.export=, maps the returned items through
+  =trading.v1.ops.export_portfolio=, maps the returned items through
   =ores::ore::xml::exporter::export_portfolio= and writes the file.
 - *The three verbs drive the existing services. No new service, subject
   or protocol member is needed.* Met. The diff adds two files and

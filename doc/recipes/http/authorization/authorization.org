@@ -12,116 +12,116 @@ This file documents the authorization resource over HTTP, one section per endpoi
 
 * Endpoints
 
-** =POST /api/v1/iam/roles/assign=
+** =POST /api/v1/iam/ops/assign_role=
 :PROPERTIES:
 :ID: 1798A90E-6894-519C-8B53-17F4C968C190
 :END:
 
 Assign role. It needs a session.
 
-It forwards to =iam.v1.roles.assign=.
+It forwards to =iam.v1.ops.assign_role=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/assign
+POST /api/v1/iam/ops/assign_role
 #+end_example
 
 #+name: authorization-assign-role
 #+begin_src hurl :tangle authorization-assign-role.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/assign
+POST {{base_url}}/api/v1/iam/ops/assign_role
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/revoke=
+** =POST /api/v1/iam/ops/revoke_role=
 :PROPERTIES:
 :ID: D1D1CEB5-79B3-5D4D-996B-9C783877489B
 :END:
 
 Revoke role. It needs a session.
 
-It forwards to =iam.v1.roles.revoke=.
+It forwards to =iam.v1.ops.revoke_role=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/revoke
+POST /api/v1/iam/ops/revoke_role
 #+end_example
 
 #+name: authorization-revoke-role
 #+begin_src hurl :tangle authorization-revoke-role.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/revoke
+POST {{base_url}}/api/v1/iam/ops/revoke_role
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/by-account=
+** =POST /api/v1/iam/ops/get_account_roles=
 :PROPERTIES:
 :ID: 074D3723-1348-577E-95E7-B9EC90F2343F
 :END:
 
 Get account roles. It needs a session.
 
-It forwards to =iam.v1.roles.by-account=.
+It forwards to =iam.v1.ops.get_account_roles=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/by-account
+POST /api/v1/iam/ops/get_account_roles
 #+end_example
 
 #+name: authorization-get-account-roles
 #+begin_src hurl :tangle authorization-get-account-roles.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/by-account
+POST {{base_url}}/api/v1/iam/ops/get_account_roles
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/permissions=
+** =POST /api/v1/iam/ops/get_role_permissions=
 :PROPERTIES:
 :ID: D657A55F-ED53-5C39-92DC-F532C984173E
 :END:
 
 Get role permissions. It needs a session.
 
-It forwards to =iam.v1.roles.permissions=.
+It forwards to =iam.v1.ops.get_role_permissions=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/permissions
+POST /api/v1/iam/ops/get_role_permissions
 #+end_example
 
 #+name: authorization-get-role-permissions
 #+begin_src hurl :tangle authorization-get-role-permissions.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/permissions
+POST {{base_url}}/api/v1/iam/ops/get_role_permissions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/roles/permissions/put=
+** =POST /api/v1/iam/roles_permissions/put=
 :PROPERTIES:
 :ID: 2D264CC1-C63D-51E2-88DB-3767F003D06A
 :END:
 
 Put role permissions. It needs a session.
 
-It forwards to =iam.v1.roles.permissions.put=.
+It forwards to =iam.v1.roles_permissions.put=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/roles/permissions/put
+POST /api/v1/iam/roles_permissions/put
 #+end_example
 
 #+name: authorization-put-role-permissions
 #+begin_src hurl :tangle authorization-put-role-permissions.hurl :exports none
-POST {{base_url}}/api/v1/iam/roles/permissions/put
+POST {{base_url}}/api/v1/iam/roles_permissions/put
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

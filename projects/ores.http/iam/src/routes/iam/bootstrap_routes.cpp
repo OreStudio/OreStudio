@@ -131,9 +131,9 @@ void bootstrap_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering bootstrap routes";
 
     auto bootstrap_status_route =
-        router->post("/api/v1/iam/bootstrap/status")
+        router->post("/api/v1/iam/ops/bootstrap_status")
             .summary("Bootstrap status")
-            .description("Forwards to the iam.v1.bootstrap.status operation.")
+            .description("Forwards to the iam.v1.ops.bootstrap_status operation.")
             .tags({"iam"})
             .auth_optional()
             .body<messaging::bootstrap_status_request>()
@@ -146,9 +146,9 @@ void bootstrap_routes::register_routes(
     registry->register_route(bootstrap_status_built);
 
     auto create_initial_admin_route =
-        router->post("/api/v1/iam/bootstrap/create-admin")
+        router->post("/api/v1/iam/ops/create_initial_admin")
             .summary("Create initial admin")
-            .description("Forwards to the iam.v1.bootstrap.create-admin operation.")
+            .description("Forwards to the iam.v1.ops.create_initial_admin operation.")
             .tags({"iam"})
             .auth_optional()
             .body<messaging::create_initial_admin_request>()

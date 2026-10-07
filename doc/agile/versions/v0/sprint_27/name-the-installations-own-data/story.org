@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 58F3FC7C-2E73-4D7B-945B-18AEB9238B4A
+:END:
+#+title: Story: Name the installation's own data
+#+description: The fleet, the roster, the logs, the bus and the versions are facts about the deployment, not about a tenant. They are stored in tenant-scoped tables and read through policies written for tenant data, so every read of them is a workaround. This story names the third owner and moves those reads onto the policy that fits.
+#+type: story
+#+level: s2
+#+filetags: :architecture:tenancy:security:rls:operations:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The installation owns a class of data the schema does not name: the facts about the deployment itself. This story names it, gives it the policy shape it wants, and moves the Operations reads onto it, so a read of the fleet is honest rather than a workaround. It adds no security exception and no tenant parameter.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- The codegen can express installation-scoped data, so a model declares its owner instead of hand-writing a policy.
+- The samples, the roster, the logs, the bus and the versions carry the installation's policy shape and are read whole by a session the permission admits.
+- The Operations grid reads the fleet whole under compute::grid_samples:read, and every claim it makes about the work counts is true.
+- Installation-wide work totals are either built on the audit's token exchange or stated on the screen as out of reach, with the capture that records it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:89F76CAA-6EE6-4E1B-96EA-05502824C1E8][Give installation-scoped data its policy shape]] | BACKLOG | | | A model cannot say that its rows belong to the installation, so such a table hand-writes the shared-reference policy: own tenant or system-tenant rows. This task adds the codegen feature that states it, and moves the grid and node samples onto it. |
+| [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | BACKLOG | | | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -687,15 +687,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     // Subject routing is per-triplet: the compute orchestrator publishes each
     // assignment on compute.v1.work.assignments.{tenant_id}.{platform_code}
-    // with the package URI already resolved for that platform. Wrappers
-    // subscribe only to their own triplet so they never see assignments they
-    // couldn't run.
-    std::string sanitised_tenant = cfg.tenant_id;
-    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '_');
+    // with the package URI already resolved for that platform. The deployment's
+    // wrapper fleet is the shared pool, so it consumes every tenant's
+    // assignments for its own platform; the tenant segment stays in the subject
+    // as the routing key a tenant's own pool will filter on. --tenant-id is
+    // this node's own identity for its host row and telemetry, not a filter on
+    // the work it takes.
     const std::string my_triplet(ores::utility::version::platform_triplet());
     const std::string assignment_prefix(compute::messaging::work_assignment_event::nats_subject);
-    const std::string work_subject = assignment_prefix + "." + cfg.tenant_id + "." + my_triplet;
-    const std::string durable_name = "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
+    const std::string work_subject = assignment_prefix + ".*." + my_triplet;
+    const std::string durable_name = "compute_wrapper_shared_" + my_triplet;
     const std::string queue_group = "ores.compute.wrapper." + my_triplet;
 
     co_await ores::service::service::run(

@@ -8,30 +8,43 @@
 #+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
 #+owner: marco
 #+branch: feature/reporting-compute-handoff
-#+pr:
-#+blocked_on:
-#+blocked_since:
+#+pr: 2740
+#+blocked_on: The node's per-assignment storage capability, owned by the tenant-data isolation story
+#+blocked_since: 2026-10-07
 #+created: 2026-09-27
 #+updated: 2026-09-27
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The reporting submit path cannot run anything: it publishes an assignment on a subject no wrapper subscribes to, leaves result_id, package_uri, config_uri and output_uri empty, and hands over a bucket-prefixed URI where the wrapper fetches an HTTP path. The compute-side dispatch path does all three correctly and is the model to follow.
+Make the reporting path's workunit reach a wrapper and run. The original note
+listed three defects in the submit path; the run-token task moved submission
+onto the compute dispatcher and closed one of them, so two remain:
+
+- *The subject has no consumer.* The dispatcher publishes each assignment on
+  =compute.v1.work.assignments.{run_tenant}.{platform}=, and every wrapper
+  subscribes on its own configured tenant, the system tenant, so a tenant's
+  run is published where nobody listens. The platform's wrapper fleet is the
+  deployment's shared pool and must consume every tenant's work.
+- *The input URI is the wrong shape.* =prepare_ore_package= answers with
+  =ores/ore/packages/{instance}/ore_package.tar.gz=, a bucket and key, and the
+  wrapper fetches it over the storage HTTP interface, which speaks
+  =/api/v1/storage/{bucket}/{key}=. The package and output URIs the dispatcher
+  sets are already paths.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Now          | The subject and URI defects are fixed and proven; the wrapper takes the run's assignment. The download stops at HTTP 401 because a node holds no storage credential yet. |
+| Waiting on   | The [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][tenant-data isolation story]]'s node capability, without which a wrapper cannot download. The two fixture tasks also gate a fresh run: [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][the schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][the risk report configurations]]. |
+| Next         | Re-run once a node can authenticate to storage. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -41,11 +54,46 @@ The reporting submit path cannot run anything: it publishes an assignment on a s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The subject fix belongs in the wrapper, not the dispatcher: the stream already
+captures =assignments.>=, and the tenant segment is the routing key a tenant's
+own pool will filter on later, so the shared fleet widens its consumer to
+=assignments.*.{platform}= and keeps the tenant in the subject. The node's
+=--tenant-id= stays its own identity for the host row and telemetry; it is no
+longer a filter on the work it takes.
+
+The URI fix belongs where the URI is built: =prepare_ore_package= builds it with
+=storage_paths::make_object_path=, the same helper the compute dispatcher uses
+for the package and the output.
 
 * Notes
+
+The live run reached the wrapper. Run =f8275ac1-1ac5-4e2e-a485-97324ef3b13e=,
+tenant =51e855c0-ce99-4726-a590-7272c89cf8b1=:
+
+- The wrapper subscribes to
+  =compute.v1.work.assignments.*.x64-linux= (durable
+  =compute_wrapper_shared_x64-linux=), and at 14:24:57 it took the run's
+  assignment. Defect 1 is closed.
+- The attempted package URL is
+  =http://localhost:20600/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/...=,
+  the path shape storage speaks. Defect 3 is closed for the package; the input
+  is built by the same helper.
+- It then failed =HTTP 401=. =ores.compute.wrapper= has no storage credential
+  at all: =application.cpp= passes a =constexpr= empty =storage_bearer_token=
+  to every get and put. A node needs a credential before it can download, and
+  the design says that credential is the per-assignment capability
+  [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] describes, which
+  the [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][isolation story]] owns. This
+  task waits on it rather than inventing a standing service token the policy
+  would replace.
+
+A second finding: the JetStream assignments stream survives a database
+recreate. On the recreated environment the wrapper replayed assignments from
+the previous one and answered =results.submit failed: Result not found= for
+each, because the result rows were gone. The smoke-test story's "reproducible
+from a freshly recreated database" acceptance will meet this; the stream wants
+purging, or the handler wants to treat an unknown result as an expiry rather
+than an error.
 
 * Test Scenarios
 
@@ -62,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2740][#2740]] | [compute] Let the shared wrapper fleet take a tenant's work |
 
 * Review
 
@@ -71,3 +119,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Partial, and landed: the two defects this task owned are fixed and proven.
+
+- The platform wrapper fleet consumes =compute.v1.work.assignments.*.{platform}=,
+  so the shared pool serves every tenant. Proven live: the wrapper took run
+  =f8275ac1='s assignment.
+- =prepare_ore_package= builds its tarball URI with
+  =storage_paths::make_object_path=, so the wrapper's input URL is well formed.
+- The handoff's third defect was closed by the run-token task, which moved
+  submission onto the compute dispatcher.
+
+Still open, and why this task is BLOCKED rather than DONE: a wrapper cannot
+download, because a node holds no storage credential. That is the
+per-assignment capability the isolation story owns, not a handoff defect. The
+task closes when a node can authenticate to storage and a run executes.
+

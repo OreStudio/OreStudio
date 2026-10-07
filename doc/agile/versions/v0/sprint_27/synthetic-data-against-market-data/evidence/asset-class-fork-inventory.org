@@ -6,17 +6,24 @@
 
 * Status after implementation
 
-The inventory is the as-found record at =9c1c4af10e=. Three of its findings
+The inventory is the as-found record at =9c1c4af10e=. Several of its findings
 have since been acted on and must not be quoted as current.
 
 - The binding mode and the producer subject are one builder for every kind
   now, so a sandboxed IR curve is expressible (=f09d43f5bf=).
 - =ensure_feed_binding= no longer exists anywhere. The FX-only
   =start(ore_key, ...)= path and its vintage copy are deleted, and
-  =bind_feed= at =feed_controller.hpp:384= is called from both live start
-  paths, so binding auto-creation is reachable (=2e3ca06d17=).
-- The remaining spurious forks, the control-plane duplication, are captured
-  as a backlog task rather than closed.
+  =bind_feed= is called from both live start paths, so binding auto-creation is
+  reachable (=2e3ca06d17=).
+- The control-plane duplication is closed by the per-kind registry (task
+  =9DC69ED9=, branch =feature/give-the-synthetic-control-plane-one-registry=).
+  The seven spurious forks below that were still open — the repository probe
+  that resolved the kind, the per-kind start duplication, the folder loops,
+  the per-kind permission literals, the FX-only vintage handler, the
+  duplicated simulate plumbing and the repeated factory build — now exist once
+  over registered kinds. The one fork deliberately left open is the shared
+  embedded base struct for the two generation-config entities, which needs a
+  codegen model and schema change.
 
 * Summary
 

@@ -66,6 +66,42 @@ struct complete_party_onboarding_response {
     ores::utility::domain::result result;
 };
 
+struct get_setting_request {
+    using response_type = struct get_setting_response;
+    static constexpr std::string_view nats_subject = "variability.v1.ops.get_setting";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The setting's name, which is its natural key.
+     *
+     * A setting is addressed by its name everywhere it is spoken about --
+     * =iam.token.access_lifetime_seconds= is the setting, and nobody knows its
+     * identifier -- so a caller that holds a name asks for it by name rather than
+     * by looking it up in a list first.
+     */
+    std::string name;
+};
+
+struct get_setting_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The setting's value as text, meaningful when the outcome is ok.
+     *
+     * The value is text whatever the type: =data_type= says how to read it, and a
+     * caller that asked for a cron expression reads it as one.
+     */
+    std::string value;
+    /**
+     * @brief The setting's declared type, an empty string when it does not exist.
+     */
+    std::string data_type;
+};
+
 }
 
 #endif

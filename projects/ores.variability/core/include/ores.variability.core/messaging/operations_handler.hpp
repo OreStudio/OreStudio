@@ -29,6 +29,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
+#include "ores.variability.core/repository/system_setting_repository.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <optional>
 
@@ -137,6 +138,66 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             complete_party_onboarding_response resp;
+            resp.result.outcome = ores::utility::domain::outcome::failed;
+            resp.result.code = "operation_failed";
+            resp.result.message = e.what();
+            ores::service::messaging::reply(nats_, msg, resp);
+        }
+    }
+
+    /**
+     * @brief Reads one setting by the name it is known by.
+     *
+     * A component reads the installation's configuration over the wire rather
+     * than reaching into this component's tables. A setting that is not there
+     * is =missing= and not an error: the caller decides whether it can proceed
+     * without one.
+     */
+    void get_setting(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            ores::service::messaging::error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+
+        auto req = ores::service::messaging::decode<get_setting_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(operations_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            ores::service::messaging::error_reply(
+                nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        const auto& ctx = *ctx_expected;
+        if (!ores::service::messaging::has_permission(ctx, "variability::system_settings:read")) {
+            get_setting_response resp;
+            resp.result.outcome = ores::utility::domain::outcome::denied;
+            resp.result.code = "permission_denied";
+            resp.result.message =
+                "Reading a system setting needs variability::system_settings:read.";
+            ores::service::messaging::reply(nats_, msg, resp);
+            return;
+        }
+        try {
+            repository::system_setting_repository repo;
+            const auto found = repo.read_latest_by_name(ctx, req->name);
+            get_setting_response resp;
+            if (found.empty()) {
+                resp.result.outcome = ores::utility::domain::outcome::missing;
+                resp.result.code = "no_such_setting";
+                resp.result.message = "No setting is named " + req->name + ".";
+            } else {
+                resp.result.outcome = ores::utility::domain::outcome::ok;
+                resp.value = found.front().value;
+                resp.data_type = found.front().data_type;
+            }
+            ores::service::messaging::reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_setting_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
             resp.result.message = e.what();

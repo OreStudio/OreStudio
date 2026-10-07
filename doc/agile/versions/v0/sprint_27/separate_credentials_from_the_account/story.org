@@ -21,11 +21,11 @@ A profile write can never change a credential, and the history says which of the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ A profile write can never change a credential, and the history says which of the
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | DONE | 2026-10-06 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | STARTED | 2026-10-06 | | Initial task for: Separate the account's credentials from its profile |
+| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | DONE | 2026-10-06 | 2026-10-07 | Initial task for: Separate the account's credentials from its profile |
 
 * Decisions
 
@@ -106,3 +106,28 @@ A profile write can never change a credential, and the history says which of the
 * See also
 
 - [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] — the census of every subject in the tree against the same specification, and the gate that will hold it. This story takes the IAM subjects it has to move anyway; the rest of the component is that story's.
+
+* Result
+
+The account's profile and its secrets are two entities with two access paths.
+=ores.iam.account= declares every column it holds, so a whole-row write through
+it is lossless and cannot reach a credential, because there is none on the row.
+=ores.iam.account_credential= holds the secret material with every column
+=:no_wire:=, is projected across the whole stack, and declares no write verb
+because a credential has no write record to carry. =password_salt= is gone: the
+stored hash embeds its own salt and nothing read the column.
+
+Both properties the story is named for were measured on the running system. A
+profile write took an account from version 2 to version 3 while its credential
+row kept the same id, version and =service_password_hash=; the credential reads
+answered with 25 records and no secret field in any of them.
+
+Two things came out of it that are not the split itself. A nullable =:no_wire:=
+column exposed a codegen defect -- the mapper emitted =v.secret_hash.empty()=
+against an =rfl::Skip=, which does not compile -- and the mapper template now
+branches on the flag with a regression test. And the first cut modelled the
+entity as internal, with the wire facets withdrawn; that was wrong and is
+recorded in * Decisions.
+
+TOTP is not built. The secret is a column with no reader and no writer, and the
+capability is captured in the inbox.

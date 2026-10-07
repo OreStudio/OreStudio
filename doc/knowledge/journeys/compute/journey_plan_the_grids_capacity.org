@@ -1,0 +1,274 @@
+:PROPERTIES:
+:ID: 01238DF2-9745-451A-B288-7C0F141E35B6
+:END:
+#+title: User Journey: Plan the grid's capacity
+#+description: A signed-in person compares what the compute nodes have against what a job needs and what is scheduled to arrive soon, and judges whether the grid can absorb it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A signed-in person compares what the compute nodes have against what a job needs and what is scheduled to arrive soon, and judges whether the grid can absorb it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know whether the grid can take what is coming." The person picks a
+horizon and reads one screen: what capacity the nodes have, how much of it the
+grid is using, what a job needs to run, what is scheduled to arrive inside the
+horizon, and who is using the grid. The journey is done when the person can say
+whether the grid has headroom for the work that is about to arrive, and which
+resource is the constraint.
+
+* Actor and trigger
+
+The actor is what the rows admit, and the session decides the rows. A tenant
+sees its own arrivals and its own share of the grid; the super administrator
+sees the installation's. This is one journey: the activity is the same "can the
+grid take this" at two visible sets.
+
+The fleet rows are the installation's: the nodes and their capacity describe
+machines the installation owns, so they are read whole. The arrivals are a
+tenant's, so they narrow to the session's tenant. The allocation by tenant is
+different in kind: it is a fact about several tenants at once and no single
+tenant owns it. The ownership study calls that aggregate Class T and says the
+sanctioned way to compute it is to act inside each tenant, which is the
+mechanism the audit is building. Until that mechanism exists, the allocation
+chart is the installation's aggregate and its audience is a permission decision
+([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+information flow]]).
+
+The trigger is a change to either side: a node was added or drained, a release
+needs more memory than the fleet has, or a schedule is about to fire a large
+batch. The person opens the capacity screen to compare the two sides. The
+journey ends when the headroom question is answered.
+
+This journey writes nothing. It reads the host registry, the app version
+requirements, the samples and the scheduler's status. It does not add a node,
+change a schedule or stop a job.
+
+* Steps
+
+1. *Open the capacity screen and pick a horizon.* The person opens the screen
+   and picks how far ahead to look, for example the next day or the next week.
+   The system answers over that horizon and draws the arrivals and the usage
+   against one time axis.
+2. *Read what the nodes have.* The system states each node's capacity from the
+   host registry: =cpu_count=, =ram_mb= and =gpu_type=, with the node's
+   =external_id= and =display_name=. This is the grid's ceiling, and it does
+   not depend on any sample
+   ([[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]]).
+3. *Read the headroom.* The system draws used against total capacity in each
+   interval. The total is the host registry's. The usage the grid records is
+   coarse: =grid_sample= states how many hosts were online and how many were
+   idle, so the headroom is drawn in hosts and not in cores, memory or GPUs.
+   The screen must say which unit it is drawing, because a headroom in hosts
+   is not a headroom in memory.
+4. *Read what a job needs.* The system states the requirements a job carries.
+   The app version states a =min_ram_mb=, and its platform row states the
+   triplet the package was built for: =code=, =os_family= and =cpu_arch=. A job
+   is a =workunit= that names its =app_version_id=, its =priority= and its
+   =target_redundancy=
+   ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]],
+   [[id:256097D3-ED41-40C3-99DC-C61C6B13E80A][ores.compute.platform]]).
+5. *Read the requirements matrix.* The system draws the open jobs against the
+   nodes that can hold them: memory against =ram_mb=, platform against the
+   node's triplet, and a GPU need against =gpu_type=. A job whose
+   =min_ram_mb= is above every node's memory, or whose platform no online node
+   runs, is a job the grid cannot start, and the matrix is where that shows.
+6. *Read the upcoming arrivals.* The system draws a timeline of the scheduled
+   runs ahead of now. The scheduler answers with each job's =job_name=, its
+   =schedule_expression=, its =next_fire_at=, its =last_run_status= and its
+   =running_count=, so the person sees what fires and when
+   ([[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]],
+   [[id:3D1E9A64-7C2B-4F58-9E01-6A5D2C4B8E17][ores.scheduler.scheduling_operations]]).
+   What each arrival needs is not on the scheduler's answer: a scheduled run
+   submits a batch, and the batch's jobs and their requirements exist only after
+   submission. The timeline shows when, and the requirements matrix shows what,
+   and the two join only for work that has been submitted.
+7. *Read who is using the grid.* The system draws the allocation by tenant over
+   the horizon. This is the cross-tenant aggregate, so it is the one panel here
+   whose rows are not the session's alone.
+8. *Judge the constraint.* The person compares the three: the ceiling, the
+   usage and the arrivals. The answer is a sentence about one resource, for
+   example "the grid has memory for tomorrow's batch and no node runs its
+   platform".
+9. *No capacity data.* No sample is stored for the horizon, or no host row
+   describes the fleet. The screen says the capacity is unmeasured and does not
+   draw a ceiling from an empty table.
+10. *Leave, or go on.* A constraint that is a busy grid continues in
+    [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]. A constraint
+    that is a release's memory need continues in
+    [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]].
+
+* Screens and wireframes
+
+One screen. The horizon bar, the host capacity table, the headroom chart, the
+requirements matrix, the arrivals timeline and the allocation chart are panels
+of that screen, because the person reads them as one answer. The screen is
+read-only: it creates nothing, changes nothing and destroys nothing.
+
+The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
+journeys]] names for planning capacity:
+
+| Panel | Chart | Answers |
+|-------+-------+---------|
+| Headroom | *Capacity headroom* | Can the grid take more? |
+| Arrivals | *Upcoming arrivals* | What kicks in soon? |
+| Matrix | *Requirements matrix* | What does each job need? |
+| Allocation | *Allocation by tenant* | Who is using the grid? |
+
+The headroom chart is a stacked area of used against total cores, memory and
+GPUs per interval. The grid does not measure a node's used cores, memory or
+GPUs, so the panel can draw only the part the samples support, and it must not
+draw a used line it cannot fill.
+
+The wireframe is not drawn yet. This journey is written before the prototype,
+and the prototype must draw these charts from mock series at the sizes the real
+screen gives them.
+
+* Prototype
+
+None. This journey is not built and has no clickable prototype. Its design
+record is the use-case analysis on
+[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]].
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =host= | The grid's ceiling: =external_id=, =display_name=, =location=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =grid_sample= | The usage the grid records: =total_hosts=, =online_hosts= and =idle_hosts= per interval | [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]] |
+| =node_sample= | A node's interval, for the load behind the usage: =tasks_since_last=, =avg_task_duration_ms= and =input_bytes_fetched= | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
+| =workunit= | A job waiting for capacity: =app_version_id=, =priority= and =target_redundancy= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
+| =batch= | The container of the waiting jobs: =external_ref= and =status= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
+| =app_version= | What a job needs to run: =wrapper_version=, =engine_version= and =min_ram_mb= | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
+| =app_version_platform= | The platform a job's package was built for, with =package_uri= and =sha256= | [[id:E0010C05-D225-462B-A194-330F12A41B28][ores.compute.app_version_platform]] |
+| =platform= | The triplet the nodes must match: =code=, =os_family=, =cpu_arch= and =is_active= | [[id:256097D3-ED41-40C3-99DC-C61C6B13E80A][ores.compute.platform]] |
+| =job_definition= | A scheduled arrival: =job_name=, =schedule_expression=, =action_type= and =is_active= | [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]] |
+| =job_schedule_status= | The live status of a scheduled job: =job_name=, =schedule_expression=, =last_run_status=, =next_fire_at= and =running_count= | [[id:3D1E9A64-7C2B-4F58-9E01-6A5D2C4B8E17][ores.scheduler.scheduling_operations]] |
+
+The host is the only row that states capacity. The node sample states what a
+node did, not what it used: it carries task counts, durations and bytes, and no
+cores, memory or GPU in use. The requirements matrix therefore compares a job's
+stated need against a node's stated capacity, and the headroom chart can report
+usage only in the units the samples carry.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read what the nodes have | Read the host registry | =compute.v1.hosts.list= | exists |
+| Read the headroom | Read the grid samples in the horizon | (no range read) | missing |
+| Read the headroom | Read the node samples in the horizon | (no range read) | missing |
+| Read what a job needs | Read the app versions and their platform rows | =compute.v1.app_versions.list=, =compute.v1.app_version_platforms.list= | exists |
+| Read what a job needs | Read the waiting jobs | =compute.v1.workunits.list=, =compute.v1.batches.list= | exists |
+| Read the arrivals | Read the scheduler's job status | =scheduler.v1.status= | exists |
+| Read the arrivals | Read what a scheduled run will need | (nothing until it submits) | missing |
+| Read the allocation by tenant | Read one tenant's work as that tenant, for every tenant | (token exchange, not built here) | missing |
+| Read the allocation by tenant | Read the cross-tenant aggregate | (Class T: needs an owner allowed to enter tenants) | missing |
+| Refresh | Read the horizon again | (the reads above) | missing |
+
+=scheduler.v1.status= carries no request fields and answers with every job the
+caller can see, each with its schedule, its last run and its =next_fire_at=.
+It is the arrivals read, and it is the scheduler's, not the grid's.
+
+The grid's own reads are the host registry, which is complete, and the sample
+range read, which does not exist. The requirements matrix reads two entity
+lists that already exist. The allocation chart has no read at all, because the
+aggregate it needs has no owner.
+
+The browser reads the screen through a hand-written BFF route on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
+a compute screen yet.
+
+* What is missing
+
+1. *No usage over time.* The headroom chart spans time and the grid read
+   answers with the newest sample alone. The poller keeps writing samples that
+   no read returns, so the chart has no series to draw
+   ([[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage
+   history]]).
+2. *No measured usage per resource.* The host states total cores, memory and
+   GPU, and no row states how much of any of them a node is using. The node
+   sample reports tasks, durations and bytes. The headroom chart cannot draw a
+   used line in cores, memory or GPUs today, and the candidate is to carry the
+   node's in-use figures on the sample or a new resource sample.
+3. *The arrivals have no requirements until they are submitted.* The scheduler
+   says when a job fires and nothing about what the run will need. The
+   requirements matrix and the arrivals timeline therefore describe different
+   sets: submitted jobs on one, scheduled jobs on the other. This is the open
+   question the use cases raise, that "what is scheduled to kick in soon" is the
+   scheduler's question and the grid's is what it does to the load
+   ([[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]).
+4. *The allocation by tenant has no read and no owner.* A cross-tenant
+   aggregate is Class T: it is a fact about several tenants at once, and the
+   sanctioned way to compute it is to act inside each tenant. Until that
+   mechanism exists, the chart is either absent or computed by a widening the
+   policy guard exists to stop
+   ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+   information flow]]).
+5. *The grid serves one tenant's slice.* The grid read filters by the session
+   tenant, so a headroom chart drawn from it would report one tenant's hosts as
+   the fleet ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is
+   scoped to the session tenant]]).
+6. *A wrapper consumes one tenant's work.* Capacity that is planned per tenant
+   must account for the wrapper subscribing to the system tenant's assignment
+   subject alone, which leaves another tenant's dispatched work with no node to
+   run it. The plan would reserve capacity for work the fleet cannot pick up
+   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
+   tenant's work]]).
+7. *The quotas and the fair share are targets, not rows.* The design for
+   thousands of runs gives each tenant a weight and a cap on its assignments in
+   flight, and each tenant and party a limit on running runs. Those numbers are
+   capacity-test targets, and no table holds them, so the requirements matrix
+   cannot state a tenant's own cap
+   ([[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]).
+8. *Nothing gates the reads.* The host, workunit and app version handlers check
+   no permission. The candidate is the =compute::hosts:read=,
+   =compute::workunits:read= and =compute::app_versions:read= codes the seed
+   already holds
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
+   operation handler]]).
+
+* Related journeys
+
+- [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load the plan is measured against
+- [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one of the jobs the plan counts
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: a job that failed because no node could hold it
+- [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: the app versions whose requirements the plan reads
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]: the current fleet, in the operations group
+- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]]: work that was planned and never left =unsent=
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]]: a node that is missing rather than busy
+
+* Related knowledge
+
+- [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]: the use cases and the charts this journey implements
+- [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]]
+- [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]]
+- [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]]
+- [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]]
+- [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]
+- [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]
+- [[id:E0010C05-D225-462B-A194-330F12A41B28][ores.compute.app_version_platform]]
+- [[id:256097D3-ED41-40C3-99DC-C61C6B13E80A][ores.compute.platform]]
+- [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]]
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]: the quotas and the grid's fair share, as design targets
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]]: the checklist this journey is written against
+- [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Task: Extract the ores.compute user journeys]]: the story that owns this work
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]: the group that owns the fleet survey

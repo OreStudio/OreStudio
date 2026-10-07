@@ -9,10 +9,6 @@
 #+created: 2026-10-07
 #+updated: 2026-10-07
 
-*This page is a proposal under review. The use cases are complete; the journey
-list is the set proposed to write and prototype. Nothing here is an accepted
-journey yet.*
-
 * Overview
 
 The compute grid is not one screen. It is a set of things a person wants to
@@ -158,16 +154,16 @@ by deciding the question does not matter.
 | Chart | Answers | Reads |
 |-------+---------+-------|
 | *Versions in flight* | Which release is running where? | a node-by-version matrix |
-| *Concurrency against the cap* | Am I throttling myself? | in-flight against the policy's cap, per policy |
+| *Concurrency in flight* | Is work piling up behind a policy? | in-flight work per reporting concurrency policy. The policy is a behaviour, skip or queue or fail, and not a number, so there is no cap to draw against; the chart shows the pile-up |
 
 ** What the charts ask of the data
 
 - *A time range, not the newest row.* Every chart above spans time, and the
   grid's read serves one stored sample today. This is
   [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]],
-  and it is why [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
-  matters: the charts are the demand for that read, not a nice-to-have on top
-  of it.
+  and the charts are the demand for that read, not a nice-to-have on top of it.
+  [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
+  is the same gap on the telemetry logs' side rather than on the grid's.
 - *A range selector and one shared axis.* The poller keeps thirty days, so
   last hour, day and week are all answerable; the panels must share one time
   axis so a spike lines up across them.
@@ -185,15 +181,17 @@ and whether the timeline earns its space.
 
 * The journeys proposed
 
-1. *Watch the grid* — the fleet, the load, and how it moved.
-2. *Follow a job* — one job end to end, and where its time went.
-3. *Diagnose and reproduce a failure* — a job's full detail, its node's logs,
-   and enough to run it again locally.
-4. *Plan the grid's capacity* — what the nodes have, what a job needs, and
-   what is arriving.
-5. *Keep what the grid runs* — apps, versions, packages and concurrency.
+The five are now written:
 
-Five to write, one deferred. Not nine: the actor split I first proposed was not
+1. [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load, and how it moved.
+2. [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one job end to end, and where its time went.
+3. [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: a job's full detail, its node's logs,
+   and enough to run it again locally.
+4. [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: what the nodes have, what a job needs, and
+   what is arriving.
+5. [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: apps, versions, packages and concurrency.
+
+Five written, one deferred. Not nine: the actor split I first proposed was not
 a security boundary, and expressing it as journeys would have duplicated five
 screens to say what the session already says.
 

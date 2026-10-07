@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 1439FB25-A388-40C7-930A-3A814B703DDD
+:END:
+#+title: User Journey: Follow a job
+#+description: A signed-in person follows one compute job end to end: its state, the node it ran on, its timings, its inputs and outputs, and where its time went.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A signed-in person follows one compute job end to end: its state, the node it ran on, its timings, its inputs and outputs, and where its time went.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to follow this job from submission to output." The person opens one
+batch or one job and reads one screen: the batch it belongs to, the job's state,
+the node it ran on, when it was dispatched and when its output arrived, the
+input bundle it read and the output archive it wrote. The journey is done when
+the person can say where this job is, what it is doing, and what it produced.
+
+* Actor and trigger
+
+The actor is what the rows admit, and the session decides the rows. A member
+sees their own job, a tenant administrator sees their tenant's, and the super
+administrator sees every job. This is one journey: the activity is the same
+"where is this job" over three visible sets, and permissions and row-level
+security already describe the sets, so the journey does not split on the actor.
+
+The rows are a tenant's. Workunits, batches and results belong to the tenant
+that owns them, so every read here narrows to the session's tenant. A
+super administrator who wants another tenant's job reaches it by acting inside
+that tenant, not by widening a policy
+([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+information flow]]).
+
+The trigger is a job the person cares about: a result they are waiting for, a
+batch that looks stuck, or a job whose output a report needs. The person opens
+the screen from a batch reference, a job id or a result id. The journey ends
+when the job's state, its node, its times and its files are all accounted for.
+
+This journey writes nothing. It reads the job's rows, the node registry and the
+current samples. It does not cancel, requeue or re-run anything: that is
+control, and it is deferred.
+
+* Steps
+
+1. *Find the job.* The person opens the screen and gives a batch reference, a
+   job id or a result id, or reads the batch's own list. The system answers with
+   the job, its batch and the runs of that job. A batch carries its
+   =external_ref= and its =status=, and a job is a =workunit= of that batch.
+2. *Read the state.* The system states where the job is. The workunit has no
+   status column: a job with no =canonical_result_id= is not done, and one with
+   it is. Each run of the job is a =result= with its own =server_state=, which
+   is 1 Inactive, 2 Unsent, 4 InProgress or 5 Done, and its own =outcome=, which
+   is 1 Success, 3 ClientError or 4 NoReply
+   ([[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]).
+3. *Read the node.* The system names the node each finished run ran on, from
+   the =host_id= the submit recorded, and joins the host's =external_id= and
+   =display_name= so the person reads a name and not an id. A run that has not
+   finished may show no node yet: the dispatcher creates the result without one
+   and the submit binds it
+   ([[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]],
+   [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]]).
+4. *Read the timings.* The system states when the batch was dispatched, when
+   the run's row was written, and when its output was received. The run's
+   =recorded_at= is when the dispatcher wrote it and =received_at= is when the
+   output arrived, so the two bracket the run.
+5. *Read the inputs and outputs.* The system states the input bundle the job
+   read, from the workunit's =input_uri= and =config_uri=, and the output
+   archive it wrote, from the result's =output_uri=. The person can take either
+   away: the input with the shell's download-input command and the output with
+   download-output
+   ([[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job
+   input from the shell?]]).
+6. *Read where the time went.* The system draws one bar for the run, from its
+   dispatch to its output, and splits the batch's jobs into one row each, so the
+   person sees which jobs overlapped and which waited. Inside the bar the
+   system can show only what it stores: the job was queued, then it ran, then
+   its output arrived. The phases between those points are not recorded, and
+   the waterfall must say so rather than draw a guessed split.
+7. *Read the app that ran it.* The system states the workunit's
+   =app_version_id= and, through it, the =engine_version= and
+   =wrapper_version= the run used, so a job that behaved differently from its
+   neighbours can be told apart by its build
+   ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]).
+8. *Compare the job with its neighbours.* The system draws the batch's jobs as
+   a timeline, and, when the range holds enough neighbours, a duration
+   distribution and a duration by node. The person asks whether this job is
+   normal, whether one node is slow, and whether the batch is nearly done.
+9. *No such job.* The reference matches nothing, the job belongs to another
+   tenant, or the person's rows do not include it. The screen says so and offers
+   the way back to the batch list. It does not present the empty answer as a
+   job with no state.
+10. *Leave, or go on.* A failed run continues in
+    [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a
+    failure]], where the error and the node's logs are read. The load the job
+    sat in continues in
+    [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]].
+
+* Screens and wireframes
+
+One screen. The finder bar, the job header, the run table, the timeline, the
+duration charts and the file panel are panels of that screen, because the
+person reads them as one answer. The screen is read-only: it creates nothing,
+changes nothing and destroys nothing.
+
+The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
+journeys]] names for following a job:
+
+| Panel | Chart | Answers |
+|-------+-------+---------|
+| Batch rows | *Job timeline* | What ran when, and what overlapped? |
+| Run bar | *Job waterfall* | Where did this job's time go? |
+| Distribution | *Duration distribution* | Is this job normal? |
+| Node comparison | *Duration by node* | Is one node slow? |
+
+The timeline is the cluster Gantt: one row per job of the batch, a bar per run.
+The waterfall is the one job's own bar, split by phase as far as the stored
+times allow. The two duration charts compare the job with its neighbours, and
+they need a range of finished runs to say anything.
+
+The wireframe is not drawn yet. This journey is written before the prototype,
+and the prototype must draw these charts from mock series at the sizes the real
+screen gives them.
+
+* Prototype
+
+None. This journey is not built and has no clickable prototype. Its design
+record is the use-case analysis on
+[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]].
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =batch= | The container the job belongs to: =external_ref= and =status= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
+| =workunit= | The job: =batch_id=, =app_version_id=, =input_uri=, =config_uri=, =priority=, =target_redundancy= and =canonical_result_id= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
+| =result= | One run of the job: =workunit_id=, =host_id=, =server_state=, =outcome=, =output_uri=, =error_message= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
+| =host= | The node a run ran on: =external_id=, =display_name=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =app_version= | The wrapper and engine build the job used: =wrapper_version= and =engine_version= | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
+| =node_sample= | A node's work in an interval, for the duration comparison: =tasks_since_last=, =avg_task_duration_ms= and =max_task_duration_ms= | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
+
+The job's identity is the workunit's id. The runs are the results that carry
+that =workunit_id=, and the run that counted is the workunit's
+=canonical_result_id=. A job with =target_redundancy= above one has several
+runs, and the timeline shows them as one row's bars.
+
+The duration charts read =node_sample=, which describes a node's interval and
+not a result. Its =avg_task_duration_ms= and =max_task_duration_ms= are means
+and maxima over the tasks of that interval, so a chart built on them compares
+nodes rather than following one job. The result itself carries no duration.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Before the screen: a batch is dispatched | Publish one assignment per job | =compute.v1.work.assignments= | exists |
+| Find the job | Read the batches a person may see | =compute.v1.batches.list= | exists |
+| Find the job | Read one batch by its reference | =compute.v1.batches.get= | exists |
+| Read the state | Read the jobs of the batch | =compute.v1.workunits.list_by_batch_id= | exists |
+| Read the state | Read one job | =compute.v1.workunits.get= | exists |
+| Read the state and the timings | Read the runs of the job | =compute.v1.results.list_by_workunit_id= | exists |
+| Read the state and the timings | Read one run | =compute.v1.results.get= | exists |
+| Read the node | Read the host registry | =compute.v1.hosts.list= | exists |
+| Read the node | Read one host | =compute.v1.hosts.get= | exists |
+| Read the app that ran it | Read the app versions | =compute.v1.app_versions.list= | exists |
+| Read the waterfall phases | Read the per-phase times of one run | (no field on any row) | missing |
+| Read the duration charts | Read the per-result durations over a range | (no field on any row) | missing |
+| Find the job across tenants | Read another tenant's jobs as that tenant | (token exchange, not built here) | missing |
+| Refresh | Read the job again | (the reads above) | exists |
+
+Every read above is generated from an entity model and carries its subject. The
+workunit read carries a =list_by_batch_id= variant, and the result read carries
+a =list_by_workunit_id= variant, so the batch, its jobs and their runs are
+three reads that line up by id.
+
+None of these reads is gated by a permission. The generated handler
+authenticates the token and serves the session's tenant, and the row-level
+policy does the narrowing. A dedicated permission, =compute::workunits:read=,
+=compute::results:read= or =compute::batches:read=, exists in the seed but no
+handler checks it.
+
+The browser reads the screen through a hand-written BFF route on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
+a compute screen yet.
+
+* What is missing
+
+1. *A tenant cannot list its own jobs.* The reads exist, but no journey and no
+   screen carry them, so the tenant administrator's question "what is my tenant
+   running?" has no answer today. The operations grid screen is the system
+   administrator's and shows the installation. This journey is the missing
+   screen
+   ([[id:77DA388B-FC5A-41AE-B88C-4BF34C82D7C9][A tenant cannot list its own
+   jobs]]).
+2. *No per-phase times.* The waterfall wants queued, dispatched, downloaded,
+   running, uploaded and validated. The service records the run's creation and
+   its output's arrival, and nothing between, so the waterfall can draw a bar
+   with two ends and no phases. Per-phase timestamps on the result, written by
+   the dispatcher and the wrapper, are the missing piece.
+3. *No per-result duration.* The result carries no start time and no duration,
+   and =node_sample= carries interval means and maxima, not per-result values.
+   The duration distribution and duration by node charts therefore compare
+   nodes over an interval rather than placing this job in a distribution.
+4. *A run in flight may show no node.* On the JetStream path the dispatcher
+   creates the result without a =host_id= and the submit binds it at the end,
+   so the node is known only when the run is done. The screen must say the node
+   is not yet known rather than leave the field blank.
+5. *The workunit has no status.* Its state is derived from
+   =canonical_result_id=, so a job that has run and failed reads as done, which
+   is correct for the grid and surprising for a person. The screen must show
+   the run's =outcome= beside it, and acceptance does not filter by outcome
+   ([[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]).
+6. *A batch's canonical runs may all have failed.* Acceptance moves the batch
+   to =closed= even when every canonical result failed, so a closed batch is not
+   a successful batch. The screen must state the outcomes and not equate closure
+   with success.
+7. *The node summary drops the failure fields.* A job's own outcome is on the
+   result, so the job view is complete, but the neighbouring node comparison
+   cannot state a node's failures
+   ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
+   failure fields]]).
+8. *Nothing gates the reads.* The workunit, result and batch handlers check no
+   permission. The candidate is the =compute::workunits:read=,
+   =compute::results:read= and =compute::batches:read= codes the seed already
+   holds. The gap is not these reads' alone
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
+   operation handler]]).
+
+* Related journeys
+
+- [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]: the load this job sat in, over a range
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: a run of this job that failed, and how to run it again
+- [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: the queue this job waited in and what comes behind it
+- [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: the app version this job pinned
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]: the node this job ran on, in the fleet survey
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]]: the lines a run published, found by its result id
+- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]]: a job stuck unsent because the assignment never reached a node
+
+* Related knowledge
+
+- [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]: the use cases and the charts this journey implements
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]: the six stages, the states and the storage keys
+- [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]
+- [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]]
+- [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]]
+- [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]]
+- [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]
+- [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]]
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]]
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]]: the checklist this journey is written against
+- [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Task: Extract the ores.compute user journeys]]: the story that owns this work
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]: where the fleet survey lives

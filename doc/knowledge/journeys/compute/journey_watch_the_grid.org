@@ -1,0 +1,293 @@
+:PROPERTIES:
+:ID: 32ECF41B-B27B-4A69-B7F0-A4131F993297
+:END:
+#+title: User Journey: Watch the grid
+#+description: A signed-in person reads how much work the compute grid is carrying, how busy its nodes are, and how the load, the throughput and the outcomes moved over a time range.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A signed-in person reads how much work the compute grid is carrying, how busy its nodes are, and how the load, the throughput and the outcomes moved over a time range.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know how much work the grid is carrying, and how that changed." The
+person picks a time range, last hour, last day or last week, and reads one
+screen. The screen states how much work is in flight and in what state, how
+many nodes are up and how busy each one was, how much work finished in each
+interval, how it finished, and whether the grid is keeping up with what it was
+given. The journey is done when the person can say whether the grid is busy,
+whether it is behind, and whether it is succeeding.
+
+* Actor and trigger
+
+The actor is what the rows admit, and the session decides the rows. A member
+sees their own work, a tenant administrator sees their tenant's work, and the
+super administrator sees all of it. This is one journey, not three: the
+activity is the same "how much work is in flight" over three visible sets, and
+the database already knows which set applies. The journey does not split on the
+actor
+([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]).
+
+Two kinds of row sit on the screen, and they narrow differently. The fleet rows
+are the installation's: the nodes and their samples describe machines the
+installation owns, so every account the permission admits reads them whole. The
+work counts are a tenant's: workunits, batches and results belong to the tenant
+that owns them, so they narrow to the session's tenant. A cross-tenant total is
+a fact about several tenants at once and is not a fact about the installation.
+The ownership study places that aggregate with the audit, and this journey must
+not present one tenant's counts as the grid's totals.
+
+The trigger is work in flight: a batch was submitted, results are late, or
+somebody asks whether the grid is the reason. The person opens the load screen
+and chooses a range. The journey ends when the load over that range is
+accounted for.
+
+This journey writes nothing. It reads stored samples and the current work rows.
+It changes no node and stops no job: that is control, use case 6 of
+[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]], and it is
+deferred.
+
+* Steps
+
+1. *Open the load screen and choose a range.* The person opens the screen and
+   picks last hour, last day or last week. The system answers over that range
+   and draws every panel against one shared time axis, so a spike in one panel
+   lines up with the same moment in the next. The poller keeps thirty days of
+   samples, so all three ranges are answerable
+   ([[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]],
+   [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]]).
+2. *Read the load over time.* The system draws how much work was in flight in
+   each interval, stacked over the result states: inactive, unsent, in progress
+   and done. The person sees the shape of the work, not one number, so a burst
+   that drained and a burst still sitting unsent look different.
+3. *Read the fleet.* The system states how many nodes the grid has, how many
+   were online and how many were idle, over the same axis. A fleet that shrinks
+   explains a load that backs up.
+4. *Read the node load heatmap.* The system draws one row per node and one
+   column per interval, coloured by the work that node did in that interval.
+   Each row carries the node's name, its hostname and its display name. The
+   person reads which node was hot and when, and whether the load spread
+   evenly.
+5. *Read the node state ribbon.* Under the heatmap the system draws the same
+   rows as bands over time: online, quiet or lost. The person reads which node
+   went quiet and when, and whether that lines up with work that stopped
+   finishing.
+6. *Read throughput and outcomes.* The system draws a bar per interval for the
+   work that finished, and beside it a bar stacked over success, client error
+   and no reply. The person reads whether the grid is keeping up and whether
+   what it finishes is good.
+7. *Read the queue depth.* The system draws a line over the unsent and
+   in-progress work. A line that climbs while throughput stays flat is a grid
+   that is falling behind, and it is the first sign that a node is missing.
+8. *Find the row that is the problem.* Each node row carries a small trend of
+   its own work, so the person spots the odd row in the table without reading
+   the heatmap. The row opens the node's own view, which is out of this
+   journey's scope.
+9. *A grid with no history.* The deployment is up but the range holds no
+   samples, which is the state before the sampler's first pass or after a long
+   stop. The screen says the range is empty and does not present a flat line at
+   zero as a fact about the grid.
+10. *Leave, or go on.* The person leaves the screen, follows one node, or
+    follows one job into
+    [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]. The paths out
+    are the related journeys at the foot of the screen.
+
+* Screens and wireframes
+
+One screen. The range bar, the counters, the node load heatmap, the node state
+ribbon, the load over time, the fleet size, the throughput, the outcomes, the
+queue depth and the per-node table with its sparklines are panels of that
+screen, because the person reads them as one answer. The screen is read-only:
+it creates nothing, changes nothing and destroys nothing.
+
+The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
+journeys]] names for watching the grid, and each one answers one question:
+
+| Panel | Chart | Answers |
+|-------+-------+---------|
+| Load over time | *Load over time* | How much work is in flight, and of what sort? |
+| Fleet counters | *Fleet size* | How many nodes do I have, and how many are up? |
+| Node grid | *Node load heatmap* | Which node was hot, and when? |
+| Node bands | *Node state ribbon* | Which node was quiet or lost? |
+| Finishing bars | *Throughput* | How much is finishing? |
+| Outcome bars | *Outcomes* | Is it succeeding? |
+| Depth line | *Queue depth* | Is the grid keeping up? |
+| Node table | *Per-node sparklines* | Which row of this table is the problem? |
+
+The panels share one time axis and one range selector, and the heatmap is the
+same chart whether it is coloured by work, failures or bytes.
+
+The wireframe is not drawn yet. This journey is written before the prototype,
+and the prototype must draw these charts from mock series at the sizes the real
+screen gives them, so the walk can judge whether a heatmap of nodes is legible
+and whether the chart earns its space.
+
+* Prototype
+
+None. This journey is not built and has no clickable prototype. Its design
+record is the use-case analysis on
+[[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]], which states
+that a prototype of these screens with empty frames would not answer the
+question the walk is for, and that the charts must be drawn from mock series.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =grid_sample= | The work and host counters as one stored sample: states, batches, workunits and outcomes | [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]] |
+| =node_sample= | One node's work in one interval: tasks, mean and longest duration, bytes and seconds since heartbeat | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
+| =host= | The node's name, hostname and capacity: =external_id=, =display_name=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =result= | The execution attempt behind a state count, with its =server_state=, =outcome=, =host_id= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
+| =workunit= | The job behind a result: its =batch_id=, =app_version_id= and =target_redundancy= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
+| =batch= | The container behind a workunit, with its =external_ref= and =status= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
+
+The heatmap and the ribbon need one row per node per interval. That is the
+=node_sample= table: it is a TimescaleDB hypertable partitioned by =sampled_at=,
+and its indexes are (=host_id=, =sampled_at= desc) and (=tenant_id=,
+=sampled_at= desc). The counters need one row per interval, which is the same
+shape on =grid_sample=.
+
+A node with no matching =host= row shows its id and says no host names it. The
+node sample carries no release, so the panels cannot say which build a busy
+node ran; the service heartbeat carries the release but not the node's work.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Before the screen: the service samples the grid on its interval | (no subject: an internal poller stores the sample) | none | exists |
+| Before the screen: each wrapper reports its node's interval | Publish one node's sample | =compute.v1.telemetry.node_samples= | exists |
+| Open the screen and choose a range | Read the grid samples in the range | (no subject: the model generates no protocol) | missing |
+| Read the node load heatmap, the ribbon and the sparklines | Read the node samples in the range, one series per node | (no subject: the model generates no protocol) | missing |
+| Read the load, the fleet, the throughput, the outcomes and the queue depth | Read the grid samples in the range | (no subject: the model generates no protocol) | missing |
+| Name the nodes | Join the host registry onto each node row | =compute.v1.hosts.list= | exists |
+| Read the newest sample alone | Read one stored grid sample and the newest node row | =compute.v1.telemetry.get_grid_stats= | exists |
+| The read is not gated | Check the caller's permission | (no check in the handler) | missing |
+| Refresh, or watch | Read the range again | (no subject) | missing |
+
+=compute.v1.telemetry.get_grid_stats= carries no request fields and answers
+with one stored grid sample and one =node_stats_summary= per node. It is the
+only grid read there is, and it serves the newest row and nothing else, so it
+cannot answer any panel above except the counters at the right-hand edge of the
+axis.
+
+Both sample models are declared internal: only the data layer and the SQL
+schema are generated, and neither has a protocol, a handler or a shell command.
+No subject exists to ask for a range of either table today.
+
+=compute.v1.telemetry.node_samples= is ingested with auth =none=, because the
+publishing wrapper has no session. Each wrapper publishes what its node did
+since the previous sample, and the service writes the row.
+
+The browser reads the panels through a hand-written BFF route on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
+a compute screen yet.
+
+* What is missing
+
+1. *The grid has no usage history.* The read answers with the newest stored
+   sample alone, so no panel over time can be drawn, and every chart this
+   journey names is blocked on the same gap. The poller keeps writing samples
+   that no read returns; the data is already there, and a read over a time
+   range is the whole of the missing piece
+   ([[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage
+   history]]). These charts are the demand
+   [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats
+   surface]] records from the other side of the same problem: an aggregate the
+   database computes, and no subject to ask for it.
+2. *No read serves node-sample history either.* The heatmap, the ribbon and the
+   sparklines need one series per node over the range, and the only node read
+   is the newest row of each node inside =get_grid_stats=. The candidate is the
+   same range read over =node_sample=, indexed by (=host_id=, =sampled_at=
+   desc).
+3. *The grid read serves one tenant.* The grid belongs to the installation:
+   every tenant's work runs on the same hosts. The read filters by the session
+   tenant anyway, so an administrator reads one tenant's slice of a shared grid
+   and cannot tell it is short
+   ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the
+   session tenant]]). The read must serve the fleet whole, and the permission
+   gate decides who may see it.
+4. *The node summary drops the failure fields.* =node_sample= carries
+   =tasks_failed= and =max_task_duration_ms=, and =node_stats_summary= carries
+   neither, so a node failing every task reads as idle. The heatmap coloured by
+   failures and the ribbon cannot state a node's failures until both fields
+   reach the read
+   ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
+   failure fields]]).
+5. *A node has no state but its heartbeat age.* The ribbon wants to state
+   online, quiet or lost, and only the first two can be derived from
+   =last_rpc_time= and =seconds_since_hb=. There is no draining state and no
+   maintenance flag on =host=, so the deferred control of use case 6 has no row
+   to set.
+6. *The work counts and the fleet have different owners.* The fleet is the
+   installation's and the work counts are a tenant's, so the screen must not
+   add one tenant's counts to another's nodes and call the sum the grid's. The
+   cross-tenant aggregate needs the mechanism the ownership study places with
+   the audit
+   ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
+   information flow]]).
+7. *The read checks no permission.* The handler authenticates the token and
+   then serves any signed-in account. The candidate is the dedicated
+   =compute::grid_samples:read= permission the model names, as the tenant reads
+   guard =iam::tenants:read=. The gap is not this read's alone
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
+   operation handler]]).
+8. *A wrapper consumes one tenant's work.* The dispatcher routes each workunit
+   to its own tenant's assignment subject, and a wrapper subscribes to the
+   system tenant's subject alone, so another tenant's work is dispatched and
+   never picked up. A load panel over a multi-tenant grid would show work in
+   flight that no node can start
+   ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
+   tenant's work]]).
+
+* Related journeys
+
+The fleet survey already has a journey. It is
+[[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] in the
+Operations group, and it covers the summary, the node table and the wrappers.
+This journey is the load: how much work is in flight, how busy the nodes were,
+and how that moved over time. It starts where the fleet survey stops, and it
+does not repeat it.
+
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]]: the fleet survey, meaning the summary, the node table and the wrappers, at the newest sample
+- [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]: one job behind the work counts, end to end
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]: the failures in the outcome panel, one at a time
+- [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]: what the load needs next, against what the nodes have
+- [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]]: the apps, versions and packages behind the work
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]]: a flat load with every node quiet starts here
+- [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]]: a stalled bus explains work that never leaves =unsent=
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]]: the lines behind a spike or a node that went quiet
+
+* Related knowledge
+
+- [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]: the use cases and the charts this journey implements
+- [[id:05BA3A23-3596-4881-BFB6-D4E3438FD9AC][ores.compute.telemetry]]: the grid and node sample messages
+- [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]]
+- [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]]
+- [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]]
+- [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]]
+- [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]]
+- [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]]
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]: how a batch becomes workunits and results
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]: which rows are the installation's and which are a tenant's
+- [[id:7E3F9A2B-4C81-4D5E-8F2A-1B9C3D4E5F6A][Compute Grid Telemetry Design]]: the poller and the two hypertables
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]]
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]]: the checklist this journey is written against
+- [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Task: Extract the ores.compute user journeys]]: the story that owns this work
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]]: the group that owns the fleet survey

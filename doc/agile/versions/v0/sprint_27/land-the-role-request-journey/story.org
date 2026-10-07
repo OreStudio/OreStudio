@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:journeys:access:sprint_27:v0:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-07
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -17,9 +17,18 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 The fourth Access journey runs in =ores.web=: the member asks for a role
 beyond the one registration gave them, and the tenant administrator answers.
-The work is the five request subjects the journey names, the four-eyes
-guard, the waiting state the request needs in =ores.workflow=, and the
-member's ask screen and the administrator's queue.
+
+The journey was designed around a =workflow_instance= that waits on a person.
+It was landed a different way, by
+[[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals
+and notifications]]: an approval request is its own record with a state and an
+answer, and the role grant is its first kind. That story built the request, the
+four-eyes guard, the grant, the two notifications and both screens. Four of the
+journey's seven gaps closed there, and a fifth was answered by the change of
+design.
+
+What remains is what no screen can yet say: which roles a member may ask for,
+and what becomes of a request that nobody answers.
 
 This story was split from
 [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in
@@ -31,31 +40,54 @@ request moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The journey is delivered except for two gaps. |
 | Waiting on    | Nothing.                               |
-| Next          | Build the request subjects and the four-eyes guard, then the ask screen and the queue. |
-| Last touched  | 2026-10-05                               |
+| Next          | Say which roles may be asked for, then give the role request a deadline. |
+| Last touched  | 2026-10-07                               |
 
 * Acceptance
 
-- The five request subjects the journey names exist, with the four-eyes
-  guard.
-- The waiting state the request needs lives in =ores.workflow= as its own
-  recorded decision.
+- An approval request of kind =iam.role_grant= carries the ask, the four-eyes
+  guard and the grant, and the shell reaches the same subjects as the screens.
+- The waiting state the request needs is a state of the request's own record,
+  and the journey records why =ores.workflow= is not the holder.
 - The member's ask screen and the administrator's queue run in =ores.web=
-  against the real server, and the shell reaches the same subjects.
-- The journey's documented gaps are closed or stated on the screen.
+  against the real server.
+- A tenant can say which of its roles a member may ask for.
+- A request that nobody answers closes on its own.
+- The journey's remaining documented gaps are closed, and the document
+  describes the design that was built.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | BACKLOG | | | The five request subjects the journey names, the four-eyes guard, and the member's ask screen and the administrator's queue. |
+| [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | DONE | 2026-10-05 | 2026-10-06 | The request, the four-eyes guard and the grant, and the member's ask screen and the administrator's queue. Landed by the inbox story, whose two tasks own the work. |
+| [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] | BACKLOG | | | The =is_requestable= flag on the role row, and the ask operation and the screens reading it. |
+| [[id:67E3A6BB-831B-4C91-8E74-157BD5CF095F][Give the role request a deadline]] | BACKLOG | | | The role request kind's deadline, and the sweep that closes a request nobody answers. |
 
 * Decisions
 
+- *A request is a record, not a waiting workflow.* The journey put the request
+  in =ores.workflow= as an instance that suspends and resumes. The workflow
+  engine cannot wait on a person, and extending it to do so would serve this one
+  journey. The request is instead a row of its own with a state, a raiser and an
+  answer, and the states are =waiting=, =held=, =approved=, =refused=,
+  =withdrawn= and =expired=. Recorded in
+  [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]].
+- *The journey's five request subjects were not built.* They named IAM as the
+  holder of the queue and the decision. The queue is generic across kinds, so it
+  belongs to =ores.inbox=, and IAM keeps only the detail of a role grant. See
+  [[id:2BA72C77-99DC-4538-8937-52A572CF6F53][Role requests]].
+- *Four eyes is a rule of the store, not of the screen.* The decisions table
+  refuses a decision by the person who asked, so a screen cannot be the only
+  guard.
+- *An approval is not a grant.* IAM reconciles approved requests into role
+  assignments exactly once, rather than granting at the moment of the decision.
+
 * Out of scope
 
--
+- The notification that tells an administrator a request is waiting, and that
+  tells the member the answer. Built by the inbox story, not here.

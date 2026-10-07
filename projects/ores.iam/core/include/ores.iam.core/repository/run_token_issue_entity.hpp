@@ -96,9 +96,9 @@ struct run_token_issue_entity {
 inline std::ostream& operator<<(std::ostream& s, const run_token_issue_entity& v) {
     s << "id: " << v.id.value() << ", issued_at: " << v.issued_at.value()
       << ", tenant_id: " << v.tenant_id << ", party_id: " << v.party_id
-      << ", grant_id: " << v.grant_id << ", run_id: " << v.run_id
-      << ", service: " << v.service << ", grantor_account_id: " << v.grantor_account_id
-      << ", outcome: " << v.outcome << ", reason: " << v.reason;
+      << ", grant_id: " << v.grant_id << ", run_id: " << v.run_id << ", service: " << v.service
+      << ", grantor_account_id: " << v.grantor_account_id << ", outcome: " << v.outcome
+      << ", reason: " << v.reason;
     return s;
 }
 

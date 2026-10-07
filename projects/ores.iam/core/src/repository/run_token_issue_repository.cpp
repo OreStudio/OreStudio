@@ -65,8 +65,8 @@ void run_token_issue_repository::record(const std::chrono::system_clock::time_po
                                         const std::string& outcome,
                                         const std::string& reason) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Recording run token issue for grant " << grant_id
-                               << " run " << run_id << ": " << outcome;
+    BOOST_LOG_SEV(lg(), debug) << "Recording run token issue for grant " << grant_id << " run "
+                               << run_id << ": " << outcome;
 
     boost::uuids::random_generator uuid_gen;
     const auto id_str = boost::lexical_cast<std::string>(uuid_gen());
@@ -105,9 +105,9 @@ std::size_t run_token_issue_repository::distinct_runs(const std::string& grant_i
     try {
         return static_cast<std::size_t>(std::stoull(rows.front()));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "The run count for grant " << grant_id
-                                   << " is not a number: " << rows.front() << " (" << e.what()
-                                   << ")";
+        BOOST_LOG_SEV(lg(), error)
+            << "The run count for grant " << grant_id << " is not a number: " << rows.front()
+            << " (" << e.what() << ")";
         throw;
     }
 }

@@ -18,8 +18,8 @@
  *
  */
 #include "ores.scheduler.api/domain/cron_expression.hpp"
-#include <string>
 #include <croncpp.h>
+#include <string>
 
 namespace ores::scheduler::domain {
 

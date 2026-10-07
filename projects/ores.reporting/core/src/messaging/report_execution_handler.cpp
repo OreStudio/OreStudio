@@ -130,11 +130,8 @@ report_execution_handler::report_execution_handler(
     , instance_states_(std::move(instance_states))
     , http_base_url_(std::move(http_base_url)) {}
 
-std::optional<ores::nats::service::nats_client>
-report_execution_handler::run_token_client(const std::string& tenant_id,
-                                           const std::string& run_id,
-                                           bool renew,
-                                           std::string& error) {
+std::optional<ores::nats::service::nats_client> report_execution_handler::run_token_client(
+    const std::string& tenant_id, const std::string& run_id, bool renew, std::string& error) {
     try {
         const auto tenant_ctx =
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);

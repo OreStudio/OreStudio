@@ -390,9 +390,8 @@ private:
             return;
         const auto saved = bindings().save_if_absent(source_name, caller_bearer_token);
         if (!saved) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to auto-create feed binding for " << source_name << ": "
-                << saved.error();
+            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Failed to auto-create feed binding for "
+                                                     << source_name << ": " << saved.error();
             return;
         }
         BOOST_LOG_SEV(lg(), ores::logging::info)
@@ -614,7 +613,8 @@ public:
     }
 
     std::expected<void, std::string>
-    save_if_absent(const std::string& source_name, const std::string& caller_bearer_token) override {
+    save_if_absent(const std::string& source_name,
+                   const std::string& caller_bearer_token) override {
         auto delegated = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated);
         // Read-then-write rather than an insert that would fail on the

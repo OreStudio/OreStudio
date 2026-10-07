@@ -69,10 +69,11 @@ public:
      * @param burst  The most tokens one key may hold at once.
      * @param now    The clock; a test passes its own.
      */
-    rate_limiter(int limit,
-                 std::chrono::seconds period,
-                 int burst,
-                 clock_fn now = [] { return std::chrono::system_clock::now(); })
+    rate_limiter(
+        int limit,
+        std::chrono::seconds period,
+        int burst,
+        clock_fn now = [] { return std::chrono::system_clock::now(); })
         : limit_(limit)
         , period_(period)
         , burst_(burst)

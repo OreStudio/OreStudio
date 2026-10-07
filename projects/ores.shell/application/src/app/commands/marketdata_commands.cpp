@@ -119,9 +119,9 @@ public:
         for (auto& [subscription, read] : subscriptions_) {
             const auto snapshot = subscription.snapshot();
             for (; read < snapshot.size(); ++read) {
-                auto decoded = ores::nats::default_wire_codec()
-                                   .decode<marketdata::messaging::market_tick>(
-                                       snapshot[read].data);
+                auto decoded =
+                    ores::nats::default_wire_codec().decode<marketdata::messaging::market_tick>(
+                        snapshot[read].data);
                 if (decoded)
                     ticks.push_back(std::move(*decoded));
             }
@@ -184,13 +184,12 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
         "Write the tenant's market data back out as ORE market.txt/fixings.txt files",
         {"[--market-data <path>] [--fixings <path>]"});
 
-    marketdata_menu->Insert(
-        "stream",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_stream(std::ref(out), std::ref(session), args);
-        },
-        "Watch one oresmd on the republished tick stream until Ctrl-C",
-        {"<oresmd-uri> [--csv <path>]"});
+    marketdata_menu->Insert("stream",
+                            [&session](std::ostream& out, std::vector<std::string> args) {
+                                process_stream(std::ref(out), std::ref(session), args);
+                            },
+                            "Watch one oresmd on the republished tick stream until Ctrl-C",
+                            {"<oresmd-uri> [--csv <path>]"});
 
     ores::shell::app::insert_menu(root_menu, std::move(marketdata_menu));
 }
@@ -335,10 +334,8 @@ void marketdata_commands::process_export(std::ostream& out,
                               << result->fixing_count << " fixings.";
 }
 
-std::expected<stream_watch, std::string>
-marketdata_commands::stream_subjects(std::string_view tenant_id,
-                                     std::string_view party_id,
-                                     std::string_view uri) {
+std::expected<stream_watch, std::string> marketdata_commands::stream_subjects(
+    std::string_view tenant_id, std::string_view party_id, std::string_view uri) {
     auto datum = marketdata::datum::oresmd_uri_codec::read(uri);
     if (!datum)
         return std::unexpected(datum.error());
@@ -375,21 +372,20 @@ std::string marketdata_commands::tick_line(const marketdata::messaging::market_t
 }
 
 std::string marketdata_commands::tick_row(const marketdata::messaging::market_tick& tick) {
-    return std::format("{},{},{},{}",
-                       csv_field(ores::platform::time::datetime::to_iso8601_utc(
-                           tick.observation_time)),
-                       csv_field(tick.oresmd_uri),
-                       csv_field(tick.value),
-                       csv_field(tick.source));
+    return std::format(
+        "{},{},{},{}",
+        csv_field(ores::platform::time::datetime::to_iso8601_utc(tick.observation_time)),
+        csv_field(tick.oresmd_uri),
+        csv_field(tick.value),
+        csv_field(tick.source));
 }
 
-stream_output marketdata_commands::run_stream(tick_source& source,
-                                              const std::function<bool()>& cancelled,
-                                              const std::string& csv_path,
-                                              std::ostream& out,
-                                              const std::function<bool(
-                                                  const marketdata::messaging::market_tick&)>&
-                                                  accept) {
+stream_output marketdata_commands::run_stream(
+    tick_source& source,
+    const std::function<bool()>& cancelled,
+    const std::string& csv_path,
+    std::ostream& out,
+    const std::function<bool(const marketdata::messaging::market_tick&)>& accept) {
     stream_output output;
     output.rows.push_back(std::string(stream_csv_header));
 

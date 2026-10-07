@@ -64,13 +64,12 @@ boost::uuids::uuid id_of(const std::string& text) {
     return boost::uuids::string_generator()(text);
 }
 
-synthetic::fx_spot_generation_config
-fx_config_row(const std::string& id,
-              const std::string& owner,
-              const std::string& source_name,
-              const std::string& ore_key,
-              bool enabled,
-              bool auto_start) {
+synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
+                                                   const std::string& owner,
+                                                   const std::string& source_name,
+                                                   const std::string& ore_key,
+                                                   bool enabled,
+                                                   bool auto_start) {
     synthetic::fx_spot_generation_config row;
     row.id = id_of(id);
     row.party_id = id_of(party);
@@ -142,13 +141,12 @@ feed_listing two_class_listing() {
 
     listing.fx_spot.push_back(
         fx_config_row(fx_config, config_one, "synthetic.eurusd", "FX/RATE/EUR/USD", true, true));
-    listing.fx_spot.push_back(
-        fx_config_row("bbbbbbbb-0000-4000-8000-000000000002",
-                      config_two,
-                      "synthetic.eurgbp",
-                      "FX/RATE/EUR/GBP",
-                      true,
-                      false));
+    listing.fx_spot.push_back(fx_config_row("bbbbbbbb-0000-4000-8000-000000000002",
+                                            config_two,
+                                            "synthetic.eurgbp",
+                                            "FX/RATE/EUR/GBP",
+                                            true,
+                                            false));
     for (int i = 0; i < 3; ++i)
         listing.gmm_components.push_back(gmm_row(fx_config, i));
 
@@ -282,23 +280,23 @@ TEST_CASE("the_listing_states_every_configured_feed_and_marks_the_partial_ones",
 TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto rows = synthetic_commands::plan_fx(
-        fx_config,
-        config_one,
-        std::string("11111111-0000-4000-8000-000000000004"),
-        party,
-        "synthetic.eurusd",
-        "EUR",
-        "USD",
-        "geometric",
-        60,
-        1.0812,
-        {{0.7, 0.0, 0.01}, {0.3, 0.0, 0.02}});
+    const auto rows =
+        synthetic_commands::plan_fx(fx_config,
+                                    config_one,
+                                    std::string("11111111-0000-4000-8000-000000000004"),
+                                    party,
+                                    "synthetic.eurusd",
+                                    "EUR",
+                                    "USD",
+                                    "geometric",
+                                    60,
+                                    1.0812,
+                                    {{0.7, 0.0, 0.01}, {0.3, 0.0, 0.02}});
 
     REQUIRE(rows.size() == 3);
     CHECK(rows[0].subject == "synthetic.v1.fx_spot_generation_configs.put");
-    const auto config = rfl::json::read<messaging::put_fx_spot_generation_config_request>(
-        rows[0].body);
+    const auto config =
+        rfl::json::read<messaging::put_fx_spot_generation_config_request>(rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.source_name == "synthetic.eurusd");
     CHECK(config->change.write.ore_key == "FX/RATE/EUR/USD");
@@ -335,26 +333,26 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", tags) {
     kappa.process_type_code = "VASICEK";
     kappa.parameter_name = "kappa";
 
-    const auto rows = synthetic_commands::plan_ir(
-        ir_config,
-        config_two,
-        std::string("22222222-0000-4000-8000-000000000004"),
-        party,
-        "ir_curve.usd.sofr",
-        {kappa},
-        "USD",
-        "sofr",
-        std::string(),
-        "self_discounting",
-        "VASICEK",
-        60,
-        {{.parameter_name = "kappa", .parameter_value = 0.5}},
-        {"1Y", "2Y"});
+    const auto rows =
+        synthetic_commands::plan_ir(ir_config,
+                                    config_two,
+                                    std::string("22222222-0000-4000-8000-000000000004"),
+                                    party,
+                                    "ir_curve.usd.sofr",
+                                    {kappa},
+                                    "USD",
+                                    "sofr",
+                                    std::string(),
+                                    "self_discounting",
+                                    "VASICEK",
+                                    60,
+                                    {{.parameter_name = "kappa", .parameter_value = 0.5}},
+                                    {"1Y", "2Y"});
 
     REQUIRE(rows.size() == 4);
     CHECK(rows[0].subject == "synthetic.v1.ir_curve_generation_configs.put");
-    const auto config = rfl::json::read<messaging::put_ir_curve_generation_config_request>(
-        rows[0].body);
+    const auto config =
+        rfl::json::read<messaging::put_ir_curve_generation_config_request>(rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.process_type == "VASICEK");
     CHECK(config->change.write.currency_code == "USD");
@@ -370,14 +368,16 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", tags) {
     CHECK(config->change.write.fixed_leg_payment_frequency_code == "Annual");
 
     CHECK(rows[1].subject == "synthetic.v1.ir_curve_template_entries.put");
-    const auto entry = rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[1].body);
+    const auto entry =
+        rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[1].body);
     REQUIRE(entry);
     CHECK(entry->change.write.sequence_index == 0);
     CHECK(entry->change.write.start_tenor_code == "1Y");
     CHECK(entry->change.write.instrument_code == "ir_swap");
 
     CHECK(rows[2].subject == "synthetic.v1.ir_curve_template_entries.put");
-    const auto second = rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[2].body);
+    const auto second =
+        rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[2].body);
     REQUIRE(second);
     CHECK(second->change.write.sequence_index == 1);
     CHECK(second->change.write.start_tenor_code == "2Y");
@@ -396,21 +396,21 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", tags) {
 TEST_CASE("a_process_parameter_with_no_definition_is_left_unwritable", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto rows = synthetic_commands::plan_ir(ir_config,
-                                                  config_two,
-                                                  std::string("22222222-0000-4000-8000-000000000004"),
-                                                  party,
-                                                  "ir_curve.usd.sofr",
-                                                  {},
-                                                  "USD",
-                                                  "sofr",
-                                                  std::string(),
-                                                  "self_discounting",
-                                                  "VASICEK",
-                                                  60,
-                                                  {{.parameter_name = "kappa",
-                                                    .parameter_value = 0.5}},
-                                                  {"1Y"});
+    const auto rows =
+        synthetic_commands::plan_ir(ir_config,
+                                    config_two,
+                                    std::string("22222222-0000-4000-8000-000000000004"),
+                                    party,
+                                    "ir_curve.usd.sofr",
+                                    {},
+                                    "USD",
+                                    "sofr",
+                                    std::string(),
+                                    "self_discounting",
+                                    "VASICEK",
+                                    60,
+                                    {{.parameter_name = "kappa", .parameter_value = 0.5}},
+                                    {"1Y"});
 
     REQUIRE(rows.size() == 3);
     // The row that cannot be joined onto the catalogue carries no subject, and
@@ -429,13 +429,13 @@ TEST_CASE("process_setup_writes_the_container_id_as_the_fx_configs_parent", tags
 
     // Container, three folders, the FX config and its one GMM component.
     REQUIRE(session.rows.size() == 6);
-    const auto container = rfl::json::read<messaging::put_market_data_generation_config_request>(
-        session.rows[0].body);
+    const auto container =
+        rfl::json::read<messaging::put_market_data_generation_config_request>(session.rows[0].body);
     REQUIRE(container);
     const auto container_id = container->change.write.id;
 
-    const auto config = rfl::json::read<messaging::put_fx_spot_generation_config_request>(
-        session.rows[4].body);
+    const auto config =
+        rfl::json::read<messaging::put_fx_spot_generation_config_request>(session.rows[4].body);
     REQUIRE(config);
     CHECK(config->change.write.config_id == container_id);
     CHECK(config->change.write.id != container_id);
@@ -468,41 +468,28 @@ TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", tags) 
     stub_setup_session session(ir_setup_listing());
     std::ostringstream out;
 
-    synthetic_commands::process_setup(out,
-                                      session,
-                                      {"--kind",
-                                       "ir",
-                                       "--name",
-                                       "Basic",
-                                       "--source",
-                                       "ir_curve.usd.sofr",
-                                       "--currency",
-                                       "USD",
-                                       "--index-family",
-                                       "sofr",
-                                       "--process",
-                                       "VASICEK",
-                                       "--param",
-                                       "kappa=0.5",
-                                       "--param",
-                                       "theta=0.05",
-                                       "--param",
-                                       "sigma=0.01",
-                                       "--param",
-                                       "initial_rate=0.03",
-                                       "--curve-key",
-                                       "1Y"});
+    synthetic_commands::process_setup(out, session, {"--kind",         "ir",
+                                                     "--name",         "Basic",
+                                                     "--source",       "ir_curve.usd.sofr",
+                                                     "--currency",     "USD",
+                                                     "--index-family", "sofr",
+                                                     "--process",      "VASICEK",
+                                                     "--param",        "kappa=0.5",
+                                                     "--param",        "theta=0.05",
+                                                     "--param",        "sigma=0.01",
+                                                     "--param",        "initial_rate=0.03",
+                                                     "--curve-key",    "1Y"});
 
     // Container, three folders, the IR config, one template entry and four
     // process parameter values.
     REQUIRE(session.rows.size() == 10);
-    const auto container = rfl::json::read<messaging::put_market_data_generation_config_request>(
-        session.rows[0].body);
+    const auto container =
+        rfl::json::read<messaging::put_market_data_generation_config_request>(session.rows[0].body);
     REQUIRE(container);
     const auto container_id = container->change.write.id;
 
-    const auto config = rfl::json::read<messaging::put_ir_curve_generation_config_request>(
-        session.rows[4].body);
+    const auto config =
+        rfl::json::read<messaging::put_ir_curve_generation_config_request>(session.rows[4].body);
     REQUIRE(config);
     CHECK(config->change.write.config_id == container_id);
     CHECK(config->change.write.id != container_id);

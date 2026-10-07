@@ -76,9 +76,9 @@ void report_submit_handler::submit(ores::nats::message msg) {
         }
 
         ores::service::service::cache::run_token_step_scope step_tokens(run_tokens_,
-                                                                       req.report_instance_id);
-        const ores::service::service::cache::run_token_key key{
-            .grant_id = req.run_grant_id, .run_id = req.report_instance_id};
+                                                                        req.report_instance_id);
+        const ores::service::service::cache::run_token_key key{.grant_id = req.run_grant_id,
+                                                               .run_id = req.report_instance_id};
         if (run_tokens_.token_for(key, req.tenant_id).empty()) {
             wf->fail("submit_compute: the run has no run token; its grant is missing or IAM "
                      "refused the exchange");

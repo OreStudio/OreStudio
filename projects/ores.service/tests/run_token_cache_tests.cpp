@@ -56,8 +56,8 @@ struct counting_minter {
         asked->push_back(key);
         if (*refuse)
             return std::nullopt;
-        return run_token{.token = key.grant_id + "/" + key.run_id + "#" +
-                                  std::to_string(asked->size()),
+        return run_token{.token =
+                             key.grant_id + "/" + key.run_id + "#" + std::to_string(asked->size()),
                          .expires_at = *now + lifetime};
     }
 };
@@ -68,8 +68,8 @@ TEST_CASE("a miss mints a token and a fresh token is reused", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     const auto first = cache.token_for(key_of("g1", "r1"), "t1");
     const auto second = cache.token_for(key_of("g1", "r1"), "t1");
@@ -83,8 +83,8 @@ TEST_CASE("a token close to expiry is exchanged again", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     CHECK(cache.token_for(key_of("g1", "r1"), "t1") == "g1/r1#1");
 
@@ -103,8 +103,8 @@ TEST_CASE("a refused exchange holds nothing", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = true;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     CHECK(cache.token_for(key_of("g1", "r1"), "t1").empty());
     CHECK(cache.size() == 0);
@@ -118,8 +118,8 @@ TEST_CASE("invalidate makes the next call exchange again", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     CHECK(cache.token_for(key_of("g1", "r1"), "t1") == "g1/r1#1");
     cache.invalidate(key_of("g1", "r1"));
@@ -131,8 +131,8 @@ TEST_CASE("evict_run drops every entry of one run", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     cache.token_for(key_of("g1", "r1"), "t1");
     cache.token_for(key_of("g2", "r1"), "t2");
@@ -150,8 +150,8 @@ TEST_CASE("the cache is bounded and drops the least recently used", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 2, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 2, seconds(60), [&] { return now; });
 
     cache.token_for(key_of("g1", "r1"), "t1");
     cache.token_for(key_of("g2", "r1"), "t1");
@@ -170,8 +170,8 @@ TEST_CASE("two grants and two runs hold their own tokens", tags) {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
-    run_token_cache cache(counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60),
-                          [&] { return now; });
+    run_token_cache cache(
+        counting_minter{&asked, &now, seconds(300), &refuse}, 16, seconds(60), [&] { return now; });
 
     CHECK(cache.token_for(key_of("g1", "r1"), "t1") == "g1/r1#1");
     CHECK(cache.token_for(key_of("g2", "r1"), "t1") == "g2/r1#2");

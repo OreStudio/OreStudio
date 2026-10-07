@@ -215,7 +215,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_average_ois_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_base_correlation_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_bma_basis_swap_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_bond_future_volatility_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_bond_future_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_bond_yield_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_business_centre_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_calendar_event_event_mapping(event_source, event_bus, nats));
@@ -223,34 +224,46 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_calendar_name_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_calendar_rule_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_calendar_type_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_cap_floor_volatility_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cap_floor_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_cds_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_cds_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_cds_volatility_term_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_cms_spread_option_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cms_spread_option_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_commodity_curve_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_commodity_forward_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_commodity_future_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_forward_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_future_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_commodity_price_segment_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_commodity_volatility_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_counterparty_contact_information_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_commodity_volatility_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_counterparty_contact_information_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_counterparty_identifier_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_cross_currency_basis_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_cross_currency_fix_float_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cross_currency_basis_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_cross_currency_fix_float_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_csa_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_csa_eligible_currency_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_group_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_currency_pair_classification_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_currency_pair_classification_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_bootstrap_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_configuration_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_curve_configuration_section_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_configuration_section_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_correlation_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_definition_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_global_report_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_parametric_smile_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_curve_parametric_smile_parameter_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_parametric_smile_parameter_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_quote_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_curve_report_configuration_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_curve_report_configuration_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_section_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_security_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_curve_segment_event_mapping(event_source, event_bus, nats));
@@ -259,7 +272,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_curve_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_day_counter_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_default_curve_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_default_curve_configuration_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_default_curve_configuration_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_deposit_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_derivation_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_equity_curve_config_event_mapping(event_source, event_bus, nats));
@@ -269,19 +283,24 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_fx_option_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fx_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ibor_index_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_inflation_cap_floor_volatility_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_inflation_cap_floor_volatility_config_event_mapping(
+        event_source, event_bus, nats));
     subs.push_back(register_inflation_curve_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_inflation_seasonality_factor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_inflation_seasonality_factor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_inflation_swap_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_intraday_power_curve_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_intraday_power_load_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_intraday_power_curve_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_intraday_power_load_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_bootstrap_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ir_curve_bootstrap_pillar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_agreement_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_netting_set_identifier_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ois_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_overnight_index_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_overnight_index_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_contact_information_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_identifier_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_party_status_event_mapping(event_source, event_bus, nats));
@@ -291,13 +310,17 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_sandbox_member_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swap_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swap_index_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_swaption_volatility_config_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_tenor_basis_swap_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_tenor_basis_two_swap_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_swaption_volatility_config_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_tenor_basis_swap_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_tenor_basis_two_swap_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_yield_curve_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_yield_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_zero_convention_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_zero_inflation_index_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_zero_inflation_index_convention_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

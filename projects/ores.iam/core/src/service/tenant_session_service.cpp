@@ -197,14 +197,12 @@ tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
     return r;
 }
 
-eventing::service::cache::partition_token
-tenant_session_service::read_inside(const tenant_reader& reader,
-                                    const std::string& tenant_id,
-                                    std::chrono::seconds lifetime) {
+eventing::service::cache::partition_token tenant_session_service::read_inside(
+    const tenant_reader& reader, const std::string& tenant_id, std::chrono::seconds lifetime) {
     const auto target = utility::uuid::tenant_id::from_string(tenant_id);
     if (!target) {
-        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username
-                                  << ": unreadable tenant id " << tenant_id;
+        BOOST_LOG_SEV(lg(), warn) << "No token for " << reader.username << ": unreadable tenant id "
+                                  << tenant_id;
         return {};
     }
     const auto inside = party_inside(*target, reader.username);
@@ -227,8 +225,8 @@ tenant_session_service::read_inside(const tenant_reader& reader,
     claims.expires_at = now + lifetime;
     const auto token = signer_.create_token(claims);
     if (!token) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to sign the token for " << reader.username
-                                   << " inside tenant " << tenant_id;
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to sign the token for " << reader.username << " inside tenant " << tenant_id;
         return {};
     }
     BOOST_LOG_SEV(lg(), info) << "Issued a token for " << reader.username << " inside tenant "

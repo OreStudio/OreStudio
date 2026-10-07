@@ -30,8 +30,8 @@
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_params.hpp"
 #include "ores.iam.api/domain/role_codes.hpp"
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
@@ -1137,9 +1137,8 @@ private:
         if (!start_synthetic_theme_feeds(system_client, arguments.theme))
             throw std::runtime_error("The theme '" + arguments.theme + "' feeds were not started.");
 
-        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
-                                                           .parties = bound,
-                                                           .datasets = {arguments.theme}}));
+        wf.complete(rfl::json::write(provision_step_result{
+            .kind = command.kind, .parties = bound, .datasets = {arguments.theme}}));
     }
 
     /// Marks the tenant active and clears bootstrap mode, the two operations

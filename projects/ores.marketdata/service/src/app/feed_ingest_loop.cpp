@@ -86,9 +86,8 @@ void feed_ingest_loop::refresh() {
     std::map<binding_key, std::shared_ptr<feed_stats>> kept;
     for (const auto& [source_name, source_bindings] : bindings_by_source_) {
         for (const auto& b : source_bindings) {
-            const binding_key key{b.source_name,
-                                  b.tenant_id.to_string(),
-                                  boost::uuids::to_string(b.party_id)};
+            const binding_key key{
+                b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
             const auto it = stats_.find(key);
             kept[key] = it != stats_.end() ? it->second : std::make_shared<feed_stats>();
         }
@@ -125,8 +124,8 @@ std::optional<tick_drop> feed_ingest_loop::handle_tick(const messaging::market_t
         switch (plan.error()) {
             case tick_drop::unbound_source:
                 if (unbound_warned_.insert(tick.source).second)
-                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '" << tick.source
-                                              << "': no enabled feed_binding";
+                    BOOST_LOG_SEV(lg(), warn) << "Dropping ticks for unbound source '"
+                                              << tick.source << "': no enabled feed_binding";
                 break;
             case tick_drop::unnameable_datum:
                 if (unnameable_warned_.insert(tick.oresmd_uri).second)
@@ -147,9 +146,8 @@ std::optional<tick_drop> feed_ingest_loop::handle_tick(const messaging::market_t
         if (!persist(b, plan->datum, tick))
             continue;
 
-        const binding_key key{b.source_name,
-                              b.tenant_id.to_string(),
-                              boost::uuids::to_string(b.party_id)};
+        const binding_key key{
+            b.source_name, b.tenant_id.to_string(), boost::uuids::to_string(b.party_id)};
         std::uint64_t prev_count = 0;
         {
             std::lock_guard lock(mu_);

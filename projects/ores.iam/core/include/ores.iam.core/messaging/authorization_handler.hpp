@@ -591,7 +591,8 @@ public:
         const bool own_tenant =
             !req->tenant_id.empty() && req->tenant_id == caller.tenant_id().to_string();
         if (!ores::service::messaging::has_permission(caller, "iam::roles:assign") ||
-            (!own_tenant && !ores::service::messaging::has_permission(caller, "iam::tenants:read"))) {
+            (!own_tenant &&
+             !ores::service::messaging::has_permission(caller, "iam::tenants:read"))) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

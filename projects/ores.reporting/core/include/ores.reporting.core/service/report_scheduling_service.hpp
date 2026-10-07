@@ -155,8 +155,7 @@ private:
      * @brief Asks IAM, on behalf of the person scheduling, for the grant the
      * definition's runs act under, and returns its id.
      */
-    std::expected<boost::uuids::uuid, std::string>
-    grant_runs(const domain::report_definition& def);
+    std::expected<boost::uuids::uuid, std::string> grant_runs(const domain::report_definition& def);
 
     /**
      * @brief Asks IAM, on behalf of the person unscheduling, to revoke a grant.

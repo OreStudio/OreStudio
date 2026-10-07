@@ -208,8 +208,7 @@ report_scheduling_service::send_delete_request(const boost::uuids::uuid& job_id,
         auto resp = codec.decode<ores::scheduler::messaging::delete_job_definition_response>(
             reply_msg.data);
         if (!resp)
-            return std::unexpected("Scheduler returned unparseable response for job " +
-                                   job_id_str);
+            return std::unexpected("Scheduler returned unparseable response for job " + job_id_str);
         // A job that is already gone is the state the caller asked for, so a
         // second delete of the same job converges instead of failing.
         if (resp->result.outcome == ores::utility::domain::outcome::missing)
@@ -284,9 +283,9 @@ report_scheduling_service::schedule_one(const domain::report_definition& def,
 
     const auto withdraw_grant = [&] {
         if (const auto revoked = revoke_runs(*grant_id); !revoked)
-            BOOST_LOG_SEV(lg(), warn) << "Run grant " << *grant_id << " of definition " << def.id
-                                      << " stays active after a failed schedule: "
-                                      << revoked.error();
+            BOOST_LOG_SEV(lg(), warn)
+                << "Run grant " << *grant_id << " of definition " << def.id
+                << " stays active after a failed schedule: " << revoked.error();
     };
 
     const auto job_id = gen_uuid();
@@ -459,8 +458,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         try {
             all = repo.read_latest(tenant_ctx);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to read definitions for tenant "
-                                       << tenant_id_str << ": " << e.what();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to read definitions for tenant " << tenant_id_str << ": " << e.what();
             ++total_failed;
             continue;
         }
@@ -487,12 +486,12 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 report_definition_service svc(tenant_ctx);
                 svc.save_definition(updated);
                 ++total_cleared;
-                BOOST_LOG_SEV(lg(), info) << "Cleared the ungranted schedule of definition "
-                                          << def.id;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Cleared the ungranted schedule of definition " << def.id;
             } catch (const std::exception& e) {
                 ++total_failed;
-                BOOST_LOG_SEV(lg(), error) << "Could not clear the schedule of definition "
-                                           << def.id << ": " << e.what();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Could not clear the schedule of definition " << def.id << ": " << e.what();
             }
         }
     }
@@ -508,10 +507,9 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         const auto reply = svc_nats_.authenticated_request(
             ores::scheduler::messaging::list_job_definitions_request::nats_subject,
             ores::nats::default_wire_codec().encode(list_req));
-        if (auto parsed =
-                ores::nats::default_wire_codec()
-                    .decode<ores::scheduler::messaging::list_job_definitions_response>(
-                        reply.data)) {
+        if (auto parsed = ores::nats::default_wire_codec()
+                              .decode<ores::scheduler::messaging::list_job_definitions_response>(
+                                  reply.data)) {
             scheduler_read_ok = true;
             for (const auto& existing : parsed->definitions)
                 if (is_report_definition_job_name(existing.job_name))
@@ -554,9 +552,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 continue;
             if (const auto sent = send_schedule_request(def, *def.scheduler_job_id); sent) {
                 ++total_restored;
-                BOOST_LOG_SEV(lg(), info)
-                    << "Restored scheduler job " << *def.scheduler_job_id << " for definition "
-                    << def.id;
+                BOOST_LOG_SEV(lg(), info) << "Restored scheduler job " << *def.scheduler_job_id
+                                          << " for definition " << def.id;
             } else {
                 ++total_failed;
                 BOOST_LOG_SEV(lg(), error) << "Could not restore the job for definition " << def.id
@@ -566,8 +563,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. Tenants: " << tenants.size()
-                              << ", removed: " << total_removed
-                              << ", restored: " << total_restored
+                              << ", removed: " << total_removed << ", restored: " << total_restored
                               << ", cleared: " << total_cleared << ", failed: " << total_failed
                               << ".";
     co_return;

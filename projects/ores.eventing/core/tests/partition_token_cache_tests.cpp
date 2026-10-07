@@ -48,8 +48,8 @@ struct counting_minter {
 TEST_CASE("each partition gets its own token", "[partition_token_cache]") {
     std::vector<std::string> asked;
     time_point now{};
-    partition_token_cache cache(counting_minter{&asked, &now, seconds(300)}, seconds(30),
-                                [&] { return now; });
+    partition_token_cache cache(
+        counting_minter{&asked, &now, seconds(300)}, seconds(30), [&] { return now; });
 
     CHECK(cache.get("tenant-a") == "tenant-a#1");
     CHECK(cache.get("tenant-b") == "tenant-b#2");
@@ -59,8 +59,8 @@ TEST_CASE("each partition gets its own token", "[partition_token_cache]") {
 TEST_CASE("a fresh token is reused without another exchange", "[partition_token_cache]") {
     std::vector<std::string> asked;
     time_point now{};
-    partition_token_cache cache(counting_minter{&asked, &now, seconds(300)}, seconds(30),
-                                [&] { return now; });
+    partition_token_cache cache(
+        counting_minter{&asked, &now, seconds(300)}, seconds(30), [&] { return now; });
 
     CHECK(cache.get("tenant-a") == "tenant-a#1");
     now += seconds(200);
@@ -68,24 +68,22 @@ TEST_CASE("a fresh token is reused without another exchange", "[partition_token_
     CHECK(asked.size() == 1);
 }
 
-TEST_CASE("a token within the margin of its expiry is exchanged again",
-          "[partition_token_cache]") {
+TEST_CASE("a token within the margin of its expiry is exchanged again", "[partition_token_cache]") {
     std::vector<std::string> asked;
     time_point now{};
-    partition_token_cache cache(counting_minter{&asked, &now, seconds(300)}, seconds(30),
-                                [&] { return now; });
+    partition_token_cache cache(
+        counting_minter{&asked, &now, seconds(300)}, seconds(30), [&] { return now; });
 
     CHECK(cache.get("tenant-a") == "tenant-a#1");
     now += seconds(271);
     CHECK(cache.get("tenant-a") == "tenant-a#2");
 }
 
-TEST_CASE("renew exchanges again even when the token held looks fresh",
-          "[partition_token_cache]") {
+TEST_CASE("renew exchanges again even when the token held looks fresh", "[partition_token_cache]") {
     std::vector<std::string> asked;
     time_point now{};
-    partition_token_cache cache(counting_minter{&asked, &now, seconds(300)}, seconds(30),
-                                [&] { return now; });
+    partition_token_cache cache(
+        counting_minter{&asked, &now, seconds(300)}, seconds(30), [&] { return now; });
 
     CHECK(cache.get("tenant-a") == "tenant-a#1");
     CHECK(cache.get("tenant-a", true) == "tenant-a#2");
@@ -111,8 +109,8 @@ TEST_CASE("a refused exchange holds nothing, so the next get asks again",
 TEST_CASE("the provider hands out the cache's tokens", "[partition_token_cache]") {
     std::vector<std::string> asked;
     time_point now{};
-    partition_token_cache cache(counting_minter{&asked, &now, seconds(300)}, seconds(30),
-                                [&] { return now; });
+    partition_token_cache cache(
+        counting_minter{&asked, &now, seconds(300)}, seconds(30), [&] { return now; });
     const auto provider = cache.provider();
 
     CHECK(provider("tenant-a", false) == "tenant-a#1");

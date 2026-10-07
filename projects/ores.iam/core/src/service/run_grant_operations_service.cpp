@@ -155,8 +155,7 @@ run_grant_operations_service::exchange_limiters::exchange_limiters(const exchang
 
 const std::shared_ptr<run_grant_operations_service::exchange_limiters>&
 run_grant_operations_service::shared_limiters() {
-    static const auto instance =
-        std::make_shared<exchange_limiters>(default_exchange_limits);
+    static const auto instance = std::make_shared<exchange_limiters>(default_exchange_limits);
     return instance;
 }
 
@@ -398,8 +397,7 @@ exchange_decision decide_exchange(const exchange_facts& facts,
         return refuse_with(exchange_refusal::grant_revoked);
     if (grant.not_after != never && grant.not_after <= now)
         return refuse_with(exchange_refusal::grant_expired);
-    if (grant.max_runs > 0 &&
-        facts.runs_served >= static_cast<std::size_t>(grant.max_runs) &&
+    if (grant.max_runs > 0 && facts.runs_served >= static_cast<std::size_t>(grant.max_runs) &&
         !facts.run_already_served)
         return refuse_with(exchange_refusal::grant_exhausted);
 
@@ -456,12 +454,11 @@ security::jwt::jwt_claims run_token_claims(const domain::run_grant& grant,
     return claims;
 }
 
-void run_grant_operations_service::log_refusal(
-    const std::string& tenant_id,
-    const messaging::exchange_run_grant_request& request,
-    const std::string& service_name,
-    const std::string& grantor_account_id,
-    std::string_view reason) {
+void run_grant_operations_service::log_refusal(const std::string& tenant_id,
+                                               const messaging::exchange_run_grant_request& request,
+                                               const std::string& service_name,
+                                               const std::string& grantor_account_id,
+                                               std::string_view reason) {
     try {
         repository::run_token_issue_repository(ctx_).record(std::chrono::system_clock::now(),
                                                             tenant_id,
@@ -499,16 +496,16 @@ run_grant_operations_service::issue(const domain::run_grant& grant,
 
     // The row is appended before the token is handed over, so no run token
     // exists that the issue log does not name.
-    repository::run_token_issue_repository(ctx_).record(now,
-                                                        grant.tenant_id.to_string(),
-                                                        boost::uuids::to_string(grant.party_id),
-                                                        boost::uuids::to_string(grant.id),
-                                                        run_id,
-                                                        service_name,
-                                                        boost::uuids::to_string(
-                                                            grant.grantor_account_id),
-                                                        std::string(issued_outcome),
-                                                        "");
+    repository::run_token_issue_repository(ctx_).record(
+        now,
+        grant.tenant_id.to_string(),
+        boost::uuids::to_string(grant.party_id),
+        boost::uuids::to_string(grant.id),
+        run_id,
+        service_name,
+        boost::uuids::to_string(grant.grantor_account_id),
+        std::string(issued_outcome),
+        "");
 
     BOOST_LOG_SEV(lg(), info) << "Issued a run token for grant " << grant.id << " run " << run_id
                               << " to " << service_name << " as "
@@ -517,9 +514,9 @@ run_grant_operations_service::issue(const domain::run_grant& grant,
     response r;
     r.success = true;
     r.token = *token;
-    r.expires_at = std::chrono::duration_cast<std::chrono::seconds>(
-                       claims.expires_at.time_since_epoch())
-                       .count();
+    r.expires_at =
+        std::chrono::duration_cast<std::chrono::seconds>(claims.expires_at.time_since_epoch())
+            .count();
     return r;
 }
 
@@ -546,7 +543,8 @@ messaging::exchange_run_grant_response run_grant_operations_service::exchange_ru
     // to the caller's own tenant and answers with another tenant's grant.
     const auto target = utility::uuid::tenant_id::from_string(request.tenant_id);
     if (!target) {
-        log_refusal("", request, "", "", exchange_refusal_reason(exchange_refusal::tenant_unreadable));
+        log_refusal(
+            "", request, "", "", exchange_refusal_reason(exchange_refusal::tenant_unreadable));
         return refuse<response>("The request names no tenant: " + request.tenant_id + ".",
                                 exchange_refusal::tenant_unreadable);
     }
@@ -606,8 +604,8 @@ messaging::exchange_run_grant_response run_grant_operations_service::exchange_ru
     if (!service_limit.allowed) {
         log_refusal(logged_tenant, request, service_name, "", rate_limited_reason);
         return refuse<response>("[unavailable] Too many exchanges for " + service_name +
-                                "; retry after " + std::to_string(service_limit.retry_after.count()) +
-                                " ms.");
+                                "; retry after " +
+                                std::to_string(service_limit.retry_after.count()) + " ms.");
     }
 
     // 3. The two permission lists the last check and the mint read. The role
@@ -652,18 +650,19 @@ messaging::exchange_run_grant_response run_grant_operations_service::exchange_ru
                     service_name,
                     grantor ? boost::uuids::to_string(grantor->id) : "",
                     exchange_refusal_reason(reason));
-        BOOST_LOG_SEV(lg(), info) << "Refused a run token for grant " << request.grant_id
-                                  << " run " << request.run_id << " to " << service_name << ": "
+        BOOST_LOG_SEV(lg(), info) << "Refused a run token for grant " << request.grant_id << " run "
+                                  << request.run_id << " to " << service_name << ": "
                                   << exchange_refusal_reason(reason);
-        std::string detail = "The run token was refused: " +
-                             std::string(exchange_refusal_reason(reason)) + ".";
+        std::string detail =
+            "The run token was refused: " + std::string(exchange_refusal_reason(reason)) + ".";
         if (reason == exchange_refusal::grant_lapsed)
             detail = "The grantor holds none of the role's permissions any more, so the grant has "
                      "lapsed.";
         return refuse<response>(std::move(detail), reason);
     }
 
-    return issue(*facts.grant, grantor->username, service_name, request.run_id, decision.permissions);
+    return issue(
+        *facts.grant, grantor->username, service_name, request.run_id, decision.permissions);
 }
 
 }

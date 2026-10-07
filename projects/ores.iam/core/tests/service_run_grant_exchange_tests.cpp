@@ -130,9 +130,8 @@ role existing_or_new_role(database_helper& h,
 
 /// A step service's own context: it acts as its service account, in the
 /// tenant the request names, carrying only the exchange permission.
-context service_context(database_helper& h,
-                        const account& service,
-                        const boost::uuids::uuid& party) {
+context
+service_context(database_helper& h, const account& service, const boost::uuids::uuid& party) {
     return h.context()
         .with_party(h.tenant_id(), party, {party}, service.username)
         .with_roles({exchange_code});
@@ -184,7 +183,9 @@ struct exchange_fixture {
     std::optional<context> caller_context;
 
     /// The step service's own context.
-    context caller() const { return *caller_context; }
+    context caller() const {
+        return *caller_context;
+    }
 
     explicit exchange_fixture(const std::string& grantor_status = "active")
         : h()
@@ -217,8 +218,8 @@ struct exchange_fixture {
             .find_grant(id_of(grant_id));
     }
 
-    std::optional<ores::iam::domain::run_grant> save_grant(
-        const std::function<void(ores::iam::domain::run_grant&)>& change) {
+    std::optional<ores::iam::domain::run_grant>
+    save_grant(const std::function<void(ores::iam::domain::run_grant&)>& change) {
         auto grants = run_grant_service(h.context().with_tenant(h.tenant_id(), grantor.username));
         auto grant = grants.find_grant(id_of(grant_id));
         if (!grant)
@@ -281,10 +282,9 @@ TEST_CASE("exchange_run_grant_refuses_a_caller_without_the_exchange_permission",
 TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role", tags) {
     exchange_fixture f;
     const auto plain = write_account(f.h, f.gen, "active");
-    const auto resp = run_grant_operations_service(
-                          service_context(f.h, plain, f.party), signer_for_tests())
-                          .exchange_run_grant(
-                              exchange_request(f.grant_id, f.tenant_id, "run-1"));
+    const auto resp =
+        run_grant_operations_service(service_context(f.h, plain, f.party), signer_for_tests())
+            .exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1"));
     CHECK_FALSE(resp.success);
     CHECK_THAT(resp.message, ContainsSubstring("no_service_identity"));
 }
@@ -299,10 +299,9 @@ TEST_CASE("exchange_run_grant_refuses_a_service_outside_the_audience", tags) {
     // compute service is outside it.
     REQUIRE(f.save_grant([](auto& g) { g.audience = "ReportingService,OreService"; }));
 
-    const auto resp = run_grant_operations_service(
-                          service_context(f.h, other, f.party), signer_for_tests())
-                          .exchange_run_grant(
-                              exchange_request(f.grant_id, f.tenant_id, "run-1"));
+    const auto resp =
+        run_grant_operations_service(service_context(f.h, other, f.party), signer_for_tests())
+            .exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1"));
     CHECK_FALSE(resp.success);
     CHECK_THAT(resp.message, ContainsSubstring("outside_audience"));
 }
@@ -333,9 +332,8 @@ TEST_CASE("exchange_run_grant_refuses_a_revoked_grant", tags) {
 
 TEST_CASE("exchange_run_grant_refuses_a_grant_past_its_not_after", tags) {
     exchange_fixture f;
-    REQUIRE(f.save_grant([](auto& g) {
-        g.not_after = std::chrono::system_clock::now() - std::chrono::hours(1);
-    }));
+    REQUIRE(f.save_grant(
+        [](auto& g) { g.not_after = std::chrono::system_clock::now() - std::chrono::hours(1); }));
 
     const auto resp = run_grant_operations_service(f.caller(), signer_for_tests())
                           .exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1"));
@@ -359,8 +357,9 @@ TEST_CASE("exchange_run_grant_admits_one_run_and_refuses_the_next", tags) {
 
 TEST_CASE("exchange_run_grant_refuses_a_tenant_that_is_not_a_tenant_id", tags) {
     exchange_fixture f;
-    const auto resp = run_grant_operations_service(f.caller(), signer_for_tests())
-                          .exchange_run_grant(exchange_request(f.grant_id, "not-a-tenant", "run-1"));
+    const auto resp =
+        run_grant_operations_service(f.caller(), signer_for_tests())
+            .exchange_run_grant(exchange_request(f.grant_id, "not-a-tenant", "run-1"));
     CHECK_FALSE(resp.success);
     CHECK_THAT(resp.message, ContainsSubstring("tenant_unreadable"));
 }
@@ -396,8 +395,7 @@ TEST_CASE("exchange_run_grant_refuses_a_caller_over_its_rate_limit", tags) {
     run_grant_operations_service sut(f.caller(), signer_for_tests(), limits);
 
     REQUIRE(sut.exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-1")).success);
-    const auto refused =
-        sut.exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-2"));
+    const auto refused = sut.exchange_run_grant(exchange_request(f.grant_id, f.tenant_id, "run-2"));
     CHECK_FALSE(refused.success);
     CHECK_THAT(refused.message, ContainsSubstring("unavailable"));
     CHECK_THAT(refused.message, ContainsSubstring("retry after"));

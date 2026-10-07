@@ -93,8 +93,8 @@ private:
 // bindings carry are asserted rather than restated here.
 class fake_binding_store final : public feed_binding_store {
 public:
-    std::expected<void, std::string>
-    save_if_absent(const std::string& source_name, const std::string&) override {
+    std::expected<void, std::string> save_if_absent(const std::string& source_name,
+                                                    const std::string&) override {
         for (const auto& b : bindings_)
             if (b.source_name == source_name)
                 return {};

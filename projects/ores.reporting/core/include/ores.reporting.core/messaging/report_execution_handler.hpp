@@ -90,11 +90,10 @@ private:
      * @return The client, or nothing when the instance holds no grant or the
      * exchange refuses; @p error then says why.
      */
-    std::optional<ores::nats::service::nats_client>
-    run_token_client(const std::string& tenant_id,
-                     const std::string& run_id,
-                     bool renew,
-                     std::string& error);
+    std::optional<ores::nats::service::nats_client> run_token_client(const std::string& tenant_id,
+                                                                     const std::string& run_id,
+                                                                     bool renew,
+                                                                     std::string& error);
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

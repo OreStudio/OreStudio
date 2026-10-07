@@ -42,8 +42,13 @@ states the failures beside the completions.
 
 * Acceptance
 
-- =node_stats_summary= carries =tasks_failed= and =max_task_duration_ms=.
-- The grid reply and the shell's grid stats command surface both fields.
+- =node_stats_summary= carries =tasks_failed= (int, default 0) and
+  =max_task_duration_ms= (std::int64_t, default 0), each documented for what
+  the summary states rather than for what the sample stores.
+- =get_grid_stats= fills both fields on every node summary from the node's
+  most recent sample, so the reply never drops them.
+- The shell's =compute grid-stats= node table prints both fields beside the
+  completions, and the table's header row names both columns.
 - The capture [[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]
   moves out of the inbox with this task's evidence.
 

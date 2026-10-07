@@ -92,6 +92,18 @@ the reply, so it would be a second command for one read.
  */
 #+end_src
 
+*** tasks_failed
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Tasks the node failed since its wrapper started.
+ */
+#+end_src
+
 *** tasks_since_last
 :PROPERTIES:
 :cpp_type: int
@@ -113,6 +125,18 @@ the reply, so it would be a second command for one read.
 #+begin_src cpp :name comment
 /**
  * @brief Mean task duration over the tasks since the last sample.
+ */
+#+end_src
+
+*** max_task_duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Longest task the node ran since its previous sample.
  */
 #+end_src
 

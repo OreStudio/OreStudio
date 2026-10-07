@@ -83,6 +83,7 @@ grants nothing by itself.
 
 - [[id:8DAB4D55-9D53-48FA-96B0-2EA432B4B42C][Report processing interfaces]] — the trades and market data exports write to storage and answer with the key.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the bucket and key protocol every claim check names.
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — a compute assignment carries the keys, and the node fetches them under a capability scoped to those keys.
 
 * Related patterns
 

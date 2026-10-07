@@ -26,12 +26,12 @@ Every application write to an entity table goes through its generated repository
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
-| Now          | Unit of work written; its test runs.   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Move booking onto the repositories in one unit of work. |
-| Last touched | 2026-10-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -114,7 +114,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ctest suites passing | 93 of 94 | =./compass.sh test run= | 8ea91a2421 |
+| ctest assertions passing | 9370 of 9371 | =./compass.sh test results= | 8ea91a2421 |
+| unit of work suite | 39 cases, 138 assertions, 0 failures | =./compass.sh test run= (=test-results-ores.database.tests.xml=) | 8ea91a2421 |
+| booking suite | 127 cases, 886 assertions, 0 failures | =./compass.sh test run= (=test-results-ores.trading.core.tests.xml=) | 8ea91a2421 |
+| previously crashing targets | 18 of 18 built and passing | =./compass.sh build= then =./compass.sh test run= | 8ea91a2421 |
+| entity-table writers the ratchet knows | 114 (110 SQL functions, 4 C++) | =python3 projects/ores.codegen/scripts/check_entity_table_writes.py= | 8ea91a2421 |
+| the one failing suite | =ores.scheduler.api.tests=, cron =0 9 1 * 1= day-field semantics | =./compass.sh test run= | 8ea91a2421 |
+| pgTAP trading suites | 4 of 6 abort, 2 assertions fail; every failure is a NULL party or counterparty | =./projects/ores.sql/test/run_tests.sh= | 8ea91a2421 |
 
 * Notes
 
@@ -209,8 +216,12 @@ and closed by the owner.
 
 ** Next
 
-Delete =ores_trading_book_trade_fn=, rewrite the two pgTAP files that call
-it, and add the architectural rule with its checked ratchet baseline.
+Nothing. The task is merged. The open item is environmental: the pgTAP
+trading suites read a party and a counterparty from the *system* tenant,
+and this environment's system tenant carries one party and no
+counterparty, so =order by id offset 1 limit 1= is NULL. That state
+predates this task; the suites passed before =compass db recreate= rebuilt
+the database, which reset the system tenant's seed data.
 
 * Test Scenarios
 
@@ -236,3 +247,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged on 2026-10-07 as [[https://github.com/OreStudio/OreStudio/pull/2718][#2718]], on top of #2672 and #2680.
+
+** What landed
+
+- =ores::database::unit_of_work= binds one transaction to a =context=;
+  the repository read, write and delete helpers join it when the context
+  carries one and open their own session when it does not.
+- =book_trade= opens one unit of work and writes the trade, the activity,
+  the booking and the state through their repositories, each with a
+  =must_not_exist= claim.
+- =ores_trading_book_trade_fn= is deleted, and the two pgTAP files that
+  called it are rewritten.
+- =check_entity_table_writes.py= states the rule with a ratchet baseline,
+  runs on every pull request, and records the purge and the fixtures as
+  its exceptions.
+- The sqlgen overlay carries =fix-iterator-transaction.patch=, which stops
+  the postgres iterator from ending an enclosing transaction on a read.
+  The port is =0.8.0#2=.
+
+** What was verified
+
+=ctest= is 93 of 94 suites and 9370 of 9371 assertions at =8ea91a2421=.
+The unit of work suite passes 39 cases and 138 assertions; the booking
+suite passes 127 cases and 886 assertions. Each of the 18 test targets
+that crashed before this work now builds and passes.
+
+** What is open
+
+=ores.scheduler.api.tests= fails one case. It asserts that =0 9 1 * 1=
+matches on either restricted day field, so the next match after Tuesday
+2026-10-06 is Monday 2026-10-12; the engine returns Monday 2026-02-01,
+which is the *and* reading. No file in this task's diff touches
+=ores.scheduler=, and the test binary and the scheduler library were both
+rebuilt from this tree.
+
+The pgTAP trading suites cannot run in this environment. Every failure is
+a NULL party or counterparty read from the system tenant, which carries
+one party and none of the counterparties the tests index with =offset 1=.
+The suites passed against the database that predates the =compass db
+recreate= this verification required.

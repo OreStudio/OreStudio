@@ -42,6 +42,9 @@ The full template source. Edit here and re-tangle with
 #include <string>
 #include <utility>
 #include <vector>
+{{#put_operations}}
+#include <sstream>
+{{/put_operations}}
 {{/protocol_derived}}
 {{#service_pages_versions}}
 #include <algorithm>
@@ -132,6 +135,34 @@ messaging::{{entity_singular}}_key key_from(const domain::{{entity_singular}}& v
 {{/key_is_primary}}
     return key;
 }
+
+{{#put_operations}}
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::{{entity_singular}}& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+{{#key_is_primary}}
+{{#primary_key.key_columns}}
+    append("{{column}}", v.{{group_prefix}}{{column}});
+{{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+    append("{{declared_key}}", v.{{declared_key_group_prefix}}{{declared_key}});
+{{/key_is_primary}}
+    return text.str();
+}
+{{/put_operations}}
 
 /**
  * @brief Builds the domain object a write record states.
@@ -588,6 +619,19 @@ ores::utility::domain::result
         if (!current.empty()) {
             result.outcome = outcome::conflict;
             result.code = "already_exists";
+            result.message = "A {{entity_singular}} with " + describe_key(out) +
+                " already exists. State the version you read to replace it, or ask "
+                "for a version replace.";
+{{#key_is_primary}}
+{{#primary_key.key_columns}}
+            result.fields.push_back(
+                {"{{column}}", "already_exists", "This value is already taken."});
+{{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+            result.fields.push_back(
+                {"{{declared_key}}", "already_exists", "This value is already taken."});
+{{/key_is_primary}}
             return result;
         }
         break;
@@ -596,6 +640,18 @@ ores::utility::domain::result
         if (current.empty()) {
             result.outcome = outcome::missing;
             result.code = "not_found";
+            result.message =
+                "No {{entity_singular}} with " + describe_key(out) + " exists.";
+{{#key_is_primary}}
+{{#primary_key.key_columns}}
+            result.fields.push_back(
+                {"{{column}}", "not_found", "No record holds this value."});
+{{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+            result.fields.push_back(
+                {"{{declared_key}}", "not_found", "No record holds this value."});
+{{/key_is_primary}}
             return result;
         }
         // The protocol states the version as a uint32 and the row carries it
@@ -605,6 +661,15 @@ ores::utility::domain::result
                    != *change.precondition.version) {
             result.outcome = outcome::conflict;
             result.code = "version_conflict";
+            result.message = "The {{entity_singular}} with " + describe_key(out) +
+                " is at version " +
+                std::to_string(current.front().{{domain_entity.scaffold_prefix}}version) +
+                ", and the write states " +
+                std::to_string(*change.precondition.version) + ".";
+            result.fields.push_back(
+                {"version", "version_conflict",
+                 "The record moved since it was read. Read it again and state the "
+                 "version you read."});
             return result;
         }
 {{/has_audit_columns}}
@@ -952,6 +1017,9 @@ std::vector<ores::utility::domain::hierarchy_node>
 #include <string>
 #include <utility>
 #include <vector>
+{{#put_operations}}
+#include <sstream>
+{{/put_operations}}
 {{#has_uuid_left_or_right}}
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
@@ -1031,6 +1099,28 @@ messaging::{{name_singular}}_key key_from(const domain::{{name_singular}}& v) {
     key.{{right.column}} = v.{{right.column}};
     return key;
 }
+
+{{#put_operations}}
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::{{name_singular}}& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("{{left.column}}", v.{{left.column}});
+    append("{{right.column}}", v.{{right.column}});
+    return text.str();
+}
+{{/put_operations}}
 
 /**
  * @brief Builds the domain object a write record states.
@@ -1328,6 +1418,19 @@ ores::utility::domain::result
         if (!current.empty()) {
             result.outcome = outcome::conflict;
             result.code = "already_exists";
+            result.message = "A {{entity_singular}} with " + describe_key(out) +
+                " already exists. State the version you read to replace it, or ask "
+                "for a version replace.";
+{{#key_is_primary}}
+{{#primary_key.key_columns}}
+            result.fields.push_back(
+                {"{{column}}", "already_exists", "This value is already taken."});
+{{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+            result.fields.push_back(
+                {"{{declared_key}}", "already_exists", "This value is already taken."});
+{{/key_is_primary}}
             return result;
         }
         break;
@@ -1335,6 +1438,18 @@ ores::utility::domain::result
         if (current.empty()) {
             result.outcome = outcome::missing;
             result.code = "not_found";
+            result.message =
+                "No {{entity_singular}} with " + describe_key(out) + " exists.";
+{{#key_is_primary}}
+{{#primary_key.key_columns}}
+            result.fields.push_back(
+                {"{{column}}", "not_found", "No record holds this value."});
+{{/primary_key.key_columns}}
+{{/key_is_primary}}
+{{^key_is_primary}}
+            result.fields.push_back(
+                {"{{declared_key}}", "not_found", "No record holds this value."});
+{{/key_is_primary}}
             return result;
         }
         // The protocol states the version as a uint32 and the row carries it
@@ -1344,6 +1459,15 @@ ores::utility::domain::result
                    != *change.precondition.version) {
             result.outcome = outcome::conflict;
             result.code = "version_conflict";
+            result.message = "The {{entity_singular}} with " + describe_key(out) +
+                " is at version " +
+                std::to_string(current.front().{{domain_entity.scaffold_prefix}}version) +
+                ", and the write states " +
+                std::to_string(*change.precondition.version) + ".";
+            result.fields.push_back(
+                {"version", "version_conflict",
+                 "The record moved since it was read. Read it again and state the "
+                 "version you read."});
             return result;
         }
         break;

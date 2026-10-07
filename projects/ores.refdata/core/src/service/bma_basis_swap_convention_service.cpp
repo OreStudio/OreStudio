@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -80,6 +81,25 @@ messaging::bma_basis_swap_convention_key key_from(const domain::bma_basis_swap_c
     messaging::bma_basis_swap_convention_key key;
     key.id = v.id;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::bma_basis_swap_convention& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("id", v.id);
+    return text.str();
 }
 
 /**
@@ -358,6 +378,11 @@ ores::utility::domain::result bma_basis_swap_convention_service::prepare_change(
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A bma_basis_swap_convention with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back({"id", "already_exists", "This value is already taken."});
                 return result;
             }
             break;
@@ -365,6 +390,9 @@ ores::utility::domain::result bma_basis_swap_convention_service::prepare_change(
             if (current.empty()) {
                 result.outcome = outcome::missing;
                 result.code = "not_found";
+                result.message =
+                    "No bma_basis_swap_convention with " + describe_key(out) + " exists.";
+                result.fields.push_back({"id", "not_found", "No record holds this value."});
                 return result;
             }
             // The protocol states the version as a uint32 and the row carries it
@@ -374,6 +402,15 @@ ores::utility::domain::result bma_basis_swap_convention_service::prepare_change(
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
+                result.message = "The bma_basis_swap_convention with " + describe_key(out) +
+                                 " is at version " + std::to_string(current.front().version) +
+                                 ", and the write states " +
+                                 std::to_string(*change.precondition.version) + ".";
+                result.fields.push_back(
+                    {"version",
+                     "version_conflict",
+                     "The record moved since it was read. Read it again and state the "
+                     "version you read."});
                 return result;
             }
             break;

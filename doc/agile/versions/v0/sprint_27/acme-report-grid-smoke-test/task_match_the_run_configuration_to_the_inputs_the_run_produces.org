@@ -8,7 +8,7 @@
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
 #+branch: feature/match-the-run-configuration-to-the-inputs-the-run-produces
-#+pr:
+#+pr: 2769
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2769][2769]] | Put the run's own data where the engine reads it |
 
 * Review
 

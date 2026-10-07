@@ -34,6 +34,14 @@
 \echo '--- FPML Coding Schemes Artefacts ---'
 \ir fpml_coding_schemes_artefact_populate.sql
 
+-- Publish coding schemes to production (required before other datasets can reference them)
+\echo '--- Publishing FPML Coding Schemes ---'
+select * from ores_dq_coding_schemes_publish_fn(
+    (select id from ores_dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(),
+    'upsert'
+);
+
 -- =============================================================================
 -- FPML Datasets
 -- =============================================================================

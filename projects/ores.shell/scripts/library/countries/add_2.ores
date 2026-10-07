@@ -1,6 +1,0 @@
-# Add
-#
-# GENERATED from doc/recipes/shell/countries/add_2.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-countries add XX XXX 999 "Test Country" "Test Country Official" system.new_record "Shell verification test"

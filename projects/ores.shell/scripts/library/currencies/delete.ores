@@ -1,6 +1,0 @@
-# Delete
-#
-# GENERATED from doc/recipes/shell/currencies/delete.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-currencies delete TEST700

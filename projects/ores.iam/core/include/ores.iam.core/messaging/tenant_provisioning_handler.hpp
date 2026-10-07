@@ -1555,6 +1555,9 @@ private:
             marketdata::messaging::put_feed_binding_request req;
             req.change.write.id = uuid_gen();
             req.change.write.source_name = source_name;
+            // These bindings name the theme's simulated streams, so the series
+            // the ingest loop stamps from them are generated, not observed.
+            req.change.write.producer_kind = "SYNTHETIC";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
             // The write states no expectation, because the store's

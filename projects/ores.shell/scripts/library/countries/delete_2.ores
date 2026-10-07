@@ -1,6 +1,0 @@
-# Delete
-#
-# GENERATED from doc/recipes/shell/countries/delete_2.org — do not edit by hand.
-# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
-#
-countries delete XX

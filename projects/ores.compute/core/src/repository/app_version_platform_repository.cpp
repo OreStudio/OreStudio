@@ -30,6 +30,7 @@
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -149,9 +150,11 @@ void app_version_platform_repository::write(
 std::vector<domain::app_version_platform> app_version_platform_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("app_version_id"_c, "platform_id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<app_version_platform_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("app_version_id"_c, "platform_id"_c);
 
     return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
         ctx_,
@@ -167,10 +170,12 @@ app_version_platform_repository::read_latest(std::uint32_t offset, std::uint32_t
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("app_version_id"_c, "platform_id"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<app_version_platform_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("app_version_id"_c, "platform_id"_c) | sqlgen::offset(offset) |
+        sqlgen::limit(limit);
 
     return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
         ctx_,
@@ -190,8 +195,10 @@ app_version_platform_repository::read_latest(const boost::uuids::uuid& app_versi
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "app_version_id"_c == app_version_id_str &&
                              "platform_id"_c == platform_id_str && "valid_to"_c == max.value());
 
     return execute_read_query<app_version_platform_entity, domain::app_version_platform>(
@@ -211,9 +218,11 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
     };
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -232,10 +241,12 @@ app_version_platform_repository::read_latest_by_app_version(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto app_version_id_str = boost::uuids::to_string(app_version_id);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
-                             "valid_to"_c == max.value()) |
-                       order_by("platform_id"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<app_version_platform_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
+        order_by("platform_id"_c);
 
     auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
         ctx_,
@@ -283,9 +294,10 @@ app_version_platform_repository::read_latest_by_platform(const boost::uuids::uui
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto platform_id_str = boost::uuids::to_string(platform_id);
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "platform_id"_c == platform_id_str &&
-                             "valid_to"_c == max.value()) |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "platform_id"_c == platform_id_str && "valid_to"_c == max.value()) |
                        order_by("app_version_id"_c);
 
     auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
@@ -307,10 +319,12 @@ app_version_platform_repository::read_latest_by_app_version(
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<app_version_platform_entity>> |
-                       where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
-                             "valid_to"_c == max.value()) |
-                       order_by("platform_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<app_version_platform_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
+        order_by("platform_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     auto rows = execute_read_query<app_version_platform_entity, domain::app_version_platform>(
         ctx_,
@@ -363,10 +377,11 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
     };
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "app_version_id"_c == app_version_id_str &&
-              "valid_to"_c == max.value()) |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+              "app_version_id"_c == app_version_id_str && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -390,10 +405,11 @@ std::uint32_t app_version_platform_repository::get_total_app_version_platform_co
     };
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         sqlgen::select_from<app_version_platform_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "platform_id"_c == platform_id_str &&
-              "valid_to"_c == max.value()) |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+              "platform_id"_c == platform_id_str && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);

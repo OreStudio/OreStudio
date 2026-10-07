@@ -209,6 +209,24 @@ suppressions), which is how the =iam_login_info= table keeps
 The feature is authored in the =* SQL ** Flags= drawer, beside the other SQL
 projection knobs above.
 
+*A soft foreign key states which tenants it may match.* By default the
+insert trigger checks the referenced row in the writer's own tenant, so a
+row cannot point at another tenant's row. =:use_system_tenant: true= names
+a target that lives only in the system tenant -- the platform-managed
+catalogues every tenant reads. =:system_tenant_visible: true= names a
+*global registry* whose system-tenant rows every tenant may read while a
+tenant may still own rows of its own, so the check admits the row's own
+tenant or the system tenant. Use it for a key into an entity whose
+repository declares =:system_tenant_visible:= and whose row-level policy
+exposes system rows, so the trigger and the read path agree; a mismatch
+rejects a reference the reads happily return. A junction that carries the
+registry's own rows -- compute's app version platforms, whose package every
+tenant dispatches against -- declares the same flag in its =* Repository=
+drawer, which widens its reads the same way. =:use_no_tenant: true= names
+a target with no =tenant_id= at all. Neither =:use_system_tenant:= nor
+=:system_tenant_visible:= combines with =:enforce:=, since a =REFERENCES=
+constraint can only match the row's own tenant.
+
 *A foreign key into an immutable entity can be enforced by the
 database.* A foreign key is normally a trigger check against the target's
 current row, because a temporal target holds closed versions that a

@@ -20,7 +20,7 @@
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/domain/workunit.hpp"
-#include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.core/repository/app_version_repository.hpp"
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -34,6 +34,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
@@ -43,16 +44,6 @@ namespace ores::compute::messaging {
 using namespace ores::logging;
 using namespace ores::service::messaging;
 using namespace ores::reporting::messaging;
-
-namespace {
-
-// Subject for work assignment events: append tenant_id so wrappers can
-// subscribe to their own tenant's work stream.
-std::string assignment_subject(const std::string& tenant_id) {
-    return std::string(work_assignment_event::nats_subject) + "." + tenant_id;
-}
-
-} // namespace
 
 report_submit_handler::report_submit_handler(ores::nats::service::client& nats,
                                              ores::database::context ctx,
@@ -115,24 +106,20 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
         // ── Resolve the application version ───────────────────────────
         // A workunit must name one and the table refuses a nil value. The
-        // report configuration does not state which version to run yet, so the
-        // tenant's newest is used; a field on the config would make the choice
-        // explicit rather than implied.
-        const auto app_version_rows =
-            ores::database::repository::execute_parameterized_string_query(
-                tenant_ctx,
-                "SELECT id::text FROM ores_compute_app_versions_tbl "
-                "WHERE tenant_id = $1::uuid AND valid_to = ores_utility_infinity_timestamp_fn() "
-                "ORDER BY version DESC LIMIT 1",
-                {req.tenant_id},
-                lg(),
-                "Resolving the application version for a report workunit");
-        if (app_version_rows.empty() || app_version_rows.front().empty()) {
-            wf->fail("submit_compute: no application version is configured for this tenant");
+        // report configuration states no version to run yet, so the highest
+        // engine version stands in; a field on the configuration would make
+        // the choice explicit rather than implied. App versions are a global
+        // registry: the platform publishes the canonical ones under the system
+        // tenant, and the repository reads the caller's own rows together with
+        // those, which its row-level policy exposes to every tenant.
+        repository::app_version_repository app_versions;
+        const auto candidates = app_versions.read_latest(tenant_ctx);
+        if (candidates.empty()) {
+            wf->fail("submit_compute: no application version is available to run");
             return;
         }
-        boost::uuids::string_generator app_version_sg;
-        const auto app_version_uuid = app_version_sg(app_version_rows.front());
+        const auto app_version_uuid =
+            std::ranges::max_element(candidates, {}, &domain::app_version::engine_version)->id;
 
         // ── Create workunits and publish assignments ───────────────────
         service::workunit_service wu_svc(tenant_ctx);
@@ -153,19 +140,13 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
             wu_svc.save_workunit(wu);
             workunit_ids.push_back(wu_id);
-
-            work_assignment_event evt;
-            evt.workunit_id = wu_id;
-            evt.app_version_id = boost::uuids::to_string(wu.app_version_id);
-            evt.input_uri = tarball_uri;
-            // result_id, package_uri, config_uri, output_uri left empty
-            // until the compute app version is wired up.
-
-            nats_.publish(assignment_subject(req.tenant_id),
-                          ores::nats::default_wire_codec().encode(evt));
-
-            BOOST_LOG_SEV(lg(), debug) << "Dispatched work assignment for workunit " << wu_id;
         }
+
+        // Dispatch is the workunit dispatcher's job, on the workunit-changed
+        // event the save above publishes: it resolves the per-platform package
+        // and publishes to the triplet-qualified subject a wrapper subscribes
+        // to. Publishing an assignment here as well would name no platform and
+        // carry none of the fields a wrapper needs.
 
         // Record the async bridge row: batch_workflow_bridge will publish
         // step_completed_event once the batch reaches "closed" status.

@@ -36,7 +36,8 @@ left open. It states the target, not the shape of the tree today; see
 - *Addressing a report* — the listing a person actually types.
 - *The object capability* — claims, minting, and who presents what.
 - *Enforcement* — the checks storage makes before it moves a byte.
-- *Lifecycle* — retention, pruning and offboarding.
+- *Lifecycle* — when a run's objects leave the bucket, and the backstop that
+  bounds a leak.
 - *Compute assignments* — the narrow grant a worker node holds.
 - *Tenant nodes* — a tenant's own machines, and what may reach them.
 - *Distance from today* — what still separates the tree from this page.
@@ -73,16 +74,16 @@ Two consequences follow and are accepted:
 |--------+-------+---------+---------+------------+-----------|
 | =platform.packages= | platform | engine and application version packages | nodes | the platform | long |
 | =platform.artefacts= | platform | seed datasets, images, reference artefacts | services | the platform | long |
-| =t.{tenant_id}.inputs= | tenant | run inputs, assembled bundles, packaged run archives | step services, the ore service, nodes | step services, the ore service | pruned at run end |
-| =t.{tenant_id}.outputs= | tenant | engine outputs and report results | reporting | nodes | per the tenant's policy |
+| =t.{tenant_id}.inputs= | tenant | run inputs, assembled bundles, packaged run archives | step services, the ore service, nodes | step services, the ore service | removed at run end |
+| =t.{tenant_id}.outputs= | tenant | engine outputs, in transit to the database | reporting | nodes | removed once collected |
 
 - ={tenant_id}= is the tenant's UUID. It is stable and unambiguous, and it is
   what the storage service checks a capability against. A short code may be
   added as a human-readable label in the middle of the name, but the UUID is
   the identity.
-- The class segment is =inputs= or =outputs=. The two differ in retention, in
-  who writes them, and in who reads them, which is what earns each its own
-  bucket. They are not split per report: see [[*The key grammar]].
+- The class segment is =inputs= or =outputs=. The two differ in who writes
+  them, who reads them and when each is removed, which is what earns each its
+  own bucket. They are not split per report: see [[*The key grammar]].
 - =platform= is not a tenant and never appears in ={tenant_id}=. A platform
   bucket holds no tenant's bytes.
 
@@ -228,15 +229,21 @@ derives it from the bucket, which the policy fixed, and compares.
 
 * Lifecycle
 
-- *Inputs are the run's.* A run's inputs are pruned when the run reaches a
+A tenant's objects in storage are working data, not the record. A run's report
+is processed into the database, and the database holds the durable record and
+the audit retention. Storage's job is to hold a run's bytes only as long as the
+work needs them.
+
+- *Inputs leave at run end.* A run's inputs are removed when the run reaches a
   terminal state. They are not the record of the run; the database is.
-- *Outputs are the deliverable.* They are retained under one policy per tenant.
-  The platform default is *365 days*, and a tenant may raise it for its own
-  case. The default is a floor rather than a ceiling, because a run's output
-  should outlive the person who triggered it and the annual audit cycle is the
-  common case. Pruning is a lifecycle rule on the tenant's outputs bucket; a
-  per-definition override is a later addition if a report ever needs one, not a
-  reason to split a bucket.
+- *Outputs leave once collected.* An engine's output archive is removed once
+  its data is in the database. Its bucket is a transit area, not a store of
+  record.
+- *A 24-hour backstop, not a retention policy.* Anything left behind — a
+  crashed collect, a failed load, an event nobody saw — is removed after 24
+  hours. The backstop bounds a leak; it is not how long a report is kept. How
+  long a report is kept is the database's, and it is a different policy with a
+  different owner.
 - *Platform objects outlive tenants.* A package is not re-uploaded per tenant
   and is not removed when a tenant is removed.
 - *Offboarding is a bucket operation.* Because the tenant owns buckets, its
@@ -304,6 +311,9 @@ was given.
   This page owns only what a node, platform or tenant, may reach.
 - The storage contract and its two interfaces, which
   [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] owns.
+- The durable retention of a report's results, which is the database's and
+  belongs with report post-processing. This page governs only how long a run's
+  bytes sit in a bucket before the database has them.
 - The backend's implementation and deployment.
 - The bucket names each domain builds, beyond the grammar above.
 
@@ -322,8 +332,9 @@ was given.
 - *The node holds a standing identity.* The wrapper authenticates to storage
   with its own service token, which reaches whatever that identity's
   permission reaches. It must present a per-assignment capability instead.
-- *No lifecycle rules.* Nothing prunes a run's inputs; nothing retains an
-  output under a policy.
+- *No lifecycle rules.* Nothing removes a run's objects when the run ends or
+  its data reaches the database, and nothing sweeps what a failure leaves
+  behind.
 - *No tenant node.* Every wrapper is a platform node on the platform's own
   network, bound to the system tenant. A tenant's own machine cannot register,
   and no pool is named for a tenant.
@@ -350,9 +361,10 @@ was given.
 - *IAM is the only signer.* It mints every capability with the key it already
   publishes through JWKS, so storage keeps one verifier and the orchestrator
   holds no signing key of its own.
-- *Outputs are retained under one policy per tenant, defaulting to 365 days.*
-  The tenant may raise it; the platform's floor keeps a run's output past the
-  person who triggered it.
+- *A tenant's objects in storage are transient.* Inputs leave at run end,
+  outputs once their data is in the database, and a 24-hour backstop bounds
+  anything left behind. Durable retention is the database's policy, and this
+  page does not set it.
 - *No scratch class.* Bytes an engine needs in flight are either a run input or
   a node-local working file. A third bucket class would exist for no case we
   have.
@@ -367,8 +379,8 @@ was given.
 
 - The credential a tenant node holds: a tenant-scoped service account, an mTLS
   certificate bound to the tenant, or both.
-- Whether the platform caps the retention a tenant may ask for, and where that
-  cap lives.
+- Whether the 24-hour backstop is a bucket lifecycle rule or a sweeper the
+  platform runs.
 
 * Patterns used
 

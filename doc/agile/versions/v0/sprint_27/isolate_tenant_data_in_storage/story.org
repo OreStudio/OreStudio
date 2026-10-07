@@ -38,7 +38,7 @@ ones, and every caller reaches only the objects its credential names.
 - The storage service verifies an object capability and checks the bucket's owner, so a caller reaches only the objects its capability names.
 - A worker node holds a capability for one assignment and no standing storage credential.
 - A step service reaches its tenant's buckets with its run token.
-- A run's inputs are pruned when the run ends, and a tenant's data leaves with its buckets.
+- A run's inputs and outputs are removed when the run ends and its data is in the database, with a 24-hour backstop, and a tenant's data leaves with its buckets.
 - A tenant may run nodes of its own; they receive only that tenant's work and hold only a per-assignment capability.
 
 * Tasks
@@ -63,8 +63,9 @@ ones, and every caller reaches only the objects its credential names.
   own run and no other run of the same tenant.
 - *IAM is the only signer,* so storage keeps one verifier and the orchestrator
   holds no signing key.
-- *Outputs are retained under one policy per tenant,* defaulting to 365 days
-  and raisable by the tenant.
+- *A tenant's objects in storage are transient.* Inputs leave at run end,
+  outputs once collected, and a 24-hour backstop bounds a leak. Durable
+  retention is the database's policy, not storage's.
 - *No scratch bucket class.* An engine's in-flight bytes are a run input or a
   node-local working file.
 - *The engine package is served straight from =platform.packages=,* with no

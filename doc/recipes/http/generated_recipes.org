@@ -19,6 +19,10 @@ any note beside a link, are hand-written and are kept.
 The hand-written recipes that predate the facet are catalogued separately in
 =doc/recipes/http/http.org=.
 
+* Account Credentials
+
+- [[id:E371920E-98B2-5CAE-9DD8-785EA0308E95][How do I call the account_credentials endpoints over HTTP?]]
+
 * Account Operations
 
 - [[id:76F232AB-8D75-572F-9309-49288505E73A][How do I call the account_operations endpoints over HTTP?]]

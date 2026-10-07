@@ -132,3 +132,38 @@ def test_missing_testing_flags_empty_when_all_present():
     ns = argparse.Namespace(testing_plan="p", testing_evidence="e",
                             testing_limitations="l")
     assert compass_pr._missing_testing_flags(ns) == []
+
+
+def test_parent_story_id_reads_the_status_row():
+    task = (
+        "* Status\n\n"
+        "| Field        | Value |\n"
+        "|--------------+-------|\n"
+        "| Parent story | [[id:AAAA1111-2222-3333-4444-555566667777][The story]] |\n"
+    )
+    assert (compass_pr._parent_story_id(task, "BBBB1111-2222-3333-4444-555566667777")
+            == "AAAA1111-2222-3333-4444-555566667777")
+
+
+def test_parent_story_id_falls_back_to_the_first_foreign_link():
+    task = ("This page documents a "
+            "[[id:BBBB1111-2222-3333-4444-555566667777][task]] in the "
+            "[[id:AAAA1111-2222-3333-4444-555566667777][story]] story.")
+    assert (compass_pr._parent_story_id(task, "BBBB1111-2222-3333-4444-555566667777")
+            == "AAAA1111-2222-3333-4444-555566667777")
+
+
+def test_backlog_capture_slug_names_the_capture_not_story_org(tmp_path):
+    """A capture is named after itself, which is why a task under it has no
+    story.org beside it, and the error can still name the promote command."""
+    bucket = tmp_path / "doc" / "agile" / "product_backlog" / "next"
+    bucket.mkdir(parents=True)
+    (bucket / "stochastic-tick-arrival-times.org").write_text(
+        ":PROPERTIES:\n:ID: CCCC1111-2222-3333-4444-555566667777\n:END:\n",
+        encoding="utf-8")
+    assert (compass_pr._backlog_capture_slug(
+        tmp_path, "CCCC1111-2222-3333-4444-555566667777")
+        == "stochastic-tick-arrival-times")
+    assert compass_pr._backlog_capture_slug(tmp_path, "") == ""
+    assert (compass_pr._backlog_capture_slug(
+        tmp_path, "DDDD1111-2222-3333-4444-555566667777") == "")

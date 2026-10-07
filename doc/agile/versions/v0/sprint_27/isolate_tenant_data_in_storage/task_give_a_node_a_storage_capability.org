@@ -32,9 +32,9 @@ presents it; storage enforces it and holds no database lookup on the path.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | The token carries the grants and both verifiers read them back. IAM, storage and the dispatcher are next. |
+| Now          | The token carries the grants, IAM mints them, and both verifiers read them back. Storage enforcement and the dispatcher are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Mint the capability in IAM, then enforce it in storage, then carry it through the dispatcher and the wrapper. |
+| Next         | Enforce the grants in the storage route, then carry the capability through the dispatcher and the wrapper. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -55,7 +55,9 @@ Four slices, each built and verified before the next:
 2. *IAM mints.* A =iam.v1.storage_capabilities.mint= operation, held by the
    services that dispatch work, that signs a capability naming a tenant and its
    grants. The signer is the one IAM already holds, so storage keeps one
-   verifier.
+   verifier. *Landed*: the operation is modelled, the protocol reuses the
+   security claim row, the ComputeService role holds the permission, and the
+   IAM service builds.
 3. *Storage enforces.* The HTTP route reads the capability's grants and answers
    from them — bucket, key prefix and operation — instead of the account's
    permissions. A token with no grants keeps today's permission path. The

@@ -41,10 +41,10 @@ the latest sample of every node.
 
 The grid belongs to the installation: every tenant's work runs on the same
 hosts, and the samples describe the fleet, not a tenant's slice of it. The
-read filters by the caller's session tenant anyway, so the grid an
-administrator sees can be short without saying so — a defect under the read,
-recorded in *What is missing* and in
-[[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]].
+node read serves the whole grid and is gated on =compute::grid_samples:read=,
+so the permission decides who may see it
+([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]).
+The summary's counters are narrower than the node read — see *What is missing*.
 
 * Steps
 
@@ -58,18 +58,21 @@ recorded in *What is missing* and in
    the outcomes of the last day: successes, client errors and jobs that got no
    reply. The sample time sits beside the counters, because a summary without
    its age cannot be trusted: the counters mirror one stored sample, not a
-   live count taken at read time.
+   live count taken at read time. The counters are computed for one tenant, so
+   the screen says whose they are rather than presenting them as every
+   tenant's work.
 3. *Read the nodes.* The system gives each node its hostname and one row of
    measurements: tasks completed since its wrapper started, tasks finished
-   since the previous sample, the mean task time, the bytes fetched, the bytes
-   uploaded, and the seconds since the node last heartbeated. A node the
-   operator should look at has a large number in the last column.
+   since the previous sample, the failed task count, the mean task time, the
+   slowest task, the bytes fetched, the bytes uploaded, and the seconds since
+   the node last heartbeated. A node the operator should look at has a large
+   number in the last column, or failures beside its completions.
 4. *Read the wrappers.* The system gives each compute wrapper its instance
    id, its state and the release it runs, and when it last reported — the
    same heartbeat the services screen reads. One wrapper runs on each node
    and takes the work that node runs, so the panel is the fleet's other half.
-   The wrappers sit beside the nodes and not on them; *What is missing* says
-   why.
+   The heartbeat carries the host id, so the panel places each wrapper on its
+   node.
 5. *A grid with no sample.* The deployment is up but no grid sample is stored
    yet, which is the state before the sampler's first pass. The screen says it
    has no sample and shows the node table on its own, rather than presenting
@@ -113,9 +116,9 @@ services screen: a wrapper runs on a node and reports for it, so the panel
 sits under the node table with the same four columns the services screen reads
 — instance, state, release, last heartbeat — and the services screen leaves
 the wrapper service out. It also settled the frame around the read: the grid
-is the installation's, so the read must stop narrowing it to the session's
-tenant, and the summary keeps its sample time beside the counters because the
-counters mirror one stored sample.
+is the installation's, and the read serves it whole, gated on
+=compute::grid_samples:read=, while the summary keeps its sample time beside
+the counters because the counters mirror one stored sample.
 
 * Entities composed
 
@@ -132,10 +135,9 @@ nothing more. The hostname a person reads is the host's =external_id=, and it
 arrives by joining the host list onto the summary. A node with no matching
 host row shows its id and says no host names it.
 
-The node rows and the wrapper rows describe the same machines, and they share
-no key: the node sample carries =host_id= and no release, and the heartbeat
-carries the release and no host. The panel places the wrappers beside the
-nodes because nothing joins them — see *What is missing*.
+The node rows and the wrapper rows describe the same machines. The node
+sample carries =host_id= and no release, and the heartbeat carries =host_id=
+beside the release, so the host id joins a wrapper to its node.
 
 * Operations and messages
 
@@ -152,20 +154,22 @@ nodes because nothing joins them — see *What is missing*.
 | A grid with no sample | Answer with an empty sample time | carried by =compute.v1.ops.get_grid_stats= | exists |
 | Refresh, or watch | Read again | =compute.v1.ops.get_grid_stats= | exists |
 
-=compute.v1.ops.get_grid_stats= carries no request fields, and the
-handler scopes the reply by the caller's session tenant — which the grid's
-ownership says it must not; see *What is missing*. Its reply carries the
-counters, the sample time as an ISO-8601 string, and one
-=node_stats_summary= per node. The handler reads the newest stored grid sample
-and the most recent sample of every node; it computes nothing live.
+=compute.v1.ops.get_grid_stats= carries no request fields, and the handler
+serves the whole grid's node rows, gated on =compute::grid_samples:read=. Its
+reply carries the counters, the sample time as an ISO-8601 string, and one
+=node_stats_summary= per node, each stating the node's failures and its
+slowest task. The handler reads the newest stored grid sample and the most
+recent sample of every node; it computes nothing live. The stored counters
+were themselves computed per tenant, so the summary panel states whose they
+are — see *What is missing*.
 
 =compute.v1.ops.node_sample= is ingested. Each wrapper publishes what
 its node did since the previous sample, and the message is declared with auth
 =none=, because the publishing node has no session.
 
 The wrapper panel reads =telemetry.v1.services.list=, the same read the
-services screen uses, filtered to the compute wrapper service. Nothing joins
-its rows to the nodes above.
+services screen uses, filtered to the compute wrapper service. The heartbeat's
+host id joins each wrapper row to its node.
 
 The browser reads the summary through a hand-written BFF route on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
@@ -175,27 +179,21 @@ does, and reads the wrapper samples.
 
 * What is missing
 
-1. *The grid is the installation's and the read serves one tenant.* The grid
-   is shared: every tenant's work runs on the same hosts. The read filters by
-   the session's tenant anyway, so an administrator reads one tenant's slice
-   of a shared grid, or nothing
-   ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]).
-   The read must serve the whole grid, and the permission gate decides who
-   may see it.
-2. *A wrapper cannot be placed on its node.* The wrapper heartbeat carries
-   the service name, the instance id and the release, and no host. The node
-   sample carries the host and no release. Nothing joins the two, so the
-   wrappers are listed beside the nodes rather than on them. A host id on the
-   heartbeat would join them, and each node row could then state the release
-   it runs
-   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]).
-3. *Failures are dropped on the way to the screen.* The node sample carries
-   =tasks_failed= and =max_task_duration_ms=, and the node summary carries
-   neither. The screen cannot show failed tasks or the slowest task per node,
-   which are the first numbers an operator wants from a grid
-   ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the failure fields]]).
-   A node failing every task reads as a node doing nothing. The candidate is
-   to carry both fields into =node_stats_summary=.
+1. *The grid is the installation's and the read serves the whole grid.* Closed
+   by [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]]: the
+   tenant filter is dropped from the grid reads, the stored tenant id stays as
+   attribution, and the read is gated on =compute::grid_samples:read=, so the
+   whole grid and who may see it stay two separate decisions.
+2. *A wrapper sits on its node.* Closed by
+   [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]]:
+   =host_id= sits on the heartbeat beside the release and on the stored sample,
+   so the panel joins each wrapper to the node it runs on, and each node row
+   can state the release it runs.
+3. *The failures reach the screen.* Closed by
+   [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]]:
+   =tasks_failed= and =max_task_duration_ms= sit on =node_stats_summary=, and
+   =get_grid_stats= fills both from each node's newest sample, so a node
+   failing every task no longer reads as a node doing nothing.
 4. *No history.* The read answers with the newest stored sample only, so the
    screen cannot show a trend, and a batch's progress over time is not
    visible. The poller keeps writing samples that no read returns. The
@@ -203,11 +201,22 @@ does, and reads the wrapper samples.
 5. *A node with no host row.* The join fixes the common case, and a node the
    host registry does not know shows a bare id. The screen must say that no
    host names the node, rather than printing the id as if it were a name.
-6. *The read checks no permission.* The handler authenticates the token and
-   then serves any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
-   is not this read's alone
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
+6. *The read checks a permission.* Closed by
+   [[id:E3FF9B97-A7F5-494F-BECE-DBB8910244C6][Read the whole grid]]:
+   =compute.v1.ops.get_grid_stats= is gated on
+   =compute::grid_samples:read=. The tree-wide gap the original item named
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]])
+   is not this read's alone.
+7. *The summary's counters are one tenant's.* The node table is the
+   installation's, but the counters above it are not. They are computed by
+   =ores_compute_grid_stats_fn(p_tenant_id)=, which filters every count —
+   hosts, results, workunits and batches — by the tenant it is handed, and the
+   poller hands it its own session tenant. The read that would make them the
+   installation's own usage is the ledger
+   [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]]
+   builds, and it is not built. Until it is, the screen states that the
+   counters are computed for one tenant rather than presenting them as every
+   tenant's work.
 
 * Related journeys
 

@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/report_operations/report_operations.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-report_operations submit-compute __none__ __none__ __none__ __none__
+report_operations submit-compute __none__ __none__ __none__ __none__ __none__ __none__

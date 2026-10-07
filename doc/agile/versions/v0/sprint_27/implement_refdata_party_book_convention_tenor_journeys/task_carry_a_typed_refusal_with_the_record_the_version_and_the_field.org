@@ -20,28 +20,76 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+One refusal shape, served by every refdata operation the five journeys
+read. A write the store refuses is answered with the outcome, a stable
+code, a message that names the record and the version, and a
+=field_failure= for the field at fault, so a screen shows why the write
+failed rather than the database's words or a bare error.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | The shape is found and the change located; the template edit is not written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Edit =prepare_change= in the two template bodies, tangle, regenerate ores.refdata, build and run the refdata suites. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A create that collides, a version conflict and a missing record are
+  each answered with =outcome=, =code=, a =message= naming the record and
+  the version, and a =field_failure= naming the field.
+- The refusal has the same shape from every refdata entity, because it is
+  emitted from the template and not per service.
+- The store's own refusals no longer reach the client as an exception
+  with the trigger's text.
+- =ores.refdata.core.tests= passes, and the coverage tables of the five
+  journeys are corrected where they say =missing=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the tree already carries
+
+=ores.utility::domain::result=, in
+=projects/ores.utility/include/ores.utility/domain/protocol.hpp=, already
+has the shape: =outcome= (seven values), =code=, =message=, and
+=fields=, a vector of =field_failure{field, code, message}=. Assets and
+IAM populate =fields=; the generated refdata services do not.
+
+=prepare_change=, emitted into 135 refdata services, sets =outcome= and
+=code= for a collision and a version conflict, and nothing else. It
+returns before =repo_.write=, so a refusal from the write path itself
+still throws and reaches the client as the trigger's text.
+
+** The change
+
+=prepare_change= and =key_from= are emitted from
+=projects/ores.codegen/library/templates/ores.cpp.service.service_impl.org=,
+which tangles to =cpp_service.cpp.mustache=. The org carries two bodies,
+one under =domain_entity= and one under =protocol_derived=, and both need
+the same edit. The banner at the head of the mustache is explicit that
+the org is the source, so editing the mustache alone trips the drift
+gate.
+
+1. Emit a =describe_key= beside =key_from=, in the anonymous namespace,
+   rendering the key as =field=value, field=value= so a message names the
+   row. A key of several columns exists, so the rendering joins rather
+   than naming one column.
+2. In =prepare_change=, give =already_exists=, =not_found= and
+   =version_conflict= a =message= that names the record and, for the
+   conflicts, the version, and push a =field_failure= for the field at
+   fault.
+3. Map the store's own refusals. =repo_.write= throws, and the write path
+   needs to translate rather than let the trigger text escape.
+
+** Order
+
+Steps 1 and 2 first: one template edit and one regeneration, covering
+the refusals the journeys draw most. Step 3 is a second increment,
+because it touches the repository's error surface.
 
 * Measurements
 

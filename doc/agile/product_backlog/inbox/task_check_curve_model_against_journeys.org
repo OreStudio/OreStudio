@@ -8,7 +8,7 @@
 #+filetags: :inbox:product_backlog:agile:
 #+owner: marco
 #+branch: feature/curve-point-provenance
-#+pr:
+#+pr: 2750
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -184,7 +184,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2750][#2750]] | [marketdata] Record a curve point's source kind and enforce manual precedence |
 
 * Review
 

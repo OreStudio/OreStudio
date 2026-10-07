@@ -26,11 +26,11 @@ Bring iam.v1.storage_capabilities.mint inside the entity protocol, and give the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | Renamed, projected and green on the four checks it exists to fix. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the full suite and open the hotfix PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

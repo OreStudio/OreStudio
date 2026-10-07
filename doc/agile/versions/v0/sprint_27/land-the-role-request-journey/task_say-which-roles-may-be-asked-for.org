@@ -26,11 +26,11 @@ A tenant administrator can say which roles a member may ask for. Today every rol
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

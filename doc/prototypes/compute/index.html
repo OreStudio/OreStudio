@@ -19,6 +19,13 @@
   Every chart in "The charts a grid needs" is drawn here, hand-rolled as
   inline SVG from a seeded mock series, so the walk repeats exactly.
 
+  The watch screen carries a fourth tab, Usage, for the global view: which
+  tenant is using the grid. It reads the usage ledger the installation keeps
+  about its own operation, as sprint_27's "Name the installation's own data"
+  and "Account for the grid's usage" decide, so it needs no cross-tenant read.
+  The Allocation by tenant chart moved there from the capacity screen and no
+  longer stands alone.
+
   Two actor variants, switchable with ?variant=fleet|tenant. The fleet
   variant is the super administrator reading the whole installation. The
   tenant variant narrows the work rows to one tenant and withholds one

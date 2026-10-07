@@ -8,7 +8,13 @@
  *
  * Every series here is a fixture from a seeded generator, so the walk repeats
  * exactly. Every chart is hand-rolled inline SVG. Nothing here reads a server,
- * and nothing outlives the page. */
+ * and nothing outlives the page.
+ *
+ * The watch screen's fourth tab, Usage, is the global view: which tenant is
+ * using the grid. It reads the usage ledger the installation keeps about its
+ * own operation, per sprint_27's "the installation records what it did"
+ * decision, so it is a read over installation rows and not a cross-tenant
+ * read of the tenants' tables. */
 
 (function () {
     'use strict';
@@ -296,15 +302,13 @@
             done: [], inProgress: [], unsent: [], inactive: [],
             online: [], idle: [], total: [],
             coresUsed: [], memUsed: [], gpuUsed: [],
-            coresTotal: 0, memTotal: 0, gpuTotal: 0,
-            tenantCores: {}
+            coresTotal: 0, memTotal: 0, gpuTotal: 0
         };
         NODES.forEach(function (n) {
             f.coresTotal += n.cores;
             f.memTotal += n.memGiB;
             f.gpuTotal += n.gpu;
         });
-        TENANTS.forEach(function (t) { f.tenantCores[t.id] = []; });
 
         var jit = [];
         for (var j = 0; j < INTERVALS; j++) jit[j] = rand();
@@ -349,16 +353,6 @@
             f.coresUsed[i] = Math.min(f.coresTotal, used);
             f.memUsed[i] = Math.min(f.memTotal, Math.round((f.coresUsed[i] / f.coresTotal) * f.memTotal * (0.80 + 0.18 * jit[i])));
             f.gpuUsed[i] = Math.min(f.gpuTotal, Math.round(f.gpuTotal * (0.35 + 0.55 * shape)));
-
-            var runningShare = 0;
-            TENANTS.forEach(function (t, ti) {
-                var share = t.share * (0.94 + 0.12 * jit[(i + ti * 7) % INTERVALS]);
-                runningShare += share;
-            });
-            TENANTS.forEach(function (t, ti) {
-                var share = t.share * (0.94 + 0.12 * jit[(i + ti * 7) % INTERVALS]) / runningShare;
-                f.tenantCores[t.id][i] = Math.round(f.coresUsed[i] * share);
-            });
         }
         return f;
     })();
@@ -418,6 +412,100 @@
         FAILED_JOBS.forEach(function (j) { if (j.submit < first) first = j.submit; });
         return first === INTERVALS ? 34 : first;
     })();
+
+    // ------------------------------------------------------- the usage ledger
+    /* The installation records what it did about its own operation. As the
+       compute service dispatches a tenant's work and takes the result back it
+       is already inside that tenant, so it writes a usage row there: the
+       tenant, the host, the app version, the duration, the cores and the
+       outcome, and none of the tenant's content. The global view is a read
+       over these rows, so it needs no policy exception and no cross-tenant
+       read. The sprint-27 decision "the installation records what it did"
+       states the rule; this fixture is what that record would hold. */
+    var USAGE = (function buildUsage() {
+        var rnd = mulberry32(20261008);
+        var perTenant = {};
+        TENANTS.forEach(function (t) {
+            perTenant[t.id] = {
+                cores: zeros(INTERVALS),
+                jobs: zeros(INTERVALS),
+                gridMinutes: zeros(INTERVALS),
+                jobsTotal: 0,
+                gridMinutesTotal: 0,
+                peakCores: 0,
+                success: 0,
+                failed: 0,
+                noReply: 0
+            };
+        });
+
+        var MEAN_TASK_MIN = { northwind: 11, helios: 6, meridian: 2.5, system: 1.5 };
+        /* The whole grid's series, for the axis a tenant reads its own band
+           against. A tenant sees only its own band, but the scale stays the
+           grid's, so the band does not read as the whole grid. */
+        var totalGridMinutesSeries = zeros(INTERVALS);
+        var totalJobsSeries = zeros(INTERVALS);
+        /* The story: Northwind dominates the grid and holds its lead, Helios
+           grows through the window, Meridian barely uses it, and the system
+           tenant is the installation's own housekeeping. */
+        function weight(t, i) {
+            var u = i / (INTERVALS - 1);
+            if (t.id === 'northwind') return 0.50 * (1 + 0.06 * u);
+            if (t.id === 'helios') return 0.15 + 0.33 * u;
+            if (t.id === 'meridian') return 0.07 - 0.02 * u;
+            return 0.03;
+        }
+
+        for (var i = 0; i < INTERVALS; i++) {
+            var wsum = 0;
+            TENANTS.forEach(function (t) { wsum += weight(t, i); });
+            TENANTS.forEach(function (t) {
+                var agg = perTenant[t.id];
+                var u = weight(t, i) / wsum;
+                var jitter = 0.88 + 0.24 * rnd();
+                var cores = Math.max(0, Math.round(FLEET.coresUsed[i] * u * jitter));
+                var jobs = Math.max(0, Math.round(FLEET.throughput[i] * u * jitter));
+                agg.cores[i] = cores;
+                agg.jobs[i] = jobs;
+                agg.gridMinutes[i] = Math.round(jobs * MEAN_TASK_MIN[t.id] * (0.85 + 0.3 * rnd()));
+                totalJobsSeries[i] += jobs;
+                totalGridMinutesSeries[i] += agg.gridMinutes[i];
+            });
+        }
+
+        /* The bad release reaches one tenant's rows first, so that tenant's
+           ledger carries the visible failures. */
+        var badTenant = FAILED_JOBS.length ? FAILED_JOBS[0].tenant : 'northwind';
+        TENANTS.forEach(function (t) {
+            var agg = perTenant[t.id];
+            for (var j = 0; j < INTERVALS; j++) {
+                agg.jobsTotal += agg.jobs[j];
+                agg.gridMinutesTotal += agg.gridMinutes[j];
+                if (agg.cores[j] > agg.peakCores) agg.peakCores = agg.cores[j];
+            }
+            var rate = t.id === badTenant ? 0.019 : 0.0016;
+            agg.failed = Math.round(agg.jobsTotal * rate);
+            agg.noReply = Math.round(agg.jobsTotal * 0.0005);
+            agg.success = Math.max(0, agg.jobsTotal - agg.failed - agg.noReply);
+        });
+
+        var totalGridMinutes = TENANTS.reduce(function (a, t) { return a + perTenant[t.id].gridMinutesTotal; }, 0);
+        return {
+            perTenant: perTenant,
+            totalGridMinutes: totalGridMinutes,
+            totalGridMinutesSeries: totalGridMinutesSeries,
+            totalJobsSeries: totalJobsSeries,
+            badTenant: badTenant
+        };
+    })();
+
+    /* Every usage chart says where its numbers come from, because the point of
+       the global view is that it is a read of the installation's own record
+       rather than a read across the tenants' tables. */
+    function usageSourceNote() {
+        return 'The series are the usage the installation recorded about its own operation as it dispatched the work and took the results back, ' +
+            'not a read of any tenant\u2019s tables. A usage row carries the tenant, the host, the app version, the duration, the cores and the outcome, and none of the tenant\u2019s content.';
+    }
 
     /* Task failures per node: the low background plus the burst the bad release
        leaves on whichever node a failed job touched. */
@@ -508,6 +596,20 @@
         return Math.floor(m / 60) + ' h ' + pad2(m % 60) + ' m';
     }
     function pct(x) { return (x * 100).toFixed(1) + '%'; }
+    /* Grid time is held in task-minutes, so the table can state hours. */
+    function asHours(minutes) {
+        var h = minutes / 60;
+        if (h < 1) return Math.round(minutes) + ' m';
+        var text = h >= 100 ? String(Math.round(h)) : h.toFixed(1);
+        var parts = text.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.') + ' h';
+    }
+    /* A label sitting on a flat series colour must stay readable on it. */
+    function inkFor(hex) {
+        var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+        return (0.299 * r + 0.587 * g + 0.114 * b) > 145 ? '#0b0e13' : '#f0f0f2';
+    }
     function niceMax(v) {
         if (!(v > 0)) return 1;
         var mag = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
@@ -1024,6 +1126,68 @@
             '</section>';
     }
 
+    /* The tenant table of the global view: the usage ledger rolled up, one row
+       per tenant. Its natural order is grid time, largest first. */
+    var TENANT_ORDER = [
+        { id: 'grid', label: 'Grid time', desc: true, cmp: function (a, b) { return a.gridMinutes - b.gridMinutes; } },
+        { id: 'name', label: 'Tenant', cmp: function (a, b) { return a.tenant.short < b.tenant.short ? -1 : a.tenant.short > b.tenant.short ? 1 : 0; } },
+        { id: 'jobs', label: 'Jobs', cmp: function (a, b) { return a.jobs - b.jobs; } },
+        { id: 'share', label: 'Share of grid time', cmp: function (a, b) { return a.share - b.share; } },
+        { id: 'cores', label: 'Cores now', cmp: function (a, b) { return a.coresNow - b.coresNow; } },
+        { id: 'peak', label: 'Peak cores', cmp: function (a, b) { return a.peakCores - b.peakCores; } },
+        { id: 'success', label: 'Succeeded', cmp: function (a, b) { return a.success - b.success; } }
+    ];
+
+    function tenantUsagePanel() {
+        var last = INTERVALS - 1;
+        var rows = TENANTS.filter(function (t) {
+            return !isTenant() || t.id === TENANT_VARIANT;
+        }).map(function (t) {
+            var agg = USAGE.perTenant[t.id];
+            return {
+                tenant: t,
+                jobs: agg.jobsTotal,
+                gridMinutes: agg.gridMinutesTotal,
+                share: USAGE.totalGridMinutes ? agg.gridMinutesTotal / USAGE.totalGridMinutes : 0,
+                coresNow: agg.cores[last],
+                peakCores: agg.peakCores,
+                success: agg.success,
+                failed: agg.failed
+            };
+        });
+        var meta = page('tenants', orderBy('tenants', TENANT_ORDER, rows));
+        var body = meta.rows.map(function (r) {
+            return '<tr>' +
+                '<td><span class="cellgroup"><span class="swatch" style="background:' + r.tenant.color + '"></span>' +
+                esc(r.tenant.name) + '</span></td>' +
+                '<td class="code">' + num(r.jobs) + '</td>' +
+                '<td class="code">' + esc(asHours(r.gridMinutes)) + '</td>' +
+                '<td class="code">' + pct(r.share) + '</td>' +
+                '<td class="code">' + num(r.coresNow) + ' of ' + num(FLEET.coresTotal) + '</td>' +
+                '<td class="code">' + num(r.peakCores) + '</td>' +
+                '<td class="code">' + (r.failed > 0 ? '<span class="tag bad">' + r.failed + ' failed</span> ' : '') +
+                pct(r.jobs ? r.success / r.jobs : 0) + '</td>' +
+                '</tr>';
+        }).join('');
+        if (rows.length === 0) body = '<tr><td colspan="7" class="faint">No usage in this view.</td></tr>';
+        return '<section class="card wide" id="tenant-usage">' +
+            '<header class="sectionhead"><h2>What does each tenant\u2019s usage add up to?</h2>' +
+            '<span class="faint" style="font-size:12px">' + rows.length + ' tenants, one row each, from the installation\u2019s usage ledger</span></header>' +
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[1], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[2], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[0], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[3], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[4], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[5], TENANT_ORDER) + '</th>' +
+            '<th>' + orderButton('tenants', TENANT_ORDER[6], TENANT_ORDER) + '</th>' +
+            '</tr></thead><tbody>' + body + '</tbody></table></div>' +
+            pager('tenants', meta) +
+            '<p class="rowfoot">' + esc(usageSourceNote()) + ' Cores now is what the tenant held at ' + esc(intervalTime(last)) +
+            ', and peak cores is the busiest interval it held. The table is the ledger rolled up; the charts above are the same rows over time.</p>' +
+            '</section>';
+    }
+
     /* 9. Job timeline: one row per job, a bar per run, the cluster Gantt. */
     function ganttPanel(jobs) {
         var rows = jobs.slice().sort(function (a, b) { return a.submit - b.submit || (a.id < b.id ? -1 : 1); });
@@ -1308,7 +1472,8 @@
         var meta = 'Used against total per interval, cores, memory and GPU';
         var foot = '<p class="rowfoot">The dashed line is what the hosts have; the fill is what the work holds. ' +
             esc('GPU is at ' + pct(FLEET.gpuUsed[last] / (FLEET.gpuTotal || 1)) + ' and cores at ' + pct(FLEET.coresUsed[last] / FLEET.coresTotal) +
-                ', so a GPU job waits and a CPU job does not. That is the headroom the arrival panel then spends.') + '</p>' +
+                ', so a GPU job waits and a CPU job does not. That is the headroom the arrival panel then spends. ' +
+                'Which tenant holds that capacity is on Watch the grid, on the Usage tab, over the installation\u2019s recorded usage.') + '</p>' +
             miniLegend([
                 { label: 'used', color: C.blue },
                 { label: 'GPU used', color: C.violet }
@@ -1396,26 +1561,122 @@
         return chartCard('requirements', question, meta, svgEl(w, h, out, 'requirements', question + ', ' + meta), foot, '', true);
     }
 
-    /* 19. Allocation by tenant. */
+    /* 19. Usage over time: grid time per tenant, stacked. This is the global
+       view's lead chart. The series are the installation's own record, so the
+       chart is a read of installation rows and needs no exception. */
+    function usageOverTimeChart() {
+        var tenants = isTenant() ? [tenantById(TENANT_VARIANT)] : TENANTS;
+        var series = tenants.map(function (t) { return USAGE.perTenant[t.id].gridMinutes; });
+        var colors = tenants.map(function (t) { return t.color; });
+        var w = 1000, h = 260;
+        var p = fullPlot(w, h, 64, 16, 22, 40);
+        /* The scale is the whole grid's even when the variant shows one band,
+           so a tenant's band does not read as the whole grid. */
+        var max = niceMax(maxOf(USAGE.totalGridMinutesSeries));
+        var out = yAxis(p, max, 'grid time (task-minutes)', 4) + timeAxis(p) + stackedBands(series, colors, p, max);
+        var question = 'Which tenant is the grid working for, and how did that move?';
+        var meta = 'Grid time per tenant per interval, stacked area, task-minutes';
+        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' +
+            (isTenant()
+                ? 'The tenant variant shows Northwind Capital\u2019s own grid time against the whole grid\u2019s scale; the rest of the ledger is the super administrator\u2019s read under its permission.'
+                : 'Grid time is the task time the installation spent on each tenant\u2019s work in the interval. ' +
+                  'Northwind\u2019s band is the widest and holds flat, Helios\u2019s band widens from ' + esc(intervalTime(0)) +
+                  ' to ' + esc(intervalTime(INTERVALS - 1)) + ', and Meridian\u2019s stays thin.') + '</p>' +
+            miniLegend(tenants.map(function (t) { return { label: t.short, color: t.color }; }));
+        return chartCard('usage-time', question, meta, svgEl(w, h, out, 'usagetime', question + ', ' + meta), foot, '', true);
+    }
+
+    /* 20. Share of the grid: the same rows as one whole, split by tenant. */
+    function usageShareChart() {
+        var tenants = isTenant() ? [tenantById(TENANT_VARIANT)] : TENANTS;
+        var last = INTERVALS - 1;
+        var coresNow = tenants.map(function (t) { return USAGE.perTenant[t.id].cores[last]; });
+        var gridRange = tenants.map(function (t) { return USAGE.perTenant[t.id].gridMinutesTotal; });
+        var coresNowAll = TENANTS.reduce(function (a, t) { return a + USAGE.perTenant[t.id].cores[last]; }, 0) || 1;
+        var rows = [
+            { label: 'cores held now', values: coresNow, total: coresNowAll, unit: 'cores' },
+            { label: 'grid time, the range', values: gridRange, total: USAGE.totalGridMinutes || 1, unit: 'task-minutes' }
+        ];
+        var w = 1000, left = 168, right = 176, barH = 34, gap = 46, top = 28;
+        var p = { x: left, w: w - left - right };
+        var height = top + barH * rows.length + gap + 12;
+        var out = '<text class="axis-label" x="' + p.x + '" y="' + (top - 10) + '">' +
+            esc(isTenant() ? 'each bar is the whole grid, and the blank is the usage that is not shown here' : 'each bar is the whole grid, split by tenant') + '</text>';
+        rows.forEach(function (row, r) {
+            var y = top + r * (barH + gap);
+            out += '<text class="tick rowlabel" x="' + (left - 10) + '" y="' + (y + barH / 2 + 4) + '">' + esc(row.label) + '</text>';
+            var x = p.x;
+            tenants.forEach(function (t, ti) {
+                var share = row.values[ti] / row.total;
+                var bw = share * p.w;
+                out += '<rect x="' + x.toFixed(2) + '" y="' + y + '" width="' + bw.toFixed(2) + '" height="' + barH +
+                    '" fill="' + t.color + '" fill-opacity="0.9"><title>' +
+                    esc(t.short + ' \u00b7 ' + pct(share) + ' of ' + row.unit) + '</title></rect>';
+                if (bw > 48) out += '<text class="tick mid" x="' + (x + bw / 2).toFixed(1) + '" y="' + (y + barH / 2 + 4) +
+                    '" style="fill:' + inkFor(t.color) + '">' + pct(share) + '</text>';
+                x += bw;
+            });
+            out += '<text class="tick start strong" x="' + (p.x + p.w + 10) + '" y="' + (y + barH / 2 + 4) + '">' +
+                esc(num(row.total) + ' ' + row.unit) + '</text>';
+        });
+        var question = 'How is the grid split between tenants?';
+        var meta = 'Share of cores held at ' + intervalTime(last) + ', and of grid time over the range, percent';
+        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' +
+            (isTenant()
+                ? 'This is ' + esc(tenantById(TENANT_VARIANT).name) +
+                  '\u2019s own share of the grid; no other tenant\u2019s is shown.'
+                : 'Helios takes a larger share of the time than of the cores, because its tasks are longer; ' +
+                  'Meridian is the thin end of both bars.') + '</p>' +
+            miniLegend(tenants.map(function (t) { return { label: t.short, color: t.color }; }));
+        return chartCard('usage-share', question, meta, svgEl(w, height, out, 'usageshare', question + ', ' + meta), foot);
+    }
+
+    /* 21. Jobs per tenant, stacked bars, so the ledger's job count tells the
+       same story as its grid time. */
+    function usageJobsChart() {
+        var tenants = isTenant() ? [tenantById(TENANT_VARIANT)] : TENANTS;
+        var series = tenants.map(function (t) { return USAGE.perTenant[t.id].jobs; });
+        var colors = tenants.map(function (t) { return t.color; });
+        var w = 1000, h = 250;
+        var p = fullPlot(w, h, 58, 16, 22, 40);
+        var totals = zeros(INTERVALS);
+        series.forEach(function (s) { for (var i = 0; i < INTERVALS; i++) totals[i] += s[i]; });
+        var max = niceMax(maxOf(totals));
+        var out = yAxis(p, max, 'jobs', 4) + timeAxis(p) + stackedBars(series, colors, p, max);
+        var question = 'How many jobs does each tenant run?';
+        var meta = 'Jobs per tenant per interval, stacked bars, count';
+        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' +
+            (isTenant()
+                ? 'The bars rise with the load spike at ' + esc(intervalTime(49)) +
+                  '. This is ' + esc(tenantById(TENANT_VARIANT).name) + '\u2019s own jobs, and no other tenant\u2019s.'
+                : 'The bars rise with the load spike at ' + esc(intervalTime(49)) + '. Helios\u2019s colour grows through the window while ' +
+                  'Meridian\u2019s stays a sliver, which is the grid-time story told in jobs rather than in time.') + '</p>' +
+            miniLegend(tenants.map(function (t) { return { label: t.short, color: t.color }; }));
+        return chartCard('usage-jobs', question, meta, svgEl(w, h, out, 'usagejobs', question + ', ' + meta), foot);
+    }
+
+    /* 22. Capacity consumed per tenant. The old "Allocation by tenant" chart,
+       now read from the ledger and part of the global view rather than
+       standing alone on the capacity plan. */
     function allocationChart() {
         var tenants = isTenant() ? [tenantById(TENANT_VARIANT)] : TENANTS;
-        var series = tenants.map(function (t) { return FLEET.tenantCores[t.id]; });
+        var series = tenants.map(function (t) { return USAGE.perTenant[t.id].cores; });
         var colors = tenants.map(function (t) { return t.color; });
         var w = 1000, h = 250;
         var p = fullPlot(w, h, 58, 16, 22, 40);
         var max = niceMax(FLEET.coresTotal);
         var out = yAxis(p, max, 'cores', 4) + timeAxis(p) + stackedBands(series, colors, p, max);
-        var question = 'Who is using the grid?';
-        var meta = 'Cores allocated per tenant per interval, stacked area, cores';
-        var foot = (isTenant()
-            ? '<p class="rowfoot">The tenant variant shows Northwind Capital\u2019s own share. The other tenants\u2019 bands are the installation\u2019s ' +
-              'cross-tenant aggregate, so they are withheld here and stay whole for the super administrator. This is the one chart on these ' +
-              'screens with a permission question, and it is a gate on the panel, not a second screen.</p>'
-            : '<p class="rowfoot">Every tenant\u2019s work runs on the same hosts, so the bands stack to the fleet\u2019s used cores. ' +
-              'This is a cross-tenant aggregate: the super administrator reads it whole, and a tenant administrator sees only their own band.</p>') +
+        var question = 'How much of the grid is each tenant holding?';
+        var meta = 'Cores held per tenant per interval, stacked area, cores';
+        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' +
+            'Every tenant\u2019s work runs on the same hosts, so the bands stack to the fleet\u2019s used cores. ' +
+            (isTenant()
+                ? 'The tenant variant shows Northwind Capital\u2019s own band; the whole ledger is the super administrator\u2019s read under its permission.'
+                : 'Northwind holds the largest band and Helios\u2019s band widens across the window.') + '</p>' +
             miniLegend(tenants.map(function (t) { return { label: t.short, color: t.color }; }));
-        return chartCard('allocation', question, meta, svgEl(w, h, out, 'allocation', question + ', ' + meta), foot, '', !isTenant());
+        return chartCard('allocation', question, meta, svgEl(w, h, out, 'allocation', question + ', ' + meta), foot, '', true);
     }
+
 
     /* 20. Versions in flight: a node by version matrix. */
     function versionsInFlightChart() {
@@ -1516,8 +1777,9 @@
             '<span class="tag">tasks completed</span></span></div>' +
             '</div>' +
             '<p class="rowfoot">The grid is the installation\u2019s: every tenant\u2019s work runs on the same hosts. ' +
-            'The fleet counts are whole for every role the permission admits; the work counts are cross-tenant aggregates and ' +
-            'the tenant variant narrows them to one tenant\u2019s slice, as compute.org records.</p>' +
+            'The installation records what it did about its own operation, so the fleet counts and the work counts are both true ' +
+            'for the whole grid rather than a slice of one tenant. The tenant variant shows Northwind\u2019s rows; which tenant is ' +
+            'using what is on the Usage tab, over the same recorded usage.</p>' +
             '</section>';
     }
 
@@ -2024,7 +2286,8 @@
         watch: [
             { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?' },
             { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when' },
-            { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' }
+            { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' },
+            { id: 'usage', name: 'Usage', note: 'which tenant is using what, from the installation\u2019s own ledger' }
         ],
         job: [
             { id: 'jobs', name: 'The job', note: 'where it is, what the models carry, and where its time went' },
@@ -2038,7 +2301,7 @@
             { id: 'detail', name: 'Detail', note: 'what the job and the node said' }
         ],
         capacity: [
-            { id: 'headroom', name: 'Headroom', note: 'can the grid take more, and who is using it' },
+            { id: 'headroom', name: 'Headroom', note: 'can the grid take more' },
             { id: 'arrivals', name: 'Arrivals', note: 'what kicks in soon, and what it needs' }
         ],
         versions: [
@@ -2076,6 +2339,9 @@
             body = heatmapChart(S.heatMetric, true) + ribbonChart();
         else if (tab === 'fleet')
             body = fleetSizeChart() + nodeTablePanel();
+        else if (tab === 'usage')
+            body = usageOverTimeChart() + usageShareChart() + usageJobsChart() +
+                allocationChart() + tenantUsagePanel();
         else
             body = summaryPanel() + loadChart() + throughputChart() +
                 outcomesChart() + queueChart();
@@ -2117,7 +2383,7 @@
         var tab = activeTab('capacity');
         var body = tab === 'arrivals'
             ? arrivalsChart(arrivals) + requirementsMatrix(filteredJobs())
-            : capacityChart() + allocationChart();
+            : capacityChart();
         return subTabs('capacity') + body;
     }
 
@@ -2223,13 +2489,13 @@
         if (id === 'failure') return 'A job\u2019s full detail, the node\u2019s own logs, and the two charts that separate a bad release from a bad node.';
         if (id === 'capacity') return 'What the nodes have, what arriving work needs, and whether the grid can absorb it.';
         if (id === 'versions') return 'The apps, their versions, and the concurrency policy that caps how many of a thing run together.';
-        return 'The fleet, the load, and how it moved over the last six hours. Every chart in compute.org\u2019s grid list is drawn from a mock series.';
+        return 'The fleet, the load, and how it moved over the last six hours. The Usage tab answers which tenant is using the grid, from the usage the installation recorded about its own operation. Every chart in compute.org\u2019s grid list is drawn from a mock series.';
     }
 
     function notice() {
         var text = isTenant()
             ? 'PROTOTYPE. ' + filteredJobs().length + ' of the range\u2019s ' + JOBS.length + ' jobs (this tenant\u2019s work) are ' +
-              'fixtures from a seeded generator; the fleet rows stay whole. ' +
+              'fixtures from a seeded generator; the fleet rows stay whole, and the usage ledger narrows to this tenant\u2019s recorded usage. ' +
               'The node log download is withheld: a node\u2019s logs are the installation\u2019s and may carry another tenant\u2019s inputs.'
             : 'PROTOTYPE. Every row and every series is a fixture from a seeded generator, so the walk repeats exactly. ' +
               'Nothing on this page reads the server.';
@@ -2320,9 +2586,10 @@
         nodes: NODE_ORDER,
         catalogue: CATALOGUE_ORDER,
         failures: FAIL_ORDER,
-        lineage: LINEAGE_ORDER
+        lineage: LINEAGE_ORDER,
+        tenants: TENANT_ORDER
     };
-    var TABLE_IDS = ['jobs', 'nodes', 'catalogue', 'failures', 'lineage'];
+    var TABLE_IDS = ['jobs', 'nodes', 'catalogue', 'failures', 'lineage', 'tenants'];
 
     function readParams() {
         var p = new URLSearchParams(window.location.search);

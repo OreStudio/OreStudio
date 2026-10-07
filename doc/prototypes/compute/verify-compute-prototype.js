@@ -49,7 +49,7 @@ function run(query) {
 }
 
 const TABS = {
-    watch: ['dashboard', 'nodes', 'fleet'],
+    watch: ['dashboard', 'nodes', 'fleet', 'usage'],
     job: ['jobs', 'lineage', 'timeline', 'spread'],
     failure: ['rates', 'where', 'detail'],
     capacity: ['headroom', 'arrivals'],
@@ -59,7 +59,7 @@ const VARIANTS = ['fleet', 'tenant'];
 /* The tables that carry a pager, and the ones whose fixture is longer than one
    page, so that the page size, the order and Load all are shown. */
 const PAGED = {
-    watch: { nodes: false, fleet: true },
+    watch: { nodes: false, fleet: true, usage: true },
     job: { jobs: true, lineage: true, timeline: false, spread: false },
     failure: { rates: false, where: false, detail: true },
     capacity: { headroom: false, arrivals: false },
@@ -96,6 +96,10 @@ Object.keys(TABS).forEach((screen) => {
             ok(html.length > 500, label + ' renders');
             ok(html.indexOf('<div class="shell">') >= 0, label + ' shell');
             ok(html.indexOf('data-act="refresh"') >= 0, label + ' refresh');
+            /* The global view is a read of the installation's own record, so no
+               panel hedges the work counts as a cross-tenant read or as out of
+               reach. */
+            ok(html.indexOf('cross-tenant') < 0, label + ' no cross-tenant hedging');
             /* Every chart drawn through svgEl keeps the 1000-wide viewBox, so a
                card scales them all alike. The node sparklines are the one
                deliberate exception: they are drawn inside a table row at
@@ -146,6 +150,30 @@ Object.keys(TABS).forEach((screen) => {
                     ok(html.indexOf('data-act="download-logs"') < 0, label + ' node logs control withheld');
                     ok(html.indexOf('withheld for a tenant administrator') >= 0, label + ' withheld reason stated');
                 }
+            }
+            if (screen === 'watch' && tab === 'usage') {
+                /* The global view: the four charts and the tenant table, each
+                   chart naming the ledger as its source, and the allocation
+                   chart moved here rather than standing alone. */
+                ok(html.indexOf('id="usage-time"') >= 0, label + ' usage over time chart');
+                ok(html.indexOf('id="usage-share"') >= 0, label + ' share of the grid chart');
+                ok(html.indexOf('id="usage-jobs"') >= 0, label + ' jobs per tenant chart');
+                ok(html.indexOf('id="allocation"') >= 0, label + ' allocation by tenant chart');
+                ok(html.indexOf('id="tenant-usage"') >= 0, label + ' tenant table');
+                ok(html.indexOf('The series are the usage the installation recorded') >= 0, label + ' ledger source stated');
+                ok((html.match(/The series are the usage the installation recorded/g) || []).length >= 4,
+                    label + ' every usage chart states its source');
+                ok(html.indexOf('class="swatch"') >= 0, label + ' tenant colour in the table');
+                if (variant === 'tenant') {
+                    ok(html.indexOf('Northwind') >= 0, label + ' tenant view names its tenant');
+                    ok(html.indexOf('Helios') < 0, label + ' tenant view withholds other tenants');
+                } else {
+                    ok(html.indexOf('Northwind') >= 0 && html.indexOf('Helios') >= 0 && html.indexOf('Meridian') >= 0,
+                        label + ' the whole ledger names every tenant');
+                }
+            }
+            if (screen === 'capacity' && tab === 'headroom') {
+                ok(html.indexOf('id="allocation"') < 0, label + ' allocation no longer stands alone on capacity');
             }
         });
     });

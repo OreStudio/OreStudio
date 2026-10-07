@@ -252,6 +252,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/session_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/session_samples_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/signup_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/storage_capability_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/tenant_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.api/messaging/tenant_session_protocol.hpp"

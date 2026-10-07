@@ -63,6 +63,7 @@
 #include "ores.iam.core/messaging/seed_profile_step_registrar.hpp"
 #include "ores.iam.core/messaging/session_operations_handler.hpp"
 #include "ores.iam.core/messaging/session_registrar.hpp"
+#include "ores.iam.core/messaging/storage_capability_handler.hpp"
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_session_handler.hpp"
@@ -534,6 +535,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         exchange_run_grant_request::nats_subject, qg, [rgh](ores::nats::message msg) {
             rgh->exchange(std::move(msg));
+        }));
+
+    // --- Storage capabilities ---
+    // A service that dispatches work asks for the object-scoped token a worker
+    // node presents to storage. It is the one operation that signs with the
+    // key IAM already publishes, so the handler is given the signer.
+    auto sch = std::make_shared<storage_capability_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        mint_storage_capability_request::nats_subject, qg, [sch](ores::nats::message msg) {
+            sch->mint(std::move(msg));
         }));
 
     // --- Seed profiles, their steps and their parameters ---

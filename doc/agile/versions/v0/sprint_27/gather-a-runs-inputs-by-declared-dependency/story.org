@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,7 +26,7 @@ assembled only when nothing is missing.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | The story is cut into nine tasks and none is started. The gathering is a linear chain today: one export per owner, no grouping of trades in the request, no as-of anywhere, and no way to say what a run is waiting for. |
 | Waiting on    | Nothing.                               |
@@ -44,7 +44,7 @@ assembled only when nothing is missing.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] | BACKLOG | | | A step is dispatched by its ordinal position and nothing else, so nothing states what it needs before it can run or what it leaves behind for the next step to read. Give a step a declared set of input artifacts and output artifacts, and make the engine refuse to dispatch a step whose inputs do not exist. This is the declaration half: without it the engine cannot know whether a run is waiting on work or is simply broken. |
+| [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] | STARTED | 2026-10-08 | | A step is dispatched by its ordinal position and nothing else, so nothing states what it needs before it can run or what it leaves behind for the next step to read. Give a step a declared set of input artifacts and output artifacts, and make the engine refuse to dispatch a step whose inputs do not exist. This is the declaration half: without it the engine cannot know whether a run is waiting on work or is simply broken. |
 | [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] | BACKLOG | | | The chain is a std::vector built in code and the instance stores each step's ordinal, so the only edges are the ordinals. Persist the graph with the run — steps as vertices, artifact dependencies as edges — and reconstruct it as a boost::adjacency_list for dispatch, the way ores.dq's publish_service already orders datasets. A step with several producers then has a defined completion condition rather than an ordinal that no longer describes it. |
 | [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]] | BACKLOG | | | Nothing in ores.trading can group trades. The run resolves its scope once, in gather_trades, and treats it as one bag of books, so one export object answers for every book. Give ores.trading a batcher with a pluggable strategy that partitions a report's trade population into trade sets, each with a name and an as-of; the simplest strategy batches by book. The set name is the batch key the rest of the run fans out over. |
 | [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a trade set as an archive]] | BACKLOG | | | trading.v1.ops.export_trades_to_storage takes book ids and no date and writes one gzipped msgpack of trade_export_item rows for all of them, which is not something the ORE mapper can consume: it carries instruments as an opaque payload and no shape the mapper can walk. Export one trade set at a time, by its batch key, and source everything the portfolio needs — trade headers, instruments and envelopes — into a zip whose shape is declared. The as-of travels on the set. |

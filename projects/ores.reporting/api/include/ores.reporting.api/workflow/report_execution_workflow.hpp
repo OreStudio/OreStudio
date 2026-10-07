@@ -191,6 +191,7 @@ template <typename Command>
     s.command_subject = std::string(assemble_bundle_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {"gather_trades", "gather_market_data"};
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results& prev) -> std::string {
@@ -256,6 +257,7 @@ template <typename Command>
     s.command_subject = std::string(prepare_ore_package_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {"assemble_bundle", "gather_trades", "gather_market_data"};
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results& prev) -> std::string {
@@ -299,6 +301,7 @@ template <typename Command>
     s.command_subject = std::string(submit_compute_request::nats_subject);
     s.timeout = compute_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {input_step};
 
     s.build_command =
         [input_step = std::move(input_step)](const std::string& request_json,
@@ -331,6 +334,7 @@ template <typename Command>
     s.command_subject = std::string(collect_compute_results_request::nats_subject);
     s.timeout = compute_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {"submit_compute"};
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results& prev) -> std::string {
@@ -364,6 +368,7 @@ template <typename Command>
     s.command_subject = std::string(ignore_compute_results_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
+    s.consumes = {"submit_compute"};
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results& prev) -> std::string {

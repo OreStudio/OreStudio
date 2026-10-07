@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :zettelkasten:documentation:knowledge:org_roam:
 #+created: 2026-05-28
-#+updated: 2026-08-26
+#+updated: 2026-10-07
 
 * Summary
 
@@ -69,6 +69,77 @@ file and link to it, not to add another section. ORE Studio enforces this
 weakly — the document types (knowledge, recipe, component overview, task,
 story) are each scoped to a single subject — but within each type the author
 must resist the temptation to include tangential detail.
+
+** Writing a note
+
+The atomic rule says how much a page holds. Three more rules, taken from
+Luhmann's practice rather than from the plain-text community's retelling
+of it, say what the page does with what it holds.
+
+*** A page asserts, or it is a reference
+
+An atomic page that only names its subject is inert: nothing can be said
+against it, so nothing grows from it. Luhmann's cards were claims, short
+and contestable, and their value was that another card could disagree.
+The test for a title is whether a reader can reject it.
+
+Most pages here are reference pages by design — definitions, catalogues
+and explanations, where a topic title is the right title. The discipline
+binds the pages that argue: structure notes, research-paper summaries,
+captures, and anything that draws a conclusion. What separates them is
+whether the page can be wrong.
+
+*** Choosing the connection is the work
+
+Luhmann filed a new card behind a specific existing card, never by
+subject, and that choice was where the thinking happened. A tool can
+narrow the field but cannot decide, because the decision is the exercise.
+An agent asked to file a page searches for candidates and presents them;
+the author chooses.
+
+Each candidate carries a relation, and four cover the ground:
+
+- *contradicts* — the new page tensions or refutes the existing claim.
+- *completes* — it adds evidence or a consequence.
+- *exemplifies* — it is a concrete case of a principle.
+- *answers* — it resolves a question the other page left open.
+
+Contradiction is worth more than resemblance: two pages that say the same
+thing in different words are one page's worth of knowledge with two
+copies to maintain. The relation is written in the annotation a See also
+link already carries, as the hub rows of [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][the knowledge index]] do. The
+=id=, =file= and =proj= link types of [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] answer a different
+question — how a link resolves — and say nothing about the relation.
+
+A new page also links out and is linked back before it is committed. The
+back-link is what makes it reachable from the cluster it joined;
+=link_structure_notes.py --check= enforces it for the pages a structure
+note orders, and the convention holds for every other page.
+
+*** One improbable neighbour
+
+The pages nearest a new one are the pages it resembles. Look once outside
+that cluster for a page it could connect to in a non-obvious way, and
+write the sentence that explains the crossing. This is what lets the
+collection answer back rather than merely file. The [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] hub does
+it when it links to this page, to say why its order is authored rather
+than computed.
+
+** Anti-patterns
+
+- *Summarising a source instead of saying what it means here.* A
+  research-paper page is worth the commentary on what the result changes,
+  not the abstract restated.
+- *Filing by tool decision.* An agent that picks the thread has removed
+  the exercise; it may propose, not choose.
+- *Only the near neighbours.* The similar pages are the easy candidates,
+  and the contradiction is the one that pays.
+- *A page holding several claims.* Split it; a page with two theses
+  cannot be contradicted cleanly by either.
+- *A hub that restates its cluster.* The structure note gists and links;
+  a second copy of the content drifts.
+- *A page with no way in.* A page nothing links to is not in the graph,
+  whatever directory it sits in.
 
 ** Structure notes
 

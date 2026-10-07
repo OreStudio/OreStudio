@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 6AC37FF8-1247-4C28-8B0B-6DF870DAE3D5
+:END:
+#+title: Task: Add the writing discipline to the Zettelkasten page
+#+description: The page says how much a note holds, and nothing about what it does with it. Add the thesis discipline, the relation vocabulary, the improbable neighbour and the anti-patterns, and point the knowledge-doc runbook at them.
+#+type: task
+#+level: s1
+#+filetags: :zettelkasten_writing_discipline:sprint_27:v0:
+#+owner: marco
+#+branch: feature/zettelkasten-writing-discipline
+#+pr: 2734
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E40D6E4F-CBDD-4007-8B7F-BEE205044B75][Add the writing discipline the Zettelkasten page omits]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the Zettelkasten page the half of the method it does not yet carry: the craft of composing and filing a note.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E40D6E4F-CBDD-4007-8B7F-BEE205044B75][Add the writing discipline the Zettelkasten page omits]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The page states the thesis discipline and says which pages it binds.
+- The page names the four link relations and the rule that the author chooses the thread.
+- The page lists the anti-patterns.
+
+* Plan
+
+The source is the =zettelkasten-luhmann= skill (daniloneto), a writing
+assistant for a personal Markdown vault. It was read against
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] and the corpus, and the
+transferable parts were added to that page.
+
+/Taken./ The thesis discipline, scoped to the pages that argue; the filing
+decision and the four relations (contradicts, completes, exemplifies, answers);
+the improbable neighbour; the anti-patterns.
+
+/Not taken, and why./ The vault layout, templates, YAML frontmatter and fixed
+English section headings describe a Markdown vault; this graph is =.org= files
+addressable by UUID, and its mechanical conventions already exist. Fleeting and
+daily notes have a counterpart in the capture backlog. "Never file
+automatically" mostly does not apply: we automate only the mechanical back-link
+a structure note needs, and never the semantic choice — which is the rule the
+page now states, so the boundary is explicit rather than implied.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Title lines under doc/knowledge | 461 | grep -rh "^#+title:" doc/knowledge/ --include=*.org \| wc -l | 863347b241 |
+| Structure notes that order pages | 16 | python3 build/scripts/link_structure_notes.py --check | 863347b241 |
+
+* Notes
+
+The source skill's core is the cognitive half of Zettelkasten — a note is a
+contestable claim, and the choice of where it is filed is the thought. This
+graph already carries the structural half well: UUID addresses, a link graph,
+argued structure notes, and checks that every ordered page links back. The page
+had no statement of the cognitive half, so an agent writing a page had no rule
+for whether it must argue, no vocabulary for the relation it joins, and no list
+of what not to do. Those three gaps are what the change closes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2734][#2734]] | [doc] Add the writing discipline the Zettelkasten page omits |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The page now carries a Writing a note section — the thesis discipline and its
+scope, the four relations and who chooses the thread, and the improbable
+neighbour — and an Anti-patterns section. The add-a-knowledge-document runbook
+points at them. Existing gates pass: =compass lint=, =link_structure_notes.py
+--check= and =check_pattern_uses.py=.

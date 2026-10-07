@@ -8,7 +8,7 @@
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/close-read-the-whole-grid
-#+pr: 2761
+#+pr: 2765
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -94,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2765][#2765]] | [agile] Close the whole-grid read on the evidence that landed |
 | [[https://github.com/OreStudio/OreStudio/pull/2761][#2761]] | [compute,codegen] Name the installation's own data |
 
 * Review

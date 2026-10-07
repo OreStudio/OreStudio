@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F86177CA-202C-4488-9E4F-1C698E60F088
+:END:
+#+title: Story: Report a refused request as a refusal
+#+description: A guarded request the caller may not make is answered with an empty body and an X-Error header, but a client that only knows token_expired tries to decode the empty body and reports a decoding failure. The work is sent after a wire-format defect that does not exist, and a real permission problem is invisible.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make every client report a refusal as a refusal, naming the reason the server gave, so a permission problem is never mistaken for a malformed payload.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- A request refused with X-Error: forbidden prints a message naming the refusal and the subject, and never mentions unpacking or decoding
+- X-Error: unauthorized and bad_request are surfaced the same way, each with its own literal message
+- X-Error: token_expired keeps its current re-authentication behaviour
+- Tests pin each header value against a literal expected message
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A8327D88-FCCE-4C1A-B113-AFFD34AA0F15][Scaffold story: Report a refused request as a refusal]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A25E5BC5-C7E0-4A8B-981F-9A0C12125AD0][Surface a refusal instead of a decode failure]] | BACKLOG | | | Initial task for: Report a refused request as a refusal |
+
+* Decisions
+
+* Out of scope
+
+-

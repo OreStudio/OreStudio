@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 8A1B795A-91B7-4157-86BF-87CD5DD5D234
+:END:
+#+title: Task: Let an operator key and clear a curve point by hand
+#+description: A manual point can be recorded and read, but nothing in the product can key one. Add the write and clear path, so an operator over-keys a coordinate and withdraws the over-key, with the actor and reason recorded.
+#+type: task
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+owner: marco
+#+branch: feature/marketdata-curves
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let an operator over-key one coordinate of a curve and withdraw it, with who keyed it, when and why recorded, and without destroying what the over-key replaced.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- An operator can over-key one coordinate of a series, and the read then returns the manual value with the actor, time and reason recorded
+- An operator can clear the over-key, and the read then returns the fed value again
+- Clearing closes the manual row rather than deleting it, so the history still shows what the over-key replaced
+- The observation row and the annex row cannot diverge: if one write fails, neither is left behind
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered in PR 2751.
+
+An operator can now over-key one coordinate of a series and withdraw the
+over-key. =write_manual_point()= records the observation row the read returns
+and the cold annex row that names it =manual=, in one transaction. The actor
+comes from the context rather than an argument, so the auditor trail names who
+keyed the point rather than who the caller claimed to be, and the caller's
+reason code and commentary land beside it. =clear_manual_point()= closes the
+current manual row bitemporally rather than deleting it, so the history keeps
+the value the over-key replaced and the read returns the fed value again.
+
+Atomicity is the part that mattered. The two rows cannot diverge: both writes
+run inside one =unit_of_work=, one pooled connection and one transaction, and
+the single commit covers both. A failure in the annex write rolls the
+observation back with it, which the forced-failure case proves by passing a
+reason code the annex refuses and asserting the read still returns the fed
+value. This is what stops a point being silently mislabelled as quoted, since
+an observation with no annex row reads as quoted.
+
+Measured. Re-run independently of the implementer: 26 assertions across the
+four new cases, all passing. The clear test was proven to bite by making
+=clear_manual_point()= a no-op, regenerating and rebuilding, which failed the
+fed-value case with ="0.050000"= where ="0.045000"= was expected and failed
+the history case on its no-current-manual-row check; the no-op was reverted.
+Codegen drift reports no drift and the structure-note link check passes.
+
+Not done here. There is no service, wire or UI endpoint, so an operator reaches
+these operations from code rather than from the shell or a screen; that surface
+is what makes the journey real and is not yet scoped.
+

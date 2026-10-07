@@ -8,7 +8,7 @@
 #+filetags: :isolate_tenant_data_in_storage:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/bring-the-storage-capability-subject-onto-the-protocol
-#+pr: 2776
+#+pr: 2777
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -26,11 +26,11 @@ Bring iam.v1.storage_capabilities.mint inside the entity protocol, and give the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | Renamed, projected and green on the four checks it exists to fix. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the full suite and open the hotfix PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -100,6 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2777][#2777]] | [agile] Close the storage capability protocol hotfix task |
 | [[https://github.com/OreStudio/OreStudio/pull/2776][#2776]] | [iam,codegen] Bring the storage capability subject onto the protocol |
 
 * Review

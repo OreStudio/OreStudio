@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-07T13:23:34.286602Z
+' Generated: 2026-10-07T15:37:17.722540Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -141,8 +141,7 @@ package "iam" #E8F4FD {
     and a server-owned field never appears in one; a credential's only meaningful
     field is server-derived, so the resource has no write record to carry, and "a
     read-only resource simply declares no write verb". The credential's writes are
-    domain operations, iam.v1.ops.*, declared in
-    [[id:C6FC2B06-F8D6-4697-A54E-2399DB3665D3][ores.iam.operations]].
+    domain operations, iam.v1.ops.*.
     end note
 
     entity ores_iam_account_parties_tbl <<junction>> #ECECEC {

@@ -2,7 +2,7 @@
 :ID: CF865781-BE15-42F7-BB13-7107BF06F97C
 :END:
 #+title: Task: Join trades with typed links
-#+description: Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll.
+#+description: Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll. A link holds nothing and stands alone; its provenance is the activity stamp on the amendments it joined.
 #+type: task
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-07
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every relation between two trades is a typed, directed link that keeps the activity which made it.
+Every relation between two trades that a process did not create is a typed, directed link, and it holds nothing.
 
 * Status
 
@@ -29,13 +29,14 @@ Every relation between two trades is a typed, directed link that keeps the activ
 | State        | BACKLOG                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Waiting on   | Nothing. This task does not wait on the process run model: a link is a relation that holds nothing, and the amendment stamps already exist. |
+| Next         | Seed trade_link_type from the catalogue, then add trade_link. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- trade_link joins two trades with enforced foreign keys and a type from trade_link_type, and records the activity that created it.
+- trade_link joins two trades with enforced foreign keys and a type from trade_link_type, and records the trade activity stamp that made it.
+- A link a process created carries that run as well, once the run model lands; the column is nullable until then.
 - trade_link_type names the from and to roles and the economic effect, seeded from the link catalogue (novation, exercise, roll and the rest).
 - Nothing in the tree carries a successor trade id.
 

@@ -340,10 +340,9 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     for (const auto& row : rows)
         result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
 
-    // A current manual point owns its coordinate for reading until it is
-    // cleared, so it overlays the fed value and any later automatic write to
-    // the same coordinate. A manual point keyed after as_of_datetime had not
-    // happened yet at that instant and does not overlay.
+    // A current manual point owns its coordinate until cleared, overlaying the
+    // fed value and any later automatic write. One whose instant is after the
+    // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
         if (manual.observation_datetime > as_of_datetime)
             continue;
@@ -442,9 +441,10 @@ market_observation_repository::read_as_of_buckets(
     }
 
     // The manual overlay, once per bucket: a manual point owns its coordinate
-    // from the bucket whose boundary is at or after the manual write, and the
-    // buckets before it keep the fed value they showed. The boundaries mirror
-    // the generate_series() above, where bucket_ordinal 0 is the oldest.
+    // from the bucket whose boundary is at or after the manual point's own
+    // instant, and the buckets before it keep the fed value they showed. The
+    // boundaries mirror the generate_series() above, where bucket_ordinal 0 is
+    // the oldest.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
         for (unsigned int i = 0; i < bucket_count; ++i) {
             const auto offset = std::chrono::seconds(

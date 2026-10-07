@@ -41,9 +41,9 @@ onto the compute dispatcher and closed one of them, so two remain:
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | The handoff drives a job. A tenant's report run reached the shared wrapper fleet, the node downloaded the package and the input with its assignment capability, ran the engine, uploaded the output, and the result came back Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing here. What the engine does with the input it is handed is a separate gap: [[id:08E748D6-9C5C-4073-826A-6B95D250138E][the run configuration and the produced inputs disagree]] and [[id:8E55B78D-0928-45D9-B61F-7A5D3619A381][an engine error is not a failed result]]. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

@@ -32,9 +32,9 @@ presents it; storage enforces it and holds no database lookup on the path.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | All four slices are landed and proven end to end: a tenant's report run reached a shared wrapper, the node downloaded its package and its input with the capability, ran the engine, uploaded the output, and the result came back Done. Two defects blocked it on the way and are fixed — see Result. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The tenant-bucket work moves each tenant into its own bucket, which is what makes the bucket-ownership bullet in Acceptance true. Until then the key prefix is the whole tenant scope. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

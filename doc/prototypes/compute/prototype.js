@@ -1232,7 +1232,10 @@
             rows.forEach(function (j) { if (j.requirements[c.key] > m) m = j.requirements[c.key]; });
             return m || 1;
         });
-        var cellW = 108, cellH = 22, left = 104, top = 40;
+        /* Every chart's viewBox is 1000 wide so a card scales them all by the
+           same factor. A narrower one magnifies its own text. */
+        var cellH = 24, left = 104, top = 40;
+        var cellW = Math.round((1000 - left - 10) / cols.length);
         var w = left + cols.length * cellW + 10;
         var h = top + rows.length * cellH + 16;
         var out = '';
@@ -1282,7 +1285,10 @@
 
     /* 20. Versions in flight: a node by version matrix. */
     function versionsInFlightChart() {
-        var cellW = 150, cellH = 22, left = 90, top = 44;
+        /* The same 1000-wide viewBox as every other chart, for the same
+           reason: the card must scale them all alike. */
+        var cellH = 24, left = 90, top = 44;
+        var cellW = Math.round((1000 - left - 20) / WRAPPER_VERSIONS.length);
         var w = left + WRAPPER_VERSIONS.length * cellW + 20;
         var h = top + NODES.length * cellH + 16;
         var versionColor = { 'v0.0.25': C.teal, 'v0.0.24': C.amber, 'v0.0.19': C.vermillion };

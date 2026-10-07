@@ -5,15 +5,50 @@
 #+description: Give ores.marketdata a first-class representation of a curve, so a bootstrapped curve is an entity with identity, provenance and a consumer rather than a derived series nothing reads back.
 #+type: story
 #+level: s2
-#+filetags: :v0:marketdata:curves:product_backlog:inbox:
-#+created: 2026-09-27
-#+updated: 2026-10-06
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
+
+Give ores.marketdata a first-class representation of a curve, so a bootstrapped curve is an entity with identity, provenance and a consumer rather than a derived series nothing reads back.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-09-27 in the product backlog; promoted preserving the UUID.
+
+** Goal
 
 Make a curve a thing ores.marketdata owns. Today a curve exists only as a
 side effect of one service: a `market_series` row stamped
@@ -25,7 +60,7 @@ The outcome this story delivers: a curve can be created, identified, read
 and asked about its provenance, without the reader having to know that it is
 stored as a series.
 
-* Status
+** Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
@@ -36,7 +71,7 @@ stored as a series.
 | Next          | Check the data model against the journeys and start the representation. |
 | Last touched  | 2026-10-07                               |
 
-* What exists today
+** What exists today
 
 The findings below came from a read-only investigation. Each is grounded in
 code; the paths are the evidence.
@@ -149,14 +184,14 @@ The curve ground in that tree, for whoever picks this up:
 Any deeper analysis of what a curve is, or of what a lossless ORE export
 would have to reproduce, should read that tree rather than the vendored copy.
 
-* Deeper analysis, 2026-10-06
+** Deeper analysis, 2026-10-06
 
 A second read-only pass, at =d02032a18c=. It answers the open questions far
 enough to choose a direction. It is a snapshot, not a description of the
 system. Two facts the first investigation stated are corrected here, because
 they change the shape of the answer.
 
-** What a curve is made of
+*** What a curve is made of
 
 Four things, and the tree already holds three of them under other names.
 
@@ -184,7 +219,7 @@ Four things, and the tree already holds three of them under other names.
   =ir_curve_bootstrap_pillar= rows. Its =output_series_id= and the pillars'
   tenor codes are *soft* references into other components.
 
-** The correction that matters: lineage is most of the build
+*** The correction that matters: lineage is most of the build
 
 The first investigation read the build as entirely absent. It is not:
 =observation_lineage= is written by =republish()= beside every output
@@ -194,14 +229,14 @@ therefore does not have to invent provenance; it has to *group* the points of
 one build and add the two facts lineage lacks, =reference_date= and
 =build_kind=. That is a much smaller table than the sprint 25 design assumed.
 
-** The second correction: the point identity is the URI
+*** The second correction: the point identity is the URI
 
 The sprint 25 =curve_point= design draws a =point_id= column. The shipped
 observation table has none; the point identity is the whole =oresmd_uri=. Any
 curve design either reads the pillar identity out of the URI or adds a real
 =point_id=/tenor column. The first is free; the second must be justified.
 
-** How each part maps onto the existing infrastructure
+*** How each part maps onto the existing infrastructure
 
 | Curve part | Existing home | State |
 |------------+---------------+-------|
@@ -216,7 +251,7 @@ curve design either reads the pillar identity out of the URI or adds a real
 | Read back | =marketdata.v1.curve-snapshot.get= / =.buckets= | Exists; the handler checks no permission and no code is seeded |
 | Consumer | none | Missing |
 
-** The modelling decision
+*** The modelling decision
 
 Three shapes are available. The recommendation is the first, with the third
 held open until a journey proves it.
@@ -245,7 +280,7 @@ The deciding input is *what a consumer does with a curve*, which is what the
 journeys are for. The design deliberately stops before =curve_point= and lets
 the journey work decide whether it is earned.
 
-** Curves and tenors
+*** Curves and tenors
 
 The relation is real but undeclared today, in three places.
 
@@ -275,7 +310,7 @@ The recommendation is to make the pillar's tenor a checked reference to
 reader can group by tenor without parsing the URI. The business-day gap and
 the split tenor are separate defects, not part of the representation.
 
-** The user journeys are the input that decides this
+*** The user journeys are the input that decides this
 
 The tree has no market-data journey group and no journey that owns a curve;
 the closest analogues are =journey_keep_a_holiday_calendar_right= (rules, then
@@ -301,7 +336,7 @@ a build journey needs a build, a comparison journey is what earns
 vocabulary question, because the actor classes in the journeys are
 =TenantAdmin= and =Operations= today and neither is a rates quant.
 
-** Defects found on the way, independent of the representation
+*** Defects found on the way, independent of the representation
 
 - The curve-snapshot reads are unauthenticated: =curve_snapshot_handler= checks
   no permission and no =curve-snapshot= code is seeded
@@ -311,7 +346,7 @@ vocabulary question, because the actor classes in the journeys are
 - =CUBIC_SPLINE= is recognised by the engine and throws; =IMM_ROLL= is
   superseded and throws.
 
-** Recommended next steps
+*** Recommended next steps
 
 1. Agree the journey catalogue above with the owner (J08 of the extraction
    standard), then run the marketdata journey extraction, reading the legacy
@@ -323,7 +358,7 @@ vocabulary question, because the actor classes in the journeys are
 4. Keep the ORE handoff out of this story, as it already is; the lossless
    export is the second journey's consumer and its own story.
 
-* Curve data model, 2026-10-06
+** Curve data model, 2026-10-06
 
 A design pass against the existing tables and the
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria, at
@@ -331,7 +366,7 @@ A design pass against the existing tables and the
 and how do they join to the ones already there? The joins below were run
 against the recreated database.
 
-** The joins a curve needs already exist
+*** The joins a curve needs already exist
 
 A curve is a =market_series= whose oresmd URI names it. Its points are
 =market_observation= rows of that series. Its inputs are per-point
@@ -358,7 +393,7 @@ validated (see below), with the point's coordinate equal to it by construction
 (=curve_republish_service.cpp= passes =point.point_id=, the end tenor, to
 =datum_at_point=).
 
-** The decision: the values add no table; the shape and the provenance do
+*** The decision: the values add no table; the shape and the provenance do
 
 The facts a build needs are already stored, or are derivable:
 
@@ -390,7 +425,7 @@ representation of the points:
 Both are cold data split away from the hot row, which is what the
 data-oriented criteria ask for.
 
-** If a first-class build is needed, it is a cold header
+*** If a first-class build is needed, it is a cold header
 
 One consumer type would earn a table: a journey that treats a build as an
 object in its own right, with a state, a reviewer or a sign-off, rather than
@@ -431,7 +466,7 @@ The recommendation is to *not* create it until that journey is agreed, and to
 write the journey first if it is. This is the one place the curve model may
 add a table, and the journeys decide it.
 
-** The data-oriented layout
+*** The data-oriented layout
 
 The three regimes get three shapes, and the storage shape is already the
 right one.
@@ -466,7 +501,7 @@ right one.
   =marketdata.v1.curve-snapshot.get= is reshaped to it rather than joined by a
   second subject.
 
-** Does the storage hold up for the evolution read?
+*** Does the storage hold up for the evolution read?
 
 It does. The composite object is a series; its nodes are the series' point
 observations at each instant; the hypertable already stores them that way, and
@@ -488,7 +523,7 @@ What the evolution requirement does change is the priority: the aligned
 matrix read is the first thing to build, and the single-curve build journey is
 not.
 
-* The composite object is the requirement, 2026-10-06
+** The composite object is the requirement, 2026-10-06
 
 A person does not ask for a series or a point. They ask for a *term structure*
 or a *surface* — a composite object with named axes — and then they ask how it
@@ -497,7 +532,7 @@ the canonical question, and the acceptance below did not ask it: it asked for
 a curve's identity, one build and one consumer. Evolution, surfaces and axes
 were absent, and the word *surface* did not appear.
 
-** Today's answer to the canonical question, and why it is not easy
+*** Today's answer to the canonical question, and why it is not easy
 
 The storage supports the question. An FX vol surface is one =market_series=
 whose points carry =(expiry, strike_label)= coordinates — the =fx_option= row
@@ -530,7 +565,7 @@ retrieve, and the reason is the requirements, not the storage. The storage
 already holds the right rows; the reads and the acceptance never ask the
 question in the person's terms.
 
-** Where is the shape? There is no shape table, and there must be
+*** Where is the shape? There is no shape table, and there must be
 
 The question is the right one, and the answer today is: nowhere. The seven
 marketdata tables hold the series identity, the points, the fixings, the
@@ -556,7 +591,7 @@ were added or dropped between two instants" cannot be answered against an
 expected axis. And a surface's components cannot be enumerated without
 scanning history.
 
-** The shape is a first-class, cold declaration
+*** The shape is a first-class, cold declaration
 
 The object's shape is its axes and their ordered values:
 
@@ -601,7 +636,7 @@ drift; an observed or imported structure writes its shape from what it
 declares, with no recipe at all. This is also where the tenor validation
 lands: an axis value that is a term must be a =refdata_tenors= code.
 
-** The components: ATM, RR and BF are the surface's own axis
+*** The components: ATM, RR and BF are the surface's own axis
 
 The vol surface's quoting convention is not a detail beside the surface; it
 is one of its axes. The FX option key is
@@ -626,7 +661,7 @@ This is the same gap as the surface, one axis down, and it argues for the axis
 work rather than for a table: the components are slices of the surface's grid,
 not independent objects.
 
-** One series per surface, or one per component?
+*** One series per surface, or one per component?
 
 The question this raises is whether ATM, RR and BF should each be a series of
 their own, grouped into a surface, rather than a coordinate of one surface
@@ -648,7 +683,7 @@ So the recommendation stays: the surface is one series; ATM, RR and BF are
 values of its strike-label axis, and what they need is a typed, named,
 validated axis and a read that returns a slice, not a series and not a table.
 
-** Manually keyed points
+*** Manually keyed points
 
 Users key points by hand: a trader's IR level, a broker's vol, a correction
 after a bad feed. That is a first-class market-data operation, not an anomaly,
@@ -684,7 +719,7 @@ way: either broaden =observation_lineage= into the point-provenance annex that
 document already proposes, or rename it to say what it now is. Two cold tables
 keyed by =(series_id, observation_datetime, oresmd_uri)= would be a smell.
 
-** Precedence: a feed must not silently undo a manual point
+*** Precedence: a feed must not silently undo a manual point
 
 Because the manual write is bitemporal, a later feed tick would close the
 manual row and take over, so the precedence is a policy the model must state
@@ -694,7 +729,7 @@ latest manual point over the latest automatic one until the manual point is
 cleared. Either way the rule is explicit and testable, and the evolution view
 can show the manual segment with its actor and its reason.
 
-** The requirements the use case implies
+*** The requirements the use case implies
 
 1. A composite object is first-class: identifiable and of a kind (term
    structure, surface, grid), with its axes named, before any point is read.
@@ -725,7 +760,7 @@ can show the manual segment with its actor and its reason.
 12. The evolution view distinguishes manual points and shows their actor and
     reason, so a person can see what was keyed by hand.
 
-** What to add, in order
+*** What to add, in order
 
 1. The composite-object identity at the wire boundary: a typed request (asset
    class, scope such as a currency pair, object kind, party) that resolves to
@@ -757,7 +792,7 @@ can show the manual segment with its actor and its reason.
 9. Guard the curve-snapshot reads (capture =D9258D1F=).
 10. Only then decide the =curve_builds= table, from the agreed journeys.
 
-* Journey to model reconciliation, 2026-10-07
+** Journey to model reconciliation, 2026-10-07
 
 A third read-only pass, at =44b4fa36a4= (=origin/main=). It reconciles the
 curve data model against the signed-off journey catalogue, reads the tables,
@@ -765,7 +800,7 @@ the generated repositories and the SQL directly, and corrects the two earlier
 passes where the tree has moved. Nothing here writes code, SQL or a generated
 file.
 
-** What the tree has moved since the earlier passes
+*** What the tree has moved since the earlier passes
 
 - *The curve-snapshot reads are now authenticated and their permission is
   seeded.* =curve_snapshot_handler.hpp:81-85= and =:121-125= check
@@ -788,7 +823,7 @@ file.
   outside the tests, so every "today" statement below about a built curve is a
   statement about code paths the tests exercise, not about data.
 
-** Every journey, what serves it, and the gap
+*** Every journey, what serves it, and the gap
 
 The gap counts are the journey documents' own "What is missing" items under
 =doc/knowledge/journeys/market_data/=, except journey 15, which is under
@@ -813,7 +848,7 @@ now, with a file and a line.
 | 14 | See who changed a curve, and when | Generic =history.get= (=history_protocol.hpp=) with providers for =market_series=, =observation_lineage=, =feed_binding= and =series_classification_rule= (=registrar.cpp=); =market_series_versions.list= (=market_series_protocol.hpp:227=) | 7: =market_observation= registers no history provider; no publish acts; no market-data approval kind; no candidate distinction; lineage read keyed by id; manual points unmarked; no auditor role | The manual point's author and reason live on the annex, which already registers a history provider, so the auditor trail exists once the annex row is written. No new table. |
 | 15 | Keep the market data feeds running | =feed_binding= CRUD; =feed_ingest_loop.cpp=; synthetic start and stop subjects | 7: no last-tick read; no source-to-series mapping; IR configs not listable; start and stop are shell-only; no silence threshold; no status history; enabled differs from running | Unchanged. The ingest insert is not the precedence choke point, because the chosen rule is read-time. |
 
-** The five join hops, confirmed and corrected
+*** The five join hops, confirmed and corrected
 
 The story's "Curve data model" table (story :341-347) claims five hops. Four
 hold; one is wrong about its key.
@@ -831,7 +866,7 @@ Two further facts the hops table should state: =market_observations= carries no
 =observation_lineage= is not written for observed points, so "points to inputs"
 is a hop that exists only for derived points.
 
-** Open questions, answered
+*** Open questions, answered
 
 1. *How does a curve read its points?* Today =read_as_of= returns an array of
    =market_observation= objects whose value is text and whose coordinate is
@@ -885,7 +920,7 @@ is a hop that exists only for derived points.
    binding; its inputs are series ids, and =republish()= already writes those
    into =source_series_ids= (=curve_republish_service.cpp:311,354=). No change.
 
-** The smallest representation that satisfies the acceptance
+*** The smallest representation that satisfies the acceptance
 
 The acceptance demands four things the model lacks: a point's source kind, a
 manual point's author/time/reason, a precedence rule, and one read that returns
@@ -965,7 +1000,7 @@ declared shape and the aligned read are the first consumer's work; the shape
 tables are a named gap with a decision (journey 13) and can be added when the
 evolution read's added/dropped/persistent requirement is implemented.
 
-** The first production consumer
+*** The first production consumer
 
 *None exists today, and the acceptance allows the record to say so.* The
 bootstrap engine is called by the republish service and by its own tests; the
@@ -979,7 +1014,7 @@ above, and it proves the object definition that the single-instant and slice
 reads will then share. The compute preview of journey 4 is the second, because
 it needs no storage at all.
 
-** Decisions taken here
+*** Decisions taken here
 
 1. Keep the series as the identity; add no curve, build or point table.
 2. Put the point's source kind on the existing cold annex; quoted is the
@@ -994,7 +1029,7 @@ it needs no storage at all.
 7. Treat the snapshot-permission defect as closed and the oresmd curve
    vocabulary as deleted; strike both from the open questions.
 
-** What this pass could not determine
+*** What this pass could not determine
 
 - Whether a consumer wants the *raw* feed value beside an active manual value
   at the same instant. Read-time precedence can return both in one response; a
@@ -1021,13 +1056,13 @@ it needs no storage at all.
   back-filled -- stays open, and adding it later changes no representation,
   only the check on this one column.
 
-* Journey catalogue, signed off 2026-10-06
+** Journey catalogue, signed off 2026-10-06
 
 The catalogue was agreed with the owner on 2026-10-06. The journey documents
 are written against it under =doc/knowledge/journeys/market_data/=, with the
 feeds journey under =doc/knowledge/journeys/operations/=.
 
-** The model the journeys assume: observations are not curves
+*** The model the journeys assume: observations are not curves
 
 - *A market observation* is what the market sends. It arrives per point, from
   a feed or an import, and nobody signs it off. It is the evidence.
@@ -1037,7 +1072,7 @@ feeds journey under =doc/knowledge/journeys/operations/=.
   approvals are given. Only the published object is visible to pricing,
   reporting and every other consumer.
 
-** Actors
+*** Actors
 
 | Actor | Who they are | Note |
 |-------+--------------+------|
@@ -1048,7 +1083,7 @@ feeds journey under =doc/knowledge/journeys/operations/=.
 | Consumer | Any user who reads published market data | |
 | Auditor | Reads the trail after an incident | |
 
-** The catalogue
+*** The catalogue
 
 | # | Journey | Actor | Group |
 |---+---------+-------+-------|
@@ -1068,7 +1103,7 @@ feeds journey under =doc/knowledge/journeys/operations/=.
 | 14 | See who changed a curve, and when | Auditor | market_data |
 | 15 | Keep the market data feeds running | Operations | operations |
 
-** Decisions taken at sign-off
+*** Decisions taken at sign-off
 
 - *Journeys 3 and 4 of the first draft are one screen*, now journey 3: the
   market's exceptions are cleared where they are seen.
@@ -1082,7 +1117,7 @@ feeds journey under =doc/knowledge/journeys/operations/=.
 - *The feeds journey moves to the =operations= group*, because Operations owns
   it and it is not about curves.
 
-* Acceptance
+** Acceptance
 
 Read every bullet in the person's terms: the composite object first, its
 evolution second, the representation third.
@@ -1134,15 +1169,16 @@ evolution second, the representation third.
 - Every market data journey has a plain-HTML prototype, the prototypes are
   listed in one inventory, and the inventory check is green.
 
-* Tasks
+** Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
 | [[id:412F1C3E-7C86-4E1D-9E4E-ECE6CF97AB6B][Check the curve model against the journeys and start the representation]] | BACKLOG | | | Settle the shape the journeys demand against the tables that exist, give a point its provenance and a manual key its author, and start the representation. |
 | [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] | BACKLOG | | | A term structure is drawn from points that rarely share an observation instant, so a plot can mix market horizons without saying so. Every point carries its age and the view shows it. |
+| [[id:8A1B795A-91B7-4157-86BF-87CD5DD5D234][Let an operator key and clear a curve point by hand]] | BACKLOG | | | A manual point can be recorded and read, but nothing in the product can key one. Add the write and clear path, so an operator over-keys a coordinate and withdraws it, with the actor and reason recorded. |
 
-* Decisions
+** Decisions
 
 **Why this is a story and not a task under the clean-up.** The clean-up
 brings ores.marketdata up to the Component Clean Standard. This changes the
@@ -1154,7 +1190,7 @@ decision inside a mechanical PR.
 projections and import boundary. Landing a curve representation on top of a
 model that is still in motion would mean doing it twice.
 
-* Out of scope
+** Out of scope
 
 - The ORE handoff — writing =curveconfig.xml=, =market.txt=, =todaysmarket.xml=
   and reading =curves.csv= back. It is a prerequisite for a lossless curve
@@ -1166,7 +1202,7 @@ model that is still in motion would mean doing it twice.
   =ir_curve_generation_config=). They publish curve *points* as ticks and are
   a producer, not a representation.
 
-* Open questions for the deeper analysis
+** Open questions for the deeper analysis
 
 Answered by the =Deeper analysis, 2026-10-06= section above; the questions
 are kept as the record of what was asked.
@@ -1202,7 +1238,7 @@ are kept as the record of what was asked.
   Lineage is documented as deliberately generic, and feed bindings map a raw
   producer channel to a series. A curve's inputs are a series, not a channel.
 
-* Staleness, 2026-10-07
+** Staleness, 2026-10-07
 
 A term structure is drawn from points that rarely share one observation
 instant. One pillar may have ticked a minute ago and the next three days ago,
@@ -1243,7 +1279,7 @@ returns points without their instants cannot draw it. The aligned evolution
 read is the first place it lands, since that read already returns instants by
 nodes, so the age comes with the matrix rather than from a second call.
 
-* References
+** References
 
 - ORE engine source: =/home/marco/Vault/Development/ORE/Engine= — the real
   checkout, not the vendored copy under =external/ore/=. Start at

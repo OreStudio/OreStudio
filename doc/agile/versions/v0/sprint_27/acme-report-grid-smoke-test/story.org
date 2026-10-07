@@ -40,10 +40,12 @@ A report definition owned by ACME corporation, carrying a new report type, runs 
 |------+-------+-------+-----+-------------|
 | [[id:6908C71C-5064-42CA-AB0E-1028188D856E][Scaffold story: Run an example bundle through the compute grid from a report definition]] | DONE | 2026-09-27 | 2026-09-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:06147DF3-FDC9-4EDD-8F77-1B165BB316E7][Let a definition select its step chain]] | DONE | | 2026-09-28 | Task for: Run an example bundle through the compute grid from a report definition |
-| [[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][Make the reporting to compute handoff drive a job]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][Make the reporting to compute handoff drive a job]] | STARTED | 2026-10-07 | | Task for: Run an example bundle through the compute grid from a report definition |
 | [[id:9F93A090-D547-4599-A4B3-8F4911998F54][Retrieve the compute results]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
 | [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
 | [[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]] | BACKLOG | | | Task for: Run an example bundle through the compute grid from a report definition |
+| [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][Correct the seeded report definition schedule expression]] | BACKLOG | | | The Intercompany Exposure Matrix definition is seeded with schedule_expression '0 6 * * 1,15', whose fifth field is the day of week and 15 is out of range, so cron_expression::from_string refuses it and report_operations schedule-report-definitions fails. A definition that cannot be scheduled never gets a run grant, so no run can be admitted. Its description says monthly cadence. |
+| [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]] | BACKLOG | | | The acme_demo profile seeds 155 report definitions but no risk report configurations. The report execution chain resolves a risk_report_config by definition id before it does anything else, and fails the instance with 'risk_report_config not found' when there is none, so every seeded definition is unrunnable. Seed at least one configuration and its book or portfolio scope for the definitions the stories exercise, and decide whether the rest stay unconfigured. |
 
 * Decisions
 

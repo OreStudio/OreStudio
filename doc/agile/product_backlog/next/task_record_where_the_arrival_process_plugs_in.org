@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: B9E5A52A-E345-4C0D-B86F-5AF7F229891E
+:END:
+#+title: Task: Record where the arrival process plugs into the tick clock
+#+description: The capture names candidate arrival models but not where any of them plugs in, because the code it was written against had two clocks. Record the seam the arrival model takes, and what the current clock cannot express about intensity per feed rather than per asset class.
+#+type: task
+#+level: s1
+#+filetags: :next:product_backlog:agile:
+#+owner: marco
+#+branch: doc/record-where-the-arrival-process-plugs-in
+#+pr: 2767
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record, in the capture, what the tick-clock collapse changed and which seam an arrival model takes, so the next person does not rediscover it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C75D1DCC-ED4A-48D0-9035-0B9E4D9C2593][Stochastic tick arrival times for synthetic feeds]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The capture states the seam an arrival model takes, and that the clock stops computing a constant period and asks for the next instant instead
+- The capture states that intensity is a property of the feed rather than the asset class, since a G11 pair ticks far more often than an emerging-market pair
+- The capture states that a regime model's state machine belongs to the arrival model and the clock stays regime-agnostic
+- The traps a draw-based clock must not inherit are recorded: the first tick sleeping a full period, and the stop-responsive slicing having to survive
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2767][#2767]] | [agile] Record where stochastic tick arrival plugs into the clock |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Delivered in PR 2767, a documentation change to the capture itself.
+
+The capture already named candidate arrival models but not where any of them
+plugs in, because the code it was written against had a clock per producer and
+so no single place to put one. It now records that the two clocks collapsed
+into one =tick_clock= owning the period, the sliced stop-responsive sleep, the
+publish counter and the guard, with a producer supplying only what one tick
+does.
+
+It records the seam precisely: the clock answers one question, when is the next
+tick, and today computes a constant period from =ticks_per_hour=; the change is
+to ask an arrival model for that instant instead, which leaves the producer's
+process untouched and keeps the arrival process decoupled from the price
+process, as the capture's goal requires.
+
+It records what the current code cannot express. Intensity is a property of the
+feed and not of the asset class -- a G11 pair ticks far more often than an
+emerging-market pair -- so the scalar =ticks_per_hour= is too coarse and the
+arrival parameters belong on the generation config beside the process
+parameters. Under a regime model the state machine belongs to the arrival model
+and the clock stays regime-agnostic, which is what stops that work reopening the
+clock.
+
+Two traps for the implementer are recorded: the first tick currently sleeps a
+full period, which a draw-based clock must not inherit because under an arrival
+model the first tick is not special; and the stop-responsive slicing must
+survive, so a sleep cut short by a stop is not confused with a short
+inter-arrival draw.
+
+No code changed, so nothing is tested. The claim that the capture's listed
+models remain unconfirmed by a literature review is the capture's own open
+question and is left standing.

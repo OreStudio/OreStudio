@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 239AABDC-4CB1-489A-8BFA-A38617929C3E
+:END:
+#+title: Story: Clear the local-check failures on main
+#+description: The local check gate fails on main for two reasons that are nobody's branch: six shell scripts tangle differently from what is committed, and the two DSH plugin packages still declare version 0.0.25 against a 0.0.27 product.
+#+type: story
+#+level: s2
+#+filetags: :codegen:release:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The local check gate stops failing on drift that predates any branch.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- The six shell scripts match what their recipes tangle to.
+- The DSH plugin package versions match the product version.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DABB1ED1-C126-4194-994F-C0BDFA44AB01][Scaffold story: Clear the local-check failures on main]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0725298C-D015-4ECB-A72D-DE6ABD387206][Regenerate the drifted shell scripts]] | BACKLOG | | | Initial task for: Clear the local-check failures on main |
+| [[id:F42FCBF0-1931-46A9-A227-968996DDE510][Bump the DSH plugin package versions]] | BACKLOG | | | The two DSH plugin packages declare version 0.0.25 against a 0.0.27 product, so their manifest checks fail. |
+
+* Decisions
+
+* Out of scope
+
+-

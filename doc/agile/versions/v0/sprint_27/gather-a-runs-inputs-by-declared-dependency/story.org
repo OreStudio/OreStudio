@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 004B0E88-1BB6-4323-A579-EEB56C29BA3F
+:END:
+#+title: Story: Gather a run's inputs by declared dependency
+#+description: A run's inputs are gathered today by a fixed linear chain that exports each owner's rows as one opaque blob and never waits for more than one of anything. A report has hundreds to thousands of books, each needing its own trades archive, its own market data resolution and its own configuration at a stated as-of. Declare the inputs a run needs, let the engine hold them as a graph, fan the gathering out per book, and assemble the package only when every declared input is present.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report run must name up front what inputs it needs, and the engine must know which are present, which are still being produced, and which failed. Gathering fans out per book; the package is assembled only when nothing is missing.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The story is cut into nine tasks and none is started. The gathering is a linear chain today: one export per owner, no book in the request, no as-of anywhere, and no way to say what a run is waiting for. |
+| Waiting on    | Nothing.                               |
+| Next          | Take the two foundations first — the artifact declaration and the dependency graph — because the fan-out over books, and the package that waits for it, have no defined completion condition without them. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- A step declares the artifacts it consumes and produces, and the engine refuses to dispatch it until its inputs exist.
+- A run whose gathering fans out over N books dispatches N gathers and assembles its package only when all N are present.
+- The dependency graph is persisted with the run and reconstructed for dispatch, rather than living only in the code that built the chain.
+- Every gathered artifact is reproducible for a stated as-of date.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] | BACKLOG | | | A step is dispatched by its ordinal position and nothing else, so nothing states what it needs before it can run or what it leaves behind for the next step to read. Give a step a declared set of input artifacts and output artifacts, and make the engine refuse to dispatch a step whose inputs do not exist. This is the declaration half: without it the engine cannot know whether a run is waiting on work or is simply broken. |
+| [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] | BACKLOG | | | The chain is a std::vector built in code and the instance stores each step's ordinal, so the only edges are the ordinals. Persist the graph with the run — steps as vertices, artifact dependencies as edges — and reconstruct it as a boost::adjacency_list for dispatch, the way ores.dq's publish_service already orders datasets. A step with several producers then has a defined completion condition rather than an ordinal that no longer describes it. |
+| [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Resolve the book scope a run fans out over]] | BACKLOG | | | The run resolves its scope once, in the gather_trades step, and treats it as one bag of books, so one export object answers for every book. A report covers hundreds to thousands of books and each needs its own trades archive, its own market data and its own portfolio XML. Resolve the scope up front, record it against the run, and let the run fan out one gather per book. |
+| [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a book's trades as an archive at an as-of]] | BACKLOG | | | trading.v1.ops.export_trades_to_storage takes book ids and no date and writes one gzipped msgpack of trade_export_item rows for all of them, which is not something the ORE mapper can consume: it carries instruments as an opaque payload and no shape the mapper can walk. Export one book at a time at a stated as-of, source everything the portfolio needs — trade headers, instruments and envelopes — and write a zip whose shape is declared. |
+| [[id:18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82][Map a book's archive into the ORE portfolio]] | BACKLOG | | | No trades-to-ORE-portfolio exporter exists. trade_mapper and the instrument mappers walk the import direction only, so prepare_ore_package copies the trades blob into the tarball and ORE never opens it, which is why the engine stops at 'Build Portfolio'. ores.ore owns the ORE schema and its mappers, so it rebuilds the mapper's input types from the archive, maps them, renders the book's portfolio XML, and uploads it as the run's portfolio input. |
+| [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a book's market data requirements]] | BACKLOG | | | gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a book's trades actually need. Resolve it: from a book to its trades, from the trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. Decide how much of that resolution belongs in SQL, where the joins already live, and how much in the services. |
+| [[id:86994A25-E1C5-41AF-BE1D-E13F0667EFB1][Export the market data a book requires]] | BACKLOG | | | marketdata.v1.ops.export_market_data_to_storage takes no book and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per book needs the export narrowed to the resolved requirements and read as of the run's date, so two runs of one book on different dates read different rows. |
+| [[id:75159083-58A4-4266-A64B-4FDC94EF0426][Hand each configuration to its owner by id at an as-of]] | BACKLOG | | | The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over books and configurations must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it. |
+| [[id:5B2B71A8-EE8E-4B9B-8D30-93BFB44282DA][Assemble the package once every input is present]] | BACKLOG | | | prepare_ore_package downloads whatever it is handed and packs it, so it cannot tell a run that is still gathering from one that is broken, and it fails on a missing input only when the engine reads it. Make the step consume the declared artifact set, run only when every artifact the run declared exists, and name the ones that are missing when it cannot. |
+
+* Dependencies between the tasks
+
+The two foundations gate the rest:
+
+#+begin_example
+declare what a step consumes and produces
+  └─ hold a workflow as a dependency graph
+       ├─ resolve the book scope a run fans out over
+       └─ assemble the package once every input is present
+
+export a book's trades as an archive at an as-of
+  └─ map a book's archive into the ORE portfolio
+
+resolve a book's market data requirements
+  └─ export the market data a book requires
+
+hand each configuration to its owner by id at an as-of   (independent)
+#+end_example
+
+The four producers are independent of each other and of the foundations, so
+they can be built in any order once the declaration's vocabulary exists. What
+they cannot do is *wait* for each other: only the graph can say whether a run
+is still gathering.
+
+* Decisions
+
+*Open, to settle inside the tasks.* Each is recorded with the task that owns
+it, and none is closed:
+
+- *The archive's shape.* One archive per book, with a member per instrument
+  type plus a manifest; not one archive per book per type. Owned by
+  [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a book's trades as an archive at an as-of]].
+- *Where the oresmd requirement grammar lives.* It is C++ codecs today, so
+  "resolve it in the database" means moving the grammar or splitting the
+  resolution. Owned by [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a book's market data requirements]].
+- *How the graph's edges are persisted.* An edge table keeps a step's
+  producers open-ended; a depends-on column keeps the read simple. Owned by
+  [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]].
+- *What carries a configuration document to storage.* One transport shape for
+  every kind, or a message type per kind. Owned by
+  [[id:75159083-58A4-4266-A64B-4FDC94EF0426][Hand each configuration to its owner by id at an as-of]].
+
+*The as-of is cross-cutting.* Every market and trade table is bitemporal, so an
+as-of read is a =valid_at= read and needs no new machinery — but the run
+document's =asofDate= is currently passed to nothing, and every producer has to
+be handed it for the same run to be reproducible. The story's acceptance says
+every gathered artifact is reproducible for a stated as-of; that is the test.
+
+*What this story does not do.* It does not change the compute side. The package
+the run assembles, the assignment that carries it and the node that runs it
+keep the shape the storage-capability work gave them.
+
+* Out of scope
+
+- The compute side: the package, the assignment and the node keep the shape the
+  storage-capability work gave them.
+- The near-term portfolio unblock, which maps today's blob so the engine
+  proceeds before the archive is redesigned:
+  [[id:5CF75315-C9BF-4114-8BF1-A6AB68FF573B][Export the trades as the ORE portfolio the engine reads]]. The reverse
+  mappers are shared, so whichever lands first builds them.
+

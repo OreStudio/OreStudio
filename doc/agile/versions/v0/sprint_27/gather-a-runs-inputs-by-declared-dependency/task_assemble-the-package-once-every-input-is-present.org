@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 5B2B71A8-EE8E-4B9B-8D30-93BFB44282DA
+:END:
+#+title: Task: Assemble the package once every input is present
+#+description: prepare_ore_package downloads whatever it is handed and packs it, so it cannot tell a run that is still gathering from one that is broken, and it fails on a missing input only when the engine reads it. Make the step consume the declared artifact set, run only when every artifact the run declared exists, and name the ones that are missing when it cannot.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: The declaration and the graph: one says what to wait for, the other says whether it has arrived.
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=prepare_ore_package= downloads whatever it is handed and packs it. If a
+producer has not finished, or a producer failed, the step cannot tell: it
+either reads a missing key and throws, or it packs what is there and the engine
+discovers the gap when it reads the file. A run that is still gathering and a
+run that is broken look the same until the engine speaks.
+
+Make the step consume the run's declared artifact set, run only when every
+artifact exists, and name the ones that do not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] and [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- The step dispatches only when every artifact the run declared exists.
+- When one is missing, the run reports which artifact is missing and which
+  step produces it, rather than failing inside the engine.
+- The package is assembled from storage, so the step holds no state of its own
+  that a restart would lose.
+- The engine's working directory is still the layout ORE reads: the run
+  document and its configuration under =inputPath=, and the run's own data at
+  the paths the run document names.
+
+* Plan
+
+This is the task that makes the waiting visible, and it depends on both
+foundations: the declaration says what the run needs, and the graph says
+whether each producer has finished. Assembling from storage rather than from a
+staging directory built inside one call is what lets the producers run
+anywhere and in any order.
+
+=ores.ore.store::declared_data_files= already reads the names the run document
+gives the run's own data, and =archive_layout= already places the configuration
+documents where the engine reads them. The pieces the earlier change built are
+the ones this step keeps; what changes is where the bytes come from and when
+the step is allowed to start.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

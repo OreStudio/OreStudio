@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 75159083-58A4-4266-A64B-4FDC94EF0426
+:END:
+#+title: Task: Hand each configuration to its owner by id at an as-of
+#+description: The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over books and configurations must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The run document's configuration documents are pulled synchronously inside
+=prepare_ore_package=: =export_run= calls each owner's document operation in
+turn, with the run token, and waits. One call answers for every configuration,
+so nothing is an artifact, nothing can be produced in parallel, and the
+package step cannot start until the slowest owner has answered.
+
+Ask each owner for one configuration by its id and an as-of, have the owner
+write it to storage, and let the mapping happen afterwards.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- Each configuration is requested on its own, naming its configuration id and
+  the as-of date.
+- The owner writes the document to storage as an artifact the run declares, so
+  the package step waits on artifacts rather than on a blocking call.
+- The run document itself is one of these artifacts, not a special case.
+- A configuration whose document is missing fails the run and names the
+  configuration.
+
+* Plan
+
+The precedent is already in the tree and this task follows it rather than
+inventing one: for the configuration documents, the owners return *neutral*
+documents and =ores.ore.core= renders the ORE XML through
+=curve_configuration_mapper::reverse=, =todays_market_mapper::reverse=,
+=pricing_engine_mapper::reverse= and =conventions_mapper::reverse=. The owners
+do not know the ORE schema, and that stays true — only the transport changes.
+
+So the shape is: reporting asks the owner for one configuration by id at an
+as-of; the owner writes the neutral document to the run's storage prefix; the
+run declares it as an artifact; and =ores.ore= consumes it when it renders the
+package. The id is the configuration row the definition already binds, and
+today's =export_run= walk is the list of owners this splits into.
+
+The one question the task must answer is what carries the document: the
+neutral domain type serialised to storage, or a new message type per
+configuration kind. The first keeps one transport shape for every kind, which
+is what makes the package step indifferent to which owner produced what.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

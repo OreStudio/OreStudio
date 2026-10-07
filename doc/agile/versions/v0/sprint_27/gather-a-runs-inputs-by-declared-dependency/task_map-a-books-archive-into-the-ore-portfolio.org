@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82
+:END:
+#+title: Task: Map a book's archive into the ORE portfolio
+#+description: No trades-to-ORE-portfolio exporter exists. trade_mapper and the instrument mappers walk the import direction only, so prepare_ore_package copies the trades blob into the tarball and ORE never opens it, which is why the engine stops at 'Build Portfolio'. ores.ore owns the ORE schema and its mappers, so it rebuilds the mapper's input types from the archive, maps them, renders the book's portfolio XML, and uploads it as the run's portfolio input.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: The trades archive, which is the input this mapper consumes.
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No trades-to-ORE-portfolio exporter exists. =trade_mapper= and the instrument
+mappers walk the import direction only, so =prepare_ore_package= copies
+trading's blob into the tarball under a name ORE never opens, and the engine
+stops at "Pricing: Build Portfolio" with "Failed to run analytics
+PRICING,XVA".
+
+=ores.ore= owns the ORE schema and the mappers, so the reverse walk belongs
+there: read the book's archive, rebuild the mapper's input types, map them,
+render the book's portfolio XML, and upload it as the run's portfolio input.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a book's trades as an archive at an as-of]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- The mapper walks from a stored trade to the ORE portfolio element it
+  describes, for every instrument type the archive can carry.
+- The rendered portfolio is what ORE reads at the file its run document names
+  as =portfolioFile=, and the engine proceeds past "Build Portfolio".
+- A trade the mapper cannot express fails the step and names the trade, rather
+  than producing a portfolio that is quietly missing it.
+- The output is one portfolio per book, uploaded as a declared artifact the
+  package step can wait on.
+
+* Plan
+
+=save_data(const portfolio&)= already exists, and every mappers' forward
+function already exists because the import path uses it. The work is the
+reverse direction, and the decision to take first is whether to add a reverse
+to each mapper or to build the portfolio by walking the archive directly
+against =trade_mapper='s element constructors. The mappers already know both
+spellings of each element, so a reverse beside each forward keeps the two
+halves of one mapping in one file; a separate builder would be a second place
+that knows the same correspondence.
+
+The step must not emit a partial portfolio. ORE treats a portfolio that parses
+as the truth of what to price, so a trade that cannot be mapped has to stop
+the run: a silent omission is a report that prices a portfolio nobody asked
+for.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

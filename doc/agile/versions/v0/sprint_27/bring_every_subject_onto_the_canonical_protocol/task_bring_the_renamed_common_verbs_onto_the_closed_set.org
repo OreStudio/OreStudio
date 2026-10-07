@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-every-subject-onto-the-canonical-protocol
-#+pr:
+#+pr: 2737
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2737][#2737]] | [codegen] Bring every subject onto the canonical entity protocol |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :nightly_includes_and_generated_files:sprint_27:v0:
 #+owner: marco
 #+branch: feature/nightly-includes-and-generated-files
-#+pr:
+#+pr: 2739
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2739][#2739]] | [format] Land the nightly include fixes and keep the fixer out of generated files |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:rates:data-model:trading:codegen:sprint_27:v0:
 #+owner: marco
 #+branch: feature/analyse-the-rates-family
-#+pr:
+#+pr: 2780
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2780][#2780]] | [agile] Analyse the rates family and propose its relational model |
 
 * Review
 

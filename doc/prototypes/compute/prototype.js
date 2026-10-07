@@ -454,7 +454,7 @@
         heatMetric: 'work',
         job: null,
         showState: true,
-        watchTab: 'fleet',
+        watchTab: 'dashboard',
         updatedAt: clock(NOW_MIN),
         logsDownloaded: 0
     };
@@ -1501,21 +1501,24 @@
     }
 
     var WATCH_TABS = [
-        { id: 'fleet', name: 'Fleet' },
-        { id: 'work', name: 'Work' }
+        { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?' },
+        { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when' },
+        { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' }
     ];
 
     function watchScreen() {
         var tab = S.watchTab;
-        var support = tab === 'work'
-            ? loadChart() + throughputChart() + outcomesChart() + queueChart()
-            : ribbonChart() + fleetSizeChart() + nodeTablePanel();
-        return summaryPanel() +
-            heatmapChart(S.heatMetric, true) +
-            subTabs(WATCH_TABS, tab, tab === 'work'
-                ? 'the work the grid is doing'
-                : 'the nodes it is doing it on') +
-            support;
+        var body;
+        if (tab === 'nodes')
+            body = heatmapChart(S.heatMetric, true) + ribbonChart();
+        else if (tab === 'fleet')
+            body = fleetSizeChart() + nodeTablePanel();
+        else
+            body = summaryPanel() + loadChart() + throughputChart() +
+                outcomesChart() + queueChart();
+        var active = WATCH_TABS[0];
+        for (var i = 0; i < WATCH_TABS.length; i++) if (WATCH_TABS[i].id === tab) active = WATCH_TABS[i];
+        return subTabs(WATCH_TABS, tab, active.note) + body;
     }
 
     function jobScreen() {
@@ -1669,7 +1672,8 @@
         if (screenById(p.get('screen')).id === p.get('screen')) S.screen = p.get('screen');
         if (variantById(p.get('variant')).id === p.get('variant')) S.variant = p.get('variant');
         if (p.get('metric') === 'failures' || p.get('metric') === 'work') S.heatMetric = p.get('metric');
-        if (p.get('tab') === 'fleet' || p.get('tab') === 'work') S.watchTab = p.get('tab');
+        for (var i = 0; i < WATCH_TABS.length; i++)
+            if (WATCH_TABS[i].id === p.get('tab')) S.watchTab = p.get('tab');
         if (p.get('job')) S.job = p.get('job');
     }
 

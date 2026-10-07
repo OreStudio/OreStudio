@@ -100,7 +100,8 @@ via its "Verifies task" field.
   access is an object capability naming the exact keys a caller may touch.
 - It records the four checks the storage service makes, the lifecycle, the
   narrow capability a worker node holds for one assignment, the seven gaps
-  between the tree and the target, and four open questions.
+  between the tree and the target, and the decisions that settle ownership,
+  the run token's scope, the signer, output retention and the bucket set.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] now points at
   the policy rather than leaving tenancy open, and the policy is linked
   bidirectionally with the Claim Check and Access Token patterns.

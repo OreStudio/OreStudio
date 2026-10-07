@@ -58,6 +58,14 @@ ones, and every caller reaches only the objects its credential names.
   buckets and key prefixes. A step service presents its run token; a worker
   node presents a capability for one assignment.
 - *Storage derives the tenant from the bucket,* never from a request field.
+- *The run token is confined to the run's key prefix,* so a step reaches its
+  own run and no other run of the same tenant.
+- *IAM is the only signer,* so storage keeps one verifier and the orchestrator
+  holds no signing key.
+- *Outputs are retained under one policy per tenant,* with a per-definition
+  override only if a report later needs one.
+- *No scratch bucket class.* An engine's in-flight bytes are a run input or a
+  node-local working file.
 
 * Out of scope
 

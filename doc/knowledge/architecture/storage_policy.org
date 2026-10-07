@@ -185,15 +185,19 @@ Who presents what:
 | Caller | Credential | Scope |
 |--------+------------+-------|
 | a person | session token | the tenant's buckets |
-| a step service | its run token | the tenant's buckets |
+| a step service | its run token | the run's key prefix |
 | a worker node | an assignment capability | the exact keys of the assignment |
 | the platform | a service token | the platform buckets, and any tenant bucket for provisioning and pruning |
 
-The run token already carries the tenant and the party
+The run token already carries the tenant, the party, the grant and the run
 ([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]), so a
-step service needs no second token to reach its tenant's buckets. Its party
-does not narrow a bucket, because a bucket is a tenant's and the party is a
-row-level concept; the storage service checks the tenant and no more.
+step service needs no second token. It also carries the run's key prefix: the
+grant names the report definition and the run is the instance, so the two
+together give ={definition_id}/{instance_id}/=. Storage confines the step to
+that prefix, and a step therefore reaches its own run and no other run of the
+same tenant. The party does not narrow a bucket: a bucket is a tenant's and the
+party is a row-level concept, so storage checks the tenant and the run prefix
+and no more.
 
 * Enforcement
 
@@ -225,8 +229,11 @@ derives it from the bucket, which the policy fixed, and compares.
 
 - *Inputs are the run's.* A run's inputs are pruned when the run reaches a
   terminal state. They are not the record of the run; the database is.
-- *Outputs are the deliverable.* They are retained under the tenant's policy,
-  and the report's post-processing reads them from the outputs bucket.
+- *Outputs are the deliverable.* They are retained under one policy per tenant,
+  and the report's post-processing reads them from the outputs bucket. A
+  per-definition override is not needed today; if a report ever needs a
+  different retention, the policy grows a per-definition exception rather than
+  a bucket.
 - *Platform objects outlive tenants.* A package is not re-uploaded per tenant
   and is not removed when a tenant is removed.
 - *Offboarding is a bucket operation.* Because the tenant owns buckets, its
@@ -235,9 +242,11 @@ derives it from the bucket, which the policy fixed, and compares.
 
 * Compute assignments
 
-The worker node holds no standing storage credential. The orchestrator mints
-an assignment capability for the job and puts it in the assignment, beside the
-result id and the package, input and output keys. The node uses it to fetch
+The worker node holds no standing storage credential. For each job the
+orchestrator asks IAM for an assignment capability and puts it in the
+assignment, beside the result id and the package, input and output keys. IAM is
+the only signer, so storage verifies every capability against the one published
+key it already holds. The node uses it to fetch
 the package and the input and to write the output, and then it is done with
 it.
 
@@ -297,19 +306,29 @@ it.
 - *Storage derives the tenant from the bucket, never from a request field.*
 - *A step service presents its run token.* It is already tenant-scoped, so the
   run-token design needed no second credential.
+- *The run token is confined to the run's key prefix.* The grant names the
+  definition and the token names the run, so storage holds a step to
+  ={definition_id}/{instance_id}/=. A step reaches its own run and no other run
+  of the same tenant, which is the most a run's own authority should buy.
+- *IAM is the only signer.* It mints every capability with the key it already
+  publishes through JWKS, so storage keeps one verifier and the orchestrator
+  holds no signing key of its own.
+- *Outputs are retained under one policy per tenant.* A per-definition override
+  is a later addition if a report ever needs one, not a reason to split a
+  bucket.
+- *No scratch class.* Bytes an engine needs in flight are either a run input or
+  a node-local working file. A third bucket class would exist for no case we
+  have.
 
 * Open questions
 
-- Whether the run token narrows to the run's key prefix, or a step service may
-  reach its whole tenant's buckets. The run's own inputs argue for the
-  prefix; another step of the same run may need the same bucket anyway.
-- Whether a capability is minted by IAM or by the orchestrator holding a
-  delegation. IAM signs today, and the orchestrator is the party that knows
-  the exact keys.
-- The exact retention of outputs, and whether it is per tenant or per report
-  definition.
-- Whether a deployment needs a =scratch= class for intermediate bytes that are
-  neither a run input nor a deliverable.
+- The retention value itself: how long a tenant's outputs live, and whether the
+  platform sets a default the tenant may raise but not lower.
+- Whether the engine package is shared straight from =platform.packages= or
+  mirrored per node's region or network.
+- Whether a tenant may run its own nodes against the shared grid, and if so
+  whether those nodes read the tenant's buckets directly or still present a
+  capability.
 
 * Patterns used
 

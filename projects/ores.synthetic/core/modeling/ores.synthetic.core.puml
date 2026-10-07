@@ -877,7 +877,7 @@ class ores::synthetic::messaging::publish_from_dq_handler {
 }
 note right of "ores::synthetic::messaging::publish_from_dq_handler"
 The one handler with no verifier_ member: it serves the
-synthetic.v1.theme.publish-from-dq workflow step and calls
+synthetic.v1.ops.publish_theme_from_dq workflow step and calls
 the SECURITY DEFINER SQL functions, which read the DQ
 artefact tables and write the ores_synthetic_* tables. The
 workflow engine, not a user, drives it.
@@ -894,7 +894,7 @@ note right of "ores::synthetic::messaging::registrar"
 The component's one entry point. It composes every
 sub-registrar, wires the two hand-wired subjects
 (generate_organisation_request and
-synthetic.v1.theme.publish-from-dq), builds one
+synthetic.v1.ops.publish_theme_from_dq), builds one
 function-local static dispatch_registry, registers the nine
 history providers into it, and finally registers the
 generic history.v1.get subscription against it. All

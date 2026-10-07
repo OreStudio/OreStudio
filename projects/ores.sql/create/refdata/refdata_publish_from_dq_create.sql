@@ -3716,14 +3716,14 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
--- CRM Topology Bundles: refdata.v1.crm-topology-bundles.publish-from-dq
+-- CRM Topology Bundles: refdata.v1.ops.publish_crm_topology_bundles_from_dq
 -- =============================================================================
 
 /**
  * CRM Topology Bundles Publish-from-DQ Function
  *
  * SECURITY DEFINER function called by the refdata service's NATS
- * handler for the refdata.v1.crm-topology-bundles.publish-from-dq
+ * handler for the refdata.v1.ops.publish_crm_topology_bundles_from_dq
  * subject. Reads ores_dq_crm_topology_bundles_artefact_tbl (system
  * tenant) and writes crm_topology_config/crm_driver_pair/
  * crm_enabled_derived_pair rows for the target (tenant, party) --

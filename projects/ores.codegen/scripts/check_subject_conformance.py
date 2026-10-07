@@ -107,6 +107,14 @@ def classify(subject: str) -> tuple[bool, str]:
     if resource == "ops":
         return True, "a domain operation in the reserved ops namespace"
 
+    # The verb is checked before the event branch, because a resource may
+    # itself be named *_events: trading.v1.lifecycle_events.delete_many is a
+    # request on the lifecycle_events resource, not an event whose action is
+    # delete_many. An event's action is never a verb of the common set, so the
+    # order is unambiguous for every subject the grammar admits.
+    if suffix in SPEC_VERBS or suffix.startswith(LIST_BY):
+        return True, "a request"
+
     if resource.endswith("_events"):
         if suffix not in SPEC_EVENT_ACTIONS:
             return False, (
@@ -114,9 +122,6 @@ def classify(subject: str) -> tuple[bool, str]:
                 f"{', '.join(SPEC_EVENT_ACTIONS)}"
             )
         return True, "an event"
-
-    if suffix in SPEC_VERBS or suffix.startswith(LIST_BY):
-        return True, "a request"
 
     # Everything still standing here is an operation that acts on an entity
     # without being one of the eight. The specification's discriminator is that

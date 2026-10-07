@@ -85,11 +85,11 @@ struct identity_workflow_request {
 
 /// The subject a step's command is dispatched to. One subject serves every step,
 /// because the payload says what the step does.
-inline constexpr std::string_view identity_step_command_subject = "workflow.v1.identity.step";
+inline constexpr std::string_view identity_step_command_subject = "workflow.v1.ops.identity_step";
 
 /// The subject a step's compensation is dispatched to.
 inline constexpr std::string_view identity_compensation_command_subject =
-    "workflow.v1.identity.compensate";
+    "workflow.v1.ops.identity_compensate";
 
 /**
  * @brief Registers the identity_workflow definition.

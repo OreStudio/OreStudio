@@ -129,7 +129,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         subs.push_back(
-            nats.queue_subscribe("synthetic.v1.theme.publish-from-dq",
+            nats.queue_subscribe("synthetic.v1.ops.publish_theme_from_dq",
                                  "ores.synthetic.service",
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }

@@ -77,7 +77,7 @@ public:
  *      whole batch is, by construction, a slice of one internally consistent latent curve.
  *   3. Publishes each entry as its own market_tick, named by its pillar's oresmd quote URI and
  *      all sharing one observation time, on the producer subject for its source_name and
- *      binding_mode (synthetic.v1.tick.<source>, or the sandbox prefix).
+ *      binding_mode (synthetic.v1.ops.tick.<source>, or the sandbox prefix).
  *
  * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which stores one
  * market_observation per tick for each consumer the source's feed bindings name. The synthetic
@@ -169,7 +169,7 @@ private:
  * initial_rate parameter value is used as-is.
  *
  * The publish subject is derived from cfg.source_name under @p binding_mode via
- * producer_subject(): a bound curve publishes on "synthetic.v1.tick.<source>", a sandboxed
+ * producer_subject(): a bound curve publishes on "synthetic.v1.ops.tick.<source>", a sandboxed
  * one on the sandbox prefix the marketdata ingest loop never subscribes to.
  *
  * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()

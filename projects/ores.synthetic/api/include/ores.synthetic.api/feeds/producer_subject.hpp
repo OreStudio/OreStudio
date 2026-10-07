@@ -36,8 +36,8 @@ namespace ores::synthetic::feed {
  * '-' — is replaced with '_' so a stray value cannot produce surprise routing
  * or a publish error.
  *
- * A sandboxed feed publishes under "synthetic.v1.sandbox.tick." rather than
- * "synthetic.v1.tick.<source>", which the marketdata ingest loop never
+ * A sandboxed feed publishes under "synthetic.v1.ops.sandbox_tick." rather than
+ * "synthetic.v1.ops.tick.<source>", which the marketdata ingest loop never
  * subscribes to, so its ticks cannot be stored whatever bindings exist. This
  * is the one subject builder for every asset class; a producer supplies only
  * its source_name and binding_mode.

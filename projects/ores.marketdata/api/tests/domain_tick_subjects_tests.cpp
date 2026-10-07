@@ -29,7 +29,7 @@ const std::string tags("[domain][tick_subjects]");
 
 TEST_CASE("a_producer_publishes_on_its_source_subject", tags) {
     CHECK(ores::marketdata::domain::synthetic_tick_subject("usd.sofr") ==
-          "synthetic.v1.tick.usd.sofr");
+          "synthetic.v1.ops.tick.usd.sofr");
 }
 
 TEST_CASE("a_consumer_reads_a_datum_under_its_lower_cased_ore_key", tags) {

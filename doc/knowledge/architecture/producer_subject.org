@@ -31,8 +31,8 @@ publish error.
 
 ** The two prefixes
 
-A bound feed yields ="synthetic.v1.tick.<token>"=. A sandboxed feed yields
-="synthetic.v1.sandbox.tick.<token>"=. Both prefixes are constants in
+A bound feed yields ="synthetic.v1.ops.tick.<token>"=. A sandboxed feed yields
+="synthetic.v1.ops.sandbox_tick.<token>"=. Both prefixes are constants in
 =ores.marketdata.api/domain/tick_subjects.hpp=, which is also where the
 ingest loop's own wildcard is built, by appending the NATS multi token
 wildcard to the bound prefix.

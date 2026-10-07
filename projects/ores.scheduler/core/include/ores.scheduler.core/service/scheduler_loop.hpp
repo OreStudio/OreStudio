@@ -48,7 +48,7 @@ namespace ores::scheduler::service {
 class ORES_SCHEDULER_CORE_EXPORT scheduler_loop final {
 public:
     static constexpr std::string_view job_instance_events_subject =
-        "scheduler.v1.job-instance-events";
+        "scheduler.v1.job_instance_events.updated";
 
     scheduler_loop(ores::nats::service::client& nats,
                    database::context system_ctx,

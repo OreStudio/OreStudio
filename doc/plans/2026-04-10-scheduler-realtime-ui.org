@@ -30,7 +30,7 @@ reporting service, another microservice — can both:
 1. *Schedule* a job by sending =schedule_job_request= to
    =scheduler.v1.job-definitions.schedule=.
 2. *Get notified* of job lifecycle transitions by subscribing to
-   =scheduler.v1.job-instance-events=.
+   =scheduler.v1.job_instance_events.updated=.
 
 There is nothing special about the Qt client here.  The existing =nats_publish=
 action handler already demonstrates this pattern for service-to-service
@@ -44,7 +44,7 @@ Re-use the existing =entity_change_event= format (=ores.eventing= library) so
 no new struct or =ClientManager= code is needed:
 
 #+begin_src
-subject:      scheduler.v1.job-instance-events
+subject:      scheduler.v1.job_instance_events.updated
 entity:       ores.scheduler.job_instance
 change_type:  created   (job started)
               updated   (job completed — succeeded or failed)
@@ -90,7 +90,7 @@ Files:
 
 ** Phase 2 — Client: =JobInstanceController= subscribes to events
 
-Pass ="scheduler.v1.job-instance-events"= as the =eventName= argument to the
+Pass ="scheduler.v1.job_instance_events.updated"= as the =eventName= argument to the
 =EntityController= base constructor inside =JobInstanceController=.  The base
 class then handles subscribe / unsubscribe / reconnect automatically and calls
 =window->markAsStale()= on every event, showing the stale indicator immediately.
@@ -132,9 +132,9 @@ directly:
 
 - In constructor: connect =clientManager_->notificationReceived= to a lambda
   that calls =window_->refresh()= when =eventType ==
-  "scheduler.v1.job-instance-events"= and the window is open.
+  "scheduler.v1.job_instance_events.updated"= and the window is open.
 - On =on_login= (via =SchedulerPlugin=): call
-  =clientManager_->subscribeToEvent("scheduler.v1.job-instance-events")= and
+  =clientManager_->subscribeToEvent("scheduler.v1.job_instance_events.updated")= and
   unsubscribe in =closeWindow()= / destructor.
 
 This makes the monitor window update immediately when any job fires, instead of

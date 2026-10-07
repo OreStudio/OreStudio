@@ -1689,8 +1689,8 @@ class ores::synthetic::feed::producer_subject {
 note top of "ores::synthetic::feed::producer_subject"
 Free function, the one subject builder for every asset class. It scrubs
 source_name into a safe NATS token and returns the unified subject
-synthetic.v1.tick.<source>. A sandboxed binding instead publishes under
-synthetic.v1.sandbox.tick.<source>, which the ingest loop's bound-feed
+synthetic.v1.ops.tick.<source>. A sandboxed binding instead publishes under
+synthetic.v1.ops.sandbox_tick.<source>, which the ingest loop's bound-feed
 subscription never matches, so a sandboxed feed is structurally unreachable
 from the bound-feed resolution path. A producer supplies only its source_name
 and binding_mode; FX and IR share this and have no subject logic of their own.

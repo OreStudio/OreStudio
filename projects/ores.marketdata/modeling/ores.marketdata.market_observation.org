@@ -121,7 +121,7 @@ std::to_string(faker::number::decimal<double>(0.0, 100.0))
 :END:
 
 Source tag identifying the producer channel that published this observation
-(e.g. =synthetic.v1.tick.fx_spot.eur-usd=).
+(e.g. =synthetic.v1.ops.tick.fx_spot.eur-usd=).
 
 * SQL
 

@@ -175,7 +175,7 @@ public:
      *
      * @p binding_mode is the mode the caller built the feed with, and it
      * drives the bind below: =bound= creates or confirms the feed_binding on
-     * "synthetic.v1.tick.<source>", the subject the marketdata ingest loop
+     * "synthetic.v1.ops.tick.<source>", the subject the marketdata ingest loop
      * subscribes; =sandboxed= publishes on the sandbox prefix instead and
      * never gains a binding, because a binding naming this source would
      * claim ingestion happens on the bound subject when it does not.

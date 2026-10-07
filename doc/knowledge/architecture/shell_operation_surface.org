@@ -48,9 +48,9 @@ supplies only which rows a feed needs.
 
 =synthetic preview fx-spot=, =synthetic preview ir-shape= and =synthetic
 preview ir-paths= take one feed token and reach the three dry-run operations
-the service already offers: =synthetic.v1.fx_spot.simulate=,
-=synthetic.v1.ir_curve.preview_shape= and
-=synthetic.v1.ir_curve.simulate_paths=. Each states the feed's own process
+the service already offers: =synthetic.v1.ops.simulate_fx_spot_paths=,
+=synthetic.v1.ops.preview_ir_curve_shape= and
+=synthetic.v1.ops.simulate_ir_curve_paths=. Each states the feed's own process
 type and its stored rows, so the preview is of the configured feed and not of
 a request the caller assembles. =fx-spot= and =ir-paths= take =--ticks=,
 =--paths= and =--seed=; =ir-shape= takes =--seed= and =--frequency=.

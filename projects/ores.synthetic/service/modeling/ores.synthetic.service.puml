@@ -204,7 +204,7 @@ class ores::synthetic::service::feed_config_handler {
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
 note right of "ores::synthetic::service::feed_config_handler"
-Serves synthetic.v1.feed_configs.start / .stop / .list --
+Serves synthetic.v1.ops.start_feed / .stop / .list --
 one handler for every asset class, replacing the per-kind
 handlers that came before it. The client sends a config_id
 and nothing else: the handler probes the FX repository and
@@ -261,7 +261,7 @@ class ores::synthetic::service::simulate_handler {
     +simulate(msg : nats::message)
 }
 note right of "ores::synthetic::service::simulate_handler"
-Serves synthetic.v1.fx_spot.simulate. Builds the real GMM
+Serves synthetic.v1.ops.simulate_fx_spot_paths. Builds the real GMM
 price process and steps it to answer a whole batch of sample
 paths at once. Nothing is persisted and nothing is
 published: it is a dry run so a caller can see the configured
@@ -292,10 +292,10 @@ note right of "ores::synthetic::service::registrar"
 The control-plane registrar, distinct from
 ores.synthetic.core's entity registrar. It subscribes nine
 subjects, all on the ores.synthetic.service queue:
-synthetic.v1.feed_configs.start/.stop/.list,
-synthetic.v1.fx_spot.simulate,
-synthetic.v1.ir_curve.simulate_paths,
-synthetic.v1.ir_curve.preview_shape,
+synthetic.v1.ops.start_feed/.stop/.list,
+synthetic.v1.ops.simulate_fx_spot_paths,
+synthetic.v1.ops.simulate_ir_curve_paths,
+synthetic.v1.ops.preview_ir_curve_shape,
 marketdata.v1.ops.start_feeds_under_folder/.stop_folder
 and marketdata.v1.ops.get_vintage_validity. Each
 lambda constructs its handler per message.

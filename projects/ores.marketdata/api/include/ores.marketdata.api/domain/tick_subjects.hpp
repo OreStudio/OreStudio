@@ -30,15 +30,15 @@ namespace ores::marketdata::domain {
 /**
  * @brief The subjects a live market_tick travels on.
  *
- * A producer publishes on "synthetic.v1.tick.<source>", or under the sandbox
+ * A producer publishes on "synthetic.v1.ops.tick.<source>", or under the sandbox
  * prefix, which the ingest loop never subscribes to. The ingest loop
  * republishes each tick to every consumer the source's feed bindings name, on
  * the market_tick subject extended with the consumer and the datum's
  * canonical ORE key.
  */
-inline constexpr std::string_view synthetic_tick_subject_prefix = "synthetic.v1.tick.";
+inline constexpr std::string_view synthetic_tick_subject_prefix = "synthetic.v1.ops.tick.";
 inline constexpr std::string_view synthetic_sandbox_tick_subject_prefix =
-    "synthetic.v1.sandbox.tick.";
+    "synthetic.v1.ops.sandbox_tick.";
 
 /// Every producer's ticks; '>' because a source name may itself be dotted.
 inline std::string synthetic_tick_wildcard() {

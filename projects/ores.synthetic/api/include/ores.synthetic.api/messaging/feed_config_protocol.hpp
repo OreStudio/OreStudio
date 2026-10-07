@@ -39,7 +39,7 @@ namespace ores::synthetic::messaging {
  */
 struct start_feed_request {
     using response_type = struct start_feed_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.feed_configs.start";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.start_feed";
 
     std::string config_id;
 };
@@ -60,7 +60,7 @@ struct start_feed_response {
  */
 struct stop_feed_request {
     using response_type = struct stop_feed_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.feed_configs.stop";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.stop_feed";
 
     std::string config_id;   // preferred: resolved server-side to source_name
     std::string source_name; // used only if config_id is empty; empty too = stop all

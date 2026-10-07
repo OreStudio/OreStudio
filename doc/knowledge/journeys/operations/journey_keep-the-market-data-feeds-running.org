@@ -140,9 +140,9 @@ rather than from the binding.
 | Read the feed behind the source | List the folders | =synthetic.v1.folders.list= | exists |
 | Read whether the source is running | List the running source names | =synthetic.v1.feed_configs.list= | exists |
 | Read the last tick | Read the tick count and last tick per source | no subject | missing |
-| Start a feed | Start one feed by config | =synthetic.v1.feed_configs.start= | exists |
+| Start a feed | Start one feed by config | =synthetic.v1.ops.start_feed= | exists |
 | Start a feed | Start every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder= | exists |
-| Stop a feed | Stop one feed by config | =synthetic.v1.feed_configs.stop= | exists |
+| Stop a feed | Stop one feed by config | =synthetic.v1.ops.stop_feed= | exists |
 | Stop a feed | Stop every feed under a folder | =marketdata.v1.ops.stop_feeds_under_folder= | exists |
 | Enable or disable a binding | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
 | Enable or disable a binding | Write the binding | =marketdata.v1.feed_bindings.put= | exists |

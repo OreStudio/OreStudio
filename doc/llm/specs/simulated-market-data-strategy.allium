@@ -82,7 +82,7 @@ entity SimTheme {
 }
 
 -- One synthetic producer: publishes ticks on
--- synthetic.v1.tick.<source_name>. The source_name is namespaced by
+-- synthetic.v1.ops.tick.<source_name>. The source_name is namespaced by
 -- theme and pair ("synthetic.<theme>.<pair>"), not by party: there is
 -- exactly one producer per source per environment (config).
 entity SimFeed {
@@ -122,7 +122,7 @@ entity FeedBinding {
 -- the binding's own realtime subject (see RepublishedTickStream).
 entity IngestSubscription {
     binding: FeedBinding
-    subject: String  -- synthetic.v1.tick.<source_name>
+    subject: String  -- synthetic.v1.ops.tick.<source_name>
     tick_count: Integer = 0
 }
 

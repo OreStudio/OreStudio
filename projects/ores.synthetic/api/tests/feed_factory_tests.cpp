@@ -218,7 +218,7 @@ private:
     std::string source_name_{"stub"};
     std::string qualifier_{"STUB/KEY"};
     std::string role_;
-    std::string nats_subject_{"synthetic.v1.tick.stub"};
+    std::string nats_subject_{"synthetic.v1.ops.tick.stub"};
 };
 
 }
@@ -273,18 +273,18 @@ TEST_CASE("factory::make derives the producer subject from the build input's bin
     auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
     fx.binding_mode = binding_mode::bound;
     CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
-          "synthetic.v1.tick.eur_usd_test");
+          "synthetic.v1.ops.tick.eur_usd_test");
     fx.binding_mode = binding_mode::sandboxed;
     CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), fx)->nats_subject() ==
-          "synthetic.v1.sandbox.tick.eur_usd_test");
+          "synthetic.v1.ops.sandbox_tick.eur_usd_test");
 
     auto ir = ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
     ir.binding_mode = binding_mode::bound;
     CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
-          "synthetic.v1.tick.usd_sofr_test");
+          "synthetic.v1.ops.tick.usd_sofr_test");
     ir.binding_mode = binding_mode::sandboxed;
     CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), ir)->nats_subject() ==
-          "synthetic.v1.sandbox.tick.usd_sofr_test");
+          "synthetic.v1.ops.sandbox_tick.usd_sofr_test");
 }
 
 TEST_CASE("factory::make rejects an unknown kind", tags) {

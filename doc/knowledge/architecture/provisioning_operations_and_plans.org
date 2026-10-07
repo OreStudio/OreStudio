@@ -42,7 +42,7 @@ rather than a row. The catalogue is publishing a bundle, importing a legal-entit
 provisioning a party, loading staff, attaching images, starting market feeds, and the completing
 operation that marks the tenant ready. The contract refuses an operation outside that catalogue.
 
-The engine dispatches every operation of a run to one subject, =iam.v1.ops.provision_tenant-step=. One
+The engine dispatches every operation of a run to one subject, =iam.v1.ops.provision_tenant_step=. One
 subject serves every operation, because the engine persists an operation's name and subject while the
 payload names the operation to perform. ores.iam serves that subject, so ores.iam owns the
 orchestration and a new operation needs no other component to change. The definition appends the

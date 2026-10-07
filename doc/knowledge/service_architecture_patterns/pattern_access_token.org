@@ -137,6 +137,10 @@ snapshot, so a revoked permission takes effect at the next token.
   sets the session's tenant and party, and
   [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]]
   filters on them.
+- *Object storage.* [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]]
+  mints an object capability the same way: a signed, short-lived token whose
+  claims name the buckets and key prefixes a caller may touch, verified by the
+  storage service against the same published key.
 
 * Related patterns
 

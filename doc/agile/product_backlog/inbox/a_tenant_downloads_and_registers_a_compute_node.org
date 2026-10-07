@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 119BA28D-5300-4055-9511-9079342A82A2
+:END:
+#+title: A tenant downloads a compute node and registers it against the platform
+#+description: A tenant's user downloads a compute node binary, runs it on their own PC, and registers it against an ORE Studio deployment so the tenant's runs execute on their machine. The use case, the journey it needs, and the issues it raises: identity and enrolment, distribution, reaching the platform from outside, trust, and scheduling.
+#+type: capture
+#+level: cross
+#+filetags: :compute:multi_tenancy:distributed:security:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant decides its report runs should execute on hardware it owns rather than
+on the platform's grid. A person of that tenant signs in to ORE Studio, takes a
+compute node binary, runs it on their own laptop, desktop or machine in the
+tenant's own data centre, and registers it against the deployment. The machine
+then appears as one of the tenant's nodes, and the tenant's runs are dispatched
+to it. It is the bring-your-own-compute case the storage policy calls a *tenant
+node*: a pool of the tenant's own, with a tenant-scoped identity, receiving only
+that tenant's work.
+
+* The journey the product needs
+
+The shape below is the use case as the user experiences it. It is not yet a
+[[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user journey]] document; that comes
+when the story is shaped.
+
+1. A tenant administrator opens a compute-nodes area of the client and asks to
+   add a node.
+2. The platform gives them something to hand to the machine: a download for the
+   right platform and a short-lived enrolment token, or a command line that
+   carries both.
+3. They run it on the machine. It installs (or unpacks) a node, and it enrols:
+   it exchanges the enrolment token for its own long-lived tenant-scoped
+   credential and records the platform's address.
+4. The node connects outbound to the platform's bus and storage, registers a
+   host row, and starts heartbeating. It appears in the area as *online*, with
+   its platform, capacity and current job.
+5. A run of the tenant is dispatched to the pool. The node takes the
+   assignment, downloads the package and the input, runs the engine, uploads
+   the output, and reports the result.
+6. The administrator can watch the node, pause it, revoke it, or remove it, and
+   the tenant can decide whether its work uses its own nodes, the shared
+   platform pool, or both.
+
+* Why
+
+- Tenants with capacity of their own, or with data that may not leave their
+  premises, can run their reports without waiting for shared platform capacity.
+- The platform's grid stays a shared pool for tenants that have no nodes, so
+  the same product serves both without a second deployment.
+- The policy work already assumes the case: a tenant's nodes form a pool of
+  their own and hold only a per-assignment capability, so the enforcement the
+  story builds is exercised by this use case rather than bolted on after it.
+
+* Issues to settle
+
+The hard parts are identity, getting the platform reachable from a machine the
+operator does not control, and trusting that machine with the tenant's data.
+
+**Enrolment and identity**
+
+- How the node obtains its identity. A one-time enrolment token minted in the
+  client is the least surprising shape, but it needs single use, a lifetime, and
+  a revocation path. An OAuth device flow is the alternative; a password is not.
+- What credential the node ends up holding: a tenant-scoped NATS credential, a
+  client certificate from the deployment's CA, or both. The platform's own
+  wrappers use per-service mTLS certificates today, and a downloadable node
+  cannot ship with one.
+- Who may register a node, and whether it acts for the tenant or for the person.
+  The results belong to the tenant, so the node's authority should too.
+- What happens to a node's host row and credential when the node is removed,
+  when the tenant is offboarded, or when the token leaked.
+
+**Distribution**
+
+- Which platforms the node is built for, and where the downloads live. Today
+  the wrapper is built by the repo and started by systemd; the engine packages
+  exist for x64-linux only.
+- Signing and notarisation. Windows and macOS both refuse a downloaded binary
+  that is not signed, and macOS additionally notarises.
+- Updates and protocol compatibility: how a node learns that the platform has
+  moved on, and what it does about it.
+
+**Reaching the platform from outside**
+
+- The node connects outbound only, over the bus (TLS) and storage (HTTPS). The
+  bus must accept a connection from a machine on the public internet, which it
+  does not today.
+- Certificates, ports, and the deployment's network posture; a tenant node
+  behind a corporate firewall or NAT.
+- The current result-submit channel is trusted at the transport layer, with no
+  per-node authentication. A node outside the operator's network makes that
+  unacceptable.
+
+**Trust and isolation**
+
+- The machine is outside the operator's control and the engine is arbitrary
+  code. The capability confines one job to its own keys, but it says nothing
+  about what the engine does inside the node or on the host.
+- A malicious or careless report input is data that drives the engine on a
+  user's machine. An input worth auditing is one that can make the engine read
+  a file, resolve a path, or parse untrusted XML.
+- The node's work directory holds the tenant's extracted data on the user's
+  disk until it is wiped. The policy says the node wipes it at job end; a
+  crash does not.
+- A person of the tenant who runs a node may not be entitled to the party whose
+  report runs on it. The node acts for the tenant, so the party scoping the
+  policy states is what keeps the person from seeing a report they may not see.
+- Telemetry from a personal machine: hostname, CPU, memory, address. What is
+  collected, who sees it, and how it is protected.
+
+**Execution on someone else's machine**
+
+- The engine's footprint: package size, RAM, CPU and disk on a laptop, and
+  whether the node limits itself so the user's own work is not starved.
+- Sleep, hibernate, and going offline mid-job. JetStream redelivers, but the
+  engine may already have run; duplicate work must be expected, not treated as
+  a fault.
+- Whether the node runs as a user process or a service, and how it survives a
+  reboot.
+
+**Scheduling**
+
+- How a tenant's work decides between its own pool and the shared one, and
+  whether it may fall back to the shared pool when its own nodes are all
+  offline.
+- Whether a BYO node takes priority over shared capacity for its tenant's runs,
+  and how a tenant's weight and cap apply when it supplies its own nodes.
+
+* References
+
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — the *Tenant nodes* section, the pool and the per-assignment capability this use case relies on.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the capability a node presents for the package, the input and the output.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — what a node does with an assignment once it has one.
+- =projects/ores.compute/wrapper/= — the node as it exists today: a systemd unit with per-service mTLS certificates, not a download.
+
+* See also
+
+- [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] — the story whose tenant-node acceptance this use case motivates.

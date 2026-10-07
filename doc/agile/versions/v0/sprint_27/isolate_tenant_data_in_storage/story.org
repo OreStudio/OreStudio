@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 0B573887-5101-4D91-9288-38F0C0AE3E06
+:END:
+#+title: Story: Isolate tenant data in object storage and the compute grid
+#+description: Give every object one owner: a tenant owns a bucket per data class, the platform owns the shared buckets, and access is an object capability scoped to exact keys. A step service presents its run token and a worker node presents a capability for one assignment, so no tenant can reach another tenant's bytes.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One deployment runs one grid and one object store for many tenants. No tenant
+may see another tenant's bytes, on the grid or in storage. This story settles
+who owns an object and what a caller must present to reach it, then makes the
+tree enforce it: a tenant owns buckets of its own, the platform owns the shared
+ones, and every caller reaches only the objects its credential names.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The policy is stated. Its acceptance is not yet built. |
+| Waiting on    | Nothing.                               |
+| Next          | Cut the implementation tasks: tenant buckets and provisioning, capability minting, the storage check, the call-site migration, and the node's assignment capability. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- Object ownership is the bucket: a tenant owns an inputs bucket and outputs bucket, and the platform owns the package and artefact buckets.
+- The storage service verifies an object capability and checks the bucket's owner, so a caller reaches only the objects its capability names.
+- A worker node holds a capability for one assignment and no standing storage credential.
+- A step service reaches its tenant's buckets with its run token.
+- A run's inputs and outputs are removed when the run ends and its data is in the database, with a 24-hour backstop, and a tenant's data leaves with its buckets.
+- A tenant may run nodes of its own; they receive only that tenant's work and hold only a per-assignment capability.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A26895DD-A991-4A69-8E40-058BA62CAACE][Scaffold story: Isolate tenant data in object storage and the compute grid]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:466DC2F4-C981-4205-BBAA-9C47F3973732][State the storage policy]] | DONE | 2026-10-07 | 2026-10-07 | The architecture page that settles object ownership, the bucket set, the key grammar, the object capability and the storage checks. |
+
+* Decisions
+
+- *The owner is the bucket, not the prefix.* A bucket cannot hold another
+  tenant's object, so the boundary does not rest on a parse of every key.
+- *A tenant owns a bucket per data class.* Inputs and outputs differ in
+  retention and in who touches them. Reports do not: their identity is a key
+  prefix, because a bucket is an administrative unit and a report is not.
+- *Access is an object capability,* minted per caller and naming the exact
+  buckets and key prefixes. A step service presents its run token; a worker
+  node presents a capability for one assignment.
+- *Storage derives the tenant from the bucket,* never from a request field.
+- *The run token is confined to the run's key prefix,* so a step reaches its
+  own run and no other run of the same tenant.
+- *IAM is the only signer,* so storage keeps one verifier and the orchestrator
+  holds no signing key.
+- *A tenant's objects in storage are transient.* Inputs leave at run end,
+  outputs once collected, and a 24-hour backstop bounds a leak. Durable
+  retention is the database's policy, not storage's.
+- *No scratch bucket class.* An engine's in-flight bytes are a run input or a
+  node-local working file.
+- *The engine package is served straight from =platform.packages=,* with no
+  regional mirror.
+- *A tenant may run its own nodes.* They form a pool of their own, carry a
+  tenant-scoped identity, and present the same assignment capability a platform
+  node does.
+
+* Out of scope
+
+- How the dispatcher picks a pool for a run, and the fair share across tenants:
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] owns
+  them. This story owns what a caller or a node may reach, not where the work
+  is sent.
+- How a tenant node reaches the platform across the network: mutually
+  authenticated TLS is the deployment's, and the node credential's shape is an
+  open question on the policy page.
+- The journey that enrols a tenant's machine — download a binary, run it,
+  register it, remove it — with its distribution and trust issues:
+  [[id:119BA28D-5300-4055-9511-9079342A82A2][A tenant downloads a compute node
+  and registers it against the platform]] captures it for a story of its own.
+- The engine's own sandboxing, beyond the node holding one assignment at a
+  time and removing a job's directory when the job ends.

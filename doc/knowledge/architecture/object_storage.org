@@ -238,10 +238,13 @@ directory it must create. Storage validates a key only as a path -- traversal,
 charset, length -- on every path that turns a key into a location.
 
 A deployment that needs a second bucket says so here first. A bucket name is one
-segment, lower snake case, and it names an allocation rather than a service, a
-purpose or a tenant. The tenancy question is still open (see [[*Authentication
-and tenancy]]), and a bucket-per-tenant answer would arrive as a rule in this
-section rather than as a name a caller invents.
+segment, lower snake case, and it names an allocation rather than a service or a
+purpose. The tenancy question this section used to leave open is now settled by
+[[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]]: the owner is the
+bucket, and a tenant owns a bucket set of its own, so the one-bucket shape above
+is the shape this page's own contract was written against and not the target for
+tenant data. Read the two pages together: this one owns the contract, that one
+owns who may touch a bucket.
 
 Retiring a bucket is an operator's task, not a consequence of a caller stopping.
 The store creates a bucket on the first write and never garbage-collects one, so
@@ -273,10 +276,12 @@ Every interface authenticates before it acts: a bearer token on HTTP, the
 existing session on NATS. Storage holds other tenants' bytes, so an
 unauthenticated read or write is a defect rather than a default.
 
-Tenancy itself is unsettled and this page does not settle it. The open
-question is whether a bucket is global with keys namespaced per tenant, or
-whether tenants get buckets of their own. Storage needs an answer before it can
-claim the isolation its callers assume.
+Tenancy is settled by [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage
+policy]], which owns the question: the owner of an object is its bucket, a
+tenant owns buckets of its own, and access is an object capability the storage
+service verifies. This page keeps only the part that is the contract's: every
+interface authenticates before it acts, and storage holds other tenants' bytes,
+so an unauthenticated read or write is a defect rather than a default.
 
 * What this page does not cover
 

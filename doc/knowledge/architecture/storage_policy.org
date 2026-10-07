@@ -1,0 +1,402 @@
+:PROPERTIES:
+:ID: F37D960D-9687-47DC-8737-605CA38D0CF2
+:END:
+#+title: Storage policy
+#+description: How object storage assigns ownership: one bucket per tenant and data class, the key grammar that addresses a report and its runs, the object capability each caller presents, and the rule that storage never trusts a key.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:storage:multi_tenancy:security:target_state:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+Every object has one owner: a tenant or the platform. The bucket names the
+owner and the data class, and the key names the object within it. A tenant
+therefore owns a bucket, never a prefix inside a shared bucket, and one
+tenant's bytes can never sit beside another's under one allocation.
+
+Access is by *object capability*: a signed, short-lived grant that names the
+exact buckets and key prefixes a caller may touch and the operations it may
+perform. Storage verifies the grant and the ownership of the key it is asked
+to move, so the caller never derives authority from knowing a key. A step
+service presents its run token; a worker node presents a grant minted for the
+one assignment it is running; a person presents their session.
+
+This page settles the tenancy question [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]
+left open. It states the target, not the shape of the tree today; see
+[[*Distance from today]].
+
+* Reading order
+
+- *The owner of an object* — the tenant or the platform, and why the bucket
+  carries it.
+- *The bucket set* — four buckets, their classes and their names.
+- *The key grammar* — how a key names a report and a run.
+- *Addressing a report* — the listing a person actually types.
+- *The object capability* — claims, minting, and who presents what.
+- *Enforcement* — the checks storage makes before it moves a byte.
+- *Lifecycle* — when a run's objects leave the bucket, and the backstop that
+  bounds a leak.
+- *Compute assignments* — the narrow grant a worker node holds.
+- *Tenant nodes* — a tenant's own machines, and what may reach them.
+- *Distance from today* — what still separates the tree from this page.
+
+* The owner of an object
+
+An object is owned by exactly one of two parties:
+
+- a *tenant*, for bytes a tenant caused to exist: a run's inputs, an engine's
+  output, a report's data;
+- the *platform*, for bytes the deployment provides to every tenant: engine
+  and application packages, seed datasets, images and other reference
+  artefacts.
+
+Ownership is the security boundary, so it is stated where a policy can be
+attached to it: the bucket. A prefix inside a shared bucket would leave the
+boundary to be derived from the key on every request, and a single mistyped or
+mis-parsed key crosses it. A bucket that is a tenant's cannot contain another
+tenant's object at all.
+
+Two consequences follow and are accepted:
+
+- *Storage stops being one allocation.* The tree today runs one bucket,
+  =ores=, and says a second bucket is a deployment decision
+  ([[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]). That is
+  reversed here: the bucket set is part of the policy, and the deployment
+  provisions it.
+- *Every object moves.* There is no compatibility path from =ores/...=; the
+  policy states the target and the migration is its own work.
+
+* The bucket set
+
+| Bucket | Owner | Purpose | Read by | Written by | Retention |
+|--------+-------+---------+---------+------------+-----------|
+| =platform.packages= | platform | engine and application version packages | nodes | the platform | long |
+| =platform.artefacts= | platform | seed datasets, images, reference artefacts | services | the platform | long |
+| =t.{tenant_id}.inputs= | tenant | run inputs, assembled bundles, packaged run archives | step services, the ore service, nodes | step services, the ore service | removed at run end |
+| =t.{tenant_id}.outputs= | tenant | engine outputs, in transit to the database | reporting | nodes | removed once collected |
+
+- ={tenant_id}= is the tenant's UUID. It is stable and unambiguous, and it is
+  what the storage service checks a capability against. A short code may be
+  added as a human-readable label in the middle of the name, but the UUID is
+  the identity.
+- The class segment is =inputs= or =outputs=. The two differ in who writes
+  them, who reads them and when each is removed, which is what earns each its
+  own bucket. They are not split per report: see [[*The key grammar]].
+- =platform= is not a tenant and never appears in ={tenant_id}=. A platform
+  bucket holds no tenant's bytes.
+
+A new tenant gets its two buckets at provisioning, with the tenant's row. A
+bucket that already exists is left as it is; the operation is
+create-if-absent.
+
+* The key grammar
+
+Inside a tenant bucket:
+
+#+begin_example
+{definition_id}/{service}/{purpose}/{instance_id}/{name}
+#+end_example
+
+Inside a platform bucket:
+
+#+begin_example
+{service}/{purpose}/{id}/{name}
+#+end_example
+
+- =service= is the owning domain component in lower snake case: =reporting=,
+  =ore=, =compute=. A service writes only under its own segment.
+- =purpose= says what the object is for within that service, in the plural
+  where it is a collection: =runs=, =packages=, =results=.
+- =definition_id= is the report definition the bytes belong to. It is first so
+  that one prefix selects everything a report owns, across services.
+- =instance_id= is the report instance, so one run's objects stay apart from
+  the next run of the same definition.
+- =name= is the file's own name where the object has one, so =trades.msgpack=
+  and =market_data.msgpack= under one run stay apart. An object that is the
+  id's own archive carries no name and ends in its extension.
+- =id= in a platform key identifies the platform object: the app version, the
+  dataset, the image.
+
+A segment holds letters, digits, dots, hyphens and underscores, and never a
+slash. Dot and dot dot are refused, a slash is the only separator, and a key
+can never leave the bucket that owns it. Storage validates a key only as a
+path; it never parses a segment.
+
+The grammar is a rule the domains keep and =ores.storage.api/net/object_keys.hpp=
+is where it is written down and checked, as it is today. What changes is the
+bucket it builds against and the leading =definition_id=.
+
+* Addressing a report
+
+The definition id first makes the report the unit of listing. With definition
+abc = =4caf8694-3155-415f-960d-e88e44abcc02=, the inputs bucket holds:
+
+#+begin_example
+4caf8694-.../reporting/runs/fccf4a19-.../trades.msgpack
+4caf8694-.../reporting/runs/fccf4a19-.../market_data.msgpack
+4caf8694-.../ore/packages/fccf4a19-.../ore_package.tar.gz
+#+end_example
+
+| Question | Operation |
+|----------+-----------|
+| the inputs of one run (the code path) | read the exact keys; no listing |
+| everything report abc owns on the input side | =list(t.{tenant}.inputs, "4caf8694-.../")= |
+| one run of report abc | =list(t.{tenant}.inputs, "4caf8694-.../")= then the instance segment |
+| a tenant's whole input side | the bucket |
+
+A caller never walks other reports to find one: the store filters by prefix,
+and a listing returns only the keys under it. The report definition owns the
+prefix, not a bucket, because a bucket is an administrative unit and a report
+is not: a tenant with a thousand definitions would otherwise own a thousand
+buckets, each with its own policy, quota and lifecycle. Split a bucket only
+when the administrative treatment differs, which for report data it does not.
+
+* The object capability
+
+A caller proves its right to an object with a capability: a signed token,
+short-lived, that names what it may touch and nothing more.
+
+#+begin_example
+{
+  "iss": "iam",
+  "sub": "<the service or node the grant was minted for>",
+  "tenant_id": "<the tenant whose buckets it may reach>",
+  "grants": [
+    { "bucket": "t.<tenant>.inputs",  "prefix": "4caf8694-.../", "ops": ["get"] },
+    { "bucket": "t.<tenant>.outputs", "prefix": "4caf8694-.../fccf4a19-.../", "ops": ["put"] },
+    { "bucket": "platform.packages",  "prefix": "app/.../1.8.17.0/", "ops": ["get"] }
+  ],
+  "exp": "<unix seconds, the assignment's deadline>",
+  "jti": "<unique id, for the issue log>"
+}
+#+end_example
+
+- IAM mints the token and signs it with the key it already publishes through
+  JWKS, so storage verifies it without calling the issuer. This is the
+  [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] mechanism with an
+  object scope rather than a permission scope.
+- The scope is a set of grants, so one token covers the inputs, the output and
+  the package of a job without granting the rest of the tenant's data.
+- =exp= is the assignment's deadline. A token outlives its job by no more than
+  the job's own grace.
+
+Who presents what:
+
+| Caller | Credential | Scope |
+|--------+------------+-------|
+| a person | session token | the tenant's buckets |
+| a step service | its run token | the run's key prefix |
+| a worker node | an assignment capability | the exact keys of the assignment |
+| the platform | a service token | the platform buckets, and any tenant bucket for provisioning and pruning |
+
+The run token already carries the tenant, the party, the grant and the run
+([[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]]), so a
+step service needs no second token. It also carries the run's key prefix: the
+grant names the report definition and the run is the instance, so the two
+together give ={definition_id}/{instance_id}/=. Storage confines the step to
+that prefix, and a step therefore reaches its own run and no other run of the
+same tenant. The party does not narrow a bucket: a bucket is a tenant's and the
+party is a row-level concept, so storage checks the tenant and the run prefix
+and no more.
+
+* Enforcement
+
+The storage service is the enforcement point. Before it moves a byte it
+checks, in order:
+
+1. *The token verifies.* Signature against the published key, and =exp= in the
+   future.
+2. *The operation is granted.* The request's operation is in some grant's
+   =ops=.
+3. *The key is inside a granted prefix.* The request's key starts with that
+   grant's =prefix=, compared segment by segment so a prefix cannot match a
+   sibling by string accident.
+4. *The bucket is owned as claimed.* The bucket's tenant equals the token's
+   =tenant_id=, and the bucket is one the grant names. This is the check that
+   makes the rest defence in depth rather than the only control.
+
+Today =objects_handler= checks one global permission, =storage::objects:read=
+or =:write=, and trusts whatever bucket and key arrive. Under this policy that
+permission stays as the coarse gate that says a caller may use storage at all,
+and the capability decides which objects it may touch. A principal holding the
+permission can then reach only the objects its capability names, and never
+another tenant's.
+
+Storage never derives a tenant from a request field a caller supplies. It
+derives it from the bucket, which the policy fixed, and compares.
+
+* Lifecycle
+
+A tenant's objects in storage are working data, not the record. A run's report
+is processed into the database, and the database holds the durable record and
+the audit retention. Storage's job is to hold a run's bytes only as long as the
+work needs them.
+
+- *Inputs leave at run end.* A run's inputs are removed when the run reaches a
+  terminal state. They are not the record of the run; the database is.
+- *Outputs leave once collected.* An engine's output archive is removed once
+  its data is in the database. Its bucket is a transit area, not a store of
+  record.
+- *A 24-hour backstop, not a retention policy.* Anything left behind — a
+  crashed collect, a failed load, an event nobody saw — is removed after 24
+  hours. The backstop bounds a leak; it is not how long a report is kept. How
+  long a report is kept is the database's, and it is a different policy with a
+  different owner.
+- *Platform objects outlive tenants.* A package is not re-uploaded per tenant
+  and is not removed when a tenant is removed.
+- *Offboarding is a bucket operation.* Because the tenant owns buckets, its
+  data leaves with =drop bucket=, not with a prefix sweep that can miss a key.
+  That is the second reason the owner is the bucket.
+
+* Compute assignments
+
+The worker node holds no standing storage credential. For each job the
+orchestrator asks IAM for an assignment capability and puts it in the
+assignment, beside the result id and the package, input and output keys. IAM is
+the only signer, so storage verifies every capability against the one published
+key it already holds. The node uses it to fetch
+the package and the input and to write the output, and then it is done with
+it.
+
+- *One job at a time.* A node runs one assignment at a time, so it holds one
+  job's capability and no other job is exposed by concurrency.
+- *Sequential residue.* One job at a time is not enough on its own: a job's
+  work directory must be removed when the job ends, or the next tenant's job
+  can read the previous tenant's extracted input. The node owns that cleanup.
+- *The package is shared.* The engine package is read from a platform bucket
+  under a =get= grant, so every node reads the same bytes and a node can reach
+  no tenant object it was not assigned.
+- *Results return through the orchestrator.* The node sends the result id, the
+  output key and the outcome; the compute service, under its own identity,
+  loads the result row tenant-scoped, checks it belongs to the assignment's
+  workunit, and records it. The node writes no tenant row and names no tenant.
+
+* Tenant nodes
+
+A tenant may run nodes of its own — a laptop, a desktop, a machine in its own
+data centre — and have its runs use them. This changes who owns the machine and
+who may see the work, not what a single job may reach.
+
+- *A tenant's nodes are a pool of their own,* named for the tenant. A node in
+  that pool receives only that tenant's assignments. It never joins the shared
+  platform pool, because one queue group over shared work would hand a tenant's
+  machine another tenant's job.
+- *The node authenticates as a tenant-scoped principal.* Its identity names the
+  tenant; a platform node's names the platform. The platform issues the
+  credential, and it is the tenant, not the operator, that admits the machine.
+- *The node still presents an assignment capability.* Being the tenant's own
+  machine does not widen what one job may reach: the engine is untrusted code,
+  and a capability confines a compromised node to the job it was handed.
+- *Routing.* A tenant's work goes to its own pool when it has one and has asked
+  for it, and to the shared platform pool otherwise. A tenant never sends its
+  work to another tenant's pool, and no pool serves two tenants.
+- *The result path checks the tenant.* The node submits its result on an
+  authenticated channel, and the compute service requires the result's workunit
+  to belong to the tenant the node names, so a node can never report onto
+  another tenant's work.
+
+A node on a network the operator does not control reaches the bus and storage
+over mutually authenticated TLS. That exposure is the deployment's, not this
+policy's; what the policy fixes is that the machine's reach stops at the job it
+was given.
+
+* What this page does not cover
+
+- How the dispatcher chooses a pool for a run and orders work within it, and
+  the fair share across tenants: [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report
+  execution at scale]] and
+  [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] own them.
+  This page owns only what a node, platform or tenant, may reach.
+- The storage contract and its two interfaces, which
+  [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] owns.
+- The durable retention of a report's results, which is the database's and
+  belongs with report post-processing. This page governs only how long a run's
+  bytes sit in a bucket before the database has them.
+- The backend's implementation and deployment.
+- The bucket names each domain builds, beyond the grammar above.
+
+* Distance from today
+
+- *One bucket.* The tree runs one bucket, =ores=, and a deployment needs four
+  classes of bucket, two of them per tenant.
+- *A global permission.* =objects_handler= checks =storage::objects:read|write=
+  and trusts the key. It must verify a capability and check the bucket's owner.
+- *No capability exists.* There is no mint operation, no claim set and no
+  issue log. IAM mints, storage verifies.
+- *No tenant in any key.* Keys are =<service>/<purpose>/<id>[/<name>]= and name
+  no tenant, and no definition id.
+- *Bucket provisioning.* Buckets are created on first write by the store. A
+  tenant's buckets must exist with the tenant, and offboarding must drop them.
+- *The node holds a standing identity.* The wrapper authenticates to storage
+  with its own service token, which reaches whatever that identity's
+  permission reaches. It must present a per-assignment capability instead.
+- *No lifecycle rules.* Nothing removes a run's objects when the run ends or
+  its data reaches the database, and nothing sweeps what a failure leaves
+  behind.
+- *No tenant node.* Every wrapper is a platform node on the platform's own
+  network, bound to the system tenant. A tenant's own machine cannot register,
+  and no pool is named for a tenant.
+
+* Decisions
+
+- *The owner is the bucket, not the prefix.* A bucket cannot hold another
+  tenant's object; a shared bucket with per-tenant prefixes leaves the
+  boundary to a parse on every request.
+- *One bucket set per tenant, by data class.* Inputs and outputs differ enough
+  in retention and in who touches them to earn a bucket each. Reports do not:
+  their identity is a key prefix, and a bucket per report is policy sprawl.
+- *The tenant's UUID names the bucket.* It is stable, it is what a capability
+  checks, and it survives a rename of the tenant's short code.
+- *Access is an object capability.* Least privilege is per object, so knowing
+  a key confers nothing, and a compromised node reaches only its own job.
+- *Storage derives the tenant from the bucket, never from a request field.*
+- *A step service presents its run token.* It is already tenant-scoped, so the
+  run-token design needed no second credential.
+- *The run token is confined to the run's key prefix.* The grant names the
+  definition and the token names the run, so storage holds a step to
+  ={definition_id}/{instance_id}/=. A step reaches its own run and no other run
+  of the same tenant, which is the most a run's own authority should buy.
+- *IAM is the only signer.* It mints every capability with the key it already
+  publishes through JWKS, so storage keeps one verifier and the orchestrator
+  holds no signing key of its own.
+- *A tenant's objects in storage are transient.* Inputs leave at run end,
+  outputs once their data is in the database, and a 24-hour backstop bounds
+  anything left behind. Durable retention is the database's policy, and this
+  page does not set it.
+- *No scratch class.* Bytes an engine needs in flight are either a run input or
+  a node-local working file. A third bucket class would exist for no case we
+  have.
+- *The package is served straight from =platform.packages=.* No regional or
+  network mirror; a node that cannot reach the platform bucket is a deployment
+  problem, not a second copy of the registry.
+- *A tenant may run its own nodes,* and those nodes form a pool of their own
+  with a tenant-scoped identity. They present the same assignment capability as
+  a platform node, because the engine is untrusted code on any machine.
+
+* Open questions
+
+- The credential a tenant node holds: a tenant-scoped service account, an mTLS
+  certificate bound to the tenant, or both.
+- Whether the 24-hour backstop is a bucket lifecycle rule or a sweeper the
+  platform runs.
+
+* Patterns used
+
+- [[id:1B641A2B-7E8B-4BDF-8C1C-6401FE1DF637][Claim Check]] — the assignment
+  names the keys and the node fetches the bytes, so the message carries no
+  payload.
+- [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] — the capability
+  is a signed token the storage service verifies without calling IAM.
+
+* See also
+
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the bucket and
+  key contract, and the two interfaces the capability travels over.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — where object
+  storage sits among the durable stores.
+- [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — the
+  tenant-scoped credential a step service presents.
+- [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the
+  design whose grid this policy isolates.

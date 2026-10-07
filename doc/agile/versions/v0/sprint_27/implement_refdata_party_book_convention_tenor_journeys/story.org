@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906
+:END:
+#+title: Story: Implement the refdata party, book, convention and tenor journeys
+#+description: Build the five refdata journeys in ores.web on the server changes each one needs: counterparty onboarding, party details, the book structure, the instrument conventions and the tenor resolution.
+#+type: story
+#+level: s2
+#+filetags: :refdata:journeys:ux:web:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The five refdata journeys that were drawn and written in
+[[id:93E2D898-6098-4C1C-9C4E-0E8BFDF4E799][Write the refdata party,
+book, convention and tenor journeys]] work in =ores.web=, on the server
+changes each one needs. A tenant administrator onboards a counterparty,
+keeps a party's details current, shapes the book structure, defines the
+conventions for an instrument and defines how tenors resolve, on screens
+that match the accepted prototypes.
+
+Each journey document records what the server does not yet provide. The
+gaps are the tasks here, grouped by concern rather than by journey where
+several journeys need the same thing.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The five screens are accepted; the tasks that build them and the server work they need are filed. |
+| Waiting on    | Nothing.                               |
+| Next          | Start with the refusal shape, which every screen reads, then the server tasks in dependency order, then the screens. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- Each of the five journeys runs end to end in =ores.web= against the
+  live fleet, and matches the prototype the product owner accepted.
+- Every gap recorded in the five journey documents is either built or
+  recorded as dropped with its reason.
+- The operations and messages each journey names exist with the status
+  its coverage table claims, and the tables are corrected where they
+  say =missing= and the operation has since been built.
+- A person who is not a tenant administrator can reach the journeys
+  the catalogue assigns them.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ACA1CA30-0EC7-4B5E-9FE9-75E72BB80121][Scaffold story: Implement the refdata party, book, convention and tenor journeys]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EB8380F8-89BD-41EE-86AC-EE4152DB9FC8][Carry a typed refusal with the record, the version and the field]] | BACKLOG | | | Every journey draws a refusal that names the record, the version and the field. Journeys 5, 6, 8 and 9. |
+| [[id:315C71F6-EDD7-4715-AF45-09D7A146E3A5][Mark an identifier authoritative and a contact primary]] | BACKLOG | | | Give counterparty_identifier an authoritative flag and party_contact_information a primary flag, with a constraint that keeps one per owner. |
+| [[id:68441632-6DD1-4465-8E29-CDC8CB337FC6][Record every business centre a counterparty deals through]] | BACKLOG | | | Replace the counterparty's single business_centre_code with the set of centres it deals through, and let a party-counterparty read be addressed from the counterparty side. |
+| [[id:FF39A19E-FB7D-4C66-8F41-3B05D2287E11][Write a party or counterparty and its children as one unit]] | BACKLOG | | | Give the refdata write path one composite operation that writes a party or counterparty with its identifiers, contacts and agreements, so a partial save cannot be left behind. |
+| [[id:D10CD9DF-F324-49C4-BEFA-FB1CA8ED536C][Read a record's diff and its children in one reply]] | BACKLOG | | | Return the field-level difference with the version history, and let the landing list carry its child rows, so a journey does not compose a diff or issue one call per row. |
+| [[id:A8C22E8A-E9BD-4539-BEC4-A55451B325AC][Give the party memberships their versions, and filter the business units]] | BACKLOG | | | Serve versions for the party_countries and party_currencies junctions, filter business units by party, and refuse a business unit level the rule forbids. |
+| [[id:82ECA5A0-C01A-48E7-B8F1-8FD31A17069D][Carry the book's purpose and ledger feed, and refuse a close it cannot make]] | BACKLOG | | | Add book_purpose_type and ledger_feed_type to the book, add the status transition rule, refuse a close while activity is open, and check the owner unit against the ancestry chain. |
+| [[id:2A061FF5-B1A6-4F4C-A898-9F17EFA13146][Search the convention list, validate its terms, and return its draft history]] | BACKLOG | | | Let a convention list be filtered by a term, validate the term columns on write, serve the family-to-entity mapping, add the sub-period coupon type list, and return a draft version in history. |
+| [[id:D538F972-C4A4-4BF3-A189-D0BD1755FBA4][Resolve a tenor over the wire, and make the tenor machinery writable]] | BACKLOG | | | Add a tenor resolve operation, a roll-rule column on tenor_convention, writes for tenor_convention_resolutions, a change reason on the tenor write, and a record for a swap's rolls. |
+| [[id:B29EDC39-D491-4929-97F6-89B2FE7863DA][Let a role below the tenant administrator maintain reference data]] | BACKLOG | | | Give the Operations role the reads and writes the reference data journeys need, so the screens are reachable by the people who run them. |
+| [[id:B21B1E7A-E2EB-4989-9B57-2AF96A104C8F][Build the counterparty onboarding screen]] | BACKLOG | | | Build journey 5 in ores.web from its document and prototype: the landing list, identity, identifiers, contacts, netting and collateral, the review and the refusal. |
+| [[id:20994B80-87B6-4637-A1E6-3E8EFB99486A][Build the party details screen]] | BACKLOG | | | Build journey 6 in ores.web from its document and prototype: the party list, overview, identifiers, contacts, memberships, structure, review, refusal and history. |
+| [[id:06486D5B-4BBB-4C08-91C2-14CA195329A1][Build the book structure screen]] | BACKLOG | | | Build journey 7 in ores.web from its document and prototype: the portfolio tree, the book, its classification, the rights, the review, the refusal and the history. |
+| [[id:C8C40E6D-CB30-452D-ABBC-3CA7C97EA115][Build the instrument convention screen]] | BACKLOG | | | Build journey 8 in ores.web from its document and prototype: the instrument picker, the convention, the terms, the review, the refusal and the history. |
+| [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | BACKLOG | | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history. |
+
+* Decisions
+
+- *The gaps are tasks, and they are grouped by concern.* Several
+  journeys need the same thing: a refusal that names the field, a
+  field-level diff in a reply, a composite write. One task per gap
+  would have produced four tasks saying the same thing, so the tasks
+  below group the gaps where a single change closes several.
+- *The refusal shape comes first.* Every screen reads a refusal, so the
+  shape it reads is settled before the screens are built, not while
+  they are.
+- *The server tasks precede the screens they block.* A screen is built
+  against the operations it needs, so the task order follows the
+  dependency, not the journey number.
+
+* Out of scope
+
+- The prototype and the journey documents. They are in
+  [[id:93E2D898-6098-4C1C-9C4E-0E8BFDF4E799][Write the refdata party,
+  book, convention and tenor journeys]], accepted and merged.
+- =portfolio_right=, which the catalogue assigned to the Access group,
+  and sandboxes and sandbox members, which belong with the workspace
+  work. Journey 7 draws the rights panel and records the assignment as a
+  gap; moving it is a decision for the Access journeys.
+- Curve configuration, the =crm_*= entities and the volatility configs,
+  which the extraction assigned to the marketdata and analytics
+  journeys.

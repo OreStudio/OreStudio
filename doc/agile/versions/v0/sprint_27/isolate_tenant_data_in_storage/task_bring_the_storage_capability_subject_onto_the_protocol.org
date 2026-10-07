@@ -8,7 +8,7 @@
 #+filetags: :isolate_tenant_data_in_storage:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/bring-the-storage-capability-subject-onto-the-protocol
-#+pr: 2776
+#+pr: 2777
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -100,6 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2777][#2777]] | [agile] Close the storage capability protocol hotfix task |
 | [[https://github.com/OreStudio/OreStudio/pull/2776][#2776]] | [iam,codegen] Bring the storage capability subject onto the protocol |
 
 * Review

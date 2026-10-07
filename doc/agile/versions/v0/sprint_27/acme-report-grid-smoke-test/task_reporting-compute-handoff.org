@@ -41,9 +41,9 @@ onto the compute dispatcher and closed one of them, so two remain:
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Both defects fixed and built. The live proof waits on the two fixture tasks the same run needs. |
-| Waiting on   | [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][Correct the seeded report definition schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]]. A run cannot be scheduled or admitted without them. |
-| Next         | Run a definition through the chain and watch a wrapper take the assignment, once the fixtures can supply a run. |
+| Now          | The subject and URI defects are fixed and proven; the wrapper takes the run's assignment. The download stops at HTTP 401 because a node holds no storage credential yet. |
+| Waiting on   | The [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][tenant-data isolation story]]'s node capability, without which a wrapper cannot download. The two fixture tasks also gate a fresh run: [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][the schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][the risk report configurations]]. |
+| Next         | Re-run once a node can authenticate to storage. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -66,6 +66,34 @@ The URI fix belongs where the URI is built: =prepare_ore_package= builds it with
 for the package and the output.
 
 * Notes
+
+The live run reached the wrapper. Run =f8275ac1-1ac5-4e2e-a485-97324ef3b13e=,
+tenant =51e855c0-ce99-4726-a590-7272c89cf8b1=:
+
+- The wrapper subscribes to
+  =compute.v1.work.assignments.*.x64-linux= (durable
+  =compute_wrapper_shared_x64-linux=), and at 14:24:57 it took the run's
+  assignment. Defect 1 is closed.
+- The attempted package URL is
+  =http://localhost:20600/api/v1/storage/ores/compute/packages/ORE-1.8.17.0/...=,
+  the path shape storage speaks. Defect 3 is closed for the package; the input
+  is built by the same helper.
+- It then failed =HTTP 401=. =ores.compute.wrapper= has no storage credential
+  at all: =application.cpp= passes a =constexpr= empty =storage_bearer_token=
+  to every get and put. A node needs a credential before it can download, and
+  the design says that credential is the per-assignment capability
+  [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] describes, which
+  the [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][isolation story]] owns. This
+  task waits on it rather than inventing a standing service token the policy
+  would replace.
+
+A second finding: the JetStream assignments stream survives a database
+recreate. On the recreated environment the wrapper replayed assignments from
+the previous one and answered =results.submit failed: Result not found= for
+each, because the result rows were gone. The smoke-test story's "reproducible
+from a freshly recreated database" acceptance will meet this; the stream wants
+purging, or the handler wants to treat an unknown result as an expiry rather
+than an error.
 
 * Test Scenarios
 

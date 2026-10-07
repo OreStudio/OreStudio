@@ -448,6 +448,10 @@
         { id: 'tenant', name: 'One tenant', gist: 'A tenant administrator reads Northwind Capital\u2019s rows; the node logs are withheld, because a node\u2019s logs are the installation\u2019s.' }
     ];
 
+    /* The page, the page size and the order are held per table and carried in
+       the address, as record_screen_standard.org states. `allOf` marks a table
+       read whole by the Load all control, which is offered only when the total
+       is 1000 or less. */
     var S = {
         screen: 'watch',
         variant: 'fleet',
@@ -455,6 +459,10 @@
         job: null,
         showState: true,
         tab: {},
+        pageOf: {},
+        sizeOf: {},
+        orderOf: {},
+        allOf: {},
         updatedAt: clock(NOW_MIN),
         logsDownloaded: 0
     };
@@ -508,6 +516,12 @@
         return step * mag;
     }
     function zeros(n) { var a = []; for (var i = 0; i < n; i++) a[i] = 0; return a; }
+    /* A lineage box is a fixed width, so its labels are cut to fit the box
+       rather than allowed to run over the edge. */
+    function trunc(value, chars) {
+        var s = String(value === null || value === undefined ? '' : value);
+        return s.length <= chars ? s : s.slice(0, chars - 1) + '\u2026';
+    }
     function maxOf(series) {
         var m = 0;
         series.forEach(function (v) { if (v > m) m = v; });
@@ -644,6 +658,100 @@
         return '<div class="legend">' + items.map(function (it) {
             return '<span class="legend-item"><span class="swatch" style="background:' + it.color + '"></span>' + esc(it.label) + '</span>';
         }).join('') + '</div>';
+    }
+
+    // -------------------------------------------------------------- the pager
+    /* The list standard's pager, hand-rolled because this screen has no React:
+       the count first, then First, Previous, Next and Last, the page size and
+       Load all. Pager.tsx offers the last two in that order, and Load all only
+       when the total is small enough to read whole. */
+    var PAGE_SIZES = [15, 25, 50, 100, 200, 500];
+    var LOAD_ALL_LIMIT = 1000;
+    var DEFAULT_PAGE_SIZE = 15;
+
+    /* Which rows of one table the screen shows. The total is the server's in
+       the real read; here it is the fixture's whole list. */
+    function page(tableId, list) {
+        var total = list.length;
+        var size = S.sizeOf[tableId] || DEFAULT_PAGE_SIZE;
+        if (!(size > 0)) size = DEFAULT_PAGE_SIZE;
+        var offset = S.pageOf[tableId] || 0;
+        if (offset < 0 || offset >= total) offset = 0;
+        var lastOffset = total === 0 ? 0 : Math.floor((total - 1) / size) * size;
+        if (offset > lastOffset) offset = lastOffset;
+        return {
+            rows: list.slice(offset, offset + size),
+            offset: offset,
+            size: size,
+            total: total,
+            shown: Math.min(size, total - offset),
+            lastOffset: lastOffset,
+            atStart: offset === 0,
+            atEnd: offset + Math.min(size, total - offset) >= total
+        };
+    }
+
+    function pager(tableId, meta) {
+        var first = meta.shown === 0 ? 0 : meta.offset + 1;
+        var last = meta.offset + meta.shown;
+        var pageSizeInList = PAGE_SIZES.indexOf(meta.size) >= 0;
+        var canLoadAll = meta.total <= LOAD_ALL_LIMIT && meta.total > meta.size;
+        return '<div class="pager">' +
+            '<span class="pager-count">Showing ' + first + ' to ' + last + ' of ' + num(meta.total) +
+            (first === 1 && last === meta.total ? ' \u00b7 the whole list' : '') + '</span>' +
+            '<span class="pager-controls">' +
+            '<button class="btn small" data-act="page" data-table="' + tableId + '" data-page="0"' +
+            (meta.atStart ? ' disabled' : '') + '>First</button>' +
+            '<button class="btn small" data-act="page" data-table="' + tableId + '" data-page="' +
+            Math.max(0, meta.offset - meta.size) + '"' + (meta.atStart ? ' disabled' : '') + '>Previous</button>' +
+            '<button class="btn small" data-act="page" data-table="' + tableId + '" data-page="' +
+            (meta.offset + meta.size) + '"' + (meta.atEnd ? ' disabled' : '') + '>Next</button>' +
+            '<button class="btn small" data-act="page" data-table="' + tableId + '" data-page="' + meta.lastOffset + '"' +
+            (meta.atEnd ? ' disabled' : '') + '>Last</button>' +
+            '<label class="pager-size">Page size' +
+            '<select class="btn small" data-act="page-size" data-table="' + tableId + '" aria-label="Page size">' +
+            (pageSizeInList ? '' : '<option value="' + meta.size + '" selected>' + meta.size + '</option>') +
+            PAGE_SIZES.map(function (s) {
+                return '<option value="' + s + '"' + (s === meta.size ? ' selected' : '') + '>' + s + '</option>';
+            }).join('') +
+            '</select></label>' +
+            (canLoadAll
+                ? '<button class="btn small ghost" data-act="load-all" data-table="' + tableId +
+                  '" data-total="' + meta.total + '">Load all</button>'
+                : '') +
+            '</span></div>';
+    }
+
+    /* The order control of one table. The field and the direction live in the
+       address beside the page, as the standard states, and a new order returns
+       the list to its first page. The first definition is the table's natural
+       order, which the standard makes the default. */
+    function orderState(tableId, defs) {
+        var wanted = S.orderOf[tableId];
+        for (var i = 0; i < defs.length; i++)
+            if (defs[i].id === wanted) return { key: wanted, dir: S.orderOf[tableId + ':dir'] === 'desc' ? 'desc' : 'asc' };
+        return { key: defs[0].id, dir: defs[0].desc ? 'desc' : 'asc' };
+    }
+
+    function orderBy(tableId, defs, rows) {
+        var state = orderState(tableId, defs);
+        var def = defs[0];
+        for (var i = 0; i < defs.length; i++) if (defs[i].id === state.key) def = defs[i];
+        var factor = state.dir === 'desc' ? -1 : 1;
+        var sorted = rows.slice();
+        sorted.sort(function (a, b) { return def.cmp(a, b) * factor; });
+        return sorted;
+    }
+
+    /* A clickable column heading: a button that names the order it asks for. */
+    function orderButton(tableId, def, defs) {
+        var state = orderState(tableId, defs);
+        var on = def.id === state.key;
+        var next = on && state.dir === 'asc' ? 'desc' : 'asc';
+        var arrow = on ? (state.dir === 'desc' ? ' \u25be' : ' \u25b4') : '';
+        return '<button class="thbtn' + (on ? ' on' : '') + '" data-act="order" data-table="' + tableId +
+            '" data-order="' + def.id + '" data-dir="' + next +
+            '" title="' + esc('Order by ' + def.label) + '">' + esc(def.label) + arrow + '</button>';
     }
 
     // ============================================================ the charts
@@ -852,11 +960,31 @@
             '</svg>';
     }
 
+    var NODE_ORDER = [
+        { id: 'index', label: 'Node', cmp: function (a, b) { return a.index - b.index; } },
+        { id: 'cores', label: 'Cores', cmp: function (a, b) { return a.cores - b.cores; } },
+        { id: 'done', label: 'Tasks done', cmp: function (a, b) { return nodeDone(a) - nodeDone(b); } },
+        { id: 'failed', label: 'Failed', cmp: function (a, b) { return nodeFails(a) - nodeFails(b); } },
+        { id: 'release', label: 'Wrapper release', cmp: function (a, b) { return a.wrapperVersion < b.wrapperVersion ? -1 : a.wrapperVersion > b.wrapperVersion ? 1 : 0; } }
+    ];
+
+    function nodeDone(node) {
+        return node.work.reduce(function (a, b) { return a + b; }, 0);
+    }
+
+    /* The failure count is a function of the whole roster, not of one row, so it
+       is computed once and read back by the order and the rows. */
+    var NODE_FAIL_TOTALS = null;
+    function nodeFails(node) {
+        if (!NODE_FAIL_TOTALS) NODE_FAIL_TOTALS = nodeFailureTotals();
+        return NODE_FAIL_TOTALS[node.index];
+    }
+
     function nodeTablePanel() {
-        var failTotals = nodeFailureTotals();
-        var rows = NODES.map(function (node, ni) {
-            var done = node.work.reduce(function (a, b) { return a + b; }, 0);
-            var fails = failTotals[ni];
+        var meta = page('nodes', orderBy('nodes', NODE_ORDER, NODES));
+        var rows = meta.rows.map(function (node) {
+            var done = nodeDone(node);
+            var fails = nodeFails(node);
             var lost = node.state[INTERVALS - 1] === 'lost';
             var draining = node.state[INTERVALS - 1] === 'draining';
             var stateTag = lost ? '<span class="tag bad">lost</span>'
@@ -881,9 +1009,15 @@
             '<header class="sectionhead"><h2>Which row of this table is the problem?</h2>' +
             '<span class="faint" style="font-size:12px">' + NODES.length + ' nodes, one row each, with a work trend in the row</span></header>' +
             '<div class="table-wrap"><table><thead><tr>' +
-            '<th>Node</th><th>Cores</th><th>Work, 09:00 to 15:00</th><th>Tasks done</th><th>Failed</th>' +
-            '<th>Mean task time</th><th>State</th><th>Wrapper release</th>' +
+            '<th>' + orderButton('nodes', NODE_ORDER[0], NODE_ORDER) + '</th>' +
+            '<th>' + orderButton('nodes', NODE_ORDER[1], NODE_ORDER) + '</th>' +
+            '<th>Work, 09:00 to 15:00</th>' +
+            '<th>' + orderButton('nodes', NODE_ORDER[2], NODE_ORDER) + '</th>' +
+            '<th>' + orderButton('nodes', NODE_ORDER[3], NODE_ORDER) + '</th>' +
+            '<th>Mean task time</th><th>State</th>' +
+            '<th>' + orderButton('nodes', NODE_ORDER[4], NODE_ORDER) + '</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            pager('nodes', meta) +
             '<p class="rowfoot">The sparkline answers the table\u2019s own question: a row whose trend falls away is the node to open. ' +
             'The fleet is the installation\u2019s, so these rows do not narrow with the tenant variant. ' +
             'The wrapper release comes from the heartbeat, which carries no host, so the join is a fixture here and a gap in the read (see Keep what it runs).</p>' +
@@ -1255,7 +1389,7 @@
             });
         });
         var question = 'What does each job need?';
-        var meta = rows.length + ' jobs against five resources, colour from the viridis ramp, the number is the requirement';
+        var meta = 'The newest ' + rows.length + ' of ' + jobs.length + ' jobs against five resources, colour from the viridis ramp, the number is the requirement';
         var foot = '<p class="rowfoot">Rows are the jobs, columns the resources, and the number in each cell is the requirement. ' +
             'The bright column is the one that binds: read down it and the arrivals panel says whether the grid has it. ' +
             'A GPU job is a single bright cell, because GPU is scarce, not because the job is large.</p>';
@@ -1387,13 +1521,26 @@
             '</section>';
     }
 
+    /* The job list. Its rows are paged and its columns ordered, and a row opens
+       the job's own detail below the table, which is the master-detail layout
+       the report on this change argues for. */
+    var JOB_ORDER = [
+        { id: 'submit', label: 'Submitted', cmp: function (a, b) { return a.submit - b.submit; } },
+        { id: 'id', label: 'Job', cmp: function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; } },
+        { id: 'batch', label: 'Batch', cmp: function (a, b) { return a.batch < b.batch ? -1 : a.batch > b.batch ? 1 : 0; } },
+        { id: 'state', label: 'State', cmp: function (a, b) { return a.state < b.state ? -1 : a.state > b.state ? 1 : 0; } },
+        { id: 'duration', label: 'Duration', cmp: function (a, b) { return a.durationSec - b.durationSec; } }
+    ];
+
     function jobsTablePanel(jobs) {
-        var rows = jobs.slice().sort(function (a, b) { return a.submit - b.submit; }).map(function (job) {
+        var ordered = orderBy('jobs', JOB_ORDER, jobs);
+        var meta = page('jobs', ordered);
+        var rows = meta.rows.map(function (job) {
             var stateTag = job.state === 'failed' ? '<span class="tag bad">failed</span>'
                 : job.state === 'running' ? '<span class="tag accent">running</span>'
                     : job.state === 'queued' ? '<span class="tag muted">queued</span>'
                         : '<span class="tag ok">done</span>';
-            return '<tr>' +
+            return '<tr class="rowlink' + (job.id === selectedJob().id ? ' on' : '') + '" data-act="job" data-job="' + esc(job.id) + '" tabindex="0">' +
                 '<td class="code">' + esc(job.id) + '</td>' +
                 '<td class="code">' + esc(job.batch) + '</td>' +
                 '<td>' + esc(job.app.replace('ores.', '')) + ' <span class="mono faint">' + esc(job.version) + '</span></td>' +
@@ -1404,21 +1551,149 @@
                 '<td class="code">' + esc(intervalTime(job.submit)) + '</td>' +
                 '</tr>';
         }).join('');
-        return '<section class="card wide">' +
+        if (jobs.length === 0) {
+            rows = '<tr><td colspan="8" class="faint">No jobs in this view. A member sees their own jobs, a tenant administrator their tenant\u2019s.</td></tr>';
+        }
+        return '<section class="card wide" id="jobs-table">' +
             '<header class="sectionhead"><h2>Where is one job?</h2>' +
-            '<span class="faint" style="font-size:12px">' + jobs.length + ' jobs, one row each</span></header>' +
+            '<span class="faint" style="font-size:12px">' + jobs.length + ' jobs, one row each, click a row for its full detail</span></header>' +
             '<div class="table-wrap"><table><thead><tr>' +
-            '<th>Job</th><th>Batch</th><th>App</th><th>Tenant</th><th>Node</th><th>State</th><th>Duration</th><th>Submitted</th>' +
+            '<th>' + orderButton('jobs', JOB_ORDER[1], JOB_ORDER) + '</th>' +
+            '<th>' + orderButton('jobs', JOB_ORDER[2], JOB_ORDER) + '</th>' +
+            '<th>App</th><th>Tenant</th><th>Node</th>' +
+            '<th>' + orderButton('jobs', JOB_ORDER[3], JOB_ORDER) + '</th>' +
+            '<th>' + orderButton('jobs', JOB_ORDER[4], JOB_ORDER) + '</th>' +
+            '<th>' + orderButton('jobs', JOB_ORDER[0], JOB_ORDER) + '</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            pager('jobs', meta) +
             '<p class="rowfoot">A member sees their own jobs, a tenant administrator their tenant\u2019s, and the super administrator all of them. ' +
-            'That is one journey over three visible sets, which is why there is one screen and not two.</p>' +
+            'That is one journey over three visible sets, which is why there is one screen and not two. ' +
+            'The page, the page size and the order are held in the address, so a link reopens this list where it was left.</p>' +
             '</section>';
     }
 
-    function failureDetailPanel() {
-        var failed = filteredJobs().filter(function (j) { return j.state === 'failed'; });
-        var rows = failed.map(function (job) {
+    /* The job's own detail: every field the models carry for it. The panel sits
+       beside the list rather than on a tab of its own, because the list is how
+       a person finds the job and the detail is what they read next; a tab would
+       hide the row that gave the job its context. */
+    function jobDetailPanel(job) {
+        var attempt = job.attempts[job.attempts.length - 1];
+        var tenant = tenantById(job.tenant);
+        var version = null;
+        for (var i = 0; i < APP_VERSIONS.length; i++)
+            if (APP_VERSIONS[i].app === job.app && APP_VERSIONS[i].version === job.version) version = APP_VERSIONS[i];
+        var sameBatch = filteredJobs().filter(function (j) { return j.batch === job.batch; });
+        var finished = job.submit + Math.max(1, Math.round(job.durationSec / (SPACING_MIN * 60)));
+        var outcome = job.state === 'failed' ? '3 ClientError' : job.state === 'done' ? '1 Success' : 'no outcome yet';
+        var serverState = job.state === 'done' || job.state === 'failed' ? '5 Done'
+            : job.state === 'running' ? '4 InProgress' : '2 Unsent';
+
+        var attemptRows = job.attempts.map(function (run, ri) {
             return '<tr>' +
+                '<td class="code">' + ri + '</td>' +
+                '<td class="code">' + esc(run.node) + '</td>' +
+                '<td>' + (run.state === 'aborted' ? '<span class="tag warn">aborted</span>' : '<span class="tag ok">' + esc(run.state) + '</span>') + '</td>' +
+                '<td class="code">' + esc(intervalTime(run.start)) + '</td>' +
+                '<td class="code">' + esc(intervalTime(Math.min(run.end, INTERVALS - 1))) + '</td>' +
+                '<td class="code">' + (ri === job.attempts.length - 1 ? job.exitCode : 'no exit: abandoned') + '</td>' +
+                '</tr>';
+        }).join('');
+
+        var phaseRows = job.phases.map(function (ph) {
+            return '<tr><td class="code">' + esc(ph.name) + '</td><td class="code">' + ph.sec.toFixed(1) + ' s</td>' +
+                '<td class="faint">' + (ph.name === 'queued' || ph.name === 'running' ? 'recorded in the prototype' : 'not modelled') + '</td></tr>';
+        }).join('');
+
+        return '<section class="card jobdetail" id="job-detail">' +
+            '<header class="sectionhead"><h2>Job ' + esc(job.id) + '</h2>' +
+            '<div class="meta">' +
+            '<span class="tag ' + (job.state === 'failed' ? 'bad' : job.state === 'done' ? 'ok' : 'accent') + '">' + esc(job.state) + '</span>' +
+            '<span class="tag">' + esc(job.app + ' ' + job.version) + '</span>' +
+            '<span class="tag">' + esc(job.node) + '</span>' +
+            '</div></header>' +
+
+            '<div class="detailcols">' +
+            '<table class="kv">' +
+            '<tr><td>Job id</td><td class="code">' + esc(job.id) + '</td></tr>' +
+            '<tr><td>Batch</td><td class="code">' + esc(job.batch) + ' <span class="faint">(' + sameBatch.length + ' jobs in it)</span></td></tr>' +
+            '<tr><td>App and version</td><td class="code">' + esc(job.app) + ' ' + esc(job.version) + '</td></tr>' +
+            '<tr><td>Tenant</td><td>' + esc(tenant.name) + ' <span class="faint mono">(' + tenant.id + ')</span></td></tr>' +
+            '<tr><td>Node</td><td class="code">' + esc(job.node) + '</td></tr>' +
+            '<tr><td>Submitted</td><td class="code">' + esc(intervalTime(job.submit)) + ' \u00b7 ' + esc(String(job.submit)) + ' of ' + INTERVALS + '</td></tr>' +
+            '<tr><td>Finished</td><td class="code">' + esc(job.state === 'running' || job.state === 'queued' ? 'not yet' : intervalTime(finished)) + '</td></tr>' +
+            '<tr><td>Duration</td><td class="code">' + esc(asDuration(job.durationSec)) + ' <span class="faint">(' + job.durationSec + ' s)</span></td></tr>' +
+            '</table>' +
+            '<table class="kv">' +
+            '<tr><td>State</td><td class="code">' + esc(job.state) +
+                ' <span class="faint">\u00b7 a workunit has no status column, so the state follows its canonical result</span></td></tr>' +
+            '<tr><td>Attempts</td><td class="code">' + job.attempts.length + ' result' + (job.attempts.length === 1 ? '' : 's') +
+                (job.attempts.length > 1 ? ' <span class="tag warn">' + (job.attempts.length - 1) + ' abandoned</span>' : '') + '</td></tr>' +
+            '<tr><td>Attempt id</td><td class="code">' + esc(job.id.replace('J-', 'R-') + '-a' + (job.attempts.length - 1)) + '</td></tr>' +
+            '<tr><td>Result state</td><td class="code">' + esc(serverState) + ' <span class="faint">\u00b7 1 Inactive, 2 Unsent, 4 InProgress, 5 Done</span></td></tr>' +
+            '<tr><td>Outcome</td><td class="code">' + esc(outcome) + ' <span class="faint">\u00b7 1 Success, 3 ClientError, 4 NoReply</span></td></tr>' +
+            '<tr><td>Exit code</td><td class="code">' + job.exitCode + '</td></tr>' +
+            '<tr><td>App version row</td><td class="code">' + esc(job.version) + ' released ' + esc(version ? version.released : '\u2014') + '</td></tr>' +
+            '<tr><td>Order</td><td class="code">priority 1 \u00b7 target redundancy 1</td></tr>' +
+            '</table>' +
+            '</div>' +
+
+            '<h3 class="detailhead">Attempts, one result row per run</h3>' +
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>#</th><th>Node</th><th>Run state</th><th>Started</th><th>Ended</th><th>Exit code</th>' +
+            '</tr></thead><tbody>' + attemptRows + '</tbody></table></div>' +
+
+            '<h3 class="detailhead">Resource requirements</h3>' +
+            '<div class="statgrid">' +
+            '<div><span class="lbl">Cores</span><span class="val"><span class="big">' + job.requirements.cores + '</span>' +
+            '<span class="tag ' + (job.requirements.cores > 8 ? 'warn' : '') + '">requested</span></span></div>' +
+            '<div><span class="lbl">Memory</span><span class="val"><span class="big">' + num(job.requirements.memGiB) + '</span><span class="tag">GiB</span></span></div>' +
+            '<div><span class="lbl">GPU</span><span class="val"><span class="big">' + job.requirements.gpu + '</span>' +
+            '<span class="tag ' + (job.requirements.gpu ? 'warn' : 'muted') + '">' + (job.requirements.gpu ? 'GPU job' : 'none') + '</span></span></div>' +
+            '<div><span class="lbl">Wallclock limit</span><span class="val"><span class="big">' + job.requirements.wallclockMin + '</span><span class="tag">minutes</span></span></div>' +
+            '<div><span class="lbl">Input bundle</span><span class="val"><span class="big">' + num(job.requirements.inputMiB) + '</span><span class="tag">MiB</span></span></div>' +
+            '<div><span class="lbl">Node app version minimum</span><span class="val"><span class="big mono">v0.0.25</span><span class="tag">wrapper</span></span></div>' +
+            '</div>' +
+
+            '<h3 class="detailhead">Inputs and outputs</h3>' +
+            '<table class="kv">' +
+            '<tr><td>Input bundle</td><td class="code">input/' + esc(job.batch) + '.tar.gz</td></tr>' +
+            '<tr><td>Engine config</td><td class="code">Input/ore.xml</td></tr>' +
+            '<tr><td>Output archive</td><td class="code">' +
+                (job.state === 'done' || job.state === 'failed' ? 'output/' + esc(job.id.replace('J-', 'r-')) + '.tar.gz' : 'not written yet') + '</td></tr>' +
+            '<tr><td>Waterfall phases</td><td class="faint">' +
+                (job.state === 'done' || job.state === 'failed'
+                    ? 'queued and running are recorded; the middle phases are not modelled (see below)'
+                    : 'the run has not finished, so no phase is recorded') + '</td></tr>' +
+            '</table>' +
+
+            (!job.stderr
+                ? '<p class="rowfoot">The run wrote no error message, which is what a success records.</p>'
+                : '<h3 class="detailhead">Error message, attempt ' + (job.attempts.length - 1) + '</h3>' +
+                  '<pre class="stderr">' + esc(job.stderr) + '</pre>') +
+
+            '<h3 class="detailhead">Phases as the prototype draws them</h3>' +
+            '<div class="table-wrap"><table><thead><tr><th>Phase</th><th>Seconds</th><th>Modelled?</th></tr></thead>' +
+            '<tbody>' + phaseRows + '</tbody></table></div>' +
+            '<p class="rowfoot">The waterfall on this tab splits the run into six phases, because it is the chart ' +
+            'compute.org asks for. The service records only when the run was written and when its output arrived, so the ' +
+            'phase split is the prototype\u2019s fixture and the journey records it as missing. The workunit has no status ' +
+            'column either: a job with a canonical result is done, whether that result succeeded or failed, so the outcome ' +
+            'is stated beside the state. This panel is the job\u2019s own detail. The node\u2019s logs are not here: they are ' +
+            'the installation\u2019s and are offered, or withheld, on Diagnose a failure.</p>' +
+            '</section>';
+    }
+
+    var FAIL_ORDER = [
+        { id: 'submit', label: 'Submitted', cmp: function (a, b) { return a.submit - b.submit; } },
+        { id: 'id', label: 'Job', cmp: function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; } },
+        { id: 'node', label: 'Node', cmp: function (a, b) { return a.node < b.node ? -1 : a.node > b.node ? 1 : 0; } }
+    ];
+
+    function failureDetailPanel() {
+        var failed = orderBy('failures', FAIL_ORDER, filteredJobs().filter(function (j) { return j.state === 'failed'; }));
+        var meta = page('failures', failed);
+        var rows = meta.rows.map(function (job) {
+            return '<tr class="rowlink" data-act="job" data-job="' + esc(job.id) + '" tabindex="0">' +
                 '<td class="code">' + esc(job.id) + '</td>' +
                 '<td>' + esc(job.app.replace('ores.', '')) + ' <span class="mono faint">' + esc(job.version) + '</span></td>' +
                 '<td class="code">' + esc(job.node) + '</td>' +
@@ -1427,17 +1702,21 @@
                 '<td>' + esc(job.stderr.split('\n').slice(-1)[0]) + '</td>' +
                 '</tr>';
         }).join('');
-        var first = failed[0];
+        var first = meta.rows[0];
         if (!first) {
             rows = '<tr><td colspan="6" class="faint">No failed job in this view. The fleet\u2019s own failure line above stays whole.</td></tr>';
         }
         return '<section class="card wide">' +
             '<header class="sectionhead"><h2>Why did it fail?</h2>' +
-            '<span class="faint" style="font-size:12px">' + failed.length + ' failed jobs in this view</span></header>' +
+            '<span class="faint" style="font-size:12px">' + failed.length + ' failed jobs in this view, one row each, click a row to read it below</span></header>' +
             '<div class="table-wrap"><table><thead><tr>' +
-            '<th>Job</th><th>App</th><th>Node</th><th>Submitted</th><th>Exit code</th><th>Last stderr line</th>' +
+            '<th>' + orderButton('failures', FAIL_ORDER[1], FAIL_ORDER) + '</th><th>App</th>' +
+            '<th>' + orderButton('failures', FAIL_ORDER[2], FAIL_ORDER) + '</th>' +
+            '<th>' + orderButton('failures', FAIL_ORDER[0], FAIL_ORDER) + '</th>' +
+            '<th>Exit code</th><th>Last stderr line</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
-            (first ? '<h3 style="margin-top:18px;font-size:14px">stderr, ' + esc(first.id) + '</h3><pre class="stderr">' + esc(first.stderr) + '</pre>' : '') +
+            pager('failures', meta) +
+            (first ? '<h3 class="detailhead">stderr, ' + esc(first.id) + '</h3><pre class="stderr">' + esc(first.stderr) + '</pre>' : '') +
             '<p class="rowfoot">The job\u2019s own detail narrows like any row. The node\u2019s logs are different: they are the installation\u2019s and may carry ' +
             'another tenant\u2019s inputs, so pulling them is a capability the super administrator holds and a tenant administrator does not. ' +
             'One screen, one control withheld.</p>' +
@@ -1468,8 +1747,15 @@
             '</section>';
     }
 
+    var CATALOGUE_ORDER = [
+        { id: 'app', label: 'App', cmp: function (a, b) { return a.app < b.app ? -1 : a.app > b.app ? 1 : 0; } },
+        { id: 'version', label: 'Version', cmp: function (a, b) { return cmpVersion(a.version, b.version); } },
+        { id: 'released', label: 'Released', cmp: function (a, b) { return a.released < b.released ? -1 : a.released > b.released ? 1 : 0; } }
+    ];
+
     function cataloguePanel() {
-        var rows = APP_VERSIONS.map(function (av) {
+        var meta = page('catalogue', orderBy('catalogue', CATALOGUE_ORDER, APP_VERSIONS));
+        var rows = meta.rows.map(function (av) {
             var jobs = JOBS.filter(function (j) { return j.app === av.app && j.version === av.version; });
             var failed = jobs.filter(function (j) { return j.state === 'failed'; }).length;
             var nodes = NODES.filter(function (n) { return n.wrapperVersion === av.version; }).length;
@@ -1488,11 +1774,245 @@
             '<header class="sectionhead"><h2>What may the grid run?</h2>' +
             '<span class="faint" style="font-size:12px">' + APP_VERSIONS.length + ' app versions</span></header>' +
             '<div class="table-wrap"><table><thead><tr>' +
-            '<th>App</th><th>Version</th><th>Released</th><th>Status</th><th>Jobs run</th><th>Failed</th><th>Nodes on this release</th>' +
+            '<th>' + orderButton('catalogue', CATALOGUE_ORDER[0], CATALOGUE_ORDER) + '</th>' +
+            '<th>' + orderButton('catalogue', CATALOGUE_ORDER[1], CATALOGUE_ORDER) + '</th>' +
+            '<th>' + orderButton('catalogue', CATALOGUE_ORDER[2], CATALOGUE_ORDER) + '</th>' +
+            '<th>Status</th><th>Jobs run</th><th>Failed</th><th>Nodes on this release</th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            pager('catalogue', meta) +
             '<p class="rowfoot">Reading the catalogue is everyone\u2019s, because a tenant needs to know what it may submit. ' +
             'Writing it is the super administrator\u2019s. That is a permission on the write, not a second journey, so this screen carries one catalogue ' +
             'and the edit control is absent rather than disabled.</p>' +
+            '</section>';
+    }
+
+    // ------------------------------------------------------- the lineage flow
+    /* What report caused this job, and what jobs its batch holds. Every hop is
+       drawn only where a model carries it; the one hop the models do not carry
+       is drawn dashed and named as such in the footnote. */
+    var LINEAGE_REPORTS = [
+        { name: 'daily-risk-pack', type: 'risk-report', cron: '0 6 * * *' },
+        { name: 'eod-pl-curve', type: 'pl-report', cron: '45 18 * * 1-5' },
+        { name: 'var-backtest', type: 'risk-report', cron: '0 22 * * *' }
+    ];
+    var LINEAGE_JOBS = [
+        { name: 'nightly-curves', action: 'nats_publish', subject: 'reporting.v1.ops.trigger_report_instance' },
+        { name: 'eod-close', action: 'nats_publish', subject: 'reporting.v1.ops.trigger_report_instance' },
+        { name: 'intraday-refresh', action: 'nats_publish', subject: 'reporting.v1.ops.trigger_report_instance' }
+    ];
+
+    function lineageFixture(batchRef) {
+        var hash = 0, i;
+        for (i = 0; i < batchRef.length; i++) hash = (hash * 31 + batchRef.charCodeAt(i)) % 100000;
+        return {
+            report: LINEAGE_REPORTS[hash % LINEAGE_REPORTS.length],
+            job: LINEAGE_JOBS[hash % LINEAGE_JOBS.length]
+        };
+    }
+
+    /* A lineage node is a small box with a heading and the fields the model
+       carries. Boxes are laid out in columns; the column to its left is where
+       its parents sit, so the chain reads left to right. */
+    function lineageNode(node) {
+        var hl = node.highlight ? ' bg' + node.highlight : '';
+        var out = '<rect class="lnode' + hl + '" x="' + node.x + '" y="' + node.y + '" width="' + node.w +
+            '" height="' + node.h + '" rx="6"></rect>';
+        out += '<text class="lkicker" x="' + (node.x + 10) + '" y="' + (node.y + 16) + '">' + esc(node.kicker) + '</text>';
+        node.lines.forEach(function (line, i) {
+            out += '<text class="' + (i === 0 ? 'llabel' : 'lsub') + '" x="' + (node.x + 10) + '" y="' +
+                (node.y + 33 + i * 15) + '">' + esc(line) + '</text>';
+        });
+        return out;
+    }
+
+    /* Straight across when the two anchors share a height, an elbow when they
+       do not. A dashed edge is one the models do not carry, and it says so in
+       its own title and in the chart's footnote. */
+    function lineageEdge(a, b, note, latch) {
+        var cls = 'ledge' + (note ? ' unmodelled' : '') + (note && latch ? ' latch' : '');
+        var title = '<title>' + esc(note || 'modelled link') + '</title>';
+        if (note && latch) {
+            var x1 = a.x, y1 = a.y, x2 = b.x, y2 = b.y;
+            var width = Math.max(8, ((x1 - x2) * 0.55).toFixed(1));
+            var taper = Math.max(6, ((x1 - x2) * 0.32).toFixed(1));
+            var body = 'M ' + x1 + ' ' + y1 + ' H ' + (x2 - taper) + ' L ' + x2 + ' ' + y2 +
+                ' L ' + (x2 - taper) + ' ' + (y2 + width / 2) + ' H ' + x1 + ' Z';
+            return '<g class="' + cls + '"><path class="lenv" d="' + body + '"></path>' +
+                '<line x1="' + x2 + '" y1="' + y2 + '" x2="' + (x2 - taper) + '" y2="' + (y2 - width / 2) + '"/>' +
+                '<line x1="' + x2 + '" y1="' + y2 + '" x2="' + (x2 - taper) + '" y2="' + (y2 + width / 2) + '"/>' +
+                title + '</g>';
+        }
+        if (a.y === b.y) {
+            return '<g class="' + cls + '"><line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"></line>' +
+                '<path class="larrow" d="M ' + (b.x - 5) + ' ' + (b.y - 3.5) + ' L ' + b.x + ' ' + b.y + ' L ' + (b.x - 5) + ' ' + (b.y + 3.5) + ' Z"></path>' +
+                title + '</g>';
+        }
+        var mid = Math.round((a.x + b.x) / 2);
+        return '<g class="' + cls + '"><path d="M ' + a.x + ' ' + a.y + ' H ' + mid + ' V ' + b.y + ' H ' + b.x + '"></path>' +
+            '<path class="larrow" d="M ' + (b.x - 5) + ' ' + (b.y - 3.5) + ' L ' + b.x + ' ' + b.y + ' L ' + (b.x - 5) + ' ' + (b.y + 3.5) + ' Z"></path>' +
+            title + '</g>';
+    }
+
+    function lineageChart(job) {
+        var batchRef = job.batch;
+        var fx = lineageFixture(batchRef);
+        var siblings = filteredJobs().filter(function (j) { return j.batch === batchRef; })
+            .sort(function (a, b) { return a.submit - b.submit || (a.id < b.id ? -1 : 1); });
+
+        var L = 10, R = 16, G = 14, TOP = 34, HALF = 25, ROWH = 62, GAP = 16, LH = 52;
+        var avail = 1000 - L - R;
+
+        /* Left to right: the scheduled job, the report definition and its run,
+           the batch, then the batch's workunits and the runs of the selected
+           job. The run column carries the one back edge, so it is placed from
+           its parent and may need the batch to sit further right. */
+        var main = (avail - 4 * G) / 5;
+        var jobW = 180;
+        var repW = Math.max(150, Math.min(180, avail - jobW - 2 * main - 4 * G));
+        var leftCols = [
+            { id: 'sched', w: jobW, x: L },
+            { id: 'report', w: repW, x: L + jobW + G },
+            { id: 'batch', w: main, x: L + jobW + G + repW + G }
+        ];
+        var rightStart = leftCols[2].x + main + G;
+        var rightWidth = L + avail - rightStart;
+        var subGap = G;
+        var wuW = (rightWidth - 2 * subGap) / 2;
+        var resW = (rightWidth - 3 * subGap) / 4;
+        var wuXs = [rightStart, rightStart + wuW + subGap];
+        var resXs = [0, 1, 2, 3].map(function (i) { return rightStart + i * (resW + subGap); });
+
+        var wuRows = Math.max(2, Math.ceil(siblings.length / 2));
+        var resCount = Math.max(1, Math.min(job.attempts.length, 4));
+        var resRows = Math.max(2, Math.ceil(resCount / 4));
+        var wuColH = wuRows * LH + (wuRows - 1) * GAP;
+        var resColH = resRows * LH + (resRows - 1) * GAP;
+        var middleY = TOP + 206;
+        var wuTop = Math.round(Math.max(TOP, middleY - wuColH / 2));
+        var resTop = Math.round(Math.max(wuTop + LH + GAP + 16, middleY - resColH / 2));
+        var height = Math.max(wuTop + wuColH, resTop + resColH) + 30;
+
+        var nodes = [];
+        var N = function (id, x, y, w, h, kicker, lines, highlight) {
+            var n = { id: id, x: Math.round(x), y: y, w: Math.round(w), h: h, kicker: kicker, lines: lines, highlight: highlight };
+            nodes.push(n);
+            return n;
+        };
+        var byId = {};
+        var push = function (n) { byId[n.id] = n; return n; };
+
+        push(N('sched', leftCols[0].x, TOP, jobW, LH, 'scheduled job',
+            [trunc(fx.job.name, 21), 'action ' + trunc(fx.job.action, 18), 'cron ' + trunc(fx.report.cron, 22)]));
+
+        var rep = N('report', leftCols[1].x, TOP, repW, LH, 'report definition',
+            [trunc(fx.report.name, 21), trunc(fx.report.type, 22), trunc('cron ' + fx.report.cron, 24)]);
+
+        var ri = N('reportinstance', leftCols[1].x, TOP + 206, repW, LH, 'report run',
+            [trunc('RI ' + batchRef, 21), 'started ' + intervalTime(Math.max(0, job.submit - 4)),
+                job.state === 'running' || job.state === 'queued' ? 'state running' : 'state completed']);
+
+        var batch = N('batch', leftCols[2].x, TOP + 100, main, LH, 'batch',
+            [trunc(batchRef, 21), siblings.length + ' workunits',
+                job.state === 'running' || job.state === 'queued' ? 'status dispatched' : 'status closed']);
+
+        /* The report hop is the one place the batch sits to the right of its
+           parent, so it is the node that may need pushing. */
+        batch.x = Math.max(batch.x, ri.x + ri.w + G);
+
+        var wuNodes = siblings.map(function (s, i) {
+            var done = s.state === 'done' || s.state === 'failed';
+            return N('wu' + i, wuXs[i % 2], wuTop + Math.floor(i / 2) * (LH + GAP), wuW, LH, 'workunit',
+                [trunc(s.id, 21), trunc(s.app.replace('ores.', '') + ' ' + s.version, 21),
+                    'pins the app version', done ? 'canonical result set' : 'no canonical result yet'],
+                s.id === job.id ? 'sel' : null);
+        });
+
+        var resNodes = job.attempts.slice(0, 4).map(function (run, i) {
+            return N('res' + i, resXs[i], resTop, resW, LH, 'result',
+                [trunc('R ' + job.id.replace('J-', '') + '-' + i, 21),
+                    trunc(run.node, 21), 'outcome ' + (run.state === 'failed' ? '3 ClientError' : run.state === 'done' ? '1 Success' : 'none yet')]);
+        });
+
+        var out = '';
+        var rightOf = function (n) { return { x: n.x + n.w, y: n.y + n.h / 2 }; };
+        var leftOf = function (n) { return { x: n.x, y: n.y + n.h / 2 }; };
+
+        out += lineageEdge(rightOf(byId.sched), leftOf(rep), 'ores.reporting.report_definition.scheduler_job_id');
+        out += lineageEdge(rightOf(rep), leftOf(ri), 'ores.reporting.report_instance.definition_id');
+        out += lineageEdge(leftOf(ri), rightOf(batch),
+            'no stored link: the trigger message copies the scheduler job_instance_id into report_instance.trigger_run_id, and the batch read joins that report instance by acting inside its tenant', true);
+        wuNodes.forEach(function (n) {
+            out += lineageEdge(rightOf(batch), leftOf(n), 'ores.compute.workunit.batch_id');
+        });
+        resNodes.forEach(function (n) {
+            out += lineageEdge(rightOf(wuNodes[0]), leftOf(n), 'ores.compute.result.workunit_id');
+        });
+
+        out += nodes.map(lineageNode).join('');
+
+        var question = 'What caused this job, and what runs beside it?';
+        var meta = 'scheduled job \u2192 report definition \u2192 report run \u2192 batch \u2192 workunits \u2192 results, for ' + job.id + ' in ' + batchRef + ', ' + siblings.length + ' workunits';
+        var foot = '<p class="rowfoot">Every hop drawn solid is carried by a model: ' +
+            '<span class="mono">report_definition.scheduler_job_id</span> names the scheduled job, ' +
+            '<span class="mono">report_instance.definition_id</span> names the definition, ' +
+            '<span class="mono">workunit.batch_id</span> names the batch, and ' +
+            '<span class="mono">result.workunit_id</span> names the job a run belongs to. ' +
+            'The batch to its report run is the one hop with no stored row, so it is drawn dashed: ' +
+            'the compute submit sets the batch\u2019s <span class="mono">external_ref</span> to the report instance id and ' +
+            'records <span class="mono">workflow_batch_link.workflow_instance_id</span>, but the report instance carries no ' +
+            'batch column to join on. The report definition to its own run is by the run\u2019s ' +
+            '<span class="mono">definition_id</span>; the report run to the scheduler\u2019s own job instance is drawn only ' +
+            'in the link note above, because no row holds it. Clicking a job in the chart selects it.</p>' +
+            miniLegend([
+                { label: 'modelled link', color: C.sky },
+                { label: 'link the models do not carry, dashed', color: C.amber },
+                { label: 'the selected job', color: C.violet }
+            ]);
+        return chartCard('lineage', question, meta, svgEl(1000, height, out, 'lineage', question + ', ' + meta), foot, '', true);
+    }
+
+    var LINEAGE_ORDER = [
+        { id: 'submit', label: 'Submitted', cmp: function (a, b) { return a.submit - b.submit; } },
+        { id: 'id', label: 'Job', cmp: function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; } }
+    ];
+
+    function lineagePanel(jobs, job) {
+        var siblings = orderBy('lineage', LINEAGE_ORDER, jobs.filter(function (j) { return j.batch === job.batch; }));
+        var meta = page('lineage', siblings);
+        /* The selected job is always offered, even when it sits past the first
+           page of the picker, because the picker states which chain is drawn. */
+        var offered = jobs.slice().sort(function (a, b) { return a.submit - b.submit; }).slice(0, 24);
+        if (!offered.filter(function (j) { return j.id === job.id; }).length) offered.push(job);
+        var picker = offered.map(function (j) {
+            return '<option value="' + esc(j.id) + '"' + (j.id === job.id ? ' selected' : '') + '>' +
+                esc(j.id + ' \u00b7 ' + j.batch + ' \u00b7 ' + j.app.replace('ores.', '')) + '</option>';
+        }).join('');
+        var head = '<div class="lineagebar">' +
+            '<span class="hint">Showing the chain for</span>' +
+            '<select class="btn small" data-act="job" aria-label="Choose the job the chain follows">' + picker + '</select>' +
+            '<span class="hint">' + siblings.length + ' jobs share ' + esc(job.batch) + '</span>' +
+            '</div>';
+        var rows = meta.rows.map(function (j) {
+            return '<tr class="rowlink' + (j.id === job.id ? ' on' : '') + '" data-act="job" data-job="' + esc(j.id) + '" tabindex="0">' +
+                '<td class="code">' + esc(j.id) + '</td>' +
+                '<td class="code">' + esc(j.app.replace('ores.', '') + ' ' + j.version) + '</td>' +
+                '<td>' + (j.state === 'failed' ? '<span class="tag bad">failed</span>'
+                    : j.state === 'done' ? '<span class="tag ok">done</span>'
+                        : '<span class="tag accent">' + esc(j.state) + '</span>') + '</td>' +
+                '<td class="code">' + esc(j.node) + '</td>' +
+                '<td class="code">' + esc(asDuration(j.durationSec)) + '</td>' +
+                '</tr>';
+        }).join('');
+        return head + lineageChart(job) +
+            '<section class="card wide"><header class="sectionhead"><h2>Which jobs are in this batch?</h2>' +
+            '<span class="faint" style="font-size:12px">' + siblings.length + ' workunits in ' + esc(job.batch) + ', one row each, click a row to select it</span></header>' +
+            '<div class="table-wrap"><table><thead><tr>' +
+            '<th>' + orderButton('lineage', LINEAGE_ORDER[1], LINEAGE_ORDER) + '</th><th>App</th><th>State</th><th>Node</th>' +
+            '<th>' + orderButton('lineage', LINEAGE_ORDER[0], LINEAGE_ORDER) + '</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            pager('lineage', meta) +
+            '<p class="rowfoot">A batch is the container one report run submits, so every row here is a sibling of the ' +
+            'selected job. The lineage chart above draws the whole chain and highlights the row this list has selected.</p>' +
             '</section>';
     }
 
@@ -1507,7 +2027,8 @@
             { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' }
         ],
         job: [
-            { id: 'jobs', name: 'The job', note: 'where it is, and where its time went' },
+            { id: 'jobs', name: 'The job', note: 'where it is, what the models carry, and where its time went' },
+            { id: 'lineage', name: 'Lineage', note: 'what report caused it, and what jobs its batch holds' },
             { id: 'timeline', name: 'Timeline', note: 'what ran when, and what overlapped' },
             { id: 'spread', name: 'Spread', note: 'is this job normal, and is one node slow' }
         ],
@@ -1566,12 +2087,14 @@
         var job = selectedJob();
         var tab = activeTab('job');
         var body;
-        if (tab === 'timeline')
-            body = ganttPanel(jobs);
+        if (tab === 'lineage')
+            body = lineagePanel(jobs, job);
+        else if (tab === 'timeline')
+            body = ganttPanel(jobs) + jobsTablePanel(jobs);
         else if (tab === 'spread')
             body = histogramChart(jobs) + durationByNodeChart();
         else
-            body = jobsTablePanel(jobs) + waterfallChart(job);
+            body = jobsTablePanel(jobs) + jobDetailPanel(job) + waterfallChart(job);
         return subTabs('job') + body;
     }
 
@@ -1696,7 +2219,7 @@
     }
 
     function screenLede(id) {
-        if (id === 'job') return 'One job end to end: what ran when, where its time went, and whether its duration is normal.';
+        if (id === 'job') return 'One job end to end: what the models carry for it, what report caused it, what ran when, and whether its duration is normal.';
         if (id === 'failure') return 'A job\u2019s full detail, the node\u2019s own logs, and the two charts that separate a bad release from a bad node.';
         if (id === 'capacity') return 'What the nodes have, what arriving work needs, and whether the grid can absorb it.';
         if (id === 'versions') return 'The apps, their versions, and the concurrency policy that caps how many of a thing run together.';
@@ -1745,6 +2268,11 @@
         var variantButtons = VARIANTS.map(function (v) {
             return '<button data-act="variant" data-variant="' + v.id + '"' + (S.variant === v.id ? ' class="on"' : '') + '>' + esc(v.name) + '</button>';
         }).join('');
+        var paging = TABLE_IDS.map(function (id) {
+            return '<span>' + id + ': <b>page size ' + (S.sizeOf[id] || DEFAULT_PAGE_SIZE) +
+                (S.allOf[id] ? ' (Load all)' : '') + ', offset ' + (S.pageOf[id] || 0) +
+                (S.orderOf[id] ? ', order ' + S.orderOf[id] + ' ' + (S.orderOf[id + ':dir'] || 'asc') : '') + '</b></span>';
+        }).join('');
         var state = '<div class="state-panel">' +
             '<div class="state-grid">' +
             '<span>screen: <b>' + esc(S.screen) + '</b> (' + esc(screen.question) + ')</span>' +
@@ -1761,6 +2289,7 @@
             '<span>P50 / P90 / P99: <b>' + asDuration(P50) + ' / ' + asDuration(P90) + ' / ' + asDuration(P99) + '</b></span>' +
             '<span>withheld: <b>' + (isTenant() ? 'node logs (Download this node\u2019s logs)' : 'none') + '</b></span>' +
             '<span>seed: <b>20261007 (mulberry32)</b></span>' +
+            paging +
             '</div>' +
             '<p class="state-note">Story: hot ' + esc(STORY.hot) + ' \u00b7 ' + esc(STORY.quiet) + ' \u00b7 ' + esc(STORY.draining) +
             ' \u00b7 bad release ' + esc(STORY.badVersion) + ' \u00b7 ' + esc(STORY.spike) + ' \u00b7 ' + esc(STORY.slow) + '</p>' +
@@ -1784,6 +2313,17 @@
     }
 
     // ---------------------------------------------------------------- events
+    /* Every paged table. The page, the page size and the order of each are held
+       in the address, as record_screen_standard.org states. */
+    var TABLE_ORDERS = {
+        jobs: JOB_ORDER,
+        nodes: NODE_ORDER,
+        catalogue: CATALOGUE_ORDER,
+        failures: FAIL_ORDER,
+        lineage: LINEAGE_ORDER
+    };
+    var TABLE_IDS = ['jobs', 'nodes', 'catalogue', 'failures', 'lineage'];
+
     function readParams() {
         var p = new URLSearchParams(window.location.search);
         if (screenById(p.get('screen')).id === p.get('screen')) S.screen = p.get('screen');
@@ -1793,6 +2333,21 @@
         if (tabs) for (var i = 0; i < tabs.length; i++)
             if (tabs[i].id === p.get('tab')) S.tab[S.screen] = p.get('tab');
         if (p.get('job')) S.job = p.get('job');
+        TABLE_IDS.forEach(function (id) {
+            var offset = parseInt(p.get('page.' + id), 10);
+            if (offset > 0) S.pageOf[id] = offset;
+            var size = parseInt(p.get('size.' + id), 10);
+            if (size > 0) S.sizeOf[id] = size;
+            if (p.get('all.' + id) === '1') S.allOf[id] = true;
+            var defs = TABLE_ORDERS[id];
+            for (var k = 0; k < defs.length; k++) {
+                if (defs[k].id === p.get('order.' + id)) {
+                    S.orderOf[id] = defs[k].id;
+                    if (p.get('dir.' + id) === 'desc') S.orderOf[id + ':dir'] = 'desc';
+                    if (p.get('dir.' + id) === 'asc') S.orderOf[id + ':dir'] = 'asc';
+                }
+            }
+        });
     }
 
     function writeParams() {
@@ -1803,7 +2358,22 @@
         var tab = activeTab(S.screen);
         if (tab) p.set('tab', tab);
         p.set('job', selectedJob().id);
+        TABLE_IDS.forEach(function (id) {
+            var defs = TABLE_ORDERS[id];
+            var state = orderState(id, defs);
+            p.set('order.' + id, state.key);
+            p.set('dir.' + id, state.dir);
+            if (S.allOf[id]) p.set('all.' + id, '1');
+            if (S.sizeOf[id]) p.set('size.' + id, String(S.sizeOf[id]));
+            if (S.pageOf[id]) p.set('page.' + id, String(S.pageOf[id]));
+        });
         window.history.replaceState(null, '', window.location.pathname + '?' + p.toString());
+    }
+
+    /* A new search, filter, order or page size returns to the first page. */
+    function resetPage(tableId) {
+        S.pageOf[tableId] = 0;
+        S.allOf[tableId] = false;
     }
 
     function refresh() {
@@ -1816,12 +2386,15 @@
         if (!el) return;
         ev.preventDefault();
         var act = el.getAttribute('data-act');
+        var tableId = el.getAttribute('data-table');
         if (act === 'screen') {
             S.screen = el.getAttribute('data-screen');
             S.job = null;
             log.push('screen \u00b7 ' + S.screen);
         } else if (act === 'variant') {
             S.variant = el.getAttribute('data-variant');
+            TABLE_IDS.forEach(resetPage);
+            S.job = null;
             log.push('variant \u00b7 ' + S.variant + (isTenant() ? ' \u00b7 rows narrowed to ' + TENANT_VARIANT + ', node logs withheld' : ' \u00b7 all rows, node logs offered'));
         } else if (act === 'metric') {
             S.heatMetric = el.getAttribute('data-metric');
@@ -1832,7 +2405,27 @@
             log.push('tab \u00b7 ' + tabScreen + ' \u00b7 ' + S.tab[tabScreen]);
         } else if (act === 'job') {
             S.job = el.getAttribute('data-job');
+            S.pageOf.lineage = 0;
             log.push('job \u00b7 ' + S.job);
+        } else if (act === 'page') {
+            S.pageOf[tableId] = parseInt(el.getAttribute('data-page'), 10) || 0;
+            S.allOf[tableId] = false;
+            log.push('page \u00b7 ' + tableId + ' \u00b7 offset ' + S.pageOf[tableId]);
+        } else if (act === 'page-size') {
+            S.sizeOf[tableId] = parseInt(el.value, 10) || DEFAULT_PAGE_SIZE;
+            resetPage(tableId);
+            log.push('page size \u00b7 ' + tableId + ' \u00b7 ' + S.sizeOf[tableId] + ' rows, back to the first page');
+        } else if (act === 'load-all') {
+            var total = el.getAttribute('data-total') ? parseInt(el.getAttribute('data-total'), 10) : 0;
+            S.sizeOf[tableId] = total || LOAD_ALL_LIMIT;
+            S.pageOf[tableId] = 0;
+            S.allOf[tableId] = true;
+            log.push('load all \u00b7 ' + tableId + ' \u00b7 ' + total + ' rows read whole');
+        } else if (act === 'order') {
+            S.orderOf[tableId] = el.getAttribute('data-order');
+            S.orderOf[tableId + ':dir'] = el.getAttribute('data-dir') === 'desc' ? 'desc' : 'asc';
+            resetPage(tableId);
+            log.push('order \u00b7 ' + tableId + ' \u00b7 ' + S.orderOf[tableId] + ' ' + S.orderOf[tableId + ':dir'] + ', back to the first page');
         } else if (act === 'download-logs') {
             S.logsDownloaded++;
             log.push('download node logs \u00b7 ' + selectedJob().node + ' \u00b7 fixture, no file leaves the page');
@@ -1840,6 +2433,26 @@
             refresh();
         } else if (act === 'toggle-state') {
             S.showState = !S.showState;
+        }
+        render();
+        writeParams();
+    });
+
+    /* The page size is a select, so its change is its own event. */
+    document.addEventListener('change', function (ev) {
+        var el = ev.target;
+        if (!el || !el.getAttribute) return;
+        var act = el.getAttribute('data-act');
+        if (act !== 'page-size' && act !== 'job') return;
+        var tableId = el.getAttribute('data-table');
+        if (act === 'page-size') {
+            S.sizeOf[tableId] = parseInt(el.value, 10) || DEFAULT_PAGE_SIZE;
+            resetPage(tableId);
+            log.push('page size \u00b7 ' + tableId + ' \u00b7 ' + S.sizeOf[tableId] + ' rows, back to the first page');
+        } else {
+            S.job = el.value;
+            S.pageOf.lineage = 0;
+            log.push('job \u00b7 ' + S.job);
         }
         render();
         writeParams();

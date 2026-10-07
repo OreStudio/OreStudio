@@ -324,6 +324,99 @@ td.wrap { white-space: normal; }
 .cellgroup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .rowfoot { color: var(--ink-faint); font-size: 12px; margin-top: 14px; max-width: 100ch; }
 
+/* A row that opens the record below it. The row keeps the table's own look and
+   gains a pointer, which is the one affordance the table has for it. */
+tr.rowlink { cursor: pointer; }
+tr.rowlink:hover td { background: var(--panel-2); }
+tr.rowlink.on td { background: rgba(88, 166, 255, 0.08); }
+tr.rowlink.on td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* A column heading that orders the list, the button behind a th. */
+.thbtn {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.thbtn:hover { color: var(--ink); }
+.thbtn.on { color: var(--accent-bright); }
+
+/* --------------------------------------------------------------- pager */
+/* The shared Pager of record_screen_standard.org, by hand: the count first,
+   then First, Previous, Next and Last, the page size and Load all. */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+    color: var(--ink-dim);
+    font-size: 13px;
+}
+.pager .pager-count { white-space: nowrap; color: var(--ink-dim); }
+.pager .pager-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager .pager-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    color: var(--ink-dim);
+    font-size: 13px;
+}
+.pager select.btn { padding: 4px 6px; }
+.pager .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* --------------------------------------------------------- job detail */
+/* The job's own detail, beside its row in the list. The two panels sit side by
+   side when the width allows and stack when it does not. */
+.detailcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 0 28px; }
+.detailhead {
+    margin: 20px 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+}
+.jobdetail .statgrid { margin-top: 4px; }
+
+/* ---------------------------------------------------------- the lineage */
+.lineagebar {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.lineagebar select.btn { max-width: 34rem; }
+
+.chart .lnode { fill: #22262d; stroke: var(--line-strong); stroke-width: 1; }
+.chart .lnode.bgsel { fill: rgba(204, 121, 167, 0.22); stroke: #CC79A7; stroke-width: 2; }
+.chart .lkicker {
+    fill: var(--ink-faint);
+    font: 9px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.chart .llabel { fill: var(--ink); font: 11px var(--mono); }
+.chart .lsub { fill: var(--ink-dim); font: 10px var(--mono); }
+.chart .ledge { stroke: var(--accent-bright); stroke-width: 1.6; fill: none; }
+.chart .ledge .larrow { fill: var(--accent-bright); stroke: none; }
+.chart .ledge.unmodelled { stroke: var(--warn); stroke-dasharray: 5 4; }
+.chart .ledge.unmodelled .larrow { fill: var(--warn); }
+.chart .ledge.latch { stroke: var(--warn); stroke-width: 1.4; }
+.chart .ledge.latch .lenv { fill: none; stroke: var(--warn); stroke-width: 1.4; }
+
 /* --------------------------------------------------------------- grid */
 
 .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 12px 32px; }

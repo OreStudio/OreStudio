@@ -88,11 +88,6 @@
       "where": "projects/ores.dq/modeling/ores.dq.report_definition_template.org:116"
     },
     {
-      "subject": "{component}.v1.history.get",
-      "reason": "the component segment '{component}' is not lower snake_case",
-      "where": "projects/ores.history/modeling/ores.history.history_messages.org:85"
-    },
-    {
       "subject": "iam.v1.account-contact-informations.publish-from-dq",
       "reason": "the resource segment 'account-contact-informations' is not lower snake_case",
       "where": "projects/ores.iam/modeling/ores.iam.account_contact_information.org:442"

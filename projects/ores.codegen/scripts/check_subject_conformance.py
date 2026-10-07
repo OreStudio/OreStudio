@@ -81,6 +81,14 @@ def classify(subject: str) -> tuple[bool, str]:
 
     component, version, resource, suffix = segments
 
+    # The generic history request every entity shares. The component segment
+    # is a generation-time placeholder, and the header builds the subject at
+    # runtime as component + ".v1.history.get", so every concrete subject it
+    # produces is owned by the component that asks and conforms. The literal
+    # spelling is the one subject in the tree that is not a fixed address.
+    if component == "{component}":
+        return True, "a generic request, parameterised by the asking component"
+
     for name, segment in (
         ("component", component),
         ("version", version),

@@ -8,7 +8,7 @@
 #+filetags: :dangling_operations_link:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2752
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2752][#2752]] | [iam] Drop the link to the withdrawn operations model |
 
 * Review
 

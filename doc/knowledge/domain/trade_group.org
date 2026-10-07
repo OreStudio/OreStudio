@@ -157,3 +157,4 @@ A residual is the operation failing to close.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the set that is a product rather than a run.
 - [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the relations that are not groups.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the stamp an amendment carries, which is not the run.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.

@@ -101,3 +101,4 @@ requirement that a run be repeatable.
 - [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] — the recorded set a run leaves behind.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — how a change of book is recorded on the trade.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — why a stored relationship is a row and a derived one is a key.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.

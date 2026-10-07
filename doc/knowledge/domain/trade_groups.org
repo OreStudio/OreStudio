@@ -42,10 +42,10 @@ identity. If it relates particular trades for a reason and contains
 nothing, it is a link.
 #+end_quote
 
-The test follows from the rule [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]
-states for persisted data: relationships are keys, not ownership. A named
-collection cannot be a by-product of the links between its members,
-because nothing would then carry its name or record that it is empty.
+The test follows from the rule Data-Oriented Design states for persisted
+data: relationships are keys, not ownership. A named collection cannot be
+a by-product of the links between its members, because nothing would then
+carry its name or record that it is empty.
 
 The converse matters as much. A link is not a degenerate group. Recording
 a hedge as a group of two would give it an identity the business never
@@ -59,24 +59,6 @@ the relation.
 
 Source: [[./trade_set_taxonomy.puml][=trade_set_taxonomy.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/domain/trade_set_taxonomy.puml=.
-
-** What this cluster leaves out
-
-- *Batching and chunking.* How a set is partitioned for a report or for
-  the compute grid, and the strategies that do it, belong with
-  [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] and the report-execution pages. This
-  cluster supplies the set they partition.
-- *The run.* The identity of a run, the process enumeration, and the
-  states a run moves through are their own subject. This cluster states
-  the foreign key and stops.
-- *Each process.* A funding roll, a sweep and a compression have pages of
-  their own. [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] carries the catalogue and the
-  role rules, and does not restate them.
-- *Links.* [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] and
-  [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] carry the relations that are not
-  sets.
-- *Positions and filters.* [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] and
-  [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]] are neither a set nor a link.
 
 * Documents in this cluster
 
@@ -97,6 +79,24 @@ concept.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal
   Composition]] — the set that is also a product, and the
   composition ladder above it.
+
+* What this cluster does not cover
+
+- *Batching and chunking.* How a set is partitioned for a report or for
+  the compute grid, and the strategies that do it, belong with
+  [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] and the report-execution pages. This
+  cluster supplies the set they partition.
+- *The run.* The identity of a run, the process enumeration, and the
+  states a run moves through are their own subject. This cluster states
+  the foreign key and stops.
+- *Each process.* A funding roll, a sweep and a compression have pages of
+  their own. [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] carries the catalogue and the
+  role rules, and does not restate them.
+- *Links.* [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] and
+  [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] carry the relations that are not
+  sets.
+- *Positions and filters.* [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] and
+  [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]] are neither a set nor a link.
 
 * Sources
 

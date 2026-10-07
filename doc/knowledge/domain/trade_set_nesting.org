@@ -101,3 +101,4 @@ exclusivity test, are this page's synthesis.
 - [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]] — the arbitrary groupings that sit outside the tree, and are therefore not identity.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the tree in miniature, and why the customer sees the structure.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — why a change of address is a versioned change to the trade.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.

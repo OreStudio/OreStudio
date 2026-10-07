@@ -281,6 +281,21 @@ Step 1: gather market data series.
 :cpp_type: std::string
 :END:
 
+*** fixings_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the gather step put the fixings body.
+ *
+ * The engine reads fixings through a file its run document names, and the
+ * export writes them apart from the market data, so the run carries the key
+ * the packaging step fetches it from.
+ */
+#+end_src
+
 ** assemble_bundle_request
 :PROPERTIES:
 :subject: reporting.v1.ops.assemble_bundle
@@ -318,6 +333,21 @@ Step 2: assemble and persist the report input bundle.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+*** fixings_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the gather step put the fixings body.
+ *
+ * The engine reads fixings through a file its run document names, and the
+ * export writes them apart from the market data, so the run carries the key
+ * the packaging step fetches it from.
+ */
+#+end_src
+
 
 *** trade_count
 :PROPERTIES:
@@ -410,6 +440,18 @@ id is not a credential.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** fixings_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the run's fixings body is, so the package can place it where
+ * the engine reads it.
+ */
+#+end_src
 
 
 ** prepare_ore_package_result

@@ -166,6 +166,64 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
         refdata::service::conventions_document_service(ctx).get()));
 }
 
+/**
+ * @brief The run document out of a set of input files.
+ */
+domain::ore parse_run_document(const input_files& files) {
+    const auto run = files.find(std::string(run_document_file));
+    if (run == files.end())
+        throw std::invalid_argument(
+            std::format("An ORE input holds its run document as {}.", run_document_file));
+
+    domain::ore document;
+    domain::load_data(run->second, document);
+    return document;
+}
+
+/**
+ * @brief What a run document sets one setup parameter to, empty when none.
+ */
+std::string setup_parameter(const domain::ore& document, std::string_view name) {
+    for (const auto& p : document.Setup.Parameter)
+        if (std::string(p.name) == name)
+            return static_cast<const std::string&>(p);
+    return {};
+}
+
+/**
+ * @brief Whether a path stays inside the package.
+ *
+ * The input path and the file names come from a stored run document, which a
+ * tenant edits, and the result names where the package writes; a path that is
+ * absolute or climbs out with .. would write outside the package.
+ */
+bool inside(const std::filesystem::path& p) {
+    const auto normal = p.lexically_normal();
+    if (p.is_absolute() || p.has_root_name() || normal.empty())
+        return false;
+    return std::ranges::none_of(normal, [](const auto& part) { return part == ".."; });
+}
+
+/**
+ * @brief The run's data file in one slot, as the package path it goes to.
+ *
+ * Empty when the run document names no file there. A name that would leave the
+ * package is refused rather than written.
+ */
+std::string data_file_path(const std::string& input_path,
+                           std::string_view parameter,
+                           const std::string& name) {
+    if (name.empty())
+        return {};
+    const std::filesystem::path path = std::filesystem::path(input_path) / name;
+    if (!inside(std::filesystem::path(name)) || !inside(path))
+        throw std::invalid_argument(std::format(
+            "The run document's {} names {}, which would be written outside the package.",
+            parameter,
+            name));
+    return path.lexically_normal().generic_string();
+}
+
 }
 
 run_import_result import_run(const context& ctx,
@@ -269,27 +327,11 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
 }
 
 input_files archive_layout(const input_files& files) {
-    const auto run = files.find(std::string(run_document_file));
-    if (run == files.end())
-        throw std::invalid_argument(
-            std::format("An ORE input holds its run document as {}.", run_document_file));
+    const auto document = parse_run_document(files);
 
-    domain::ore document;
-    domain::load_data(run->second, document);
     std::string input_path = "Input";
-    for (const auto& p : document.Setup.Parameter)
-        if (std::string(p.name) == "inputPath" && !static_cast<const std::string&>(p).empty())
-            input_path = static_cast<const std::string&>(p);
-
-    // The input path and the file names come from a stored run document, which
-    // a tenant edits, and the result names where the package writes; a path
-    // that is absolute or climbs out with .. would write outside the package.
-    const auto inside = [](const std::filesystem::path& p) {
-        const auto normal = p.lexically_normal();
-        if (p.is_absolute() || p.has_root_name() || normal.empty())
-            return false;
-        return std::ranges::none_of(normal, [](const auto& part) { return part == ".."; });
-    };
+    if (const auto declared = setup_parameter(document, "inputPath"); !declared.empty())
+        input_path = declared;
     if (!inside(input_path))
         throw std::invalid_argument(
             std::format("The run document's input path {} leaves the package.", input_path));
@@ -306,6 +348,26 @@ input_files archive_layout(const input_files& files) {
         layout[path.lexically_normal().generic_string()] = content;
     }
     return layout;
+}
+
+run_data_files declared_data_files(const input_files& files) {
+    const auto document = parse_run_document(files);
+
+    std::string input_path = "Input";
+    if (const auto declared = setup_parameter(document, "inputPath"); !declared.empty())
+        input_path = declared;
+    if (!inside(input_path))
+        throw std::invalid_argument(
+            std::format("The run document's input path {} leaves the package.", input_path));
+
+    run_data_files places;
+    places.market_data =
+        data_file_path(input_path, "marketDataFile", setup_parameter(document, "marketDataFile"));
+    places.fixings =
+        data_file_path(input_path, "fixingDataFile", setup_parameter(document, "fixingDataFile"));
+    places.portfolio =
+        data_file_path(input_path, "portfolioFile", setup_parameter(document, "portfolioFile"));
+    return places;
 }
 
 }

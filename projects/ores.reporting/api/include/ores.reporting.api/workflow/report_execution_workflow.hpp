@@ -207,6 +207,7 @@ template <typename Command>
                                     .correlation_id = req.correlation_id,
                                     .trades_storage_key = trades.storage_key,
                                     .market_data_storage_key = market_data.storage_key,
+                                    .fixings_storage_key = market_data.fixings_storage_key,
                                     .trade_count = trades.trade_count,
                                     .series_count = market_data.series_count});
     };
@@ -275,7 +276,8 @@ template <typename Command>
                                         .run_grant_id = req.run_grant_id,
                                         .correlation_id = req.correlation_id,
                                         .trades_storage_key = trades.storage_key,
-                                        .market_data_storage_key = market_data.storage_key});
+                                        .market_data_storage_key = market_data.storage_key,
+                                        .fixings_storage_key = market_data.fixings_storage_key});
     };
 
     s.build_compensation = [](const std::string& cmd_json, const std::string&) -> std::string {

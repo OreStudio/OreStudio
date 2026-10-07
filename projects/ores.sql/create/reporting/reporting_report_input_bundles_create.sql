@@ -38,13 +38,15 @@ create table if not exists "ores_reporting_report_input_bundles_tbl" (
     "definition_id"             uuid    not null,
     "trades_storage_key"        text    not null,
     "market_data_storage_key"   text    not null,
+    "fixings_storage_key"       text    not null,
     "trade_count"               integer not null default 0,
     "series_count"              integer not null default 0,
     "created_at"                timestamp with time zone not null default current_timestamp,
     primary key (tenant_id, id),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("trades_storage_key" <> ''),
-    check ("market_data_storage_key" <> '')
+    check ("market_data_storage_key" <> ''),
+    check ("fixings_storage_key" <> '')
 );
 
 -- One bundle per report instance execution.

@@ -39,7 +39,12 @@ std::string trades_storage_key(const std::string& report_instance_id) {
 
 std::string market_data_storage_key(const std::string& report_instance_id) {
     return ores::storage::api::object_keys::make(
-        service_segment, runs_segment, report_instance_id, "market_data.msgpack");
+        service_segment, runs_segment, report_instance_id, "market_data.txt");
+}
+
+std::string fixings_storage_key(const std::string& report_instance_id) {
+    return ores::storage::api::object_keys::make(
+        service_segment, runs_segment, report_instance_id, "fixings.txt");
 }
 
 }

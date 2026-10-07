@@ -345,15 +345,26 @@ export interface GetVintageValidityResponse {
 }
 
 /**
- * @brief Exports all market data series to object storage.
+ * @brief Exports the tenant's market data to object storage as ORE text.
  *
- * Fetches all active market series for the tenant, serialises to JSON,
- * compresses with gzip, and uploads to storage. Returns the storage key
- * on success.
+ * The engine reads a market data file its run document names, and nothing else
+ * can fill that file, so what is written here is that body and no other form
+ * of the data.
  */
 export interface ExportMarketDataToStorageRequest {
     storage_bucket: string;
+    /**
+     * @brief Where the market data body goes.
+     */
     storage_key: string;
+    /**
+     * @brief Where the fixings body goes.
+     *
+     * The engine reads fixings from a file of their own, so the body goes to an
+     * object of its own. An empty body is written too, because a run whose run
+     * document names the file must find it.
+     */
+    fixings_storage_key: string;
 }
 
 export interface ExportMarketDataToStorageResponse {
@@ -361,6 +372,10 @@ export interface ExportMarketDataToStorageResponse {
     message: string;
     series_count: number;
     storage_key: string;
+    /**
+     * @brief Where the fixings body was written.
+     */
+    fixings_storage_key: string;
 }
 
 /**

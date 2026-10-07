@@ -48,7 +48,7 @@ namespace ores::storage::api {
  *   where the object is the id's file and has no name of its own:
  *   =compute/input/<uuid>.tar.gz=.
  * - _name_, when present, is the file's own name, so two objects under one id
- *   -- =trades.msgpack= and =market_data.msgpack= in one run -- are
+ *   -- =trades.msgpack= and =market_data.txt= in one run -- are
  *   distinguishable.
  *
  * A segment holds letters, digits, dots, hyphens and underscores, and never a

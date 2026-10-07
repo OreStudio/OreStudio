@@ -99,7 +99,8 @@ public:
 
     /**
      * @brief assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id>
-     * <trades_storage_key> <market_data_storage_key> [--trade_count <v>] [--series_count <v>]
+     * <trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>]
+     * [--series_count <v>]
      */
     static void process_assemble_bundle(std::ostream& out,
                                         ores::nats::service::nats_client& session,
@@ -108,6 +109,7 @@ public:
     /**
      * @brief prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id>
      * <party_id> <run_grant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
+     * <fixings_storage_key>
      */
     static void process_prepare_ore_package(std::ostream& out,
                                             ores::nats::service::nats_client& session,

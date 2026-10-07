@@ -448,11 +448,11 @@ struct get_vintage_validity_response {
 };
 
 /**
- * @brief Exports all market data series to object storage.
+ * @brief Exports the tenant's market data to object storage as ORE text.
  *
- * Fetches all active market series for the tenant, serialises to JSON,
- * compresses with gzip, and uploads to storage. Returns the storage key
- * on success.
+ * The engine reads a market data file its run document names, and nothing else
+ * can fill that file, so what is written here is that body and no other form
+ * of the data.
  */
 struct export_market_data_to_storage_request {
     using response_type = struct export_market_data_to_storage_response;
@@ -466,7 +466,18 @@ struct export_market_data_to_storage_request {
      */
     static constexpr bool requires_session = true;
     std::string storage_bucket;
+    /**
+     * @brief Where the market data body goes.
+     */
     std::string storage_key;
+    /**
+     * @brief Where the fixings body goes.
+     *
+     * The engine reads fixings from a file of their own, so the body goes to an
+     * object of its own. An empty body is written too, because a run whose run
+     * document names the file must find it.
+     */
+    std::string fixings_storage_key;
 };
 
 struct export_market_data_to_storage_response {
@@ -474,6 +485,10 @@ struct export_market_data_to_storage_response {
     std::string message;
     int series_count = 0;
     std::string storage_key;
+    /**
+     * @brief Where the fixings body was written.
+     */
+    std::string fixings_storage_key;
 };
 
 /**

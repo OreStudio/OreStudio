@@ -288,6 +288,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         ores::marketdata::messaging::export_market_data_to_storage_request md_req;
         md_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         md_req.storage_key = key;
+        md_req.fixings_storage_key = service::fixings_storage_key(req.report_instance_id);
 
         std::string err;
         auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
@@ -314,6 +315,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         result.success = true;
         result.series_count = md_resp->series_count;
         result.storage_key = md_resp->storage_key;
+        result.fixings_storage_key = md_resp->fixings_storage_key;
         result.message = std::format("Gathered {} market data series", md_resp->series_count);
 
         BOOST_LOG_SEV(lg(), info) << "gather_market_data complete | instance="
@@ -342,7 +344,8 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
 
     BOOST_LOG_SEV(lg(), info) << "assemble_bundle starting | instance=" << req.report_instance_id
                               << " trades_key=" << req.trades_storage_key
-                              << " market_data_key=" << req.market_data_storage_key;
+                              << " market_data_key=" << req.market_data_storage_key
+                              << " fixings_key=" << req.fixings_storage_key;
 
     try {
         if (req.trades_storage_key.empty()) {
@@ -351,6 +354,10 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         }
         if (req.market_data_storage_key.empty()) {
             wf->fail("assemble_bundle: market_data_storage_key is missing");
+            return;
+        }
+        if (req.fixings_storage_key.empty()) {
+            wf->fail("assemble_bundle: fixings_storage_key is missing");
             return;
         }
 
@@ -365,6 +372,7 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         bundle.definition_id = req.definition_id;
         bundle.trades_storage_key = req.trades_storage_key;
         bundle.market_data_storage_key = req.market_data_storage_key;
+        bundle.fixings_storage_key = req.fixings_storage_key;
         bundle.trade_count = req.trade_count;
         bundle.series_count = req.series_count;
         bundle.created_at =

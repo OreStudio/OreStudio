@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/base_correlation_config_repository.hpp"
 #include "ores.refdata.core/repository/bond_future_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/cap_floor_volatility_config_repository.hpp"
@@ -51,8 +52,11 @@
 #include "ores.refdata.core/repository/swaption_volatility_config_repository.hpp"
 #include "ores.refdata.core/repository/yield_curve_config_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <set>
+#include <utility>
 
 namespace ores::refdata::service {
 

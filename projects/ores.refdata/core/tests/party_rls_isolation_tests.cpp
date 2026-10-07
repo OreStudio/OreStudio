@@ -17,7 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
@@ -32,10 +34,15 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
-#include <boost/uuid/random_generator.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;

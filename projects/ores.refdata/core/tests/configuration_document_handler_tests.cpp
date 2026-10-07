@@ -17,6 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.refdata.api/generators/curve_configuration_generator.hpp"
 #include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
@@ -27,13 +30,16 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {

@@ -328,12 +328,12 @@ Change notifications are published on =dq.v1.<entity>_events.<action>=, where th
 
 | Subject | Description |
 |---------+-------------|
-| =dq.v1.ip2country.publish-from-dq= | Trigger the IP-to-country publish-from-DQ step |
-| =dq.v1.coding-schemes.publish-from-dq= | Trigger the coding schemes publish-from-DQ step |
-| =dq.v1.badge-severities.publish-from-dq= | Trigger the badge severities publish-from-DQ step |
-| =dq.v1.badge-definitions.publish-from-dq= | Trigger the badge definitions publish-from-DQ step |
-| =dq.v1.code-domains.publish-from-dq= | Trigger the code domains publish-from-DQ step |
-| =dq.v1.badge-mappings.publish-from-dq= | Trigger the badge mappings publish-from-DQ step |
+| =dq.v1.ops.publish_ip2country_from_dq= | Trigger the IP-to-country publish-from-DQ step |
+| =dq.v1.ops.publish_coding_schemes_from_dq= | Trigger the coding schemes publish-from-DQ step |
+| =dq.v1.ops.publish_badge_severities_from_dq= | Trigger the badge severities publish-from-DQ step |
+| =dq.v1.ops.publish_badge_definitions_from_dq= | Trigger the badge definitions publish-from-DQ step |
+| =dq.v1.ops.publish_code_domains_from_dq= | Trigger the code domains publish-from-DQ step |
+| =dq.v1.ops.publish_badge_mappings_from_dq= | Trigger the badge mappings publish-from-DQ step |
 
 * Report Definition Templates
 

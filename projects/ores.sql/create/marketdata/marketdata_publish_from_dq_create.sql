@@ -32,7 +32,7 @@
  */
 
 -- =============================================================================
--- Market Data Observations: marketdata.v1.market-data-observations.publish-from-dq
+-- Market Data Observations: marketdata.v1.ops.publish_market_data_observations_from_dq
 --
 -- Generic across series identity (FX spot, rates curves today; vol surfaces,
 -- ... later, as more datasets are published under the same market_data_

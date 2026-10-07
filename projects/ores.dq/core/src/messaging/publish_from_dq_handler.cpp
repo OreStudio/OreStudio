@@ -46,21 +46,25 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "dq.v1.coding-schemes.publish-from-dq" to
+ * Converts "dq.v1.ops.publish_coding_schemes_from_dq" to
  * "ores_dq_coding_schemes_publish_fn". Any namespace prefix, such as
  * "ores.dev.local3.", is ignored.
  */
 std::string subject_to_fn(std::string_view subject) {
-    const auto v1_pos = subject.find("v1.");
-    if (v1_pos == std::string_view::npos)
+    // The operation is the last segment of a reserved-namespace subject:
+    // dq.v1.ops.publish_coding_schemes_from_dq names
+    // ores_dq_coding_schemes_publish_fn.
+    constexpr std::string_view ops = "v1.ops.";
+    const auto pos = subject.find(ops);
+    if (pos == std::string_view::npos)
         return {};
-    const auto start = v1_pos + 3;
-    const auto end = subject.rfind(".publish-from-dq");
-    if (end == std::string_view::npos || end <= start)
+    auto operation = std::string(subject.substr(pos + ops.size()));
+    constexpr std::string_view lead = "publish_";
+    constexpr std::string_view tail = "_from_dq";
+    if (operation.rfind(lead, 0) != 0 || operation.size() <= lead.size() + tail.size())
         return {};
-    auto entity = std::string(subject.substr(start, end - start));
-    std::replace(entity.begin(), entity.end(), '-', '_');
-    return "ores_dq_" + entity + "_publish_fn";
+    operation = operation.substr(lead.size(), operation.size() - lead.size() - tail.size());
+    return "ores_dq_" + operation + "_publish_fn";
 }
 
 /**

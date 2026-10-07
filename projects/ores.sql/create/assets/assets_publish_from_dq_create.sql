@@ -30,7 +30,7 @@
  */
 
 -- =============================================================================
--- Images: assets.v1.images.publish-from-dq
+-- Images: assets.v1.ops.publish_images_from_dq
 -- =============================================================================
 
 create or replace function ores_assets_publish_images_from_dq_fn(

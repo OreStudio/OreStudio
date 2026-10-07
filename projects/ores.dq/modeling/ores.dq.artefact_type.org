@@ -110,7 +110,7 @@ std::string(faker::lorem::word()) + "_tbl"
 
 NATS subject dispatched by the workflow engine to publish data from
 the DQ artefact table to the target service table. Example:
-"refdata.v1.countries.publish-from-dq".
+"refdata.v1.ops.publish_countries_from_dq".
 
 #+begin_src cpp :name generator
 std::string(faker::lorem::word()) + ".v1.publish-from-dq"

@@ -75,7 +75,7 @@ def test_join_is_a_read():
 
 
 def test_the_registry_is_a_registration_not_a_write():
-    text = "('dq_x_artefact_tbl', 'refdata_x_tbl', 'refdata.v1.x.publish-from-dq', 41,"
+    text = "('dq_x_artefact_tbl', 'refdata_x_tbl', 'refdata.v1.ops.publish_x_from_dq', 41,"
     assert census.relation(text, "dq_x_artefact_tbl", REGISTRY) == "registers"
 
 

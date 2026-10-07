@@ -30,7 +30,7 @@
  */
 
 -- =============================================================================
--- Theme Configs: synthetic.v1.theme.publish-from-dq
+-- Theme Configs: synthetic.v1.ops.publish_theme_from_dq
 --
 -- A theme (e.g. "2016 ORE Samples") is one DQ dataset covering every asset
 -- class it contains, published atomically by this single function -- not N

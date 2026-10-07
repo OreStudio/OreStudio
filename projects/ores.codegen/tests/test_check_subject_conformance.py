@@ -43,6 +43,9 @@ SPEC.loader.exec_module(check_subject_conformance)
     "iam.v1.tenants_events.updated",
     "iam.v1.tenants_events.deleted",
     "iam.v1.ops.switch_party",
+    # A resource may itself be named *_events, and the verb decides:
+    # delete_many is a verb of the set, so this is a request.
+    "trading.v1.lifecycle_events.delete_many",
 ])
 def test_a_conforming_subject_passes(subject):
     ok, reason = check_subject_conformance.classify(subject)

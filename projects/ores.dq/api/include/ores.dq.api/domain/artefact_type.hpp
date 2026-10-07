@@ -84,7 +84,7 @@ struct artefact_type final {
 
     /**
      * @brief NATS subject dispatched by the workflow engine to publish data from the DQ artefact
-     * table to the target service table. Example: "refdata.v1.countries.publish-from-dq".
+     * table to the target service table. Example: "refdata.v1.ops.publish_countries_from_dq".
      */
     std::optional<std::string> target_subject;
 

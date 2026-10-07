@@ -32,7 +32,7 @@ namespace ores::refdata::messaging {
  *
  * One handler instance serves all 22 refdata publish-from-dq NATS subjects.
  * The subject name is mapped to the corresponding SECURITY DEFINER SQL function
- * (e.g. "refdata.v1.countries.publish-from-dq" ->
+ * (e.g. "refdata.v1.ops.publish_countries_from_dq" ->
  * "ores_refdata_publish_countries_from_dq_fn").
  */
 class ORES_REFDATA_CORE_EXPORT publish_from_dq_handler {

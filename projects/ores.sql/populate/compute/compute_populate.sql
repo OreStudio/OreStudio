@@ -19,7 +19,7 @@
  */
 
 -- Seed the compute stale-result reaper job (system scope, runs every minute).
--- Publishes to compute.v1.work.reap which triggers the reaper handler in
+-- Publishes to compute.v1.ops.reap_work which triggers the reaper handler in
 -- ores.compute.service to reset stale in-progress results back to Unsent.
 insert into ores_scheduler_job_definitions_tbl (
     id, tenant_id, party_id, job_name, description, command,
@@ -31,10 +31,10 @@ select
     gen_random_uuid(), NULL, NULL,
     'compute.v1.reap.stale_results',
     'Reset stale in-progress compute results every minute',
-    'compute.v1.work.reap',
+    'compute.v1.ops.reap_work',
     '* * * * *',
     'nats_publish',
-    '{"subject":"compute.v1.work.reap"}',
+    '{"subject":"compute.v1.ops.reap_work"}',
     true,
     current_user, current_user, 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()

@@ -307,7 +307,7 @@ struct get_account_contact_information_version_response {
  */
 struct publish_account_contact_informations_from_dq_request {
     static constexpr std::string_view nats_subject =
-        "iam.v1.account-contact-informations.publish-from-dq";
+        "iam.v1.ops.publish_account_contact_informations_from_dq";
     /**
      * @brief Whether the caller must have established a session first.
      *

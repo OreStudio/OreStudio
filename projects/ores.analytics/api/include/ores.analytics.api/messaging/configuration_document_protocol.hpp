@@ -67,7 +67,7 @@ struct todays_market_document {
  */
 struct save_pricing_engines_document_request {
     using response_type = struct save_pricing_engines_document_response;
-    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engines_documents.save";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engines_documents.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -151,7 +151,7 @@ struct delete_pricing_engines_document_response {
  */
 struct save_todays_market_document_request {
     using response_type = struct save_todays_market_document_response;
-    static constexpr std::string_view nats_subject = "analytics.v1.todays_market_documents.save";
+    static constexpr std::string_view nats_subject = "analytics.v1.todays_market_documents.put";
     /**
      * @brief Whether the caller must have established a session first.
      *

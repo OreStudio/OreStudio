@@ -26,7 +26,7 @@ The command is shaped like this:
 workflow step-result <step_id> <tenant_id>
 #+end_example
 
-It is addressed at =workflow.v1.steps.get-result=.
+It is addressed at =workflow.v1.ops.get_step_result=.
 
 #+name: workflow-step-result
 #+begin_src ores-shell :tangle workflow-step-result.ores :exports none
@@ -68,7 +68,7 @@ The command is shaped like this:
 workflow steps <workflow_instance_id>
 #+end_example
 
-It is addressed at =workflow.v1.instances.steps=.
+It is addressed at =workflow.v1.ops.get_workflow_steps=.
 
 #+name: workflow-steps
 #+begin_src ores-shell :tangle workflow-steps.ores :exports none
@@ -110,7 +110,7 @@ The command is shaped like this:
 workflow retry <workflow_instance_id> [--step_name <v>]
 #+end_example
 
-It is addressed at =workflow.v1.instances.retry=.
+It is addressed at =workflow.v1.ops.retry_workflow_instance=.
 
 #+name: workflow-retry
 #+begin_src ores-shell :tangle workflow-retry.ores :exports none

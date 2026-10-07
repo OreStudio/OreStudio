@@ -45,7 +45,7 @@ loop for each job (15)
     shell -> svc : save workunit (shared input bundle)
     svc -> db : insert workunit (no canonical result)
     svc -> db : insert result (Unsent)
-    svc -> js : publish assignment\ncompute.v1.work.assignments.{tenant}.{platform}\n(result, workunit, package_uri, sha256,\ninput_uri, output_uri)
+    svc -> js : publish assignment\ncompute.v1.ops.work_assignment.{tenant}.{platform}\n(result, workunit, package_uri, sha256,\ninput_uri, output_uri)
 end
 svc -> db : batch status dispatched
 

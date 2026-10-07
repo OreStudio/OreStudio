@@ -130,17 +130,17 @@ column on =market_series=.
 |------+-----------+---------+--------|
 | Open the curve | List and read the series | =marketdata.v1.market_series.list=, =.get= | exists |
 | Read the candidates | List one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Read the candidates | Read the latest snapshot of the curve | =marketdata.v1.curve-snapshot.get= | exists |
+| Read the candidates | Read the latest snapshot of the curve | =marketdata.v1.curve_snapshot.get= | exists |
 | Compare to the last published | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
 | Read the provenance | Read the config and its pillars | =refdata.v1.ir_curve_bootstrap_configs.get=, =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
 | Read the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.list= | exists |
 | Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
-| Raise the request | Raise the request | =inbox.v1.approval-requests.raise= | exists |
+| Raise the request | Raise the request | =inbox.v1.ops.raise_approval= | exists |
 | Raise the request | Apply the decision when it comes (the kind's owning operation) | =marketdata.v1.curve_bootstrap.publish= | missing |
-| Confirm the separation of duties | Read my own requests and their state | =inbox.v1.approval-requests.mine= | exists |
+| Confirm the separation of duties | Read my own requests and their state | =inbox.v1.ops.list_my_approval_requests= | exists |
 | Confirm the separation of duties | Read the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
 
-=inbox.v1.approval-requests.raise= is generic: it is defined in
+=inbox.v1.ops.raise_approval= is generic: it is defined in
 [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] and
 takes a =kind_code= and a =reason=. It will raise a market-data ask the day a
 market-data kind exists. The kind's owning operation, which applies an approval,

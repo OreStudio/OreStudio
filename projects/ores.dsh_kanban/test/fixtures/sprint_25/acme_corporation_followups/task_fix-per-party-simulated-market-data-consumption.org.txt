@@ -51,7 +51,7 @@ per-office theme publishing.
   party, workspace); every party's series fills with observations
   from the shared stream.
 - The republish subject is per party:
-  marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>; the
+  marketdata.v1.ops.market_tick.<tenant>.<workspace>.<party>.<ore_key>; the
   marketdata client (fx_spot_subscription) consumes the new shape.
 - Fresh-DB verification: every ACME party's series has observations,
   the same source produces identical values in every party, and the
@@ -97,7 +97,7 @@ Shipped on feature/f15-per-party-feed-consumption.
 - The marketdata service keeps one ingest subscription per
   (source_name, tenant, party, workspace) and republishes each tick
   on the per-party realtime subject
-  marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>.
+  marketdata.v1.ops.market_tick.<tenant>.<workspace>.<party>.<ore_key>.
 - ACME provisioning publishes the two themes and the FX driver
   vintage once, against the system party; creates bindings for the
   system party, holding and every office (workspace = Live sentinel);
@@ -118,5 +118,5 @@ skipped at boot; 65 first-tick fan-outs; every party's series fills
 holds (0 divergent (source, observation_datetime) rows across all 13
 sources); party-scoped CRM reads are non-empty for US and HK; the
 per-party republish streams deliver (5/5 messages on
-marketdata.v1.tick.<tenant>.Live.<party>.fx.rate.eur.usd). All six
+marketdata.v1.ops.market_tick.<tenant>.Live.<party>.fx.rate.eur.usd). All six
 acceptance bullets are met.

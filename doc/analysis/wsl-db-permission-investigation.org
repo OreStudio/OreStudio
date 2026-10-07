@@ -27,7 +27,7 @@ fresh WSL DB:
   ores_variability_system_settings_tbl
 
 [ERROR] [ores.iam.messaging.bootstrap_handler]
-  ores.dev.local1.iam.v1.bootstrap.status failed: Repository error: ...
+  ores.dev.local1.iam.v1.ops.bootstrap_status failed: Repository error: ...
   permission denied for table ores_variability_system_settings_tbl
 #+end_src
 

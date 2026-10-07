@@ -32,7 +32,7 @@ path.
 Specific orphans discovered:
 
 - ~projects/ores.marketdata.core/.../service/import_service~ and NATS subject
-  ~marketdata.v1.import~ exist and work, but nothing in
+  ~marketdata.v1.ops.import_market_data~ exist and work, but nothing in
   ~projects/ores.cli/src/app/application.cpp::import_data()~ invokes them.
 - ~projects/ores.ore/src/xml/importer.cpp::importer::import_conventions()~ reads
   ~conventions.xml~, normalises enums to FpML/CDM canonical codes, and returns

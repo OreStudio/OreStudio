@@ -59,8 +59,8 @@ served by hand-written handlers.
 
 | Subject | Description |
 |---------+-------------|
-| =scheduler.v1.job-instances.list= | List job executions across every job the caller can see, with the job's name folded in |
-| =scheduler.v1.status= | The live status of every job: its schedule, its last run, its next fire time, and the running total |
+| =scheduler.v1.job_instances.list= | List job executions across every job the caller can see, with the job's name folded in |
+| =scheduler.v1.ops.get_scheduler_status= | The live status of every job: its schedule, its last run, its next fire time, and the running total |
 
 * Execution events
 

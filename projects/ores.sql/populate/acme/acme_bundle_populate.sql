@@ -22,7 +22,7 @@
 -- Acme Corporation Provisioning Bundles
 --
 -- The data-driven holding-group spec the internal-impersonation orchestrator
--- (ores.iam.core's Acme provisioner) drives via dq.v1.bundles.publish,
+-- (ores.iam.core's Acme provisioner) drives via dq.v1.ops.publish_bundle,
 -- instead of a hardcoded SQL VALUES list of companies/datasets -- see
 -- "Rework Acme provisioning: simulate real per-party setup via internal
 -- actor impersonation". Adding a fifth office later is a new bundle

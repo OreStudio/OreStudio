@@ -379,7 +379,7 @@ The reporter publishes to a JetStream subject consumed by the compute
 service for persistence:
 
 #+begin_src fundamental
-compute.v1.telemetry.node_samples   (published by wrappers)
+compute.v1.ops.node_sample   (published by wrappers)
 #+end_src
 
 The compute service subscribes as a queue consumer and writes the incoming
@@ -398,7 +398,7 @@ approach used everywhere else.
 ** Subject
 
 #+begin_src fundamental
-compute.v1.telemetry.get_grid_stats
+compute.v1.ops.get_grid_stats
 #+end_src
 
 ** Request
@@ -541,7 +541,7 @@ Tasks are listed in dependency order. Each row is a single commit.
 | 6 | ~ores.compute~              | Add NATS messages: ~get_grid_stats_request/response~, ~node_sample_publish~ |
 | 7 | ~ores.compute.service~      | Implement ~compute_grid_poller~                                   |
 | 8 | ~ores.compute.service~      | Implement ~get_grid_stats~ handler                                |
-| 9 | ~ores.compute.service~      | Subscribe to ~compute.v1.telemetry.node_samples~, persist to DB  |
+| 9 | ~ores.compute.service~      | Subscribe to ~compute.v1.ops.node_sample~, persist to DB  |
 |10 | ~ores.compute.service~      | Wire poller + handler into ~application::run()~; add config flag |
 |11 | ~ores.compute.wrapper~      | Implement ~node_stats_reporter~; instrument ~process_assignment~  |
 |12 | ~ores.compute.wrapper~      | Wire reporter into ~application::run()~; add config flag         |

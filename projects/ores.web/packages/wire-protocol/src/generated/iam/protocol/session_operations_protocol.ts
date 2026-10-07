@@ -47,7 +47,7 @@ export interface GetActiveSessionsResponse {
 }
 
 export const subjects = {
-    get_active_sessions_request: 'iam.v1.sessions.active',
+    get_active_sessions_request: 'iam.v1.ops.get_active_sessions',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

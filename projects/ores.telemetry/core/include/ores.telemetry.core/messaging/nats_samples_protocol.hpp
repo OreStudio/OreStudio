@@ -142,7 +142,7 @@ struct nats_stream_samples_query {
  */
 struct get_nats_server_samples_request {
     using response_type = struct get_nats_server_samples_response;
-    static constexpr std::string_view nats_subject = "telemetry.v1.nats.server-samples.list";
+    static constexpr std::string_view nats_subject = "telemetry.v1.nats_server_samples.list";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -179,7 +179,7 @@ struct get_nats_server_samples_response {
  */
 struct get_nats_stream_samples_request {
     using response_type = struct get_nats_stream_samples_response;
-    static constexpr std::string_view nats_subject = "telemetry.v1.nats.stream-samples.list";
+    static constexpr std::string_view nats_subject = "telemetry.v1.nats_stream_samples.list";
     /**
      * @brief Whether the caller must have established a session first.
      *

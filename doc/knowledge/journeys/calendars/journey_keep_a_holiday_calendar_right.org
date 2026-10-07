@@ -141,11 +141,11 @@ edited.
 | Add an exception | Write or remove an exception | =refdata.v1.calendar_exceptions.put=, =.delete= | exists |
 | Record diary events | Fill the diary entry type picker | =refdata.v1.diary_entry_types.list= | exists |
 | Record diary events | Write or remove an event | =refdata.v1.calendar_events.put=, =.delete= | exists |
-| Rebuild the business days | Regenerate the materialised dates | =refdata.v1.calendar_dates.regenerate= | exists |
+| Rebuild the business days | Regenerate the materialised dates | =refdata.v1.ops.regenerate_calendar_dates= | exists |
 | Check the business days | Read the dates of one calendar | =refdata.v1.calendar_dates.list_by_calendar_code= | partial |
 | Check the history | Read every version with its diff | =refdata.v1.history.get= | exists |
 | Check the history | Revert by writing the old values | the entity's =put= | exists |
-| Export for ORE | Read the calendar adjustments | =refdata.v1.calendar_adjustments.export= | partial |
+| Export for ORE | Read the calendar adjustments | =refdata.v1.ops.get_calendar_adjustments= | partial |
 
 The history request is the generic one, with =entity_type=
 =ores.refdata.calendar=, =ores.refdata.calendar_rule=,
@@ -157,7 +157,7 @@ and unions them on the screen; it needs no operation of its own.
 
 1. *The business days are not rebuilt when their inputs change, and a rebuild
    never rewrites a built day.* Writing a rule, an exception or a base does not
-   regenerate =calendar_date=, and =refdata.v1.calendar_dates.regenerate= only
+   regenerate =calendar_date=, and =refdata.v1.ops.regenerate_calendar_dates= only
    adds days past the last one built: a changed rule or a new exception never
    reaches a year already built. The candidate is a rebuild that rewrites the
    days whose inputs changed. Until then the screen does not rebuild after a

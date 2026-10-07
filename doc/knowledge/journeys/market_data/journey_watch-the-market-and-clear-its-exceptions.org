@@ -124,12 +124,12 @@ say who cleared what do not exist yet.
 | Read the raw points | List the fixings | =marketdata.v1.market_fixings.list= | exists |
 | Read the raw points | Read each point's lineage | =marketdata.v1.observation_lineages.get= | exists |
 | Find the exceptions | Compare against the expected points | =refdata.v1.ir_curve_bootstrap_pillars.list= | partial |
-| Find the exceptions | Check the feed vintage | =marketdata.v1.market_feed_configs.vintage_validity= | partial |
+| Find the exceptions | Check the feed vintage | =marketdata.v1.ops.get_vintage_validity= | partial |
 | Find the exceptions | Read the exceptions of a scope | none | missing |
 | Decide each exception | Read the exception rules and thresholds | none | missing |
 | Record the resolution | Write the resolution | none | missing |
 | Record the resolution | Write a carried-forward value | =marketdata.v1.market_observations.put= | partial |
-| Escalate | Raise an approval request | =inbox.v1.approval-requests.raise= | partial |
+| Escalate | Raise an approval request | =inbox.v1.ops.raise_approval= | partial |
 | Check what the market holds | Read every version with its diff | =marketdata.v1.history.get= | exists |
 
 The history request is the generic one, with =entity_type=

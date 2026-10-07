@@ -115,22 +115,22 @@ account is readable by the caller.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open sign-up | Ask whether the deployment is provisioned | =iam.v1.bootstrap.status= | exists |
-| Open sign-up | Read the deployment's registration policy, which decides whether a form is offered at all | =iam.v1.auth.registration-policy= | exists |
-| Submit | Create the account, its login record and its baseline role | =iam.v1.auth.signup= | exists |
+| Open sign-up | Ask whether the deployment is provisioned | =iam.v1.ops.bootstrap_status= | exists |
+| Open sign-up | Read the deployment's registration policy, which decides whether a form is offered at all | =iam.v1.ops.registration_policy= | exists |
+| Submit | Create the account, its login record and its baseline role | =iam.v1.ops.signup= | exists |
 | Refusals | Say which refusal it is | =signup_response.error_code= | exists |
-| The account cannot sign in | Refuse an account that works in no party | carried by =iam.v1.auth.login= | exists |
+| The account cannot sign in | Refuse an account that works in no party | carried by =iam.v1.ops.login= | exists |
 | Fix it | Give the new account a party | =iam.v1.account_parties.put= | partial |
 
-=iam.v1.auth.signup= comes from
+=iam.v1.ops.signup= comes from
 [[id:1AB3A848-E562-46F1-84EE-A3E5F9CF0894][ores.iam.signup_messages]]: the
 request carries =principal=, =password=, =email= and =hostname=, and the
 response carries =success=, =message=, =error_code=, =account_id=,
 =account_status=, =party_id= and =role_id=. It is one of the few subjects that
 needs no session, because it is what a person without a session uses.
-=iam.v1.auth.registration-policy= comes from
+=iam.v1.ops.registration_policy= comes from
 [[id:42696101-091F-49BE-92A2-061B7787C227][ores.iam.registration_policy_messages]],
-and =iam.v1.bootstrap.status= from
+and =iam.v1.ops.bootstrap_status= from
 [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]].
 
 =partial= on =iam.v1.account_parties.put= means the junction subject exists —

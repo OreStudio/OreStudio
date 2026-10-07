@@ -28,7 +28,7 @@ The tenant_provisioning protocol messages.
 
 ** provision_tenant_command
 :PROPERTIES:
-:subject: iam.v1.tenants.provision
+:subject: iam.v1.ops.provision_tenant
 :response: provision_tenant_command_response
 :request_timeout_seconds: 120
 :END:
@@ -41,7 +41,7 @@ The tenant_provisioning protocol messages.
  * the profile orders run afterwards as a workflow instance, whose id the
  * answer carries. This is the one verb for every tenant, the first one
  * included, and it replaces iam.v1.bootstrap.provision-tenant and
- * iam.v1.tenants.provision-acme.
+ * iam.v1.ops.provision_tenant-acme.
  *
  * The answer takes longer than the transport's default request timeout,
  * because creating the tenant copies the deployment's registered data into it
@@ -226,7 +226,7 @@ The tenant_provisioning protocol messages.
 
 ** provision_party_command
 :PROPERTIES:
-:subject: iam.v1.parties.provision
+:subject: iam.v1.ops.provision_party
 :response: provision_party_command_response
 :END:
 

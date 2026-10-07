@@ -65,8 +65,8 @@ export interface CreateInitialAdminResponse {
 }
 
 export const subjects = {
-    bootstrap_status_request: 'iam.v1.bootstrap.status',
-    create_initial_admin_request: 'iam.v1.bootstrap.create-admin',
+    bootstrap_status_request: 'iam.v1.ops.bootstrap_status',
+    create_initial_admin_request: 'iam.v1.ops.create_initial_admin',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

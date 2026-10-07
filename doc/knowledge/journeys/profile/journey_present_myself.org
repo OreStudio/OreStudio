@@ -82,18 +82,18 @@ the sign-in summary is
 | Open my profile | Read the account | =iam.v1.accounts.get= | exists |
 | Open my profile | Read the contact record | =iam.v1.account_contact_informations.list_by_account_id= | exists |
 | Replace the photo | Upload an image, receive its id | none | missing |
-| Replace the photo | Set the photo on the account | =iam.v1.accounts.update= | partial |
-| Correct the identity | Set full name and job title | =iam.v1.accounts.update= | partial |
+| Replace the photo | Set the photo on the account | =iam.v1.ops.update_account= | partial |
+| Correct the identity | Set full name and job title | =iam.v1.ops.update_account= | partial |
 | Save | Record the reason, write a new version | shared change-reason flow | exists |
 
-=iam.v1.accounts.update= exists, but it needs =iam::accounts:update=, which is a
+=iam.v1.ops.update_account= exists, but it needs =iam::accounts:update=, which is a
 tenant-administrator permission. A member cannot call it for their own record.
 So =partial= here means the operation exists and the caller may not use it.
 
 * What is missing
 
 1. *No self-service update.* There is no subject for a member to change their
-   own profile. The candidate is =iam.v1.accounts.update-self=, restricted to
+   own profile. The candidate is =iam.v1.ops.update_self_account=, restricted to
    the caller's own account and to the fields a member owns: =full_name=,
    =job_title=, =image_id=, and the contact record.
 2. *No image upload.* The BFF serves =/api/images/:id= as a read only. Nothing uploads a new image, so the photo cannot be changed at

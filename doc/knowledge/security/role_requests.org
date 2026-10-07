@@ -30,8 +30,8 @@ kind, and a kind names the permission that decides it.
 
 ** Asking
 
-A member calls =iam.v1.role-requests.ask= with the role ids and a reason. IAM
-forwards =inbox.v1.approval-requests.raise= with =kind_code= =iam.role_grant=,
+A member calls =iam.v1.ops.ask_for_roles= with the role ids and a reason. IAM
+forwards =inbox.v1.ops.raise_approval= with =kind_code= =iam.role_grant=,
 reusing the caller's token so the request is the person's, then writes
 =ores_iam_role_grant_requests_tbl= and
 =ores_iam_role_grant_request_roles_tbl=. The ask is refused when a role is
@@ -46,9 +46,9 @@ operation refuses what it should.
 
 ** The queue and the answer
 
-=inbox.v1.approval-requests.queue= returns the open requests the caller holds
+=inbox.v1.ops.list_approval_queue= returns the open requests the caller holds
 the decide permission for, and leaves out the ones they raised. The order is
-oldest first. =inbox.v1.approval-requests.decide= takes the request id, the
+oldest first. =inbox.v1.ops.decide_approval= takes the request id, the
 version the row was read at, a decision code, and a comment. A refusal, a hold
 and a reversal each need a comment, because they are what the person reads.
 An approval needs one only when the kind asks for it. The version is the whole
@@ -82,7 +82,7 @@ carries a kind, the values its sentence names, and a link to the request.
 
 ** What a screen cannot read
 
-The self read, =inbox.v1.approval-requests.mine=, returns the request rows and
+The self read, =inbox.v1.ops.list_my_approval_requests=, returns the request rows and
 not the roles they ask for. The roles live in IAM's detail tables, whose read
 codes a plain member does not hold, so a member's own request shows the kind and
 the reason. A joined read would close the gap; the store serves no batched read

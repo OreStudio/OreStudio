@@ -44,7 +44,7 @@ end.
 
 ** raise_approval_request_request
 :PROPERTIES:
-:subject:  inbox.v1.approval-requests.raise
+:subject:  inbox.v1.ops.raise_approval
 :response: raise_approval_request_response
 :END:
 
@@ -102,7 +102,7 @@ end.
 
 ** withdraw_approval_request_request
 :PROPERTIES:
-:subject:  inbox.v1.approval-requests.withdraw
+:subject:  inbox.v1.ops.withdraw_approval
 :response: withdraw_approval_request_response
 :END:
 
@@ -152,7 +152,7 @@ end.
 
 ** decide_approval_request_request
 :PROPERTIES:
-:subject:  inbox.v1.approval-requests.decide
+:subject:  inbox.v1.ops.decide_approval
 :response: decide_approval_request_response
 :END:
 
@@ -222,7 +222,7 @@ end.
 
 ** list_approval_queue_request
 :PROPERTIES:
-:subject:  inbox.v1.approval-requests.queue
+:subject:  inbox.v1.ops.list_approval_queue
 :response: list_approval_queue_response
 :END:
 
@@ -275,7 +275,7 @@ end.
 
 ** list_my_approval_requests_request
 :PROPERTIES:
-:subject:  inbox.v1.approval-requests.mine
+:subject:  inbox.v1.ops.list_my_approval_requests
 :response: list_my_approval_requests_response
 :END:
 

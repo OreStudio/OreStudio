@@ -471,7 +471,7 @@ serve the UI and the log pipeline rather than a REPL session.
 
 ** publish_log_entries_request
 :PROPERTIES:
-:subject: telemetry.v1.logs.publish
+:subject: telemetry.v1.ops.publish_log_entries
 :auth: none
 :END:
 

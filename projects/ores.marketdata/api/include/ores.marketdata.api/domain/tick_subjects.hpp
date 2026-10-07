@@ -57,7 +57,7 @@ inline std::string synthetic_tick_subject(std::string_view source_name) {
 
 /**
  * @brief The subject a consumer reads one datum's ticks on:
- * "marketdata.v1.tick.<tenant>.<party>.<key>", where the key is the
+ * "marketdata.v1.ops.market_tick.<tenant>.<party>.<key>", where the key is the
  * datum's canonical ORE key, lower-cased, with its slashes turned to dots.
  */
 inline std::string

@@ -32,7 +32,7 @@ The authorization protocol messages.
 
 ** assign_role_request
 :PROPERTIES:
-:subject: iam.v1.roles.assign
+:subject: iam.v1.ops.assign_role
 :response: assign_role_response
 :http_route: true
 :END:
@@ -91,7 +91,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** assign_role_by_name_request
 :PROPERTIES:
-:subject: iam.v1.roles.assign-by-name
+:subject: iam.v1.ops.assign_role_by_name
 :response: assign_role_by_name_response
 :END:
 
@@ -107,7 +107,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** revoke_role_request
 :PROPERTIES:
-:subject: iam.v1.roles.revoke
+:subject: iam.v1.ops.revoke_role
 :response: revoke_role_response
 :http_route: true
 :END:
@@ -150,7 +150,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** revoke_role_by_name_request
 :PROPERTIES:
-:subject: iam.v1.roles.revoke-by-name
+:subject: iam.v1.ops.revoke_role_by_name
 :response: revoke_role_by_name_response
 :END:
 
@@ -166,7 +166,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** get_account_roles_request
 :PROPERTIES:
-:subject: iam.v1.roles.by-account
+:subject: iam.v1.ops.get_account_roles
 :response: get_account_roles_response
 :http_route: true
 :END:
@@ -178,7 +178,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** get_my_roles_request
 :PROPERTIES:
-:subject: iam.v1.roles.mine
+:subject: iam.v1.ops.get_my_roles
 :response: get_account_roles_response
 :END:
 
@@ -240,7 +240,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** get_role_permissions_request
 :PROPERTIES:
-:subject: iam.v1.roles.permissions
+:subject: iam.v1.ops.get_role_permissions
 :response: get_role_permissions_response
 :http_route: true
 :END:
@@ -264,7 +264,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** put_role_permissions_request
 :PROPERTIES:
-:subject: iam.v1.roles.permissions.put
+:subject: iam.v1.roles_permissions.put
 :response: get_role_permissions_response
 :http_route: true
 :END:
@@ -305,7 +305,7 @@ A note the administrator adds to the reason. It is stored on the grant.
 
 ** suggest_role_commands_request
 :PROPERTIES:
-:subject: iam.v1.roles.suggest-commands
+:subject: iam.v1.ops.suggest_role_commands
 :response: suggest_role_commands_response
 :END:
 

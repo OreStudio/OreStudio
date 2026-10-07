@@ -118,9 +118,9 @@ void session_operations_routes::register_routes(
     BOOST_LOG_SEV(lg(), info) << "Registering session_operations routes";
 
     auto get_active_sessions_route =
-        router->post("/api/v1/iam/sessions/active")
+        router->post("/api/v1/iam/ops/get_active_sessions")
             .summary("Get active sessions")
-            .description("Forwards to the iam.v1.sessions.active operation.")
+            .description("Forwards to the iam.v1.ops.get_active_sessions operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::get_active_sessions_request>()

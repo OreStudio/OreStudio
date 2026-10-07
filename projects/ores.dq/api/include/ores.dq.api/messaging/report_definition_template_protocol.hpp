@@ -66,7 +66,7 @@ struct dq_report_definition_template {
  */
 struct list_dq_report_definition_templates_request {
     using response_type = struct list_dq_report_definition_templates_response;
-    static constexpr std::string_view nats_subject = "dq.v1.report-definition-templates.list";
+    static constexpr std::string_view nats_subject = "dq.v1.report_definition_templates.list";
     /**
      * @brief Whether the caller must have established a session first.
      *

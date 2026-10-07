@@ -36,8 +36,8 @@ Tenant create, update and delete are system-administrator work, and so are
 tenant provisioning and system reset. They are out of scope for this journey,
 which does not design them; the tenant panel on this screen is read-only. The
 subjects that do that work are =iam.v1.tenants.put=, =iam.v1.tenants.delete=,
-=iam.v1.tenants.provision-acme=, =iam.v1.tenants.complete-provisioning=,
-=iam.v1.system.reset-tenant= and =iam.v1.system.reset=. Each needs a
+=iam.v1.ops.provision_tenant-acme=, =iam.v1.tenants.complete-provisioning=,
+=iam.v1.ops.reset_tenant= and =iam.v1.ops.reset_system=. Each needs a
 system-level permission, and none of them is a step below.
 
 * Steps

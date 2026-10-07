@@ -31,7 +31,7 @@ namespace ores::compute::wrapper::app {
  *
  * Reads @c job_dir/log.txt, parses each line via ore_log_parser, converts
  * the entries to publish_log_entry_item records, and publishes them in
- * batches of up to 200 to "telemetry.v1.logs.publish". Tagged with
+ * batches of up to 200 to "telemetry.v1.ops.publish_log_entries". Tagged with
  * @c result_id for downstream filtering.
  */
 void publish_ore_logs(ores::nats::service::client& nats,

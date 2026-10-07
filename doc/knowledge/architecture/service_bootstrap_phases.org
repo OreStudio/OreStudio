@@ -67,7 +67,7 @@ Everything that makes the service able to *answer* a request:
   =register_<entity>_handlers()= registrars ([[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed
   registrars]]), or directly for hand-written handlers. This
   *includes the service's own subjects it might later call itself*
-  (e.g. IAM's =iam.v1.auth.service-login=).
+  (e.g. IAM's =iam.v1.ops.service_login=).
 
 At the end of Phase 1, every subject is subscribed and will *accept* a
 request — from another service, or from itself. That is not quite the

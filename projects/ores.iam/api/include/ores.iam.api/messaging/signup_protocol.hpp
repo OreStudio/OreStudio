@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 struct signup_request {
     using response_type = struct signup_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.signup";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.signup";
     /**
      * @brief Whether the caller must have established a session first.
      *

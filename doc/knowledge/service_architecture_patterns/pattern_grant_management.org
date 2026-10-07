@@ -118,7 +118,7 @@ that name it until they are revoked, and the issue log records each use.
 
 * In ORE Studio
 
-- *Run grants.* IAM holds them and serves =iam.v1.run_grants.create=, =revoke=,
+- *Run grants.* IAM holds them and serves =iam.v1.run_grants.put=, =revoke=,
   =get= and =exchange=. [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] holds the entity, its checks and its lifecycle.
 - *Scheduled reports.* Reporting creates a grant when a person schedules a
   report definition and revokes it when the definition is unscheduled or

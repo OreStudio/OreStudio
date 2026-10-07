@@ -1647,7 +1647,7 @@ class ores::iam::messaging::publish_from_dq_handler {
 note right of "ores::iam::messaging::publish_from_dq_handler"
 One handler instance serves every iam publish-from-dq subject. It maps
 the subject name onto the corresponding SECURITY DEFINER SQL function
-(for example iam.v1.accounts.publish-from-dq reaches
+(for example iam.v1.ops.publish_accounts_from_dq reaches
 ores_iam_publish_accounts_from_dq_fn), the same convention
 ores.refdata uses, so the staging-to-live promotion stays in SQL.
 end note

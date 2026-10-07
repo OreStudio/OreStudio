@@ -32,13 +32,13 @@ namespace ores::ore::workflow {
  * @brief Registers the run_configuration_import_workflow definition.
  *
  * One step:
- *   0. ore.v1.run_configuration.import.execute: maps the run's files and
+ *   0. ore.v1.ops.run_configuration_import_execute: maps the run's files and
  *      stores each document through the component that owns it, then answers
  *      with a run_configuration_import_execute_result naming what it stored.
  *      A failure part way deletes what the step had stored before it fails.
  *
  * Compensation:
- *   ore.v1.run_configuration.import.rollback: deletes what the step stored,
+ *   ore.v1.ops.run_configuration_import_rollback: deletes what the step stored,
  *   from the result it answered with.
  *
  * The instance's request_json is a run_configuration_import_execute_request,

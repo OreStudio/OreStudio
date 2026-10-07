@@ -131,8 +131,8 @@ in for them.
 | Set the interpolation | Read or write the two interpolation axes | none | missing |
 | Set the extrapolation | Read or write the two extrapolations | none | missing |
 | Choose a parametric model | Read or write the model and its parameters | none | missing |
-| Read the current surface | Read a snapshot of the grid | =marketdata.v1.curve-snapshot.get= | partial |
-| Read the current surface | Read the grid over time | =marketdata.v1.curve-snapshot.buckets= | partial |
+| Read the current surface | Read a snapshot of the grid | =marketdata.v1.curve_snapshot.get= | partial |
+| Read the current surface | Read the grid over time | =marketdata.v1.ops.get_curve_snapshot_buckets= | partial |
 | Check the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.get= | exists |
 | Save the framework | Write the surface framework | none | missing |
 

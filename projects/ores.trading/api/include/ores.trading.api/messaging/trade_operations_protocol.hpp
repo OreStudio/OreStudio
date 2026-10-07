@@ -45,7 +45,7 @@ namespace ores::trading::messaging {
  */
 struct book_trade_request {
     using response_type = struct book_trade_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.book";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.book_trade";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -123,7 +123,7 @@ struct trade_export_item {
  */
 struct export_portfolio_request {
     using response_type = struct export_portfolio_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.portfolio.export";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.export_portfolio";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -172,7 +172,7 @@ struct export_portfolio_response {
  */
 struct export_trades_to_storage_request {
     using response_type = struct export_trades_to_storage_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.export_trades_to_storage";
     /**
      * @brief Whether the caller must have established a session first.
      *

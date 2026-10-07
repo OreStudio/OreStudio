@@ -126,19 +126,19 @@ its own, and the published marker has no field; see /What is missing/.
 |------+-----------+---------+--------|
 | Open the approved set | List the approved requests of a kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
 | Read the approval | Read the request and its decisions | =inbox.v1.approval_requests.get=, =inbox.v1.approval_decisions.list_by_request_id= | exists |
-| Read the points | Read the candidates and the latest snapshot | =marketdata.v1.market_observations.list_by_series_id=, =marketdata.v1.curve-snapshot.get= | exists |
+| Read the points | Read the candidates and the latest snapshot | =marketdata.v1.market_observations.list_by_series_id=, =marketdata.v1.curve_snapshot.get= | exists |
 | Apply the approved set | Publish the approved set as the curve the system uses | =marketdata.v1.curve_bootstrap.publish= | missing |
-| Apply the approved set | Write the derived observations unconditionally | =marketdata.v1.curve_bootstrap.republish= | partial |
-| Watch the moment | Read the published version a consumer sees | =marketdata.v1.curve-snapshot.get= | partial |
+| Apply the approved set | Write the derived observations unconditionally | =marketdata.v1.ops.republish_curve= | partial |
+| Watch the moment | Read the published version a consumer sees | =marketdata.v1.curve_snapshot.get= | partial |
 | Record who published | Name the publisher and the time on the published version | a field on the published record | missing |
-| Publish with zero approvals | Raise a request that is approved at once, then apply it | =inbox.v1.approval-requests.raise= with =approvals_required= 0 | missing |
-| Tell the consumers | Raise a publish notice to the consumers | =inbox.v1.notifications.raise= | partial |
+| Publish with zero approvals | Raise a request that is approved at once, then apply it | =inbox.v1.ops.raise_approval= with =approvals_required= 0 | missing |
+| Tell the consumers | Raise a publish notice to the consumers | =inbox.v1.ops.raise_notification= | partial |
 
-=marketdata.v1.curve_bootstrap.republish= exists and writes the derived
+=marketdata.v1.ops.republish_curve= exists and writes the derived
 observations, but its own contract says there is no review or approval gate: it
 always auto-publishes. That is the opposite of what this journey needs, so it
 is =partial= rather than the operation this step calls for.
-=inbox.v1.notifications.raise= exists and is generic, but no market-data
+=inbox.v1.ops.raise_notification= exists and is generic, but no market-data
 notification kind tells it what a publish notice is.
 
 * What is missing
@@ -148,7 +148,7 @@ notification kind tells it what a publish notice is.
    =marketdata.v1.curve_bootstrap.publish=, which takes the approved request
    and the candidate set and makes it the published version under the
    publisher's name. Until then the only write is
-   =marketdata.v1.curve_bootstrap.republish=, which publishes unconditionally
+   =marketdata.v1.ops.republish_curve=, which publishes unconditionally
    and ignores the approval.
 2. *There is no published marker on a series or a build.* Nothing says which
    candidate set is the live one, so a reader cannot tell a candidate from the

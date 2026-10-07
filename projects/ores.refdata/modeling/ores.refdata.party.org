@@ -369,7 +369,7 @@ TypeScript twin render it.
 
 ** get_party_composite_as_of_request
 :PROPERTIES:
-:subject: refdata.v1.parties.composite_as_of
+:subject: refdata.v1.ops.get_party_composite_as_of
 :response: get_party_composite_as_of_response
 :END:
 

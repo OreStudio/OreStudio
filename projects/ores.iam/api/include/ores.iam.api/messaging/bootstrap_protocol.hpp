@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 struct bootstrap_status_request {
     using response_type = struct bootstrap_status_response;
-    static constexpr std::string_view nats_subject = "iam.v1.bootstrap.status";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.bootstrap_status";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -69,7 +69,7 @@ struct bootstrap_status_response {
 
 struct create_initial_admin_request {
     using response_type = struct create_initial_admin_response;
-    static constexpr std::string_view nats_subject = "iam.v1.bootstrap.create-admin";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.create_initial_admin";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -761,7 +761,7 @@ grants.  This keeps the permission model simple and avoids over-engineering.
 2. Resolution order computation: recursive CTE exposed as a helper function.
 3. New NATS endpoints: ~workspace.v1.list~, ~workspace.v1.create~,
    ~workspace.v1.archive~, ~workspace.v1.copy~,
-   ~workspace.v1.trade-scope.set~, ~workspace.v1.trade-scope.clear~.
+   ~workspace.v1.ops.set_trade_scope~, ~workspace.v1.ops.clear_trade_scope~.
 4. Extend report definition endpoints to accept and return ~workspace_id~;
    add ~report-definition.v1.clone~ endpoint (creates workspace-local copy).
 

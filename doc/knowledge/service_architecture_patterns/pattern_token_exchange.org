@@ -124,7 +124,7 @@ within its scope until it expires, and names the service that obtained it.
   given account and party, and =internal_request_client= re-mints once on
   =token_expired=. Tenant provisioning drives several parties this way. See
   [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]].
-- *Over the bus.* IAM serves the exchange as =iam.v1.run_grants.exchange= for
+- *Over the bus.* IAM serves the exchange as =iam.v1.ops.exchange_run_grant= for
   work that runs under a grant. The subject is a grant id, the actor is the step
   service's own token, and the new token lasts five minutes. See
   [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] for IAM's checks and claims.

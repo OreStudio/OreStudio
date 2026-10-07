@@ -269,10 +269,10 @@ export interface GetConventionsDocumentResponse {
 }
 
 export const subjects = {
-    save_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.save',
+    save_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.put',
     get_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.get',
     delete_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.delete',
-    save_conventions_document_request: 'refdata.v1.conventions_documents.save',
+    save_conventions_document_request: 'refdata.v1.conventions_documents.put',
     get_conventions_document_request: 'refdata.v1.conventions_documents.get',
 } as const;
 /**

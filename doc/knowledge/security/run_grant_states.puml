@@ -21,11 +21,11 @@ title The run grant
 
 hide empty description
 
-[*] --> active : iam.v1.run_grants.create\n(the grantor holds every\npermission of the grant's role)
+[*] --> active : iam.v1.run_grants.put\n(the grantor holds every\npermission of the grant's role)
 
 active : each exchange checks the audience,\nthe tenant and the grantor
 
-active --> revoked : iam.v1.run_grants.revoke\n(unschedule, delete,\nchange of party)
+active --> revoked : iam.v1.ops.revoke_run_grant\n(unschedule, delete,\nchange of party)
 active --> exhausted : a manual grant\nreaches max_runs
 active --> expired : not_after passes
 revoked --> [*]

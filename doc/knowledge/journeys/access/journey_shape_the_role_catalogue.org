@@ -52,7 +52,7 @@ reproduced.
    administrator unticked is removed by the same call that adds the others.
 5. *Save the bundle.* The administrator saves, and the role bundles exactly the
    permissions that were ticked. The call is
-   =iam.v1.roles.permissions.put=, it needs =iam::roles:update=, and it answers
+   =iam.v1.roles_permissions.put=, it needs =iam::roles:update=, and it answers
    with the bundle as stored so the screen renders what was saved rather than
    what it hoped to save.
 6. *Check the result.* The system re-reads the role and its permissions. The
@@ -110,14 +110,14 @@ the server.
 | Open the catalogue | List the roles in the tenant | =iam.v1.roles.list= | exists |
 | Create or pick a role | Write a role | =iam.v1.roles.put= | exists |
 | Read the permission catalogue | List the permissions the platform defines | =iam.v1.permissions.list= | exists |
-| Choose the bundle | Read the permissions a role bundles | =iam.v1.roles.permissions= | exists |
-| Choose the bundle | Write the permissions a role bundles | =iam.v1.roles.permissions.put= | exists |
+| Choose the bundle | Read the permissions a role bundles | =iam.v1.ops.get_role_permissions= | exists |
+| Choose the bundle | Write the permissions a role bundles | =iam.v1.roles_permissions.put= | exists |
 | Remove a role | Delete a role | =iam.v1.roles.delete= | exists |
-| Check the result | Read a role and its permissions | =iam.v1.roles.get=, =iam.v1.roles.permissions= | exists |
+| Check the result | Read a role and its permissions | =iam.v1.roles.get=, =iam.v1.ops.get_role_permissions= | exists |
 
 The role subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
-=iam.v1.roles.permissions= is a read and =iam.v1.roles.permissions.put= is the
+=iam.v1.ops.get_role_permissions= is a read and =iam.v1.roles_permissions.put= is the
 write, and the write answers with the read's own response: the codes as stored,
 so the two cannot disagree about the bundle.
 

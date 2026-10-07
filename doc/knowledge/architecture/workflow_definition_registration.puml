@@ -36,7 +36,7 @@ end note
 
 ... later, a start message arrives ...
 
-caller -> service : publish the start message\n(workflow.v1.start, naming the type)
+caller -> service : publish the start message\n(workflow.v1.ops.start_workflow, naming the type)
 service -> registry : find the type
 
 alt the type is registered

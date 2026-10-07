@@ -37,12 +37,12 @@ using ores::workflow::service::write_step_timeout;
  * @brief Registers the ore_import_workflow definition.
  *
  * The ore_import_workflow has a single step:
- *   0. ore.v1.ore.import.execute — fetch, scan, plan, and save all ORE
+ *   0. ore.v1.ops.ore_import_execute — fetch, scan, plan, and save all ORE
  *      entities; publishes publish_step_completion with an
  *      ore_import_execute_result payload carrying all saved entity IDs.
  *
  * Compensation:
- *   ore.v1.ore.import.rollback — deletes all entities saved in step 0,
+ *   ore.v1.ops.ore_import_rollback — deletes all entities saved in step 0,
  *   in reverse order (trades → books → portfolios → currencies).
  *
  * The workflow instance's request_json is an ore_import_execute_request.

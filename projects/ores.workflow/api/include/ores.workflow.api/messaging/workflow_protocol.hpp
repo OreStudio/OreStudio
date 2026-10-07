@@ -52,7 +52,7 @@ struct step_log_entry {
 /**
  * @brief Fire-and-forget event published by domain services on step completion.
  *
- * Published to workflow.v1.events.step-completed by any domain service that
+ * Published to workflow.v1.ops.step_completed by any domain service that
  * participates in a workflow. The workflow engine subscribes to this subject
  * (queue-group) and advances or compensates the workflow accordingly.
  *
@@ -61,7 +61,7 @@ struct step_log_entry {
  * that the referenced workflow_step is still in_progress before acting.
  */
 struct step_completed_event {
-    static constexpr std::string_view nats_subject = "workflow.v1.events.step-completed";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.step_completed";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -114,7 +114,7 @@ struct step_completed_event {
  * that the workflow engine create and drive a new workflow_instance.
  */
 struct start_workflow_message {
-    static constexpr std::string_view nats_subject = "workflow.v1.start";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.start_workflow";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -183,7 +183,7 @@ struct start_workflow_message {
  */
 struct get_step_result_request {
     using response_type = struct get_step_result_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.steps.get-result";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.get_step_result";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -358,7 +358,7 @@ struct workflow_step_summary {
  */
 struct get_workflow_steps_request {
     using response_type = struct get_workflow_steps_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.instances.steps";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.get_workflow_steps";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -453,7 +453,7 @@ struct list_workflow_definitions_response {
  */
 struct retry_workflow_instance_request {
     using response_type = struct retry_workflow_instance_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.instances.retry";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.retry_workflow_instance";
     /**
      * @brief Whether the caller must have established a session first.
      *

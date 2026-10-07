@@ -49,7 +49,7 @@ The login protocol messages.
 
 ** login_request
 :PROPERTIES:
-:subject: iam.v1.auth.login
+:subject: iam.v1.ops.login
 :auth: none
 :response: login_response
 :http_route: true
@@ -232,7 +232,7 @@ The login protocol messages.
 
 ** logout_request
 :PROPERTIES:
-:subject: iam.v1.auth.logout
+:subject: iam.v1.ops.logout
 :response: logout_response
 :http_route: true
 :END:
@@ -252,13 +252,13 @@ The login protocol messages.
 
 ** public_key_request
 :PROPERTIES:
-:subject: iam.v1.auth.public-key
+:subject: iam.v1.ops.public_key
 :auth: none
 :END:
 
 ** refresh_request
 :PROPERTIES:
-:subject: iam.v1.auth.refresh
+:subject: iam.v1.ops.refresh
 :response: refresh_response
 :END:
 
@@ -311,7 +311,7 @@ The login protocol messages.
 
 ** service_login_request
 :PROPERTIES:
-:subject: iam.v1.auth.service-login
+:subject: iam.v1.ops.service_login
 :auth: none
 :response: service_login_response
 :END:

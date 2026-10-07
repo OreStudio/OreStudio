@@ -50,7 +50,7 @@ struct session_view {
 
 struct get_active_sessions_request {
     using response_type = struct get_active_sessions_response;
-    static constexpr std::string_view nats_subject = "iam.v1.sessions.active";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_active_sessions";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -11,9 +11,9 @@
 
 * Summary
 
-=marketdata.v1.import= turns the text of an ORE =market.txt= and
+=marketdata.v1.ops.import_market_data= turns the text of an ORE =market.txt= and
 =fixings.txt= into stored series, observations and fixings.
-=marketdata.v1.export= writes the tenant's store back out in the same two
+=marketdata.v1.ops.export_market_data= writes the tenant's store back out in the same two
 formats. The import lives in
 =projects/ores.marketdata/core/src/service/import_service.cpp=. Neither
 operation needs a running producer.

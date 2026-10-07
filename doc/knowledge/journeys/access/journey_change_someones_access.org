@@ -99,17 +99,17 @@ anyway, and that is a gap named below.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Find the colleague | List the accounts in the tenant | =iam.v1.accounts.list= | exists |
-| Read what they hold | Read the roles on the account | =iam.v1.roles.by-account= | exists |
+| Read what they hold | Read the roles on the account | =iam.v1.ops.get_account_roles= | exists |
 | Choose a role to grant | List the roles defined in the tenant | =iam.v1.roles.list= | exists |
-| Grant the role | Assign a role to the account | =iam.v1.roles.assign= | exists |
-| Revoke a role | Revoke a role from the account | =iam.v1.roles.revoke= | exists |
-| Confirm | Read the assignment row: who, when, why | =iam.v1.roles.by-account= | exists |
+| Grant the role | Assign a role to the account | =iam.v1.ops.assign_role= | exists |
+| Revoke a role | Revoke a role from the account | =iam.v1.ops.revoke_role= | exists |
+| Confirm | Read the assignment row: who, when, why | =iam.v1.ops.get_account_roles= | exists |
 
 The role subjects are defined in
 [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
 Both writes check their own permission before they act:
-=iam.v1.roles.assign= refuses a caller without =iam::roles:assign=, and
-=iam.v1.roles.revoke= refuses one without =iam::roles:revoke=. That was not
+=iam.v1.ops.assign_role= refuses a caller without =iam::roles:assign=, and
+=iam.v1.ops.revoke_role= refuses one without =iam::roles:revoke=. That was not
 true when this journey was written — assign checked nothing, and any signed-in
 account could grant any role inside its tenant — and it is the first of the two
 gaps the [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][access group]]'s survey closed.

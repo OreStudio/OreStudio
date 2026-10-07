@@ -44,7 +44,7 @@ is the reason the storage shape below is what it is.
 * The policy the door reads
 
 The door asks one question before it offers a form, and that question has one
-answer. A new unauthenticated read — =iam.v1.auth.registration-policy= — returns
+answer. A new unauthenticated read — =iam.v1.ops.registration_policy= — returns
 the whole policy for the tenant at the address:
 
 | Field | Meaning | Source |
@@ -57,7 +57,7 @@ the whole policy for the tenant at the address:
 | =usable_now= | Whether a registration can sign in without an administrator | Derived: =tenant=, =party= and =role= are all present |
 
 The password rules stay where they are: [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]] already
-answers =iam.v1.auth.password-policy=, and the sign-up screen reads it the same
+answers =iam.v1.ops.get_password_policy=, and the sign-up screen reads it the same
 way the sign-in screen does.
 
 ** The scope of the switch
@@ -70,7 +70,7 @@ must not confuse the two. What the door reports is the deployment's switch; a
 tenant that wants its own answer is a later change with its own rule for which
 of the two wins.
 
-The read is separate from =iam.v1.bootstrap.status= rather than folded into it.
+The read is separate from =iam.v1.ops.bootstrap_status= rather than folded into it.
 The bootstrap read answers whether the deployment has been set up; this one
 answers what the deployment offers a person who is not in it yet. They change
 for different reasons, and a client that wants one rarely wants the other.
@@ -186,7 +186,7 @@ account up.*
 
 ** What sign-in does with it
 
-=iam.v1.auth.login= refuses a pending account before it refuses a missing party,
+=iam.v1.ops.login= refuses a pending account before it refuses a missing party,
 and with its own code and its own words: *Your account is waiting for an
 administrator to finish setting it up.* The person learns what they are waiting
 for instead of being told to contact an administrator about a party they have
@@ -221,7 +221,7 @@ write path the settings have ever had:
 Until that pair exists, the switch can only be set by seeding it: there is no
 screen and no subject that writes a named setting. What the door does with the
 value is settled — the live path reads it through
-=iam.v1.auth.registration-policy= and refuses the registration it should never
+=iam.v1.ops.registration_policy= and refuses the registration it should never
 have accepted — so the missing write is a convenience for an operator rather
 than the difference between a closed door and an open one.
 
@@ -267,12 +267,12 @@ decides what it opens onto.
 
 * The registration flow end to end
 
-1. The door asks =iam.v1.auth.registration-policy=, unauthenticated, with the
+1. The door asks =iam.v1.ops.registration_policy=, unauthenticated, with the
    address it was served at.
 2. The screen renders the form when the policy allows registration and the
    destination is known, and the closed notice with its reason when it does not.
 3. The form takes a username, an email address, a password and its confirmation,
-   and states the password rules from =iam.v1.auth.password-policy=.
+   and states the password rules from =iam.v1.ops.get_password_policy=.
 4. The BFF posts to its registration route, under the same limiter family the
    sign-in route uses, and forwards the hostname.
 5. The service resolves the tenant, reads both flags, validates the username,

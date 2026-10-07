@@ -219,7 +219,7 @@ describe('GET /api/sessions', () => {
 describe('GET /api/sessions/active', () => {
     it('answers the open sessions', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'iam.v1.sessions.active': {
+            'iam.v1.ops.get_active_sessions': {
                 sessions: [wireSession],
                 success: true,
                 message: '',
@@ -236,14 +236,14 @@ describe('GET /api/sessions/active', () => {
         expect(response.json()).toMatchObject({
             sessions: [{ id: SESSION_ID, clientIdentifier: 'ores.web', endTime: '' }],
         });
-        expect(calls).toEqual([{ subject: 'iam.v1.sessions.active', body: {} }]);
+        expect(calls).toEqual([{ subject: 'iam.v1.ops.get_active_sessions', body: {} }]);
 
         await server.close();
     });
 
     it('answers an empty list while the handler is a stub, rather than failing', async () => {
         const { server, sessionId } = buildTestServer({
-            'iam.v1.sessions.active': { success: true, message: '' },
+            'iam.v1.ops.get_active_sessions': { success: true, message: '' },
         });
 
         const response = await server.inject({
@@ -267,7 +267,7 @@ describe('GET /api/sessions/active', () => {
 describe('GET /api/me/sessions', () => {
     it('keeps the signed-in account sessions and drops every other account', async () => {
         const { server, sessionId } = buildTestServer({
-            'iam.v1.sessions.active': {
+            'iam.v1.ops.get_active_sessions': {
                 sessions: [
                     wireSession,
                     {

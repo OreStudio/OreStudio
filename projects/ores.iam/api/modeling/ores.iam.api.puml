@@ -1956,20 +1956,20 @@ class ores::iam::messaging::get_account_contact_information_version_request <<st
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::publish_account_contact_informations_from_dq_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.account-contact-informations.publish-from-dq"
+    {static} +nats_subject : string_view = "iam.v1.ops.publish_account_contact_informations_from_dq"
     {static} +requires_session : bool = true
 }
 ' --- messaging/account_operations_protocol.hpp
 class ores::iam::messaging::publish_accounts_from_dq_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.publish-from-dq"
+    {static} +nats_subject : string_view = "iam.v1.ops.publish_accounts_from_dq"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::save_account_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.save"
+    {static} +nats_subject : string_view = "iam.v1.accounts.put"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::update_account_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.update"
+    {static} +nats_subject : string_view = "iam.v1.ops.update_account"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::delete_account_request <<struct>> {
@@ -1977,35 +1977,35 @@ class ores::iam::messaging::delete_account_request <<struct>> {
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::lock_account_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.lock"
+    {static} +nats_subject : string_view = "iam.v1.ops.lock_account"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::unlock_account_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.unlock"
+    {static} +nats_subject : string_view = "iam.v1.ops.unlock_account"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::reset_password_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.reset-password"
+    {static} +nats_subject : string_view = "iam.v1.ops.reset_password"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::update_my_email_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.update-email"
+    {static} +nats_subject : string_view = "iam.v1.ops.update_my_email"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::set_my_default_party_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.set-default-party"
+    {static} +nats_subject : string_view = "iam.v1.ops.set_my_default_party"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::select_party_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.select-party"
+    {static} +nats_subject : string_view = "iam.v1.ops.select_party"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::switch_party_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.switch-party"
+    {static} +nats_subject : string_view = "iam.v1.ops.switch_party"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::change_password_request_typed <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.accounts.change-password"
+    {static} +nats_subject : string_view = "iam.v1.ops.change_password"
     {static} +requires_session : bool = true
 }
 ' --- messaging/account_party_protocol.hpp
@@ -2101,48 +2101,48 @@ class ores::iam::messaging::get_account_type_version_request <<struct>> {
 }
 ' --- messaging/authorization_protocol.hpp
 class ores::iam::messaging::assign_role_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.assign"
+    {static} +nats_subject : string_view = "iam.v1.ops.assign_role"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::assign_role_by_name_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.assign-by-name"
+    {static} +nats_subject : string_view = "iam.v1.ops.assign_role_by_name"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::revoke_role_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.revoke"
+    {static} +nats_subject : string_view = "iam.v1.ops.revoke_role"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::revoke_role_by_name_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.revoke-by-name"
+    {static} +nats_subject : string_view = "iam.v1.ops.revoke_role_by_name"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::get_account_roles_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.by-account"
+    {static} +nats_subject : string_view = "iam.v1.ops.get_account_roles"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::get_my_roles_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.mine"
+    {static} +nats_subject : string_view = "iam.v1.ops.get_my_roles"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::get_role_permissions_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.permissions"
+    {static} +nats_subject : string_view = "iam.v1.ops.get_role_permissions"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::put_role_permissions_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.permissions.put"
+    {static} +nats_subject : string_view = "iam.v1.roles_permissions.put"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::suggest_role_commands_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.roles.suggest-commands"
+    {static} +nats_subject : string_view = "iam.v1.ops.suggest_role_commands"
     {static} +requires_session : bool = true
 }
 ' --- messaging/bootstrap_protocol.hpp
 class ores::iam::messaging::bootstrap_status_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.bootstrap.status"
+    {static} +nats_subject : string_view = "iam.v1.ops.bootstrap_status"
     {static} +requires_session : bool = false
 }
 class ores::iam::messaging::create_initial_admin_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.bootstrap.create-admin"
+    {static} +nats_subject : string_view = "iam.v1.ops.create_initial_admin"
     {static} +requires_session : bool = false
 }
 class ores::iam::messaging::provision_tenant_request <<struct>> {
@@ -2164,23 +2164,23 @@ class ores::iam::messaging::get_many_login_info_request <<struct>> {
 }
 ' --- messaging/login_protocol.hpp
 class ores::iam::messaging::login_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.login"
+    {static} +nats_subject : string_view = "iam.v1.ops.login"
     {static} +requires_session : bool = false
 }
 class ores::iam::messaging::logout_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.logout"
+    {static} +nats_subject : string_view = "iam.v1.ops.logout"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::public_key_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.public-key"
+    {static} +nats_subject : string_view = "iam.v1.ops.public_key"
     {static} +requires_session : bool = false
 }
 class ores::iam::messaging::refresh_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.refresh"
+    {static} +nats_subject : string_view = "iam.v1.ops.refresh"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::service_login_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.service-login"
+    {static} +nats_subject : string_view = "iam.v1.ops.service_login"
     {static} +requires_session : bool = false
 }
 ' --- messaging/permission_protocol.hpp
@@ -2214,11 +2214,11 @@ class ores::iam::messaging::delete_many_permissions_request <<struct>> {
 }
 ' --- messaging/reset_protocol.hpp
 class ores::iam::messaging::reset_tenant_command <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.system.reset-tenant"
+    {static} +nats_subject : string_view = "iam.v1.ops.reset_tenant"
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::reset_system_command <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.system.reset"
+    {static} +nats_subject : string_view = "iam.v1.ops.reset_system"
     {static} +requires_session : bool = true
 }
 ' --- messaging/role_protocol.hpp
@@ -2260,7 +2260,7 @@ class ores::iam::messaging::get_role_version_request <<struct>> {
 }
 ' --- messaging/session_operations_protocol.hpp
 class ores::iam::messaging::get_active_sessions_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.sessions.active"
+    {static} +nats_subject : string_view = "iam.v1.ops.get_active_sessions"
     {static} +requires_session : bool = true
 }
 ' --- messaging/session_protocol.hpp
@@ -2294,12 +2294,12 @@ class ores::iam::messaging::delete_many_sessions_request <<struct>> {
 }
 ' --- messaging/session_samples_protocol.hpp
 class ores::iam::messaging::get_session_samples_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.sessions.samples"
+    {static} +nats_subject : string_view = "iam.v1.ops.get_session_samples"
     {static} +requires_session : bool = true
 }
 ' --- messaging/signup_protocol.hpp
 class ores::iam::messaging::signup_request <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.auth.signup"
+    {static} +nats_subject : string_view = "iam.v1.ops.signup"
     {static} +requires_session : bool = false
 }
 ' --- messaging/tenant_protocol.hpp
@@ -2345,7 +2345,7 @@ class ores::iam::messaging::complete_tenant_provisioning_command <<struct>> {
     {static} +requires_session : bool = true
 }
 class ores::iam::messaging::provision_acme_tenant_command <<struct>> {
-    {static} +nats_subject : string_view = "iam.v1.tenants.provision-acme"
+    {static} +nats_subject : string_view = "iam.v1.ops.provision_tenant-acme"
     {static} +requires_session : bool = true
 }
 ' --- messaging/tenant_status_protocol.hpp
@@ -2508,7 +2508,7 @@ arrives. It is the only wrapped member declaration in the component. Both
 publish-from-dq structs are triggers rather than requests: each states a
 subject and no response_type, and each body is empty because the
 server-side function knows how to expand the DQ artefact. This one's
-subject, iam.v1.account-contact-informations.publish-from-dq, hyphenates the
+subject, iam.v1.ops.publish_account_contact_informations_from_dq, hyphenates the
 resource where every other subject for the same entity uses underscores
 (iam.v1.account_contact_informations.list and its siblings).
 end note

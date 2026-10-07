@@ -50,17 +50,17 @@ the engine holds the run open until the compute batch closes.
 | Message | Subject | Objective |
 |---------+---------+-----------|
 | Trigger a report instance | =reporting.v1.ops.trigger_report_instance= | Carry the definition and the tenant; the reply names the instance. |
-| Start the workflow | =workflow.v1.start= | Carry the type, the workflow instance id, and the run's request, including its run configuration. |
-| Gather trades | =reporting.v1.report.gather-trades= | Select the trades the definition's scope names and store them. |
-| Gather market data | =reporting.v1.report.gather-market-data= | Select the market data for the run's period and store it. |
-| Assemble the bundle | =reporting.v1.report.assemble-bundle= | Persist the input bundle row that names the two stored objects. |
-| Resolve the prepared input | =reporting.v1.report.resolve-prepared-input= | Answer in the packaging phase's result type with the archive the definition named. |
-| Prepare the ORE package | =ore.v1.report.prepare-package= | Build the tarball the engine consumes and store it. |
-| Submit to the grid | =compute.v1.report.submit= | Create the batch and its workunits from the tarball URIs. |
-| Collect the results | =reporting.v1.report.collect-compute-results= | Ingest the engine's output for the batch. |
-| Ignore the results | =reporting.v1.report.ignore-compute-results= | Record the batch and leave its output unread. |
-| Finalise | =reporting.v1.report.finalise= | Mark the instance completed and stamp its completion time. |
-| Fail the report | =reporting.v1.report.fail= | The compensation every step of this workflow shares: mark the instance failed with the step's error. |
+| Start the workflow | =workflow.v1.ops.start_workflow= | Carry the type, the workflow instance id, and the run's request, including its run configuration. |
+| Gather trades | =reporting.v1.ops.gather_trades= | Select the trades the definition's scope names and store them. |
+| Gather market data | =reporting.v1.ops.gather_market_data= | Select the market data for the run's period and store it. |
+| Assemble the bundle | =reporting.v1.ops.assemble_bundle= | Persist the input bundle row that names the two stored objects. |
+| Resolve the prepared input | =reporting.v1.ops.resolve_prepared_input= | Answer in the packaging phase's result type with the archive the definition named. |
+| Prepare the ORE package | =ore.v1.ops.prepare_ore_package= | Build the tarball the engine consumes and store it. |
+| Submit to the grid | =compute.v1.ops.submit_compute= | Create the batch and its workunits from the tarball URIs. |
+| Collect the results | =reporting.v1.ops.collect_compute_results= | Ingest the engine's output for the batch. |
+| Ignore the results | =reporting.v1.ops.ignore_compute_results= | Record the batch and leave its output unread. |
+| Finalise | =reporting.v1.ops.finalise_report= | Mark the instance completed and stamp its completion time. |
+| Fail the report | =reporting.v1.ops.fail_report= | The compensation every step of this workflow shares: mark the instance failed with the step's error. |
 
 The fields of each message are declared in
 =projects/ores.reporting/api/include/ores.reporting.api/messaging/report_operations_protocol.hpp=.
@@ -103,7 +103,7 @@ Source: =[[./report_execution_interaction.puml][report_execution_interaction.pum
 
 This workflow declares no failure policy of its own: the engine compensates the
 steps that completed, in reverse. Every step compensates through
-=reporting.v1.report.fail=, so a compensation is not an undo. It marks the report
+=reporting.v1.ops.fail_report=, so a compensation is not an undo. It marks the report
 instance failed with the failing step's message, and each further compensation
 leaves the first message in place. What a completed step produced, a stored
 object or a compute batch, stays where it is; nothing deletes it.
@@ -129,7 +129,7 @@ The engine's own failure rules are on
 
 Two reads render progress, and they answer different questions.
 
-- The run: =workflow.v1.instances.list= and =workflow.v1.instances.steps=, over
+- The run: =workflow.v1.instances.list= and =workflow.v1.ops.get_workflow_steps=, over
   the workflow instance and its steps. The workflow instance id is created by the
   trigger and carried in the start message, so a client can follow the engine's
   view before the first step answers.
@@ -149,7 +149,7 @@ same table.
 
 - [[id:4F11D22B-2830-4E8E-B752-552F0C59CD07][Correlation Identifier]] — the start message carries the run's correlation id.
 - [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — every step compensates
-  through =reporting.v1.report.fail=, which marks the instance failed.
+  through =reporting.v1.ops.fail_report=, which marks the instance failed.
 - [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the engine runs
   the report chain the run configuration selects.
 

@@ -43,7 +43,7 @@ generates no service handler.
 
 ** book_trade_request
 :PROPERTIES:
-:subject:  trading.v1.trades.book
+:subject:  trading.v1.ops.book_trade
 :response: book_trade_response
 :END:
 
@@ -189,7 +189,7 @@ generates no service handler.
 
 ** export_portfolio_request
 :PROPERTIES:
-:subject:  trading.v1.trades.portfolio.export
+:subject:  trading.v1.ops.export_portfolio
 :response: export_portfolio_response
 :END:
 
@@ -283,7 +283,7 @@ generates no service handler.
 
 ** export_trades_to_storage_request
 :PROPERTIES:
-:subject:  trading.v1.trades.export-to-storage
+:subject:  trading.v1.ops.export_trades_to_storage
 :response: export_trades_to_storage_response
 :END:
 

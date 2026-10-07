@@ -418,7 +418,7 @@ def test_an_entity_declares_messages_beside_its_derived_set():
         "get_party_composite_as_of_request",
         "get_party_composite_as_of_response",
     ]
-    assert declared[0]["subject"] == "refdata.v1.parties.composite_as_of"
+    assert declared[0]["subject"] == "refdata.v1.ops.get_party_composite_as_of"
     assert declared[0]["response_type"] == "get_party_composite_as_of_response"
     assert [(f["name"], f.get("ts_type")) for f in declared[1]["fields"]] == [
         ("success", "boolean"),
@@ -440,7 +440,7 @@ def test_a_declared_message_renders_on_both_twins(tmp_path):
         ("cpp_protocol.hpp.mustache", "party_protocol.hpp", [
             "struct get_party_composite_as_of_request {",
             '    static constexpr std::string_view nats_subject = '
-            '"refdata.v1.parties.composite_as_of";',
+            '"refdata.v1.ops.get_party_composite_as_of";',
             "struct get_party_composite_as_of_response {",
             "    ores::refdata::domain::party party;",
             "    std::vector<ores::refdata::domain::party_identifier> identifiers;",
@@ -459,7 +459,7 @@ def test_a_declared_message_renders_on_both_twins(tmp_path):
             CODEGEN / "library" / "templates", tmp_path,
             target_template=template, target_output=name)
         rendered = (tmp_path / name).read_text(encoding="utf-8")
-        assert '"refdata.v1.parties.composite_as_of"' in rendered, name
+        assert '"refdata.v1.ops.get_party_composite_as_of"' in rendered, name
         for fragment in expected:
             assert fragment in rendered, f"{fragment!r} missing from {name}"
 

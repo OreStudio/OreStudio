@@ -37,7 +37,7 @@ namespace ores::dq::messaging {
  */
 struct publish_bundle_request {
     using response_type = struct publish_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.bundles.publish";
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_bundle";
     /**
      * @brief Whether the caller must have established a session first.
      *

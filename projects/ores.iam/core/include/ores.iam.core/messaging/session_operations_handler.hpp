@@ -60,7 +60,7 @@ public:
         , signer_(std::move(signer)) {}
 
     /**
-     * @brief Serves iam.v1.sessions.active.
+     * @brief Serves iam.v1.ops.get_active_sessions.
      *
      * The rows are the sessions whose end time is empty, which is what makes a
      * session active. The caller must hold the permission a session read needs,

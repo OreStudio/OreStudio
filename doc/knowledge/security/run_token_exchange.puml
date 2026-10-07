@@ -37,7 +37,7 @@ handler -> cache : get (grant id, run id)
 alt a hit with more than 20% of its life left
     cache --> handler : run token
 else a miss, or close to expiry
-    cache -> iam : iam.v1.run_grants.exchange\n(Authorization: the service's own token;\ngrant id, run id, tenant)
+    cache -> iam : iam.v1.ops.exchange_run_grant\n(Authorization: the service's own token;\ngrant id, run id, tenant)
     iam -> iam : the caller holds iam::run_grants:exchange\nand is in the grant's audience
     iam -> iam : the grant is active, its tenant matches,\nand its grantor is active
     iam -> iam : permissions = the grant's role\nintersected with the grantor's permissions in the party

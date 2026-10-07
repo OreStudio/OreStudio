@@ -145,20 +145,20 @@ down anywhere the audit can read it. That is gap 3 below.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the door | Ask whether the deployment is provisioned | =iam.v1.bootstrap.status= | exists |
-| Enter credentials | Verify credentials, resolve the tenant, return the parties | =iam.v1.auth.login= | exists |
-| Wrong password | Count the failed attempt and lock at five | carried by =iam.v1.auth.login= | exists |
-| Locked account | Read the lock state and refuse before the password | carried by =iam.v1.auth.login= | exists |
+| Open the door | Ask whether the deployment is provisioned | =iam.v1.ops.bootstrap_status= | exists |
+| Enter credentials | Verify credentials, resolve the tenant, return the parties | =iam.v1.ops.login= | exists |
+| Wrong password | Count the failed attempt and lock at five | carried by =iam.v1.ops.login= | exists |
+| Locked account | Read the lock state and refuse before the password | carried by =iam.v1.ops.login= | exists |
 | The password must change | Signal that a change is required before anything else | =login_response.password_reset_required= | partial |
-| More than one party | Offer the parties the account works in | =iam.v1.auth.login= | exists |
-| Choose the party | Bind the chosen party to the session | =iam.v1.accounts.select-party= | exists |
-| Land | Keep the session alive while the workspace is used | =iam.v1.auth.refresh= | exists |
-| Sign out | End the session | =iam.v1.auth.logout= | exists |
+| More than one party | Offer the parties the account works in | =iam.v1.ops.login= | exists |
+| Choose the party | Bind the chosen party to the session | =iam.v1.ops.select_party= | exists |
+| Land | Keep the session alive while the workspace is used | =iam.v1.ops.refresh= | exists |
+| Sign out | End the session | =iam.v1.ops.logout= | exists |
 
-=iam.v1.auth.login=, =iam.v1.auth.logout=, =iam.v1.auth.refresh= and
-=iam.v1.bootstrap.status= come from
+=iam.v1.ops.login=, =iam.v1.ops.logout=, =iam.v1.ops.refresh= and
+=iam.v1.ops.bootstrap_status= come from
 [[id:72596DEE-01BE-40A5-B084-4C38DB212191][ores.iam.login_messages]];
-=iam.v1.accounts.select-party= comes from
+=iam.v1.ops.select_party= comes from
 [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]].
 All of them are present in the generated web protocol
 (=wire-protocol/src/generated/iam/protocol/login_protocol.ts= and its
@@ -171,8 +171,8 @@ and it is cleared when the member changes the password, but the login handler
 does not read it and put it in the reply. So the branch cannot fire today.
 
 Lock, unlock, reset and change-password are separate administrative or
-self-service subjects — =iam.v1.accounts.lock=, =iam.v1.accounts.unlock=,
-=iam.v1.accounts.reset-password= and =iam.v1.accounts.change-password= — and
+self-service subjects — =iam.v1.ops.lock_account=, =iam.v1.ops.unlock_account=,
+=iam.v1.ops.reset_password= and =iam.v1.ops.change_password= — and
 belong to [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] and
 [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]]. This journey
 only meets their after-effects; it never calls them.
@@ -182,9 +182,9 @@ only meets their after-effects; it never calls them.
 1. *No self-service password recovery from the door.* There is no subject for a
    person who has forgotten a password to obtain a new one. Everything that
    exists either needs the current password
-   ([[id:082C5D76-93C2-41E6-8193-9598B79DD07A][=iam.v1.accounts.change-password=]])
+   ([[id:082C5D76-93C2-41E6-8193-9598B79DD07A][=iam.v1.ops.change_password=]])
    or an administrator
-   ([[id:082C5D76-93C2-41E6-8193-9598B79DD07A][=iam.v1.accounts.reset-password=]]).
+   ([[id:082C5D76-93C2-41E6-8193-9598B79DD07A][=iam.v1.ops.reset_password=]]).
    No reset e-mail or reset-token path exists, so the candidate is a
    =iam.v1.auth.request-password-reset= subject plus a delivery mechanism
    outside IAM. Until it exists the screen offers no *Forgot password* control
@@ -202,7 +202,7 @@ only meets their after-effects; it never calls them.
    So "who signed in, as which party" is not answerable from the session store,
    which is exactly the question a multi-party tenant has to answer. The
    candidate is a =party_id= column on the sessions table.
-4. *No way out of a lock without an administrator.* =iam.v1.accounts.unlock= is
+4. *No way out of a lock without an administrator.* =iam.v1.ops.unlock_account= is
    an administrative operation, so a locked member cannot help themselves and
    the screen can only tell them to ask. The candidate is a delay-based
    self-unlock, or a stated cooling-off period, so the lock does not become a

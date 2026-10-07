@@ -140,7 +140,7 @@ missing/.
 | Apply a spread overlay | Apply a parallel or twist shift | =marketdata.v1.curve.shift= | missing |
 | Apply a spread overlay | Apply a surface shift | =marketdata.v1.surface.shift= | missing |
 | Confirm survival | Keep the manual point against a feed write | (no precedence rule) | missing |
-| Leave unpublished | Arrange the approval later | =inbox.v1.approval-requests.raise= | exists |
+| Leave unpublished | Arrange the approval later | =inbox.v1.ops.raise_approval= | exists |
 
 =marketdata.v1.market_observations.put= exists, but it writes a row
 indistinguishable from a feed write: the =market_observation= table has no

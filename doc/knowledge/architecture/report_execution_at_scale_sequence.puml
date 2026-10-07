@@ -37,9 +37,9 @@ participant "worker node" as worker
 == Define and schedule (once, with a caller) ==
 
 user -> reporting : save the definition and its documents\n(user token)
-user -> reporting : reporting.v1.report-definitions.schedule\n(user token)
+user -> reporting : reporting.v1.ops.schedule_report_definitions\n(user token)
 activate reporting
-reporting -> iam : iam.v1.run_grants.create\n(on behalf of the user)
+reporting -> iam : iam.v1.run_grants.put\n(on behalf of the user)
 iam -> iam : check the user holds every permission\nof the ReportRun role in the party
 iam --> reporting : grant id
 reporting -> scheduler : scheduler.v1.job_definitions.put\n(job named for the definition, tenant, party)
@@ -56,7 +56,7 @@ reporting -> reporting : adopt the instance for this firing id, or create it
 reporting -> reporting : apply the definition's concurrency policy,\nthen the tenant and party quotas
 alt admitted
     reporting -> reporting : instance born pending
-    reporting -> engine : workflow.v1.start\n(instance id, tenant, party, grant id, as-of instant)
+    reporting -> engine : workflow.v1.ops.start_workflow\n(instance id, tenant, party, grant id, as-of instant)
 else over quota
     reporting -> reporting : instance born queued
 end
@@ -66,9 +66,9 @@ scheduler -> scheduler : firing succeeded
 
 == Execute (each step acts as the tenant and the party) ==
 
-engine -> ore : ore.v1.report.prepare-package\n(step headers, grant id, as-of instant)
+engine -> ore : ore.v1.ops.prepare_ore_package\n(step headers, grant id, as-of instant)
 activate ore
-ore -> iam : iam.v1.run_grants.exchange\n(service token, grant id, run id)\nor a hit in the token cache
+ore -> iam : iam.v1.ops.exchange_run_grant\n(service token, grant id, run id)\nor a hit in the token cache
 iam --> ore : run token (tenant, party, ReportRun, 5 minutes)
 ore -> reporting : reporting.v1.run_documents.get (run token)
 ore -> owners : the configuration documents, the scope read\nand the market data resolution (run token)
@@ -80,7 +80,7 @@ end
 ore --> engine : step completed (input key and digest)
 deactivate ore
 
-engine -> compute : compute.v1.report.submit\n(step headers, grant id, input key)
+engine -> compute : compute.v1.ops.submit_compute\n(step headers, grant id, input key)
 activate compute
 compute -> iam : exchange, or a cache hit
 compute -> compute : adopt or create the batch for this instance;\nenqueue its workunits in the tenant's fair-share queue
@@ -88,18 +88,18 @@ compute -> worker : an assignment, when the tenant's share allows it
 worker -> storage : read the engine package and the input (node identity)
 worker -> worker : run the engine
 worker -> storage : write the output archive (node identity)
-worker -> compute : compute.v1.results.submit
+worker -> compute : compute.v1.ops.submit_result
 compute -> compute : accept the result, close the batch
 compute --> engine : step completed (batch, output keys)
 deactivate compute
 
-engine -> reporting : reporting.v1.report.collect-compute-results
+engine -> reporting : reporting.v1.ops.collect_compute_results
 activate reporting
 reporting -> iam : exchange, or a cache hit
 reporting -> storage : read the output archive (run token)
 reporting -> reporting : parse and bulk load the results
 reporting --> engine : step completed (row counts)
-engine -> reporting : reporting.v1.report.finalise
+engine -> reporting : reporting.v1.ops.finalise_report
 reporting -> reporting : instance completed;\npromote the next queued run of this tenant
 reporting --> engine : step completed
 deactivate reporting

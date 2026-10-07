@@ -142,24 +142,24 @@ nodes because nothing joins them — see *What is missing*.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Before the screen: each wrapper reports on a timer | Publish one node's sample | =compute.v1.telemetry.node_samples= | exists |
+| Before the screen: each wrapper reports on a timer | Publish one node's sample | =compute.v1.ops.node_sample= | exists |
 | Before the screen: the service samples the grid | (no subject: an internal poller stores the summary) | — | exists |
-| Open the screen | Read the newest grid sample and the node rows | =compute.v1.telemetry.get_grid_stats= | exists |
-| Read the summary | Read the host and work counters | carried by =compute.v1.telemetry.get_grid_stats= | exists |
-| Read the nodes | Read one row per node | carried by =compute.v1.telemetry.get_grid_stats= | exists |
+| Open the screen | Read the newest grid sample and the node rows | =compute.v1.ops.get_grid_stats= | exists |
+| Read the summary | Read the host and work counters | carried by =compute.v1.ops.get_grid_stats= | exists |
+| Read the nodes | Read one row per node | carried by =compute.v1.ops.get_grid_stats= | exists |
 | Name the nodes | Join the host registry onto each node row | =compute.v1.hosts.list= | exists |
 | Read the wrappers | List the latest sample of every wrapper instance | =telemetry.v1.services.list= | exists |
-| A grid with no sample | Answer with an empty sample time | carried by =compute.v1.telemetry.get_grid_stats= | exists |
-| Refresh, or watch | Read again | =compute.v1.telemetry.get_grid_stats= | exists |
+| A grid with no sample | Answer with an empty sample time | carried by =compute.v1.ops.get_grid_stats= | exists |
+| Refresh, or watch | Read again | =compute.v1.ops.get_grid_stats= | exists |
 
-=compute.v1.telemetry.get_grid_stats= carries no request fields, and the
+=compute.v1.ops.get_grid_stats= carries no request fields, and the
 handler scopes the reply by the caller's session tenant — which the grid's
 ownership says it must not; see *What is missing*. Its reply carries the
 counters, the sample time as an ISO-8601 string, and one
 =node_stats_summary= per node. The handler reads the newest stored grid sample
 and the most recent sample of every node; it computes nothing live.
 
-=compute.v1.telemetry.node_samples= is ingested. Each wrapper publishes what
+=compute.v1.ops.node_sample= is ingested. Each wrapper publishes what
 its node did since the previous sample, and the message is declared with auth
 =none=, because the publishing node has no session.
 

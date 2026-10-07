@@ -12,46 +12,46 @@ This file documents the login resource over HTTP, one section per endpoint. Ever
 
 * Endpoints
 
-** =POST /api/v1/iam/auth/login=
+** =POST /api/v1/iam/ops/login=
 :PROPERTIES:
 :ID: 45882A82-4865-5B14-B10A-4513A5F62EE5
 :END:
 
 Login. It needs no session.
 
-It forwards to =iam.v1.auth.login=.
+It forwards to =iam.v1.ops.login=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/auth/login
+POST /api/v1/iam/ops/login
 #+end_example
 
 #+name: login-login
 #+begin_src hurl :tangle login-login.hurl :exports none
-POST {{base_url}}/api/v1/iam/auth/login
+POST {{base_url}}/api/v1/iam/ops/login
 Accept: application/json
 HTTP 200
 #+end_src
 
-** =POST /api/v1/iam/auth/logout=
+** =POST /api/v1/iam/ops/logout=
 :PROPERTIES:
 :ID: 6504F620-1AC8-57AB-8593-E0B3464D47AE
 :END:
 
 Logout. It needs a session.
 
-It forwards to =iam.v1.auth.logout=.
+It forwards to =iam.v1.ops.logout=.
 
 The request is:
 
 #+begin_example
-POST /api/v1/iam/auth/logout
+POST /api/v1/iam/ops/logout
 #+end_example
 
 #+name: login-logout
 #+begin_src hurl :tangle login-logout.hurl :exports none
-POST {{base_url}}/api/v1/iam/auth/logout
+POST {{base_url}}/api/v1/iam/ops/logout
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

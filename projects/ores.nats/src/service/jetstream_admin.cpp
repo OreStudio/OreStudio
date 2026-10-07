@@ -26,6 +26,26 @@
 
 namespace ores::nats::service {
 
+namespace {
+
+/**
+ * @brief Whether a stream's filter is already exactly the one asked for.
+ *
+ * The subjects are the contract that decides which publishes a stream holds,
+ * so an order difference counts as a difference.
+ */
+bool same_subjects(const jsStreamConfig* cfg, const std::vector<std::string>& wanted) {
+    if (!cfg || cfg->SubjectsLen != static_cast<int>(wanted.size()))
+        return false;
+    for (int i = 0; i < cfg->SubjectsLen; ++i) {
+        if (wanted[static_cast<std::size_t>(i)] != cfg->Subjects[i])
+            return false;
+    }
+    return true;
+}
+
+}
+
 jetstream_admin::jetstream_admin(void* js_ctx) noexcept
     : js_ctx_(js_ctx) {}
 
@@ -43,11 +63,45 @@ void jetstream_admin::ensure_stream(std::string_view name,
     // Check whether the stream already exists.
     jsStreamInfo* info = nullptr;
     natsStatus s = js_GetStreamInfo(&info, js, name_str.c_str(), &opts, &jerr);
-    if (info)
+
+    if (s == NATS_OK) {
+        // The stream exists. Its subject filter is the contract that decides
+        // which publishes it holds, and a subject renamed anywhere in the tree
+        // leaves a stream that no longer covers what its own service
+        // publishes: every publish then finds no stream and fails with no
+        // responders. Reconcile the filter rather than assume it still holds.
+        if (same_subjects(info->Config, subjects)) {
+            jsStreamInfo_Destroy(info);
+            return;
+        }
+
+        std::vector<const char*> updated_ptrs;
+        updated_ptrs.reserve(subjects.size());
+        for (const auto& sub : subjects)
+            updated_ptrs.push_back(sub.c_str());
+
+        // Copy the stream's own configuration and replace only the filter, so
+        // a reconciliation changes nothing else about the stream.
+        jsStreamConfig cfg = *info->Config;
+        cfg.Subjects = updated_ptrs.data();
+        cfg.SubjectsLen = static_cast<int>(updated_ptrs.size());
+
+        jsStreamInfo* updated = nullptr;
+        jerr = jsErrCode(0);
+        s = js_UpdateStream(&updated, js, &cfg, &opts, &jerr);
+        if (updated)
+            jsStreamInfo_Destroy(updated);
         jsStreamInfo_Destroy(info);
 
-    if (s == NATS_OK)
-        return; // stream exists — nothing to do
+        if (s != NATS_OK)
+            throw std::runtime_error(std::string("ensure_stream '") + name_str +
+                                     "' subject update failed: " + natsStatus_GetText(s) +
+                                     " (js err " + std::to_string(static_cast<int>(jerr)) + ")");
+        return;
+    }
+
+    if (info)
+        jsStreamInfo_Destroy(info);
 
     if (s != NATS_NOT_FOUND && jerr != JSStreamNotFoundErr)
         throw std::runtime_error(std::string("ensure_stream '") + name_str +

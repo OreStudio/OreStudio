@@ -111,7 +111,7 @@ that owns the definition; a session that acts for no party may only read.
 
 ** save_run_document_request
 :PROPERTIES:
-:subject: reporting.v1.run_documents.save
+:subject: reporting.v1.run_documents.put
 :response: save_run_document_response
 :END:
 
@@ -155,7 +155,7 @@ that owns the definition; a session that acts for no party may only read.
 
 ** bind_configuration_request
 :PROPERTIES:
-:subject: reporting.v1.run_documents.bind
+:subject: reporting.v1.ops.bind_configuration
 :response: bind_configuration_response
 :END:
 

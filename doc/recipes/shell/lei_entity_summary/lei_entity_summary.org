@@ -26,7 +26,7 @@ The command is shaped like this:
 lei_entity_summary get-lei-entities-summary [--country_filter <v>] [--offset <v>] [--limit <v>]
 #+end_example
 
-It is addressed at =dq.v1.lei-entities.summary=.
+It is addressed at =dq.v1.ops.get_lei_entities_summary=.
 
 #+name: lei_entity_summary-get-lei-entities-summary
 #+begin_src ores-shell :tangle lei_entity_summary-get-lei-entities-summary.ores :exports none
@@ -47,7 +47,7 @@ The command is shaped like this:
 lei_entity_summary search-lei-entities <search> [--country_filter <v>] [--offset <v>] [--limit <v>]
 #+end_example
 
-It is addressed at =dq.v1.lei-entities.search=.
+It is addressed at =dq.v1.ops.search_lei_entities=.
 
 #+name: lei_entity_summary-search-lei-entities
 #+begin_src ores-shell :tangle lei_entity_summary-search-lei-entities.ores :exports none

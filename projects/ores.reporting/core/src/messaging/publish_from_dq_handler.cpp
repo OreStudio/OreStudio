@@ -46,7 +46,7 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "reporting.v1.report-definitions.publish-from-dq" to
+ * Converts "reporting.v1.ops.publish_report_definitions_from_dq" to
  * "ores_reporting_publish_report_definitions_from_dq_fn".
  */
 

@@ -138,14 +138,14 @@ request's id; see /What is missing/.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the queue | List the requests this approver may decide | =inbox.v1.approval-requests.queue= | exists |
+| Open the queue | List the requests this approver may decide | =inbox.v1.ops.list_approval_queue= | exists |
 | Open one request | Read the request header | =inbox.v1.approval_requests.get= | exists |
 | Open one request | Read the requests of one kind | =inbox.v1.approval_requests.list_by_kind_code= | exists |
 | Read the delta | Show the change against the published version | =marketdata.v1.curve_candidates.diff= | missing |
 | Read the checks | Run and return the QA checks over the candidates | =marketdata.v1.curve_bootstrap.validate= | missing |
 | Read the rule | Read how many approvals and who decides | =inbox.v1.approval_kinds.list= | exists |
 | Read the decisions so far | List the decisions on the request | =inbox.v1.approval_decisions.list_by_request_id= | exists |
-| Decide | Approve, refuse, hold or resume | =inbox.v1.approval-requests.decide= | exists |
+| Decide | Approve, refuse, hold or resume | =inbox.v1.ops.decide_approval= | exists |
 | Leave | Read the curve the request is about | =marketdata.v1.market_series.get= | exists |
 | Leave | Read the candidate points | =marketdata.v1.market_observations.list_by_series_id= | exists |
 

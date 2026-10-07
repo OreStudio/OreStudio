@@ -34,10 +34,10 @@ namespace ores::ore::service::messaging {
  *
  * Handles two fire-and-forget subjects dispatched by the workflow engine:
  *
- *  ore.v1.ore.import.execute — runs the full import (fetch, scan, plan, save)
+ *  ore.v1.ops.ore_import_execute — runs the full import (fetch, scan, plan, save)
  *                              and calls publish_step_completion.
  *
- *  ore.v1.ore.import.rollback — deletes all entities saved in a prior execute
+ *  ore.v1.ops.ore_import_rollback — deletes all entities saved in a prior execute
  *                               step and calls publish_step_completion.
  *
  * The bearer_token field in the command payload is used to delegate the
@@ -62,7 +62,7 @@ public:
                                std::string work_dir);
 
     /**
-     * @brief Handles ore.v1.ore.import.execute.
+     * @brief Handles ore.v1.ops.ore_import_execute.
      *
      * Fetches and unpacks the ORE tarball, scans the directory, builds the
      * import plan, saves all currencies/portfolios/books/trades, and calls
@@ -71,7 +71,7 @@ public:
     void execute(ores::nats::message msg);
 
     /**
-     * @brief Handles ore.v1.ore.import.rollback.
+     * @brief Handles ore.v1.ops.ore_import_rollback.
      *
      * Deletes all entities saved by a prior execute step (trades → books →
      * portfolios → currencies) and calls publish_step_completion.

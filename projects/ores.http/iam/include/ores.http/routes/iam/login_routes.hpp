@@ -73,14 +73,14 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/auth/login — Login.
+     * @brief POST /api/v1/iam/ops/login — Login.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_login(const ores::http::domain::http_request& req,
                  ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/auth/logout — Logout.
+     * @brief POST /api/v1/iam/ops/logout — Logout.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_logout(const ores::http::domain::http_request& req,

@@ -48,7 +48,7 @@ person sees here reaches pricing: pricing reads only a published curve.
    a point with a source, so a generated rate is marked generated rather than
    observed, and the same bootstrap serves either.
 3. *Run the bootstrap.* The person chooses *Compute candidate*. The system calls
-   =marketdata.v1.curve_bootstrap.compute=, which bootstraps the config's
+   =marketdata.v1.ops.compute_curve=, which bootstraps the config's
    pillars from the observations at that as-of and replies with the computed
    points: a point id, a date and a discount factor. Nothing is written.
 4. *Read the points.* The system shows the computed pillars in short-to-long
@@ -67,7 +67,7 @@ person sees here reaches pricing: pricing reads only a published curve.
    /What is missing/.
 8. *The publish act, in a later journey.* A publish is a named act with an
    owner and, where the desk configures it, an approval. The operation that
-   exists today, =marketdata.v1.curve_bootstrap.republish=, writes the
+   exists today, =marketdata.v1.ops.republish_curve=, writes the
    bootstrap's observations and lineage straight into the output series and
    stamps it. It has no candidate step and no approval gate, so this journey
    does not offer it.
@@ -120,14 +120,14 @@ the only curve the data can hold is the one a republish writes.
 | Find the blueprint | List its pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
 | Choose the as-of | Read observations at an as-of | =marketdata.v1.market_observations.list= | exists |
 | Choose the as-of | Read one series' observations | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Choose the as-of | Read a snapshot of the series | =marketdata.v1.curve-snapshot.get= | exists |
-| Run the bootstrap | Bootstrap the curve and echo its points | =marketdata.v1.curve_bootstrap.compute= | exists |
-| Refresh | Bootstrap again at a new as-of | =marketdata.v1.curve_bootstrap.compute= | exists |
+| Choose the as-of | Read a snapshot of the series | =marketdata.v1.curve_snapshot.get= | exists |
+| Run the bootstrap | Bootstrap the curve and echo its points | =marketdata.v1.ops.compute_curve= | exists |
+| Refresh | Bootstrap again at a new as-of | =marketdata.v1.ops.compute_curve= | exists |
 | Read the health | Read per-pillar diagnostics | none | missing |
-| Read the evolution | Read the curve over buckets | =marketdata.v1.curve-snapshot.buckets= | exists |
+| Read the evolution | Read the curve over buckets | =marketdata.v1.ops.get_curve_snapshot_buckets= | exists |
 | Leave unpublished | Store the candidate | none | missing |
-| Publish later | Bootstrap and publish the output | =marketdata.v1.curve_bootstrap.republish= | partial |
-| Publish later | Ask for the publish to be approved | =inbox.v1.approval-requests.raise= | partial |
+| Publish later | Bootstrap and publish the output | =marketdata.v1.ops.republish_curve= | partial |
+| Publish later | Ask for the publish to be approved | =inbox.v1.ops.raise_approval= | partial |
 | Read the trail | Read every version with its diff | =marketdata.v1.history.get= | exists |
 
 The two curve operations exist server-side: the handlers and the subjects are
@@ -139,8 +139,8 @@ carries no audit columns, so a point has no readable trail.
 
 * What is missing
 
-1. *Nothing calls the curve operations.* =marketdata.v1.curve_bootstrap.compute=,
-   =.republish=, =marketdata.v1.curve-snapshot.get= and =.buckets= have subjects
+1. *Nothing calls the curve operations.* =marketdata.v1.ops.compute_curve=,
+   =.republish=, =marketdata.v1.curve_snapshot.get= and =.buckets= have subjects
    and handlers, and no caller sends any of them. There is no web page, HTTP
    route or shell verb for a curve operation. The candidate is a page and a
    route, and a verb for the shell. Until then the whole journey runs only from

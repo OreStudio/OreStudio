@@ -26,7 +26,7 @@ The command is shaped like this:
 registration_policy registration-policy <hostname>
 #+end_example
 
-It is addressed at =iam.v1.auth.registration-policy=.
+It is addressed at =iam.v1.ops.registration_policy=.
 
 #+name: registration_policy-registration-policy
 #+begin_src ores-shell :tangle registration_policy-registration-policy.ores :exports none

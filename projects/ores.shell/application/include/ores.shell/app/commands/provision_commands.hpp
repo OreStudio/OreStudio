@@ -37,8 +37,8 @@ namespace ores::shell::app::commands {
  * @brief Porcelain provisioning commands.
  *
  * Thin callers of the same subjects the browser's setup journeys call:
- * =iam.v1.bootstrap.status=, =iam.v1.bootstrap.create-admin=,
- * =iam.v1.tenants.provision= and =iam.v1.parties.provision=, each followed
+ * =iam.v1.ops.bootstrap_status=, =iam.v1.ops.create_initial_admin=,
+ * =iam.v1.ops.provision_tenant= and =iam.v1.ops.provision_party=, each followed
  * through the same progress read the journey's rail renders. A command holds
  * no sequence of its own beyond the order the two clients share, and the
  * starting point it runs from is a flag naming a seeded row rather than a

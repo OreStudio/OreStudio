@@ -98,8 +98,8 @@ LEVEL    [YYYY-Mon-DD HH:MM:SS.microseconds]    (source/file.cpp:line) : message
 ** Files to modify
 | File | Change |
 |------|--------|
-| =ores.telemetry/messaging/telemetry_protocol.hpp= | Add =publish_log_entries_request= (fire-and-forget batch publish on =telemetry.v1.logs.publish=) |
-| =ores.telemetry.service/…/telemetry_handler.*= | Add handler for =telemetry.v1.logs.publish= |
+| =ores.telemetry/messaging/telemetry_protocol.hpp= | Add =publish_log_entries_request= (fire-and-forget batch publish on =telemetry.v1.ops.publish_log_entries=) |
+| =ores.telemetry.service/…/telemetry_handler.*= | Add handler for =telemetry.v1.ops.publish_log_entries= |
 | =ores.compute.wrapper/src/app/application.cpp= | Call =publish_ore_logs= and =publish_engine_logs= after engine exits |
 
 ** New files to create

@@ -92,14 +92,14 @@ edit; only the caller and the permission differ.
 | Find the person | List accounts in the tenant | =iam.v1.accounts.list= | exists |
 | Open the record | Read the account | =iam.v1.accounts.get= | exists |
 | Open the record | Read the contact record | =iam.v1.account_contact_informations.list_by_account_id= | exists |
-| Correct the profile | Set full name and job title | =iam.v1.accounts.update= | exists |
+| Correct the profile | Set full name and job title | =iam.v1.ops.update_account= | exists |
 | Replace the photo | Upload an image, receive its id | none | missing |
-| Replace the photo | Set the photo on the account | =iam.v1.accounts.update= | exists |
+| Replace the photo | Set the photo on the account | =iam.v1.ops.update_account= | exists |
 | Correct the contact details | Write the contact record | =iam.v1.account_contact_informations.put= | exists |
 | Save | Record the reason, write a new version | shared change-reason flow | exists |
 
 Both write subjects need a permission the administrator holds.
-=iam.v1.accounts.update= needs =iam::accounts:update=, and
+=iam.v1.ops.update_account= needs =iam::accounts:update=, and
 =iam.v1.account_contact_informations.put= needs
 =iam::account_contact_informations:write=. The tenant-administrator role holds
 both, which is what makes this journey =exists= where the member's journey is
@@ -115,12 +115,12 @@ both writes carry the shared change intent.
    already holds.
 2. *Two records, two writes, no single save.* The profile and the contact
    details live in different records, so one Save sends
-   =iam.v1.accounts.update= and =iam.v1.account_contact_informations.put= as
+   =iam.v1.ops.update_account= and =iam.v1.account_contact_informations.put= as
    separate requests, and nothing makes the pair atomic. Until a composite
    operation exists, the screen must send both and say which record failed.
 3. *Two email fields.* =account.email= is the colleague's login address and
    =account_contact_information.email= is the contact address.
-   =iam.v1.accounts.update= writes the first and the contact put writes the
+   =iam.v1.ops.update_account= writes the first and the contact put writes the
    second, so the screen must label them, or the administrator changes the wrong
    one.
 4. *No approval for the reporting line.* The line is shown on this screen and a

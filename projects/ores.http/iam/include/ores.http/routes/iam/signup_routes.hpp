@@ -73,7 +73,7 @@ public:
                                 ores::nats::service::nats_client& session);
 
     /**
-     * @brief POST /api/v1/iam/auth/signup — Signup.
+     * @brief POST /api/v1/iam/ops/signup — Signup.
      */
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_signup(const ores::http::domain::http_request& req,

@@ -74,14 +74,14 @@ so they cross to TypeScript as strings.
 
 ** step_completed_event
 :PROPERTIES:
-:subject: workflow.v1.events.step-completed
+:subject: workflow.v1.ops.step_completed
 :END:
 
 #+begin_src cpp :name comment
 /**
  * @brief Fire-and-forget event published by domain services on step completion.
  *
- * Published to workflow.v1.events.step-completed by any domain service that
+ * Published to workflow.v1.ops.step_completed by any domain service that
  * participates in a workflow. The workflow engine subscribes to this subject
  * (queue-group) and advances or compensates the workflow accordingly.
  *
@@ -171,7 +171,7 @@ so they cross to TypeScript as strings.
 
 ** start_workflow_message
 :PROPERTIES:
-:subject: workflow.v1.start
+:subject: workflow.v1.ops.start_workflow
 :END:
 
 #+begin_src cpp :name comment
@@ -277,7 +277,7 @@ so they cross to TypeScript as strings.
 
 ** get_step_result_request
 :PROPERTIES:
-:subject: workflow.v1.steps.get-result
+:subject: workflow.v1.ops.get_step_result
 :response: get_step_result_response
 :shell_command: step-result
 :END:
@@ -678,7 +678,7 @@ so they cross to TypeScript as strings.
 
 ** get_workflow_steps_request
 :PROPERTIES:
-:subject: workflow.v1.instances.steps
+:subject: workflow.v1.ops.get_workflow_steps
 :response: get_workflow_steps_response
 :shell_command: steps
 :END:
@@ -870,7 +870,7 @@ so they cross to TypeScript as strings.
 
 ** retry_workflow_instance_request
 :PROPERTIES:
-:subject: workflow.v1.instances.retry
+:subject: workflow.v1.ops.retry_workflow_instance
 :response: retry_workflow_instance_response
 :shell_command: retry
 :END:

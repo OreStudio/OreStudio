@@ -173,14 +173,14 @@ function buildTestServer(answerFor: (subject: string) => unknown) {
 /** The answers a profile screen's routes expect, keyed by subject. */
 function profileAnswers(overrides: Record<string, unknown> = {}) {
     const answers: Record<string, unknown> = {
-        'iam.v1.accounts.update-self': { result: okResult, account: accountRow },
+        'iam.v1.ops.update_self_account': { result: okResult, account: accountRow },
         'iam.v1.accounts.get': { account: accountRow },
-        'iam.v1.accounts.update': { success: true, message: '' },
-        'iam.v1.account_contact_informations.update-self': {
+        'iam.v1.ops.update_account': { success: true, message: '' },
+        'iam.v1.ops.update_self_account_contact_information': {
             result: okResult,
             account_contact_information: contactRow,
         },
-        'iam.v1.account_contact_informations.mine': {
+        'iam.v1.ops.get_my_account_contact_information': {
             result: okResult,
             account_contact_information: contactRow,
         },
@@ -193,8 +193,8 @@ function profileAnswers(overrides: Record<string, unknown> = {}) {
             result: okResult,
             account_contact_information: contactRow,
         },
-        'assets.v1.images.upload': { result: okResult, image_id: IMAGE_ID },
-        'assets.v1.images.upload-policy': {
+        'assets.v1.ops.upload_image': { result: okResult, image_id: IMAGE_ID },
+        'assets.v1.ops.get_image_upload_policy': {
             result: okResult,
             formats: ['image/png', 'image/jpeg', 'image/webp'],
             max_size_bytes: 2097152,
@@ -228,7 +228,7 @@ describe('PUT /api/me/profile', () => {
         expect(response.statusCode).toBe(200);
         expect(calls).toEqual([
             {
-                subject: 'iam.v1.accounts.update-self',
+                subject: 'iam.v1.ops.update_self_account',
                 body: {
                     full_name: 'Ada Lovelace',
                     job_title: 'Chief Analyst',
@@ -248,7 +248,7 @@ describe('PUT /api/me/profile', () => {
     it('answers a refusal in the body, field failures whole', async () => {
         const { server, cookies } = buildTestServer(
             profileAnswers({
-                'iam.v1.accounts.update-self': {
+                'iam.v1.ops.update_self_account': {
                     result: {
                         outcome: 'denied',
                         code: 'field_not_self_writable',
@@ -293,7 +293,7 @@ describe('GET /api/me/contact-information', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.subject).toBe('iam.v1.account_contact_informations.mine');
+        expect(calls[0]?.subject).toBe('iam.v1.ops.get_my_account_contact_information');
         expect(calls[0]?.body).toEqual({});
         expect(response.json().contact.city).toBe('London');
     });
@@ -301,7 +301,7 @@ describe('GET /api/me/contact-information', () => {
     it('answers nothing for an account with no record', async () => {
         const { server, cookies } = buildTestServer(
             profileAnswers({
-                'iam.v1.account_contact_informations.mine': {
+                'iam.v1.ops.get_my_account_contact_information': {
                     result: okResult,
                     account_contact_information: null,
                 },
@@ -333,7 +333,7 @@ describe('PUT /api/me/contact-information', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.subject).toBe('iam.v1.account_contact_informations.update-self');
+        expect(calls[0]?.subject).toBe('iam.v1.ops.update_self_account_contact_information');
         expect(calls[0]?.body).toEqual({
             street_line_1: '1 Panton Street',
             street_line_2: '',
@@ -377,7 +377,7 @@ describe('PUT /api/accounts/:username/profile', () => {
             body: { key: { username: 'ada' } },
         });
         expect(calls[1]).toEqual({
-            subject: 'iam.v1.accounts.update',
+            subject: 'iam.v1.ops.update_account',
             body: {
                 account_id: ACCOUNT_ID,
                 email: 'ada@example.com',
@@ -561,7 +561,7 @@ describe('POST /api/images', () => {
 
         expect(response.statusCode).toBe(200);
         expect(calls[0]).toEqual({
-            subject: 'assets.v1.images.upload',
+            subject: 'assets.v1.ops.upload_image',
             body: { mime_type: 'image/png', data: 'aGVsbG8=' },
         });
         expect(response.json().imageId).toBe(IMAGE_ID);
@@ -570,7 +570,7 @@ describe('POST /api/images', () => {
     it('answers a refused image in the body rather than failing the call', async () => {
         const { server, cookies } = buildTestServer(
             profileAnswers({
-                'assets.v1.images.upload': {
+                'assets.v1.ops.upload_image': {
                     result: {
                         outcome: 'invalid',
                         code: 'unsupported_media_type',
@@ -622,7 +622,7 @@ describe('GET /api/image-upload-policy', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(calls[0]?.subject).toBe('assets.v1.images.upload-policy');
+        expect(calls[0]?.subject).toBe('assets.v1.ops.get_image_upload_policy');
         expect(response.json()).toEqual({
             formats: ['image/png', 'image/jpeg', 'image/webp'],
             maxSizeBytes: 2097152,

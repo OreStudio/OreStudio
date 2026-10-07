@@ -28,7 +28,7 @@ database PostgreSQL as db
 
 Person -> web : open the door at the address the deployment serves
 web -> bff : GET /api/registration-policy
-bff -> auth : iam.v1.auth.registration-policy {hostname}
+bff -> auth : iam.v1.ops.registration_policy {hostname}
 auth -> settings : is_user_signups_enabled()
 settings -> db : read system.user_signups at system scope
 db --> settings : false by default

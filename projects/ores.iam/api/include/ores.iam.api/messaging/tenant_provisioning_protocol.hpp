@@ -39,7 +39,7 @@ namespace ores::iam::messaging {
  * the profile orders run afterwards as a workflow instance, whose id the
  * answer carries. This is the one verb for every tenant, the first one
  * included, and it replaces iam.v1.bootstrap.provision-tenant and
- * iam.v1.tenants.provision-acme.
+ * iam.v1.ops.provision_tenant-acme.
  *
  * The answer takes longer than the transport's default request timeout,
  * because creating the tenant copies the deployment's registered data into it
@@ -48,7 +48,7 @@ namespace ores::iam::messaging {
  */
 struct provision_tenant_command {
     using response_type = struct provision_tenant_command_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.provision";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.provision_tenant";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -149,7 +149,7 @@ struct provision_tenant_command_response {
  */
 struct provision_party_command {
     using response_type = struct provision_party_command_response;
-    static constexpr std::string_view nats_subject = "iam.v1.parties.provision";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.provision_party";
     /**
      * @brief Whether the caller must have established a session first.
      *

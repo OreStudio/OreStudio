@@ -51,7 +51,7 @@ struct ore_import_item_error {
  */
 struct ore_import_request {
     using response_type = struct ore_import_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.ore.import";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.ore_import";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -92,7 +92,7 @@ struct ore_import_response {
  * calls publish_step_completion.
  */
 struct ore_import_execute_request {
-    static constexpr std::string_view nats_subject = "ore.v1.ore.import.execute";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.ore_import_execute";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -136,7 +136,7 @@ struct ore_import_execute_result {
  * publish_step_completion.
  */
 struct ore_import_rollback_request {
-    static constexpr std::string_view nats_subject = "ore.v1.ore.import.rollback";
+    static constexpr std::string_view nats_subject = "ore.v1.ops.ore_import_rollback";
     /**
      * @brief Whether the caller must have established a session first.
      *

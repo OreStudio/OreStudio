@@ -246,8 +246,8 @@ Two new subjects handled by the telemetry registrar (following the existing
 
 | Subject                                   | Handler                         |
 |-------------------------------------------+---------------------------------|
-| =telemetry.v1.nats.server-samples.list=   | Return server samples for range |
-| =telemetry.v1.nats.stream-samples.list=   | Return stream samples for range |
+| =telemetry.v1.nats_server_samples.list=   | Return server samples for range |
+| =telemetry.v1.nats_stream_samples.list=   | Return stream samples for range |
 
 * Repository Changes
 

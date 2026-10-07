@@ -412,7 +412,7 @@ them from this same model.
 
 ** put_composite_instrument_with_legs_request
 :PROPERTIES:
-:subject:  trading.v1.composite_instruments.put_with_legs
+:subject:  trading.v1.ops.put_composite_instrument_with_legs
 :response: put_composite_instrument_with_legs_response
 :END:
 
@@ -453,7 +453,7 @@ them from this same model.
 
 ** get_composite_instrument_legs_request
 :PROPERTIES:
-:subject:  trading.v1.composite_instruments.legs
+:subject:  trading.v1.ops.get_composite_instrument_legs
 :response: get_composite_instrument_legs_response
 :END:
 

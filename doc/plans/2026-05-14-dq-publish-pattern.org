@@ -40,7 +40,7 @@ Investigating the fix surfaced two related but distinct concerns:
 2. *Installing (creating) report definitions for a party.* Once the
    user confirms their selection, the wizard creates actual report
    definitions in ~ores_reporting_report_definitions_tbl~ for the
-   current party. The current path is ~dq.v1.bundles.publish~ which
+   current party. The current path is ~dq.v1.ops.publish_bundle~ which
    invokes a ~SECURITY DEFINER~ function that writes across service
    boundaries at the database level.
 
@@ -75,7 +75,7 @@ This document proposes a way forward.
 
 ** Entry point
 
-A single NATS subject ~dq.v1.bundles.publish~ (declared in
+A single NATS subject ~dq.v1.ops.publish_bundle~ (declared in
 ~projects/ores.dq.api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp~)
 is consumed by ~publication_service::publish_bundle~ in
 ~projects/ores.dq.core/src/service/publication_service.cpp~. It executes a
@@ -165,7 +165,7 @@ implementation plan below supersedes them in a single PR:
   direct cross-service ~SELECT~.
 
 These three changes should be reverted as part of the implementation
-PR; the proper ~dq.v1.report-definition-templates.list~ NATS endpoint
+PR; the proper ~dq.v1.report_definition_templates.list~ NATS endpoint
 replaces them.
 
 * What the Pattern Violates
@@ -248,7 +248,7 @@ The function lives in the target service's SQL tree (e.g.,
 [[proj:projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql][~projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql~]]),
 owned and reviewed by that service's owners.
 
-The DQ bundle orchestrator (~dq.v1.bundles.publish~) keeps the bundle
+The DQ bundle orchestrator (~dq.v1.ops.publish_bundle~) keeps the bundle
 abstraction: it iterates the bundle's dataset list and dispatches each
 dataset to the appropriate target-service NATS endpoint, aggregating the
 results. The dispatch table replaces ~ores_dq_artefact_types_tbl~'s
@@ -389,7 +389,7 @@ Mapping:
 - *Step command*: ~<service>.v1.<entity>.publish-from-dq~ with
   ~{dataset_id, target_tenant_id, target_party_id, mode, params}~ and an
   ~X-Workflow-Step-Id~ header for idempotency.
-- *Step completion event*: ~workflow.v1.events.step-completed~ carrying
+- *Step completion event*: ~workflow.v1.ops.step_completed~ carrying
   ~{success, records_inserted/updated/skipped/deleted, error}~, exactly
   per the engine generalisation contract.
 - *On step failure*: workflow engine halts the saga and marks the
@@ -399,7 +399,7 @@ Mapping:
   in ~ores_dq_bundle_publications_tbl~ is written by the workflow's
   finalise step (still DQ-owned data).
 
-The DQ NATS subject ~dq.v1.bundles.publish~ becomes a thin wrapper that
+The DQ NATS subject ~dq.v1.ops.publish_bundle~ becomes a thin wrapper that
 starts the workflow and returns the workflow_instance_id. Callers (wizard,
 librarian) subscribe to workflow step events on
 ~ores.workflow.workflow_instance_changed~ via the reusable
@@ -413,7 +413,7 @@ stays in DQ; per-step audit moves to the workflow engine's
 *Why workflow service over bespoke orchestration*
 
 - Step state is already a first-class concept in the engine; no need to
-  invent a new ~dq.v1.bundles.publish.progress~ NATS stream.
+  invent a new ~dq.v1.ops.publish_bundle.progress~ NATS stream.
 - Both UI consumers consume the same workflow status feed — no
   duplicated step-rendering plumbing.
 - Halt-on-failure is the engine's default behaviour.
@@ -453,7 +453,7 @@ Every step's publish function is already idempotent (each
 target table scoped by party). Combined with the workflow engine's
 ~X-Workflow-Step-Id~ check, a failed publish can be re-driven by either:
 
-1. *Restart the workflow.* Re-issuing ~dq.v1.bundles.publish~ with the
+1. *Restart the workflow.* Re-issuing ~dq.v1.ops.publish_bundle~ with the
    same bundle/tenant/party starts a new workflow instance; each step's
    ~EXISTS~ check skips already-installed datasets, and only the failed
    step's work is retried.
@@ -489,7 +489,7 @@ no fallback path, and no backwards-compatible shim. On merge:
 - The SQL function ~ores_dq_bundles_publish_fn~ is deleted. The bundle
   abstraction is reimplemented as a ~bundle_publish~ workflow
   definition (located in ~ores.dq.api~ per the relocation rule from
-  the hardening PR). The NATS subject ~dq.v1.bundles.publish~ stays,
+  the hardening PR). The NATS subject ~dq.v1.ops.publish_bundle~ stays,
   but its handler now starts a workflow instance and returns the
   instance id.
 - DQ exposes ~dq.v1.<entity>-templates.list~ read endpoints for any
@@ -498,7 +498,7 @@ no fallback path, and no backwards-compatible shim. On merge:
   the Party Setup wizard).
 - The cross-service ~SELECT~ in
   ~report_definition_template_service::list_templates~ is removed.
-  Reporting consumes ~dq.v1.report-definition-templates.list~ instead.
+  Reporting consumes ~dq.v1.report_definition_templates.list~ instead.
 - The grants file (~iam_service_db_grants_create.sql~) is regenerated:
   no service user gains a new cross-component grant; DQ-side grants on
   populate functions are removed.
@@ -532,7 +532,7 @@ The three publish-driven wizards
 ~PublishBundleWizard~ in ~ores.qt.refdata~) currently have a final page
 holding a single ~statusLabel_~ showing "Publishing bundle...". Replace
 this label with a ~WorkflowStepsWidget~ bound to the workflow instance id
-returned by ~dq.v1.bundles.publish~.
+returned by ~dq.v1.ops.publish_bundle~.
 
 Required wizard behaviour:
 
@@ -608,7 +608,7 @@ Branch: ~feature/dq-publish-pattern~
 - [X] ~ores.reporting.core~ — ~publish_from_dq_handler~ + 1-subject registration (~report-definitions~)
 - [X] ~ores.dq.core~ — ~publish_from_dq_handler~ + 2-subject registration (~ip2country~, ~coding-schemes~)
 - [X] CMake: ~ores.dq.api~ added as PRIVATE dependency to assets/refdata/reporting core
-- [X] ~dq.v1.report-definition-templates.list~ NATS endpoint in DQ service
+- [X] ~dq.v1.report_definition_templates.list~ NATS endpoint in DQ service
 - [X] ~report_definition_template_service::list_templates~ — remove cross-service SELECT, use NATS call
 
 ** UI phase
@@ -667,7 +667,7 @@ PR #767 merged:
 2. *Per-record selection granularity.* The wizard's Report Definitions
    page wants per-row checkboxes (install template X but not Y). The
    current publish function is all-or-nothing per dataset. Under the new
-   ~reporting.v1.report-definitions.publish-from-dq~, the request payload
+   ~reporting.v1.ops.publish_report_definitions_from_dq~, the request payload
    can carry an optional list of artefact IDs to install. This moves the
    per-row decision from "filter the SELECT inside the function" to
    "filter the SELECT against a request-provided ID list," a trivial

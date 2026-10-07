@@ -298,9 +298,9 @@
         var canWrite = opts.canWrite;
         var why = canWrite
             ? (isSelf()
-                ? 'You may change your own name, job title and photo \u2014 <b>iam.v1.accounts.update-self</b>.'
+                ? 'You may change your own name, job title and photo \u2014 <b>iam.v1.ops.update_self_account</b>.'
                 : 'You hold <b>iam::accounts:update</b> in this tenant.')
-            : 'Read-only for you. <b>iam.v1.accounts.update-self</b> is what makes the rest of this panel yours.';
+            : 'Read-only for you. <b>iam.v1.ops.update_self_account</b> is what makes the rest of this panel yours.';
         var body = photoInto(rec, { canWrite: canWrite }) +
             '<div style="margin-top:18px">' + identityFields(rec, canWrite) + '</div>' +
             '<div class="field"><label>Reporting line</label></div>' + reportingLine(rec, canWrite);
@@ -314,7 +314,7 @@
         var c = rec.contact;
         var why = canWrite
             ? (isSelf()
-                ? 'You may change your own contact record \u2014 <b>iam.v1.account_contact_informations.update-self</b>.'
+                ? 'You may change your own contact record \u2014 <b>iam.v1.ops.update_self_account_contact_information</b>.'
                 : 'You hold <b>iam::account_contact_informations:write</b> in this tenant.')
             : 'Read-only for you.';
         var body =

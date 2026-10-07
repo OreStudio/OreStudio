@@ -137,19 +137,19 @@ is not in this table checks its read permission.
 
 | Subject | Answers | Why it is open |
 |---------+---------+----------------|
-| =iam.v1.roles.mine= | The caller's roles, each with the permissions it grants and its assignment tail | Self read |
+| =iam.v1.ops.get_my_roles= | The caller's roles, each with the permissions it grants and its assignment tail | Self read |
 | =iam.v1.roles.list= | The tenant's roles: name, description and flags | A member chooses the role to ask for |
 | =iam.v1.roles.get= | One role | A member reads the role to ask for |
-| =iam.v1.roles.permissions= | The permission codes one role bundles | A member reads what a role grants before asking for it |
+| =iam.v1.ops.get_role_permissions= | The permission codes one role bundles | A member reads what a role grants before asking for it |
 | =iam.v1.permissions.list= | The permission codes and their descriptions | A member reads a role's codes in words, and asks "Can I…?" |
-| =inbox.v1.approval-requests.mine= | The requests the caller raised, and their decisions | Self read |
-| =inbox.v1.notifications.mine= | The notifications addressed to the caller | Self read |
-| =inbox.v1.notifications.unread-count= | How many of those are unread | Self read |
-| =iam.v1.account_contact_informations.mine= | The caller's own contact record | Self read; the profile reads it, and =list_by_account_id= needs =iam::account_contact_informations:read= |
-| =iam.v1.auth.password-policy= | The rules a password must meet | Read before a session exists |
-| =iam.v1.auth.registration-policy= | Whether and where a person may sign up | Read before a session exists |
-| =iam.v1.auth.public-key= | The key that verifies tokens | Read before a session exists |
-| =iam.v1.bootstrap.status= | Whether the system is in bootstrap mode | Read before a session exists |
+| =inbox.v1.ops.list_my_approval_requests= | The requests the caller raised, and their decisions | Self read |
+| =inbox.v1.ops.list_my_notifications= | The notifications addressed to the caller | Self read |
+| =inbox.v1.ops.count_unread_notifications= | How many of those are unread | Self read |
+| =iam.v1.ops.get_my_account_contact_information= | The caller's own contact record | Self read; the profile reads it, and =list_by_account_id= needs =iam::account_contact_informations:read= |
+| =iam.v1.ops.get_password_policy= | The rules a password must meet | Read before a session exists |
+| =iam.v1.ops.registration_policy= | Whether and where a person may sign up | Read before a session exists |
+| =iam.v1.ops.public_key= | The key that verifies tokens | Read before a session exists |
+| =iam.v1.ops.bootstrap_status= | Whether the system is in bootstrap mode | Read before a session exists |
 
 A row is added to this table in the same change that opens the read, with its
 reason. Removing a row closes the read.
@@ -196,10 +196,10 @@ has thrown the attribution away.
 
 | Read | Subject | Who | Needs | Answers |
 |------+---------+-----+-------+---------|
-| The caller's own access | =iam.v1.roles.mine= | any signed-in account | a session | the account's roles, each with the permissions it grants and its assignment tail |
-| Another account's access | =iam.v1.roles.by-account= | a tenant administrator | =iam::roles:read= | the same shape, for the account named |
-| One role's bundle | =iam.v1.roles.permissions= | any signed-in account | a session | the permission codes one role bundles |
-| The old flat list | =iam.v1.roles.permissions-by-account= | retired | — | folded into the composed read, because a flat list is what loses the attribution |
+| The caller's own access | =iam.v1.ops.get_my_roles= | any signed-in account | a session | the account's roles, each with the permissions it grants and its assignment tail |
+| Another account's access | =iam.v1.ops.get_account_roles= | a tenant administrator | =iam::roles:read= | the same shape, for the account named |
+| One role's bundle | =iam.v1.ops.get_role_permissions= | any signed-in account | a session | the permission codes one role bundles |
+| The old flat list | =iam.v1.ops.get_role_permissions-by-account= | retired | — | folded into the composed read, because a flat list is what loses the attribution |
 
 The three that remain each carry a =result=, which the contract above requires of
 every operation. The first two answer =denied= when the caller may not have what

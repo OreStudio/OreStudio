@@ -27,20 +27,20 @@ dispatched instead of the phase it replaces, never alongside it.
 | Subject | Publisher | Consumer | Payload |
 |---------+-----------+----------+---------|
 | =reporting.v1.ops.trigger_report_instance= | the shell, or the scheduler on a firing | reporting | definition, tenant, and the firing's identity |
-| =workflow.v1.start= | reporting | the workflow engine | workflow type, the run's request, and its run configuration |
-| =reporting.v1.report.gather-trades= | the workflow engine | reporting | instance, definition, tenant |
-| =reporting.v1.report.gather-market-data= | the workflow engine | reporting | instance, definition, tenant |
-| =reporting.v1.report.assemble-bundle= | the workflow engine | reporting | the two storage keys and the counts they carry |
-| =ore.v1.report.prepare-package= | the workflow engine | ores.ore | the two storage keys |
-| =reporting.v1.report.resolve-prepared-input= *(substitute)* | the workflow engine | reporting | instance, tenant, and the prepared input key |
-| =compute.v1.report.submit= | the workflow engine | ores.compute | instance, tenant, correlation, and the tarball URIs |
-| =compute.v1.work.assignments.{tenant}.{platform}= | ores.compute | a worker node, by queue group | result, workunit, package and its digest, input, output |
-| =compute.v1.results.submit= | the worker node | ores.compute | result, host, output location, outcome |
-| =reporting.v1.report.collect-compute-results= | the workflow engine | reporting | instance, tenant, batch (a stub: it ingests nothing yet) |
-| =reporting.v1.report.ignore-compute-results= *(substitute)* | the workflow engine | reporting | instance, tenant, batch |
-| =reporting.v1.report.finalise= | the workflow engine | reporting | instance, tenant |
-| =reporting.v1.report.fail= | the engine's compensation | reporting | instance, tenant, and the reason |
-| =workflow.v1.events.step-completed= | any phase | the workflow engine | step and its result |
+| =workflow.v1.ops.start_workflow= | reporting | the workflow engine | workflow type, the run's request, and its run configuration |
+| =reporting.v1.ops.gather_trades= | the workflow engine | reporting | instance, definition, tenant |
+| =reporting.v1.ops.gather_market_data= | the workflow engine | reporting | instance, definition, tenant |
+| =reporting.v1.ops.assemble_bundle= | the workflow engine | reporting | the two storage keys and the counts they carry |
+| =ore.v1.ops.prepare_ore_package= | the workflow engine | ores.ore | the two storage keys |
+| =reporting.v1.ops.resolve_prepared_input= *(substitute)* | the workflow engine | reporting | instance, tenant, and the prepared input key |
+| =compute.v1.ops.submit_compute= | the workflow engine | ores.compute | instance, tenant, correlation, and the tarball URIs |
+| =compute.v1.ops.work_assignment.{tenant}.{platform}= | ores.compute | a worker node, by queue group | result, workunit, package and its digest, input, output |
+| =compute.v1.ops.submit_result= | the worker node | ores.compute | result, host, output location, outcome |
+| =reporting.v1.ops.collect_compute_results= | the workflow engine | reporting | instance, tenant, batch (a stub: it ingests nothing yet) |
+| =reporting.v1.ops.ignore_compute_results= *(substitute)* | the workflow engine | reporting | instance, tenant, batch |
+| =reporting.v1.ops.finalise_report= | the workflow engine | reporting | instance, tenant |
+| =reporting.v1.ops.fail_report= | the engine's compensation | reporting | instance, tenant, and the reason |
+| =workflow.v1.ops.step_completed= | any phase | the workflow engine | step and its result |
 
 ** The messages that control the run rather than perform it
 
@@ -48,9 +48,9 @@ dispatched instead of the phase it replaces, never alongside it.
 |---------+-----------+----------+---------|
 | =scheduler.v1.job_definitions.put= | reporting, when reconciling | the scheduler | create or update a definition's schedule |
 | =scheduler.v1.job_definitions.delete= | reporting, when unscheduling | the scheduler | remove a definition's schedule |
-| =workflow.v1.steps.get-result= | the workflow engine, and any reader | the workflow engine | read a completed step's result |
-| =reporting.v1.report-definitions.schedule= | the shell, or an operator | reporting | schedule on demand |
-| =reporting.v1.report-definitions.unschedule= | the shell, or an operator | reporting | unschedule on demand |
+| =workflow.v1.ops.get_step_result= | the workflow engine, and any reader | the workflow engine | read a completed step's result |
+| =reporting.v1.ops.schedule_report_definitions= | the shell, or an operator | reporting | schedule on demand |
+| =reporting.v1.ops.unschedule_report_definitions= | the shell, or an operator | reporting | unschedule on demand |
 
 ** The bulk reads pre-processing depends on
 
@@ -59,8 +59,8 @@ Both exist, as operation subjects on the component that owns the data.
 
 | Subject | Publisher | Consumer | Payload |
 |---------+-----------+----------+---------|
-| =trading.v1.trades.export-to-storage= | pre-processing | ores.trading | the book scope and the target key; returns the trade count |
-| =marketdata.v1.series.export-to-storage= | pre-processing | ores.marketdata | the target key; returns the series count |
+| =trading.v1.ops.export_trades_to_storage= | pre-processing | ores.trading | the book scope and the target key; returns the trade count |
+| =marketdata.v1.ops.export_market_data_to_storage= | pre-processing | ores.marketdata | the target key; returns the series count |
 
 Both write into the platform bucket under the key the caller supplies, which is
 =reporting/runs/{instance}/trades.msgpack= and

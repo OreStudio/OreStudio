@@ -596,11 +596,11 @@ class ores::workflow::messaging::workflow_step_protocol <<generated protocol uni
 ' state is hand-written in workflow_vocabulary.hpp.
 
 class ores::workflow::messaging::start_workflow_message <<generated>> {
-    +subject : workflow.v1.start
+    +subject : workflow.v1.ops.start_workflow
 }
 
 class ores::workflow::messaging::step_completed_event <<generated>> {
-    +subject : workflow.v1.events.step-completed
+    +subject : workflow.v1.ops.step_completed
 }
 
 class ores::workflow::messaging::list_workflow_definitions_request <<generated>> {
@@ -608,7 +608,7 @@ class ores::workflow::messaging::list_workflow_definitions_request <<generated>>
 }
 
 class ores::workflow::messaging::get_step_result_request <<generated>> {
-    +subject : workflow.v1.steps.get-result
+    +subject : workflow.v1.ops.get_step_result
 }
 
 note bottom of "ores::workflow::messaging::step_log_entry"

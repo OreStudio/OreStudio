@@ -39,7 +39,7 @@ namespace ores::iam::messaging {
  */
 struct ask_for_roles_request {
     using response_type = struct ask_for_roles_response;
-    static constexpr std::string_view nats_subject = "iam.v1.role-requests.ask";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.ask_for_roles";
     /**
      * @brief Whether the caller must have established a session first.
      *

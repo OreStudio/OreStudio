@@ -273,7 +273,7 @@ struct get_composite_instrument_version_response {
 struct put_composite_instrument_with_legs_request {
     using response_type = struct put_composite_instrument_with_legs_response;
     static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.put_with_legs";
+        "trading.v1.ops.put_composite_instrument_with_legs";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -292,7 +292,7 @@ struct put_composite_instrument_with_legs_response {
 
 struct get_composite_instrument_legs_request {
     using response_type = struct get_composite_instrument_legs_response;
-    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.legs";
+    static constexpr std::string_view nats_subject = "trading.v1.ops.get_composite_instrument_legs";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -48,8 +48,8 @@ package "publishers" #F2F2F2 {
 }
 
 package "telemetry.v1.> subjects" #F2F2F2 {
-    interface "telemetry.v1.logs.publish" as s_logs_publish
-    interface "telemetry.v1.services.heartbeat" as s_services_heartbeat
+    interface "telemetry.v1.ops.publish_log_entries" as s_logs_publish
+    interface "telemetry.v1.ops.service_heartbeat" as s_services_heartbeat
     interface "telemetry.v1.logs.list" as s_logs_list
     interface "telemetry.v1.services.list" as s_services_list
     interface "telemetry.v1.nats.\nserver-samples.list" as s_server_samples_list

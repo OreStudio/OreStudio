@@ -176,9 +176,9 @@ void authorization_routes::register_routes(
     nats_client& session) {
     BOOST_LOG_SEV(lg(), info) << "Registering authorization routes";
 
-    auto assign_role_route = router->post("/api/v1/iam/roles/assign")
+    auto assign_role_route = router->post("/api/v1/iam/ops/assign_role")
                                  .summary("Assign role")
-                                 .description("Forwards to the iam.v1.roles.assign operation.")
+                                 .description("Forwards to the iam.v1.ops.assign_role operation.")
                                  .tags({"iam"})
                                  .auth_required()
                                  .body<messaging::assign_role_request>()
@@ -190,9 +190,9 @@ void authorization_routes::register_routes(
     router->add_route(assign_role_built);
     registry->register_route(assign_role_built);
 
-    auto revoke_role_route = router->post("/api/v1/iam/roles/revoke")
+    auto revoke_role_route = router->post("/api/v1/iam/ops/revoke_role")
                                  .summary("Revoke role")
-                                 .description("Forwards to the iam.v1.roles.revoke operation.")
+                                 .description("Forwards to the iam.v1.ops.revoke_role operation.")
                                  .tags({"iam"})
                                  .auth_required()
                                  .body<messaging::revoke_role_request>()
@@ -205,9 +205,9 @@ void authorization_routes::register_routes(
     registry->register_route(revoke_role_built);
 
     auto get_account_roles_route =
-        router->post("/api/v1/iam/roles/by-account")
+        router->post("/api/v1/iam/ops/get_account_roles")
             .summary("Get account roles")
-            .description("Forwards to the iam.v1.roles.by-account operation.")
+            .description("Forwards to the iam.v1.ops.get_account_roles operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::get_account_roles_request>()
@@ -220,9 +220,9 @@ void authorization_routes::register_routes(
     registry->register_route(get_account_roles_built);
 
     auto get_role_permissions_route =
-        router->post("/api/v1/iam/roles/permissions")
+        router->post("/api/v1/iam/ops/get_role_permissions")
             .summary("Get role permissions")
-            .description("Forwards to the iam.v1.roles.permissions operation.")
+            .description("Forwards to the iam.v1.ops.get_role_permissions operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::get_role_permissions_request>()
@@ -235,9 +235,9 @@ void authorization_routes::register_routes(
     registry->register_route(get_role_permissions_built);
 
     auto put_role_permissions_route =
-        router->post("/api/v1/iam/roles/permissions/put")
+        router->post("/api/v1/iam/roles_permissions/put")
             .summary("Put role permissions")
-            .description("Forwards to the iam.v1.roles.permissions.put operation.")
+            .description("Forwards to the iam.v1.roles_permissions.put operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::put_role_permissions_request>()

@@ -36,7 +36,7 @@ Runner -> Registrar : register_fn(nats, ctx, signer)
 activate Registrar
 
 Registrar -> Auth : construct auth_handler(nats, ctx, signer)
-Registrar -> NatsThread : subscribe(iam.v1.auth.service-login)
+Registrar -> NatsThread : subscribe(iam.v1.ops.service_login)
 note right of NatsThread
   Live immediately: dispatched on the NATS
   client's own thread (cnats calls the handler
@@ -57,7 +57,7 @@ end note
 
 Registrar -> Cache : construct party_cache(nats)
 Registrar -> Registrar : make_service_token_provider(\n  nats, ctx.service_account(), service_password)
-Registrar -> NatsThread : request_sync(iam.v1.auth.service-login)
+Registrar -> NatsThread : request_sync(iam.v1.ops.service_login)
 NatsThread -> Auth : dispatch (NATS thread)
 Auth --> NatsThread : JWT (service-account token)
 NatsThread --> Registrar : JWT

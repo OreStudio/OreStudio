@@ -70,7 +70,7 @@ struct service_sample {
  * not wait for one.
  */
 struct service_heartbeat_message {
-    static constexpr std::string_view nats_subject = "telemetry.v1.services.heartbeat";
+    static constexpr std::string_view nats_subject = "telemetry.v1.ops.service_heartbeat";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -193,7 +193,7 @@ struct service_roster_slot {
  */
 struct get_service_roster_request {
     using response_type = struct get_service_roster_response;
-    static constexpr std::string_view nats_subject = "telemetry.v1.services.roster";
+    static constexpr std::string_view nats_subject = "telemetry.v1.ops.get_service_roster";
     /**
      * @brief Whether the caller must have established a session first.
      *

@@ -118,8 +118,8 @@ const provisionedReply = {
 describe('OresClient provision tenant', () => {
     it('sends every field the request declares and reads the answer as a result', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
-            'iam.v1.tenants.provision': [{ body: provisionedReply }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'iam.v1.ops.provision_tenant': [{ body: provisionedReply }],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
@@ -127,8 +127,8 @@ describe('OresClient provision tenant', () => {
         const result = await client.provisionTenant(request);
 
         expect(transport.calls.map((call) => call.subject)).toEqual([
-            'iam.v1.auth.login',
-            'iam.v1.tenants.provision',
+            'iam.v1.ops.login',
+            'iam.v1.ops.provision_tenant',
         ]);
         // The parameters travel as one "name=value" entry each, which is the
         // shape the shell fills from a command line.
@@ -154,8 +154,8 @@ describe('OresClient provision tenant', () => {
 
     it('answers with the refusal the server stated rather than throwing', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
-            'iam.v1.tenants.provision': [
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'iam.v1.ops.provision_tenant': [
                 {
                     body: {
                         success: false,
@@ -183,7 +183,7 @@ describe('OresClient provision tenant', () => {
 
     it('refuses a request the browser shape does not accept', async () => {
         const transport = new ScriptedTransport({
-            'iam.v1.auth.login': [{ body: loginReply() }],
+            'iam.v1.ops.login': [{ body: loginReply() }],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });

@@ -183,8 +183,8 @@ export interface GetNatsStreamSamplesResponse {
 }
 
 export const subjects = {
-    get_nats_server_samples_request: 'telemetry.v1.nats.server-samples.list',
-    get_nats_stream_samples_request: 'telemetry.v1.nats.stream-samples.list',
+    get_nats_server_samples_request: 'telemetry.v1.nats_server_samples.list',
+    get_nats_stream_samples_request: 'telemetry.v1.nats_stream_samples.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

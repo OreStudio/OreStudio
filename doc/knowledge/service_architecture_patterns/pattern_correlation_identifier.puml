@@ -37,7 +37,7 @@ origin -> a : request (Nats-Correlation-Id: C)
 a -> logs : every line of this request: correlation_id=C
 a -> b : request (Nats-Correlation-Id: C)
 b -> logs : every line: correlation_id=C
-a -> engine : workflow.v1.start (correlation id C, stored on the run)
+a -> engine : workflow.v1.ops.start_workflow (correlation id C, stored on the run)
 a --> origin : reply (Nats-Correlation-Id: C)
 ... later, after a restart if need be ...
 engine -> step : step command (Nats-Correlation-Id: C)

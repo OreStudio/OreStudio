@@ -153,11 +153,11 @@ export interface ClearNotificationsResponse {
 }
 
 export const subjects = {
-    raise_notification_request: 'inbox.v1.notifications.raise',
-    list_my_notifications_request: 'inbox.v1.notifications.mine',
-    count_unread_notifications_request: 'inbox.v1.notifications.unread-count',
-    mark_notifications_read_request: 'inbox.v1.notifications.mark-read',
-    clear_notifications_request: 'inbox.v1.notifications.clear',
+    raise_notification_request: 'inbox.v1.ops.raise_notification',
+    list_my_notifications_request: 'inbox.v1.ops.list_my_notifications',
+    count_unread_notifications_request: 'inbox.v1.ops.count_unread_notifications',
+    mark_notifications_read_request: 'inbox.v1.ops.mark_notifications_read',
+    clear_notifications_request: 'inbox.v1.ops.clear_notifications',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

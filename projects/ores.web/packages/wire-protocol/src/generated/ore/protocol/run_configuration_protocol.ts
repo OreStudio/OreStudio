@@ -136,10 +136,10 @@ export interface ExportRunConfigurationResponse {
 }
 
 export const subjects = {
-    import_run_configuration_request: 'ore.v1.run_configuration.import',
-    run_configuration_import_execute_request: 'ore.v1.run_configuration.import.execute',
-    run_configuration_import_rollback_request: 'ore.v1.run_configuration.import.rollback',
-    export_run_configuration_request: 'ore.v1.run_configuration.export',
+    import_run_configuration_request: 'ore.v1.ops.import_run_configuration',
+    run_configuration_import_execute_request: 'ore.v1.ops.run_configuration_import_execute',
+    run_configuration_import_rollback_request: 'ore.v1.ops.run_configuration_import_rollback',
+    export_run_configuration_request: 'ore.v1.ops.export_run_configuration',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

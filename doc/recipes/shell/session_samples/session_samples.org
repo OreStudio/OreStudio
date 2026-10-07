@@ -26,7 +26,7 @@ The command is shaped like this:
 session_samples get-session-samples <session_id>
 #+end_example
 
-It is addressed at =iam.v1.sessions.samples=.
+It is addressed at =iam.v1.ops.get_session_samples=.
 
 #+name: session_samples-get-session-samples
 #+begin_src ores-shell :tangle session_samples-get-session-samples.ores :exports none

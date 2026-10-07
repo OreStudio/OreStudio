@@ -146,10 +146,10 @@ is needed — see *What is missing*.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Read the client version, on every screen | (no operation: the build stamps the bundle) | — | exists |
-| Read the server version, before sign-in | The bootstrap answer states the build the service runs | =iam.v1.bootstrap.status= | exists |
-| Read the server version, at sign-in | The login answer states the same build in full | =iam.v1.auth.login= | exists |
+| Read the server version, before sign-in | The bootstrap answer states the build the service runs | =iam.v1.ops.bootstrap_status= | exists |
+| Read the server version, at sign-in | The login answer states the same build in full | =iam.v1.ops.login= | exists |
 | Read the server version, on every screen | The session carries the build it was opened against | carried by the BFF route =GET /api/session= | exists |
-| Read the database fingerprint | The login answer states the database row | =iam.v1.auth.login= | missing |
+| Read the database fingerprint | The login answer states the database row | =iam.v1.ops.login= | missing |
 | Read the per-instance versions | List the latest sample of every running instance | =telemetry.v1.services.list= | exists |
 
 The server version is composed by =ores.utility::version::full_version_string()=

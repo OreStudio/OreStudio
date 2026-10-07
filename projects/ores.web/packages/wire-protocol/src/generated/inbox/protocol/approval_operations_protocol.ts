@@ -134,11 +134,11 @@ export interface ListMyApprovalRequestsResponse {
 }
 
 export const subjects = {
-    raise_approval_request_request: 'inbox.v1.approval-requests.raise',
-    withdraw_approval_request_request: 'inbox.v1.approval-requests.withdraw',
-    decide_approval_request_request: 'inbox.v1.approval-requests.decide',
-    list_approval_queue_request: 'inbox.v1.approval-requests.queue',
-    list_my_approval_requests_request: 'inbox.v1.approval-requests.mine',
+    raise_approval_request_request: 'inbox.v1.ops.raise_approval',
+    withdraw_approval_request_request: 'inbox.v1.ops.withdraw_approval',
+    decide_approval_request_request: 'inbox.v1.ops.decide_approval',
+    list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
+    list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

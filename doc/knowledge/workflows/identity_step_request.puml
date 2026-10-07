@@ -19,7 +19,7 @@
 
 title The identity request: the steps to run, and what each one reports
 
-class "identity workflow request\n(workflow.v1.start payload)" as req <<message>> #E1F5FF {
+class "identity workflow request\n(workflow.v1.ops.start_workflow payload)" as req <<message>> #E1F5FF {
     {field} +steps : list of step requests
 }
 

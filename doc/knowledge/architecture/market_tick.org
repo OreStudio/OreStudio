@@ -13,7 +13,7 @@
 
 =market_tick= is the one tick type of every asset class. It is declared in
 =ores.marketdata.api/messaging/operations_protocol.hpp= and travels on the
-NATS subject =marketdata.v1.tick=. The same struct is published by a
+NATS subject =marketdata.v1.ops.market_tick=. The same struct is published by a
 producer and read by a consumer, so both ends of the pipeline share one
 wire type.
 
@@ -49,7 +49,7 @@ the schema row behind it.
 
 =market_tick_subject(tenant, party, ore_key)=, in
 =ores.marketdata.api/domain/tick_subjects.hpp=, builds the per consumer
-subject ="marketdata.v1.tick.<tenant>.<party>.<key>"=. The key is the
+subject ="marketdata.v1.ops.market_tick.<tenant>.<party>.<key>"=. The key is the
 datum's canonical ORE key, lower cased with its slashes turned into dots.
 The producer subject note states the other end of this traffic, which is
 the subject a producer publishes on.

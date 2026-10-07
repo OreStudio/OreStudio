@@ -246,8 +246,8 @@ class TestTheExposureRule:
         operation = load_org_operation_model(LOGIN_MESSAGES)["operation"]
         patterns = [r["pattern"]
                     for r in operation_http_route_plan(operation)["routes"]]
-        assert "/api/v1/iam/auth/login" in patterns
-        assert "/api/v1/iam/auth/logout" in patterns
+        assert "/api/v1/iam/ops/login" in patterns
+        assert "/api/v1/iam/ops/logout" in patterns
 
 
 class TestTheFacetResolves:

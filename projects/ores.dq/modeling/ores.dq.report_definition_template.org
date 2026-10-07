@@ -113,7 +113,7 @@ this model, and the model owns only the wire types.
 
 ** list_dq_report_definition_templates_request
 :PROPERTIES:
-:subject:  dq.v1.report-definition-templates.list
+:subject:  dq.v1.report_definition_templates.list
 :response: list_dq_report_definition_templates_response
 :END:
 

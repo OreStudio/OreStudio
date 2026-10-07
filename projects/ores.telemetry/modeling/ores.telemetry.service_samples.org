@@ -110,7 +110,7 @@ and the operations dashboard reads the samples.
 
 ** service_heartbeat_message
 :PROPERTIES:
-:subject: telemetry.v1.services.heartbeat
+:subject: telemetry.v1.ops.service_heartbeat
 :auth: none
 :END:
 
@@ -359,7 +359,7 @@ and the operations dashboard reads the samples.
 
 ** get_service_roster_request
 :PROPERTIES:
-:subject: telemetry.v1.services.roster
+:subject: telemetry.v1.ops.get_service_roster
 :response: get_service_roster_response
 :END:
 

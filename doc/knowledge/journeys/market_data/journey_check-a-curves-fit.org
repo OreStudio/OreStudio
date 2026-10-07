@@ -45,7 +45,7 @@ runs before the candidate goes to a second pair of eyes.
    which recipe.
 2. *Read the candidate points.* The person chooses *Read candidate*. The
    system reconstructs the latest snapshot of the curve with
-   =marketdata.v1.curve-snapshot.get=, one point per =point_id=, at now. The
+   =marketdata.v1.curve_snapshot.get=, one point per =point_id=, at now. The
    read has no as-of parameter, so the person cannot look at the candidate as
    of an earlier instant.
 3. *Read the raw quotes.* The system lists the quotes the curve was built
@@ -76,7 +76,7 @@ runs before the candidate goes to a second pair of eyes.
    =refdata.v1.tenor_convention_resolutions.list_by_convention_code=. The
    resolved dates are not stored on a point, so the screen derives them.
 8. *Recompute if needed.* If the person suspects a stale candidate, they choose
-   *Recompute candidate*, which calls =marketdata.v1.curve_bootstrap.compute=
+   *Recompute candidate*, which calls =marketdata.v1.ops.compute_curve=
    with the config and an as-of and returns the bootstrapped points. The
    operation exists but no caller sends it today.
 9. *Leave.* The person returns to the list. The candidate is unchanged; the
@@ -135,7 +135,7 @@ missing/.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Open the candidate | Read one series | =marketdata.v1.market_series.get= | exists |
-| Read the candidate points | Read the curve snapshot at now | =marketdata.v1.curve-snapshot.get= | partial |
+| Read the candidate points | Read the curve snapshot at now | =marketdata.v1.curve_snapshot.get= | partial |
 | Read the raw quotes | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
 | Overlay the quotes | Join the quotes to the candidate points | (no joint read) | missing |
 | Read the pillar residuals | Read the fit residual per pillar | =marketdata.v1.curve_bootstrap.diagnostics= | missing |
@@ -143,11 +143,11 @@ missing/.
 | Read the calendar and roll | Read the recipe | =refdata.v1.ir_curve_bootstrap_configs.get= | exists |
 | Read the calendar and roll | Read the pillars | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
 | Read the calendar and roll | Resolve a tenor to a date | =refdata.v1.tenor_convention_resolutions.list_by_convention_code= | exists |
-| Recompute the candidate | Bootstrap the candidate without publishing | =marketdata.v1.curve_bootstrap.compute= | exists |
-| Recompute and publish | Bootstrap and republish | =marketdata.v1.curve_bootstrap.republish= | exists |
+| Recompute the candidate | Bootstrap the candidate without publishing | =marketdata.v1.ops.compute_curve= | exists |
+| Recompute and publish | Bootstrap and republish | =marketdata.v1.ops.republish_curve= | exists |
 | Read the recipe lineage | Read the lineage of a derived point | =marketdata.v1.observation_lineages.list= | exists |
 
-=marketdata.v1.curve_bootstrap.compute= and =.republish= both exist and no
+=marketdata.v1.ops.compute_curve= and =.republish= both exist and no
 caller sends them today; the preview half is the one this journey would use.
 The snapshot read is =partial= because it always reads now and has no as-of
 parameter. The generic history read is =marketdata.v1.history.get= with =entity_type=

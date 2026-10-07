@@ -32,7 +32,7 @@ statement, so a picker shows the server's rule rather than its own copy.
 
 ** upload_image_request
 :PROPERTIES:
-:subject: assets.v1.images.upload
+:subject: assets.v1.ops.upload_image
 :response: upload_image_response
 :END:
 
@@ -93,7 +93,7 @@ statement, so a picker shows the server's rule rather than its own copy.
 
 ** get_image_upload_policy_request
 :PROPERTIES:
-:subject: assets.v1.images.upload-policy
+:subject: assets.v1.ops.get_image_upload_policy
 :response: get_image_upload_policy_response
 :END:
 
@@ -159,7 +159,7 @@ statement, so a picker shows the server's rule rather than its own copy.
 
 ** ensure_image_request
 :PROPERTIES:
-:subject: assets.v1.images.ensure
+:subject: assets.v1.ops.ensure_image
 :response: ensure_image_response
 :END:
 

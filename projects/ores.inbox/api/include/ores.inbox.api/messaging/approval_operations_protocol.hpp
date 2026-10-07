@@ -41,7 +41,7 @@ namespace ores::inbox::messaging {
  */
 struct raise_approval_request_request {
     using response_type = struct raise_approval_request_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.approval-requests.raise";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.raise_approval";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -74,7 +74,7 @@ struct raise_approval_request_response {
  */
 struct withdraw_approval_request_request {
     using response_type = struct withdraw_approval_request_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.approval-requests.withdraw";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.withdraw_approval";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -104,7 +104,7 @@ struct withdraw_approval_request_response {
  */
 struct decide_approval_request_request {
     using response_type = struct decide_approval_request_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.approval-requests.decide";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.decide_approval";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -141,7 +141,7 @@ struct decide_approval_request_response {
  */
 struct list_approval_queue_request {
     using response_type = struct list_approval_queue_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.approval-requests.queue";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.list_approval_queue";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -167,7 +167,7 @@ struct list_approval_queue_response {
  */
 struct list_my_approval_requests_request {
     using response_type = struct list_my_approval_requests_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.approval-requests.mine";
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.list_my_approval_requests";
     /**
      * @brief Whether the caller must have established a session first.
      *

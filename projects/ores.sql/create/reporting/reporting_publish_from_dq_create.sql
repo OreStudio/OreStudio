@@ -30,7 +30,7 @@
  */
 
 -- =============================================================================
--- Report Definitions: reporting.v1.report-definitions.publish-from-dq
+-- Report Definitions: reporting.v1.ops.publish_report_definitions_from_dq
 -- =============================================================================
 
 create or replace function ores_reporting_publish_report_definitions_from_dq_fn(

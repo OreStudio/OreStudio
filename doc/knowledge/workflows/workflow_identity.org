@@ -63,12 +63,12 @@ earlier step's result by name.
 #+ATTR_HTML: :class hug-leading
 | Message              | Subject                             | Objective                                                                             |
 |----------------------+-------------------------------------+---------------------------------------------------------------------------------------|
-| Start message        | =workflow.v1.start=                 | Opens the run with the type =identity_workflow= and the request that lists the steps   |
+| Start message        | =workflow.v1.ops.start_workflow=                 | Opens the run with the type =identity_workflow= and the request that lists the steps   |
 | Step command         | =workflow.v1.identity.step=         | Dispatches one declared step to the fixture's own handler                             |
 | Compensation command | =workflow.v1.identity.compensate=   | Dispatches the compensation of a completed step that declared one                     |
-| Step completion      | =workflow.v1.events.step-completed= | Reports the outcome the request asked for: completed, completed with warnings, or failed |
-| Progress read        | =workflow.v1.instances.steps=       | Returns the run's status and one summary per declared step                            |
-| Retry action         | =workflow.v1.instances.retry=       | Resumes a stopped run from its failed step                                            |
+| Step completion      | =workflow.v1.ops.step_completed= | Reports the outcome the request asked for: completed, completed with warnings, or failed |
+| Progress read        | =workflow.v1.ops.get_workflow_steps=       | Returns the run's status and one summary per declared step                            |
+| Retry action         | =workflow.v1.ops.retry_workflow_instance=       | Resumes a stopped run from its failed step                                            |
 
 The fields the request carries, and the fields of a step within it:
 
@@ -135,7 +135,7 @@ retry]].
 * Progress
 
 The fixture adds nothing to the platform's progress read. A client follows the
-run through =workflow.v1.instances.steps= and renders one line per declared
+run through =workflow.v1.ops.get_workflow_steps= and renders one line per declared
 step, with the step's state and its error. The states a run occupies are
 pending, in progress, completed, completed with warnings, compensated and
 failed, and a client must be ready to display each of them, because the fixture

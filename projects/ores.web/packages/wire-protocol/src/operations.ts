@@ -71,11 +71,11 @@ import type { Uuid } from './primitives.js';
  */
 
 export const SUBJECTS = {
-    login: 'iam.v1.auth.login',
-    logout: 'iam.v1.auth.logout',
-    refresh: 'iam.v1.auth.refresh',
-    selectParty: 'iam.v1.accounts.select-party',
-    switchParty: 'iam.v1.accounts.switch-party',
+    login: 'iam.v1.ops.login',
+    logout: 'iam.v1.ops.logout',
+    refresh: 'iam.v1.ops.refresh',
+    selectParty: 'iam.v1.ops.select_party',
+    switchParty: 'iam.v1.ops.switch_party',
     listAccounts: 'iam.v1.accounts.list',
     listChangeReasons: 'dq.v1.change_reasons.list',
     listImages: imageSubjects.list_images_request,
@@ -95,11 +95,11 @@ export const SUBJECTS = {
     listCountries: countrySubjects.list_countries_request,
     workflowInstanceSteps: workflowSubjects.get_workflow_steps_request,
     retryWorkflowInstance: workflowSubjects.retry_workflow_instance_request,
-    passwordPolicy: 'iam.v1.auth.password-policy',
+    passwordPolicy: 'iam.v1.ops.get_password_policy',
     registrationPolicy: registrationPolicySubjects.registration_policy_request,
     signup: signupSubjects.signup_request,
-    leiEntitiesSummary: 'dq.v1.lei-entities.summary',
-    leiEntitiesSearch: 'dq.v1.lei-entities.search',
+    leiEntitiesSummary: 'dq.v1.ops.get_lei_entities_summary',
+    leiEntitiesSearch: 'dq.v1.ops.search_lei_entities',
 } as const;
 
 /**

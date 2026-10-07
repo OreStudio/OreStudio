@@ -67,7 +67,7 @@ public:
         , http_base_url_(std::move(http_base_url)) {}
 
     /**
-     * @brief Serves trading.v1.trades.book.
+     * @brief Serves trading.v1.ops.book_trade.
      */
     void book_trade(ores::nats::message msg) {
         using ores::service::messaging::decode;
@@ -111,7 +111,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.trades.portfolio.export.
+     * @brief Serves trading.v1.ops.export_portfolio.
      */
     void export_portfolio(ores::nats::message msg) {
         using ores::service::messaging::decode;
@@ -150,7 +150,7 @@ public:
     }
 
     /**
-     * @brief Serves trading.v1.trades.export-to-storage.
+     * @brief Serves trading.v1.ops.export_trades_to_storage.
      */
     void export_trades_to_storage(ores::nats::message msg) {
         using ores::service::messaging::decode;

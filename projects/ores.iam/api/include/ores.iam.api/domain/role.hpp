@@ -58,7 +58,7 @@ namespace ores::iam::domain {
  * The entity's canonical CRUD subjects are generated: role_registrar owns
  * list/get/get-many/put/put-many/delete on iam.v1.roles.*. The
  * authorization operation model declares a different set under the same
- * prefix -- iam.v1.roles.assign, .revoke, .by-account,
+ * prefix -- iam.v1.ops.assign_role, .revoke, .by-account,
  * .permissions and .suggest-commands -- so the two coexist rather than
  * compete, and no handler is suppressed here.
  *

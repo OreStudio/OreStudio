@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ An operation that is not an entity verb lives in {component}.v1.ops.{operation},
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -86,3 +86,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every operation that acts on an entity without being one of the eight moved to
+={component}.v1.ops.{operation}=, named for the request message the model
+already declares, which is the shape =reporting.v1.ops.trigger_report_instance=
+and =variability.v1.ops.clear_bootstrap_mode= already follow. The three-segment
+subjects that had no resource at all -- =workflow.v1.start=,
+=marketdata.v1.tick=, =scheduler.v1.status= -- went with them.
+
+The HTTP projection moved with the subjects, because a route is derived from
+its subject: =/api/v1/iam/auth/login= is now =/api/v1/iam/ops/login=, and the
+tangled =hurl= scripts and the shell scripts follow.
+

@@ -33,8 +33,8 @@ and the report package handler that assembles an ORE run's inputs.
 
 - Configuration: NATS, database, logging, the HTTP base URL and the work
   directory.
-- NATS requests on =workflow.v1.ore.import=, =ore.v1.ore.import.execute=
-  and =ore.v1.ore.import.rollback=, and the reporting package preparation.
+- NATS requests on =workflow.v1.ops.ore_import=, =ore.v1.ops.ore_import_execute=
+  and =ore.v1.ops.ore_import_rollback=, and the reporting package preparation.
 - The uploaded import tarball, fetched from object storage into the work
   directory.
 

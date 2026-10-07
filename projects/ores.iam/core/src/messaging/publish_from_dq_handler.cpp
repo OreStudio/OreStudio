@@ -45,7 +45,7 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "iam.v1.accounts.publish-from-dq" to
+ * Converts "iam.v1.ops.publish_accounts_from_dq" to
  * "ores_iam_publish_accounts_from_dq_fn", same convention as
  * ores.refdata's handler.
  */

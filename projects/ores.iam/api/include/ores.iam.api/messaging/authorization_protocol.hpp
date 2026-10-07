@@ -36,7 +36,7 @@ namespace ores::iam::messaging {
 
 struct assign_role_request {
     using response_type = struct assign_role_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.assign";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.assign_role";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -62,7 +62,7 @@ struct assign_role_by_name_response {
 
 struct assign_role_by_name_request {
     using response_type = struct assign_role_by_name_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.assign-by-name";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.assign_role_by_name";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -76,7 +76,7 @@ struct assign_role_by_name_request {
 
 struct revoke_role_request {
     using response_type = struct revoke_role_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.revoke";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.revoke_role";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -100,7 +100,7 @@ struct revoke_role_by_name_response {
 
 struct revoke_role_by_name_request {
     using response_type = struct revoke_role_by_name_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.revoke-by-name";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.revoke_role_by_name";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -114,7 +114,7 @@ struct revoke_role_by_name_request {
 
 struct get_account_roles_request {
     using response_type = struct get_account_roles_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.by-account";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_account_roles";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -127,7 +127,7 @@ struct get_account_roles_request {
 
 struct get_my_roles_request {
     using response_type = struct get_account_roles_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.mine";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_my_roles";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -162,7 +162,7 @@ struct get_account_roles_response {
 
 struct get_role_permissions_request {
     using response_type = struct get_role_permissions_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_role_permissions";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -191,7 +191,7 @@ struct get_role_permissions_response {
  */
 struct put_role_permissions_request {
     using response_type = struct get_role_permissions_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.permissions.put";
+    static constexpr std::string_view nats_subject = "iam.v1.roles_permissions.put";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -207,7 +207,7 @@ struct put_role_permissions_request {
 
 struct suggest_role_commands_request {
     using response_type = struct suggest_role_commands_response;
-    static constexpr std::string_view nats_subject = "iam.v1.roles.suggest-commands";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.suggest_role_commands";
     /**
      * @brief Whether the caller must have established a session first.
      *

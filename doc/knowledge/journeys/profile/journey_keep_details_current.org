@@ -102,7 +102,7 @@ operation exists and the caller may not use it.
 
 1. *No self-service update.* There is no subject for a member to write their own
    contact record. The candidate is
-   =iam.v1.account_contact_informations.update-self=, restricted to the caller's
+   =iam.v1.ops.update_self_account_contact_information=, restricted to the caller's
    own account and to the fields a member owns. Until it exists, the screen must
    show the contact panel read-only and say that a tenant administrator makes
    the change.
@@ -112,7 +112,7 @@ operation exists and the caller may not use it.
    =ores.assets= that returns an image id.
 3. *Two email fields.* =account.email= is the login address and
    =account_contact_information.email= is the contact address. The member can
-   change the first through =iam.v1.accounts.update-email=, but not the second.
+   change the first through =iam.v1.ops.update_my_email=, but not the second.
    The screen must label them, so the member does not expect one to change the
    other.
 4. *No self read.* The account read needs =iam::accounts:read=, which the

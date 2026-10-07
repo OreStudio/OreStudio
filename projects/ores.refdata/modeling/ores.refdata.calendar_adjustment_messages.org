@@ -116,7 +116,7 @@ ISO-8601 dates to treat as business days despite the built-in rules.
 
 ** get_calendar_adjustments_request
 :PROPERTIES:
-:subject: refdata.v1.calendar_adjustments.export
+:subject: refdata.v1.ops.get_calendar_adjustments
 :response: get_calendar_adjustments_response
 :END:
 

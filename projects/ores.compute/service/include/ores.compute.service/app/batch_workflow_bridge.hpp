@@ -38,7 +38,7 @@ namespace ores::compute::service::app {
  *
  * This poller runs every @p interval_seconds seconds.  For each pending
  * link it loads the batch; if the batch is "closed" it publishes a
- * step_completed_event to workflow.v1.events.step-completed and removes
+ * step_completed_event to workflow.v1.ops.step_completed and removes
  * the link row, allowing the workflow engine to advance to the next step.
  *
  * Runs as an async coroutine co-spawned alongside compute_grid_poller.

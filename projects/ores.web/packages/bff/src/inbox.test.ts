@@ -176,7 +176,7 @@ function buildTestServer(answers: Record<string, Answer>) {
 describe('inbox routes', () => {
     it('answers the signed-in person own requests with the roles asked for and the decider name', async () => {
         const { server, cookies } = buildTestServer({
-            'inbox.v1.approval-requests.mine': {
+            'inbox.v1.ops.list_my_approval_requests': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
@@ -227,7 +227,7 @@ describe('inbox routes', () => {
 
     it('still answers a request when every join behind it is refused', async () => {
         const { server, cookies } = buildTestServer({
-            'inbox.v1.approval-requests.mine': {
+            'inbox.v1.ops.list_my_approval_requests': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
@@ -262,7 +262,7 @@ describe('inbox routes', () => {
 
     it('gives up the whole roles join when the first read of it is refused', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.approval-requests.mine': {
+            'inbox.v1.ops.list_my_approval_requests': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
@@ -284,7 +284,7 @@ describe('inbox routes', () => {
 
     it('sends the page the screen asked for', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.approval-requests.mine': { result: OK, requests: [], total: 0 },
+            'inbox.v1.ops.list_my_approval_requests': { result: OK, requests: [], total: 0 },
         });
 
         const response = await server.inject({
@@ -297,7 +297,7 @@ describe('inbox routes', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ items: [], total: 0 });
         expect(calls[0]).toEqual({
-            subject: 'inbox.v1.approval-requests.mine',
+            subject: 'inbox.v1.ops.list_my_approval_requests',
             body: { offset: 20, limit: 10 },
         });
         expect(calls).toHaveLength(1);
@@ -305,7 +305,7 @@ describe('inbox routes', () => {
 
     it('asks for the roles the person named, for the reason they gave', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'iam.v1.role-requests.ask': { result: OK, request_id: REQUEST },
+            'iam.v1.ops.ask_for_roles': { result: OK, request_id: REQUEST },
         });
 
         const response = await server.inject({
@@ -320,7 +320,7 @@ describe('inbox routes', () => {
         expect(response.json()).toEqual({ requestId: REQUEST });
         expect(calls).toEqual([
             {
-                subject: 'iam.v1.role-requests.ask',
+                subject: 'iam.v1.ops.ask_for_roles',
                 body: { role_ids: [TRADING, AUDIT], reason: 'Desk cover' },
             },
         ]);
@@ -344,7 +344,7 @@ describe('inbox routes', () => {
 
     it('passes on the server words when it refuses an ask', async () => {
         const { server, cookies } = buildTestServer({
-            'iam.v1.role-requests.ask': {
+            'iam.v1.ops.ask_for_roles': {
                 result: {
                     outcome: 'denied',
                     code: 'forbidden',
@@ -367,7 +367,7 @@ describe('inbox routes', () => {
 
     it('takes back a request against the version the person read', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.approval-requests.withdraw': { result: OK, request: null },
+            'inbox.v1.ops.withdraw_approval': { result: OK, request: null },
         });
 
         const response = await server.inject({
@@ -381,7 +381,7 @@ describe('inbox routes', () => {
         expect(response.statusCode).toBe(204);
         expect(calls).toEqual([
             {
-                subject: 'inbox.v1.approval-requests.withdraw',
+                subject: 'inbox.v1.ops.withdraw_approval',
                 body: { request_id: REQUEST, version: 3, comment: 'Sorted it myself' },
             },
         ]);
@@ -404,7 +404,7 @@ describe('inbox routes', () => {
 
     it('answers the queue the server picked, with no decision looked for', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.approval-requests.queue': {
+            'inbox.v1.ops.list_approval_queue': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
@@ -440,7 +440,7 @@ describe('inbox routes', () => {
 
     it('decides a request against the version read, in the server own words', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.approval-requests.decide': { result: OK, request: null },
+            'inbox.v1.ops.decide_approval': { result: OK, request: null },
         });
 
         const response = await server.inject({
@@ -454,7 +454,7 @@ describe('inbox routes', () => {
         expect(response.statusCode).toBe(204);
         expect(calls).toEqual([
             {
-                subject: 'inbox.v1.approval-requests.decide',
+                subject: 'inbox.v1.ops.decide_approval',
                 body: {
                     request_id: REQUEST,
                     version: 3,
@@ -485,7 +485,7 @@ describe('inbox routes', () => {
 
     it('answers the notifications, unread only when the bell asks for that', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.notifications.mine': {
+            'inbox.v1.ops.list_my_notifications': {
                 result: OK,
                 notifications: [
                     {
@@ -533,7 +533,7 @@ describe('inbox routes', () => {
 
     it('answers how many notifications are unread', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.notifications.unread-count': { result: OK, unread: 3 },
+            'inbox.v1.ops.count_unread_notifications': { result: OK, unread: 3 },
         });
 
         const response = await server.inject({
@@ -545,12 +545,12 @@ describe('inbox routes', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ unread: 3 });
-        expect(calls).toEqual([{ subject: 'inbox.v1.notifications.unread-count', body: {} }]);
+        expect(calls).toEqual([{ subject: 'inbox.v1.ops.count_unread_notifications', body: {} }]);
     });
 
     it('marks the notifications the bell named read', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.notifications.mark-read': { result: OK, marked: 2 },
+            'inbox.v1.ops.mark_notifications_read': { result: OK, marked: 2 },
         });
 
         const response = await server.inject({
@@ -565,7 +565,7 @@ describe('inbox routes', () => {
         expect(response.json()).toEqual({ marked: 2 });
         expect(calls).toEqual([
             {
-                subject: 'inbox.v1.notifications.mark-read',
+                subject: 'inbox.v1.ops.mark_notifications_read',
                 body: { notification_ids: [NOTICE, REQUEST] },
             },
         ]);
@@ -573,8 +573,8 @@ describe('inbox routes', () => {
 
     it('reads an empty list as every notification, for marking and for clearing', async () => {
         const { server, cookies, calls } = buildTestServer({
-            'inbox.v1.notifications.mark-read': { result: OK, marked: 4 },
-            'inbox.v1.notifications.clear': { result: OK, cleared: 4 },
+            'inbox.v1.ops.mark_notifications_read': { result: OK, marked: 4 },
+            'inbox.v1.ops.clear_notifications': { result: OK, cleared: 4 },
         });
 
         const marked = await server.inject({
@@ -594,8 +594,8 @@ describe('inbox routes', () => {
         expect(marked.json()).toEqual({ marked: 4 });
         expect(cleared.json()).toEqual({ cleared: 4 });
         expect(calls).toEqual([
-            { subject: 'inbox.v1.notifications.mark-read', body: { notification_ids: [] } },
-            { subject: 'inbox.v1.notifications.clear', body: { notification_ids: [] } },
+            { subject: 'inbox.v1.ops.mark_notifications_read', body: { notification_ids: [] } },
+            { subject: 'inbox.v1.ops.clear_notifications', body: { notification_ids: [] } },
         ]);
     });
 
@@ -644,7 +644,7 @@ describe('inbox routes', () => {
 
     it('refuses every inbox route without a session', async () => {
         const { server, cookies } = buildTestServer({
-            'inbox.v1.notifications.unread-count': { result: OK, unread: 0 },
+            'inbox.v1.ops.count_unread_notifications': { result: OK, unread: 0 },
         });
 
         const withoutCookie = await Promise.all([

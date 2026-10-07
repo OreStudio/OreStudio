@@ -61,7 +61,7 @@ public:
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Serves iam.v1.run_grants.create.
+     * @brief Serves iam.v1.run_grants.put.
      */
     void create(ores::nats::message msg) {
         handle<create_run_grant_request>(
@@ -69,7 +69,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.run_grants.revoke.
+     * @brief Serves iam.v1.ops.revoke_run_grant.
      */
     void revoke(ores::nats::message msg) {
         handle<revoke_run_grant_request>(
@@ -77,7 +77,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.run_grants.exchange.
+     * @brief Serves iam.v1.ops.exchange_run_grant.
      */
     void exchange(ores::nats::message msg) {
         handle<exchange_run_grant_request>(

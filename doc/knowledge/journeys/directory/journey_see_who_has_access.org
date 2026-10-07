@@ -105,7 +105,7 @@ Those columns are secret.
 | Attach the sign-in state | List the tenant's login records | =iam.v1.login_info.list= | exists |
 | Attach the parties | List one account's party links | =iam.v1.account_parties.list_by_account_id= | exists |
 | Attach the parties | Resolve the party ids to names | =refdata.v1.parties.get_many= | exists |
-| Attach the roles | List one account's roles | =iam.v1.roles.by-account= | exists |
+| Attach the roles | List one account's roles | =iam.v1.ops.get_account_roles= | exists |
 | Read a row in full | Read one account by key | =iam.v1.accounts.get= | exists |
 | Open an account | Read one account's login record | =iam.v1.login_info.get= | exists |
 | Open an account | List one account's sessions, newest first | =iam.v1.sessions.list= with an account filter | missing |
@@ -135,9 +135,9 @@ roster, because the roster needs the login state and the assignments as well.
    username, state or sign-in date. The screen loads pages, sorts them and
    filters them in the client. The candidate is a filter and a sort on the list
    request, or on the joined read.
-3. *Roles are read one account at a time.* =iam.v1.roles.by-account= takes one
+3. *Roles are read one account at a time.* =iam.v1.ops.get_account_roles= takes one
    =account_id=. There is no bulk read for a page of accounts. The candidate is
-   =iam.v1.roles.by-accounts=.
+   =iam.v1.ops.get_account_roless=.
 4. *Party names need a second call.* The link carries a =party_id= only, so the
    screen resolves the names with =refdata.v1.parties.get_many=. The joined read
    should carry the name, or the link should.

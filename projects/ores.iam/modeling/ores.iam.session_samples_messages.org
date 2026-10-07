@@ -54,7 +54,7 @@ The session_samples protocol messages.
 
 ** get_session_samples_request
 :PROPERTIES:
-:subject: iam.v1.sessions.samples
+:subject: iam.v1.ops.get_session_samples
 :response: get_session_samples_response
 :END:
 

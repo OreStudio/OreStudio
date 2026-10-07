@@ -181,9 +181,9 @@ export interface ExportTradesToStorageResponse {
 }
 
 export const subjects = {
-    book_trade_request: 'trading.v1.trades.book',
-    export_portfolio_request: 'trading.v1.trades.portfolio.export',
-    export_trades_to_storage_request: 'trading.v1.trades.export-to-storage',
+    book_trade_request: 'trading.v1.ops.book_trade',
+    export_portfolio_request: 'trading.v1.ops.export_portfolio',
+    export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

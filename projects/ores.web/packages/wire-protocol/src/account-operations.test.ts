@@ -45,14 +45,14 @@ describe('setAccountsLocked', () => {
     it('uses the lock subject when locking', async () => {
         const caller = scriptedCaller({ results: [{ success: true, message: '' }] });
         await setAccountsLocked(caller, { accountIds: ['a'], locked: true });
-        expect(caller.subjects).toEqual(['iam.v1.accounts.lock']);
+        expect(caller.subjects).toEqual(['iam.v1.ops.lock_account']);
         expect(caller.bodies[0]).toEqual({ account_ids: ['a'] });
     });
 
     it('uses the unlock subject when unlocking', async () => {
         const caller = scriptedCaller({ results: [] });
         await setAccountsLocked(caller, { accountIds: [], locked: false });
-        expect(caller.subjects).toEqual(['iam.v1.accounts.unlock']);
+        expect(caller.subjects).toEqual(['iam.v1.ops.unlock_account']);
     });
 
     it('returns the per-account results rather than collapsing them', async () => {

@@ -530,7 +530,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.auth.registration-policy.
+     * @brief Serves iam.v1.ops.registration_policy.
      *
      * The one question the door asks before it offers a form. It answers the
      * deployment's switch, whether a registration also waits on an approval,
@@ -879,7 +879,7 @@ public:
     }
 
     /**
-     * @brief Serves iam.v1.auth.password-policy.
+     * @brief Serves iam.v1.ops.get_password_policy.
      *
      * The rules the server enforces, answered from the validator that enforces
      * them, so a screen states the server's rules rather than keeping a copy.

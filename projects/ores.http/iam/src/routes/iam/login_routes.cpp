@@ -130,9 +130,9 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     BOOST_LOG_SEV(lg(), info) << "Registering login routes";
 
     auto login_route =
-        router->post("/api/v1/iam/auth/login")
+        router->post("/api/v1/iam/ops/login")
             .summary("Login")
-            .description("Forwards to the iam.v1.auth.login operation.")
+            .description("Forwards to the iam.v1.ops.login operation.")
             .tags({"iam"})
             .auth_optional()
             .body<messaging::login_request>()
@@ -143,9 +143,9 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     registry->register_route(login_built);
 
     auto logout_route =
-        router->post("/api/v1/iam/auth/logout")
+        router->post("/api/v1/iam/ops/logout")
             .summary("Logout")
-            .description("Forwards to the iam.v1.auth.logout operation.")
+            .description("Forwards to the iam.v1.ops.logout operation.")
             .tags({"iam"})
             .auth_required()
             .body<messaging::logout_request>()

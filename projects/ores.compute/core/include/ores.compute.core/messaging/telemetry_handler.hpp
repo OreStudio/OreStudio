@@ -65,7 +65,7 @@ public:
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Handle compute.v1.telemetry.get_grid_stats (request/reply).
+     * @brief Handle compute.v1.ops.get_grid_stats (request/reply).
      *
      * Returns the most recent grid sample and per-node summaries from
      * TimescaleDB. No live aggregation is performed.
@@ -133,7 +133,7 @@ public:
     }
 
     /**
-     * @brief Handle compute.v1.telemetry.node_samples (fire-and-forget
+     * @brief Handle compute.v1.ops.node_sample (fire-and-forget
      * publish from wrapper nodes).
      *
      * Deserialises the node_sample_message and persists it to the

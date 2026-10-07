@@ -25,7 +25,7 @@
  * Node Sample Table
  *
  * One wrapper node's report, published fire-and-forget on
- * compute.v1.telemetry.node_samples and written here by the service. The
+ * compute.v1.ops.node_sample and written here by the service. The
  * rows are append-only, one per node per interval, and the dashboard shows
  * the newest row of each node.
  *

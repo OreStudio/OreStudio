@@ -12,8 +12,8 @@
 * Summary
 
 Two read-only operations answer questions about observations that are
-already stored. =marketdata.v1.curve-snapshot.get= returns the latest value
-of every point of one series. =marketdata.v1.curve-snapshot.buckets= returns
+already stored. =marketdata.v1.curve_snapshot.get= returns the latest value
+of every point of one series. =marketdata.v1.ops.get_curve_snapshot_buckets= returns
 the same kind of read repeated over a window of time, which is the cut. Both
 are served by =curve_snapshot_handler= in
 =projects/ores.marketdata/core/include/ores.marketdata.core/messaging/curve_snapshot_handler.hpp=.

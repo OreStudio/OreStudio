@@ -124,13 +124,13 @@ screen keeps the two apart.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Before the screen: a wrapper publishes engine logs in batches | Publish a batch of entries | =telemetry.v1.logs.publish= | exists |
+| Before the screen: a wrapper publishes engine logs in batches | Publish a batch of entries | =telemetry.v1.ops.publish_log_entries= | exists |
 | Open the screen | Read the entries a filter selects | =telemetry.v1.logs.list= | exists |
 | Set the range and the filters | Read the entries the query selects | carried by =telemetry.v1.logs.list= | exists |
 | Read the table and open one entry | Read every field of each selected entry | carried by =telemetry.v1.logs.list= | exists |
 | Page | Read one page and the total that match | carried by =telemetry.v1.logs.list= | exists |
 | Follow one sign-in | Read the entries of one session | carried by =telemetry.v1.logs.list= | exists |
-| Follow a client's lines | Read entries whose source is client | =telemetry.v1.logs.publish= | partial |
+| Follow a client's lines | Read entries whose source is client | =telemetry.v1.ops.publish_log_entries= | partial |
 
 =telemetry.v1.logs.list= is served by the [[id:F83BEB1B-FD97-4159-887F-B30AFAF64E0E][logs model]]. Its request
 carries a query whose filter fields are all optional and combine with AND: a
@@ -138,7 +138,7 @@ range, a source, a source name, a session, an account, a level, a minimum
 level, a component, a tag and free text for the message. Its reply carries
 =success=, =message=, the entries and the total count.
 
-=telemetry.v1.logs.publish= is ingested and fire-and-forget. The compute
+=telemetry.v1.ops.publish_log_entries= is ingested and fire-and-forget. The compute
 wrapper publishes batches of engine lines, and the telemetry service stamps
 every ingested entry as a server entry and stores it. The message is declared
 with auth =none=, because the publishing node has no session.

@@ -182,9 +182,9 @@ export interface GetServiceRosterResponse {
 }
 
 export const subjects = {
-    service_heartbeat_message: 'telemetry.v1.services.heartbeat',
+    service_heartbeat_message: 'telemetry.v1.ops.service_heartbeat',
     get_service_samples_request: 'telemetry.v1.services.list',
-    get_service_roster_request: 'telemetry.v1.services.roster',
+    get_service_roster_request: 'telemetry.v1.ops.get_service_roster',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

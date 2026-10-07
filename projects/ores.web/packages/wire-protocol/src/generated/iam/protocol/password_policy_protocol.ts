@@ -36,7 +36,7 @@ export interface GetPasswordPolicyResponse {
 }
 
 export const subjects = {
-    get_password_policy_request: 'iam.v1.auth.password-policy',
+    get_password_policy_request: 'iam.v1.ops.get_password_policy',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

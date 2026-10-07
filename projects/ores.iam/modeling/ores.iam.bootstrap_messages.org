@@ -27,7 +27,7 @@ The bootstrap protocol messages.
 
 ** bootstrap_status_request
 :PROPERTIES:
-:subject: iam.v1.bootstrap.status
+:subject: iam.v1.ops.bootstrap_status
 :auth: none
 :response: bootstrap_status_response
 :http_route: true
@@ -85,7 +85,7 @@ The bootstrap protocol messages.
 
 ** create_initial_admin_request
 :PROPERTIES:
-:subject: iam.v1.bootstrap.create-admin
+:subject: iam.v1.ops.create_initial_admin
 :auth: none
 :response: create_initial_admin_response
 :http_route: true

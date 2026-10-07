@@ -288,7 +288,7 @@
                 : '') +
             '<ul class="srows">' + rows + '</ul>' +
             '<p class="tiny faint" style="font-size:0.75rem">End session is drawn unavailable, not simulated: ' +
-            'iam.v1.sessions.end does not exist, and iam.v1.auth.logout ends only this session.</p>' +
+            'iam.v1.sessions.end does not exist, and iam.v1.ops.logout ends only this session.</p>' +
             '</section>';
     }
 
@@ -296,7 +296,7 @@
         var rows = [
             ['missing', 'End one other session \u2014 candidate ', 'iam.v1.sessions.end', ''],
             ['missing', 'Two-factor enrolment \u2014 candidate ', 'iam.v1.accounts.enrol-totp', ''],
-            ['partial', 'Active sessions \u2014 ', 'iam.v1.sessions.active',
+            ['partial', 'Active sessions \u2014 ', 'iam.v1.ops.get_active_sessions',
              ' replies with success and no rows, and no route serves it in the browser'],
             ['missing', 'Session statistics \u2014 candidate ', 'iam.v1.sessions.statistics', '']
         ].map(function (row) {

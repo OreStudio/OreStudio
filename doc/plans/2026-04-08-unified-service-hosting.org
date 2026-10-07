@@ -20,7 +20,7 @@ uses the same lifecycle primitives from =ores.service=.
 * Goals
 
 - Every service publishes heartbeats via =heartbeat_publisher= to the single
-  standard subject =telemetry.v1.services.heartbeat=.
+  standard subject =telemetry.v1.ops.service_heartbeat=.
 - Every service lifecycle (signal handling, JWKS fetch, JWT verifier, drain) is
   managed by a runner from =ores.service=, not hand-rolled per service.
 - =ores.http.server= and =ores.wt.service= obtain a JWT verifier at startup
@@ -39,7 +39,7 @@ uses the same lifecycle primitives from =ores.service=.
 
 | Service                   | Runner              | JWKS / verifier    | Heartbeat subject           | Dashboard status source  |
 |---------------------------+---------------------+--------------------+-----------------------------+--------------------------|
-| trading, analytics, +13   | domain_service_runner | fetched from IAM | telemetry.v1.services.heartbeat | NATS telemetry ("Online") |
+| trading, analytics, +13   | domain_service_runner | fetched from IAM | telemetry.v1.ops.service_heartbeat | NATS telemetry ("Online") |
 | =ores.iam.service=        | hand-rolled         | creates signer     | none                        | controller phase only    |
 | =ores.http.server=        | hand-rolled         | none               | none                        | controller phase only    |
 | =ores.wt.service=         | none (Wt blocks)    | none               | none                        | controller phase only    |
@@ -49,11 +49,11 @@ uses the same lifecycle primitives from =ores.service=.
 
 | Service                   | Runner                    | JWKS / verifier    | Heartbeat subject              |
 |---------------------------+---------------------------+--------------------+--------------------------------|
-| trading, analytics, +13   | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
-| =ores.iam.service=        | signing_service_runner    | creates signer     | telemetry.v1.services.heartbeat |
-| =ores.http.server=        | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
-| =ores.wt.service=         | wt_service_runner         | fetched from IAM   | telemetry.v1.services.heartbeat |
-| =ores.compute.wrapper=    | domain_service_runner     | fetched from IAM   | telemetry.v1.services.heartbeat |
+| trading, analytics, +13   | domain_service_runner     | fetched from IAM   | telemetry.v1.ops.service_heartbeat |
+| =ores.iam.service=        | signing_service_runner    | creates signer     | telemetry.v1.ops.service_heartbeat |
+| =ores.http.server=        | domain_service_runner     | fetched from IAM   | telemetry.v1.ops.service_heartbeat |
+| =ores.wt.service=         | wt_service_runner         | fetched from IAM   | telemetry.v1.ops.service_heartbeat |
+| =ores.compute.wrapper=    | domain_service_runner     | fetched from IAM   | telemetry.v1.ops.service_heartbeat |
 
 * Architecture
 
@@ -290,9 +290,9 @@ Use the no-database overload of =domain_service_runner::run()=.
 - =register_fn= (signature: =nats=, =verifier=) registers the JetStream work
   queue subscription and result reply handler.
 - =on_started= spawns:
-  1. =heartbeat_publisher= with subject =telemetry.v1.services.heartbeat=
+  1. =heartbeat_publisher= with subject =telemetry.v1.ops.service_heartbeat=
      (replaces the custom heartbeat on =compute.v1.heartbeat=).
-  2. =node_stats_reporter= on its existing =compute.v1.telemetry.node_samples=
+  2. =node_stats_reporter= on its existing =compute.v1.ops.node_sample=
      subject (unaffected — this is compute-node metrics, not service health).
 - =on_shutdown= stops the work queue and stats reporter cleanly.
 - Remove the hand-rolled signal handling and the custom heartbeat loop.
@@ -305,7 +305,7 @@ stays (it drives =node_stats_reporter=).
 
 *File:* =projects/ores.qt/src/ServiceDashboardMdiWindow.cpp=
 
-Once all five services emit =telemetry.v1.services.heartbeat=:
+Once all five services emit =telemetry.v1.ops.service_heartbeat=:
 
 - Remove the fallback branch that uses controller instance =phase= to show
   "Running" for services with no heartbeat samples.

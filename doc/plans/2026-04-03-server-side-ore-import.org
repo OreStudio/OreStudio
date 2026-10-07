@@ -46,11 +46,11 @@ surface is now =ores.shell=, and the read surface is =ores.web=.
 #+begin_src
 Qt client
   1. storage_transfer::pack_and_upload(ore_dir, "ore-imports", "{id}.tar.gz")
-  2. NATS request → workflow.v1.ore.import { request_id, import_choices_json }
+  2. NATS request → workflow.v1.ops.ore_import { request_id, import_choices_json }
   3. Await ore_import_response; display item_errors
 
 ores.ore.service
-  1. Receive + authenticate workflow.v1.ore.import
+  1. Receive + authenticate workflow.v1.ops.ore_import
   2. Create workflow_instance (type=ore_import, status=in_progress)
   3. storage_transfer::fetch_and_unpack("ore-imports", "{id}.tar.gz", work_dir/{id}/)
   4. ore_directory_scanner::scan(work_dir/{id}/)
@@ -207,7 +207,7 @@ struct ore_import_item_error {
 
 struct ore_import_request {
     using response_type = ore_import_response;
-    static constexpr std::string_view nats_subject = "workflow.v1.ore.import";
+    static constexpr std::string_view nats_subject = "workflow.v1.ops.ore_import";
     std::string request_id;
     std::string import_choices_json;
     std::string correlation_id;
@@ -258,7 +258,7 @@ ores.ore.service/
   config/options.hpp/.cpp        — db, nats, work_dir, http_base_url
   config/parser.hpp/.cpp
   app/application.hpp/.cpp       — boots NATS + DB, domain_service_runner
-  messaging/registrar.hpp/.cpp   — subscribes to workflow.v1.ore.import
+  messaging/registrar.hpp/.cpp   — subscribes to workflow.v1.ops.ore_import
   messaging/ore_import_handler.hpp/.cpp
   service/ore_import_workflow.hpp/.cpp
   main.cpp
@@ -356,7 +356,7 @@ scanner, the planner, and the trade mappers the handlers drive. The
 1. Generate ~request_id~ UUID at wizard entry.
 2. Call ~storage_transfer::pack_and_upload(ore_dir, "ore-imports",
    ore_storage::import_key(request_id))~.
-3. On success, send NATS request to ~workflow.v1.ore.import~.
+3. On success, send NATS request to ~workflow.v1.ops.ore_import~.
 4. Await ~ore_import_response~; display ~item_errors~ grouped by ~source_file~.
 5. Show ~correlation_id~ on summary page for support reference.
 

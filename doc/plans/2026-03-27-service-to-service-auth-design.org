@@ -42,7 +42,7 @@ workaround with a proper service-to-service authentication mechanism.
    separate credential management system.
 
 4. *Token refresh, not re-login.*  Services acquire a JWT at startup and refresh
-   it before it expires using the existing =iam.v1.auth.refresh= endpoint,
+   it before it expires using the existing =iam.v1.ops.refresh= endpoint,
    exactly as the shell client does.
 
 * Architecture Overview
@@ -51,7 +51,7 @@ workaround with a proper service-to-service authentication mechanism.
   Service (e.g. reporting)           IAM Service
   ──────────────────────────         ────────────
   startup:
-    send iam.v1.auth.service-login ──► validate DB password hash
+    send iam.v1.ops.service_login ──► validate DB password hash
     (username, db_password)            start_service_session()
     ◄── JWT token ──────────────────── sign + return JWT
 
@@ -60,7 +60,7 @@ workaround with a proper service-to-service authentication mechanism.
       {"Authorization": "Bearer <jwt>"})
 
   before token expires:
-    send iam.v1.auth.refresh ────────► validate (allow-expired)
+    send iam.v1.ops.refresh ────────► validate (allow-expired)
     ◄── new JWT ─────────────────────── re-sign
 #+END_SRC
 
@@ -81,7 +81,7 @@ the bcrypt hash.
 | Service accounts seeded | =ores.sql/populate/iam/iam_service_accounts_populate.sql= | ✅ 18 accounts |
 | =service_session_service= | =ores.iam.core/service/service_session_service= | ✅ Implemented |
 | RS256 JWT signer | =ores.security/jwt/jwt_authenticator= | ✅ Implemented |
-| JWT refresh endpoint | =iam.v1.auth.refresh= | ✅ Implemented |
+| JWT refresh endpoint | =iam.v1.ops.refresh= | ✅ Implemented |
 | =authenticated_request()= helper | =ores.shell/src/service/nats_session.cpp= | ✅ Used by Qt |
 | Service DB passwords | =.env= | ✅ Defined |
 
@@ -126,14 +126,14 @@ select ores_iam_service_accounts_upsert_fn(
 The psql =`echo $VAR`= back-tick syntax expands the shell variable at execution
 time, so the password never appears in a committed SQL file.
 
-*** 1.3  Add =iam.v1.auth.service-login= NATS subject
+*** 1.3  Add =iam.v1.ops.service_login= NATS subject
 
 Add to =ores.iam.api/messaging/login_protocol.hpp=:
 
 #+BEGIN_SRC cpp
 struct service_login_request {
     static constexpr std::string_view nats_subject =
-        "iam.v1.auth.service-login";
+        "iam.v1.ops.service_login";
     std::string username;   // e.g. "reporting_service@system.ores"
     std::string password;   // plaintext DB password (only over loopback/NATS)
 };
@@ -159,7 +159,7 @@ In =ores.iam.core/messaging/auth_handler.hpp=:
 
 Register in =registrar.cpp=:
 #+BEGIN_SRC cpp
-nats_.subscribe("iam.v1.auth.service-login",
+nats_.subscribe("iam.v1.ops.service_login",
     [this](auto msg) { handler_.service_login(std::move(msg)); });
 #+END_SRC
 
@@ -198,10 +198,10 @@ private:
 };
 #+END_SRC
 
-=authenticate()= sends =iam.v1.auth.service-login= and stores the returned JWT.
+=authenticate()= sends =iam.v1.ops.service_login= and stores the returned JWT.
 
 =authenticated_request()= calls =refresh_if_needed()= (which fires
-=iam.v1.auth.refresh= if within the margin window) then calls
+=iam.v1.ops.refresh= if within the margin window) then calls
 =nats_.request_sync(subject, body, {{"Authorization", "Bearer " + jwt_}})=.
 
 ** Phase 3 — Wire into outbound-calling services
@@ -322,7 +322,7 @@ Add role assignments to =iam_service_accounts_populate.sql=.
 
 - =projects/ores.iam.api/include/ores.iam.api/messaging/login_protocol.hpp= — add =service_login_request= / =service_login_response=
 - =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp= — add =service_login()= method
-- =projects/ores.iam.core/src/messaging/registrar.cpp= — register =iam.v1.auth.service-login=
+- =projects/ores.iam.core/src/messaging/registrar.cpp= — register =iam.v1.ops.service_login=
 - =projects/ores.sql/create/iam/iam_functions_create.sql= — extend =ores_iam_service_accounts_upsert_fn()=
 - [[proj:projects/ores.sql/populate/iam/iam_service_accounts_populate.sql][=projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=]] — pass passwords
 - =projects/ores.reporting.service/src/app/application.cpp= — create =service_nats_client=, pass to scheduling service

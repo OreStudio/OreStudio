@@ -101,7 +101,7 @@ instances in ~pending~ or one of the terminal initial states.
 The user creates a ~report_definition~ (and a companion ~risk_report_config~
 for type ~risk~), then requests scheduling via the UI or API.
 
-The reporting service handles ~reporting.v1.report-definitions.schedule~:
+The reporting service handles ~reporting.v1.ops.schedule_report_definitions~:
 
 1. Validates the cron expression.
 2. Builds a scheduler ~job_definition~ with ~action_type = nats_publish~

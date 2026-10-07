@@ -42,7 +42,7 @@ export interface RegenerateCalendarDatesResponse {
 }
 
 export const subjects = {
-    regenerate_calendar_dates_request: 'refdata.v1.calendar_dates.regenerate',
+    regenerate_calendar_dates_request: 'refdata.v1.ops.regenerate_calendar_dates',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

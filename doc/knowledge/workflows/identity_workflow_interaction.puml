@@ -33,7 +33,7 @@ loop each declared step, in order
     engine -> db : record the step in progress
     engine -> handler : workflow.v1.identity.step\n(the step, the instance, the tenant)
     handler -> handler : wait, if the request asked it to
-    handler -> engine : workflow.v1.events.step-completed\n(completed, completed with warnings, or failed)
+    handler -> engine : workflow.v1.ops.step_completed\n(completed, completed with warnings, or failed)
     engine -> db : record the outcome
 
 end
@@ -48,7 +48,7 @@ else a step failed
 
     opt a completed step declared a compensation
         engine -> handler : workflow.v1.identity.compensate\n(the step, the instance, the tenant)
-        handler -> engine : workflow.v1.events.step-completed
+        handler -> engine : workflow.v1.ops.step_completed
         engine -> db : record the compensation,\nat a negative step index
     end
 
@@ -56,6 +56,6 @@ else a step failed
 
 end
 
-client -> db : read the progress\n(workflow.v1.instances.steps)
+client -> db : read the progress\n(workflow.v1.ops.get_workflow_steps)
 
 @enduml

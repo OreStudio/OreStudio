@@ -19,7 +19,7 @@
 
 title The provision request: the fields the caller supplies
 
-class "provision tenant request\n(iam.v1.tenants.provision)" as provision_request <<message>> #E1F5FF {
+class "provision tenant request\n(iam.v1.ops.provision_tenant)" as provision_request <<message>> #E1F5FF {
     {field} +starting point : code
     {field} +tenant code : text
     {field} +tenant name : text

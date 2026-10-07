@@ -135,7 +135,7 @@ DB, shared schema). Subsequent requests for the same session hit the cache.
 
 | Subject                        | Direction      | Description                                       |
 |--------------------------------+----------------+---------------------------------------------------|
-| =ores.iam.v1.auth.login=       | client → IAM   | Modified: returns party list + interim token      |
+| =ores.iam.v1.ops.login=       | client → IAM   | Modified: returns party list + interim token      |
 | =ores.iam.v1.auth.select_party= | client → IAM  | New: accepts interim token + party_id, returns JWT |
 | =ores.iam.v1.auth.jwks=        | service → IAM  | New: returns public key in JWKS format            |
 

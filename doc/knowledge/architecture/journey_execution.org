@@ -164,11 +164,11 @@ it removes the seam rather than policing it.
 | [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]], with =workflow_instance= and =workflow_step= | Exists |
 | [[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal actor impersonation]], for a service acting as a person | Exists |
 | =account_setup_service=, the first coordinator | Exists. =account_operations_service::create_account= takes no account type and hard-codes =user=; a separate =create_service_account= takes one and refuses =user= outright. That second entry point is the enforcement the guard rails above ask for, and it is why the defect is now a dead field rather than an impossible service account: =save_account_request= still carries an =account_type= that reaches neither of them. |
-| Workflow progress reads: =workflow.v1.instances.steps= and =workflow.v1.instances.list= | Exists, subscribed, and reached from the browser through its own route and wire-client method. A journey's rail is a rendering of the read. |
+| Workflow progress reads: =workflow.v1.ops.get_workflow_steps= and =workflow.v1.instances.list= | Exists, subscribed, and reached from the browser through its own route and wire-client method. A journey's rail is a rendering of the read. |
 | The =workflow_instance_changed= event | Exists, and the progress contract does not rest on it. Its subject matches the convention the BFF subscribes on, =ores.<component>.<entity>_changed=, but its payload does not match what the browser decodes: the engine sends an =entity_change_event= carrying =entity_ids=, and the shared browser schema reads =alpha2_codes=, a field named for the country event it was written for. Nor is there one shape to align the schema to: every entity's own event names its identifiers its own way. So a journey follows the run through the read, and the event channel is owned by [[id:767A3138-2D4C-4330-8281-DBCFEACF244D][its capture]]. |
 | Tenant provisioning through the engine | Exists. The generic provision request creates the tenant and its administrator and opens a run whose six step kinds execute. |
-| A retry or resume verb | Exists: =workflow.v1.instances.retry= resumes a run that stopped on its failed step, re-dispatching that step under its own identity and keeping every completed step. Recovery on service start stays for runs that were in progress. |
-| A generic =iam.v1.tenants.provision= that returns an instance id at once | Exists |
+| A retry or resume verb | Exists: =workflow.v1.ops.retry_workflow_instance= resumes a run that stopped on its failed step, re-dispatching that step under its own identity and keeping every completed step. Recovery on service start stays for runs that were in progress. |
+| A generic =iam.v1.ops.provision_tenant= that returns an instance id at once | Exists |
 | A seed profile: its model, its table and its read | Exists |
 | A composite account-creation subject | Missing |
 | A joined roster read | Missing |

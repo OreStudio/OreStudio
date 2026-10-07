@@ -58,7 +58,7 @@
         }
     ];
 
-    /* telemetry.v1.nats.server-samples.list: the counters run since the server
+    /* telemetry.v1.nats_server_samples.list: the counters run since the server
        started. */
     var natsServerSamples = [
         { sampledAt: '14:01:00', inMsgs: 1228110, outMsgs: 3392011, inBytes: 208666624, outBytes: 1135515648, connections: 21, memBytes: 84934656, slowConsumers: 0 },
@@ -67,7 +67,7 @@
         { sampledAt: '14:31:45', inMsgs: 1240512, outMsgs: 3410882, inBytes: 220200960, outBytes: 1181167616, connections: 23, memBytes: 88080384, slowConsumers: 0 }
     ];
 
-    /* telemetry.v1.nats.stream-samples.list: one row per stream per sample. */
+    /* telemetry.v1.nats_stream_samples.list: one row per stream per sample. */
     var natsStreamSamples = [
         { streamName: 'ORES_TRADES', messages: 12004, bytes: 88080384, consumerCount: 2 },
         { streamName: 'ORES_RESULTS', messages: 3201, bytes: 20971520, consumerCount: 1 }

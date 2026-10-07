@@ -209,8 +209,8 @@ export const subjects = {
     delete_many_composite_instruments_request: 'trading.v1.composite_instruments.delete_many',
     list_composite_instrument_versions_request: 'trading.v1.composite_instruments_versions.list',
     get_composite_instrument_version_request: 'trading.v1.composite_instruments_versions.get',
-    put_composite_instrument_with_legs_request: 'trading.v1.composite_instruments.put_with_legs',
-    get_composite_instrument_legs_request: 'trading.v1.composite_instruments.legs',
+    put_composite_instrument_with_legs_request: 'trading.v1.ops.put_composite_instrument_with_legs',
+    get_composite_instrument_legs_request: 'trading.v1.ops.get_composite_instrument_legs',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

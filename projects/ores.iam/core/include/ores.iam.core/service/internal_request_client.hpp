@@ -147,7 +147,7 @@ public:
     };
 
     /**
-     * @brief Polls a dq.v1.bundles.publish / dq.v1.datasets.publish workflow
+     * @brief Polls a dq.v1.ops.publish_bundle / dq.v1.ops.publish_datasets workflow
      * instance until it reaches a terminal state, mirroring
      * ores.shell's workflow_run_commands::wait_for_instance (client-type-coupled,
      * so not directly reusable here).

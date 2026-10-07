@@ -115,7 +115,7 @@ blocks > *** Custom message types=. See the following example, from
 ,#+begin_src cpp :name composite_as_of_messages :implements 2C4E8F1A-6B9D-4A3E-8F2C-7D1E5A9B3C6F
 struct get_party_composite_as_of_request {
     using response_type = struct get_party_composite_as_of_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.get_party_composite_as_of";
     std::string id;
     int version = 0;
 };

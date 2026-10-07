@@ -68,7 +68,7 @@ describe('readImageUploadPolicy', () => {
             ),
         );
 
-        expect(sent[0]?.subject).toBe('assets.v1.images.upload-policy');
+        expect(sent[0]?.subject).toBe('assets.v1.ops.get_image_upload_policy');
         expect(sent[0]?.body).toEqual({});
         expect(policy).toEqual({
             formats: ['image/png', 'image/jpeg', 'image/webp'],
@@ -95,7 +95,7 @@ describe('uploadImage', () => {
             data: 'aGVsbG8=',
         });
 
-        expect(sent[0]?.subject).toBe('assets.v1.images.upload');
+        expect(sent[0]?.subject).toBe('assets.v1.ops.upload_image');
         expect(sent[0]?.body).toEqual({ mime_type: 'image/png', data: 'aGVsbG8=' });
     });
 

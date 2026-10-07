@@ -22,7 +22,7 @@ How do I view the scandies CRM rates from ores.shell?
 
 The =crm rates= command
 (=projects/ores.shell/src/app/commands/crm_commands.cpp=) sends the
-same =get_crm_rates_request= (subject =marketdata.v1.crm.rates=) the
+same =get_crm_rates_request= (subject =marketdata.v1.ops.get_crm_rates=) the
 desktop client's matrix window sent and formatted through the same
 =crm_rate_formatter=. Runs in the logged-in account's own default
 party by default; expects the services up (=compass services

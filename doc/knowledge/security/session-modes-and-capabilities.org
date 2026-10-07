@@ -60,9 +60,9 @@ modelled and already answered.
 
 | What | Subject | Today |
 |------+---------+-------|
-| The roles an account holds | =iam.v1.roles.by-account= | exists, HTTP-routed |
-| The effective permissions of an account | =iam.v1.roles.permissions-by-account= | exists, HTTP-routed, answers =permission_codes= |
-| The permissions a role grants | =iam.v1.roles.permissions= | exists, HTTP-routed |
+| The roles an account holds | =iam.v1.ops.get_account_roles= | exists, HTTP-routed |
+| The effective permissions of an account | =iam.v1.ops.get_role_permissions-by-account= | exists, HTTP-routed, answers =permission_codes= |
+| The permissions a role grants | =iam.v1.ops.get_role_permissions= | exists, HTTP-routed |
 
 Permission codes follow =component::resource:action=, which is what makes them
 usable as the menu's authority: a journey declares the permission it needs, and
@@ -84,11 +84,11 @@ The split, stated once:
 |------------------+-------+------------|
 | The session view | =session=, =party_id=, =visible_party_ids=, =username= | Gains the mode, and the tenant and party the session is acting in, stated rather than inferred |
 | The login answer | The session view above | Carries the same, so the shell can draw its first frame without a second call |
-| Effective permissions | =iam.v1.roles.permissions-by-account=, keyed by =account_id= | Needs a caller's-own-account form, or a stated rule that the caller may ask for their own |
+| Effective permissions | =iam.v1.ops.get_role_permissions-by-account=, keyed by =account_id= | Needs a caller's-own-account form, or a stated rule that the caller may ask for their own |
 | The BFF | =/api/session= | Grows a route that answers the mode and the permission codes, so the browser still names no subject |
 
 Two things to confirm rather than assume, and both are small: what permission
-=iam.v1.roles.permissions-by-account= demands of its caller, and whether a
+=iam.v1.ops.get_role_permissions-by-account= demands of its caller, and whether a
 member may call it for their own account or whether a self form is needed.
 
 ** What does not change

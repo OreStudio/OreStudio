@@ -41,7 +41,7 @@ namespace ores::refdata::messaging {
  */
 struct regenerate_calendar_dates_request {
     using response_type = struct regenerate_calendar_dates_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.calendar_dates.regenerate";
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.regenerate_calendar_dates";
     /**
      * @brief Whether the caller must have established a session first.
      *

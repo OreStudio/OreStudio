@@ -80,7 +80,7 @@ that duplicates those handlers' logic is the only alternative.
    deserialises via the same typed request/response structs any other
    caller of that subject uses, and throws on transport or parse failure.
 3. *Poll*: =client.wait_for_workflow_instance(instance_id, timeout,
-   expected_steps, on_progress)= drives a =dq.v1.bundles.publish=-style
+   expected_steps, on_progress)= drives a =dq.v1.ops.publish_bundle=-style
    workflow to completion, calling =on_progress= on every step-status
    change so the orchestrator can stream human-readable progress back to
    its own caller.

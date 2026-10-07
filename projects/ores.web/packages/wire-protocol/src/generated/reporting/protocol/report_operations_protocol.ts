@@ -208,19 +208,20 @@ export interface IgnoreComputeResultsRequest {
 
 export const subjects = {
     trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
-    schedule_report_definitions_request: 'reporting.v1.report-definitions.schedule',
-    unschedule_report_definitions_request: 'reporting.v1.report-definitions.unschedule',
-    publish_report_definitions_from_dq_request: 'reporting.v1.report-definitions.publish-from-dq',
-    gather_trades_request: 'reporting.v1.report.gather-trades',
-    gather_market_data_request: 'reporting.v1.report.gather-market-data',
-    assemble_bundle_request: 'reporting.v1.report.assemble-bundle',
-    prepare_ore_package_request: 'ore.v1.report.prepare-package',
-    submit_compute_request: 'compute.v1.report.submit',
-    collect_compute_results_request: 'reporting.v1.report.collect-compute-results',
-    finalise_report_request: 'reporting.v1.report.finalise',
-    fail_report_request: 'reporting.v1.report.fail',
-    resolve_prepared_input_request: 'reporting.v1.report.resolve-prepared-input',
-    ignore_compute_results_request: 'reporting.v1.report.ignore-compute-results',
+    schedule_report_definitions_request: 'reporting.v1.ops.schedule_report_definitions',
+    unschedule_report_definitions_request: 'reporting.v1.ops.unschedule_report_definitions',
+    publish_report_definitions_from_dq_request:
+        'reporting.v1.ops.publish_report_definitions_from_dq',
+    gather_trades_request: 'reporting.v1.ops.gather_trades',
+    gather_market_data_request: 'reporting.v1.ops.gather_market_data',
+    assemble_bundle_request: 'reporting.v1.ops.assemble_bundle',
+    prepare_ore_package_request: 'ore.v1.ops.prepare_ore_package',
+    submit_compute_request: 'compute.v1.ops.submit_compute',
+    collect_compute_results_request: 'reporting.v1.ops.collect_compute_results',
+    finalise_report_request: 'reporting.v1.ops.finalise_report',
+    fail_report_request: 'reporting.v1.ops.fail_report',
+    resolve_prepared_input_request: 'reporting.v1.ops.resolve_prepared_input',
+    ignore_compute_results_request: 'reporting.v1.ops.ignore_compute_results',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -26,7 +26,7 @@ The command is shaped like this:
 signup signup <principal> <password> <email> <hostname>
 #+end_example
 
-It is addressed at =iam.v1.auth.signup=.
+It is addressed at =iam.v1.ops.signup=.
 
 #+name: signup-signup
 #+begin_src ores-shell :tangle signup-signup.ores :exports none

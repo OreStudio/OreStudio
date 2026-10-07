@@ -36,7 +36,7 @@ loop for each firing, in any order
     reporting -> db : count the running instances\nof the tenant and of the party
     alt under both quotas
         reporting -> db : state pending
-        reporting -> engine : workflow.v1.start
+        reporting -> engine : workflow.v1.ops.start_workflow
     else a quota is full
         reporting -> db : state queued
     end
@@ -50,12 +50,12 @@ end note
 
 == a run of tenant A reaches a terminal state ==
 
-engine -> reporting : reporting.v1.report.finalise\n(or reporting.v1.report.fail)
+engine -> reporting : reporting.v1.ops.finalise_report\n(or reporting.v1.ops.fail_report)
 reporting -> db : instance completed
 reporting -> db : lock the oldest queued instance of tenant A\nwhose party is under its quota (skip locked)
 alt a candidate exists
     reporting -> db : state pending
-    reporting -> engine : workflow.v1.start
+    reporting -> engine : workflow.v1.ops.start_workflow
 end
 reporting --> engine : step completed
 

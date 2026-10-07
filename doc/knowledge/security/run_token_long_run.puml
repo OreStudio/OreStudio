@@ -36,7 +36,7 @@ loop while the step's work continues
     alt a token with more than 20% of its life left
         cache --> handler : the run token
     else the first request, or close to expiry
-        cache -> iam : iam.v1.run_grants.exchange
+        cache -> iam : iam.v1.ops.exchange_run_grant
         iam --> cache : a signed token that lasts 5 minutes
         cache --> handler : the run token
     end

@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 struct registration_policy_request {
     using response_type = struct registration_policy_response;
-    static constexpr std::string_view nats_subject = "iam.v1.auth.registration-policy";
+    static constexpr std::string_view nats_subject = "iam.v1.ops.registration_policy";
     /**
      * @brief Whether the caller must have established a session first.
      *

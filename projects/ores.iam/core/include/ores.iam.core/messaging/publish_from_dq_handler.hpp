@@ -32,7 +32,7 @@ namespace ores::iam::messaging {
  *
  * One handler instance serves every iam publish-from-dq NATS subject.
  * The subject name is mapped to the corresponding SECURITY DEFINER SQL
- * function (e.g. "iam.v1.accounts.publish-from-dq" ->
+ * function (e.g. "iam.v1.ops.publish_accounts_from_dq" ->
  * "ores_iam_publish_accounts_from_dq_fn"), same convention as
  * ores.refdata's handler.
  */

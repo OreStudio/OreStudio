@@ -50,10 +50,10 @@ export interface AuthenticatedCaller {
 
 /** Subjects for account mutations, kept beside the operations that use them. */
 export const ACCOUNT_SUBJECTS = {
-    lock: 'iam.v1.accounts.lock',
-    unlock: 'iam.v1.accounts.unlock',
+    lock: 'iam.v1.ops.lock_account',
+    unlock: 'iam.v1.ops.unlock_account',
     delete: 'iam.v1.accounts.delete',
-    changePassword: 'iam.v1.accounts.change-password',
+    changePassword: 'iam.v1.ops.change_password',
 } as const;
 
 /**

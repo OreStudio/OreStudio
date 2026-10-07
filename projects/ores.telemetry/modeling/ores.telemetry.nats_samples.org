@@ -312,7 +312,7 @@ dashboard, which is where a person meets NATS server and stream samples.
 
 ** get_nats_server_samples_request
 :PROPERTIES:
-:subject: telemetry.v1.nats.server-samples.list
+:subject: telemetry.v1.nats_server_samples.list
 :response: get_nats_server_samples_response
 :END:
 
@@ -379,7 +379,7 @@ dashboard, which is where a person meets NATS server and stream samples.
 
 ** get_nats_stream_samples_request
 :PROPERTIES:
-:subject: telemetry.v1.nats.stream-samples.list
+:subject: telemetry.v1.nats_stream_samples.list
 :response: get_nats_stream_samples_response
 :END:
 

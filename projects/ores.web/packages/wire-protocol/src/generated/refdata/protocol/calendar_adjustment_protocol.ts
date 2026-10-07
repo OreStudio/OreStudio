@@ -61,7 +61,7 @@ export interface GetCalendarAdjustmentsResponse {
 }
 
 export const subjects = {
-    get_calendar_adjustments_request: 'refdata.v1.calendar_adjustments.export',
+    get_calendar_adjustments_request: 'refdata.v1.ops.get_calendar_adjustments',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

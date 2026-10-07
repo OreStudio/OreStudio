@@ -182,11 +182,11 @@ export interface SubmitResultResponse {
 }
 
 export const subjects = {
-    pull_work_request: 'compute.v1.work.pull',
-    work_assignment_event: 'compute.v1.work.assignments',
-    heartbeat_message: 'compute.v1.work.heartbeat',
-    reap_work_message: 'compute.v1.work.reap',
-    submit_result_request: 'compute.v1.results.submit',
+    pull_work_request: 'compute.v1.ops.pull_work',
+    work_assignment_event: 'compute.v1.ops.work_assignment',
+    heartbeat_message: 'compute.v1.ops.heartbeat',
+    reap_work_message: 'compute.v1.ops.reap_work',
+    submit_result_request: 'compute.v1.ops.submit_result',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

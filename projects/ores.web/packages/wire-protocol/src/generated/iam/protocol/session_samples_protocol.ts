@@ -42,7 +42,7 @@ export interface GetSessionSamplesResponse {
 }
 
 export const subjects = {
-    get_session_samples_request: 'iam.v1.sessions.samples',
+    get_session_samples_request: 'iam.v1.ops.get_session_samples',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

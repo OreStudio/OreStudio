@@ -141,9 +141,9 @@ rather than from the binding.
 | Read whether the source is running | List the running source names | =synthetic.v1.feed_configs.list= | exists |
 | Read the last tick | Read the tick count and last tick per source | no subject | missing |
 | Start a feed | Start one feed by config | =synthetic.v1.feed_configs.start= | exists |
-| Start a feed | Start every feed under a folder | =marketdata.v1.market_feed_configs.start_folder= | exists |
+| Start a feed | Start every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder= | exists |
 | Stop a feed | Stop one feed by config | =synthetic.v1.feed_configs.stop= | exists |
-| Stop a feed | Stop every feed under a folder | =marketdata.v1.market_feed_configs.stop_folder= | exists |
+| Stop a feed | Stop every feed under a folder | =marketdata.v1.ops.stop_feeds_under_folder= | exists |
 | Enable or disable a binding | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
 | Enable or disable a binding | Write the binding | =marketdata.v1.feed_bindings.put= | exists |
 | See a feed that has gone quiet | Read the expected tick rate | =synthetic.v1.ir_curve_generation_configs.get=, =synthetic.v1.fx_spot_generation_configs.list= | partial |

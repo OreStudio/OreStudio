@@ -93,7 +93,7 @@ export interface RegistrationPolicyResponse {
 }
 
 export const subjects = {
-    registration_policy_request: 'iam.v1.auth.registration-policy',
+    registration_policy_request: 'iam.v1.ops.registration_policy',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

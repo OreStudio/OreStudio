@@ -121,11 +121,11 @@ kinds apart.
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Before the screen: the service polls NATS and stores samples | (no subject: the poller reads the NATS monitoring API) | — | exists |
-| Open the screen | Read the server samples in a time range | =telemetry.v1.nats.server-samples.list= | exists |
-| Read the vitals | Read connections, memory, message and byte totals, slow consumers | carried by =telemetry.v1.nats.server-samples.list= | exists |
-| Read the streams | Read one stream's samples in a time range | =telemetry.v1.nats.stream-samples.list= | exists |
+| Open the screen | Read the server samples in a time range | =telemetry.v1.nats_server_samples.list= | exists |
+| Read the vitals | Read connections, memory, message and byte totals, slow consumers | carried by =telemetry.v1.nats_server_samples.list= | exists |
+| Read the streams | Read one stream's samples in a time range | =telemetry.v1.nats_stream_samples.list= | exists |
 | Read the streams — the names to read by | List the streams that have samples | — | missing |
-| Follow one stream | Read the chosen stream over the range | =telemetry.v1.nats.stream-samples.list= | exists |
+| Follow one stream | Read the chosen stream over the range | =telemetry.v1.nats_stream_samples.list= | exists |
 | No samples yet | Answer an empty list | carried by both reads | exists |
 
 Both list subjects are served by the

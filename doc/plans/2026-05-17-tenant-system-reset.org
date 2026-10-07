@@ -75,8 +75,8 @@ Two new subjects in the ~iam.v1.system~ namespace:
 
 | Subject                        | Handler                       |
 |--------------------------------+-------------------------------|
-| ~iam.v1.system.reset-tenant~   | ~reset_tenant_handler~        |
-| ~iam.v1.system.reset~          | ~reset_system_handler~        |
+| ~iam.v1.ops.reset_tenant~   | ~reset_tenant_handler~        |
+| ~iam.v1.ops.reset_system~          | ~reset_system_handler~        |
 
 Only a user with the ~SuperAdmin~ role may invoke these subjects.  The
 handler validates the role before executing the SQL function.
@@ -143,7 +143,7 @@ handler validates the role before executing the SQL function.
   - ~reset_system_result~ (fields: ~success: bool~, ~message: string~)
 
 - [x] Declare NATS subjects in the IAM API protocol header:
-  ~iam.v1.system.reset-tenant~ and ~iam.v1.system.reset~.
+  ~iam.v1.ops.reset_tenant~ and ~iam.v1.ops.reset_system~.
 
 - [x] No CMakeLists changes needed; handlers are header-only and
   ~GLOB_RECURSE~ picks them up automatically.

@@ -15,7 +15,7 @@
 
 A currency pair that is *not* a [[id:1907531F-E2AF-4BF7-84A4-6D69CB9EDFD7][spanning-tree]] edge (see =crm_driver_pair=)
 but is nonetheless curated as available for on-demand triangulation via
-=marketdata.v1.crm.rate= -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast
+=marketdata.v1.ops.get_crm_rate= -- see [[id:DC08D216-348D-4511-A42D-4016EBBF38F7][the architecture decision]] to never broadcast
 the full reachable derived set, only serve a config-driven list on
 request. Owned by a =crm_topology_config= alongside its driver pairs.
 

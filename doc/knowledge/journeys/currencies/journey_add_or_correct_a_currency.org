@@ -132,7 +132,7 @@ junction inserts also check neither end of the link; see the
 | Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.currency=) | exists |
 | Revert a change | Write the old values as a new version | =refdata.v1.currencies.put= | exists |
 | Exchange with ORE | Export the currencies as ORE XML | none | missing |
-| Exchange with ORE | Import an ORE currency configuration | =ore.v1.ore.import.execute= | partial |
+| Exchange with ORE | Import an ORE currency configuration | =ore.v1.ops.ore_import_execute= | partial |
 
 The generic history request is the one =ores.history= defines: the subject is
 derived from the entity type, and the reply carries every version's full field
@@ -148,9 +148,9 @@ as it stood on a date.
    =currencyconfig.xml= itself, with =ore::xml::exporter::export_currency_config=
    linked into the desktop binary. A browser cannot do that. The candidate is a
    =refdata.v1.currencies.export= operation that returns the document, in the
-   shape of =refdata.v1.calendar_adjustments.export=. Until it exists, the screen
+   shape of =refdata.v1.ops.get_calendar_adjustments=. Until it exists, the screen
    offers no export.
-2. *Import is a whole ORE bundle, not one file.* =ore.v1.ore.import.execute=
+2. *Import is a whole ORE bundle, not one file.* =ore.v1.ops.ore_import_execute=
    imports an ORE directory, and its planner reads the currency configuration as
    one part of it. The candidate is to let the import take a currency
    configuration on its own. Until then, the screen links to the ORE import

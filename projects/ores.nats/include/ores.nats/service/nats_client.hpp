@@ -89,7 +89,7 @@ public:
     /**
      * @brief Login state for the interactive path.
      *
-     * Populated via set_auth() after a successful iam.v1.auth.login call.
+     * Populated via set_auth() after a successful iam.v1.ops.login call.
      */
     struct login_info {
         std::string jwt;

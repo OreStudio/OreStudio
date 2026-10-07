@@ -70,7 +70,7 @@ public:
         , verifier_(std::move(verifier)) {}
 
     /**
-     * @brief Serves assets.v1.images.upload.
+     * @brief Serves assets.v1.ops.upload_image.
      */
     void upload_image(ores::nats::message msg) {
         BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
@@ -107,7 +107,7 @@ public:
     }
 
     /**
-     * @brief Serves assets.v1.images.upload-policy.
+     * @brief Serves assets.v1.ops.get_image_upload_policy.
      */
     void get_image_upload_policy(ores::nats::message msg) {
         BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;
@@ -145,7 +145,7 @@ public:
     }
 
     /**
-     * @brief Serves assets.v1.images.ensure.
+     * @brief Serves assets.v1.ops.ensure_image.
      */
     void ensure_image(ores::nats::message msg) {
         BOOST_LOG_SEV(image_operations_handler_lg(), debug) << "Handling " << msg.subject;

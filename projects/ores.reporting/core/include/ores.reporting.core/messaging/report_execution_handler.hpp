@@ -38,14 +38,14 @@ namespace ores::reporting::messaging {
  *
  * Handles fire-and-forget commands dispatched by the workflow engine:
  *
- *  reporting.v1.report.gather-trades           — trades in the report's scope
- *  reporting.v1.report.gather-market-data      — the series those trades need
- *  reporting.v1.report.assemble-bundle         — persists the gathered input
- *  reporting.v1.report.resolve-prepared-input  — pre-processing, substituted
- *  reporting.v1.report.collect-compute-results — post-processing
- *  reporting.v1.report.ignore-compute-results  — post-processing, substituted
- *  reporting.v1.report.finalise                — marks instance as completed
- *  reporting.v1.report.fail                    — marks instance as failed (compensation)
+ *  reporting.v1.ops.gather_trades           — trades in the report's scope
+ *  reporting.v1.ops.gather_market_data      — the series those trades need
+ *  reporting.v1.ops.assemble_bundle         — persists the gathered input
+ *  reporting.v1.ops.resolve_prepared_input  — pre-processing, substituted
+ *  reporting.v1.ops.collect_compute_results — post-processing
+ *  reporting.v1.ops.ignore_compute_results  — post-processing, substituted
+ *  reporting.v1.ops.finalise_report                — marks instance as completed
+ *  reporting.v1.ops.fail_report                    — marks instance as failed (compensation)
  */
 class ORES_REPORTING_CORE_EXPORT report_execution_handler {
 private:

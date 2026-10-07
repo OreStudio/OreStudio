@@ -139,7 +139,7 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
 describe('POST /api/accounts/:accountId/lock', () => {
     it('locks the one account the screen named', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'iam.v1.accounts.lock': { results: [{ success: true, message: '' }] },
+            'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
         });
 
         const response = await server.inject({
@@ -151,7 +151,7 @@ describe('POST /api/accounts/:accountId/lock', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ success: true });
         expect(calls).toEqual([
-            { subject: 'iam.v1.accounts.lock', body: { account_ids: [ACCOUNT_ID] } },
+            { subject: 'iam.v1.ops.lock_account', body: { account_ids: [ACCOUNT_ID] } },
         ]);
 
         await server.close();
@@ -159,7 +159,7 @@ describe('POST /api/accounts/:accountId/lock', () => {
 
     it('answers the refusal as a failure, not as a list', async () => {
         const { server, sessionId } = buildTestServer({
-            'iam.v1.accounts.lock': {
+            'iam.v1.ops.lock_account': {
                 results: [{ success: false, message: 'The account is already locked.' }],
             },
         });
@@ -181,7 +181,7 @@ describe('POST /api/accounts/:accountId/lock', () => {
 
     it('refuses a request with no session', async () => {
         const { server, calls } = buildTestServer({
-            'iam.v1.accounts.lock': { results: [{ success: true, message: '' }] },
+            'iam.v1.ops.lock_account': { results: [{ success: true, message: '' }] },
         });
 
         const response = await server.inject({
@@ -199,7 +199,7 @@ describe('POST /api/accounts/:accountId/lock', () => {
 describe('POST /api/accounts/:accountId/unlock', () => {
     it('asks the server for the unlock subject, not the lock one', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'iam.v1.accounts.unlock': { results: [{ success: true, message: '' }] },
+            'iam.v1.ops.unlock_account': { results: [{ success: true, message: '' }] },
         });
 
         const response = await server.inject({
@@ -211,7 +211,7 @@ describe('POST /api/accounts/:accountId/unlock', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json()).toEqual({ success: true });
         expect(calls).toEqual([
-            { subject: 'iam.v1.accounts.unlock', body: { account_ids: [ACCOUNT_ID] } },
+            { subject: 'iam.v1.ops.unlock_account', body: { account_ids: [ACCOUNT_ID] } },
         ]);
 
         await server.close();
@@ -219,7 +219,7 @@ describe('POST /api/accounts/:accountId/unlock', () => {
 
     it('reports an empty result list as a refusal rather than a success', async () => {
         const { server, sessionId } = buildTestServer({
-            'iam.v1.accounts.unlock': { results: [] },
+            'iam.v1.ops.unlock_account': { results: [] },
         });
 
         const response = await server.inject({

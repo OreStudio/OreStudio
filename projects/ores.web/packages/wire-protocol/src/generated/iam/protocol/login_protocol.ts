@@ -155,11 +155,11 @@ export interface ServiceLoginResponse {
 }
 
 export const subjects = {
-    login_request: 'iam.v1.auth.login',
-    logout_request: 'iam.v1.auth.logout',
-    public_key_request: 'iam.v1.auth.public-key',
-    refresh_request: 'iam.v1.auth.refresh',
-    service_login_request: 'iam.v1.auth.service-login',
+    login_request: 'iam.v1.ops.login',
+    logout_request: 'iam.v1.ops.logout',
+    public_key_request: 'iam.v1.ops.public_key',
+    refresh_request: 'iam.v1.ops.refresh',
+    service_login_request: 'iam.v1.ops.service_login',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

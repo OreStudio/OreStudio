@@ -29,7 +29,7 @@ database "PostgreSQL\n(tenant and party RLS)" as db
 Person -> web : username and password
 web -> bff : POST /api/session
 bff -> bff : rate limit the attempt
-bff -> auth : iam.v1.auth.login {principal, password}
+bff -> auth : iam.v1.ops.login {principal, password}
 
 auth -> db : resolve the tenant by hostname,\nelse the handler's own tenant
 auth -> acct : login(username, password, client address)
@@ -68,7 +68,7 @@ else the party is still to be chosen
     bff --> web : the parties, with the default marked
     Person -> web : choose a party
     web -> bff : POST /api/session/party
-    bff -> auth : iam.v1.accounts.select-party {partyId}
+    bff -> auth : iam.v1.ops.select_party {partyId}
     auth -> db : check the association, then bind the party to the session
     auth --> bff : the active session
     bff --> web : the session

@@ -162,10 +162,10 @@ export interface DeleteTodaysMarketDocumentResponse {
 }
 
 export const subjects = {
-    save_pricing_engines_document_request: 'analytics.v1.pricing_engines_documents.save',
+    save_pricing_engines_document_request: 'analytics.v1.pricing_engines_documents.put',
     get_pricing_engines_document_request: 'analytics.v1.pricing_engines_documents.get',
     delete_pricing_engines_document_request: 'analytics.v1.pricing_engines_documents.delete',
-    save_todays_market_document_request: 'analytics.v1.todays_market_documents.save',
+    save_todays_market_document_request: 'analytics.v1.todays_market_documents.put',
     get_todays_market_document_request: 'analytics.v1.todays_market_documents.get',
     delete_todays_market_document_request: 'analytics.v1.todays_market_documents.delete',
 } as const;

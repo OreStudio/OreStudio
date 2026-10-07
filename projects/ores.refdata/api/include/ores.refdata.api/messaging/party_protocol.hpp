@@ -278,7 +278,7 @@ struct get_party_version_response {
  */
 struct get_party_composite_as_of_request {
     using response_type = struct get_party_composite_as_of_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.parties.composite_as_of";
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.get_party_composite_as_of";
     /**
      * @brief Whether the caller must have established a session first.
      *

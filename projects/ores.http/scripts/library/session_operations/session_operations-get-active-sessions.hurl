@@ -1,9 +1,9 @@
-# =POST /api/v1/iam/sessions/active=
+# =POST /api/v1/iam/ops/get_active_sessions=
 #
 # GENERATED from doc/recipes/http/session_operations/session_operations.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_http_recipes
 #
-POST {{base_url}}/api/v1/iam/sessions/active
+POST {{base_url}}/api/v1/iam/ops/get_active_sessions
 Accept: application/json
 Authorization: Bearer {{token}}
 HTTP 200

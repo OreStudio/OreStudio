@@ -117,15 +117,15 @@ the operations itself.
 | Terminate | Soft-delete the row; the delete rule sets =terminated= | =iam.v1.tenants.delete= | partial |
 | Deprovision | Run =ores_iam_deprovision_tenant_fn= | none | missing |
 | Purge | Run =ores_iam_purge_tenant_fn= then =ores_iam_hard_delete_tenants_fn= | none | missing |
-| Reset one tenant | Return the tenant to bootstrapping | =iam.v1.system.reset-tenant= | exists |
+| Reset one tenant | Return the tenant to bootstrapping | =iam.v1.ops.reset_tenant= | exists |
 | Reset one tenant | Soft-delete admin data, keep bootstrap state | none | missing |
-| Reset the system | Purge every non-system tenant | =iam.v1.system.reset= | exists |
+| Reset the system | Purge every non-system tenant | =iam.v1.ops.reset_system= | exists |
 
-*Only the two resets have a NATS subject.* =iam.v1.system.reset-tenant= needs
+*Only the two resets have a NATS subject.* =iam.v1.ops.reset_tenant= needs
 =iam::system:reset-tenant= and calls =ores_iam_reset_tenant_bootstrap_fn=,
 which soft-deletes the curated admin tables, flips Operational parties to
 =Inactive=, re-enables =system.bootstrap_mode= and sets the tenant's status to
-=bootstrapping=. =iam.v1.system.reset= needs =iam::system:reset= and calls
+=bootstrapping=. =iam.v1.ops.reset_system= needs =iam::system:reset= and calls
 =ores_iam_reset_system_fn=, which hard-purges every non-system tenant, ends the
 system tenant's sessions, removes the system admin accounts and re-enables
 bootstrap mode. Both permissions sit on =SuperAdmin=, and each handler refuses
@@ -184,7 +184,7 @@ for the two subjects that do not exist.
    The candidate is =iam.v1.tenants.reset=.
 6. *No transition guard and no server-side confirmation beyond the tenant
    code.* =tenant_status= is a lookup, so nothing refuses a purge of an active
-   tenant or a reset of a suspended one. =iam.v1.system.reset= carries no
+   tenant or a reset of a suspended one. =iam.v1.ops.reset_system= carries no
    payload at all, so nothing at the server names what it destroys. The
    candidates are a stated transition rule the three functions enforce, and a
    confirmation token on the system reset.

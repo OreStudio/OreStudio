@@ -99,7 +99,7 @@ hierarchy would create.
 
 ** get_lei_entities_summary_request
 :PROPERTIES:
-:subject:  dq.v1.lei-entities.summary
+:subject:  dq.v1.ops.get_lei_entities_summary
 :response: get_lei_entities_summary_response
 :END:
 
@@ -264,7 +264,7 @@ hierarchy would create.
 
 ** search_lei_entities_request
 :PROPERTIES:
-:subject:  dq.v1.lei-entities.search
+:subject:  dq.v1.ops.search_lei_entities
 :response: search_lei_entities_response
 :END:
 

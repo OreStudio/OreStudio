@@ -94,7 +94,7 @@ it stores.
 
 ** save_pricing_engines_document_request
 :PROPERTIES:
-:subject: analytics.v1.pricing_engines_documents.save
+:subject: analytics.v1.pricing_engines_documents.put
 :response: save_pricing_engines_document_response
 :END:
 
@@ -227,7 +227,7 @@ it stores.
 
 ** save_todays_market_document_request
 :PROPERTIES:
-:subject: analytics.v1.todays_market_documents.save
+:subject: analytics.v1.todays_market_documents.put
 :response: save_todays_market_document_response
 :END:
 

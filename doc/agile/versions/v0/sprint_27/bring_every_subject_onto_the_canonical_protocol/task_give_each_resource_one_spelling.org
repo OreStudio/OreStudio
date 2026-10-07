@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ No resource is addressable by two names, and the set of components on the protoc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -85,3 +85,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+No segment is kebab-case. The resources that were spelled twice were
+unified on snake_case -- =dq.v1.lei_entities=, =inbox.v1.approval_requests=,
+=reporting.v1.report_definitions= -- and the kebab-case operation names
+followed, so =change-password= is =change_password= and =trade-scope= is
+=trade_scope=. The dotted sub-resources became
+={resource}_{collection}=: =iam.v1.roles_permissions.put=,
+=telemetry.v1.nats_server_samples.list=.
+
+The adopted-components list the specification's Conformance section calls for
+is *not* done, and is recorded in the story's Out of scope.
+

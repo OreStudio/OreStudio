@@ -438,7 +438,7 @@ on every row it stores.
 
 ** save_curve_configuration_document_request
 :PROPERTIES:
-:subject: refdata.v1.curve_configuration_documents.save
+:subject: refdata.v1.curve_configuration_documents.put
 :response: save_curve_configuration_document_response
 :END:
 
@@ -571,7 +571,7 @@ on every row it stores.
 
 ** save_conventions_document_request
 :PROPERTIES:
-:subject: refdata.v1.conventions_documents.save
+:subject: refdata.v1.conventions_documents.put
 :response: save_conventions_document_response
 :END:
 

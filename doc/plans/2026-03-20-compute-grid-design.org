@@ -105,10 +105,10 @@ All subjects below are relative (the prefix is prepended automatically).
 | ~compute.v1.workunits.list~      | Request / Reply  | List workunits (filterable by batch)    |
 | ~compute.v1.workunits.save~      | Request / Reply  | Create workunit + dispatch to JetStream |
 | ~compute.v1.results.list~        | Request / Reply  | List results (filterable by workunit)   |
-| ~compute.v1.results.submit~      | Request / Reply  | Wrapper submits completed output        |
-| ~compute.v1.work.pull~           | Request / Reply  | Wrapper pulls next assignment           |
-| ~compute.v1.work.heartbeat~      | Core publish     | Wrapper sends liveness heartbeat        |
-| ~compute.v1.work.reap~           | Core publish     | ~ores.scheduler~ triggers stale reaper  |
+| ~compute.v1.ops.submit_result~      | Request / Reply  | Wrapper submits completed output        |
+| ~compute.v1.ops.pull_work~           | Request / Reply  | Wrapper pulls next assignment           |
+| ~compute.v1.ops.heartbeat~      | Core publish     | Wrapper sends liveness heartbeat        |
+| ~compute.v1.ops.reap_work~           | Core publish     | ~ores.scheduler~ triggers stale reaper  |
 | ~ores.compute.host_changed~      | Event publish    | DB trigger → NATS event                 |
 | ~ores.compute.result_changed~    | Event publish    | DB trigger → NATS event                 |
 | ~ores.compute.batch_changed~     | Event publish    | DB trigger → NATS event                 |
@@ -117,7 +117,7 @@ All subjects below are relative (the prefix is prepended automatically).
 
 #+begin_src
 Stream name : COMPUTE
-Subject     : compute.v1.work.assignments.*   (* = tenant_id)
+Subject     : compute.v1.ops.work_assignment.*   (* = tenant_id)
 Retention   : WorkQueuePolicy (message deleted after ack)
 Replicas    : 1 (dev) / 3 (prod)
 Max age     : 24h (undelivered assignments expire)
@@ -274,12 +274,12 @@ After saving the workunit to DB:
 
 1. Create ~target_redundancy~ result rows with ~server_state=1~ (Inactive).
 2. For each result, publish to JetStream subject
-   ~compute.v1.work.assignments.{tenant_id}~ with payload
+   ~compute.v1.ops.work_assignment.{tenant_id}~ with payload
    ~{ result_id, workunit_id, app_version_id, input_uri, config_uri }~.
 3. Update each result to ~server_state=2~ (Unsent) in DB.
 4. Return the saved workunit to the caller.
 
-*** 4b. Work Pull Handler (~compute.v1.work.pull~)
+*** 4b. Work Pull Handler (~compute.v1.ops.pull_work~)
 
 1. Verify JWT (wrapper authenticates with its host JWT).
 2. Fetch one JetStream message from the COMPUTE stream (pull consumer).
@@ -288,7 +288,7 @@ After saving the workunit to DB:
 4. Ack the JetStream message only after the DB write succeeds.
 5. Return the work payload to the wrapper.
 
-*** 4c. Result Submit Handler (~compute.v1.results.submit~)
+*** 4c. Result Submit Handler (~compute.v1.ops.submit_result~)
 
 1. Verify JWT.
 2. Validate ~output_uri~ is non-empty.
@@ -305,13 +305,13 @@ After saving the workunit to DB:
      ~'complete'~, update child to ~status = 'open'~ (eligible for dispatch).
 6. Return success to the wrapper.
 
-*** 4d. Heartbeat Handler (~compute.v1.work.heartbeat~)
+*** 4d. Heartbeat Handler (~compute.v1.ops.heartbeat~)
 
 Wrapper publishes (fire-and-forget, no reply needed):
 
 - Update ~hosts.last_rpc_time = now()~ for the identified host.
 
-*** 4e. Reap Handler (~compute.v1.work.reap~)
+*** 4e. Reap Handler (~compute.v1.ops.reap_work~)
 
 Published by ~ores.scheduler~ on a cron schedule (e.g. every minute).
 
@@ -328,7 +328,7 @@ Published by ~ores.scheduler~ on a cron schedule (e.g. every minute).
 Name        : compute-reaper
 Cron        : * * * * *   (every minute)
 Action type : mq
-MQ subject  : compute.v1.work.reap
+MQ subject  : compute.v1.ops.reap_work
 Payload     : {}
 #+end_src
 

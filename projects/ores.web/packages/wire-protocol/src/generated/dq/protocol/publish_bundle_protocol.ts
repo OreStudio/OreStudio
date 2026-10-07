@@ -71,7 +71,7 @@ export interface PublishBundleResponse {
 }
 
 export const subjects = {
-    publish_bundle_request: 'dq.v1.bundles.publish',
+    publish_bundle_request: 'dq.v1.ops.publish_bundle',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

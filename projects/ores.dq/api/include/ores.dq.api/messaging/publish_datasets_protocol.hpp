@@ -36,7 +36,7 @@ namespace ores::dq::messaging {
  */
 struct publish_datasets_request {
     using response_type = struct publish_datasets_response;
-    static constexpr std::string_view nats_subject = "dq.v1.datasets.publish";
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_datasets";
     /**
      * @brief Whether the caller must have established a session first.
      *

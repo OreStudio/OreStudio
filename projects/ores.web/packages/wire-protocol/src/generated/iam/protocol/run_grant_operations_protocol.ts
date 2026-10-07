@@ -120,9 +120,9 @@ export interface ExchangeRunGrantResponse {
 }
 
 export const subjects = {
-    create_run_grant_request: 'iam.v1.run_grants.create',
-    revoke_run_grant_request: 'iam.v1.run_grants.revoke',
-    exchange_run_grant_request: 'iam.v1.run_grants.exchange',
+    create_run_grant_request: 'iam.v1.run_grants.put',
+    revoke_run_grant_request: 'iam.v1.ops.revoke_run_grant',
+    exchange_run_grant_request: 'iam.v1.ops.exchange_run_grant',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

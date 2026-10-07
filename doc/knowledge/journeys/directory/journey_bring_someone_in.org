@@ -44,10 +44,10 @@ The roster this journey writes into is
 2. *Create the account.* The administrator enters the username, the account
    type, the email address and a first password. The system creates the account
    and its login record, and assigns the =Viewer= role by default. This is one
-   operation: =iam.v1.accounts.save=. The reply carries the new =account_id=,
+   operation: =iam.v1.accounts.put=. The reply carries the new =account_id=,
    which every later step addresses.
 3. *Add the profile.* The administrator enters the full name and the job title.
-   The system writes them with =iam.v1.accounts.update=. This is a second,
+   The system writes them with =iam.v1.ops.update_account=. This is a second,
    separate operation: the create request carries no profile fields.
 4. *Add the contact record.* The administrator enters the address, the phone and
    the contact email. The system writes one contact row with
@@ -57,7 +57,7 @@ The roster this journey writes into is
    for. The system writes one link per party with =iam.v1.account_parties.put=.
    This is a fourth, separate operation.
 6. *Grant the roles.* The administrator adds the roles beyond =Viewer=. The
-   system assigns each one with =iam.v1.roles.assign=. This is a fifth, separate
+   system assigns each one with =iam.v1.ops.assign_role=. This is a fifth, separate
    operation.
 7. *Force a password change.* The account must change its password at first
    sign-in. No operation sets that flag, so this step is missing.
@@ -91,17 +91,17 @@ id is what the later steps use to address the account.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Create the account | Create the account and set the first password | =iam.v1.accounts.save= | exists |
-| Create the account | Choose the account type | =iam.v1.accounts.save= | partial |
-| Create the account | Assign the default =Viewer= role | internal to =iam.v1.accounts.save= | exists |
-| Add the profile | Set the full name and the job title | =iam.v1.accounts.update= | exists |
+| Create the account | Create the account and set the first password | =iam.v1.accounts.put= | exists |
+| Create the account | Choose the account type | =iam.v1.accounts.put= | partial |
+| Create the account | Assign the default =Viewer= role | internal to =iam.v1.accounts.put= | exists |
+| Add the profile | Set the full name and the job title | =iam.v1.ops.update_account= | exists |
 | Add the contact record | Write the contact details | =iam.v1.account_contact_informations.put= | exists |
 | Link the parties | Link one party to the account | =iam.v1.account_parties.put= | exists |
-| Grant the roles | Assign a further role | =iam.v1.roles.assign= | exists |
+| Grant the roles | Assign a further role | =iam.v1.ops.assign_role= | exists |
 | Force a password change | Set the password-change flag | none | missing |
 | Confirm | Read the new account back | =iam.v1.accounts.get= | exists |
 
-=iam.v1.accounts.save= needs =iam::accounts:create=. =iam.v1.accounts.update=
+=iam.v1.accounts.put= needs =iam::accounts:create=. =iam.v1.ops.update_account=
 and =iam.v1.account_parties.put= need =iam::accounts:update=.
 =iam.v1.account_contact_informations.put= needs
 =iam::account_contact_informations:write=. The =TenantAdmin= role holds every
@@ -115,10 +115,10 @@ handler ignores it: the create path always writes =user=. A =service=,
 
 1. *No forced password change.* The service method =set_password_reset_required=
    exists, but nothing calls it and no subject exposes it.
-   =iam.v1.accounts.reset-password= does not help: it calls =change_password=,
+   =iam.v1.ops.reset_password= does not help: it calls =change_password=,
    which clears the flag. The candidate is
    =iam.v1.accounts.require-password-change=, or a =password_reset_required=
-   field on =iam.v1.accounts.save=. Until then the screen cannot keep the
+   field on =iam.v1.accounts.put=. Until then the screen cannot keep the
    "change at first sign-in" promise.
 2. *The account type is ignored.* The create path hard-codes =user=. The
    candidate is to honour =account_type= and route the other types to the
@@ -130,7 +130,7 @@ handler ignores it: the create path always writes =user=. A =service=,
    =account_id= and resume the missing steps; otherwise the administrator
    deletes the account and starts again. The candidate is one server-side
    journey that owns the whole create and reports each step; the workflow
-   command path on =iam.v1.accounts.save= is the place to start.
+   command path on =iam.v1.accounts.put= is the place to start.
 4. *The create request carries secrets.* =save_account_request= has a cleartext
    =password= and a cleartext =totp_secret=. The handler ignores =totp_secret=,
    so it should not be on the wire at all. There is no invitation and no
@@ -140,8 +140,8 @@ handler ignores it: the create path always writes =user=. A =service=,
 5. *The confirm step carries secrets back.* The generated =Account= type carries
    =password_hash=, =password_salt= and =totp_secret=, so the read-back delivers
    them.
-6. *Any caller may assign any role.* =iam.v1.roles.assign= has no permission
-   check. =iam.v1.roles.revoke=, next to it, needs =iam::roles:revoke=. The
+6. *Any caller may assign any role.* =iam.v1.ops.assign_role= has no permission
+   check. =iam.v1.ops.revoke_role=, next to it, needs =iam::roles:revoke=. The
    candidate is to require =iam::roles:assign=.
 
 * Related journeys

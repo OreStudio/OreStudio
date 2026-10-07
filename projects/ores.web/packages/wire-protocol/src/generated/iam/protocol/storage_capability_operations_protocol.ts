@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,18 +19,10 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_protocol.hpp.mustache
+ * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_IAM_API_MESSAGING_STORAGE_CAPABILITY_OPERATIONS_PROTOCOL_HPP
-#define ORES_IAM_API_MESSAGING_STORAGE_CAPABILITY_OPERATIONS_PROTOCOL_HPP
-
-#include "ores.security/jwt/jwt_claims.hpp"
-#include <cstdint>
-#include <string>
-#include <vector>
-
-namespace ores::iam::messaging {
+import type { StorageGrant } from '../../../security/payload.js';
 
 /**
  * @brief Asks IAM for a storage capability naming a tenant's objects.
@@ -39,39 +31,38 @@ namespace ores::iam::messaging {
  * caller must hold the mint permission, and the tenant must be one it may act
  * for. The grants are the exact rows the token will carry.
  */
-struct mint_storage_capability_request {
-    using response_type = struct mint_storage_capability_response;
-    static constexpr std::string_view nats_subject = "iam.v1.ops.mint_storage_capability";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
+export interface MintStorageCapabilityRequest {
     /**
      * @brief The tenant whose objects the capability reaches.
      */
-    std::string tenant_id;
+    tenant_id: string;
     /**
      * @brief The grants the capability carries, one row per operation.
      */
-    std::vector<ores::security::jwt::storage_grant> grants;
-};
+    grants: StorageGrant[];
+}
 
 /**
  * @brief The capability, or why there is none.
  */
-struct mint_storage_capability_response {
-    bool success = false;
-    std::string message;
-    std::string token;
+export interface MintStorageCapabilityResponse {
+    success: boolean;
+    message: string;
+    token: string;
     /**
      * @brief When the capability stops working, in seconds since the epoch.
      */
-    std::int64_t expires_at = 0;
-};
-
+    expires_at: number;
 }
 
-#endif
+export const subjects = {
+    mint_storage_capability_request: 'iam.v1.ops.mint_storage_capability',
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+    mint_storage_capability_request: true,
+} as const;

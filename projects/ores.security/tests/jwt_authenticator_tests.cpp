@@ -354,13 +354,13 @@ TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
     claims.storage_grants = {
         storage_grant{.bucket = "ores",
                       .key_prefix = "compute/packages/ORE-1.8.17.0/",
-                      .ops = {"get"}},
+                      .op = "get"},
         storage_grant{.bucket = "ores",
                       .key_prefix = "ore/packages/instance-uuid/",
-                      .ops = {"get"}},
+                      .op = "get"},
         storage_grant{.bucket = "ores",
                       .key_prefix = "compute/output/result-uuid",
-                      .ops = {"put"}}};
+                      .op = "put"}};
 
     const auto token = signer.create_token(claims);
     REQUIRE(token.has_value());
@@ -370,9 +370,9 @@ TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
     REQUIRE(validated->storage_grants.size() == 3);
     CHECK(validated->storage_grants[0].bucket == "ores");
     CHECK(validated->storage_grants[0].key_prefix == "compute/packages/ORE-1.8.17.0/");
-    CHECK(validated->storage_grants[0].ops == std::vector<std::string>{"get"});
+    CHECK(validated->storage_grants[0].op == "get");
     CHECK(validated->storage_grants[1].key_prefix == "ore/packages/instance-uuid/");
-    CHECK(validated->storage_grants[2].ops == std::vector<std::string>{"put"});
+    CHECK(validated->storage_grants[2].op == "put");
 
     const auto lenient = signer.validate_allow_expired(*token);
     REQUIRE(lenient.has_value());

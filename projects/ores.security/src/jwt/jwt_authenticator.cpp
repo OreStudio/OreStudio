@@ -48,9 +48,8 @@ void read_storage_grants(const Decoded& decoded, jwt_claims& claims) {
             grant.bucket = std::string(bucket->as_string());
         if (const auto* prefix = object.if_contains("prefix"))
             grant.key_prefix = std::string(prefix->as_string());
-        if (const auto* ops = object.if_contains("ops"))
-            for (const auto& op : ops->as_array())
-                grant.ops.push_back(std::string(op.as_string()));
+        if (const auto* op = object.if_contains("op"))
+            grant.op = std::string(op->as_string());
         claims.storage_grants.push_back(std::move(grant));
     }
 }
@@ -503,13 +502,10 @@ std::optional<std::string> jwt_authenticator::create_token(const jwt_claims& cla
         if (!claims.storage_grants.empty()) {
             boost::json::array grants;
             for (const auto& grant : claims.storage_grants) {
-                boost::json::array ops;
-                for (const auto& op : grant.ops)
-                    ops.push_back(boost::json::value(op));
                 boost::json::object entry;
                 entry["bucket"] = grant.bucket;
                 entry["prefix"] = grant.key_prefix;
-                entry["ops"] = std::move(ops);
+                entry["op"] = grant.op;
                 grants.push_back(std::move(entry));
             }
             token = token.set_payload_claim("storage_grants",

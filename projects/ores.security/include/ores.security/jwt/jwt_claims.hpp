@@ -41,11 +41,10 @@ inline constexpr std::string_view party_selection_audience = "select_party_only"
 /**
  * @brief One object grant inside a storage capability.
  *
- * A capability names the buckets and key prefixes a node may reach and the
- * operations it may perform, so the storage service answers an object-scoped
- * question without asking IAM for the caller's permissions. It is the
- * capability the Storage policy page describes: a node holds one for the job
- * it is running and nothing else.
+ * A grant is a flat row: the bucket, the key prefix and one operation. A
+ * capability is a list of these, one row per operation, so the relation stays
+ * homogeneous and nothing nests. It is the capability the Storage policy page
+ * describes: a node holds one for the job it is running and nothing else.
  */
 struct storage_grant final {
     /**
@@ -59,9 +58,9 @@ struct storage_grant final {
     std::string key_prefix;
 
     /**
-     * @brief The operations allowed: get, put, delete or list.
+     * @brief The operation allowed: get, put, delete or list.
      */
-    std::vector<std::string> ops;
+    std::string op;
 };
 
 /**

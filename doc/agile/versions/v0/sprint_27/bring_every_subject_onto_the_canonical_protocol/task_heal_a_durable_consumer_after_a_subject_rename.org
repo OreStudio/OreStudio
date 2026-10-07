@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: feature/heal-a-durable-consumer-after-a-subject-rename
-#+pr:
+#+pr: 2775
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2775][#2775]] | [nats] Heal a durable consumer after a subject rename |
 
 * Review
 

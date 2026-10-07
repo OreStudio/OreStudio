@@ -104,6 +104,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:079FA16E-82FB-45AB-AA1C-A8BDF43B7E40][Keep the nightly include-cleaner out of generated files]] | DONE | | 2026-10-07 | The nightly include-cleaner PR edits projects/ blindly. Classify its changes against the codegen generated marker, keep the hand-crafted fixes, and make the fixer skip generated files so their includes are fixed in the archetype templates. |
 | [[id:C07C3304-8605-44DE-8480-87577B9F8C86][Hotfix: Drop the libstdc++ internal header the include run added]] | DONE | | 2026-10-07 | The nightly include run added <bits/chrono.h> to two ores.refdata test files. It is a libstdc++ internal, it is not portable to libc++ or MSVC, and both files already include <chrono>. |
 | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] | BACKLOG | | | Give every object one owner: a tenant owns a bucket per data class, the platform owns the shared buckets, and access is an object capability scoped to exact keys. A step service presents its run token and a worker node presents a capability for one assignment, so no tenant can reach another tenant's bytes. |
+| [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] | DONE | | 2026-10-07 | The local check gate fails on main for two reasons that are nobody's branch: six shell scripts tangle differently from what is committed, and the two DSH plugin packages still declare version 0.0.25 against a 0.0.27 product. |
 
 * Achievements
 

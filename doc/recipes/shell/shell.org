@@ -1449,3 +1449,7 @@ tangled into the runnable script library
 * Producer Kinds
 
 - [[id:E2798B72-C22B-509D-A08B-76CF530B20CF][How do I run the producer_kinds commands from the shell?]]
+
+* Account Credentials
+
+- [[id:E371920E-98B2-5CAE-9DD8-785EA0308E95][How do I run the account_credentials commands from the shell?]]

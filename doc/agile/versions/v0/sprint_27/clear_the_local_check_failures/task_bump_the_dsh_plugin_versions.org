@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: F42FCBF0-1931-46A9-A227-968996DDE510
+:END:
+#+title: Task: Bump the DSH plugin package versions
+#+description: The two DSH plugin packages declare version 0.0.25 against a 0.0.27 product, so their manifest checks fail.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_local_check_failures:sprint_27:v0:
+#+owner: marco
+#+branch: feature/clear-the-local-check-failures
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Both DSH plugin packages carry the product version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- projects/ores.dsh_environment/package.json and projects/ores.dsh_kanban/package.json declare 0.0.27.
+- Both plugins' check-manifest.mjs passes.
+
+* Plan
+
+=check-manifest.mjs= reads the product version from =CMakeLists.txt= and fails
+when =package.json= disagrees. =CMakeLists.txt= declares =OreStudio VERSION
+0.0.27=; both plugins declared =0.0.25=. Set each =package.json= version to
+=0.0.27=. The check is deliberate, not incidental: a plugin ships with the
+product and is upgraded with it, and a missed bump installs cleanly and looks
+fine.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files declaring the stale version | 2 | grep -rn 0.0.25 projects/ores.dsh_environment projects/ores.dsh_kanban | 5e7b5285b8 |
+| Product version | 0.0.27 | project(OreStudio VERSION 0.0.27 in CMakeLists.txt | 5e7b5285b8 |
+
+* Notes
+
+Both manifests pass =node scripts/check-manifest.mjs=, which also checks the
+loader headings, the client bundle's loader call, the patch file and the
+browser roster.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both =package.json= files declare 0.0.27, and =dsh-environment= and
+=dsh-kanban= pass.

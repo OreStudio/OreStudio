@@ -71,7 +71,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Codegen suite | 1281 passed | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests -q= | 67854ba50e |
+| Widening guard | 10 widenings, 0 new | =projects/ores.codegen/scripts/check_rls_system_tenant_widenings.py= | 67854ba50e |
+| Full build | exit 0 | =./compass.sh build= | 77ad089668 |
+| Full suite | 94/94 targets pass | =./compass.sh test run= | 77ad089668 |
+| Doc validation | 42 components pass | =projects/ores.codegen/validate_docs.sh= | 77ad089668 |
 
 * Notes
 
@@ -99,3 +103,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.sql.schema= gained =:rls_own_or_system_tenant_rows:=. It emits the
+installation's policy shape -- own tenant or system-tenant rows for reads,
+the current tenant for writes -- in the tangled domain-entity and junction
+create templates. It refuses to appear without =:rls_tenant_isolation:= and
+refuses to sit beside =:rls_system_tenant_visible:=, so a model cannot ask
+for both shapes at once. The name states the rows the policy admits on the
+=tenant_id= side, not the session, so it cannot be confused with the guarded
+=current = system= widening; the justification is a comment in the entity
+meta-model.
+
+=ores.compute.grid_sample= and =ores.compute.node_sample= declare it with
+=:tenant_read_scope: shared=, so their generated reads state no tenant
+predicate and the policy decides. The regenerated SQL emits the shape for
+both samples, and the ER =.puml= is refreshed.
+
+Gates: =check_rls_system_tenant_widenings.py= reports 10 widenings, all
+listed, and no new one; the codegen suite passes 1281 tests;
+=check_component_drift.py --all= reports no drift; =validate_docs.sh= passes
+all 42 components; the full build and the 94-target suite are clean.

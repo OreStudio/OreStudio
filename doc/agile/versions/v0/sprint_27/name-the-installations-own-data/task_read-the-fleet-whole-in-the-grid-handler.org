@@ -66,7 +66,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Full build | exit 0 | =./compass.sh build= | 77ad089668 |
+| Full suite | 94/94 targets pass, 0 failed | =./compass.sh test run= | 77ad089668 |
+| Compute core tests | pass, incl. the two new cases | =ctest --preset linux-clang-debug-make -R ores.compute.core.tests= | 77ad089668 |
 
 * Notes
 
@@ -94,3 +96,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compute_telemetry_repository::latest_node_samples= lost its =WHERE tenant_id
+= $1= and the parameter it fed, so the per-node newest read states no tenant
+predicate and the row-level-security policy decides. The generated
+=read_newest= for the grid sample already lost its predicate through
+=:tenant_read_scope: shared=.
+
+=repository_compute_telemetry_repository_tests= writes one node sample under
+the session's own tenant, one under the system tenant and one under a freshly
+provisioned third tenant, and proves =latest_node_samples= returns its own and
+the system tenant's nodes and not the third's. A second case proves the
+generated newest grid-sample read ignores a newer third-tenant row and returns
+a system row. The test uses the existing generators and states the policy's
+real admission -- the session's own tenant plus the system tenant -- rather
+than a wider claim.
+
+The work-counts half of the story's acceptance is superseded by story
+84345A75 (the usage ledger) and is not implemented here.
+
+The full build is clean and all 94 test targets pass, including
+=ores.compute.core.tests=.

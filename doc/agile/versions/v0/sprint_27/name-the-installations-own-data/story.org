@@ -62,6 +62,14 @@ The installation owns a class of data the schema does not name: the facts about 
   supersedes the earlier framing of the global view as a cross-tenant
   aggregate, which was wrong. What the installation observes about itself is
   installation data from the moment it is written, so the guard never applies.
+- *The policy flag is named for the rows it admits, not the session it
+  serves.* =:rls_own_or_system_tenant_rows:= states both comparisons on the
+  =tenant_id= side -- the session's own tenant's rows, or the system
+  tenant's -- so no reader can mistake it for
+  =:rls_system_tenant_visible:=, which names the session and emits the
+  guarded =current = system= widening. Shared reference and installation
+  data want the same rows and the same write rule, so one flag serves both,
+  and the two flags are mutually exclusive.
 
 * Out of scope
 

@@ -286,6 +286,69 @@
         });
     })();
 
+    /* The failed jobs are one list, read once. The job total, the per-tenant
+       counts and every failure figure below are read back from it, so the job
+       list, the ledger and the failure panels cannot drift apart. */
+    var FAILED_JOBS = JOBS.filter(function (j) { return j.state === 'failed'; });
+    var BAD_VERSION_FIRST_SUBMIT = (function () {
+        var first = INTERVALS;
+        FAILED_JOBS.forEach(function (j) { if (j.submit < first) first = j.submit; });
+        return first === INTERVALS ? 34 : first;
+    })();
+
+    var JOBS_BY_TENANT = {};
+    var FAILED_JOBS_BY_TENANT = {};
+    TENANTS.forEach(function (t) { JOBS_BY_TENANT[t.id] = 0; FAILED_JOBS_BY_TENANT[t.id] = 0; });
+    JOBS.forEach(function (j) { JOBS_BY_TENANT[j.tenant]++; });
+
+    /* One failure model for every failure figure. A failed job fails every task
+       it touches, so the failed tasks are the background plus that burst, and
+       the failed jobs are the count of the jobs fixture. The fleet line, the
+       by-node bars and the ledger all read these, and the by-version panel
+       counts the same failed jobs from the same list. */
+    var FAILURE = (function buildFailure() {
+        var burstInterval = zeros(INTERVALS);
+        var byNode = {};
+        NODES.forEach(function (n) { byNode[n.short] = n.fails.reduce(function (a, b) { return a + b; }, 0); });
+        FAILED_JOBS.forEach(function (job) {
+            var run = job.attempts[0];
+            var span = Math.max(1, run.end - run.start);
+            for (var k = run.start; k < run.end && k < INTERVALS; k++) burstInterval[k] += 9;
+            byNode[job.node] = (byNode[job.node] || 0) + 9 * span;
+        });
+        var byInterval = zeros(INTERVALS);
+        for (var i = 0; i < INTERVALS; i++) {
+            var background = 0;
+            NODES.forEach(function (n) { background += n.fails[i]; });
+            byInterval[i] = background + burstInterval[i];
+        }
+        FAILED_JOBS.forEach(function (j) { FAILED_JOBS_BY_TENANT[j.tenant]++; });
+        return {
+            failedJobs: FAILED_JOBS.length,
+            failedJobsByTenant: FAILED_JOBS_BY_TENANT,
+            failedTasksByNode: NODES.map(function (n) { return byNode[n.short]; }),
+            failedTasksByInterval: byInterval,
+            failedTasks: byInterval.reduce(function (a, b) { return a + b; }, 0)
+        };
+    })();
+
+    /* Split a whole count across weights so the parts are integers that sum to
+       the whole. The ledger's per-tenant rows must add up to the fleet's own
+       figure, so the parts are apportioned rather than rounded independently. */
+    function apportion(total, weights) {
+        var out = weights.map(function () { return 0; });
+        if (!(total > 0)) return out;
+        var sum = weights.reduce(function (a, b) { return a + b; }, 0);
+        if (!(sum > 0)) { out[0] = total; return out; }
+        var raw = weights.map(function (w) { return total * w / sum; });
+        var floors = raw.map(function (v) { return Math.floor(v); });
+        var used = floors.reduce(function (a, b) { return a + b; }, 0);
+        var order = raw.map(function (v, i) { return { i: i, frac: v - floors[i] }; })
+            .sort(function (a, b) { return b.frac - a.frac || a.i - b.i; });
+        for (var k = 0; k < total - used; k++) floors[order[k].i]++;
+        return floors;
+    }
+
     function buildPhases(duration, state) {
         var names = ['queued', 'dispatched', 'downloaded', 'running', 'uploaded', 'validated'];
         var weights = [0.04, 0.03, 0.14, 0.72, 0.05, 0.02];
@@ -313,23 +376,13 @@
         var jit = [];
         for (var j = 0; j < INTERVALS; j++) jit[j] = rand();
 
-        /* The bad release fails every task it runs, so its failures arrive as a
-           burst over the intervals its jobs ran. The background rate is low, so
-           the failure line is flat and then it is not. */
-        var burst = zeros(INTERVALS);
-        JOBS.forEach(function (job) {
-            if (job.state !== 'failed') return;
-            var run = job.attempts[0];
-            var start = run.start;
-            var end = Math.max(start + 1, run.end);
-            for (var k = start; k < end && k < INTERVALS; k++) burst[k] += 9;
-        });
-
+        /* The failure line is the one failure model: the low background plus
+           the burst the bad release leaves over the intervals its jobs ran, so
+           it is flat and then it is not. */
         for (var i = 0; i < INTERVALS; i++) {
-            var done = 0, fails = burst[i], online = 0, idle = 0, used = 0;
+            var done = 0, fails = FAILURE.failedTasksByInterval[i], online = 0, idle = 0, used = 0;
             NODES.forEach(function (node) {
                 done += node.work[i];
-                fails += node.fails[i];
                 if (node.state[i] !== 'lost') online++;
                 if (node.state[i] !== 'lost' && node.work[i] < node.baseWork * 0.25) idle++;
                 if (node.state[i] !== 'lost') {
@@ -405,14 +458,6 @@
         { app: 'ores.vol-surface', inFlight: 2, behaviour: 'fail' }
     ];
 
-    // --------------------------------------------------------- the failures
-    var FAILED_JOBS = JOBS.filter(function (j) { return j.state === 'failed'; });
-    var BAD_VERSION_FIRST_SUBMIT = (function () {
-        var first = INTERVALS;
-        FAILED_JOBS.forEach(function (j) { if (j.submit < first) first = j.submit; });
-        return first === INTERVALS ? 34 : first;
-    })();
-
     // ------------------------------------------------------- the usage ledger
     /* The installation records what it did about its own operation. As the
        compute service dispatches a tenant's work and takes the result back it
@@ -450,42 +495,50 @@
            tenant is the installation's own housekeeping. */
         function weight(t, i) {
             var u = i / (INTERVALS - 1);
-            if (t.id === 'northwind') return 0.50 * (1 + 0.06 * u);
-            if (t.id === 'helios') return 0.15 + 0.33 * u;
-            if (t.id === 'meridian') return 0.07 - 0.02 * u;
-            return 0.03;
+            var base;
+            if (t.id === 'northwind') base = 0.50 * (1 + 0.06 * u);
+            else if (t.id === 'helios') base = 0.15 + 0.33 * u;
+            else if (t.id === 'meridian') base = 0.07 - 0.02 * u;
+            else base = 0.03;
+            return base * shapeAt(i);
         }
 
+        /* The ledger's job total is the jobs fixture's own count for the
+           tenant, split across the window in the ledger's shape, so the ledger
+           and the job list state the same total. */
+        TENANTS.forEach(function (t) {
+            var weights = [];
+            for (var i = 0; i < INTERVALS; i++) weights.push(weight(t, i) * (0.88 + 0.24 * rnd()));
+            perTenant[t.id].jobs = apportion(JOBS_BY_TENANT[t.id], weights);
+            perTenant[t.id].jobsTotal = JOBS_BY_TENANT[t.id];
+        });
+
         for (var i = 0; i < INTERVALS; i++) {
-            var wsum = 0;
-            TENANTS.forEach(function (t) { wsum += weight(t, i); });
-            TENANTS.forEach(function (t) {
+            /* Cores held is the fleet's own used cores at this interval, split
+               by the same shape, so the tenant bands stack to the fleet line. */
+            var coresAt = apportion(FLEET.coresUsed[i], TENANTS.map(function (t) {
+                return weight(t, i) * (0.88 + 0.24 * rnd());
+            }));
+            TENANTS.forEach(function (t, ti) {
                 var agg = perTenant[t.id];
-                var u = weight(t, i) / wsum;
-                var jitter = 0.88 + 0.24 * rnd();
-                var cores = Math.max(0, Math.round(FLEET.coresUsed[i] * u * jitter));
-                var jobs = Math.max(0, Math.round(FLEET.throughput[i] * u * jitter));
-                agg.cores[i] = cores;
-                agg.jobs[i] = jobs;
-                agg.gridMinutes[i] = Math.round(jobs * MEAN_TASK_MIN[t.id] * (0.85 + 0.3 * rnd()));
-                totalJobsSeries[i] += jobs;
+                agg.cores[i] = coresAt[ti];
+                agg.gridMinutes[i] = Math.round(agg.jobs[i] * MEAN_TASK_MIN[t.id] * (0.85 + 0.3 * rnd()));
+                totalJobsSeries[i] += agg.jobs[i];
                 totalGridMinutesSeries[i] += agg.gridMinutes[i];
             });
         }
 
-        /* The bad release reaches one tenant's rows first, so that tenant's
-           ledger carries the visible failures. */
-        var badTenant = FAILED_JOBS.length ? FAILED_JOBS[0].tenant : 'northwind';
+        /* The ledger records the same failure events as the job list, one row
+           per failed job, so its failure count is that fixture's count rather
+           than a rate of its own. */
         TENANTS.forEach(function (t) {
             var agg = perTenant[t.id];
             for (var j = 0; j < INTERVALS; j++) {
-                agg.jobsTotal += agg.jobs[j];
                 agg.gridMinutesTotal += agg.gridMinutes[j];
                 if (agg.cores[j] > agg.peakCores) agg.peakCores = agg.cores[j];
             }
-            var rate = t.id === badTenant ? 0.019 : 0.0016;
-            agg.failed = Math.round(agg.jobsTotal * rate);
-            agg.noReply = Math.round(agg.jobsTotal * 0.0005);
+            agg.failed = FAILED_JOBS_BY_TENANT[t.id];
+            agg.noReply = 0;
             agg.success = Math.max(0, agg.jobsTotal - agg.failed - agg.noReply);
         });
 
@@ -495,7 +548,7 @@
             totalGridMinutes: totalGridMinutes,
             totalGridMinutesSeries: totalGridMinutesSeries,
             totalJobsSeries: totalJobsSeries,
-            badTenant: badTenant
+            badTenant: FAILED_JOBS.length ? FAILED_JOBS[0].tenant : 'northwind'
         };
     })();
 
@@ -507,19 +560,10 @@
             'not a read of any tenant\u2019s tables. A usage row carries the tenant, the host, the app version, the duration, the cores and the outcome, and none of the tenant\u2019s content.';
     }
 
-    /* Task failures per node: the low background plus the burst the bad release
-       leaves on whichever node a failed job touched. */
+    /* Failed tasks per node: the one failure model, read back by the bars, the
+       table order and the release panel. */
     function nodeFailureTotals() {
-        var totals = {};
-        NODES.forEach(function (n) {
-            totals[n.short] = n.fails.reduce(function (a, b) { return a + b; }, 0);
-        });
-        FAILED_JOBS.forEach(function (job) {
-            var run = job.attempts[0];
-            var span = Math.max(1, run.end - run.start);
-            totals[job.node] = (totals[job.node] || 0) + 9 * span;
-        });
-        return NODES.map(function (n) { return totals[n.short]; });
+        return FAILURE.failedTasksByNode;
     }
 
     // ------------------------------------------------------------- variants
@@ -1392,9 +1436,11 @@
         out += '<text class="axis-label" x="' + (p.x + p.w) + '" y="' + (p.y + p.h + 42) + '" text-anchor="end">node (failed tasks over the range)</text>';
         var question = 'Is one node bad?';
         var meta = 'Failed tasks per node over the range, count';
-        var foot = '<p class="rowfoot">The bars are task failures. The three failed jobs each fail every task they touch for a few intervals, ' +
-            'so their nodes carry a burst, and the rest is the low background that follows the work. ' +
-            'A bar per node looks like a bad node; the release panel below says which it is.</p>' +
+        var foot = '<p class="rowfoot">The bars are task failures. The ' + FAILURE.failedJobs + ' failed jobs produced the ' +
+            FAILURE.failedTasks + ' failed tasks here, the same failures the fleet line counts. ' +
+            'Each failed job fails every task it touches for a few intervals, so its node carries a burst, and the rest is the low background ' +
+            'that follows the work. The release panel below counts failed jobs rather than failed tasks. ' +
+            'A bar per node looks like a bad node; the release panel says which it is.</p>' +
             miniLegend([
                 { label: 'node with failures', color: C.vermillion },
                 { label: 'node with none', color: C.grey }
@@ -1494,7 +1540,7 @@
             var x0 = p.x + (a.inMinutes / horizonMin) * p.w;
             var bw = Math.max(4, (a.wallclockMin / horizonMin) * p.w);
             var y = p.y + r * rowH;
-            out += '<text class="tick rowlabel" x="' + (left - 8) + '" y="' + (y + 15) + '">' + esc(intervalTime(NOW_MIN + a.inMinutes)) + ' ' + esc(t.short) + '</text>';
+            out += '<text class="tick rowlabel" x="' + (left - 8) + '" y="' + (y + 15) + '">' + esc(clock(NOW_MIN + a.inMinutes)) + ' ' + esc(t.short) + '</text>';
             out += '<rect x="' + x0.toFixed(1) + '" y="' + (y + 3) + '" width="' + bw.toFixed(1) + '" height="18" rx="3" fill="' + t.color + '" fill-opacity="0.85"><title>' +
                 esc(a.app + ' ' + a.version + ' \u00b7 ' + a.jobs + ' jobs \u00b7 ' + a.cores + ' cores, ' + a.memGiB + ' GiB, ' + a.gpu + ' GPU \u00b7 ' + a.wallclockMin + ' min wallclock') +
                 '</title></rect>';
@@ -1504,15 +1550,22 @@
         for (var m = 0; m <= horizonMin; m += 60) {
             var x = p.x + (m / horizonMin) * p.w;
             out += '<line class="grid" x1="' + x.toFixed(1) + '" y1="' + p.y + '" x2="' + x.toFixed(1) + '" y2="' + (p.y + p.h) + '"/>';
-            out += '<text class="tick mid" x="' + x.toFixed(1) + '" y="' + (p.y + p.h + 15) + '">' + esc(intervalTime(NOW_MIN + m)) + '</text>';
+            out += '<text class="tick mid" x="' + x.toFixed(1) + '" y="' + (p.y + p.h + 15) + '">' + esc(clock(NOW_MIN + m)) + '</text>';
         }
         out += '<text class="axis-label" x="' + (p.x + p.w) + '" y="' + (p.y + p.h + 30) + '" text-anchor="end">time ahead of now (15:00), one bar per scheduled run, width is its wallclock</text>';
         var question = 'What kicks in soon?';
         var meta = arrivals.length + ' scheduled runs in the next six hours, with their requirements';
+        /* The legend names the tenants the arrivals actually carry, so the
+           tenant variant does not name a tenant its plot does not show. */
+        var legendTenants = [];
+        arrivals.forEach(function (a) {
+            var t = tenantById(a.tenant);
+            if (!legendTenants.filter(function (x) { return x.id === t.id; }).length) legendTenants.push(t);
+        });
         var foot = '<p class="rowfoot">Each bar starts when the run is due and is as wide as its wallclock. ' +
-            'The 16-core risk run at ' + esc(intervalTime(NOW_MIN + 25)) + ' arrives while cores are at ' +
+            'The 16-core risk run at ' + esc(clock(NOW_MIN + 25)) + ' arrives while cores are at ' +
             esc(pct(FLEET.coresUsed[INTERVALS - 1] / FLEET.coresTotal)) + ', so it fits; a GPU run would queue.</p>' +
-            miniLegend(TENANTS.map(function (t) { return { label: t.short, color: t.color }; }));
+            miniLegend(legendTenants.map(function (t) { return { label: t.short, color: t.color }; }));
         return chartCard('arrivals', question, meta, svgEl(w, h, out, 'arrivals', question + ', ' + meta), foot, '', true);
     }
 
@@ -1534,8 +1587,8 @@
         /* Every chart's viewBox is 1000 wide so a card scales them all by the
            same factor. A narrower one magnifies its own text. */
         var cellH = 24, left = 104, top = 40;
-        var cellW = Math.round((1000 - left - 10) / cols.length);
-        var w = left + cols.length * cellW + 10;
+        var cellW = (1000 - left - 10) / cols.length;
+        var w = 1000;
         var h = top + rows.length * cellH + 16;
         var out = '';
         cols.forEach(function (c, ci) {
@@ -1621,12 +1674,32 @@
         });
         var question = 'How is the grid split between tenants?';
         var meta = 'Share of cores held at ' + intervalTime(last) + ', and of grid time over the range, percent';
-        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' +
-            (isTenant()
-                ? 'This is ' + esc(tenantById(TENANT_VARIANT).name) +
-                  '\u2019s own share of the grid; no other tenant\u2019s is shown.'
-                : 'Helios takes a larger share of the time than of the cores, because its tasks are longer; ' +
-                  'Meridian is the thin end of both bars.') + '</p>' +
+        /* The sentence follows the bars, so it is read from the same shares the
+           bars are drawn from rather than written by hand. */
+        var coresShare = {}, timeShare = {};
+        TENANTS.forEach(function (t) {
+            coresShare[t.id] = coresNowAll ? USAGE.perTenant[t.id].cores[last] / coresNowAll : 0;
+            timeShare[t.id] = USAGE.totalGridMinutes ? USAGE.perTenant[t.id].gridMinutesTotal / USAGE.totalGridMinutes : 0;
+        });
+        var timeLeader = null, coreLeader = null, timeGap = 0, coreGap = 0;
+        TENANTS.forEach(function (t) {
+            var gap = timeShare[t.id] - coresShare[t.id];
+            if (gap > timeGap) { timeGap = gap; timeLeader = t; }
+            if (-gap > coreGap) { coreGap = -gap; coreLeader = t; }
+        });
+        var shareNote;
+        if (isTenant()) {
+            shareNote = 'This is ' + tenantById(TENANT_VARIANT).name +
+                '\u2019s own share of the grid; no other tenant\u2019s is shown.';
+        } else if (timeLeader && coreLeader && timeGap > 0.01) {
+            shareNote = timeLeader.short + ' takes a larger share of the time (' + pct(timeShare[timeLeader.id]) +
+                ') than of the cores (' + pct(coresShare[timeLeader.id]) + '), because its tasks are longer; ' +
+                coreLeader.short + ' takes the reverse, a larger share of the cores (' + pct(coresShare[coreLeader.id]) +
+                ') than of the time (' + pct(timeShare[coreLeader.id]) + ').';
+        } else {
+            shareNote = 'The two bars split the tenants the same way.';
+        }
+        var foot = '<p class="rowfoot">' + esc(usageSourceNote()) + ' ' + esc(shareNote) + '</p>' +
             miniLegend(tenants.map(function (t) { return { label: t.short, color: t.color }; }));
         return chartCard('usage-share', question, meta, svgEl(w, height, out, 'usageshare', question + ', ' + meta), foot);
     }
@@ -1683,8 +1756,8 @@
         /* The same 1000-wide viewBox as every other chart, for the same
            reason: the card must scale them all alike. */
         var cellH = 24, left = 90, top = 44;
-        var cellW = Math.round((1000 - left - 20) / WRAPPER_VERSIONS.length);
-        var w = left + WRAPPER_VERSIONS.length * cellW + 20;
+        var cellW = (1000 - left - 20) / WRAPPER_VERSIONS.length;
+        var w = 1000;
         var h = top + NODES.length * cellH + 16;
         var versionColor = { 'v0.0.25': C.teal, 'v0.0.24': C.amber, 'v0.0.19': C.vermillion };
         var versionInk = { 'v0.0.25': '#f0f0f2', 'v0.0.24': '#0b0e13', 'v0.0.19': '#f0f0f2' };
@@ -1773,8 +1846,8 @@
             '<span class="tag ' + (failRate > 0.02 ? 'bad' : 'ok') + '">' + pct(failRate) + '</span></span></div>' +
             '<div><span class="lbl">Capacity, cores</span><span class="val"><span class="big">' + num(FLEET.coresUsed[last]) + '</span>' +
             '<span class="tag">of ' + num(FLEET.coresTotal) + ' used</span></span></div>' +
-            '<div><span class="lbl">Work over the range</span><span class="val"><span class="big">' + num(FLEET.throughput.reduce(function (a, b) { return a + b; }, 0)) + '</span>' +
-            '<span class="tag">tasks completed</span></span></div>' +
+            '<div><span class="lbl">Jobs over the range</span><span class="val"><span class="big">' + num(JOBS.length) + '</span>' +
+            '<span class="tag">jobs submitted</span></span></div>' +
             '</div>' +
             '<p class="rowfoot">The grid is the installation\u2019s: every tenant\u2019s work runs on the same hosts. ' +
             'The installation records what it did about its own operation, so the fleet counts and the work counts are both true ' +
@@ -2077,7 +2150,7 @@
        its parents sit, so the chain reads left to right. */
     function lineageNode(node) {
         var hl = node.highlight ? ' bg' + node.highlight : '';
-        var out = '<rect class="lnode' + hl + '" x="' + node.x + '" y="' + node.y + '" width="' + node.w +
+        var out = '<rect class="lnode' + hl + '" data-node="' + esc(node.id) + '" x="' + node.x + '" y="' + node.y + '" width="' + node.w +
             '" height="' + node.h + '" rx="6"></rect>';
         out += '<text class="lkicker" x="' + (node.x + 10) + '" y="' + (node.y + 16) + '">' + esc(node.kicker) + '</text>';
         node.lines.forEach(function (line, i) {
@@ -2088,31 +2161,34 @@
     }
 
     /* Straight across when the two anchors share a height, an elbow when they
-       do not. A dashed edge is one the models do not carry, and it says so in
-       its own title and in the chart's footnote. */
-    function lineageEdge(a, b, note, latch) {
-        var cls = 'ledge' + (note ? ' unmodelled' : '') + (note && latch ? ' latch' : '');
-        var title = '<title>' + esc(note || 'modelled link') + '</title>';
-        if (note && latch) {
+       do not. A modelled edge is solid and names the column that carries it; an
+       unmodelled edge is dashed and says so in its own title and in the chart's
+       footnote. Each edge names the nodes it joins, so the render can be read
+       back and checked. */
+    function lineageEdge(a, b, title, unmodelled, from, to) {
+        var cls = 'ledge' + (unmodelled ? ' unmodelled latch' : '');
+        var data = ' data-from="' + esc(from || '') + '" data-to="' + esc(to || '') + '"';
+        var titleEl = '<title>' + esc(title || 'modelled link') + '</title>';
+        if (unmodelled) {
             var x1 = a.x, y1 = a.y, x2 = b.x, y2 = b.y;
             var width = Math.max(8, ((x1 - x2) * 0.55).toFixed(1));
             var taper = Math.max(6, ((x1 - x2) * 0.32).toFixed(1));
             var body = 'M ' + x1 + ' ' + y1 + ' H ' + (x2 - taper) + ' L ' + x2 + ' ' + y2 +
                 ' L ' + (x2 - taper) + ' ' + (y2 + width / 2) + ' H ' + x1 + ' Z';
-            return '<g class="' + cls + '"><path class="lenv" d="' + body + '"></path>' +
+            return '<g class="' + cls + '"' + data + '><path class="lenv" d="' + body + '"></path>' +
                 '<line x1="' + x2 + '" y1="' + y2 + '" x2="' + (x2 - taper) + '" y2="' + (y2 - width / 2) + '"/>' +
                 '<line x1="' + x2 + '" y1="' + y2 + '" x2="' + (x2 - taper) + '" y2="' + (y2 + width / 2) + '"/>' +
-                title + '</g>';
+                titleEl + '</g>';
         }
         if (a.y === b.y) {
-            return '<g class="' + cls + '"><line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"></line>' +
+            return '<g class="' + cls + '"' + data + '><line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '"></line>' +
                 '<path class="larrow" d="M ' + (b.x - 5) + ' ' + (b.y - 3.5) + ' L ' + b.x + ' ' + b.y + ' L ' + (b.x - 5) + ' ' + (b.y + 3.5) + ' Z"></path>' +
-                title + '</g>';
+                titleEl + '</g>';
         }
         var mid = Math.round((a.x + b.x) / 2);
-        return '<g class="' + cls + '"><path d="M ' + a.x + ' ' + a.y + ' H ' + mid + ' V ' + b.y + ' H ' + b.x + '"></path>' +
+        return '<g class="' + cls + '"' + data + '><path d="M ' + a.x + ' ' + a.y + ' H ' + mid + ' V ' + b.y + ' H ' + b.x + '"></path>' +
             '<path class="larrow" d="M ' + (b.x - 5) + ' ' + (b.y - 3.5) + ' L ' + b.x + ' ' + b.y + ' L ' + (b.x - 5) + ' ' + (b.y + 3.5) + ' Z"></path>' +
-            title + '</g>';
+            titleEl + '</g>';
     }
 
     function lineageChart(job) {
@@ -2166,6 +2242,12 @@
         push(N('sched', leftCols[0].x, TOP, jobW, LH, 'scheduled job',
             [trunc(fx.job.name, 21), 'action ' + trunc(fx.job.action, 18), 'cron ' + trunc(fx.report.cron, 22)]));
 
+        /* The scheduled job's own instance. The report run names it through
+           report_instance.trigger_run_id, so the hop is drawn solid. */
+        var schedinst = N('schedinst', leftCols[0].x, TOP + 100, jobW, LH, 'scheduler job instance',
+            [trunc('JI ' + (40000 + Math.abs(fx.job.name.length * 137 + batchRef.length * 613)), 21),
+                'status succeeded', 'triggered ' + intervalTime(Math.max(0, job.submit - 6))]);
+
         var rep = N('report', leftCols[1].x, TOP, repW, LH, 'report definition',
             [trunc(fx.report.name, 21), trunc(fx.report.type, 22), trunc('cron ' + fx.report.cron, 24)]);
 
@@ -2199,32 +2281,45 @@
         var rightOf = function (n) { return { x: n.x + n.w, y: n.y + n.h / 2 }; };
         var leftOf = function (n) { return { x: n.x, y: n.y + n.h / 2 }; };
 
-        out += lineageEdge(rightOf(byId.sched), leftOf(rep), 'ores.reporting.report_definition.scheduler_job_id');
-        out += lineageEdge(rightOf(rep), leftOf(ri), 'ores.reporting.report_instance.definition_id');
+        /* Every result belongs to the selected job's own workunit, not to the
+           first workunit the batch happens to hold. */
+        var selectedWu = wuNodes[0];
+        wuNodes.forEach(function (n, i) { if (siblings[i].id === job.id) selectedWu = n; });
+
+        out += lineageEdge(rightOf(byId.sched), leftOf(rep),
+            'ores.reporting.report_definition.scheduler_job_id', false, 'sched', 'report');
+        out += lineageEdge(rightOf(byId.sched), rightOf(schedinst),
+            'ores.scheduler.job_instance.job_definition_id', false, 'sched', 'schedinst');
+        out += lineageEdge(rightOf(rep), leftOf(ri),
+            'ores.reporting.report_instance.definition_id', false, 'report', 'reportinstance');
+        out += lineageEdge(rightOf(schedinst), leftOf(ri),
+            'ores.reporting.report_instance.trigger_run_id', false, 'schedinst', 'reportinstance');
         out += lineageEdge(leftOf(ri), rightOf(batch),
-            'no stored link: the trigger message copies the scheduler job_instance_id into report_instance.trigger_run_id, and the batch read joins that report instance by acting inside its tenant', true);
+            'no stored link: the compute submit sets the batch external_ref to the report instance id, and the batch read joins that report instance by acting inside its tenant', true, 'reportinstance', 'batch');
         wuNodes.forEach(function (n) {
-            out += lineageEdge(rightOf(batch), leftOf(n), 'ores.compute.workunit.batch_id');
+            out += lineageEdge(rightOf(batch), leftOf(n), 'ores.compute.workunit.batch_id', false, 'batch', n.id);
         });
         resNodes.forEach(function (n) {
-            out += lineageEdge(rightOf(wuNodes[0]), leftOf(n), 'ores.compute.result.workunit_id');
+            out += lineageEdge(rightOf(selectedWu), leftOf(n), 'ores.compute.result.workunit_id', false, selectedWu.id, n.id);
         });
 
         out += nodes.map(lineageNode).join('');
 
         var question = 'What caused this job, and what runs beside it?';
-        var meta = 'scheduled job \u2192 report definition \u2192 report run \u2192 batch \u2192 workunits \u2192 results, for ' + job.id + ' in ' + batchRef + ', ' + siblings.length + ' workunits';
+        var meta = 'scheduled job and its instance \u2192 report definition \u2192 report run \u2192 batch \u2192 workunits \u2192 results, for ' + job.id + ' in ' + batchRef + ', ' + siblings.length + ' workunits';
         var foot = '<p class="rowfoot">Every hop drawn solid is carried by a model: ' +
             '<span class="mono">report_definition.scheduler_job_id</span> names the scheduled job, ' +
+            '<span class="mono">job_instance.job_definition_id</span> names the scheduled job\u2019s own instance, ' +
             '<span class="mono">report_instance.definition_id</span> names the definition, ' +
+            '<span class="mono">report_instance.trigger_run_id</span> names the scheduler job instance that triggered the run, ' +
             '<span class="mono">workunit.batch_id</span> names the batch, and ' +
-            '<span class="mono">result.workunit_id</span> names the job a run belongs to. ' +
+            '<span class="mono">result.workunit_id</span> names the workunit a run belongs to. ' +
             'The batch to its report run is the one hop with no stored row, so it is drawn dashed: ' +
             'the compute submit sets the batch\u2019s <span class="mono">external_ref</span> to the report instance id and ' +
             'records <span class="mono">workflow_batch_link.workflow_instance_id</span>, but the report instance carries no ' +
-            'batch column to join on. The report definition to its own run is by the run\u2019s ' +
-            '<span class="mono">definition_id</span>; the report run to the scheduler\u2019s own job instance is drawn only ' +
-            'in the link note above, because no row holds it. Clicking a job in the chart selects it.</p>' +
+            'batch column to join on. The report run to the scheduler\u2019s own job instance is carried by the run\u2019s ' +
+            '<span class="mono">trigger_run_id</span>, which holds the scheduler job instance id, so that hop is solid. ' +
+            'Clicking a job in the chart selects it.</p>' +
             miniLegend([
                 { label: 'modelled link', color: C.sky },
                 { label: 'link the models do not carry, dashed', color: C.amber },

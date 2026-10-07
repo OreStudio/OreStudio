@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE
+:END:
+#+title: A subject rename strands every durable consumer
+#+description: A durable consumer is keyed by name and JetStream refuses to attach one whose stored filter differs from what the code now asks for. The stream reconciles and the consumer does not, so a rename looks finished while every durable subscriber fails closed at startup.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :nats:codegen:drift:provisioning:memory:feedback:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+Renaming a NATS subject leaves the durable consumers that were created under its old filter. A durable is keyed by its name, and JetStream refuses to attach one whose stored filter differs from the filter the code now asks for, so every service that subscribes durably dies at startup with js_QueueSubscribe failed and never comes up. It fails closed: the service is simply absent, and the fleet reads 24 of 25 with nothing in its own log to say why.
+
+*Why:* The consumers live in the JetStream file store and survive restarts, and nothing reconciles their filter. The stream IS reconciled -- ensure_stream compares a stream's subjects against the ones asked for and updates them -- which makes the rename look finished: the stream carries the new subjects while its consumers still carry the old ones. Measured after the 2026-10-07 subject migration: four stranded consumers across two streams, the workflow engine's two and the compute wrapper's two, whose filter is a wildcard (compute.v1.work.assignments.*.x64-linux) that a stream-level fix cannot reach.
+
+*How to apply:* After any subject rename, list every stream's consumers and delete the ones whose filter is the old spelling. They are recreated with the correct filter on the next subscribe, and they are safe to delete when ack-pending and unprocessed are both zero. Do not trust a green stream: nats --server $ORES_NATS_URL --tlsca build/keys/nats/ca.crt --tlscert <service>.crt --tlskey <service>.key consumer ls <stream>, or the stream's consumer detail on the monitoring port, shows the stored filter. The structural fix is to reconcile the consumer the way ensure_stream reconciles the stream: on a failed subscribe, compare the stored filter and delete-and-retry. Verified on 2026-10-07: after the stale consumers were deleted, the workflow service started and its two durables came back filtered on workflow.v1.ops.start_workflow and workflow.v1.ops.step_completed.

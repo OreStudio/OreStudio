@@ -113,7 +113,7 @@ class ores::nats::service::client {
     +subscribe_buffered(subject : string_view, capacity) : buffered_subscription
     +queue_subscribe(subject : string_view, queue_group : string_view, handler) : subscription
     +js_publish(subject : string_view, data : span<byte>, headers) : void
-    +js_queue_subscribe(subject, durable_name, queue_group, handler) : subscription
+    +js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name : string_view) : subscription
     +make_admin() : jetstream_admin
     +drain() : void
     +make_subject(relative : string_view) : string

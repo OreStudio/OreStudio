@@ -63,8 +63,9 @@ Two calls in =ores.nats= are the whole surface. Everything else is naming.
 // The publisher side: create the stream if it is absent, then keep it honest.
 admin.ensure_stream(stream_name, {subject_filter});
 
-// The reader side: a durable queue group that survives a restart.
-nats.js_queue_subscribe(subject, durable_name, queue_group, handler);
+// The reader side: name the stream and the subscribe reconciles the durable
+// first, then attaches a durable queue group that survives a restart.
+nats.js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name);
 #+end_src
 
 Three rules make the names line up:
@@ -82,8 +83,10 @@ Three rules make the names line up:
 Every stream is file-backed and retains for seven days
 (=ensure_stream='s =max_age_days= default). A stream's subject filter is the
 contract that decides which publishes it holds, so =ensure_stream= compares it
-against the one asked for and *updates* it when it differs. That reconcile is
-what makes a renamed subject heal on the stream side.
+against the one asked for and *updates* it when it differs. A durable consumer
+stores its own filter, so =js_queue_subscribe= reconciles that one the same way
+when the caller names the stream. Both reconciles are what make a renamed
+subject heal.
 
 * The streams we create
 
@@ -122,27 +125,48 @@ This is the one failure that costs a service its start, and it fails closed.
 A rename rewrites the subject a service subscribes to. =ensure_stream= then
 reconciles the *stream*, so the stream carries the new filter and everything
 looks right. But a durable consumer's filter is stored in the consumer, not the
-stream, and *nothing reconciles a consumer*. JetStream refuses to attach a
-durable whose stored filter differs from the one the code now asks for, so
-=js_QueueSubscribe= fails, the service exits, and the fleet reads one short
-with nothing in that service's own log but =js_QueueSubscribe failed=.
+stream, and *nothing reconciles a consumer* unless the subscribe is asked to.
+JetStream refuses to attach a durable whose stored filter differs from the one
+the code now asks for, so =js_QueueSubscribe= fails, the service exits, and the
+fleet reads one short with nothing in that service's own log but
+=js_QueueSubscribe failed=.
 
-The remedy is to delete the stale consumers after a rename — they are recreated
-with the correct filter on the next subscribe, and are safe to delete when
-ack-pending and unprocessed are both zero. To see the stored filter:
+=js_queue_subscribe= closes that hole. Pass the stream name — as
+=make_stream_name= returns it — and the call reads the durable's stored filter
+first, deletes a consumer whose filter differs, and lets the subscribe recreate
+it against the current subject:
+
+#+begin_src cpp :results verbatim
+const std::string engine_stream(nats.make_stream_name("workflow"));
+
+nats.js_queue_subscribe(
+    messaging::step_completed_event::nats_subject,
+    "workflow-engine-step-completed",
+    qg,
+    handler,
+    engine_stream);
+#+end_src
+
+A caller that passes no stream name subscribes without the check, which is what
+an ephemeral or externally managed consumer wants. A consumer that is absent, or
+that cannot be read, is left alone so the subscribe reports the real reason.
+
+Deleting the consumer discards its position, so the recreated one delivers from
+the start policy again. That is at-least-once by design: a consumer whose filter
+is wrong has no useful position to keep.
+
+To read a stored filter by hand:
 
 #+begin_src sh :results verbatim
 nats --server "$ORES_NATS_URL" --tlsca build/keys/nats/ca.crt \
      --tlscert build/keys/nats/<service>.crt --tlskey build/keys/nats/<service>.key \
-     consumer ls <stream>
+     consumer info <stream> <durable>
 #+end_src
 
-The structural fix, not yet made, is for =js_queue_subscribe= to reconcile the
-consumer the way =ensure_stream= reconciles the stream: compare the stored
-filter, and on a mismatch delete and retry. Until then this is a hand step in
-every environment that has run across a rename. See
-[[id:C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE][A subject rename strands every
-durable consumer]] for the check to run.
+Verified on 2026-10-07: a durable planted on
+=workflow.v1.events.step-completed= was replaced on the next workflow service
+start by one filtered on =workflow.v1.ops.step_completed=, and the service came
+up running.
 
 * See also
 
@@ -156,4 +180,4 @@ durable consumer]] for the check to run.
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol
   Specification]] — the grammar a stream's subjects have to obey.
 - [[id:C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE][A subject rename strands every
-  durable consumer]] — the memory: the instruction to apply after a rename.
+  durable consumer]] — the memory: name the stream so the rename heals.

@@ -464,9 +464,8 @@ void process_assignment(ores::nats::service::client& nats,
             BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.package_uri),
-                                                 pkg_archive,
-                                                 evt.storage_token);
+            ores::storage::net::http_client::get(
+                make_url(cfg.http_base_url, evt.package_uri), pkg_archive, evt.storage_token);
 
             const auto actual_sha256 =
                 ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
@@ -492,9 +491,8 @@ void process_assignment(ores::nats::service::client& nats,
         // Download input archive and unpack into job_dir.
         const fs::path input_archive = job_dir / "input.tar.gz";
         BOOST_LOG_SEV(lg, debug) << "Downloading input";
-        ores::storage::net::http_client::get(make_url(cfg.http_base_url, evt.input_uri),
-                                             input_archive,
-                                             evt.storage_token);
+        ores::storage::net::http_client::get(
+            make_url(cfg.http_base_url, evt.input_uri), input_archive, evt.storage_token);
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
         BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
                                  << " to: " << job_dir.string();
@@ -595,9 +593,8 @@ void process_assignment(ores::nats::service::client& nats,
                 output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
                 BOOST_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
                                          << " (" << output_bytes << " bytes)";
-                ores::storage::net::http_client::put(make_url(cfg.http_base_url, evt.output_uri),
-                                                     output_archive,
-                                                     evt.storage_token);
+                ores::storage::net::http_client::put(
+                    make_url(cfg.http_base_url, evt.output_uri), output_archive, evt.storage_token);
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
             // Success.
@@ -626,14 +623,8 @@ void process_assignment(ores::nats::service::client& nats,
             reporter->record_task_failed();
     }
 
-    submit_result(nats,
-                  evt.result_id,
-                  evt.tenant_id,
-                  cfg.host_id,
-                  output_uri,
-                  outcome,
-                  error_message,
-                  lg);
+    submit_result(
+        nats, evt.result_id, evt.tenant_id, cfg.host_id, output_uri, outcome, error_message, lg);
 }
 
 } // namespace
@@ -699,13 +690,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     const std::string work_subject = assignment_prefix + ".*." + my_triplet;
     const std::string durable_name = "compute_wrapper_shared_" + my_triplet;
     const std::string queue_group = "ores.compute.wrapper." + my_triplet;
+    // Named so the subscribe reconciles the durable first: a subject rename
+    // leaves a consumer whose stored filter the server will not attach.
+    const std::string assignments_stream = nats.make_stream_name("compute_assignments");
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         service_name,
-        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group](auto& n,
-                                                                                auto /*verifier*/) {
+        [&nats,
+         &cfg,
+         raw_reporter,
+         &work_subject,
+         &durable_name,
+         &queue_group,
+         &assignments_stream](auto& n, auto /*verifier*/) {
             auto sub = n.js_queue_subscribe(
                 work_subject,
                 durable_name,
@@ -720,7 +719,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                         return;
                     }
                     process_assignment(nats, *evt, cfg, raw_reporter, lg());
-                });
+                },
+                assignments_stream);
             std::vector<ores::nats::service::subscription> subs;
             subs.push_back(std::move(sub));
             return subs;

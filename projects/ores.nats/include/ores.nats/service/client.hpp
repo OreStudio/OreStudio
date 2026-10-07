@@ -192,11 +192,19 @@ public:
      *
      * Combines durable consumer semantics with competing-consumer load
      * balancing across a queue group.
+     *
+     * @param stream_name The stream holding @p subject, as
+     *        @c make_stream_name returns it. Give it and the call reconciles
+     *        the durable first: a durable is identified by name, and JetStream
+     *        refuses to attach one whose stored filter differs from @p subject,
+     *        which is what a subject rename leaves behind. Pass an empty name
+     *        to subscribe without that check.
      */
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
                                                   std::string_view durable_name,
                                                   std::string_view queue_group,
-                                                  message_handler handler);
+                                                  message_handler handler,
+                                                  std::string_view stream_name = {});
 
     /**
      * @brief Create a JetStream admin handle for provisioning streams.

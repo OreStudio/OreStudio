@@ -684,10 +684,72 @@ void client::js_publish(std::string_view subject,
         throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));
 }
 
+namespace {
+
+/**
+ * @brief Delete a durable whose stored filter is not the one asked for.
+ *
+ * A durable is identified by its name, and JetStream refuses to attach one
+ * whose stored filter differs from the filter the code now asks for. A subject
+ * rename leaves exactly that: @c ensure_stream reconciles the *stream*, so the
+ * stream carries the new filter and everything looks right, while the consumer
+ * keeps the old one and the service never starts. Compare the stored filter and
+ * delete the consumer when it differs; the subscribe recreates it against the
+ * current filter.
+ *
+ * A consumer that is absent, or that cannot be read, is left alone: the
+ * subscribe that follows reports the real reason.
+ */
+void reconcile_durable(jsCtx* js,
+                       const std::string& stream,
+                       const std::string& durable,
+                       const std::string& subject) {
+    jsOptions opts;
+    jsOptions_Init(&opts);
+    auto jerr = jsErrCode(0);
+
+    // Named `existing`, not `info`: `info` is a severity enumerator in this
+    // logging facade, and a local of that name shadows it inside BOOST_LOG_SEV.
+    jsConsumerInfo* existing = nullptr;
+    const natsStatus s =
+        js_GetConsumerInfo(&existing, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+    if (s != NATS_OK || existing == nullptr) {
+        if (existing != nullptr)
+            jsConsumerInfo_Destroy(existing);
+        return;
+    }
+
+    // Copied before the destroy: FilterSubject is owned by the consumer info,
+    // so the log lines below would otherwise read freed memory.
+    const char* filter = existing->Config != nullptr ? existing->Config->FilterSubject : nullptr;
+    const std::string stored(filter != nullptr ? filter : "");
+    const bool differs = stored.empty() || subject != stored;
+    jsConsumerInfo_Destroy(existing);
+    if (!differs)
+        return;
+
+    jsOptions del_opts;
+    jsOptions_Init(&del_opts);
+    jerr = jsErrCode(0);
+    const natsStatus ds = js_DeleteConsumer(js, stream.c_str(), durable.c_str(), &del_opts, &jerr);
+    if (ds != NATS_OK) {
+        BOOST_LOG_SEV(lg(), warn) << "NATS durable '" << durable << "' on '" << stream
+                                  << "' holds the stale filter '" << stored
+                                  << "' and could not be deleted: " << natsStatus_GetText(ds);
+        return;
+    }
+    BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
+                              << "' held the stale filter '" << stored << "'; recreated on '"
+                              << subject << "'";
+}
+
+}
+
 subscription client::js_queue_subscribe(std::string_view subject,
                                         std::string_view durable_name,
                                         std::string_view queue_group,
-                                        message_handler handler) {
+                                        message_handler handler,
+                                        std::string_view stream_name) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
@@ -698,6 +760,9 @@ subscription client::js_queue_subscribe(std::string_view subject,
 
     BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
                               << " (durable: " << durable_str << ", group: " << queue_str << ")";
+
+    if (!stream_name.empty())
+        reconcile_durable(impl_->js, std::string(stream_name), durable_str, subj_str);
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);

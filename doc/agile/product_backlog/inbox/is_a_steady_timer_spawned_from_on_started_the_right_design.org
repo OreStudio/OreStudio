@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4DA2D408-7141-4D8A-8476-D06EE64F44D5
+:END:
+#+title: Is a steady_timer spawned from on_started the right design for periodic work?
+#+description: Two services put recurring work in a boost::asio steady_timer loop spawned from the domain service runner's on_started callback: compute_grid_poller samples grid telemetry every interval_seconds, and the time a service is expected to be up is exactly the time its timer runs. The pattern depends on on_started being invoked, and on 2026-10-07 it was not: the inbox service started, registered its handlers and served requests, but logged no startup sequence at all -- no 'Registered N subscription(s)', no 'Service ready.', no 'Waiting for requests...' -- and neither the heartbeat publisher nor a new expiry sweeper, both spawned from that one callback, ever ran. The process was demonstrably alive, because it published entity-change events minutes later. Root cause not found. Whatever it turns out to be, the question the incident raises is whether periodic work belongs in a process-local timer at all: the scheduler component exists to fire actions at stated times, it already fires system jobs from no-tenant rows, and a job that publishes a subject survives the service restarting, is visible in the job list, can be rescheduled without a build, and does not share a fate with a lifecycle hook. The counter-argument is real and should be weighed rather than waved away: a grid sample every interval is telemetry about this running process, and reaching into the scheduler for it may be heavier than the loop. Decide which recurring behaviours belong in the job catalogue and which are genuinely process-local, and say so, so the next one is not decided by copying whichever example is nearest.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: F06175E8-CA73-4A21-BEC5-898D0A388E17
+:END:
+#+title: Approval request expiry
+#+description: How an approval request nobody answers closes itself: the kind's deadline, the scheduled sweep, the operation it fires, the cross-tenant close, and the notice the person who asked is given.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:approval:scheduler:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+An approval request carries a deadline it takes from its kind. When nobody
+answers by then, the request closes itself as expired and the person who asked
+is told. Two paths close it: the decider who arrives too late, and a scheduled
+sweep, because the request nobody looks at is the one that matters. The sweep
+is a job the scheduler fires at a stated time, and that job publishes an inbox
+operation; the inbox closes every overdue request across every tenant in one
+statement and then raises one notice for each person who asked.
+
+* Detail
+
+** The deadline is the kind's, not the request's
+
+[[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] carries
+=expires_after_days=, and the raise path turns it into the request's
+=expires_at= once, at the moment the request is made. A kind that states no
+days produces a request that never expires, which is the right answer for a
+kind whose answer is genuinely open-ended. The role request kind states
+fourteen days.
+
+The policy is therefore data a tenant's deployment can change without a build,
+and it is stated once for every request of that kind rather than counted again
+each time one is read.
+
+** Two paths close a request, and they state the same thing
+
+The decider path is
+[[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][the decide operation]]: an open
+request whose =expires_at= has passed becomes =expired= instead of being
+decided, and the decider is told the request expired before they reached it.
+This path costs nothing and needs no schedule, but it only fires when somebody
+looks.
+
+The sweep path exists for the queue nobody opens, which is the case a queue
+rots on. Both paths write the same tail — =system.update=, and a commentary
+that says the request closed because nobody answered — so a request's history
+reads the same however it closed, and a reader cannot tell which path ran. That
+is deliberate: they are one rule applied twice, not two rules.
+
+** The sweep is a scheduled job, not a timer in a service
+
+[[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] exists to fire
+actions at stated times, and it already fires system jobs from a row that
+belongs to no tenant. The sweep is such a row: a
+[[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][job definition]] naming a cron
+expression, =action_type = nats_publish=, and the subject in its payload.
+
+The job publishes the inbox's own expiry operation. It does not run the SQL
+directly, and that is the load-bearing decision on this page: closing the
+requests and telling the people who asked are one act, the notice is raised in
+the service rather than in the store, and an =execute_sql= job would close
+requests silently. The job reaches the service for the same reason any other
+caller does.
+
+Nothing about the schedule lives in the inbox process. The inbox states what an
+expiry is; the scheduler states when one is looked for.
+
+** The close is one statement across every tenant
+
+=ores_inbox_expire_approval_requests_fn= closes every open request whose
+deadline has passed, and answers one row per request it closed so the caller
+can tell each person. It is a security-definer function because it reads every
+tenant, where the rest of the inbox is tenant-scoped by row-level security, and
+the inbox service is the only role granted execute on it. The read-write role
+keeps execute too, so the suites can test it.
+
+** An expiry is not a decision
+
+The notice a decision raises reads "{decider} wrote: {comment}", which for an
+expiry would name somebody who did nothing. So the expiry has its own
+notification kind, =inbox.approval_expired=, whose sentence says the request
+ran out of time. See
+[[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]].
+
+** The sweep is idempotent, and it races safely
+
+A request the sweep already closed is no longer open, so a repeated sweep
+closes nothing. A sweep that runs while a decider is deciding converges on one
+answer, because both paths lock the row and both read the same rule. A service
+that was down for a week sweeps what lapsed in that week on its next run,
+because the rule is stated over =expires_at= rather than over an elapsed
+interval.
+
+* Interaction
+
+The diagram draws one request from the ask to its close. The ask carries the
+kind's deadline; nobody answers; the scheduler fires the job, which publishes
+the inbox operation; the inbox closes every overdue request in one statement
+and tells the asker. The last exchange is the decider who arrives too late, and
+shows that the same rule closes the request rather than deciding it.
+
+#+caption: Approval request expiry: the ask takes the kind's deadline, the scheduler fires a job that publishes the inbox's expiry operation, the inbox closes every overdue request across every tenant in one statement and tells the asker, and a decider who reaches for a lapsed request meets the same rule rather than deciding it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/approval_request_expiry_interaction.png]]
+
+Source: [[proj:doc/knowledge/architecture/approval_request_expiry_interaction.puml][=approval_request_expiry_interaction.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/approval_request_expiry_interaction.puml=.
+
+* Patterns used
+
+- [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a
+  Tenant]] — the job belongs to no tenant and its close reads every tenant, so
+  the work a schedule fires is not scoped the way a person's call is.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the
+  sweep states its rule over the deadline rather than over an interval, so a
+  repeated run and a run after an outage both converge.
+
+* See also
+
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record
+  an expiry closes, and why a request is its own row rather than a waiting
+  workflow.
+- [[id:2BA72C77-99DC-4538-8937-52A572CF6F53][Role requests]] — the first kind,
+  and what a lapsed request means to the member who asked.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — how
+  a notice is raised, to whom, and why an expiry carries its own kind.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the
+  journey whose gap this closes: a request nobody answers used to wait forever.
+- [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — the component
+  the job row belongs to, and the jobs it already fires this way.
+- [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]]
+  — the operations a request is raised, decided and swept through.
+- [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]] — component group
+  overview.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol
+  Specification]] — the grammar the expiry subject obeys.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — a
+  sibling page, where a schedule and a durable consumer carry work instead.

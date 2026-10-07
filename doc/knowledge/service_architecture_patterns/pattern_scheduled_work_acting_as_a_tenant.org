@@ -142,6 +142,10 @@ both appear in every audit row the run writes.
 - *Scheduled reports.* [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]
   applies the composite: the =ReportRun= role, the audience of reporting, ORE
   and compute, and the moments reporting creates and revokes a grant.
+- *The expiry sweep.* [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval
+  request expiry]] applies it: the job belongs to no tenant, its close reads
+  every tenant's overdue requests in one statement, and the notice that follows
+  is each asker's own.
 - *Any timer-driven work in a tenant.* A component whose scheduled job must read
   or write party data uses this composite rather than a design of its own.
 

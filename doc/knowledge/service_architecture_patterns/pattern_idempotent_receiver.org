@@ -83,6 +83,7 @@ No security consequence: the identity decides repetition, not access.
 - [[id:183361A9-31B8-4066-A13D-94CA35270F42][Idempotency in a workflow step]] — the replay guard and the converging write.
 - [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the convergence each report phase owes the engine.
 - [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — every step is idempotent, so a retry is safe.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the sweep states its rule over the deadline rather than over an interval, so a repeated run and a run after an outage converge.
 
 * Related patterns
 

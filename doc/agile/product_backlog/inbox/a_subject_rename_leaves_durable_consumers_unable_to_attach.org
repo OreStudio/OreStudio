@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FA7D1F14-B357-4BEA-8AF0-B9D7C16E3E4D
+:END:
+#+title: A subject rename leaves durable JetStream consumers unable to attach
+#+description: Six of the twenty-five services in an environment that has been running across the subject rename do not start, and every one of them dies at the same call: the workflow service and all five compute wrappers fail with js_QueueSubscribe failed: Error. The cause is not the stream. The durable consumers that live in the JetStream file store were created before the rename and still carry the old filter subjects, and JetStream refuses to attach a durable whose filter differs from the one the code now asks for. Measured on eager_maxwell: the workflow-engine-step-completed consumer had Filter Subject workflow.v1.events.step-completed while the service subscribes to workflow.v1.ops.step_completed, and compute_wrapper_shared_x64-linux had compute.v1.work.assignments.*.x64-linux against compute.v1.ops.work_assignment.*.x64-linux. Commit 964d526a39 reconciles a stream's subject filter, and it worked -- the streams carry the new subjects -- but nothing reconciles a consumer's, so the store keeps a filter the code can no longer match. Deleting the four stale consumers and restarting brings the services up, which is a hand fix every environment must repeat. The stream reconcile is the shape the fix should take: on attach, compare the stored filter with the one being asked for and delete and recreate the consumer when they differ, since a consumer carries no state worth keeping across a rename (all four had zero ack-pending and zero unprocessed).
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

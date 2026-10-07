@@ -40,10 +40,55 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1FBC8267-A81F-40A5-A3CE-46ACA3250C52][Analyse the rates family and propose its relational data model]] | STARTED | 2026-10-08 | | Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks. |
+| [[id:1FBC8267-A81F-40A5-A3CE-46ACA3250C52][Analyse the rates family and propose its relational data model]] | DONE | 2026-10-08 | 2026-10-08 | Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks. |
 
 * Decisions
 
+Distilled from =design.org=, which carries the argument and the
+evidence. The design stays in this folder as the record of why these
+decisions are what they are.
+
+- *The family boundary is the asset class, not the catalogue's
+  =product_type=.* The rates family is the =interest_rates= codes:
+  Swap, CrossCurrencySwap, FlexiSwap, ForwardRateAgreement, CapFloor,
+  Swaption, BalanceGuaranteedSwap, CallableSwap and KnockOutSwap.
+  =RiskParticipationAgreement= is a credit product and
+  =InflationSwap= an inflation product; the refdata asset class
+  catalogue and the two domain notes say so, and =product_type= is the
+  misnamed column defect 10 records.
+- *One family header, named =rate_instruments=.* It carries the
+  coverage check over the family's codes, the trade-activity key, the
+  fields every product shares, and the =* Delete cascade= that owns the
+  family's rows. It is a coverage and ownership device first: nothing
+  owns the family today, so a delete leaves the legs and the children
+  behind.
+- *No security level.* A rates trade has no issuer and no ISIN, so
+  there is no master entity to normalise the economics onto.
+- *The legs are re-keyed to the trade and given their direction and
+  their schedules.* =(trade_id, leg_number)= replaces the surrogate
+  =id= as =bond_legs= is keyed, =payer= joins the row, and amount and
+  rate children carry the amortisation and step schedules the single
+  columns cannot.
+- *=netting_set_id= leaves the instrument.* =trade_booking= already
+  holds it, as a uuid foreign key where the instrument's copy is bare
+  text.
+- *The ORE mapping repair is the family's largest unit, not a
+  follow-up.* The import never writes the legs it builds, overwrites a
+  cross-currency swap's type to =Swap=, and leaves seven columns that
+  exist permanently empty.
+
+* Documents
+
+| Document | What it is |
+|----------+------------|
+| =design.org= | The design: the inventory, the findings and the proposed model. Transitional; expires when this story lands. |
+| =design_er.puml=, =design_er.png= | The proposed model's entity-relationship diagram. |
+
 * Out of scope
 
--
+- The credit and inflation families' own reworks, which take
+  =rpa_instruments= and =inflation_swap_instruments= once they leave.
+- The reference tables that turn the family's soft code references into
+  real foreign keys.
+- The three unrouted codes' products, which need ORE importer support
+  before a table can hold them.

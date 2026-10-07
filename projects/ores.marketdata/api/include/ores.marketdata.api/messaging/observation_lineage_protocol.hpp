@@ -45,9 +45,10 @@ struct observation_lineage_write {
     boost::uuids::uuid series_id;
     std::chrono::system_clock::time_point observation_datetime;
     std::string oresmd_uri;
-    boost::uuids::uuid derivation_config_id;
+    std::string point_source_kind;
+    std::optional<boost::uuids::uuid> derivation_config_id;
     int derivation_config_version;
-    std::chrono::system_clock::time_point source_as_of;
+    std::optional<std::chrono::system_clock::time_point> source_as_of;
     std::string source_series_ids;
 };
 

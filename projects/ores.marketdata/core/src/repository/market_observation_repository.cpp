@@ -415,6 +415,44 @@ market_observation_repository::read_latest_for_series(context ctx,
         "Reading latest market observations.");
 }
 
+namespace {
+
+/*
+ * The manual points that own their coordinate for reading: the observation
+ * each current manual annex row of this series keyed. The annex is cold and
+ * holds only hand-keyed points, so this read is small; keeping it separate
+ * from the observation scan leaves the tick path unchanged.
+ */
+std::vector<domain::market_observation>
+read_manual_points(market_observation_repository::context ctx,
+                   const boost::uuids::uuid& series_id,
+                   ores::logging::logger_t& log) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    static const std::string sql = R"(
+        SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
+               o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+        FROM ores_marketdata_observation_lineages_tbl l
+        JOIN ores_marketdata_market_observations_tbl o
+          ON o.tenant_id = l.tenant_id AND o.party_id = l.party_id
+         AND o.series_id = l.series_id AND o.oresmd_uri = l.oresmd_uri
+         AND o.observation_datetime = l.observation_datetime AND o.valid_to = $3
+        WHERE l.tenant_id = $1 AND l.series_id = $2 AND l.point_source_kind = 'manual'
+            AND l.valid_to = $3
+    )";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
+
+    std::vector<domain::market_observation> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+    return result;
+}
+
+}
+
 std::vector<domain::market_observation> market_observation_repository::read_as_of(
     context ctx,
     const boost::uuids::uuid& series_id,
@@ -447,6 +485,21 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     result.reserve(rows.size());
     for (const auto& row : rows)
         result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+
+    // A current manual point owns its coordinate for reading until it is
+    // cleared, so it overlays the fed value and any later automatic write to
+    // the same coordinate. A manual point keyed after as_of_datetime had not
+    // happened yet at that instant and does not overlay.
+    for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
+        if (manual.observation_datetime > as_of_datetime)
+            continue;
+        const auto it =
+            std::ranges::find(result, manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+        if (it != result.end())
+            *it = manual;
+        else
+            result.push_back(manual);
+    }
     return result;
 }
 
@@ -511,6 +564,25 @@ market_observation_repository::read_as_of_buckets(
         const auto ordinal = as_of_bucket_ordinal(row, result.size());
         result[ordinal].push_back(
             market_observation_mapper::map(as_of_observation(row, 1, "read_as_of_buckets")));
+    }
+
+    // The manual overlay, once per bucket: a manual point owns its coordinate
+    // from the bucket whose boundary is at or after the manual write, and the
+    // buckets before it keep the fed value they showed. The boundaries mirror
+    // the generate_series() above, where bucket_ordinal 0 is the oldest.
+    for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
+        for (unsigned int i = 0; i < bucket_count; ++i) {
+            const auto offset = std::chrono::seconds(static_cast<long long>(bucket_count - 1 - i) *
+                                                     bucket_size.count());
+            if (manual.observation_datetime > latest_boundary - offset)
+                continue;
+            const auto it = std::ranges::find(
+                result[i], manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+            if (it != result[i].end())
+                *it = manual;
+            else
+                result[i].push_back(manual);
+        }
     }
     return result;
 }

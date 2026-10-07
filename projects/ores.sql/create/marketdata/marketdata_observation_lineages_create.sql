@@ -24,13 +24,20 @@
  *
  * Observation Lineage Table
  *
- * Per-observation provenance for a *derived* market_observation row: which
- * derivation config/version produced it, and which upstream source
- * series/as-of it read. Written only alongside a derived observation --
- * never for the common OBSERVED case, and never as a column on
+ * Per-observation provenance for a bare market_observation row whose source
+ * is not the market's own quote: which derivation config/version produced it,
+ * and which upstream source series/as-of it read, or -- for a point an operator
+ * keyed by hand -- which kind of point it is, who keyed it and why. Written
+ * never for the common quoted case, and never as a column on
  * market_observations_tbl itself (a TimescaleDB hypertable explicitly
  * documented as carrying no audit columns because tick-level volumes make
- * that impractical). A row's existence *is* the "derived" marker.
+ * that impractical).
+ *
+ * point_source_kind names the two kinds that carry an annex row: derived
+ * for a point a derivation created, and manual for one keyed by hand.
+ * *Quoted is the absence of a row*, so a quoted tick keeps writing one row to
+ * the hot hypertable and nothing else; the invariant this rests on is that a
+ * point a derivation created always has an annex row.
  *
  * Deliberately generic, not curve-specific: this is what lets CRM's own
  * derived-cross publishing (currently pull-only -- see the CRM
@@ -59,9 +66,10 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
     "series_id" uuid not null,
     "observation_datetime" timestamp with time zone not null,
     "oresmd_uri" text not null,
-    "derivation_config_id" uuid not null,
+    "point_source_kind" text not null,
+    "derivation_config_id" uuid null,
     "derivation_config_version" integer not null,
-    "source_as_of" timestamp with time zone not null,
+    "source_as_of" timestamp with time zone null,
     "source_series_ids" jsonb not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -77,7 +85,8 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check (jsonb_array_length("source_series_ids") > 0)
+    check (jsonb_array_length("source_series_ids") >= 0),
+    check ("point_source_kind" in ('derived', 'manual'))
 );
 
 -- Composite natural key: unique combination for active records

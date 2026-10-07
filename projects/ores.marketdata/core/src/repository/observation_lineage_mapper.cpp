@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -58,9 +59,15 @@ domain::observation_lineage observation_lineage_mapper::map(const observation_li
 
     r.oresmd_uri = v.oresmd_uri;
 
-    r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
+    r.point_source_kind = v.point_source_kind;
+    r.derivation_config_id =
+        v.derivation_config_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.derivation_config_id)) :
+            std::nullopt;
     r.derivation_config_version = v.derivation_config_version;
-    r.source_as_of = timestamp_to_timepoint(std::string_view{v.source_as_of});
+    r.source_as_of = v.source_as_of.has_value() ?
+                         std::optional(timestamp_to_timepoint(*v.source_as_of)) :
+                         std::nullopt;
     r.source_series_ids = v.source_series_ids;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -88,9 +95,15 @@ observation_lineage_entity observation_lineage_mapper::map(const domain::observa
 
     r.oresmd_uri = v.oresmd_uri;
 
-    r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
+    r.point_source_kind = v.point_source_kind;
+    r.derivation_config_id = v.derivation_config_id.has_value() ?
+                                 std::optional(boost::uuids::to_string(*v.derivation_config_id)) :
+                                 std::nullopt;
     r.derivation_config_version = v.derivation_config_version;
-    r.source_as_of = ores::platform::time::datetime::to_iso8601_utc(v.source_as_of);
+    r.source_as_of =
+        v.source_as_of.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.source_as_of)) :
+            std::nullopt;
     r.source_series_ids = v.source_series_ids;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -116,7 +116,7 @@ CLASS_NOTES = {
 
 PATH_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("docs", ("doc/*", "assets/*", ".claude/*", "*.md", "*.org", "LICENSE*", ".gitignore")),
-    ("modeling", ("projects/*/modeling/*",)),
+    ("modeling", ("projects/*/modeling/*", "projects/ores.shell/scripts/library/*")),
     ("codegen", ("projects/ores.codegen/*", "projects/ores.http/*")),
     ("sql", ("projects/ores.sql/*", "projects/ores.seeder/*", "*.sql")),
     (
@@ -535,6 +535,10 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         classes=("web",),
         cwd="projects/ores.web",
+        # npm ci deletes and rebuilds node_modules, which the codegen
+        # formatting step reads prettier from. It mutates what other checks
+        # use, so it runs in the serial prepare phase like the other writers.
+        phase=PREPARE,
     ),
     Check(
         id="dsh-environment",

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: C07C3304-8605-44DE-8480-87577B9F8C86
+:END:
+#+title: Story: Hotfix: Drop the libstdc++ internal header the include run added
+#+description: The nightly include run added <bits/chrono.h> to two ores.refdata test files. It is a libstdc++ internal, it is not portable to libc++ or MSVC, and both files already include <chrono>.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:format:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Both test files include <chrono> and not the libstdc++ internal.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- No file in ores.refdata includes a libstdc++ internal header.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5C80BF16-4456-4B94-997C-F4DF28E8E527][Scaffold story: Hotfix: Drop the libstdc++ internal header the include run added]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EB083B46-1885-4BDF-A769-75018716793E][Remove the bits/chrono.h includes from the two test files]] | BACKLOG | | | Initial task for: Hotfix: Drop the libstdc++ internal header the include run added |
+
+* Decisions
+
+* Out of scope
+
+-

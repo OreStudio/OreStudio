@@ -110,6 +110,20 @@ BEGIN
         'integer',
         'Percentage of token lifetime at which the client proactively requests a token refresh. Default is 80 (80%).'
     );
+
+    -- -----------------------------------------------------------------------------
+    -- Inbox schedule settings
+    -- -----------------------------------------------------------------------------
+    -- The inbox declares the job that closes approval requests nobody answered.
+    -- The installation says how often it fires, because how often is worth
+    -- sweeping depends on how many requests a deployment raises and how long
+    -- its administrators take to answer.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'inbox.approval_expiry.schedule',
+        '*/5 * * * *',
+        'string',
+        'Cron expression for the job that closes approval requests past their kind''s deadline. Default is every five minutes.'
+    );
 END $$;
 
 

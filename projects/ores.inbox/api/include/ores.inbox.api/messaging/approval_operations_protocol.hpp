@@ -185,6 +185,35 @@ struct list_my_approval_requests_response {
     int total = 0;
 };
 
+/**
+ * @brief Closes every open request past its kind's deadline, across every
+ * tenant.
+ *
+ * The scheduler fires this, so it acts as the service rather than as a person
+ * and reaches requests no tenant-scoped caller could read. Each person who
+ * asked is told; a request already closed is not open, so a repeated call
+ * changes nothing.
+ */
+struct expire_overdue_approvals_request {
+    using response_type = struct expire_overdue_approvals_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.expire_overdue_approvals";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct expire_overdue_approvals_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The requests that closed, as UUID strings, oldest deadline first.
+     */
+    std::vector<std::string> expired;
+};
+
 }
 
 #endif

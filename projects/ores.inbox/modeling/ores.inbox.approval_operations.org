@@ -317,6 +317,44 @@ end.
 :default:  0
 :END:
 
+** expire_overdue_approvals_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.expire_overdue_approvals
+:response: expire_overdue_approvals_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Closes every open request past its kind's deadline, across every
+ * tenant.
+ *
+ * The scheduler fires this, so it acts as the service rather than as a person
+ * and reaches requests no tenant-scoped caller could read. Each person who
+ * asked is told; a request already closed is not open, so a repeated call
+ * changes nothing.
+ */
+#+end_src
+
+** expire_overdue_approvals_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** expired
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The requests that closed, as UUID strings, oldest deadline first.
+ */
+#+end_src
+
 * See also
 
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] -- the lifecycle these operations apply.

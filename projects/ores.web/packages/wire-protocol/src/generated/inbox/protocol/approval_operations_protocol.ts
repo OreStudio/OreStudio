@@ -133,12 +133,32 @@ export interface ListMyApprovalRequestsResponse {
     total: number;
 }
 
+/**
+ * @brief Closes every open request past its kind's deadline, across every
+ * tenant.
+ *
+ * The scheduler fires this, so it acts as the service rather than as a person
+ * and reaches requests no tenant-scoped caller could read. Each person who
+ * asked is told; a request already closed is not open, so a repeated call
+ * changes nothing.
+ */
+export interface ExpireOverdueApprovalsRequest {}
+
+export interface ExpireOverdueApprovalsResponse {
+    result: Result;
+    /**
+     * @brief The requests that closed, as UUID strings, oldest deadline first.
+     */
+    expired: string[];
+}
+
 export const subjects = {
     raise_approval_request_request: 'inbox.v1.ops.raise_approval',
     withdraw_approval_request_request: 'inbox.v1.ops.withdraw_approval',
     decide_approval_request_request: 'inbox.v1.ops.decide_approval',
     list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
+    expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -151,4 +171,5 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
+    expire_overdue_approvals_request: true,
 } as const;

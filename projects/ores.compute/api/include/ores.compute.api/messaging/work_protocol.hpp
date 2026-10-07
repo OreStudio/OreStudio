@@ -139,6 +139,14 @@ struct work_assignment_event {
      * @brief Pre-assigned upload location for the result (HTTP PUT).
      */
     std::string output_uri;
+    /**
+     * @brief The object capability the node presents to storage.
+     *
+     * Minted for this assignment alone: it names the package, the input and the
+     * output, and nothing else. The node holds no standing storage credential, so
+     * a node that serves many tenants reaches only the job it was handed.
+     */
+    std::string storage_token;
 };
 
 /**

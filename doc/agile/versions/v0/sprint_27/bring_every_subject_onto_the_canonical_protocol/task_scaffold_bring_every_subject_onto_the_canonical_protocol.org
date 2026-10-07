@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -83,3 +83,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its four tasks and the sprint wiring are in place, and the census is
+taken. 2455 distinct subjects in the tree: 2328 conform to the entity protocol
+specification's grammar, 127 do not, and three subject-parts are spelled twice,
+once snake_case and once kebab-case. The raw census and its classification are
+committed as =evidence/subject_census.txt= beside the story.
+
+Nothing is fixed yet, and that is the story's work: the gate comes first, then
+the renamed verbs, the operations into the reserved =ops= namespace, and one
+spelling per resource together with the adopted-components list the
+specification promises but the tree does not carry.

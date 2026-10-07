@@ -26,11 +26,11 @@ The local check gate stops failing on drift that predates any branch.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | The tangle output is committed.        |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the local gate and open the PR.    |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -106,3 +106,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every script the shell recipes tangle to is committed and the tangle is
+clean: =tangle-shell= passes. The same defect on the HTTP side was fixed
+with it, so =tangle-http= passes too, and both recipe inventories were
+refreshed so =recipe-inventories= passes. =component-drift= passes.

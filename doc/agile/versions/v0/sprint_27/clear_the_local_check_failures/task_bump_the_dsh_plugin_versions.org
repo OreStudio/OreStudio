@@ -26,11 +26,11 @@ Both DSH plugin packages carry the product version.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | Both manifests declare 0.0.27 and pass their check. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the local gate and open the PR.    |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -92,3 +92,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both =package.json= files declare 0.0.27, and =dsh-environment= and
+=dsh-kanban= pass.

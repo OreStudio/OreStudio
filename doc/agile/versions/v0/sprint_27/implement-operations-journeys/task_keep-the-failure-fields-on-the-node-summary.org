@@ -8,7 +8,7 @@
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/keep-the-failure-fields-on-the-node-summary
-#+pr:
+#+pr: 2774
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2774][#2774]] | [compute,shell] Keep the failure fields on the node summary |
 
 * Review
 

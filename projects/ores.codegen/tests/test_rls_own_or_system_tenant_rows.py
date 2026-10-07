@@ -91,6 +91,51 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );"""
 
+JUNCTION = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-0000000000F2
+:END:
+#+title: ores.testcomp.installation_pair
+#+type: ores.codegen.junction
+#+component: testcomp
+#+name: installation_pairs
+#+name_singular: installation_pair
+#+name_title: Installation Pair
+#+name_singular_words: installation pair
+#+brief: A junction the installation reads whole.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+
+A junction that links two installation-scoped rows.
+
+* Left
+:PROPERTIES:
+:column:        left_code
+:column_short:  left
+:type:          text
+:cpp_type:      std::string
+:END:
+
+The left side.
+
+* Right
+:PROPERTIES:
+:column:        right_code
+:column_short:  right
+:type:          text
+:cpp_type:      std::string
+:END:
+
+The right side.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+{flags}:END:
+"""
+
 
 def _generate_sql(tmp_path, tenant_isolation="true", rls_flags=""):
     model_path = tmp_path / "ores.testcomp.installation_sample.org"
@@ -167,3 +212,49 @@ def test_plain_tenant_isolation_still_emits_no_system_rows(tmp_path):
     assert re.search(
         r'for all using \(\s*tenant_id = ores_iam_current_tenant_id_fn\(\)\s*\)',
         sql)
+
+
+def _generate_junction_sql(tmp_path, flags):
+    model_path = tmp_path / "ores.testcomp.installation_pair.org"
+    model_path.write_text(JUNCTION.format(flags=flags), encoding="utf-8")
+    output_dir = tmp_path / "out"
+    output_dir.mkdir()
+    generate_from_model(
+        str(model_path),
+        DATA_DIR,
+        TEMPLATES_DIR,
+        output_dir,
+        is_processing_batch=True,
+        target_template="sql_schema_junction_create.mustache",
+        target_output="installation_pair_create.sql",
+    )
+    return (output_dir / "installation_pair_create.sql").read_text(encoding="utf-8")
+
+
+def test_a_junction_emits_own_or_system_tenant_rows_and_a_tenant_scoped_write(tmp_path):
+    sql = _generate_junction_sql(
+        tmp_path,
+        ":rls_tenant_isolation: true\n"
+        ":rls_own_or_system_tenant_rows: true\n")
+    assert POLICY_BODY in sql
+
+
+def test_a_junction_without_tenant_isolation_is_refused(tmp_path):
+    with pytest.raises(
+            ValueError,
+            match='installation_pair: rls_own_or_system_tenant_rows requires '
+                  'rls_tenant_isolation'):
+        _generate_junction_sql(
+            tmp_path, ":rls_own_or_system_tenant_rows: true\n")
+
+
+def test_a_junction_cannot_combine_own_or_system_with_the_widening(tmp_path):
+    with pytest.raises(
+            ValueError,
+            match='installation_pair: rls_own_or_system_tenant_rows and '
+                  'rls_system_tenant_visible are mutually exclusive'):
+        _generate_junction_sql(
+            tmp_path,
+            ":rls_tenant_isolation: true\n"
+            ":rls_own_or_system_tenant_rows: true\n"
+            ":rls_system_tenant_visible: true\n")

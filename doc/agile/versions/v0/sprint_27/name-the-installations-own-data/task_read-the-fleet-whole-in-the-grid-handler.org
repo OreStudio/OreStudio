@@ -8,7 +8,7 @@
 #+filetags: :name-the-installations-own-data:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2761
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -87,13 +87,15 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2761][#2761]] | [compute,codegen] Name the installation's own data |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The two new Catch2 cases logged only at debug, against the convention's one info log per case | repository_compute_telemetry_repository_tests.cpp | Accepted | One =BOOST_LOG_SEV(lg, info)= added per case |
+| 2 | The membership checks used =std::ranges::find(...) != hosts.end()= | repository_compute_telemetry_repository_tests.cpp | Accepted | Switched to =std::ranges::contains= |
+| 3 | =#+pr:= and the PRs table were empty although PR #2761 exists | task_read-the-fleet-whole-in-the-grid-handler.org | Accepted | =#+pr: 2761= and the PRs row added |
 
 * Result
 

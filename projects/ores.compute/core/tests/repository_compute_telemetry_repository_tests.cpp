@@ -117,11 +117,14 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
 
     compute_telemetry_repository telemetry;
     const auto hosts = host_ids_of(telemetry.latest_node_samples(h.context()));
+    BOOST_LOG_SEV(lg, info) << "The fleet read returned " << hosts.size()
+                            << " host(s); it must include the session's own "
+                            << "tenant and the system tenant, and no third tenant.";
     BOOST_LOG_SEV(lg, debug) << "Read host count: " << hosts.size();
 
-    CHECK(std::ranges::find(hosts, boost::uuids::to_string(own_row.host_id)) != hosts.end());
-    CHECK(std::ranges::find(hosts, boost::uuids::to_string(system_row.host_id)) != hosts.end());
-    CHECK(std::ranges::find(hosts, boost::uuids::to_string(third_row.host_id)) == hosts.end());
+    CHECK(std::ranges::contains(hosts, boost::uuids::to_string(own_row.host_id)));
+    CHECK(std::ranges::contains(hosts, boost::uuids::to_string(system_row.host_id)));
+    CHECK(!std::ranges::contains(hosts, boost::uuids::to_string(third_row.host_id)));
 }
 
 TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant_row", tags) {
@@ -169,6 +172,10 @@ TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant
 
     const auto newest = repo.read_newest(h.context());
     REQUIRE(newest.has_value());
+    BOOST_LOG_SEV(lg, info) << "The newest grid sample belongs to tenant "
+                            << newest->tenant_id.to_string()
+                            << "; it must be the system tenant's, not a newer "
+                            << "third tenant's row.";
     BOOST_LOG_SEV(lg, debug) << "Newest id: " << boost::uuids::to_string(newest->id);
 
     CHECK(newest->id != own_row.id);

@@ -77,6 +77,7 @@ export const en: SourceCatalogue = {
             home: 'Home',
             accounts: 'Accounts',
             tenants: 'Tenants',
+            operations: 'Operations',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -830,6 +831,9 @@ export const en: SourceCatalogue = {
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
             audit: 'Sign-ins',
             auditBody: 'Who is signed in now, and the sign-ins that failed.',
+            versions: 'Versions and the database',
+            versionsBody:
+                'What this browser runs, what the deployment runs, and what the database stores.',
             security: 'Your password and sign-ins',
             securityBody: 'Change your password and see where you are signed in.',
         },
@@ -847,6 +851,102 @@ export const en: SourceCatalogue = {
             reportingBody: 'Risk and P&L reports for your books.',
             security: 'Your password and sign-ins',
             securityBody: 'Change your password and see where you are signed in.',
+        },
+    },
+
+    /*
+     * The operations area: the screens that answer what the installation is
+     * doing. The versions screen belongs to every session, so it is offered
+     * from Home as well as from this area's hub.
+     */
+    operations: {
+        back: 'Back to operations',
+        instance: {
+            olderBuild: 'older build',
+            state: {
+                running: 'running',
+                lost: 'lost',
+                missing: 'missing',
+            },
+        },
+        hub: {
+            title: 'Operations',
+            description:
+                'The installation as it is running: what it is made of, what it stores, and what it did.',
+            notBuilt: 'Not built yet',
+        },
+        screens: {
+            versions: 'Versions and the database',
+            versionsBody:
+                'The client build, the deployment build, and the fingerprint of the database.',
+            services: 'Running services',
+            servicesBody: 'Every service the registry expects, met by the instances that report.',
+            grid: 'Compute grid',
+            gridBody: 'The nodes, the work they are doing, and what they have finished.',
+            bus: 'Message bus',
+            busBody: 'The counters the NATS server and its streams report.',
+            logs: 'Telemetry logs',
+            logsBody: 'The lines the services wrote, newest first.',
+        },
+        versions: {
+            title: 'Operations: versions and the database',
+            description:
+                'What this browser runs, what the deployment runs, and what the deployment stores.',
+            unknown: 'unknown',
+            client: {
+                title: 'Client',
+                lead: 'what this browser runs',
+                version: 'Version',
+                commit: 'Commit',
+                checkout: 'Checkout',
+                checkoutUnknown: 'unknown',
+                dirty: 'Uncommitted changes',
+                clean: 'Clean',
+                hint: 'Stamped into the bundle when it was built; it cannot change while the tab is open.',
+            },
+            server: {
+                title: 'Server',
+                lead: 'what the deployment runs',
+                version: 'Version',
+                address: 'Address',
+                hint: 'The login answer stated this build in full, and the session keeps it; the footer reads the same value.',
+            },
+            database: {
+                title: 'Database',
+                lead: 'what the deployment stores',
+                fingerprint: 'Fingerprint',
+                environment: 'Environment',
+                commit: 'Commit',
+                created: 'Created',
+                hint: 'Read from the login answer that opened the session, so this panel makes no request of its own.',
+            },
+            gap: {
+                shape: {
+                    title: 'The client and the server strings do not share a shape',
+                    body: 'The client states a release and a commit; the server adds the platform and the build information in a different composition. The screen shows them side by side; only an eye can compare them.',
+                },
+                releases: {
+                    title: 'The per-instance versions are releases only',
+                    body: 'Each service reports its release string with its heartbeat, so two builds of one release cannot be told apart on the services screen either.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Not on this screen yet',
+            lead: 'each gap names the journey that records it',
+            recordedBy: 'Recorded by {journey}',
+        },
+        related: {
+            title: 'Related journeys',
+            lead: 'where this question leads next',
+            notBuilt: 'Not built yet',
+        },
+        journeys: {
+            services: 'See the running services',
+            logs: 'Read the telemetry logs',
+            grid: 'Watch the compute grid',
+            audit: 'Audit sign-ins',
+            versions: 'Check the versions and the database',
         },
     },
 

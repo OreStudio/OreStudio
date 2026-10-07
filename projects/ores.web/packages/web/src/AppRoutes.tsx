@@ -36,6 +36,8 @@ import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
+import { OperationsArea } from './operations/OperationsArea.js';
+import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
@@ -271,6 +273,35 @@ export function AppRoutes({
                 path="/audit"
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
+                ))}
+            />
+            {/*
+             * The operations area: its hub, and the versions screen the
+             * prototype established. Neither route is gated: any signed-in
+             * person who knows the URL reaches both, and the versions screen's
+             * way back leads into the hub in every mode. The menus decide only
+             * what is offered, not who may look — the system-administration
+             * menu carries the area, and Home carries the versions screen in
+             * the modes without that entry. The hub is a grid of screens, so
+             * it takes the width; the versions panels are a column of detail,
+             * so they keep the default.
+             */}
+            <Route
+                path="/operations"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <OperationsArea />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/versions"
+                element={signedIn(gate.version, session, shell, (view, serverVersion) => (
+                    <VersionsPage session={view} serverVersion={serverVersion} />
                 ))}
             />
             <Route
@@ -653,7 +684,7 @@ function signedIn(
     serverVersion: string,
     session: SessionState,
     shell: ShellActions,
-    screen: (session: SessionView) => ReactNode,
+    screen: (session: SessionView, serverVersion: string) => ReactNode,
     width: ShellWidth = 'column',
 ): ReactNode {
     if (session.status !== 'authenticated') {
@@ -663,7 +694,8 @@ function signedIn(
     /*
      * The session states the build it was opened against, which is newer than
      * the deployment's first answer; that answer is what a screen has before
-     * anybody signs in.
+     * anybody signs in. The screen and the footer both get this resolved value,
+     * so the versions panel cannot state a build the footer disagrees with.
      */
     const version = view.version !== '' ? view.version : serverVersion;
     return (
@@ -677,7 +709,7 @@ function signedIn(
             onSignOut={shell.onSignOut}
             self={shell.self}
         >
-            {screen(view)}
+            {screen(view, version)}
         </AppShell>
     );
 }

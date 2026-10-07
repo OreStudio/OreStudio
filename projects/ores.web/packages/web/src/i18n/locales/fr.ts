@@ -71,6 +71,7 @@ const fr: SourceCatalogue = {
             home: 'Accueil',
             accounts: 'Comptes',
             tenants: 'Locataires',
+            operations: 'Opérations',
             parties: 'Parties',
             rescue: 'Rétablir un accès',
             audit: 'Connexions',
@@ -841,6 +842,9 @@ const fr: SourceCatalogue = {
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
             audit: 'Connexions',
             auditBody: 'Qui est connecté maintenant, et les connexions qui ont échoué.',
+            versions: 'Versions et base de données',
+            versionsBody:
+                'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que la base de données stocke.',
             security: 'Votre mot de passe et vos connexions',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
@@ -859,6 +863,98 @@ const fr: SourceCatalogue = {
             reportingBody: 'Rapports de risque et de P&L pour vos portefeuilles.',
             security: 'Votre mot de passe et vos connexions',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
+        },
+    },
+
+    operations: {
+        back: 'Retour aux opérations',
+        instance: {
+            olderBuild: 'version plus ancienne',
+            state: {
+                running: 'en cours',
+                lost: 'perdu',
+                missing: 'manquant',
+            },
+        },
+        hub: {
+            title: 'Opérations',
+            description:
+                'L’installation telle qu’elle tourne : ce qui la compose, ce qu’elle stocke et ce qu’elle a fait.',
+            notBuilt: 'Pas encore construit',
+        },
+        screens: {
+            versions: 'Versions et base de données',
+            versionsBody:
+                'La version du client, la version du déploiement et l’empreinte de la base de données.',
+            services: 'Services en cours',
+            servicesBody:
+                'Chaque service attendu par le registre, confronté aux instances qui se signalent.',
+            grid: 'Grille de calcul',
+            gridBody: 'Les nœuds, le travail en cours et ce qui est terminé.',
+            bus: 'Bus de messages',
+            busBody: 'Les compteurs rapportés par le serveur NATS et ses flux.',
+            logs: 'Journaux de télémétrie',
+            logsBody: 'Les lignes écrites par les services, les plus récentes en premier.',
+        },
+        versions: {
+            title: 'Opérations : versions et base de données',
+            description:
+                'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que le déploiement stocke.',
+            unknown: 'inconnu',
+            client: {
+                title: 'Client',
+                lead: 'ce que ce navigateur exécute',
+                version: 'Version',
+                commit: 'Commit',
+                checkout: 'Arbre de travail',
+                checkoutUnknown: 'inconnu',
+                dirty: 'Modifications non validées',
+                clean: 'Propre',
+                hint: 'Gravé dans le paquet au moment de sa construction ; il ne peut pas changer tant que l’onglet est ouvert.',
+            },
+            server: {
+                title: 'Serveur',
+                lead: 'ce que le déploiement exécute',
+                version: 'Version',
+                address: 'Adresse',
+                hint: 'La réponse de connexion a énoncé cette version en entier, et la session la conserve ; le pied de page lit la même valeur.',
+            },
+            database: {
+                title: 'Base de données',
+                lead: 'ce que le déploiement stocke',
+                fingerprint: 'Empreinte',
+                environment: 'Environnement',
+                commit: 'Commit',
+                created: 'Créée',
+                hint: 'Lue dans la réponse de connexion qui a ouvert la session ; ce panneau ne fait donc aucune requête.',
+            },
+            gap: {
+                shape: {
+                    title: 'Les chaînes du client et du serveur n’ont pas la même forme',
+                    body: 'Le client énonce une version et un commit ; le serveur ajoute la plateforme et les informations de construction dans une composition différente. L’écran les montre côte à côte ; seul l’œil peut les comparer.',
+                },
+                releases: {
+                    title: 'Les versions par instance ne sont que des versions',
+                    body: 'Chaque service rapporte sa chaîne de version avec son battement de cœur, donc deux constructions d’une même version ne peuvent pas non plus être distinguées sur l’écran des services.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Pas encore sur cet écran',
+            lead: 'chaque manque nomme le parcours qui le consigne',
+            recordedBy: 'Consigné par {journey}',
+        },
+        related: {
+            title: 'Parcours liés',
+            lead: 'où mène ensuite cette question',
+            notBuilt: 'Pas encore construit',
+        },
+        journeys: {
+            services: 'Voir les services en cours',
+            logs: 'Lire les journaux de télémétrie',
+            grid: 'Surveiller la grille de calcul',
+            audit: 'Auditer les connexions',
+            versions: 'Vérifier les versions et la base de données',
         },
     },
 

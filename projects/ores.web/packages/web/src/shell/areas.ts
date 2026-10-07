@@ -43,6 +43,7 @@ export const SHELL_MENUS: Readonly<Record<SessionMode, readonly MenuItem[]>> = {
         { nameKey: 'shell.menu.home', to: '/' },
         { nameKey: 'shell.menu.accounts', to: '/people' },
         { nameKey: 'shell.menu.tenants', to: '/tenants' },
+        { nameKey: 'shell.menu.operations', to: '/operations' },
     ],
     'tenant-administration': [
         { nameKey: 'shell.menu.home', to: '/' },

@@ -373,6 +373,11 @@ function TenantHome({
         },
         { title: t('home.tenant.rescue'), body: t('home.tenant.rescueBody'), to: '/rescue' },
         { title: t('home.tenant.audit'), body: t('home.tenant.auditBody'), to: '/audit' },
+        {
+            title: t('home.tenant.versions'),
+            body: t('home.tenant.versionsBody'),
+            to: '/operations/versions',
+        },
         { title: t('home.tenant.security'), body: t('home.tenant.securityBody'), to: '/security' },
     ];
 
@@ -429,6 +434,11 @@ function PartyHome({
                         title: t('home.tenant.access'),
                         body: t('home.tenant.accessBody'),
                         to: '/access',
+                    },
+                    {
+                        title: t('home.tenant.versions'),
+                        body: t('home.tenant.versionsBody'),
+                        to: '/operations/versions',
                     },
                 ]}
             />

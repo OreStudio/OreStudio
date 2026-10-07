@@ -76,6 +76,7 @@ const pt: SourceCatalogue = {
             home: 'Início',
             accounts: 'Contas',
             tenants: 'Inquilinos',
+            operations: 'Operações',
             parties: 'Partes',
             rescue: 'Recuperar acesso',
             audit: 'Entradas',
@@ -836,6 +837,9 @@ const pt: SourceCatalogue = {
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
             audit: 'Entradas',
             auditBody: 'Quem está ligado agora, e as entradas que falharam.',
+            versions: 'Versões e base de dados',
+            versionsBody:
+                'O que este navegador executa, o que a instalação executa e o que a base de dados guarda.',
             security: 'A sua palavra-passe e entradas',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
@@ -853,6 +857,98 @@ const pt: SourceCatalogue = {
             reportingBody: 'Relatórios de risco e de P&L para as suas carteiras.',
             security: 'A sua palavra-passe e entradas',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
+        },
+    },
+
+    operations: {
+        back: 'Voltar às operações',
+        instance: {
+            olderBuild: 'versão mais antiga',
+            state: {
+                running: 'em execução',
+                lost: 'perdido',
+                missing: 'em falta',
+            },
+        },
+        hub: {
+            title: 'Operações',
+            description:
+                'A instalação tal como está a correr: do que é feita, o que guarda e o que fez.',
+            notBuilt: 'Ainda não construído',
+        },
+        screens: {
+            versions: 'Versões e base de dados',
+            versionsBody:
+                'A versão do cliente, a versão da instalação e a impressão digital da base de dados.',
+            services: 'Serviços em execução',
+            servicesBody:
+                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam.',
+            grid: 'Grelha de cálculo',
+            gridBody: 'Os nós, o trabalho que estão a fazer e o que já terminaram.',
+            bus: 'Barramento de mensagens',
+            busBody: 'Os contadores que o servidor NATS e os seus fluxos reportam.',
+            logs: 'Registos de telemetria',
+            logsBody: 'As linhas escritas pelos serviços, as mais recentes primeiro.',
+        },
+        versions: {
+            title: 'Operações: versões e base de dados',
+            description:
+                'O que este navegador executa, o que a instalação executa e o que a instalação guarda.',
+            unknown: 'desconhecido',
+            client: {
+                title: 'Cliente',
+                lead: 'o que este navegador executa',
+                version: 'Versão',
+                commit: 'Commit',
+                checkout: 'Árvore de trabalho',
+                checkoutUnknown: 'desconhecido',
+                dirty: 'Alterações não registadas',
+                clean: 'Limpa',
+                hint: 'Gravado no pacote quando foi construído; não pode mudar enquanto o separador estiver aberto.',
+            },
+            server: {
+                title: 'Servidor',
+                lead: 'o que a instalação executa',
+                version: 'Versão',
+                address: 'Endereço',
+                hint: 'A resposta de início de sessão indicou esta versão por completo, e a sessão guarda-a; o rodapé lê o mesmo valor.',
+            },
+            database: {
+                title: 'Base de dados',
+                lead: 'o que a instalação guarda',
+                fingerprint: 'Impressão digital',
+                environment: 'Ambiente',
+                commit: 'Commit',
+                created: 'Criada',
+                hint: 'Lida na resposta de início de sessão que abriu a sessão, por isso este painel não faz qualquer pedido.',
+            },
+            gap: {
+                shape: {
+                    title: 'As cadeias do cliente e do servidor não têm a mesma forma',
+                    body: 'O cliente indica uma versão e um commit; o servidor acrescenta a plataforma e as informações de compilação numa composição diferente. O ecrã mostra-as lado a lado; só o olho as pode comparar.',
+                },
+                releases: {
+                    title: 'As versões por instância são apenas versões',
+                    body: 'Cada serviço reporta a sua cadeia de versão com o batimento, por isso duas compilações da mesma versão também não se distinguem no ecrã dos serviços.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Ainda não neste ecrã',
+            lead: 'cada lacuna nomeia o percurso que a regista',
+            recordedBy: 'Registado por {journey}',
+        },
+        related: {
+            title: 'Percursos relacionados',
+            lead: 'para onde esta questão leva a seguir',
+            notBuilt: 'Ainda não construído',
+        },
+        journeys: {
+            services: 'Ver os serviços em execução',
+            logs: 'Ler os registos de telemetria',
+            grid: 'Vigiar a grelha de cálculo',
+            audit: 'Auditar as entradas',
+            versions: 'Verificar as versões e a base de dados',
         },
     },
 

@@ -134,6 +134,11 @@ export type {
     SignupResult,
 } from './contracts.js';
 
+// One expected service instance and its last report, which the operations
+// screens read. It is a generated protocol shape, and the browser surface
+// states it rather than making a screen reach through the transport.
+export type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
+
 // Subjects, so a browser-side module can name one without importing the
 // transport that would know how to reach it.
 export { SUBJECTS } from './operations.js';

@@ -232,6 +232,7 @@ table is the cross-facet index only.
 | =rls_tenant_isolation= | bool | false |
 | =rls_party_isolation= | bool | false |
 | =rls_system_tenant_visible= | bool | false |
+| =rls_own_or_system_tenant_rows= | bool | false |
 
 ** Bundle: =ores.presentation= (presentation projection configuration)
 

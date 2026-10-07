@@ -43,6 +43,7 @@ Variability Model's own bundle tables.
 - [[id:46AC210B-6BDF-49D2-BA47-35404AAEBA18][rls_tenant_isolation]]
 - [[id:224743E4-B05D-4221-B027-9C4779F13823][rls_party_isolation]]
 - [[id:29914714-A8D4-4D4A-A3FE-7CD6D18DEEC3][rls_system_tenant_visible]]
+- [[id:E05BC423-3B67-4119-AAAE-EFF61F7944DC][rls_own_or_system_tenant_rows]]
 
 ** =ores.presentation=
 

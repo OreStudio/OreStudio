@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-07T13:23:34.286602Z
+' Generated: 2026-10-07T16:19:34.985887Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -12508,6 +12508,11 @@ package "compute" #EDE7F6 {
     is a DISTINCT ON (host_id) and the live summary is a call to
     ores_compute_grid_stats_fn, so both stay hand-written in
     compute_telemetry_repository.
+    A sample describes the installation's own grid, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
     end note
 
     entity ores_compute_hosts_tbl <<temporal>> #C6F0D8 {
@@ -12569,9 +12574,14 @@ package "compute" #EDE7F6 {
     a sample is a fact about an instant, so the bi-temporal pair has no
     meaning on it.
     The per-node newest read stays hand-written. It is a
-    DISTINCT ON (host_id) over the tenant's rows, which no generated read
+    DISTINCT ON (host_id) over the installation's rows, which no generated read
     expresses: a read by host_id returns one node's rows, and a read of the
     newest returns the grid's newest and not one row per node.
+    A sample describes the installation's own fleet, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
     end note
 
     entity ores_compute_platforms_tbl <<temporal>> #C6F0D8 {

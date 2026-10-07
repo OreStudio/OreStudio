@@ -35,7 +35,23 @@ Add a row-level-security feature to the entity meta-model that emits the install
 
 * Acceptance
 
--
+- The entity meta-model has a row-level-security feature that emits the
+  installation's policy shape -- =for all using (tenant_id =
+  ores_iam_current_tenant_id_fn() or tenant_id =
+  ores_utility_system_tenant_id_fn()) with check (tenant_id =
+  ores_iam_current_tenant_id_fn())= -- so a model states its owner
+  instead of hand-writing the policy.
+- The feature's name and doc comment cannot be confused with
+  =:rls_system_tenant_visible:=, which emits the guarded =current =
+  system= widening. A codegen test proves the emitted shape and that it
+  carries no widening.
+- The =ores.compute.grid_sample= and =ores.compute.node_sample= models
+  declare the feature and =:tenant_read_scope: shared=, so their generated
+  reads carry no tenant predicate and the policy decides.
+- The guard reports the same 10 listed widenings and no new one, and the
+  codegen suite passes.
+- The regenerated compute SQL carries the shape, and the component drift
+  gate reports no drift.
 
 * Plan
 

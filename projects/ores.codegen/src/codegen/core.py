@@ -1544,22 +1544,42 @@ def validate_cache_aux_type(domain_entity):
 
 def validate_rls_isolation(domain_entity):
     """
-    Validate the rls_party_isolation sql flag: the AS RESTRICTIVE party
-    policy is emitted inside the tenant-isolation block (it ANDs with the
-    permissive tenant policy), so party isolation without tenant isolation
-    would silently emit no RLS at all for the entity.
+    Validate the rls_* sql flags that shape the emitted tenant policy.
+
+    The AS RESTRICTIVE party policy is emitted inside the tenant-isolation
+    block (it ANDs with the permissive tenant policy), so party isolation
+    without tenant isolation would silently emit no RLS at all for the
+    entity. The own-or-system-tenant-rows shape is also emitted inside that
+    block, so it too would silently vanish, and it must not be combined with
+    rls_system_tenant_visible: the two describe different policies, and a
+    model that asked for both would emit a system-tenant widening under a
+    name that promises it is not one.
 
     Args:
         domain_entity (dict): not mutated.
 
     Raises:
-        ValueError: if rls_party_isolation is set without rls_tenant_isolation.
+        ValueError: if rls_party_isolation is set without rls_tenant_isolation,
+            if rls_own_or_system_tenant_rows is set without
+            rls_tenant_isolation, or if rls_own_or_system_tenant_rows and
+            rls_system_tenant_visible are both set.
     """
     sql_section = domain_entity.get('sql', {})
+    name = domain_entity.get('entity_singular', '?')
     if sql_section.get('rls_party_isolation') and not sql_section.get('rls_tenant_isolation'):
         raise ValueError(
-            f"{domain_entity.get('entity_singular', '?')}: rls_party_isolation requires "
+            f"{name}: rls_party_isolation requires "
             f"rls_tenant_isolation")
+    if (sql_section.get('rls_own_or_system_tenant_rows')
+            and not sql_section.get('rls_tenant_isolation')):
+        raise ValueError(
+            f"{name}: rls_own_or_system_tenant_rows requires "
+            f"rls_tenant_isolation")
+    if (sql_section.get('rls_own_or_system_tenant_rows')
+            and sql_section.get('rls_system_tenant_visible')):
+        raise ValueError(
+            f"{name}: rls_own_or_system_tenant_rows and "
+            f"rls_system_tenant_visible are mutually exclusive")
 
 
 def validate_explorer_interface(domain_entity):

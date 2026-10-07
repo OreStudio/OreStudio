@@ -38,6 +38,12 @@
  * is a DISTINCT ON (host_id) and the live summary is a call to
  * ores_compute_grid_stats_fn, so both stay hand-written in
  * compute_telemetry_repository.
+ *
+ * A sample describes the installation's own grid, not one tenant's slice of
+ * it, so the table carries :rls_own_or_system_tenant_rows:: every session
+ * reads the system tenant's rows, and writes stay the current tenant's. The
+ * C++ read states :tenant_read_scope: shared, so it adds no tenant
+ * predicate and the policy decides.
  */
 
 create table if not exists "ores_compute_grid_samples_tbl" (
@@ -124,6 +130,8 @@ end $$;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Grid Sample
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
 -- =============================================================================
 alter table ores_compute_grid_samples_tbl enable row level security;
 
@@ -134,6 +142,7 @@ create policy grid_samples_tbl_tenant_isolation_policy
 on ores_compute_grid_samples_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

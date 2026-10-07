@@ -35,7 +35,18 @@ latest_node_samples and the newest grid sample carry no tenant predicate, and a 
 
 * Acceptance
 
--
+- =compute_telemetry_repository::latest_node_samples= carries no =WHERE
+  tenant_id = $1= and no parameter for it: the policy decides which rows
+  the session reads.
+- The newest grid sample comes from the generated repository and carries
+  no tenant predicate through =:tenant_read_scope: shared=.
+- A Catch2 test under =projects/ores.compute/core/tests/= proves a session
+  the permission admits reads every node the installation reports, and
+  states honestly that a sample written under a third tenant is not
+  visible.
+- The work counts are stated as out of reach, and their ownership is
+  recorded as superseded by story 84345A75 (the usage ledger) in the
+  Result. This half is not implemented here.
 
 * Plan
 

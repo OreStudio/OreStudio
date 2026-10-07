@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
 #+branch: feature/declare-what-a-step-consumes-and-produces
-#+pr:
+#+pr: 2781
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2781][2781]] | Let a step declare the steps whose results it reads |
 
 * Review
 

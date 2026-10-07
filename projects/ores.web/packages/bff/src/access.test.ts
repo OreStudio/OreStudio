@@ -253,7 +253,9 @@ describe('access routes', () => {
                 permissionCodes: [],
             },
         ]);
-        expect(calls.filter((c) => c.subject === 'iam.v1.ops.get_role_permissions')).toHaveLength(1);
+        expect(calls.filter((c) => c.subject === 'iam.v1.ops.get_role_permissions')).toHaveLength(
+            1,
+        );
     });
 
     it('keeps a role the registration default when it is renamed', async () => {

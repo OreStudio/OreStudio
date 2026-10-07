@@ -65,8 +65,8 @@ tick(const std::string& uri, const std::string& value, const std::string& source
     made.oresmd_uri = uri;
     made.value = value;
     made.source = source;
-    made.observation_time = std::chrono::sys_days{std::chrono::year{2026} / 10 / 6} +
-                            std::chrono::hours{hour};
+    made.observation_time =
+        std::chrono::sys_days{std::chrono::year{2026} / 10 / 6} + std::chrono::hours{hour};
     return made;
 }
 
@@ -97,9 +97,8 @@ TEST_CASE("marketdata_commands registers the stream verb", tags) {
     marketdata_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("marketdata ");
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    std::string{"marketdata stream"}) != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"marketdata stream"}) !=
+          completions.end());
 }
 
 TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
@@ -108,9 +107,8 @@ TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", tags) {
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, eurusd_uri);
 
     REQUIRE(watch.has_value());
-    CHECK(watch->subjects ==
-          std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id + "." + party_id +
-                                   ".fx.rate.eur.usd"});
+    CHECK(watch->subjects == std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id +
+                                                      "." + party_id + ".fx.rate.eur.usd"});
     CHECK_FALSE(watch->series.has_value());
 }
 
@@ -123,8 +121,8 @@ TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree", tags) {
     // A series has no ORE key of its own, and a rating's two coordinates sit
     // around its identity field, so no single wildcard subject covers exactly
     // one series; the watch takes the whole subtree and filters.
-    CHECK(watch->subjects ==
-          std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id + "." + party_id + ".>"});
+    CHECK(watch->subjects == std::vector<std::string>{"marketdata.v1.ops.market_tick." + tenant_id +
+                                                      "." + party_id + ".>"});
     REQUIRE(watch->series.has_value());
     CHECK(watch->series->is_series());
 }
@@ -149,8 +147,8 @@ TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", tags) {
     // The matching point is kept and the other series' point is dropped.
     CHECK(output.count == 1);
     REQUIRE(output.screen_lines.size() == 1);
-    CHECK(output.screen_lines[0] == "2026-10-06 09:00:00Z  " + rating_point_uri +
-                                        "  0.01  synthetic.rating");
+    CHECK(output.screen_lines[0] ==
+          "2026-10-06 09:00:00Z  " + rating_point_uri + "  0.01  synthetic.rating");
     CHECK(output.rows.size() == 2);
 }
 
@@ -179,25 +177,23 @@ TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", tags) {
 
     CHECK(output.count == 2);
     REQUIRE(output.screen_lines.size() == 2);
-    CHECK(output.screen_lines[0] == "2026-10-06 09:00:00Z  " + eurusd_uri +
-                                       "  1.0812  synthetic.eurusd");
-    CHECK(output.screen_lines[1] == "2026-10-06 10:00:00Z  " + eurusd_uri +
-                                       "  1.0815  synthetic.eurusd");
+    CHECK(output.screen_lines[0] ==
+          "2026-10-06 09:00:00Z  " + eurusd_uri + "  1.0812  synthetic.eurusd");
+    CHECK(output.screen_lines[1] ==
+          "2026-10-06 10:00:00Z  " + eurusd_uri + "  1.0815  synthetic.eurusd");
     CHECK(out.str() == output.screen_lines[0] + "\n" + output.screen_lines[1] + "\n");
 
     REQUIRE(output.rows.size() == 3);
     CHECK(output.rows[0] == "observation_time,oresmd_uri,value,source");
-    CHECK(output.rows[1] == "2026-10-06 09:00:00Z," + eurusd_uri +
-                                ",1.0812,synthetic.eurusd");
-    CHECK(output.rows[2] == "2026-10-06 10:00:00Z," + eurusd_uri +
-                                ",1.0815,synthetic.eurusd");
+    CHECK(output.rows[1] == "2026-10-06 09:00:00Z," + eurusd_uri + ",1.0812,synthetic.eurusd");
+    CHECK(output.rows[2] == "2026-10-06 10:00:00Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
 }
 
 TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto row = marketdata_commands::tick_row(
-        tick(eurusd_uri, "1.0812", "synthetic, quoted", 9));
+    const auto row =
+        marketdata_commands::tick_row(tick(eurusd_uri, "1.0812", "synthetic, quoted", 9));
 
     CHECK(row == "2026-10-06 09:00:00Z," + eurusd_uri + ",1.0812,\"synthetic, quoted\"");
 }
@@ -224,8 +220,8 @@ TEST_CASE("an_unwritable_csv_path_is_reported", tags) {
     std::ostringstream out;
     const std::string unwritable("/no/such/directory/ticks.csv");
 
-    const auto output = marketdata_commands::run_stream(
-        source, [] { return false; }, unwritable, out);
+    const auto output =
+        marketdata_commands::run_stream(source, [] { return false; }, unwritable, out);
 
     // The tick still reaches the screen, and the failed file is named rather
     // than reported as written.

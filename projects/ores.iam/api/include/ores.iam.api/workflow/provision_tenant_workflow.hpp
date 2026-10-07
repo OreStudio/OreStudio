@@ -69,7 +69,8 @@ inline constexpr std::string_view provision_party_target_kind = "party";
  * The handler on this subject is ores.iam's, which owns the orchestration, so a
  * step kind is code in this component and needs no other component to change.
  */
-inline constexpr std::string_view provision_tenant_step_subject = "iam.v1.ops.provision_tenant-step";
+inline constexpr std::string_view provision_tenant_step_subject =
+    "iam.v1.ops.provision_tenant-step";
 
 /// The step kind that completes the tenant, appended to every run after the
 /// kinds the profile declares. A run finishes only by running its steps out, so

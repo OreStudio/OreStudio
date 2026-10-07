@@ -1,6 +1,6 @@
 {
   "name": "ores-dsh-environment",
-  "version": "0.0.25",
+  "version": "0.0.27",
   "private": true,
   "description": "DSH plugin: the session's own checkout as a live environment, read from compass, with service control.",
   "type": "module",

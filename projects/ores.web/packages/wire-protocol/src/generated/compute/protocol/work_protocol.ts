@@ -83,6 +83,14 @@ export interface PullWorkResponse {
  */
 export interface WorkAssignmentEvent {
     /**
+     * @brief The tenant that owns the result the node must fill in.
+     *
+     * The node hands it back on submit. A wrapper fleet is shared across tenants,
+     * so the work a node takes does not tell it which tenant it is serving, and
+     * the result row is tenant-scoped.
+     */
+    tenant_id: string;
+    /**
      * @brief The result row the node must fill in.
      */
     result_id: string;
@@ -114,6 +122,14 @@ export interface WorkAssignmentEvent {
      * @brief Pre-assigned upload location for the result (HTTP PUT).
      */
     output_uri: string;
+    /**
+     * @brief The object capability the node presents to storage.
+     *
+     * Minted for this assignment alone: it names the package, the input and the
+     * output, and nothing else. The node holds no standing storage credential, so
+     * a node that serves many tenants reaches only the job it was handed.
+     */
+    storage_token: string;
 }
 
 /**
@@ -145,6 +161,14 @@ export interface ReapWorkMessage {}
  * is trusted at the transport layer.
  */
 export interface SubmitResultRequest {
+    /**
+     * @brief The tenant that owns the result, echoed from the assignment.
+     *
+     * The service scopes the write to this tenant, so the node must return the
+     * one it was given. Without it the tenant-scoped result row is invisible to
+     * the service's own system context.
+     */
+    tenant_id: string;
     /**
      * @brief The result row that finished.
      */

@@ -83,6 +83,11 @@ BEGIN
     -- grant's audience names hold it.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:exchange', 'Exchange a run grant for a run token');
 
+    -- A service that dispatches work mints the object-scoped capability a
+    -- worker node presents to storage. The grants are the caller's to state,
+    -- so only a service trusted to scope an assignment holds it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::storage_capabilities:mint', 'Mint a storage capability for a node''s assignment');
+
     -- Permission catalogue permissions. The generated permission CRUD checks
     -- these two; the catalogue itself is seeded, so a screen picks from it
     -- rather than creating a code nothing would enforce.

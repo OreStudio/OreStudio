@@ -22,6 +22,7 @@
 
 #include "ores.compute.api/eventing/workunit_changed_event.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.iam.client/client/storage_capability_minter.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include <string>
@@ -54,7 +55,9 @@ private:
     }
 
 public:
-    workunit_dispatcher(ores::nats::service::client& nats, ores::database::context ctx);
+    workunit_dispatcher(ores::nats::service::client& nats,
+                        ores::database::context ctx,
+                        ores::nats::service::nats_client& service_nats);
 
     /**
      * @brief Dispatches every workunit named in the event.
@@ -71,6 +74,7 @@ private:
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
+    ores::iam::client::storage_capability_minter minter_;
 };
 
 }

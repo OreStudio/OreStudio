@@ -85,15 +85,21 @@ private:
     };
 
     /**
-     * @brief Authenticates the caller and checks one operation's permission.
+     * @brief Authenticates the caller and admits one operation on one object.
      *
-     * Returns the response to send when either step fails, so a handler can
-     * co_return it unchanged.
+     * A token that carries storage grants is a capability: it answers from the
+     * grant that names this bucket, this key prefix and this operation, and no
+     * permission lookup is made. A token with no grants is a session and falls
+     * through to the permission check. Returns the response to send when the
+     * caller is not admitted, so a handler can co_return it unchanged.
      */
     std::expected<auth_result, http::domain::http_response>
     check_auth(const http::domain::http_request& req,
                std::string_view required_permission,
-               std::string_view operation_name);
+               std::string_view operation_name,
+               std::string_view grant_op,
+               std::string_view bucket,
+               std::string_view key);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_put(const http::domain::http_request& req);

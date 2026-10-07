@@ -343,6 +343,49 @@ TEST_CASE("jwt_authenticator_round_trips_the_run_token_claims", tags) {
     CHECK_FALSE(own->run_id.has_value());
 }
 
+TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
+    auto signer = jwt_authenticator::create_hs256(test_secret);
+
+    jwt_claims claims;
+    claims.subject = "node-uuid";
+    claims.issued_at = std::chrono::system_clock::now();
+    claims.expires_at = claims.issued_at + std::chrono::hours(1);
+    claims.tenant_id = "acme-tenant-uuid";
+    claims.storage_grants = {
+        storage_grant{.bucket = "ores",
+                      .key_prefix = "compute/packages/ORE-1.8.17.0/",
+                      .op = "get"},
+        storage_grant{.bucket = "ores",
+                      .key_prefix = "ore/packages/instance-uuid/",
+                      .op = "get"},
+        storage_grant{.bucket = "ores",
+                      .key_prefix = "compute/output/result-uuid",
+                      .op = "put"}};
+
+    const auto token = signer.create_token(claims);
+    REQUIRE(token.has_value());
+
+    const auto validated = signer.validate(*token);
+    REQUIRE(validated.has_value());
+    REQUIRE(validated->storage_grants.size() == 3);
+    CHECK(validated->storage_grants[0].bucket == "ores");
+    CHECK(validated->storage_grants[0].key_prefix == "compute/packages/ORE-1.8.17.0/");
+    CHECK(validated->storage_grants[0].op == "get");
+    CHECK(validated->storage_grants[1].key_prefix == "ore/packages/instance-uuid/");
+    CHECK(validated->storage_grants[2].op == "put");
+
+    const auto lenient = signer.validate_allow_expired(*token);
+    REQUIRE(lenient.has_value());
+    REQUIRE(lenient->storage_grants.size() == 3);
+    CHECK(lenient->storage_grants[0].key_prefix == "compute/packages/ORE-1.8.17.0/");
+
+    // A token with no grants carries none, and a reader must not invent one.
+    claims.storage_grants.clear();
+    const auto plain = signer.validate(*signer.create_token(claims));
+    REQUIRE(plain.has_value());
+    CHECK(plain->storage_grants.empty());
+}
+
 TEST_CASE("jwt_authenticator_rs256_tamper_rejected", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";

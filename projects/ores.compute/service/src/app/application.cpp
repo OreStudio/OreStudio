@@ -120,7 +120,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.compute.workunit", "ores_compute_workunits");
 
     // Must be constructed before event_source.start() so no change is missed.
-    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database));
+    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database), svc_nats);
 
     // Grid dispatch seam: creates the result rows and publishes the JetStream
     // assignments for shell-saved workunits. It reads the in-process bus rather

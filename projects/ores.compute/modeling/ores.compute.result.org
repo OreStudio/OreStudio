@@ -149,11 +149,18 @@ std::chrono::system_clock::time_point{}
 
 ** host_id
 :PROPERTIES:
-:table:         ores_compute_hosts_tbl
-:target_column: id
-:nullable:      true
+:table:                  ores_compute_hosts_tbl
+:target_column:          id
+:nullable:               true
+:system_tenant_visible:  true
 :error_message: Invalid host_id: %. No active host found with this id.
 :END:
+
+Hosts are a deployment-level registry: a node registers itself on first
+heartbeat under the system tenant, and the fleet is shared, so one node runs
+work for every tenant. A result is a tenant's row that names the node that ran
+it, so the soft-FK check admits the row's own tenant or the system tenant. A
+host row is never a tenant's to own.
 
 * SQL
 

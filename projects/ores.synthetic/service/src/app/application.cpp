@@ -96,7 +96,7 @@ void auto_start_feeds(feed_controller& ctrl,
     using ores::synthetic::feed::ir_curve_feed_kind;
     using ores::synthetic::feed::ir_curve_qualifier;
     using ores::synthetic::feed::ir_curve_tenor_convention_code;
-    using ores::synthetic::feed::make_default_feed_factory;
+    using ores::synthetic::feed::default_feed_factory;
 
     repo::market_data_generation_config_repository feed_repo;
     repo::fx_spot_generation_config_repository fx_repo;
@@ -218,7 +218,7 @@ void auto_start_feeds(feed_controller& ctrl,
                                                         container->second.binding_mode}});
     }
 
-    const auto factory = make_default_feed_factory();
+    const auto& factory = default_feed_factory();
     int started = 0;
     for (const auto& c : candidates) {
         try {

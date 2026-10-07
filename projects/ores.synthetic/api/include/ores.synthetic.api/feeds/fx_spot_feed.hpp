@@ -28,7 +28,7 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
-#include <atomic>
+#include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -98,7 +98,7 @@ public:
     void start() override;
     void stop() override;
     std::uint64_t publish_count() const override {
-        return publish_count_.load(std::memory_order_relaxed);
+        return clock_.publish_count();
     }
 
 private:
@@ -108,10 +108,8 @@ private:
     std::string source_name_;
     std::string qualifier_;
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process_;
-    double ticks_per_hour_;
+    tick_clock clock_;
     std::string nats_subject_;
-    std::atomic<bool> stop_flag_{false};
-    std::atomic<std::uint64_t> publish_count_{0};
 };
 
 /**

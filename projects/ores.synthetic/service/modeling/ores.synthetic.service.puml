@@ -141,6 +141,41 @@ end note
 ' The feed control plane: the controller, its handlers, and the private
 ' handlers the service registrars subscribe.
 
+class ores::synthetic::service::feed_kind_registry {
+    +feed_kind_registry()
+    +feed_kind_registry(d : deps)
+    +register_kind(k : feed_kind)
+    +factory() : feed_factory&
+    +find(kind : string_view) : feed_kind*
+    +all() : vector<feed_kind*>
+    +permits_all_configs(ctx : database::context&) : bool
+    +rows(ctx : database::context&) : vector<feed_kind_row>
+    +targets(ctx : database::context&) : vector<feed_start_target>
+    +resolve(ctx : database::context&, feed_config_id : string&) : optional<feed_start_target>
+    +folder_subtree(ctx : database::context&, root_id : uuid&) : set<uuid>
+    +make_feed(target : feed_start_target&, bctx : feed_build_context&) : feed_start_attempt
+    +reply_unknown_kind(nats : nats::client&, msg : nats::message&, kind : string&)
+    +vintage_validity(ctx : database::context&, auth_nats : nats_client&, caller_bearer_token : string&) : vector<vintage_validity_entry>
+    -make_target(k : feed_kind&, c : feed_kind_candidate, containers_by_id : map<uuid,market_data_generation_config>*) : optional<feed_start_target>
+    -check_vintage(row : feed_kind_row&, auth_nats : nats_client&, caller_bearer_token : string&) : vintage_validity_entry
+}
+note right of "ores::synthetic::service::feed_kind_registry"
+The one per-kind registry: the config-plane's dispatch table.
+A feed_kind carries the factory kind, the config permission, a
+candidates closure that loads that kind's config rows, and the
+two closures that decode and reply one simulate request. The
+registry owns the reads that are not per-kind -- the
+market_data_generation_config container lookup and the folder
+subtree walk -- and the bodies of every verb that used to be
+written once per asset class: the startability gate and the
+producer construction (make_feed), the permission gate
+(permits_all_configs), the vintage check and the kind-neutral
+simulate envelope (run_simulate_paths). Injecting the three
+non-per-kind reads is what keeps every handler free of an
+ores.synthetic.core repository, and what lets a stub kind be
+driven with no database.
+end note
+
 class ores::synthetic::service::feed_controller {
     +feed_controller(nats : nats::client&, auth_nats : nats_client&, bindings : shared_ptr<feed_binding_store>)
     +~feed_controller()
@@ -150,10 +185,8 @@ class ores::synthetic::service::feed_controller {
     +shutdown()
     +running_count() : size_t
     +list(kind : string) : vector<string>
-    +validate(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
     +running_source_name_for_conflict_key(conflict_key : string) : optional<string>
     -bind_feed(source_name : string, binding_mode : binding_mode, caller_bearer_token : string)
-    -vintage_data_available(ore_key : string, vintage_source : string, vintage_date : string, error_detail : string&, caller_bearer_token : string, resolved_price : double*) : bool
     -find_conflict(feed : IFeed&, excluding_source_name : string) : optional<string>
     -start_running(feed : shared_ptr<IFeed>, binding_mode : binding_mode)
     -status_loop()
@@ -194,12 +227,10 @@ live marketdata service. Idempotent: an already-bound source keeps its one row.
 end note
 
 class ores::synthetic::service::feed_config_handler {
-    +feed_config_handler(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +feed_config_handler(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
     +start(msg : nats::message)
     +stop(msg : nats::message)
     +list(msg : nats::message)
-    -start_fx(req_ctx : database::context&, msg : nats::message&, cfg : fx_spot_generation_config&)
-    -start_ir(req_ctx : database::context&, msg : nats::message&, cfg : ir_curve_generation_config&)
     -reply_start_outcome(msg : nats::message&, resp : start_feed_response&, feed : shared_ptr<IFeed>, binding_mode : binding_mode, bearer : string)
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
@@ -207,23 +238,21 @@ note right of "ores::synthetic::service::feed_config_handler"
 Serves synthetic.v1.ops.start_feed / .stop / .list --
 one handler for every asset class, replacing the per-kind
 handlers that came before it. The client sends a config_id
-and nothing else: the handler probes the FX repository and
-then the IR repository to discover the kind, because the
-market_data_generation_config container carries no kind
-discriminator. Missing, disabled and vintage-missing all
-answer with one message shape regardless of kind. start()
-reads the container and the GMM components for FX, the
-template entries and parameter values for IR, builds the
-refdata context, then hands the feed to the factory and the
+and nothing else: the registry resolves it against every
+registered kind and reports which kind claimed it, so the
+handler names no config table and no permission string.
+Missing, disabled and vintage-missing all answer with one
+message shape regardless of kind. start() asks the registry
+for the producer (make_feed applies the gate, loads the
+children and builds through the factory) and hands it to the
 controller. stop() is idempotent: zero stopped means it was
 already stopped.
 end note
 
 class ores::synthetic::service::folder_feed_control_handler {
-    +folder_feed_control_handler(nats : nats::client&, ctrl : shared_ptr<feed_controller>, auth_nats : nats_client&, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +folder_feed_control_handler(nats : nats::client&, ctrl : shared_ptr<feed_controller>, auth_nats : nats_client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
     +start(msg : nats::message)
     +stop(msg : nats::message)
-    -resolve_subtree(ctx : database::context&, folder_id : uuid&) : set<uuid>
     -parse_folder_id(s : string&, out : uuid&) : bool
     -authenticated_context(verb : string_view, msg : nats::message&) : optional<database::context>
 }
@@ -231,74 +260,83 @@ note right of "ores::synthetic::service::folder_feed_control_handler"
 Serves marketdata.v1.ops.start_feeds_under_folder and
 .stop_folder. The single place that turns "start everything
 under this folder" into a sequence of producer starts: it
-resolves the folder subtree once and fans out over every
-config row beneath it, of every asset class, through the
-same factory and controller -- so Qt, ores.shell and a wt
-workflow step all get one behaviour from one request. The
-folder and feed rows are tenant and party scoped under RLS,
-so a valid JWT is required and the queries run in the
-caller's own context. The parameter definitions catalogue is
-read under the system tenant; everything else under the
-caller's.
+resolves the folder subtree through the registry, then fans
+out over every row the registry holds, of every asset class,
+through the same factory and controller -- so Qt, ores.shell
+and a wt workflow step all get one behaviour from one
+request. There is one loop, not one per kind: by_kind and
+stopped_by_kind are pre-populated from the registrations.
+The folder and feed rows are tenant and party scoped under
+RLS, so a valid JWT is required and the queries run in the
+caller's own context.
 end note
 
 class ores::synthetic::service::vintage_validity_handler {
-    +vintage_validity_handler(nats : nats::client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>)
+    +vintage_validity_handler(nats : nats::client&, auth_nats : nats_client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
     +list(msg : nats::message)
 }
 note right of "ores::synthetic::service::vintage_validity_handler"
 Serves marketdata.v1.ops.get_vintage_validity.
-It computes every FX feed's vintage availability live, at
-read time, through feed_controller::validate -- there is no
-stored column and no trigger, so the answer is correct even
-straight after an import that added observation rows and no
-feed rows. A feed whose price_source is not "vintage" comes
-back applicable=false and is not checked.
+It asks the registry for one validity entry per config row of
+every registered kind, and the registry's one check reads the
+anchor coordinate the kind itself supplies -- the ORE key's
+own spot datum for FX, the shortest-tenor DEPOSIT pillar of
+the config's own Curve Template for IR. There is no stored
+column and no trigger, so the answer is correct even straight
+after an import that added observation rows and no feed rows.
+A feed whose price_source is not "vintage" comes back
+applicable=false and is not checked.
 end note
 
 class ores::synthetic::service::simulate_handler {
-    +simulate_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>)
-    +simulate(msg : nats::message)
+    +simulate_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
+    +simulate(msg : nats::message, kind : string&)
 }
 note right of "ores::synthetic::service::simulate_handler"
-Serves synthetic.v1.ops.simulate_fx_spot_paths. Builds the real GMM
-price process and steps it to answer a whole batch of sample
-paths at once. Nothing is persisted and nothing is
-published: it is a dry run so a caller can see the configured
-behaviour before starting a feed.
+Serves one simulate subject per registered kind. The handler
+holds no protocol type, no process type and no kind literal:
+the registry's registration supplies the subject, the config
+permission, the decode closure that turns the kind's own
+request into the shared envelope, and the reply closure that
+answers with the kind's own typed response.
+run_simulate_paths owns the clamp, the per-path seeding and
+the stepping. Nothing is persisted and nothing is published:
+it is a dry run so a caller can see the configured behaviour
+before starting a feed.
 end note
 
 class ores::synthetic::service::ir_curve_preview_handler {
-    +ir_curve_preview_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>)
-    +simulate_paths(msg : nats::message)
-    +preview_shape(msg : nats::message)
+    +ir_curve_preview_handler(nats : nats::client&, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&)
+    +preview_shape(msg : nats::message, kind : string&)
 }
 note right of "ores::synthetic::service::ir_curve_preview_handler"
-The curve-editor dry runs. simulate_paths is the IR
-equivalent of simulate_handler and draws short-rate paths.
-preview_shape has no FX equivalent, because FX has one scalar
-spot where a curve has a tenor grid: it resolves the request's
-Curve Template entries through the shared resolver and prices
-each one at one process state, so the editor can draw the
-shape those entries imply. Both are stateless -- nothing is
-persisted or published -- and both clamp their inputs to the
-protocol's own maxima.
+The curve-shape dry run. preview_shape has no FX equivalent,
+because FX has one scalar spot where a curve has a tenor
+grid: it resolves the request's Curve Template entries
+through the shared resolver and prices each one at one
+process state, so the editor can draw the shape those entries
+imply. Stateless -- nothing is persisted or published -- and
+clamped to the protocol's own maxima. Its permission comes
+from the registry's registration for the kind the registrar
+names, so the handler holds no permission literal.
 end note
 
 class ores::synthetic::service::registrar {
-    {static} +register_handlers(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>) : vector<subscription>
+    {static} +register_handlers(nats : nats::client&, auth_nats : nats_client&, ctrl : shared_ptr<feed_controller>, ctx : database::context, verifier : optional<jwt_authenticator>, registry : feed_kind_registry&) : vector<subscription>
 }
 note right of "ores::synthetic::service::registrar"
 The control-plane registrar, distinct from
-ores.synthetic.core's entity registrar. It subscribes nine
-subjects, all on the ores.synthetic.service queue:
+ores.synthetic.core's entity registrar. It subscribes
 synthetic.v1.ops.start_feed/.stop/.list,
-synthetic.v1.ops.simulate_fx_spot_paths,
-synthetic.v1.ops.simulate_ir_curve_paths,
-synthetic.v1.ops.preview_ir_curve_shape,
-marketdata.v1.ops.start_feeds_under_folder/.stop_folder
-and marketdata.v1.ops.get_vintage_validity. Each
-lambda constructs its handler per message.
+one simulate subject per registered kind (the registry's own
+registration names the subject and the kind string),
+synthetic.v1.ops.preview_ir_curve_shape -- IR only, and the
+one explicit subscription the registrar keeps, because that
+verb has no second registration to iterate --
+marketdata.v1.ops.start_feeds_under_folder/.stop_folder and
+marketdata.v1.ops.get_vintage_validity. All on the
+ores.synthetic.service queue, and each lambda constructs its
+handler per message.
 end note
 
 ' Relationships the automated pass cannot infer.
@@ -326,13 +364,18 @@ ores::synthetic::service::registrar ..> ores::synthetic::service::simulate_handl
 ores::synthetic::service::registrar ..> ores::synthetic::service::ir_curve_preview_handler : subscribes
 
 ores::synthetic::service::feed_config_handler ..> ores::synthetic::service::feed_controller : starts and stops feeds through
-ores::synthetic::service::feed_config_handler ..> ores::synthetic::api::feeds::feed_factory : builds every feed through
 ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::service::feed_controller : adds every feed beneath the folder
-ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::repository::folder_repository : resolves the subtree with
-ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::api::feeds::feed_factory : builds every feed through
-ores::synthetic::service::vintage_validity_handler ..> ores::synthetic::service::feed_controller : asks for the live check
+ores::synthetic::service::vintage_validity_handler ..> ores::synthetic::service::feed_kind_registry : asks the registry for every kind's entry
+ores::synthetic::service::feed_config_handler ..> ores::synthetic::service::feed_kind_registry : resolves and builds every feed through
+ores::synthetic::service::folder_feed_control_handler ..> ores::synthetic::service::feed_kind_registry : walks every kind's rows through
+ores::synthetic::service::simulate_handler ..> ores::synthetic::service::feed_kind_registry : dispatches by kind through
+ores::synthetic::service::ir_curve_preview_handler ..> ores::synthetic::service::feed_kind_registry : takes its permission from
 ores::synthetic::service::ir_curve_preview_handler ..> ores::synthetic::api::feeds::ir_curve_template_resolver : resolves entries and prices them with
-ores::synthetic::service::simulate_handler ..> ores::analytics::quant::service::process_factory : builds the GMM process with
+ores::synthetic::service::app::application ..> ores::synthetic::service::feed_kind_registry : builds the one registry with
+ores::synthetic::service::feed_kind_registry ..> ores::synthetic::service::feed_controller : hands the built feed to
+ores::synthetic::service::feed_kind_registry ..> ores::synthetic::api::feeds::feed_factory : builds every feed through
+ores::synthetic::service::feed_kind_registry ..> ores::synthetic::repository::folder_repository : resolves the subtree with
+ores::synthetic::service::feed_kind_registry ..> ores::analytics::quant::service::process_factory : builds the GMM process with
 
 ores::synthetic::service::app::application ..> ores::nats::service::client : owns the connection
 ores::synthetic::service::app::application ..> ores::database::context : makes

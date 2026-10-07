@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FOLDER_FEED_CONTROL_HANDLER_HPP
 
 #include "feed_controller.hpp"
-#include "ores.database/service/tenant_context.hpp"
+#include "feed_kind_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -29,16 +29,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.synthetic.api/feeds/feed_factory.hpp"
-#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
-#include "ores.synthetic.core/repository/folder_repository.hpp"
-#include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/gmm_component_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
-#include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -59,7 +49,6 @@ inline auto& folder_feed_control_handler_lg() {
 
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::reply;
 using namespace ores::logging;
@@ -70,7 +59,7 @@ using namespace ores::logging;
  * The single place that turns "start everything under this folder" into a
  * sequence of producer starts: it resolves the folder subtree once and
  * dispatches every config row beneath it — of every asset class — through
- * the producer factory (feed_factory) to the feed controller, so Qt,
+ * the feed kind registry's factory to the feed controller, so Qt,
  * ores.shell, and a wt workflow step all get the same behaviour from one
  * request instead of each re-implementing the tree-walk-and-fan-out
  * themselves.
@@ -86,12 +75,14 @@ public:
                                 std::shared_ptr<feed_controller> ctrl,
                                 ores::nats::service::nats_client& auth_nats,
                                 ores::database::context ctx,
-                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                const feed_kind_registry& registry)
         : nats_(nats)
         , ctrl_(std::move(ctrl))
         , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , verifier_(std::move(verifier))
+        , registry_(registry) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
@@ -112,9 +103,13 @@ public:
             return;
         }
 
-        const auto folder_ids = resolve_subtree(ctx, folder_id);
+        const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
         start_feeds_under_folder_response resp;
         resp.success = true;
+        // Every registered kind is always present, whether or not this folder
+        // holds a row of it.
+        for (const auto* k : registry_.all())
+            resp.by_kind.emplace(k->kind, feed_kind_counts{});
 
         // Forwarded so delegated service-to-service lookups (vintage
         // resolution inside the IR producer builder) run in the caller's
@@ -123,196 +118,47 @@ public:
         // another tenant's market_observation rows (RLS).
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
-        const auto& factory = ores::synthetic::feed::default_feed_factory();
 
-        namespace repo = ores::synthetic::repository;
-        repo::fx_spot_generation_config_repository fx_repo;
-        repo::gmm_component_repository comp_repo;
-        repo::ir_curve_generation_config_repository ir_repo;
-        repo::ir_curve_template_entry_repository entry_repo;
-        repo::ir_curve_generation_config_process_parameter_value_repository value_repo;
-        repo::yield_curve_process_parameter_definition_repository definition_repo;
-        repo::market_data_generation_config_repository feed_repo;
+        for (const auto& target : registry_.targets(ctx)) {
+            const auto& c = target.row.candidate;
+            auto& counts = resp.by_kind.at(target.row.kind->kind);
 
-        const auto fxs = fx_repo.read_latest(ctx);
-        const auto comps = comp_repo.read_latest(ctx);
-        const auto ir_configs = ir_repo.read_latest(ctx);
-        const auto entries = entry_repo.read_latest(ctx);
-        const auto values = value_repo.read_latest(ctx);
-        // The definitions catalogue is system-tenant owned: the publish path
-        // resolves each value's parameter_definition_id from the system
-        // tenant, so a read scoped to the caller's tenant returns nothing
-        // for any real tenant. Read with a system-tenant context instead.
-        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
-        const auto definitions = definition_repo.read_latest(sys_ctx);
-        // Keyed by container id, not just checked for enabled/existence, so
-        // each feed's binding_mode (bound/sandboxed) can be forwarded and
-        // the container's enabled state checked — mirrors application.cpp's
-        // auto_start_feeds walk.
-        std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
-            containers;
-        for (const auto& f : feed_repo.read_latest(ctx))
-            containers.emplace(f.id, f);
-        std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> by_fx;
-        for (const auto& c : comps)
-            by_fx[c.fx_spot_config_id].push_back(c);
-        std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::ir_curve_template_entry>>
-            entries_by_config;
-        for (const auto& e : entries)
-            entries_by_config[e.ir_curve_config_id].push_back(e);
-        std::map<boost::uuids::uuid,
-                 std::vector<
-                     ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
-            values_by_config;
-        for (const auto& v : values)
-            values_by_config[v.config_id].push_back(v);
-
-        using ores::synthetic::feed::fx_spot_feed_build_input;
-        using ores::synthetic::feed::ir_curve_feed_build_input;
-        using ores::synthetic::feed::ir_curve_feed_kind;
-        using ores::synthetic::feed::ir_curve_qualifier;
-        using ores::synthetic::feed::ir_curve_tenor_convention_code;
-        using ores::synthetic::feed::fx_spot_feed_kind;
-
-        feed_kind_counts fx_counts;
-        for (const auto& fx : fxs) {
-            if (!fx.folder_id.has_value() || !folder_ids.contains(*fx.folder_id))
+            if (!c.folder_id || !folder_ids.contains(*c.folder_id))
                 continue;
-
-            // Uniform startability across kinds: the row itself must be
-            // enabled and its container must exist and be enabled — the
-            // same gate the auto-start walk applies.
-            const auto container = containers.find(fx.config_id);
-            if (!fx.enabled || container == containers.end() || !container->second.enabled) {
-                ++fx_counts.skipped;
+            const auto skip = [&](const std::string& reason) {
+                ++counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping " << fx.ore_key << " under folder " << req->folder_id
-                    << " — not enabled (config or container).";
-                continue;
-            }
-            const auto it = by_fx.find(fx.id);
-            if (it == by_fx.end() || it->second.empty()) {
-                ++fx_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping " << fx.ore_key << " under folder " << req->folder_id
-                    << " — no GMM components.";
-                continue;
-            }
+                    << "Skipping " << c.display_name << " under folder " << req->folder_id << " — "
+                    << reason;
+            };
             try {
-                const auto feed = factory.make(
-                    std::string(fx_spot_feed_kind),
-                    bctx,
-                    fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
+                auto attempt = registry_.make_feed(target, bctx);
+                if (!attempt.feed) {
+                    skip(attempt.failure);
+                    continue;
+                }
                 std::string conflicting_source_name;
-                if (ctrl_->add(std::move(feed),
-                               container->second.binding_mode,
+                if (ctrl_->add(std::move(attempt.feed),
+                               target.binding_mode,
                                bearer,
                                &conflicting_source_name))
-                    ++fx_counts.started;
+                    ++counts.started;
                 else if (conflicting_source_name.empty())
                     // A concurrent cascade started the same config between
                     // this loop's checks and the add.
-                    ++fx_counts.already_running;
-                else {
-                    ++fx_counts.skipped;
-                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                        << "Skipping " << fx.ore_key << " under folder " << req->folder_id
-                        << " — ore_key already held by running feed '" << conflicting_source_name
-                        << "'.";
-                }
+                    ++counts.already_running;
+                else
+                    skip("already held by running feed '" + conflicting_source_name + "'.");
             } catch (const std::exception& e) {
-                ++fx_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping " << fx.ore_key << " under folder " << req->folder_id
-                    << " — failed to start: " << e.what();
+                skip(std::string("failed to start: ") + e.what());
             }
         }
 
-        feed_kind_counts ir_counts;
-        for (const auto& cfg : ir_configs) {
-            if (!cfg.folder_id.has_value() || !folder_ids.contains(*cfg.folder_id))
-                continue;
-
-            const auto container = containers.find(cfg.config_id);
-            if (!cfg.enabled || container == containers.end() || !container->second.enabled) {
-                ++ir_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                    << " under folder " << req->folder_id
-                    << " — not enabled (config or container).";
-                continue;
-            }
-            const auto it = entries_by_config.find(cfg.id);
-            if (it == entries_by_config.end() || it->second.empty()) {
-                ++ir_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                    << " under folder " << req->folder_id << " — no template entries.";
-                continue;
-            }
-            const auto vit = values_by_config.find(cfg.id);
-            if (vit == values_by_config.end() || vit->second.empty()) {
-                ++ir_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                    << " under folder " << req->folder_id << " — no parameter value rows.";
-                continue;
-            }
-
-            // The context is per config: the series qualifier selects the
-            // tenor convention (the FOMC grid resolves under
-            // RATES_SPOT_FOMC).
-            const auto refctx = ores::synthetic::feed::build_ir_curve_refdata_context(
-                ctx, ir_curve_tenor_convention_code(ir_curve_qualifier(cfg)));
-            if (!refctx) {
-                ++ir_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                    << " under folder " << req->folder_id << " — tenor convention not found.";
-                continue;
-            }
-
-            try {
-                const auto feed =
-                    factory.make(std::string(ir_curve_feed_kind),
-                                 bctx,
-                                 ir_curve_feed_build_input{cfg,
-                                                           it->second,
-                                                           vit->second,
-                                                           definitions,
-                                                           *refctx,
-                                                           container->second.binding_mode});
-                std::string conflicting_source_name;
-                if (ctrl_->add(std::move(feed),
-                               container->second.binding_mode,
-                               bearer,
-                               &conflicting_source_name))
-                    ++ir_counts.started;
-                else if (conflicting_source_name.empty())
-                    // A concurrent cascade started the same config between
-                    // this loop's checks and the add.
-                    ++ir_counts.already_running;
-                else {
-                    ++ir_counts.skipped;
-                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                        << "Skipping IR curve config " << cfg.currency_code << "/"
-                        << cfg.index_family << " under folder " << req->folder_id
-                        << " — qualifier already held by running feed '" << conflicting_source_name
-                        << "'.";
-                }
-            } catch (const std::exception& e) {
-                ++ir_counts.skipped;
-                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                    << " under folder " << req->folder_id << " — failed to start: " << e.what();
-            }
+        for (const auto& [kind, counts] : resp.by_kind) {
+            resp.started += counts.started;
+            resp.already_running += counts.already_running;
+            resp.skipped += counts.skipped;
         }
-
-        resp.started = fx_counts.started + ir_counts.started;
-        resp.already_running = fx_counts.already_running + ir_counts.already_running;
-        resp.skipped = fx_counts.skipped + ir_counts.skipped;
-        resp.by_kind.emplace(std::string(fx_spot_feed_kind), fx_counts);
-        resp.by_kind.emplace(std::string(ir_curve_feed_kind), ir_counts);
         resp.message = std::to_string(resp.started) + " started, " +
                        std::to_string(resp.already_running) + " already running, " +
                        std::to_string(resp.skipped) + " skipped";
@@ -340,34 +186,23 @@ public:
             return;
         }
 
-        const auto folder_ids = resolve_subtree(ctx, folder_id);
-
-        namespace repo = ores::synthetic::repository;
-        repo::fx_spot_generation_config_repository fx_repo;
-        repo::ir_curve_generation_config_repository ir_repo;
-        const auto fxs = fx_repo.read_latest(ctx);
-        const auto ir_configs = ir_repo.read_latest(ctx);
+        const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
         stop_feeds_under_folder_response resp;
         resp.success = true;
-        int fx_stopped = 0;
-        for (const auto& fx : fxs) {
-            if (!fx.folder_id.has_value() || !folder_ids.contains(*fx.folder_id))
+        for (const auto* k : registry_.all())
+            resp.stopped_by_kind.emplace(k->kind, 0);
+
+        // rows(), not targets(): stopping reads no container.
+        for (const auto& row : registry_.rows(ctx)) {
+            const auto& c = row.candidate;
+            if (!c.folder_id || !folder_ids.contains(*c.folder_id))
                 continue;
-            fx_stopped += static_cast<int>(ctrl_->stop(fx.source_name));
-        }
-        int ir_stopped = 0;
-        for (const auto& cfg : ir_configs) {
-            if (!cfg.folder_id.has_value() || !folder_ids.contains(*cfg.folder_id))
-                continue;
-            ir_stopped += static_cast<int>(ctrl_->stop(cfg.source_name));
+            const auto stopped = static_cast<int>(ctrl_->stop(c.source_name));
+            resp.stopped_by_kind.at(row.kind->kind) += stopped;
+            resp.stopped += stopped;
         }
 
-        resp.stopped = fx_stopped + ir_stopped;
-        resp.stopped_by_kind.emplace(std::string(ores::synthetic::feed::fx_spot_feed_kind),
-                                     fx_stopped);
-        resp.stopped_by_kind.emplace(std::string(ores::synthetic::feed::ir_curve_feed_kind),
-                                     ir_stopped);
         resp.message = std::to_string(resp.stopped) + " feed(s) stopped";
         BOOST_LOG_SEV(folder_feed_control_handler_lg(), info)
             << msg.subject << " (folder=" << req->folder_id << ") — " << resp.message;
@@ -388,13 +223,10 @@ private:
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
-        if (!has_permission(*ctx_expected, "synthetic::fx_spot_generation_configs:read") ||
-            !has_permission(*ctx_expected, "synthetic::ir_curve_generation_configs:read")) {
+        if (!registry_.permits_all_configs(*ctx_expected)) {
             BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
                 << "Rejecting " << verb
-                << " request: missing permission "
-                   "synthetic::fx_spot_generation_configs:read or "
-                   "synthetic::ir_curve_generation_configs:read.";
+                << " request: missing a registered kind's config read permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
         }
@@ -412,24 +244,12 @@ private:
         }
     }
 
-    // Every folder id in the subtree rooted at root_id, including root_id
-    // itself — the set each config row's folder_id is matched against.
-    static std::set<boost::uuids::uuid> resolve_subtree(const ores::database::context& ctx,
-                                                        const boost::uuids::uuid& root_id) {
-        namespace repo = ores::synthetic::repository;
-        repo::folder_repository folder_repo;
-        const auto rows = folder_repo.get_hierarchy(ctx, root_id, false);
-        std::set<boost::uuids::uuid> ids;
-        for (const auto& row : rows)
-            ids.insert(row.id);
-        return ids;
-    }
-
     ores::nats::service::client& nats_;
     std::shared_ptr<feed_controller> ctrl_;
     ores::nats::service::nats_client& auth_nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    const feed_kind_registry& registry_;
 };
 
 }

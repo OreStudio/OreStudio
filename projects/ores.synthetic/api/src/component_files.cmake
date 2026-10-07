@@ -145,6 +145,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/simulate_paths_common.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 )

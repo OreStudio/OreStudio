@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-07T15:37:17.722540Z
+' Generated: 2026-10-07T16:52:45.371332Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -13019,9 +13019,10 @@ package "marketdata" #E3F2FD {
         * series_id : uuid <<FK>>
         * observation_datetime : timestamptz
         * oresmd_uri : text
-        * derivation_config_id : uuid <<FK>>
+        * point_source_kind : text
+          derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
-        * source_as_of : timestamptz
+          source_as_of : timestamptz
         * source_series_ids : jsonb
         * modified_by : text
         * performed_by : text
@@ -13036,13 +13037,19 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Observation Lineage Table
-    Per-observation provenance for a *derived* market_observation row: which
-    derivation config/version produced it, and which upstream source
-    series/as-of it read. Written only alongside a derived observation --
-    never for the common OBSERVED case, and never as a column on
+    Per-observation provenance for a bare market_observation row whose source
+    is not the market's own quote: which derivation config/version produced it,
+    and which upstream source series/as-of it read, or -- for a point an operator
+    keyed by hand -- which kind of point it is, who keyed it and why. Written
+    never for the common quoted case, and never as a column on
     market_observations_tbl itself (a TimescaleDB hypertable explicitly
     documented as carrying no audit columns because tick-level volumes make
-    that impractical). A row's existence *is* the "derived" marker.
+    that impractical).
+    point_source_kind names the two kinds that carry an annex row: derived
+    for a point a derivation created, and manual for one keyed by hand.
+    *Quoted is the absence of a row*, so a quoted tick keeps writing one row to
+    the hot hypertable and nothing else; the invariant this rests on is that a
+    point a derivation created always has an annex row.
     Deliberately generic, not curve-specific: this is what lets CRM's own
     derived-cross publishing (currently pull-only -- see the CRM
     architecture decision to never broadcast the full derived set as

@@ -171,7 +171,7 @@ def _journal_lines(units, lines=JOURNAL_LINES):
         cmd += ["-u", f"{name}.service"]
     try:
         out = subprocess.run(cmd, capture_output=True, text=True,
-                             timeout=JOURNAL_TIMEOUT_S)
+                             errors="replace", timeout=JOURNAL_TIMEOUT_S)
     except (OSError, subprocess.TimeoutExpired):
         return []
     if out.returncode:

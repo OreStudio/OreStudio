@@ -31,6 +31,7 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -443,4 +444,181 @@ TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
     CHECK(buckets[1].front().value == "0.050000");
     CHECK(buckets[2].front().value == "0.050000");
     CHECK(buckets[3].front().value == "0.050000");
+}
+
+namespace {
+
+// The session an operator writes a manual point with: the series' party, so
+// the party-scoped annex row is visible, and the test database user as the
+// actor the annex's modified_by must name.
+ores::database::context operator_context(database_helper& h,
+                                         const boost::uuids::uuid& party_id) {
+    return h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+}
+
+}
+
+TEST_CASE("write_manual_point_is_readable_and_reports_manual", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto uri = datum_uri("SPOT-1M");
+
+    market_observation_repository obs_repo;
+
+    // The fed point the operator over-keys, at the same coordinate and instant.
+    auto fed = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    fed.party_id = s.party_id;
+    obs_repo.insert(h.context(), fed);
+
+    obs_repo.write_manual_point(
+        operator_context(h, s.party_id), s.id, uri, t0, "0.050000", "system.test", "operator over-key");
+
+    const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(snapshot.size() == 1);
+    CHECK(snapshot.front().value == "0.050000");
+    CHECK(snapshot.front().oresmd_uri == uri);
+
+    // The annex is what reports the kind, and it names who keyed the point and why.
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+    const auto read = lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri);
+    REQUIRE(read.has_value());
+    CHECK(read->point_source_kind == "manual");
+    CHECK(read->modified_by == h.db_user());
+    CHECK(read->change_reason_code == "system.test");
+    CHECK(read->change_commentary == "operator over-key");
+    CHECK_FALSE(read->derivation_config_id.has_value());
+    CHECK_FALSE(read->source_as_of.has_value());
+    CHECK(read->source_series_ids == "[]");
+}
+
+TEST_CASE("clear_manual_point_restores_the_fed_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto keyed_at = t0 + std::chrono::minutes(10);
+    const auto feed_after = t0 + std::chrono::minutes(20);
+    const auto uri = datum_uri("SPOT-1M");
+
+    market_observation_repository obs_repo;
+    auto fed = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    fed.party_id = s.party_id;
+    obs_repo.insert(h.context(), fed);
+
+    obs_repo.write_manual_point(operator_context(h, s.party_id),
+                                s.id,
+                                uri,
+                                keyed_at,
+                                "0.050000",
+                                "system.test",
+                                "operator over-key");
+    // The automatic write the manual point must still own the coordinate over.
+    auto later = make_observation(ctx, s.id, "SPOT-1M", feed_after, 0.0450);
+    later.party_id = s.party_id;
+    obs_repo.insert(h.context(), later);
+
+    const auto as_of = t0 + std::chrono::minutes(30);
+    const auto before = obs_repo.read_as_of(h.context(), s.id, as_of);
+    REQUIRE(before.size() == 1);
+    CHECK(before.front().value == "0.050000");
+
+    obs_repo.clear_manual_point(operator_context(h, s.party_id), s.id, uri, keyed_at);
+
+    const auto after = obs_repo.read_as_of(h.context(), s.id, as_of);
+    REQUIRE(after.size() == 1);
+    CHECK(after.front().value == "0.045000");
+    // The same read before and after clearing differs: this is the assertion
+    // that fails when clear_manual_point does nothing.
+    CHECK(after.front().value != before.front().value);
+}
+
+TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto uri = datum_uri("SPOT-1M");
+
+    market_observation_repository obs_repo;
+    auto fed = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    fed.party_id = s.party_id;
+    obs_repo.insert(h.context(), fed);
+
+    obs_repo.write_manual_point(
+        operator_context(h, s.party_id), s.id, uri, t0, "0.050000", "system.test", "operator over-key");
+
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+    const auto manual = lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri);
+    REQUIRE(manual.has_value());
+    REQUIRE(manual->point_source_kind == "manual");
+    const auto manual_id = boost::uuids::to_string(manual->id);
+
+    obs_repo.clear_manual_point(operator_context(h, s.party_id), s.id, uri, t0);
+
+    // No current manual row remains: the coordinate is back to the feed.
+    CHECK_FALSE(
+        lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri).has_value());
+
+    // The row itself is closed, not deleted, so the history still holds it.
+    const auto history = lineage_repo.read_all(h.context(), manual_id);
+    REQUIRE_FALSE(history.empty());
+    CHECK(history.front().point_source_kind == "manual");
+    CHECK(history.front().change_commentary == "operator over-key");
+}
+
+TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto uri = datum_uri("SPOT-1M");
+
+    market_observation_repository obs_repo;
+    auto fed = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    fed.party_id = s.party_id;
+    obs_repo.insert(h.context(), fed);
+
+    // The annex write is refused by the store (the reason code does not exist),
+    // after the observation row has been written in the same transaction. The
+    // rollback must undo the observation, so the fed value is untouched.
+    CHECK_THROWS(obs_repo.write_manual_point(operator_context(h, s.party_id),
+                                             s.id,
+                                             uri,
+                                             t0,
+                                             "0.050000",
+                                             "no.such.reason",
+                                             "refused annex write"));
+
+    const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(snapshot.size() == 1);
+    CHECK(snapshot.front().value == "0.040000");
+
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+    CHECK_FALSE(lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri).has_value());
 }

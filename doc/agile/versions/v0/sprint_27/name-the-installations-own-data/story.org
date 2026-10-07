@@ -39,8 +39,8 @@ The installation owns a class of data the schema does not name: the facts about 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:89F76CAA-6EE6-4E1B-96EA-05502824C1E8][Give installation-scoped data its policy shape]] | BACKLOG | | | A model cannot say that its rows belong to the installation, so such a table hand-writes the shared-reference policy: own tenant or system-tenant rows. This task adds the codegen feature that states it, and moves the grid and node samples onto it. |
-| [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | BACKLOG | | | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
+| [[id:89F76CAA-6EE6-4E1B-96EA-05502824C1E8][Give installation-scoped data its policy shape]] | DONE | | 2026-10-07 | A model cannot say that its rows belong to the installation, so such a table hand-writes the shared-reference policy: own tenant or system-tenant rows. This task adds the codegen feature that states it, and moves the grid and node samples onto it. |
+| [[id:A2FB51BF-63FD-4F5E-8D75-878F94DB8EF5][Read the fleet whole in the grid handler]] | DONE | | 2026-10-07 | The grid handler reads the newest sample per node through a hand-written tenant predicate written for tenant data. Drop it, let the policy decide, and prove the fleet comes back. |
 
 * Decisions
 

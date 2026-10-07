@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:runbook:knowledge:documentation:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-10-07
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -28,7 +28,7 @@ In execution order:
 
 2. /Fill in the Summary./ Write the three-to-five sentence summary — every grep and index reads this field.
 
-3. /Write the Detail./ Fill in the content. Use subheadings for navigability. Every reference to another doc uses =[[id:UUID]]= links.
+3. /Write the Detail./ Fill in the content. Use subheadings for navigability. Every reference to another doc uses =[[id:UUID]]= links. What the page must do with its one idea — assert it or present it as reference, name the relation of the thread it joins, and avoid the anti-patterns — is in [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]].
 
 4. /Tag correctly./ Add topic tags (=:domain:fx:=, =:architecture:cmake:=, etc.) so the doc is discoverable by =compass list=.
 

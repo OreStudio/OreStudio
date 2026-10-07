@@ -27,6 +27,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_credential.hpp"
+#include "ores.iam.api/messaging/account_credential_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -133,18 +134,21 @@ public:
      * @param limit Maximum number of records to return
      * @param order The stated order; an empty field is the default order
      */
-    std::vector<domain::account_credential>
-    read_latest_by_account_id(context ctx,
-                              const std::string& account_id,
-                              std::uint32_t offset,
-                              std::uint32_t limit,
-                              const ores::utility::domain::order& order = {});
+    std::vector<domain::account_credential> read_latest_by_account_id(
+        context ctx,
+        const std::string& account_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::account_credentials_filter>& filter = std::nullopt);
 
     /**
      * @brief Gets the total count of active account credentials filtered by account_id.
      */
-    std::uint32_t get_total_account_credential_count_by_account_id(context ctx,
-                                                                   const std::string& account_id);
+    std::uint32_t get_total_account_credential_count_by_account_id(
+        context ctx,
+        const std::string& account_id,
+        const std::optional<messaging::account_credentials_filter>& filter = std::nullopt);
 
 
     /**
@@ -168,6 +172,7 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
+                const std::optional<messaging::account_credentials_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
@@ -175,9 +180,10 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active account credentials
      */
-    std::uint32_t
-    get_total_account_credential_count(context ctx,
-                                       const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t get_total_account_credential_count(
+        context ctx,
+        const std::optional<messaging::account_credentials_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a account credential by closing its temporal validity.

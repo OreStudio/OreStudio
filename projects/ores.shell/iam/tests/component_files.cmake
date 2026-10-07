@@ -22,6 +22,7 @@
 set(files
     "account_commands_tests.cpp"
     "account_contact_information_commands_tests.cpp"
+    "account_credential_commands_tests.cpp"
     "account_operations_operations_commands_tests.cpp"
     "account_party_commands_tests.cpp"
     "account_status_commands_tests.cpp"

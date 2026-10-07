@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/iam/iam_commands.hpp"
 #include "ores.shell/app/commands/iam/account_commands.hpp"
 #include "ores.shell/app/commands/iam/account_contact_information_commands.hpp"
+#include "ores.shell/app/commands/iam/account_credential_commands.hpp"
 #include "ores.shell/app/commands/iam/account_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/iam/account_party_commands.hpp"
 #include "ores.shell/app/commands/iam/account_status_commands.hpp"
@@ -62,6 +63,7 @@ void iam_commands::register_commands(cli::Menu& root_menu,
     bootstrap_operations_commands::register_commands(root_menu, session);
     signup_operations_commands::register_commands(root_menu, session);
     account_commands::register_commands(root_menu, session);
+    account_credential_commands::register_commands(root_menu, session);
     account_operations_operations_commands::register_commands(root_menu, session);
     authorization_operations_commands::register_commands(root_menu, session);
     session_operations_operations_commands::register_commands(root_menu, session);

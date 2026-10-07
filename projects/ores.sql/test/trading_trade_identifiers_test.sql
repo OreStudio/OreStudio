@@ -34,22 +34,47 @@ begin;
 
 select plan(15);
 
--- Row-level security applies to the test user too: state the tenant and the
--- visible parties before reading anything.
+-- Row-level security applies to the test user too: state the tenant before
+-- writing anything. The tenant comes first because the fixture below writes
+-- rows the policies then filter.
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A recreated database carries the system party and nothing else, so the
+-- fixture writes the second party and the counterparty this suite names. The
+-- suite rolls them back.
+insert into ores_refdata_parties_tbl (
+    id, tenant_id, full_name, short_code, party_category, party_type,
+    business_center_code, parent_party_id, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf002'::uuid, ores_utility_system_tenant_id_fn(),
+    'Trading Identifiers Other Party', 'TTI-OP', 'Operational', 'Corporate',
+    'WRLD', null, 'Active', current_user, current_user,
+    'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_counterparties_tbl (
+    id, tenant_id, version, full_name, short_code, party_type,
+    parent_counterparty_id, business_center_code, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf102'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    'Trading Identifiers Counterparty', 'TTI-CP', 'Corporate',
+    null, 'WRLD', 'Active', current_user, current_user,
+    'system.test', 'Trading pgTAP fixture');
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
 create temp table t_ctx on commit drop as
 select (select id from ores_refdata_parties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id,
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as party_id,
        (select id from ores_refdata_parties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id offset 1 limit 1) as other_party_id,
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'TTI-OP'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as other_party_id,
        (select id from ores_refdata_counterparties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as counterparty_id;
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'TTI-CP'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as counterparty_id;
 
 insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
     trade_type, counterparty_scope, booking_nature, entry_channel)

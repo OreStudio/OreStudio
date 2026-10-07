@@ -36,19 +36,33 @@ begin;
 
 select plan(18);
 
--- Row-level security applies to the test user too: state the tenant and the
--- visible parties before reading anything.
+-- Row-level security applies to the test user too: state the tenant before
+-- writing anything. The tenant comes first because the fixture below writes
+-- rows the policies then filter.
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A recreated database carries the system party and nothing else, so the
+-- fixture writes the counterparty this suite names. The suite rolls it back.
+insert into ores_refdata_counterparties_tbl (
+    id, tenant_id, version, full_name, short_code, party_type,
+    parent_counterparty_id, business_center_code, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf101'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    'Trading Trade Test Counterparty', 'TTT-CP', 'Corporate',
+    null, 'WRLD', 'Active', current_user, current_user,
+    'system.test', 'Trading pgTAP fixture');
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
 create temp table t_ctx on commit drop as
 select (select id from ores_refdata_parties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id,
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as party_id,
        (select id from ores_refdata_counterparties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as counterparty_id;
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'TTT-CP'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as counterparty_id;
 
 create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scope text,
     p_nature text default 'actual', p_channel text default 'manual',

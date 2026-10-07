@@ -39,6 +39,58 @@ begin;
 select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- The cases below read the ORE sample netting data, which publishes write. A
+-- recreated database carries the datasets, the system party alone and nothing
+-- published from the datasets, and a publish names the tenant's root party,
+-- which is not the system one. The fixture writes that root and runs the
+-- publishes once; the cases that publish then see their own run as the
+-- second. The suite rolls it all back.
+insert into ores_refdata_parties_tbl (
+    id, tenant_id, full_name, short_code, party_category, party_type,
+    business_center_code, parent_party_id, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf001'::uuid, ores_utility_system_tenant_id_fn(),
+    'Acme Corporation', 'ACMCOR', 'Operational', 'CorporateGroup',
+    'WRLD', null, 'Active', current_user, current_user,
+    'system.test', 'ORE sample fixture');
+
+select count(*) from ores_refdata_publish_business_centres_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'fpml.business_center'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_lei_counterparties_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_counterparties'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.counterparty_aliases'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_netting_agreements_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_netting_agreements'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_netting_sets_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_netting_sets'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_netting_set_aliases_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.netting_set_aliases'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_csas_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_csas'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 

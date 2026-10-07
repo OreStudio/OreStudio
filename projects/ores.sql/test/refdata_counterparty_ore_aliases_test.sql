@@ -38,6 +38,27 @@ select plan(12);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
+-- The cases below read the ORE sample counterparties, which a publish writes.
+-- A recreated database carries the datasets and nothing published from them,
+-- and the sample names business centres beyond the seeded WRLD, so the
+-- fixture publishes the canonical business centres and then runs the first
+-- counterparty publish; a case that publishes then sees its own run as the
+-- second. The suite rolls it back.
+select count(*) from ores_refdata_publish_business_centres_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'fpml.business_center'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_lei_counterparties_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.sample_counterparties'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
+select count(*) from ores_refdata_publish_counterparty_aliases_from_dq_fn(
+    (select id from ores_dq_datasets_tbl where code = 'ore.counterparty_aliases'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn());
+
 create or replace function pg_temp.alias_target(p_alias text)
 returns text as $$
     select ci.counterparty_id::text

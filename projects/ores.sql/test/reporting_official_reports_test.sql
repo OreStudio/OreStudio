@@ -45,6 +45,55 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
+-- A recreated database carries the system party, the risk report type and no
+-- book, definition or configuration at all, and the context below reads a
+-- book and a configuration. The suite rolls the fixture back.
+insert into ores_refdata_portfolios_tbl (
+    id, tenant_id, version, party_id, name, parent_portfolio_id, purpose_type,
+    is_virtual, sandbox_id, status, modified_by, performed_by,
+    change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf201'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    id, 'OFFREP-FIXTURE-PORTFOLIO', null, 'Risk', false, null, 'Active',
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_refdata_books_tbl (
+    id, tenant_id, version, party_id, name, parent_portfolio_id, functional_currency,
+    book_status, regulatory_book_type, is_sweepable, rates_centre_code, sandbox_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf202'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    party_id, 'OFFREP-FIXTURE-BOOK', '00000000-0000-0000-0000-0000000cf201'::uuid,
+    'USD', 'Active', 'Trading', false, 'WRLD', null,
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_portfolios_tbl
+where id = '00000000-0000-0000-0000-0000000cf201'::uuid
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_reporting_report_definitions_tbl (
+    id, tenant_id, version, name, party_id, description, report_type,
+    schedule_expression, concurrency_policy, pre_processing, post_processing,
+    is_official, modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000cf301'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    'OFFREP-FIXTURE-DEFINITION', id, 'Official reports pgTAP fixture', 'risk',
+    '0 0 * * *', 'skip', '', '',
+    true, current_user, current_user, 'system.test', 'Official reports pgTAP fixture'
+from ores_refdata_parties_tbl
+where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+
+insert into ores_reporting_risk_report_configs_tbl (
+    id, tenant_id, version, report_definition_id, base_currency,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf302'::uuid, ores_utility_system_tenant_id_fn(), 0,
+    '00000000-0000-0000-0000-0000000cf301'::uuid, 'USD',
+    current_user, current_user, 'system.test', 'Official reports pgTAP fixture');
+
 create temp table t_ctx on commit drop as
 select b.tenant_id, b.party_id, b.functional_currency as ccy,
        b.regulatory_book_type as rbt, b.rates_centre_code as rc,

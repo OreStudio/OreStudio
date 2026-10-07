@@ -601,6 +601,18 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=7200,
     ),
+    # Runs against the database the db check above rebuilt, so it stays after
+    # it. Every suite writes the reference data it reads and rolls it back,
+    # which is what lets the corpus pass on that fresh database.
+    Check(
+        id="pgtap",
+        title="Every pgTAP suite passes",
+        argv=("./projects/ores.sql/test/run_tests.sh",),
+        classes=("sql",),
+        phase=HEAVY,
+        timeout=1800,
+        fix="Read the suite's plan line and the first ERROR it printed.",
+    ),
 )
 
 CHECKS_BY_ID = {check.id: check for check in CATALOGUE}

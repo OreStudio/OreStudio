@@ -47,9 +47,7 @@ export function AskForRoleDialog({ onClose }: { readonly onClose: () => void }):
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
 
     const held = new Set((access.data?.roles ?? []).map((role) => role.roleId));
-    const offered = (roles.data ?? []).filter(
-        (role) => role.requestable && !held.has(role.id),
-    );
+    const offered = (roles.data ?? []).filter((role) => role.requestable && !held.has(role.id));
 
     const ask = useMutation({
         mutationFn: () => api.askForRoles({ roleIds: [roleId], reason: reason.trim() }),

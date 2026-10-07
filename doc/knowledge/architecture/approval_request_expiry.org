@@ -15,9 +15,11 @@ An approval request carries a deadline it takes from its kind. When nobody
 answers by then, the request closes itself as expired and the person who asked
 is told. Two paths close it: the decider who arrives too late, and a scheduled
 sweep, because the request nobody looks at is the one that matters. The sweep
-is a job the scheduler fires at a stated time, and that job publishes an inbox
-operation; the inbox closes every overdue request across every tenant in one
-statement and then raises one notice for each person who asked.
+is a job the scheduler fires, and that job publishes an inbox operation; the
+inbox closes every overdue request across every tenant in one statement and
+then raises one notice for each person who asked. The inbox declares the job
+and registers it at start; how often it fires is a system setting, so an
+installation tunes the sweep without a build.
 
 * Detail
 
@@ -54,8 +56,8 @@ is deliberate: they are one rule applied twice, not two rules.
 [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] exists to fire
 actions at stated times, and it already fires system jobs from a row that
 belongs to no tenant. The sweep is such a row: a
-[[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][job definition]] naming a cron
-expression, =action_type = nats_publish=, and the subject in its payload.
+[[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][job definition]] carrying
+=action_type = nats_publish= and the subject in its payload.
 
 The job publishes the inbox's own expiry operation. It does not run the SQL
 directly, and that is the load-bearing decision on this page: closing the
@@ -64,8 +66,48 @@ the service rather than in the store, and an =execute_sql= job would close
 requests silently. The job reaches the service for the same reason any other
 caller does.
 
-Nothing about the schedule lives in the inbox process. The inbox states what an
-expiry is; the scheduler states when one is looked for.
+A timer inside the service was the first shape this took, and it is the wrong
+one. Work that lives only inside a =steady_timer= shares its fate with the
+lifecycle hook that spawned it, and that hook can silently not fire — see the
+[[id:4DA2D408-7141-4D8A-8476-D06EE64F44D5][capture that raised it]]. A job in
+the catalogue survives the service restarting, appears in the job list, and can
+be rescheduled by an operator.
+
+** The inbox declares the job; the installation says when it fires
+
+Two things are being decided, and they belong to different people.
+
+*That the sweep recurs* is the inbox's own behaviour. The inbox owns the
+requests, so it owns the statement that a request nobody answers must close,
+and it registers the job itself rather than leaving a row in a populate script
+that nothing connects back to the component. The job name, the action and the
+subject are therefore fixed in code and are not configurable.
+
+*How often it recurs* is the installation's answer, not the inbox's. How often
+is worth sweeping depends on how many requests a deployment raises and how
+long its administrators take to answer, and neither the component nor the
+person writing it can know that. So the schedule is a
+[[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][system setting]], read by name from
+[[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] and carrying a
+default that suits a small installation. The setting is the same mechanism
+=iam.token.access_lifetime_seconds= and =system.signup_requires_authorization=
+already use, and the sweep is its first non-variability consumer.
+
+The split is the point. A component that hardcodes its own schedule is
+asserting something about somebody else's deployment, and it will be wrong; a
+component that lets the schedule be set to nothing at all is not offering a
+sweep. The inbox gets to insist that the work happens and the installation gets
+to say how often.
+
+** A registration that fails must be loud
+
+Registering at start makes the scheduler a startup dependency, and the failure
+mode is the one this page exists to prevent: a job that is not there, and
+nothing saying so. So the registration is idempotent by =job_name= — a retry
+replaces the row rather than adding a second one — and a registration that
+cannot be made is an error the service reports, not a warning it swallows. A
+sweep that is not scheduled is a queue that rots, which is exactly the state
+before this work.
 
 ** The close is one statement across every tenant
 
@@ -101,7 +143,7 @@ the inbox operation; the inbox closes every overdue request in one statement
 and tells the asker. The last exchange is the decider who arrives too late, and
 shows that the same rule closes the request rather than deciding it.
 
-#+caption: Approval request expiry: the ask takes the kind's deadline, the scheduler fires a job that publishes the inbox's expiry operation, the inbox closes every overdue request across every tenant in one statement and tells the asker, and a decider who reaches for a lapsed request meets the same rule rather than deciding it.
+#+caption: Approval request expiry: the ask takes the kind's deadline, the inbox registers the job whose schedule is a system setting, the scheduler fires it, the job publishes the inbox's expiry operation, the inbox closes every overdue request across every tenant in one statement and tells the asker, and a decider who reaches for a lapsed request meets the same rule rather than deciding it.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/approval_request_expiry_interaction.png]]
 
@@ -130,6 +172,11 @@ Source: [[proj:doc/knowledge/architecture/approval_request_expiry_interaction.pu
   journey whose gap this closes: a request nobody answers used to wait forever.
 - [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — the component
   the job row belongs to, and the jobs it already fires this way.
+- [[id:B0DEC846-32B2-494D-96B9-3E1F6819345D][ores.variability.system_setting]]
+  — the setting the schedule is read from, and the first consumer outside
+  variability.
+- [[id:E4C6D3F8-7F74-4D16-86AC-CA1BAA76F0AD][ores.variability]] — component
+  group overview, and the installation-level knobs it carries.
 - [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]]
   — the operations a request is raised, decided and swept through.
 - [[id:EE61043C-CBCE-44B5-85E9-A3E433FBA3EF][ores.inbox]] — component group

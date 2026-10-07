@@ -7,41 +7,83 @@
 #+level: s1
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/match-the-run-configuration-to-the-inputs-the-run-produces
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The engine stops at "Loading inputs" with
+=error opening file Input/market_20160205_flat.txt= and produces no analytics.
+
+The first reading was a naming mismatch: the run document names a file nothing
+produces. The investigation found something worse. *The run's gathered inputs
+are not ORE inputs at all.* Both gather steps ask their owner service for an
+"export to storage", and both write an internal encoding of the owner's rows:
+
+- =export_market_data_to_storage= wrote =rfl::msgpack::write(series)= — the
+  market *series registry*, carrying no observations and no fixings. The engine
+  cannot read it.
+- =export_trades_to_storage= writes =rfl::msgpack::write(all_items)= of
+  =trade_export_item= rows.
+
+So the bundle holds a run document that names ORE files, next to two blobs that
+are not those files. Renaming either side alone changes nothing.
+
+The engine can be handed ORE data: =marketdata.v1.ops.export_market_data=
+already returns the market body and the fixings body as the text ORE reads,
+built by =ores.ore.market::serialize_market_data=. Nothing in the run path used
+it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
+| Now          | The market data and the fixings are implemented: the gather step stores both ORE bodies, and the packaging step places each at the path the run document names. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Re-run and read where the engine now stops. The portfolio is the input it will want next, and no exporter for it exists. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- The market data the run gathers reaches the engine as the file its run
+  document names, and ORE reads it rather than reporting it missing.
+- The path the packaging step writes a data file to is the one the run document
+  names, and a name that would leave the package is refused.
+- A run whose engine cannot find an input names that input, rather than
+  appearing to succeed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two halves, because the two gathered inputs differ in how far they are from
+being ORE input.
+
+*The market data.* Its exporter already exists and is tested. The gather step's
+export stops writing the series registry and writes the ORE body instead, so
+the gathered artifact *is* the engine's file. The packaging step then places it
+at the path the run document names — =inputPath / marketDataFile= — instead of
+at a name of its own choosing. =ores.ore.store::declared_data_files= reads
+those names and refuses one that would leave the package, next to the
+=archive_layout= that already lays out the configuration documents.
+
+*The fixings.* The same export writes the fixings body, and the engine reads
+them from a file of their own, so they go to a key of their own and the run
+carries that key: =gather_market_data_result=, the bundle row, and
+=prepare_ore_package_request=. The body is written even when the tenant has no
+fixings, because a run whose run document names the file must find it.
+
+*The portfolio.* No trades-to-ORE-portfolio exporter exists. =save_data(const
+portfolio&)= and the trade mappers can be walked backwards, but that is its own
+piece of work and is not attempted here. [[id:5CF75315-C9BF-4114-8BF1-A6AB68FF573B][Export the trades as the ORE portfolio the engine reads]] carries it.
 
 * Measurements
 
@@ -55,7 +97,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Market data body ORE read | 89327 bytes | =ls -l .../jobs/cbee07a8/Input/market_20160205_flat.txt= | work in progress |
+| Fixings body ORE read | 0 bytes (no fixings held) | =ls -l .../jobs/cbee07a8/Input/fixings_20160205.txt= | work in progress |
+| ORE export assertions | 15 in 4 cases | =ores.marketdata.core.tests "[ore_export]"= | work in progress |
 
 * Notes
 
@@ -83,3 +127,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done for the market data and the fixings. The portfolio is a separate task.
+
+Report instance =4d55d7e2-b286-4901-a01e-4663d22054fc= ran against a recreated
+database and its job directory holds what the engine reads:
+
+| File the run document names | Bundled | Body |
+|-----------------------------+---------+------|
+| =market_20160205_flat.txt= | yes | 89327 bytes of ORE text |
+| =fixings_20160205.txt= | yes | 0 bytes, the tenant holds no fixings |
+| =portfolio_swap.xml= | no | the trades are still a msgpack blob |
+
+The engine's own log is the proof, and it is the same log that used to stop at
+the first line:
+
+#+begin_example
+Loading inputs                                    OK
+Requested analytics                               CASHFLOW,CURVES,EXPOSURE,NPV,XVA
+Pricing: Build Market                             OK
+Pricing: Build Portfolio                          XVA: Build Today's Market         OK
+Writing reports...                                OK
+Writing cubes...
+Error: Error in ORE analytics: Failed to run analytics PRICING,XVA
+#+end_example
+
+=Loading inputs= no longer fails, =Build Market= completes, and ORE writes
+=marketdata.csv=, =todaysmarketcalibration.csv=, =pricingstats.csv= and the
+rest. It stops at =Build Portfolio=, which is the next missing input and the
+reason no analytics are produced.
+
+The chain still ends where it did: the result is Done with outcome 1 and the
+instance reaches =completed=, so the engine's exit code is still being read as
+success while it printed an error. That is
+[[id:8E55B78D-0928-45D9-B61F-7A5D3619A381][treat an engine error as a failed result]].
+

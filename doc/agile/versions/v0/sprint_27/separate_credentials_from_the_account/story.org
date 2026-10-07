@@ -21,11 +21,11 @@ A profile write can never change a credential, and the history says which of the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ A profile write can never change a credential, and the history says which of the
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:84E6F742-1102-4244-B2CC-373A049C915C][Scaffold story: Separate the account's credentials from its profile]] | DONE | 2026-10-06 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | STARTED | 2026-10-06 | | Initial task for: Separate the account's credentials from its profile |
+| [[id:A131BB1B-3B47-4AAC-846B-17074A732DE2][Give the account a credential entity of its own]] | DONE | 2026-10-06 | 2026-10-07 | Initial task for: Separate the account's credentials from its profile |
 
 * Decisions
 
@@ -65,9 +65,10 @@ A profile write can never change a credential, and the history says which of the
   =iam.v1.ops.*=, whose discriminator the spec states outright: "an operation
   that acts on an entity the common way belongs in the common set, and an
   operation that merely has an unusual name does not qualify as a domain
-  operation." A password write fails both tests. This is why
-  =iam.v1.accounts.change-password= moves, and it settles the question without
-  a per-entity judgement.
+  operation." A password write fails both tests, which is why
+  =iam.v1.accounts.change-password= becomes =iam.v1.ops.change_password=; the
+  census story owns that move and has it in flight, and this story does not
+  duplicate it.
 - *The resource carries both codes.* =iam::account_credentials:read= is what
   the generated reads check, so an administrator may ask which accounts hold
   a credential and when it changed, and may not see one.
@@ -75,9 +76,10 @@ A profile write can never change a credential, and the history says which of the
   deliberately separate from =iam::accounts:reset_password=: a role that may
   edit a profile cannot thereby change what an account signs in with.
 - *Writes stay hand-written.* A credential write is a service method over
-  =account_credential_repository::write=, declared in =ores.iam.operations.org=
-  so its messages generate from the model the way the specification's P04
-  requires. Change-password and reset-password are built; TOTP enrolment,
+  =account_credential_repository::write=, reached by an operation the account
+  already serves. Whether those operations are declared in a model of their own
+  is a separate question, and belongs with the migration rather than with this
+  story. Change-password and reset-password are built; TOTP enrolment,
   verification and disable are not.
 - *A secret that must cross the wire travels on a purpose-built message.*
   TOTP enrolment hands the person a secret to scan, and =:no_wire:= skips the
@@ -104,3 +106,28 @@ A profile write can never change a credential, and the history says which of the
 * See also
 
 - [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] — the census of every subject in the tree against the same specification, and the gate that will hold it. This story takes the IAM subjects it has to move anyway; the rest of the component is that story's.
+
+* Result
+
+The account's profile and its secrets are two entities with two access paths.
+=ores.iam.account= declares every column it holds, so a whole-row write through
+it is lossless and cannot reach a credential, because there is none on the row.
+=ores.iam.account_credential= holds the secret material with every column
+=:no_wire:=, is projected across the whole stack, and declares no write verb
+because a credential has no write record to carry. =password_salt= is gone: the
+stored hash embeds its own salt and nothing read the column.
+
+Both properties the story is named for were measured on the running system. A
+profile write took an account from version 2 to version 3 while its credential
+row kept the same id, version and =service_password_hash=; the credential reads
+answered with 25 records and no secret field in any of them.
+
+Two things came out of it that are not the split itself. A nullable =:no_wire:=
+column exposed a codegen defect -- the mapper emitted =v.secret_hash.empty()=
+against an =rfl::Skip=, which does not compile -- and the mapper template now
+branches on the flag with a regression test. And the first cut modelled the
+entity as internal, with the wire facets withdrawn; that was wrong and is
+recorded in * Decisions.
+
+TOTP is not built. The secret is a column with no reader and no writer, and the
+capability is captured in the inbox.

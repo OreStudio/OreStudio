@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/iam/account_credential_routes.cpp"
     "routes/iam/account_operations_routes.cpp"
     "routes/iam/account_routes.cpp"
     "routes/iam/authorization_routes.cpp"
@@ -36,6 +37,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_credential_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/authorization_routes.hpp"

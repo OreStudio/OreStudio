@@ -54,8 +54,11 @@ BEGIN
     -- path alone, never by the profile path, so its write is its own code: an
     -- administrator who may reissue a password holds this one, and holds it
     -- separately from iam::accounts:update, which reaches the profile and
-    -- nothing else. There is no read code, because no caller reads a
-    -- credential: a caller proves one it already holds.
+    -- nothing else. The read is what the generated reads of
+    -- iam.v1.account_credentials check: the record carries no secret, so an
+    -- administrator may ask which accounts hold a credential and when it
+    -- changed, and may not see one.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_credentials:read', 'View which accounts hold a credential');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::account_credentials:write', 'Set or reissue an account password');
 
     -- Role management permissions. The generated role write checks

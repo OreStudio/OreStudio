@@ -21,6 +21,7 @@
 
 // Per-entity generated event-mapping registrars.
 #include "ores.iam.service/messaging/account_contact_information_event_registrar.hpp"
+#include "ores.iam.service/messaging/account_credential_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_event_registrar.hpp"
 #include "ores.iam.service/messaging/account_type_event_registrar.hpp"
 #include "ores.iam.service/messaging/login_info_event_registrar.hpp"
@@ -49,6 +50,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // keep them alive for the service's lifetime; a mapping with no live
     // subscription never reaches its subject.
     subs.push_back(register_account_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_account_credential_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_account_contact_information_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_account_type_event_mapping(event_source, event_bus, nats));

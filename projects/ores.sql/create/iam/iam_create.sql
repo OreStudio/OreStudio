@@ -41,6 +41,7 @@
 
 -- Account credentials (the secret an account proves; depends on accounts)
 \ir ./iam_account_credentials_create.sql
+\ir ./iam_account_credentials_notify_trigger_create.sql
 
 \ir ./iam_login_info_create.sql
 \ir ./iam_login_info_notify_trigger_create.sql

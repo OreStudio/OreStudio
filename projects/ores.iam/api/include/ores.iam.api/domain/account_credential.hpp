@@ -56,11 +56,21 @@ namespace ores::iam::domain {
  * shape and needs no shape flag. A credential write therefore keeps its own
  * history, and the account's history never mentions it.
  *
- * The entity is internal. It renders the data layer and the SQL schema and
- * nothing else: a credential is written and proved inside the IAM service,
- * never read by a caller, so the model declares no protocol, handler,
- * service, shell command or TypeScript twin. See the * Physical space
- * section for the reason each facet is withdrawn.
+ * The entity is projected across the whole stack, exactly as the account is: SQL
+ * schema and notify trigger, domain type, repository, generator, protocol, NATS
+ * handler and sub-registrar, generated CRUD service, history provider,
+ * presentation mapper, shell command, HTTP route, eventing, and the TypeScript
+ * twins. The secrets stay off the wire because the columns are :no_wire:, not
+ * because the entity has no wire surface. See [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS
+ * entity protocol specification]].
+ *
+ * The generated half is reads-only, and that is the specification's answer
+ * rather than ours. A write carries "the fields the user owns, and no others",
+ * and a server-owned field never appears in one; a credential's only meaningful
+ * field is server-derived, so the resource has no write record to carry, and "a
+ * read-only resource simply declares no write verb". The credential's writes are
+ * domain operations, iam.v1.ops.*, declared in
+ * [[id:C6FC2B06-F8D6-4697-A54E-2399DB3665D3][ores.iam.operations]].
  */
 struct account_credential final {
     /**

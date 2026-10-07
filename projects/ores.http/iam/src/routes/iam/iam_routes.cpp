@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/account_credential_routes.hpp"
 #include "ores.http/routes/iam/account_operations_routes.hpp"
 #include "ores.http/routes/iam/account_routes.hpp"
 #include "ores.http/routes/iam/authorization_routes.hpp"
@@ -37,6 +38,7 @@ void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                                  ores::nats::service::nats_client& session) {
 
     account_routes::register_routes(router, registry, session);
+    account_credential_routes::register_routes(router, registry, session);
     role_routes::register_routes(router, registry, session);
     permission_routes::register_routes(router, registry, session);
     session_routes::register_routes(router, registry, session);

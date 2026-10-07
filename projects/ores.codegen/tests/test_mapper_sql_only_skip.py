@@ -9,9 +9,13 @@ The domain class template guards on the flag and the generator template
 guards on it too, but the mapper template did not: for a column whose type
 matched a mapper flag (a nullable string, say) it emitted a domain member
 assignment for a member the domain struct does not have, and the entity
-never compiled. The account model found this -- its
-service_password_hash is a nullable string that only the repository's
-credential check may read. The fix guards both mapper loops on sql_only.
+never compiled. The account model found this: it once declared
+service_password_hash, a nullable string that only the repository's
+credential check read and the domain type deliberately did not carry. That
+column now lives in the account credential entity, which the domain type
+does carry, so no commissioned model declares :sql_only: today. The guard
+stays, and so does this test: the flag is still supported, and this is what
+proves the mapper keeps honouring it.
 """
 import sys
 from pathlib import Path

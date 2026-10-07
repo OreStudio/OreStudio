@@ -132,9 +132,6 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         acc.id = ctx.generate_uuid();
         acc.username = account_data[i].first;
         acc.email = account_data[i].second;
-        acc.password_hash = ctx.alphanumeric(64);
-        acc.password_salt = ctx.alphanumeric(32);
-        acc.totp_secret = ctx.alphanumeric(32);
         acc.modified_by = "system_admin";
         acc.change_reason_code = "INITIAL_SETUP";
         acc.change_commentary = "Initial account creation";

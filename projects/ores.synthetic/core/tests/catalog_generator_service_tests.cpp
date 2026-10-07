@@ -116,8 +116,6 @@ TEST_CASE("generate_accounts_have_valid_fields", tags) {
         CHECK(!acc.id.is_nil());
         CHECK(!acc.username.empty());
         CHECK(!acc.email.empty());
-        CHECK(!acc.password_hash.value().empty());
-        CHECK(!acc.password_salt.value().empty());
     }
 }
 

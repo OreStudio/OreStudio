@@ -83,7 +83,7 @@ void account_operations_operations_commands::register_commands(cli::Menu& root_m
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_save_account(std::ref(out), std::ref(session), std::move(args));
         },
-        "save-account <principal> <password> <totp_secret> <email> <account_type>");
+        "save-account <principal> <password> <email> <account_type>");
 
     menu->Insert(
         "update-account",
@@ -214,7 +214,7 @@ void account_operations_operations_commands::process_save_account(
         return;
     }
 
-    constexpr std::size_t positional_count = 5;
+    constexpr std::size_t positional_count = 4;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -226,7 +226,6 @@ void account_operations_operations_commands::process_save_account(
     try {
         req.principal = parsed->positionals[next++];
         req.password = parsed->positionals[next++];
-        req.totp_secret = parsed->positionals[next++];
         req.email = parsed->positionals[next++];
         req.account_type = parsed->positionals[next++];
     } catch (const std::exception& e) {

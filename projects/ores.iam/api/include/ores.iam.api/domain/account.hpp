@@ -25,7 +25,6 @@
 #ifndef ORES_IAM_API_DOMAIN_ACCOUNT_HPP
 #define ORES_IAM_API_DOMAIN_ACCOUNT_HPP
 
-#include "ores.utility/rfl/skip_comparison.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -40,13 +39,19 @@ namespace ores::iam::domain {
  * @brief An account that can authenticate against the system.
  *
  * An account that can authenticate against the system: one row per user,
- * service, algorithm or LLM identity, carrying the password material, the
- * TOTP secret, the email address and the optional profile and reporting
- * links. The table is bi-temporal and audited (see
+ * service, algorithm or LLM identity, carrying the name it signs in with,
+ * the email address and the optional profile and reporting links. The table
+ * is bi-temporal and audited (see
  * projects/ores.sql/create/iam/iam_accounts_create.sql): it carries
  * version, the four audit columns and the valid_from/valid_to pair
  * with the GIST exclusion, so the model takes the ordinary audited shape
  * and needs no shape flag.
+ *
+ * The secret material lives apart, in
+ * [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]]. Held here, a profile
+ * write replaced the whole row, and the column the domain type could not carry came back empty.
+ * Every column this model declares reaches the domain type, so a whole-row write is lossless, and
+ * no write through this entity can touch a credential.
  *
  * The table is a composite parent: ores_iam_accounts_touch_version_fn
  * lets a child entity (account contact information, party association)
@@ -54,21 +59,16 @@ namespace ores::iam::domain {
  * declares :generate_touch_function: true, which renders that function
  * under its existing name rather than leaving it hand-written.
  *
- * The model describes the table and nothing else. Two columns need care:
- *
- * - service_password_hash is a real column with no domain member: it is
- *   reached only by check_service_credentials and never travels on the
- *   wire, so it is declared :sql_only: true and the generated domain
- *   struct omits it while the entity struct and the mapper keep it.
- * - image_id and reports_to_account_id are nullable UUID soft
- *   references. The hand-written domain struct represented both as a plain
- *   boost::uuids::uuid with a nil sentinel, on the claim that a second
- *   std::optional<boost::uuids::uuid> member corrupts reflect-cpp
- *   aggregate serialisation for multi-element vectors. Re-verified under
- *   the generated estate: all three nullable UUIDs are modelled as
- *   std::optional<boost::uuids::uuid>, and the api suite's multi-element
- *   JSON and table tests plus the core repository's five-account round trip
- *   pass, so the workaround is not needed here.
+ * The model describes the table and nothing else. image_id and
+ * reports_to_account_id are nullable UUID soft references. The hand-written
+ * domain struct represented both as a plain boost::uuids::uuid with a nil
+ * sentinel, on the claim that a second
+ * std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+ * aggregate serialisation for multi-element vectors. Re-verified under
+ * the generated estate: all three nullable UUIDs are modelled as
+ * std::optional<boost::uuids::uuid>, and the api suite's multi-element
+ * JSON and table tests plus the core repository's five-account round trip
+ * pass, so the workaround is not needed here.
  *
  * The generated read surface is live, and it does not collide with the
  * hand-written one. The hand-written
@@ -81,9 +81,9 @@ namespace ores::iam::domain {
  * :read_only: true, so the generated half carries no write verb and the split
  * falls out of the flag rather than out of a suppression.
  *
- * The row holds the password material, the TOTP seed and the account holder's
- * own name and mail address, so the generated reads are not open to every
- * signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get
+ * The row holds the account holder's own name and mail address, so the
+ * generated reads are not open to every signed-in caller: the generated
+ * iam.v1.accounts.list and iam.v1.accounts.get
  * handlers require iam::accounts:read before they serve anything, as every
  * generated read requires its resource's read code. See
  * [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
@@ -145,32 +145,6 @@ struct account final {
      * real name is recorded.
      */
     std::string full_name;
-
-    /**
-     * @brief Hashed password for secure authentication.
-     *
-     * The hash stays in the domain struct, because signup, login and change-password read and write
-     * it there, but it never reaches the wire: :no_wire: keeps the member and skips it when the
-     * struct is serialized, so a response, a shell table and a history diff carry no credential.
-     */
-    rfl::Skip<std::string> password_hash;
-
-    /**
-     * @brief Salt used in password hashing for additional security.
-     *
-     * The stored hash embeds its own salt, so nothing reads this column and it is written empty. It
-     * stays declared because the table carries it, and it is :no_wire: for the same reason as the
-     * hash.
-     */
-    rfl::Skip<std::string> password_salt;
-
-    /**
-     * @brief Time-based One-Time Password secret for two-factor authentication.
-     *
-     * No verification path reads it yet, and it must never reach a caller, so it is :no_wire: for
-     * the same reason as the password hash.
-     */
-    rfl::Skip<std::string> totp_secret;
 
     /**
      * @brief Email address associated with the account. It is unique within a tenant, so the

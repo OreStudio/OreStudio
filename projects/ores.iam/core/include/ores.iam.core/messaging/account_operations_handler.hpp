@@ -405,6 +405,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        // Reissuing a password writes a credential, which is a different
+        // access path from the profile write. It takes the credential's own
+        // code, so a role that may edit an account cannot thereby change what
+        // the account signs in with.
+        if (!has_permission(ctx, "iam::account_credentials:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::account_operations_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id_str : req->account_ids) {

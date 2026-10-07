@@ -749,8 +749,10 @@ $$ language plpgsql;
  *
  * Service accounts:
  * - Belong to the system tenant
- * - Cannot login with passwords (password_hash is null)
- * - Authenticate by creating sessions directly at startup
+ * - Cannot login with a user password: their credential row holds no
+ *   password_hash
+ * - Authenticate by proving the SHA-256 of their machine password against
+ *   the service_password_hash in that same credential row
  * - Account names should match database user names for consistency
  */
 create or replace function ores_iam_service_accounts_upsert_fn(
@@ -761,39 +763,86 @@ create or replace function ores_iam_service_accounts_upsert_fn(
     p_full_name   text default null,
     p_picture_code text default null
 ) returns void as $$
+declare
+    v_account_id uuid;
+    v_has_credential boolean;
 begin
     perform ores_seed_validate_not_empty_fn(p_username, 'Service account username');
     perform ores_seed_validate_not_empty_fn(p_email, 'Service account email');
 
+    select a.id into v_account_id
+    from ores_iam_accounts_tbl a
+    where a.tenant_id = ores_utility_system_tenant_id_fn()
+      and a.username = p_username
+      and a.valid_to = ores_utility_infinity_timestamp_fn();
+
     -- A create that collides with a live row is refused by the store, so a
-    -- seed asks first and leaves an existing row exactly as it is.
-    if exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and username = p_username
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise debug 'Service account already exists: %', p_username;
-        return;
+    -- seed asks first and leaves an existing account exactly as it is. Its
+    -- credential is a separate row, and a missing one is the fault this seed
+    -- exists to repair: an account with no credential row cannot authenticate
+    -- at all, so the seed writes the one it is given rather than leaving the
+    -- account unable to sign in.
+    if v_account_id is not null then
+        select exists (
+            select 1 from ores_iam_account_credentials_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and account_id = v_account_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_has_credential;
+
+        if v_has_credential then
+            raise debug 'Service account already exists: %', p_username;
+            return;
+        end if;
+
+        raise debug 'Service account exists but holds no credential; writing one: %', p_username;
+    else
+        v_account_id := gen_random_uuid();
+
+        insert into ores_iam_accounts_tbl (
+            id, tenant_id, version, account_type, username, full_name, email,
+            picture_code, modified_by, performed_by, change_reason_code,
+            change_commentary, valid_from, valid_to
+        )
+        values (
+            v_account_id,
+            ores_utility_system_tenant_id_fn(),
+            0,
+            'service',
+            p_username,
+            p_full_name,
+            p_email,
+            p_picture_code,
+            current_user,
+            current_user,
+            'system.initial_load',
+            p_description,
+            current_timestamp,
+            ores_utility_infinity_timestamp_fn()
+        );
+
+        raise debug 'Created service account: %', p_username;
     end if;
 
-    insert into ores_iam_accounts_tbl (
-        id, tenant_id, version, account_type, username, full_name, password_hash, password_salt,
-        totp_secret, email, picture_code, modified_by, performed_by, change_reason_code,
-        change_commentary, valid_from, valid_to
+    -- A service account holds no interactive password, so the credential row
+    -- it gets carries only the service password hash: SHA-256 of the
+    -- high-entropy machine credential, which is what the service login path
+    -- proves.
+    insert into ores_iam_account_credentials_tbl (
+        id, tenant_id, version, account_id, service_password_hash,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
     )
     values (
         gen_random_uuid(),
         ores_utility_system_tenant_id_fn(),
         0,
-        'service',
-        p_username,
-        p_full_name,
-        '!SERVICE_ACCOUNT_NO_PASSWORD!',  -- Dummy hash - service accounts cannot login
-        '!NO_SALT!',                       -- Dummy salt - service accounts cannot login
-        '',
-        p_email,
-        p_picture_code,
+        v_account_id,
+        case
+            when p_password is not null and p_password <> ''
+                then encode(sha256(p_password::bytea), 'hex')
+            else null
+        end,
         current_user,
         current_user,
         'system.initial_load',
@@ -802,18 +851,7 @@ begin
         ores_utility_infinity_timestamp_fn()
     );
 
-    raise debug 'Created service account: %', p_username;
-
-    -- Store service_password_hash using SHA-256 (suitable for high-entropy
-    -- machine credentials such as randomly generated DB passwords).
-    if p_password is not null and p_password <> '' then
-        update ores_iam_accounts_tbl
-        set service_password_hash = encode(sha256(p_password::bytea), 'hex')
-        where username  = p_username
-          and tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to  = ores_utility_infinity_timestamp_fn();
-        raise debug 'Set service_password_hash for: %', p_username;
-    end if;
+    raise debug 'Wrote service credential for: %', p_username;
 end;
 $$ language plpgsql;
 

@@ -53,9 +53,6 @@ domain::account account_mapper::map(const account_entity& v) {
     r.account_type = v.account_type;
     r.account_status = v.account_status;
     r.full_name = v.full_name.value_or("");
-    r.password_hash = v.password_hash;
-    r.password_salt = v.password_salt;
-    r.totp_secret = v.totp_secret;
     r.email = v.email;
     r.default_party_id =
         v.default_party_id.has_value() ?
@@ -93,9 +90,6 @@ account_entity account_mapper::map(const domain::account& v) {
     r.account_type = v.account_type;
     r.account_status = v.account_status;
     r.full_name = v.full_name.empty() ? std::nullopt : std::optional(v.full_name);
-    r.password_hash = v.password_hash.value();
-    r.password_salt = v.password_salt.value();
-    r.totp_secret = v.totp_secret.value();
     r.email = v.email;
     r.default_party_id = v.default_party_id.has_value() ?
                              std::optional(boost::uuids::to_string(*v.default_party_id)) :

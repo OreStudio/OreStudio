@@ -24,9 +24,14 @@
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <array>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <openssl/evp.h>
 #include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -49,7 +54,71 @@ account_operations_service::account_operations_service(database::context ctx)
     : ctx_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
+    BOOST_LOG_SEV(lg(), debug) << "DML for account_credential: " << credential_repo_.sql();
     BOOST_LOG_SEV(lg(), debug) << "DML for login_info: " << login_info_repo_.sql();
+}
+
+std::optional<domain::account_credential>
+account_operations_service::read_credential(const boost::uuids::uuid& account_id) {
+    auto rows = credential_repo_.read_latest_by_account_id(
+        ctx_, boost::uuids::to_string(account_id), 0, 1);
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+
+void account_operations_service::write_credential(domain::account_credential credential) {
+    std::vector<domain::account_credential> rows{std::move(credential)};
+    credential_repo_.write(ctx_, rows);
+}
+
+std::optional<boost::uuids::uuid>
+account_operations_service::verify_service_credentials(const std::string& username,
+                                                       const std::string& password) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
+
+    const auto accounts = account_repo_.read_latest_by_username(ctx_, username);
+    if (accounts.empty())
+        return std::nullopt;
+
+    const auto& account = accounts.front();
+    if (account.account_type == "user") {
+        BOOST_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
+        return std::nullopt;
+    }
+
+    const auto credential = read_credential(account.id);
+    if (!credential) {
+        // The account is a service account with no credential row at all,
+        // which is a data fault and not a rejected password. Say which, so
+        // the two are not read as one another.
+        BOOST_LOG_SEV(lg(), warn)
+            << "Service account holds no credential row, so it cannot authenticate: " << username;
+        return std::nullopt;
+    }
+
+    if (credential->service_password_hash.get().empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Service account's credential holds no password hash, so it cannot authenticate: "
+            << username;
+        return std::nullopt;
+    }
+
+    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
+    unsigned int digest_len = 0;
+    EVP_Digest(password.data(), password.size(), digest.data(), &digest_len, EVP_sha256(), nullptr);
+
+    std::string computed_hash;
+    computed_hash.reserve(digest_len * 2);
+    for (unsigned int i = 0; i < digest_len; ++i)
+        computed_hash += std::format("{:02x}", digest[i]);
+
+    if (computed_hash != credential->service_password_hash.get()) {
+        BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
+        return std::nullopt;
+    }
+
+    return account.id;
 }
 
 domain::account account_operations_service::create_account(const std::string& username,
@@ -81,10 +150,6 @@ domain::account account_operations_service::create_account(const std::string& us
     new_account.username = username;
     new_account.full_name = full_name;
     new_account.account_type = "user";
-    new_account.password_hash = password_hash;
-    // FIXME remove
-    new_account.password_salt = "";
-    new_account.totp_secret = "";
     new_account.email = email;
     new_account.modified_by = modified_by;
     new_account.change_reason_code = std::string{reason::codes::new_record};
@@ -92,6 +157,18 @@ domain::account account_operations_service::create_account(const std::string& us
 
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(ctx_, accounts);
+
+    // The password is the account's credential, which is the one place it is
+    // held: a later write through the account cannot reach it.
+    domain::account_credential credential;
+    credential.version = 0;
+    credential.id = uuid_generator_();
+    credential.account_id = id;
+    credential.password_hash = password_hash;
+    credential.modified_by = modified_by;
+    credential.change_reason_code = std::string{reason::codes::new_record};
+    credential.change_commentary = change_commentary;
+    write_credential(std::move(credential));
 
     // Create a corresponding login tracking entry
     domain::login_info li{.account_id = id,
@@ -143,9 +220,6 @@ account_operations_service::create_service_account(const std::string& username,
     new_account.id = id;
     new_account.username = username;
     new_account.account_type = account_type;
-    new_account.password_hash = "";
-    new_account.password_salt = "";
-    new_account.totp_secret = "";
     new_account.email = email;
     new_account.modified_by = modified_by;
     new_account.change_reason_code = std::string{reason::codes::new_record};
@@ -153,6 +227,19 @@ account_operations_service::create_service_account(const std::string& username,
 
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(ctx_, accounts);
+
+    // A service account authenticates by proving a machine password, so it
+    // holds a credential row the moment it exists. The row is empty until the
+    // seed writes the service hash: an account with no credential row at all
+    // is the fault the service login path reports as one.
+    domain::account_credential credential;
+    credential.version = 0;
+    credential.id = uuid_generator_();
+    credential.account_id = id;
+    credential.modified_by = modified_by;
+    credential.change_reason_code = std::string{reason::codes::new_record};
+    credential.change_commentary = change_commentary;
+    write_credential(std::move(credential));
 
     // Create a corresponding login tracking entry (for consistency)
     domain::login_info li{.account_id = id,
@@ -276,7 +363,15 @@ authenticated_login account_operations_service::login(const std::string& usernam
                           "Account is locked due to too many failed attempts");
     }
 
-    bool password_valid = crypto::password_hasher::verify(password, account.password_hash.value());
+    const auto credential = read_credential(account.id);
+    if (!credential || credential->password_hash.get().empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Login refused: account holds no password credential: " << username;
+        throw login_error(error_code::invalid_credentials, "Invalid username or password");
+    }
+
+    bool password_valid =
+        crypto::password_hasher::verify(password, credential->password_hash.get());
 
     login_info.last_attempt_ip = ip_address;
 
@@ -658,7 +753,15 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
         return "Account does not exist";
     }
 
-    if (!crypto::password_hasher::verify(current_password, accounts[0].password_hash.value())) {
+    const auto credential = read_credential(account_id);
+    if (!credential || credential->password_hash.get().empty()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Password change refused: account holds no password credential: "
+            << boost::uuids::to_string(account_id);
+        return "Current password is incorrect";
+    }
+
+    if (!crypto::password_hasher::verify(current_password, credential->password_hash.get())) {
         BOOST_LOG_SEV(lg(), warn)
             << "Password change refused: current password does not match for account: "
             << boost::uuids::to_string(account_id);
@@ -687,26 +790,29 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
         return "Account does not exist";
     }
 
+    const auto existing = read_credential(account_id);
+
     // Check that new password is different from current password
-    const auto& current_hash = accounts[0].password_hash;
-    if (crypto::password_hasher::verify(new_password, current_hash.value())) {
+    if (existing && !existing->password_hash.get().empty() &&
+        crypto::password_hasher::verify(new_password, existing->password_hash.get())) {
         BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
         return "New password must be different from current password";
     }
 
-    // Hash the new password
-    auto password_hash = crypto::password_hasher::hash(new_password);
+    // A password change is a credential write and nothing else. The account
+    // row is not touched: the profile is not what changed, and a write through
+    // it could not reach a credential in any case.
+    auto credential = existing.value_or(domain::account_credential{});
+    credential.id = existing ? existing->id : uuid_generator_();
+    credential.account_id = account_id;
+    credential.password_hash = crypto::password_hasher::hash(new_password);
+    credential.modified_by = existing && !existing->modified_by.empty() ? existing->modified_by
+                                                                        : accounts.front().username;
+    credential.change_reason_code = std::string{reason::codes::non_material_update};
+    credential.change_commentary = "Password changed";
 
-    // Update account with new password hash
-    auto account = accounts[0];
-    account.password_hash = password_hash;
-    account.change_reason_code = std::string{reason::codes::non_material_update};
-    account.change_commentary = "Password changed";
-    // Note: version is NOT incremented here - the database trigger handles it
-    // The trigger uses optimistic locking: new.version must match current_version
-
-    // Write the updated account (creates new temporal version)
-    account_repo_.write(ctx_, account);
+    // Write the credential (creates a new temporal version of its own row)
+    write_credential(std::move(credential));
 
     // Clear password_reset_required flag
     auto login_info_vec = login_info_repo_.read_latest(ctx_, boost::uuids::to_string(account_id));

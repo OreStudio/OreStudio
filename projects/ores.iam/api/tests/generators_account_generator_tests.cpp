@@ -48,9 +48,6 @@ TEST_CASE("generate_single_account", tags) {
 
     CHECK(!account.username.empty());
     CHECK(!account.email.empty());
-    CHECK(!account.password_hash.value().empty());
-    CHECK(!account.password_salt.value().empty());
-    CHECK(!account.totp_secret.value().empty());
     CHECK(!account.modified_by.empty());
     CHECK(account.recorded_at != std::chrono::system_clock::time_point{});
 }

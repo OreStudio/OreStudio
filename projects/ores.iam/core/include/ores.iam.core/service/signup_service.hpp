@@ -21,8 +21,10 @@
 #define ORES_IAM_SERVICE_SIGNUP_SERVICE_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/account_credential_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -141,6 +143,7 @@ public:
 
 private:
     repository::account_repository account_repo_;
+    repository::account_credential_repository credential_repo_;
     repository::login_info_repository login_info_repo_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_settings_service> system_flags_;

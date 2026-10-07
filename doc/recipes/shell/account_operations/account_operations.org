@@ -17,20 +17,20 @@ This file documents declared operations at the shell, one section per command. E
 :ID: CECDEF58-CA57-54F5-9DE1-B4487D74A8CF
 :END:
 
-Sends =save_account_request= and prints =save_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =totp_secret=, =email=, =account_type=, in that order. The caller must have established a session first.
+Sends =save_account_request= and prints =save_account_response=, so the shape is the protocol's and the meaning is the service's. It reads =principal=, =password=, =email=, =account_type=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-account_operations save-account <principal> <password> <totp_secret> <email> <account_type>
+account_operations save-account <principal> <password> <email> <account_type>
 #+end_example
 
 It is addressed at =iam.v1.accounts.save=.
 
 #+name: account_operations-save-account
 #+begin_src ores-shell :tangle account_operations-save-account.ores :exports none
-account_operations save-account __none__ __none__ __none__ __none__ __none__
+account_operations save-account __none__ __none__ __none__ __none__
 #+end_src
 
 ** =update-account=

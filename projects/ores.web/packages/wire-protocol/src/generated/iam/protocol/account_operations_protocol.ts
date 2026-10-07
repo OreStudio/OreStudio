@@ -38,8 +38,15 @@ export interface PublishAccountsFromDqRequest {}
 
 export interface SaveAccountRequest {
     principal: string;
+    /**
+     * @brief The account's initial password, in the clear, to be hashed
+     * server-side.
+     *
+     * The only credential a request carries, and the only direction one
+     * travels. The hash the server derives from it is written to the account's
+     * credential row and never leaves it.
+     */
     password: string;
-    totp_secret: string;
     email: string;
     account_type: string;
 }

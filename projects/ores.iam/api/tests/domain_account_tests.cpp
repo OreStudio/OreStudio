@@ -44,19 +44,12 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     sut.modified_by = "admin";
     sut.id = boost::uuids::random_generator()();
     sut.username = "john.doe";
-    sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
-    sut.password_salt = "randomly_generated_salt_value";
-    sut.totp_secret = "JBSWY3DPEHPK3PXP";
     sut.email = "john.doe@example.com";
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.modified_by == "admin");
     CHECK(sut.username == "john.doe");
-    CHECK(sut.password_hash.value() ==
-          "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
-    CHECK(sut.password_salt.value() == "randomly_generated_salt_value");
-    CHECK(sut.totp_secret.value() == "JBSWY3DPEHPK3PXP");
     CHECK(sut.email == "john.doe@example.com");
 }
 
@@ -88,9 +81,6 @@ TEST_CASE("create_admin_account", tags) {
     sut.modified_by = "system";
     sut.id = boost::uuids::random_generator()();
     sut.username = "admin";
-    sut.password_hash = "admin_hash_value";
-    sut.password_salt = "admin_salt_value";
-    sut.totp_secret = "ADMIN_TOTP_SECRET";
     sut.email = "admin@example.com";
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
@@ -111,9 +101,6 @@ TEST_CASE("account_with_specific_uuid", tags) {
     sut.modified_by = "updater";
     sut.id = specific_id;
     sut.username = "test.user";
-    sut.password_hash = "test_hash";
-    sut.password_salt = "test_salt";
-    sut.totp_secret = "";
     sut.email = "test@example.com";
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
@@ -129,9 +116,6 @@ TEST_CASE("account_insertion_operator", tags) {
     sut.modified_by = "developer";
     sut.id = boost::uuids::random_generator()();
     sut.username = "serialization.test";
-    sut.password_hash = "hash123";
-    sut.password_salt = "salt456";
-    sut.totp_secret = "TOTP789";
     sut.email = "serialize@test.com";
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
 
@@ -152,9 +136,6 @@ TEST_CASE("create_account_with_faker", tags) {
     sut.modified_by = std::string(faker::internet::username());
     sut.id = boost::uuids::random_generator()();
     sut.username = std::string(faker::internet::username());
-    sut.password_hash = faker::number::hexadecimal(64);
-    sut.password_salt = faker::number::hexadecimal(32);
-    sut.totp_secret = faker::string::alphanumeric(16);
     sut.email = std::string(faker::internet::email());
 
     BOOST_LOG_SEV(lg, info) << "Account: " << sut;
@@ -163,9 +144,6 @@ TEST_CASE("create_account_with_faker", tags) {
     CHECK(sut.version <= 10);
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.username.empty());
-    CHECK(sut.password_hash.value().length() == 66);
-    CHECK(sut.password_salt.value().length() == 34);
-    CHECK(sut.totp_secret.value().length() == 16);
     CHECK(!sut.email.empty());
 }
 
@@ -179,9 +157,6 @@ TEST_CASE("create_multiple_random_accounts", tags) {
             std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         sut.id = boost::uuids::random_generator()();
         sut.username = std::string(faker::internet::username());
-        sut.password_hash = std::string(faker::crypto::sha256());
-        sut.password_salt = std::string(faker::crypto::sha256());
-        sut.totp_secret = faker::string::alphanumeric(20);
         sut.email = std::string(faker::internet::email());
         BOOST_LOG_SEV(lg, info) << "Account " << i << ":" << sut;
 
@@ -199,9 +174,6 @@ TEST_CASE("account_convert_single_to_table", tags) {
     acc.modified_by = "admin";
     acc.id = boost::uuids::random_generator()();
     acc.username = "john.doe";
-    acc.password_hash = "hash123";
-    acc.password_salt = "salt456";
-    acc.totp_secret = "TOTP789";
     acc.email = "john.doe@example.com";
 
     std::vector<account> accounts = {acc};
@@ -224,9 +196,6 @@ TEST_CASE("account_convert_multiple_to_table", tags) {
         acc.modified_by = "system";
         acc.id = boost::uuids::random_generator()();
         acc.username = "user" + std::to_string(i);
-        acc.password_hash = "hash" + std::to_string(i);
-        acc.password_salt = "salt" + std::to_string(i);
-        acc.totp_secret = "TOTP" + std::to_string(i);
         acc.email = "user" + std::to_string(i) + "@example.com";
         accounts.push_back(acc);
     }
@@ -252,9 +221,6 @@ TEST_CASE("account_convert_single_to_json", tags) {
     acc.modified_by = "admin";
     acc.id = boost::uuids::random_generator()();
     acc.username = "john.doe";
-    acc.password_hash = "hash123";
-    acc.password_salt = "salt456";
-    acc.totp_secret = "TOTP789";
     acc.email = "john.doe@example.com";
 
     std::ostringstream os;
@@ -266,11 +232,6 @@ TEST_CASE("account_convert_single_to_json", tags) {
     CHECK(!json.empty());
     CHECK(json.find("john.doe") != std::string::npos);
     CHECK(json.find("john.doe@example.com") != std::string::npos);
-    // The domain carries the credentials; the serialized form does not.
-    CHECK(json.find("password_hash") == std::string::npos);
-    CHECK(json.find("hash123") == std::string::npos);
-    CHECK(json.find("salt456") == std::string::npos);
-    CHECK(json.find("TOTP789") == std::string::npos);
 }
 
 TEST_CASE("account_convert_multiple_to_json", tags) {
@@ -283,9 +244,6 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
         acc.modified_by = "system";
         acc.id = boost::uuids::random_generator()();
         acc.username = "user" + std::to_string(i);
-        acc.password_hash = "hash" + std::to_string(i);
-        acc.password_salt = "salt" + std::to_string(i);
-        acc.totp_secret = "TOTP" + std::to_string(i);
         acc.email = "user" + std::to_string(i) + "@example.com";
         accounts.push_back(acc);
     }
@@ -300,7 +258,6 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
         CHECK(!json.empty());
         CHECK(json.find(acc.username) != std::string::npos);
         CHECK(json.find(acc.email) != std::string::npos);
-        CHECK(json.find(acc.password_hash.value()) == std::string::npos);
     }
 }
 
@@ -326,9 +283,6 @@ TEST_CASE("account_table_with_faker_data", tags) {
         acc.modified_by = std::string(faker::internet::username());
         acc.id = boost::uuids::random_generator()();
         acc.username = std::string(faker::internet::username());
-        acc.password_hash = faker::number::hexadecimal(64);
-        acc.password_salt = faker::number::hexadecimal(32);
-        acc.totp_secret = faker::string::alphanumeric(16);
         acc.email = std::string(faker::internet::email());
         accounts.push_back(acc);
     }

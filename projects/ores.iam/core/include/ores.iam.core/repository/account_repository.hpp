@@ -206,10 +206,6 @@ public:
 
     std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
 
-    std::optional<boost::uuids::uuid> check_service_credentials(context ctx,
-                                                                const std::string& username,
-                                                                const std::string& password);
-
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

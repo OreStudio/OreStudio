@@ -44,9 +44,6 @@ TEST_CASE("generate_synthetic_account_creates_valid_account", generators_tags) {
     CHECK(!account.id.is_nil());
     CHECK(!account.username.empty());
     CHECK(!account.email.empty());
-    CHECK(!account.password_hash.value().empty());
-    CHECK(!account.password_salt.value().empty());
-    CHECK(!account.totp_secret.value().empty());
     CHECK(!account.modified_by.empty());
     CHECK(account.change_reason_code == "SYNTHETIC");
 

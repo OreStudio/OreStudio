@@ -63,7 +63,7 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief save-account <principal> <password> <totp_secret> <email> <account_type>
+     * @brief save-account <principal> <password> <email> <account_type>
      */
     static void process_save_account(std::ostream& out,
                                      ores::nats::service::nats_client& session,

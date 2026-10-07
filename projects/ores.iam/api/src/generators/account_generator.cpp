@@ -53,9 +53,6 @@ domain::account generate_synthetic_account(utility::generation::generation_conte
     r.account_status = std::string("active");
     r.full_name =
         std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
-    r.password_hash = ctx.alphanumeric(64);
-    r.password_salt = ctx.alphanumeric(32);
-    r.totp_secret = ctx.alphanumeric(32);
     r.email = std::string(faker::internet::email(std::string(faker::person::firstName()),
                                                  std::string(faker::person::lastName()))) +
               "-" + std::to_string(idx);

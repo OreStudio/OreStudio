@@ -96,7 +96,6 @@ TEST_CASE("account_operations_operations_process_save_account_requires_a_session
                                                                      "sample",
                                                                      "sample",
                                                                      "sample",
-                                                                     "sample",
                                                                  });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -118,7 +117,7 @@ TEST_CASE("account_operations_operations_process_save_account_reports_the_expect
     account_operations_operations_commands::process_save_account(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 5 arguments, got 0.") != std::string::npos);
+    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -136,7 +135,6 @@ TEST_CASE("account_operations_operations_process_save_account_reaches_the_transp
     account_operations_operations_commands::process_save_account(out,
                                                                  session,
                                                                  std::vector<std::string>{
-                                                                     "sample",
                                                                      "sample",
                                                                      "sample",
                                                                      "sample",

@@ -22,10 +22,12 @@
 #define ORES_IAM_SERVICE_ACCOUNT_SERVICE_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_contact_information_repository.hpp"
+#include "ores.iam.core/repository/account_credential_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -435,8 +437,42 @@ public:
     messaging::get_my_account_contact_information_response
     get_my_account_contact_information(const boost::uuids::uuid& account_id);
 
+    /**
+     * @brief Authenticates a service account by the machine password it holds.
+     *
+     * The account is resolved by username and its credential row by the
+     * account's id, so neither read crosses tenants or reaches a neighbouring
+     * account. A user account never authenticates this way, and a service
+     * account whose credential row is missing or carries no service hash is
+     * refused with a log line that says so: a data fault must not read as a
+     * rejected password.
+     *
+     * @param username The service account's username
+     * @param password The plaintext machine password to verify
+     * @return The account's id when the credentials hold, std::nullopt otherwise
+     */
+    std::optional<boost::uuids::uuid>
+    verify_service_credentials(const std::string& username, const std::string& password);
+
 private:
+    /**
+     * @brief Reads the open credential row of an account, if it has one.
+     */
+    std::optional<domain::account_credential>
+    read_credential(const boost::uuids::uuid& account_id);
+
+    /**
+     * @brief Writes the credential row an account's write produced.
+     *
+     * A row the caller read is replaced through the version it states; an
+     * account that has no credential row gets one. Either way the store
+     * decides, so a write over a credential that moved on is a conflict
+     * rather than a silent overwrite.
+     */
+    void write_credential(domain::account_credential credential);
+
     repository::account_repository account_repo_;
+    repository::account_credential_repository credential_repo_;
     repository::account_contact_information_repository contact_repo_;
     repository::login_info_repository login_info_repo_;
     database::context ctx_;

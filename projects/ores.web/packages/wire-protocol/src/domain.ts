@@ -69,11 +69,11 @@ export const wireTimestampSchema = z.string().transform((value, ctx) => {
 });
 
 /**
- * A tenant-scoped account, minus every credential field.
+ * A tenant-scoped account.
  *
- * The server's `account` struct carries `password_hash`, `password_salt` and
- * `totp_secret`. Those exist to be written, never to be read back, so they are
- * dropped at the parse boundary and cannot reach the browser.
+ * The account holds no credential field at all: the password material lives in
+ * its own entity, `iam.account_credential`, which no protocol serves, so there
+ * is nothing to drop at the parse boundary.
  */
 export const accountSchema = z.object({
     /** Optimistic-locking version. Bumped on every accepted write. */

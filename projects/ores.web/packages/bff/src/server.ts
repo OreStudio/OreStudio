@@ -910,6 +910,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const roleBodySchema = newRoleBodySchema.extend({
         version: z.int().nonnegative(),
         registrationDefault: z.boolean(),
+        requestable: z.boolean(),
     });
 
     /** Creates a role. It starts granting nothing. */
@@ -925,6 +926,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             id,
             version: null,
             registrationDefault: false,
+            requestable: true,
         });
         if (!outcome.done) {
             throw new HttpFailure(409, { code: 'conflict', message: outcome.message });

@@ -34,8 +34,9 @@ namespace ores::iam::messaging {
 /**
  * @brief Asks for roles for the signed-in person.
  *
- * Refused when a role is unknown, already held, or already asked for in a
- * request that still waits.
+ * Refused when a role is unknown, is not one the tenant offers to its
+ * members, is already held, or is already asked for in a request that still
+ * waits.
  */
 struct ask_for_roles_request {
     using response_type = struct ask_for_roles_response;

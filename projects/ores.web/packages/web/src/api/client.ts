@@ -866,6 +866,7 @@ export const api = {
             readonly description: string;
             readonly version: number;
             readonly registrationDefault: boolean;
+            readonly requestable: boolean;
         },
     ): Promise<void> {
         await request(`/api/roles/${encodeURIComponent(roleId)}`, {

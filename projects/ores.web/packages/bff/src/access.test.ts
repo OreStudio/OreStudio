@@ -63,8 +63,15 @@ const DANIEL = '22222222-2222-2222-2222-222222222222';
 const TRADING = '33333333-3333-3333-3333-333333333333';
 const PHOTO = '44444444-4444-4444-4444-444444444444';
 
-function wireRole(id: string, name: string) {
-    return { id, version: 2, name, description: `${name} role` };
+function wireRole(id: string, name: string, isRequestable = true) {
+    return {
+        id,
+        version: 2,
+        name,
+        description: `${name} role`,
+        is_registration_default: false,
+        is_requestable: isRequestable,
+    };
 }
 
 type Answer = unknown | ((body: unknown) => unknown);
@@ -216,11 +223,11 @@ describe('access routes', () => {
         expect(response.json().message).toBe('You cannot take a role away from yourself.');
     });
 
-    it('reads what each role grants, but not what a service role grants', async () => {
+    it('reads what each role grants, and whether a member may ask for it', async () => {
         const { server, cookies, calls } = buildTestServer({
             'iam.v1.roles.list': {
                 result: { outcome: 'ok' },
-                roles: [wireRole(TRADING, 'Trading'), wireRole(PRIYA, 'IamService')],
+                roles: [wireRole(TRADING, 'Trading'), wireRole(PRIYA, 'IamService', false)],
                 total: 2,
             },
             'iam.v1.roles.permissions': {
@@ -241,6 +248,7 @@ describe('access routes', () => {
                 description: 'Trading role',
                 service: false,
                 registrationDefault: false,
+                requestable: true,
                 permissionCodes: ['refdata::currencies:read'],
             },
             {
@@ -250,13 +258,14 @@ describe('access routes', () => {
                 description: 'IamService role',
                 service: true,
                 registrationDefault: false,
+                requestable: false,
                 permissionCodes: [],
             },
         ]);
         expect(calls.filter((c) => c.subject === 'iam.v1.roles.permissions')).toHaveLength(1);
     });
 
-    it('keeps a role the registration default when it is renamed', async () => {
+    it('writes whether a member may ask for the role, with the rest of it', async () => {
         const { server, cookies, calls } = buildTestServer({
             'iam.v1.roles.put': { result: { outcome: 'ok' }, role: null },
         });
@@ -270,6 +279,7 @@ describe('access routes', () => {
                 description: 'Desk',
                 version: 2,
                 registrationDefault: true,
+                requestable: false,
             },
         });
         await server.close();
@@ -277,7 +287,12 @@ describe('access routes', () => {
         expect(response.statusCode).toBe(204);
         expect(calls[0]?.body).toMatchObject({
             change: {
-                write: { id: TRADING, name: 'Trading', is_registration_default: true },
+                write: {
+                    id: TRADING,
+                    name: 'Trading',
+                    is_registration_default: true,
+                    is_requestable: false,
+                },
                 precondition: { kind: 'must_match_version', version: 2 },
             },
         });

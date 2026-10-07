@@ -491,7 +491,10 @@ export type AccountAccess = z.infer<typeof accountAccessSchema>;
  *
  * A service role is one the platform's own services sign in with. The seed
  * names each one for its service, so a role whose name ends in `Service` is
- * one; a screen offers people only the others.
+ * one, and its permissions are not worth reading.
+ *
+ * Whether a person may ask for a role is the tenant's answer, carried on the
+ * row as `requestable` rather than worked out from the role's name.
  */
 export const roleSummarySchema = z.object({
     id: uuidSchema,
@@ -501,6 +504,8 @@ export const roleSummarySchema = z.object({
     service: z.boolean(),
     /** Whether a person who registers is given this role. */
     registrationDefault: z.boolean(),
+    /** Whether a member may ask for this role. */
+    requestable: z.boolean(),
     permissionCodes: z.array(z.string()),
 });
 

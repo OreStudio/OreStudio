@@ -29,10 +29,10 @@ import { roleLabel } from '../access/words.js';
 /**
  * Asking for a role.
  *
- * The picker offers what the person does not already hold, leaving out the
- * roles the platform services use and the one that grants everything: neither
- * is a role a person asks for, and asking for them is not a thing the server
- * would grant.
+ * The picker offers the roles the tenant lets its members ask for, less the
+ * ones the person already holds. Whether a role is on offer is the tenant's
+ * answer, carried on the role as `requestable`, and the server refuses one
+ * that is not: the screen narrows the list and the server decides.
  *
  * A duplicate ask is refused by the server, and its own words are what the
  * dialog shows: what counts as a duplicate is the queue's business, not the
@@ -48,7 +48,7 @@ export function AskForRoleDialog({ onClose }: { readonly onClose: () => void }):
 
     const held = new Set((access.data?.roles ?? []).map((role) => role.roleId));
     const offered = (roles.data ?? []).filter(
-        (role) => !role.service && !role.permissionCodes.includes('*') && !held.has(role.id),
+        (role) => role.requestable && !held.has(role.id),
     );
 
     const ask = useMutation({

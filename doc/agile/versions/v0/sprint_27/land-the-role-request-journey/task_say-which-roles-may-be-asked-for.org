@@ -26,7 +26,7 @@ A tenant administrator can say which roles a member may ask for. Today every rol
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,27 @@ A tenant administrator can say which roles a member may ask for. Today every rol
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The flag goes on the role row, in the shape of =is_registration_default=,
+because row-level security already decides who may write a role row and the
+tenant administrator is that person. Nothing new is needed to guard it.
+
+It defaults true, so a role a tenant administrator creates is offered to the
+members without further ceremony, and the rule is stated by exception: the
+seed clears it on the service roles and on the two that grant everything,
+which are the roles the screens used to filter out by name. Defaulting false
+was rejected: it would silently withdraw every role in every existing tenant
+until an administrator opted each one back in, which is a different change
+from the one the journey asks for.
+
+=ores_iam_roles_upsert_fn= takes the flag, so the seed names it in one place.
+=create or replace= does not replace a function whose argument list changed,
+so an existing database would keep the old three-argument version; the drop
+script covers it, because it drops by name and so removes every overload.
+
+The rule leaves the screens. The picker filters on the flag rather than on a
+name ending in =Service= and a permission code of =*=, and the ask operation
+refuses a role the tenant has not offered with its own outcome code, so the
+refusal is a value rather than a sentence to match.
 
 * Measurements
 

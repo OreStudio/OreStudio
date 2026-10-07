@@ -106,6 +106,21 @@ struct role final {
     bool is_registration_default = false;
 
     /**
+     * @brief Whether a member may ask for this role. A member asks for a role beyond the one
+     * registration gave them, and the tenant administrator answers; this flag is what the tenant
+     * says its members may ask for.
+     *
+     * A service's role and the role that grants everything are not roles a person asks for, so the
+     * seed clears the flag on them. The flag replaces the name suffix and the permission count the
+     * screens used to filter by, which stated the rule twice and stated it nowhere the tenant could
+     * change it.
+     *
+     * The flag is read with the role, because a member picks from the roles it allows, and it is
+     * written with the role, because the tenant administrator owns the tenant's roles.
+     */
+    bool is_requestable = false;
+
+    /**
      * @brief Username of the person who last modified this role.
      */
     std::string modified_by;

@@ -38,7 +38,7 @@ component user journeys]] for the component-level account.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The five journeys are drawn as prototypes, awaiting review.       |
+| Now           | The five journeys are drawn and written; awaiting review of the screens.       |
 | Waiting on    | Nothing.                               |
 | Next          | The product owner reviews the prototypes, then each journey is written and broken into implementation tasks. |
 | Last touched  | 2026-10-07                               |

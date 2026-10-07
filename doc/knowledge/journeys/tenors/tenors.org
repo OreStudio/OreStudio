@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 296089DE-83BF-4493-9DD1-E265A168773D
+:END:
+#+title: Tenors journeys
+#+description: Tenors as a code a person reads and a resolution the system computes: the units, anchors and schedules, the algorithm that resolves a tenor, and the dates it produces on a named calendar.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+A tenor is two things at once. It is a code a person reads, "3M" or "1Y1Y", and
+it is a resolution the system computes from that code: a unit, an anchor, a
+schedule and an algorithm, ending in a date on a named calendar. A screen that
+shows only the code hides the half that decides what a trade pays.
+
+Tenors are shared by everything that has a term, so this group holds the tenor
+machinery itself rather than the conventions that name it. The short code lists
+that classify tenors are kept with the other classification lists.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:E27EB1B6-E030-468D-996E-FED71CC17F92][Define how tenors resolve]] | tenant administrator | Set how a tenor code resolves under a convention, down to the date it produces on a named calendar |
+
+* Related
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions]] — the conventions that name a tenor
+- [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] — the calendars a resolution reads
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] — the tenor kinds, units and anchors as code lists
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

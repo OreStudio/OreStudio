@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: A08424B7-E6D7-4993-955C-53AEC241ABA5
+:END:
+#+title: Books and portfolios journeys
+#+description: The tenant's book structure: portfolios that hold books, the classification each book carries, and the rights that decide who may see a portfolio and the books under it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+A portfolio is the folder; a book is the leaf that trades sit in. A book
+inherits its place from its portfolio and carries its own classification: a
+status, a regulatory book type, a purpose and a ledger feed. Some of those are
+the tenant's own rows and some are shared lists the tenant picks from, and the
+screen has to keep the two apart.
+
+The structure is also where access is decided. A portfolio right says who may
+see a portfolio and the books under it, so shaping the structure and granting
+access are the same act from the person's point of view.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C][Shape the book structure]] | tenant administrator | Walk the portfolio tree, open or create a book, classify it, set the portfolio rights, and review the write |
+
+* Related
+
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] — the status, purpose and ledger lists a book picks from
+- [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]] — the business units a book belongs to
+- [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen]] — where a person's own books are reached
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

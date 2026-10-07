@@ -1,0 +1,247 @@
+:PROPERTIES:
+:ID: E27EB1B6-E030-468D-996E-FED71CC17F92
+:END:
+#+title: User Journey: Define how tenors resolve
+#+description: A tenant administrator defines how a tenor code resolves under a convention, down to the date it produces on a named calendar.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator defines how a tenor code resolves under a convention, down to the date it produces on a named calendar.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want every tenor code we quote to mean one date under each convention, so
+that a ladder, a curve or a swap that names 3M gets the date the desk means by
+3M." The journey is done when each convention's set reads correctly and a worked
+tenor resolves to a date the person can check on a named calendar.
+
+* Actor and trigger
+
+The actor is the tenant administrator, acting inside their own tenant. No
+narrower role holds these permissions today. The trigger is a tenor the desk
+reads differently, a new label, a convention whose anchor or resolution
+algorithm is wrong, or a swap that refused a date. The journey starts at
+*Tenors*, and ends when the person leaves the catalog. The journey keeps no
+state.
+
+The design question the screen settles is that a tenor has two halves. One half
+is the code a person reads, with its display name, description and display
+order. The other half is the resolution the system computes, which depends on
+the convention and ends in a date on a named calendar. The journey shows both
+halves at once, so a person never edits a code without seeing the date it
+produces.
+
+* Steps
+
+1. *See the tenors.* The person opens *Tenors*. The system lists every code in
+   display order: code, display name, kind, unit and multiplier, sort order and
+   version. Beside each row it shows the date the tenor resolves to under the
+   convention, calendar and horizon in force. The person searches the code, the
+   display name or the description, and filters by kind. See /What is missing/
+   for the resolution column.
+2. *Open the tenor.* The person picks a row. The system shows the code and the
+   resolution side by side: on the left the code a person reads, on the right
+   the anchor, the offset or the schedule walk, and the date that comes out. The
+   seven columns of the tenor row sit below. The person corrects a field, states
+   a change reason and a commentary, and saves. See /What is missing/ for the
+   two fields the wire does not carry.
+3. *Set its resolution.* The person opens *Its resolution* and chooses a
+   convention. The system shows the convention's default anchor (`measured_from`)
+   and its resolution algorithm, then a matrix of every tenor: whether it is in
+   this convention's set, the anchor it uses, the offset it walks and the date
+   it resolves to. A dim row is a tenor the convention does not resolve. The
+   person changes the convention's description, anchor or algorithm, or the
+   membership row. See /What is missing/ for the read-only junction.
+4. *Walk the schedule.* The person opens *The schedule* and picks a schedule
+   axis. The system shows how the axis produces dates, then expands the axis
+   into a ladder: each roll with its schedule date and the date it becomes after
+   the roll rule adjusts it on the calendar. The person can change the axis, the
+   roll count, the roll rule and the start of the ladder to see the expansion.
+5. *Read the resolved dates.* The person opens *The resolved dates* and sets the
+   tenor, the convention, the calendar, the roll rule and the horizon. The
+   system walks the resolution end to end and shows every turn: the horizon, the
+   anchor, the offset, each schedule step, the roll and the final date. A step
+   that cannot resolve is refused with the step that refused it and the dates it
+   counted.
+6. *Review.* The person opens *Review*. The system repeats the whole resolution
+   in one panel, with the tenor, the convention, the anchor date, the resolved
+   date, the calendar, the roll rule and the change reason, and states whether
+   the record resolves. Nothing is written until the person confirms.
+7. *Write the tenor and the convention.* The person confirms. The system writes
+   the tenor row and the convention row, each with a new version, and shows the
+   new version and the resolved date. See /What is missing/ for the missing
+   membership write.
+8. *Check the history.* The person opens a row's history. The system shows every
+   version with the field-level difference from the version before, and the
+   person can revert by writing the old values as a new version. History is
+   never rewritten.
+9. *Leave.* The person goes back. Every picker and ladder that reads a tenor
+   now resolves it under the new rules.
+
+Two states sit off the rail. *The refusal* shows a tenor that cannot resolve,
+with the step that refused it, the dates it counted and the row that owns the
+fault; the record does not move. *History* is the state step 8 opens.
+
+No step waits on the server after its reply, and the journey keeps no state.
+
+* Screens and wireframes
+
+One screen with the step rail on the left and one step on the right. The rail
+carries seven steps in order: see the tenors, open the tenor, set its
+resolution, walk the schedule, read the resolved dates, review, and write.
+*History* and *The refusal* sit beside the rail. The person moves between steps
+without leaving the screen.
+
+#+caption: Tenors: the step rail, the catalog with the resolution column, the code-and-resolution pair, the resolved-dates walk, the refusal and the version diff.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/tenors/wireframe_define_how_tenors_resolve.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/define-how-tenors-resolve/index.html=: mock
+data only, no backend, no build step and no session. It argues that a tenor is
+a code a person reads and a resolution the system computes, so the journey shows
+both at once and carries the resolution down to the date the tenor produces on a
+named calendar.
+
+- States :: =list=, =tenor=, =convention=, =schedule=, =resolve=, =review=,
+  =outcome=, =refused= (the alias =failure= opens the same screen) and =history=
+- Source :: =doc/prototypes/define-how-tenors-resolve/index.html=
+- Open :: =/OreStudio/doc/prototypes/define-how-tenors-resolve/= once the site
+  is built, or the file directly
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =tenor= | The catalog list and the row form: code, display name, description, sort order, kind, unit, multiplier, and the version columns in history | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =tenor_kind= | The kind filter on the list and the kind picker on the row | [[id:E63689F3-92E1-48C7-8772-AA6FA6C45D40][ores.refdata.tenor_kind]] |
+| =tenor_unit= | The unit picker on the row | [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][ores.refdata.tenor_unit]] |
+| =tenor_anchor= | The convention's `measured_from` picker and the per-row anchor override | [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][ores.refdata.tenor_anchor]] |
+| =tenor_resolution_algorithm= | The convention's algorithm picker | [[id:28587424-CF9B-40C6-A48C-F26B83861124][ores.refdata.tenor_resolution_algorithm]] |
+| =tenor_schedule= | The schedule axis, its source and the dates it produces | [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][ores.refdata.tenor_schedule]] |
+| =tenor_convention= | The convention code, description, default anchor and resolution algorithm | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =tenor_convention_resolution= | Set membership, the anchor override, and for a SPECIAL tenor the offset unit and multiplier; for a SCHEDULE_STEP row the schedule code and step count | [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][ores.refdata.tenor_convention_resolution]] |
+| =business_day_convention_type= | The roll rule the resolved date is adjusted by | [[id:B94A2D2A-7653-4165-AD13-B13008BE3B5A][ores.refdata.business_day_convention_type]] |
+| =calendar= | The named calendar a resolved date rolls on, and the events an event-lookup schedule reads | [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] |
+
+The catalog, the convention and the schedule are versioned and register a
+history provider. The resolution junction keeps closed versions in its table,
+but its protocol is read-only, so the screen shows membership and cannot change
+it.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| See the tenors | List the catalog | =refdata.v1.tenors.list= | exists |
+| See the tenors | Offer the kind filter | =refdata.v1.tenor_kinds.list= | exists |
+| See the tenors | Resolve each row for the resolution column | no operation (a resolve operation would be needed) | missing |
+| Open the tenor | Read the row | =refdata.v1.tenors.get= | exists |
+| Open the tenor | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Open the tenor | Write the row | =refdata.v1.tenors.put= | partial |
+| Its resolution | List the conventions | =refdata.v1.tenor_conventions.list= | exists |
+| Its resolution | Read the convention's tenor set | =refdata.v1.tenor_convention_resolutions.list_by_convention_code= | exists |
+| Its resolution | Fill the anchor picker | =refdata.v1.tenor_anchors.list= | exists |
+| Its resolution | Fill the algorithm picker | =refdata.v1.tenor_resolution_algorithms.list= | exists |
+| Its resolution | Write the convention | =refdata.v1.tenor_conventions.put= | partial |
+| Its resolution | Write the set membership, the anchor override or the offsets | no operation (the junction is read-only) | missing |
+| The schedule | List the schedule axes | =refdata.v1.tenor_schedules.list= | exists |
+| The schedule | List the events an event-lookup axis reads | =refdata.v1.calendar_events.list= | partial |
+| The resolved dates | Resolve the tenor to a date | no operation (a resolve operation would be needed) | missing |
+| The resolved dates | Offer the roll rules | =refdata.v1.business_day_convention_types.list= | exists |
+| The resolved dates | Read the calendar a date rolls on | =refdata.v1.calendars.list= | exists |
+| Review and write | Write the tenor | =refdata.v1.tenors.put= | partial |
+| Review and write | Write the convention | =refdata.v1.tenor_conventions.put= | partial |
+| Review and write | Write the membership row | no operation (the junction is read-only) | missing |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.tenor=) | exists |
+| Check the history | List the version rows | =refdata.v1.tenors_versions.list= | exists |
+| Check the history | Revert by writing the old values | =refdata.v1.tenors.put= | partial |
+| The refusal | Carry the refusal to the screen | no message (the server throws) | missing |
+
+Five coverage rows are =missing=, and they name three things the server does
+not carry: an operation that resolves a tenor over the wire, a write for the
+resolution junction, and a refusal message. The resolution column and the
+resolved-dates step need the same missing operation, and the resolution step
+and the write step need the same missing junction write.
+
+* What is missing
+
+1. *No operation resolves a tenor over the wire.* The resolution lives in
+   =resolve_end_date=, a domain function in
+   =ores.refdata.api/domain/tenor_resolution.hpp=. It takes the horizon, the
+   spot date and the schedule dates, and it returns a date or throws. The list
+   step's resolution column and the resolved-dates step both need an operation,
+   and the prototype draws the reply one would return. The candidate is a
+   =refdata.v1.tenors.resolve= request whose reply carries the anchor date, the
+   date before the roll, the adjusted date, the roll rule and the calendar.
+   Until then the screen cannot show a resolved date the server confirmed.
+2. *=tenor_convention= has no roll-rule column.* A convention carries its
+   anchor and its algorithm, and nothing that says how a resolved date is
+   adjusted. The =business_day_convention_type= lookup holds the four roll rules
+   the prototype draws, and no column in =tenor_convention= points at it. The
+   candidate is a =business_day_convention_type= column on =tenor_convention=,
+   with the same foreign key the other lookups use. Until then the roll rule is
+   a choice on the screen with no row behind it, and the write cannot store it.
+3. *=tenor_convention_resolutions= is read-only.* The server serves
+   =refdata.v1.tenor_convention_resolutions.list=, =.get= and
+   =.list_by_convention_code=, and there is no =.put= and no =.delete=. The
+   resolution step can show membership and cannot change it: the anchor
+   override, the SPECIAL tenor's offset and a SCHEDULE_STEP row's schedule code
+   and step count all have no write. The candidate is the =.put= and =.delete=
+   pair with the version check the other refdata writes make. Until then the
+   screen shows the set and says it cannot change it.
+4. *The refusal is a thrown exception with no message on the wire.*
+   =resolve_end_date= throws =std::invalid_argument= or =std::logic_error=, and
+   no operation carries either to a screen. A screen must show the step that
+   refused, the dates it counted and the row that owns the fault. The prototype
+   draws that payload. The candidate is a refusal message, either a failure
+   reply on the resolve operation or a typed error the handler maps. Until then
+   a refused resolution is a 500-class failure with nothing a person can read.
+5. *The tenor write carries no change reason and no commentary.* The body of
+   =refdata.v1.tenors.put= carries code, display name, description, sort order,
+   kind, unit and multiplier. It carries no change reason and no commentary,
+   although the row is validated by =ores_dq_validate_change_reason_fn=. The
+   screen draws both fields because the journey needs them. The candidate is the
+   two columns on =tenor_write=, as the other refdata writes carry them.
+6. *A swap's rolls are not a refdata row.* =tenor_schedule= names the axis and
+   the dates it produces, and nothing stores a ladder. The rolls a swap needs
+   are computed where the swap is built. The closed-form axis is evaluated
+   code-side, and an event-lookup axis reads =calendar_event= rows. The schedule
+   step draws the expansion so a reviewer can see the axis working, and it is
+   not a write target.
+
+* Related journeys
+
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Define the conventions for an instrument]] — the convention a tenor resolves under is authored there, and this screen shows the tenor side of the same pair
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the tenor kinds, units, anchors, algorithms and schedules are rows in that journey's lists
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] — the named calendar a resolved date rolls on, and the events an event-lookup schedule reads
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — the pair's spot days and calendars decide the SPOT anchor a tenor resolves from
+- [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — a curve's pillars are tenors, and each pillar resolves to a date under this screen's rules
+
+* Related knowledge
+
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the label, its conventions by curve type, and how each convention resolves it
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the ladder a resolved tenor feeds
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the roll rules and the calendar a resolved date lands on
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll the =ROLL_QUARTER= axis follows
+- [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] — the meetings the =FOMC_MEETING= axis reads
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+
+* See also
+
+- [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors journeys]] — the group this journey belongs to
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index the journey joins
+- [[id:6A63AAC7-4869-493A-97E7-55B919874784][The journey runtime]] — the step, the rail, and the rule that a final step cannot be returned past

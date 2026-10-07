@@ -8,7 +8,7 @@
 #+filetags: :refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/refdata-party-book-convention-tenor-journeys
-#+pr:
+#+pr: 2729
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -152,7 +152,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2729][#2729]] | [doc] Draw the five remaining refdata journeys as prototypes |
 
 * Review
 
@@ -162,16 +162,36 @@ via its "Verifies task" field.
 
 * Result
 
-The five journeys are drawn. Each is a directory of =index.html=,
-=prototype.css= and =prototype.js= under =doc/prototypes/=, plain HTML,
-CSS and JavaScript with no framework and no backend, driven from the
-query string and walkable from the foot bar. Each renders from
-=file://= with no uncaught error, and each draws the refusal as its own
-state and the history step with a field diff.
+The five journeys are drawn and written.
 
-The prototypes are listed in =doc/prototypes/index.org= and published by
-=projects/ores.lisp/src/ores-build-site.el=, and
+Each prototype is a directory of =index.html=, =prototype.css= and
+=prototype.js= under =doc/prototypes/=, plain HTML, CSS and JavaScript
+with no framework and no backend, driven from the query string and
+walkable from the foot bar. Each renders from =file://= with no uncaught
+error, and each draws the refusal as its own state and the history step
+with a field diff. They are listed in =doc/prototypes/index.org=,
+published by =projects/ores.lisp/src/ores-build-site.el=, and
 =build/scripts/check_prototype_inventory.py= passes.
 
-Awaiting the product owner's review. The journey documents and the
-implementation tasks follow it.
+Each journey is a document under =doc/knowledge/journeys/=, following
+the =user_journey= contract: goal, actor and trigger, steps, screens and
+wireframes, prototype, entities composed, operations and messages, what
+is missing, related journeys, related knowledge. Each has a PlantUML
+salt wireframe rendered to PNG beside it and embedded with a caption,
+and each carries a coverage table whose subjects were checked against
+the generated protocol headers.
+
+| # | Journey | Document | Group |
+|---+---------+----------+-------|
+| 5 | Onboard a counterparty | [[id:B8602F8B-AE64-4A45-8462-A3B17282D410][journey_onboard_a_counterparty.org]] | Parties |
+| 6 | Keep a party's details current | [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][journey_keep_a_partys_details_current.org]] | Parties |
+| 7 | Shape the book structure | [[id:FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C][journey_shape_the_book_structure.org]] | Books and portfolios |
+| 8 | Define the conventions for an instrument | [[id:857206FA-DA09-4920-8713-D28E613C8BCC][journey_define_the_conventions_for_an_instrument.org]] | Conventions |
+| 9 | Define how tenors resolve | [[id:E27EB1B6-E030-468D-996E-FED71CC17F92][journey_define_how_tenors_resolve.org]] | Tenors |
+
+Four groups are new, added to the journeys index: Parties, which holds
+both 5 and 6, and Books and portfolios, Conventions and Tenors. Each has
+a group page with its journey table.
+
+Awaiting the product owner's review of the screens. The implementation
+tasks follow the review.

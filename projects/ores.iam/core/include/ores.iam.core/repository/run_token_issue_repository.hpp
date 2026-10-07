@@ -62,8 +62,7 @@ struct run_token_issue {
  */
 class ORES_IAM_CORE_EXPORT run_token_issue_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.run_token_issue_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.run_token_issue_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

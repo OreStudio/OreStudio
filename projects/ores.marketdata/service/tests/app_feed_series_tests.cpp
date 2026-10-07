@@ -37,8 +37,8 @@ const std::string service_account = "system.test";
 feed_binding make_binding() {
     const boost::uuids::string_generator uuid;
     feed_binding b;
-    b.tenant_id = ores::utility::uuid::tenant_id::from_string("11111111-1111-1111-1111-111111111111")
-                      .value();
+    b.tenant_id =
+        ores::utility::uuid::tenant_id::from_string("11111111-1111-1111-1111-111111111111").value();
     b.party_id = uuid("22222222-2222-2222-2222-222222222222");
     b.source_name = "synthetic.eurusd";
     return b;

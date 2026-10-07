@@ -32,8 +32,8 @@
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
-#include <atomic>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <chrono>
 #include <map>
 #include <memory>

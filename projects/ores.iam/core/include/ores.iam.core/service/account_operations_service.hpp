@@ -451,15 +451,14 @@ public:
      * @param password The plaintext machine password to verify
      * @return The account's id when the credentials hold, std::nullopt otherwise
      */
-    std::optional<boost::uuids::uuid>
-    verify_service_credentials(const std::string& username, const std::string& password);
+    std::optional<boost::uuids::uuid> verify_service_credentials(const std::string& username,
+                                                                 const std::string& password);
 
 private:
     /**
      * @brief Reads the open credential row of an account, if it has one.
      */
-    std::optional<domain::account_credential>
-    read_credential(const boost::uuids::uuid& account_id);
+    std::optional<domain::account_credential> read_credential(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Writes the credential row an account's write produced.

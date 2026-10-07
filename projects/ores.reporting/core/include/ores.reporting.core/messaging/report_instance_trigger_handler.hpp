@@ -378,18 +378,17 @@ private:
         // The workflow is the one the report type names, so a new kind of
         // report is a seeded type and a registered workflow, not a code change
         // here.
-        report_execution_request exec_req{.report_instance_id = instance_id,
-                                          .definition_id = boost::uuids::to_string(def.id),
-                                          .tenant_id = boost::uuids::to_string(req.tenant_id),
-                                          .party_id = boost::uuids::to_string(def.party_id),
-                                          .run_grant_id = def.run_grant_id ?
-                                                              boost::uuids::to_string(
-                                                                  *def.run_grant_id) :
-                                                              std::string{},
-                                          .correlation_id = instance_id,
-                                          .pre_processing = def.pre_processing,
-                                          .prepared_input_key = def.prepared_input_key,
-                                          .post_processing = def.post_processing};
+        report_execution_request exec_req{
+            .report_instance_id = instance_id,
+            .definition_id = boost::uuids::to_string(def.id),
+            .tenant_id = boost::uuids::to_string(req.tenant_id),
+            .party_id = boost::uuids::to_string(def.party_id),
+            .run_grant_id =
+                def.run_grant_id ? boost::uuids::to_string(*def.run_grant_id) : std::string{},
+            .correlation_id = instance_id,
+            .pre_processing = def.pre_processing,
+            .prepared_input_key = def.prepared_input_key,
+            .post_processing = def.post_processing};
         ores::workflow::messaging::start_workflow_message swm{
             .type = workflow_type,
             .tenant_id = boost::uuids::to_string(req.tenant_id),

@@ -260,12 +260,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              [acth](ores::nats::message msg) {
                                  acth->update_self_account_contact_information(std::move(msg));
                              }));
-    subs.push_back(nats.queue_subscribe(
-        get_my_account_contact_information_request::nats_subject,
-        qg,
-        [acth](ores::nats::message msg) {
-            acth->get_my_account_contact_information(std::move(msg));
-        }));
+    subs.push_back(nats.queue_subscribe(get_my_account_contact_information_request::nats_subject,
+                                        qg,
+                                        [acth](ores::nats::message msg) {
+                                            acth->get_my_account_contact_information(
+                                                std::move(msg));
+                                        }));
 
     // --- Account parties ---
     // The associations are stored in a junction the codegen owns, but their
@@ -474,8 +474,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // that tenant's parties alone. The tokens come from Token Exchange
     // behind a partition token cache.
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
-    const auto self = repository::account_repository().read_latest_by_username(
-        system_ctx, ctx.service_account());
+    const auto self =
+        repository::account_repository().read_latest_by_username(system_ctx, ctx.service_account());
     if (self.empty()) {
         BOOST_LOG_SEV(lg(), error) << "IAM's service account " << ctx.service_account()
                                    << " is missing, so party_cache cannot be loaded.";

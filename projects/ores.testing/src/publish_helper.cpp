@@ -18,7 +18,6 @@
  *
  */
 #include "ores.testing/publish_helper.hpp"
-
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <string>
@@ -60,8 +59,8 @@ bool publish_refdata_dataset(const ores::database::context& ctx,
                              const std::string& tenant,
                              const std::string& dataset_code,
                              const std::string& entity) {
-    return publish_dataset(ctx, tenant, dataset_code,
-                           "ores_refdata_publish_" + entity + "_from_dq_fn");
+    return publish_dataset(
+        ctx, tenant, dataset_code, "ores_refdata_publish_" + entity + "_from_dq_fn");
 }
 
 }

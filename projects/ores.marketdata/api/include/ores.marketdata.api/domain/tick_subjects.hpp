@@ -60,9 +60,8 @@ inline std::string synthetic_tick_subject(std::string_view source_name) {
  * "marketdata.v1.tick.<tenant>.<party>.<key>", where the key is the
  * datum's canonical ORE key, lower-cased, with its slashes turned to dots.
  */
-inline std::string market_tick_subject(std::string_view tenant_id,
-                                       std::string_view party_id,
-                                       std::string ore_key) {
+inline std::string
+market_tick_subject(std::string_view tenant_id, std::string_view party_id, std::string ore_key) {
     std::ranges::transform(ore_key, ore_key.begin(), [](unsigned char c) {
         return c == '/' ? '.' : static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
     });

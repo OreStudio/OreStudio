@@ -102,10 +102,11 @@ public:
      * @param margin   How much life a token must have left to be used.
      * @param now      The clock; a test passes its own.
      */
-    explicit run_token_cache(run_token_minter mint,
-                             std::size_t capacity = 1024,
-                             std::chrono::milliseconds margin = std::chrono::seconds(60),
-                             clock_fn now = [] { return std::chrono::system_clock::now(); })
+    explicit run_token_cache(
+        run_token_minter mint,
+        std::size_t capacity = 1024,
+        std::chrono::milliseconds margin = std::chrono::seconds(60),
+        clock_fn now = [] { return std::chrono::system_clock::now(); })
         : mint_(std::move(mint))
         , capacity_(capacity)
         , margin_(margin)
@@ -169,8 +170,8 @@ private:
     };
 
     /// Moves @p held to the front, where the least recently used is the back.
-    void touch(typename std::unordered_map<run_token_key, entry, run_token_key_hash>::iterator
-                   held) {
+    void
+    touch(typename std::unordered_map<run_token_key, entry, run_token_key_hash>::iterator held) {
         recency_.splice(recency_.begin(), recency_, held->second.recency);
         held->second.recency = recency_.begin();
     }
@@ -221,7 +222,9 @@ public:
         : cache_(&cache)
         , run_id_(std::move(run_id)) {}
 
-    ~run_token_step_scope() { cache_->evict_run(run_id_); }
+    ~run_token_step_scope() {
+        cache_->evict_run(run_id_);
+    }
 
     run_token_step_scope(const run_token_step_scope&) = delete;
     run_token_step_scope& operator=(const run_token_step_scope&) = delete;

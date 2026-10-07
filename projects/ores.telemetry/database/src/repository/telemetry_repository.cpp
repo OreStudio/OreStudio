@@ -637,22 +637,22 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
 }
 
 std::vector<messaging::service_roster_slot>
-telemetry_repository::list_service_roster(context ctx,
-                                          std::chrono::system_clock::time_point now) {
+telemetry_repository::list_service_roster(context ctx, std::chrono::system_clock::time_point now) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
 
-    const std::string sql = "SELECT service_name, display_name, description, service_account, slot, "
-                            "instance_id, host_id, version, sampled_at "
-                            "FROM ores_telemetry_service_roster_fn()";
+    const std::string sql =
+        "SELECT service_name, display_name, description, service_account, slot, "
+        "instance_id, host_id, version, sampled_at "
+        "FROM ores_telemetry_service_roster_fn()";
     const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading the services roster");
 
     std::vector<messaging::service_roster_slot> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         if (row.size() < 9) {
-            BOOST_LOG_SEV(lg(), warn) << "Skipping a roster row with " << row.size()
-                                      << " column(s); the roster reads 9";
+            BOOST_LOG_SEV(lg(), warn)
+                << "Skipping a roster row with " << row.size() << " column(s); the roster reads 9";
             continue;
         }
 

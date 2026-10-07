@@ -232,8 +232,7 @@ TEST_CASE("a market feed step reads its theme", tags) {
 }
 
 TEST_CASE("a market feed step that names no theme is refused", tags) {
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"),
-                      "The step names no 'theme' argument.");
+    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"), "The step names no 'theme' argument.");
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"theme": 7})"),
                       "The step's argument 'theme' is not a string.");
 }

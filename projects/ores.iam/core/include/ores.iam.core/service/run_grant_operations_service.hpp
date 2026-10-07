@@ -150,8 +150,8 @@ struct exchange_decision {
  *
  * @param now The instant the grant's not_after is read against.
  */
-ORES_IAM_CORE_EXPORT exchange_decision
-decide_exchange(const exchange_facts& facts, std::chrono::system_clock::time_point now);
+ORES_IAM_CORE_EXPORT exchange_decision decide_exchange(const exchange_facts& facts,
+                                                       std::chrono::system_clock::time_point now);
 
 /**
  * @brief The caller's service name among the roles its account holds.
@@ -169,8 +169,7 @@ service_name_of(std::span<const std::string> role_names);
  * The audience is a comma-separated list of service names; the tokens are
  * compared with their surrounding spaces removed.
  */
-ORES_IAM_CORE_EXPORT bool
-audience_admits(std::string_view audience, std::string_view service_name);
+ORES_IAM_CORE_EXPORT bool audience_admits(std::string_view audience, std::string_view service_name);
 
 /**
  * @brief The claims a run token carries.

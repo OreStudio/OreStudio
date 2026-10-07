@@ -77,7 +77,8 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        if (!ores::service::messaging::has_permission(*ctx_expected, "reporting::report_definitions:read")) {
+        if (!ores::service::messaging::has_permission(*ctx_expected,
+                                                      "reporting::report_definitions:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

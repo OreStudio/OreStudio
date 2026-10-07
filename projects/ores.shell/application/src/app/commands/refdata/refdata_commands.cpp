@@ -1,3 +1,4 @@
+#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/asset_class_code_commands.hpp"
 #include "ores.shell/app/commands/refdata/average_ois_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/base_correlation_config_commands.hpp"
@@ -113,7 +114,6 @@
 #include "ores.shell/app/commands/refdata/portfolio_right_commands.hpp"
 #include "ores.shell/app/commands/refdata/producer_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/purpose_type_commands.hpp"
-#include "ores.shell/app/commands/refdata/refdata_commands.hpp"
 #include "ores.shell/app/commands/refdata/regulatory_book_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/rounding_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/sandbox_commands.hpp"

@@ -24,9 +24,9 @@
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <array>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <array>
 #include <format>
 #include <openssl/evp.h>
 #include <stdexcept>
@@ -60,8 +60,8 @@ account_operations_service::account_operations_service(database::context ctx)
 
 std::optional<domain::account_credential>
 account_operations_service::read_credential(const boost::uuids::uuid& account_id) {
-    auto rows = credential_repo_.read_latest_by_account_id(
-        ctx_, boost::uuids::to_string(account_id), 0, 1);
+    auto rows =
+        credential_repo_.read_latest_by_account_id(ctx_, boost::uuids::to_string(account_id), 0, 1);
     if (rows.empty())
         return std::nullopt;
     return rows.front();
@@ -365,8 +365,8 @@ authenticated_login account_operations_service::login(const std::string& usernam
 
     const auto credential = read_credential(account.id);
     if (!credential || credential->password_hash.get().empty()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Login refused: account holds no password credential: " << username;
+        BOOST_LOG_SEV(lg(), warn) << "Login refused: account holds no password credential: "
+                                  << username;
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
@@ -806,8 +806,8 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
     credential.id = existing ? existing->id : uuid_generator_();
     credential.account_id = account_id;
     credential.password_hash = crypto::password_hasher::hash(new_password);
-    credential.modified_by = existing && !existing->modified_by.empty() ? existing->modified_by
-                                                                        : accounts.front().username;
+    credential.modified_by = existing && !existing->modified_by.empty() ? existing->modified_by :
+                                                                          accounts.front().username;
     credential.change_reason_code = std::string{reason::codes::non_material_update};
     credential.change_commentary = "Password changed";
 

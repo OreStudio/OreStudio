@@ -112,8 +112,8 @@ public:
     states(const feed_listing& listing, const std::vector<std::string>& running) const = 0;
 
     /// True when the feed holds every child row its class needs.
-    [[nodiscard]] virtual bool
-    complete(const feed_listing& listing, const feed_state& feed) const = 0;
+    [[nodiscard]] virtual bool complete(const feed_listing& listing,
+                                        const feed_state& feed) const = 0;
 };
 
 /**
@@ -297,9 +297,8 @@ public:
     };
 
     /// Author a feed on @p session, as process_setup does for a live client.
-    static void process_setup(std::ostream& out,
-                              setup_session& session,
-                              const std::vector<std::string>& args);
+    static void
+    process_setup(std::ostream& out, setup_session& session, const std::vector<std::string>& args);
 
     /// The rows an FX feed needs beyond the shared container and folders.
     [[nodiscard]] static std::vector<setup_row>
@@ -316,22 +315,21 @@ public:
             const std::vector<std::array<double, 3>>& components);
 
     /// The rows an IR curve feed needs beyond the shared container and folders.
-    [[nodiscard]] static std::vector<setup_row>
-    plan_ir(const std::string& sub_config_id,
-            const std::string& container_id,
-            const std::string& folder_id,
-            const std::string& party_id,
-            const std::string& source_name,
-            const std::vector<synthetic::domain::yield_curve_process_parameter_definition>&
-                definitions,
-            const std::string& currency,
-            const std::string& index_family,
-            const std::string& tenor,
-            const std::string& role,
-            const std::string& process_type,
-            std::uint32_t ticks_per_hour,
-            const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
-            const std::vector<std::string>& curve_keys);
+    [[nodiscard]] static std::vector<setup_row> plan_ir(
+        const std::string& sub_config_id,
+        const std::string& container_id,
+        const std::string& folder_id,
+        const std::string& party_id,
+        const std::string& source_name,
+        const std::vector<synthetic::domain::yield_curve_process_parameter_definition>& definitions,
+        const std::string& currency,
+        const std::string& index_family,
+        const std::string& tenor,
+        const std::string& role,
+        const std::string& process_type,
+        std::uint32_t ticks_per_hour,
+        const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+        const std::vector<std::string>& curve_keys);
 
     /**
      * @brief Start feeds: synthetic start folder <folder-token>

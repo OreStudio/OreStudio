@@ -277,11 +277,8 @@ private:
                              bctx,
                              ores::synthetic::feed::fx_spot_feed_build_input{
                                  cfg, std::move(components), containers.front().binding_mode});
-            reply_start_outcome(msg,
-                                resp,
-                                std::move(feed),
-                                containers.front().binding_mode,
-                                bearer);
+            reply_start_outcome(
+                msg, resp, std::move(feed), containers.front().binding_mode, bearer);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = std::string("Failed to start FX feed: ") + e.what();
@@ -373,11 +370,8 @@ private:
                                                                  definitions,
                                                                  *refctx,
                                                                  containers.front().binding_mode});
-            reply_start_outcome(msg,
-                                resp,
-                                std::move(feed),
-                                containers.front().binding_mode,
-                                bearer);
+            reply_start_outcome(
+                msg, resp, std::move(feed), containers.front().binding_mode, bearer);
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();

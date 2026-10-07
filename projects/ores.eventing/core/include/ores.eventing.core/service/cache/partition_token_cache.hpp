@@ -66,9 +66,10 @@ class partition_token_cache {
 public:
     using clock_fn = std::function<std::chrono::system_clock::time_point()>;
 
-    explicit partition_token_cache(partition_token_minter mint,
-                                   std::chrono::seconds margin = std::chrono::seconds(30),
-                                   clock_fn now = [] { return std::chrono::system_clock::now(); })
+    explicit partition_token_cache(
+        partition_token_minter mint,
+        std::chrono::seconds margin = std::chrono::seconds(30),
+        clock_fn now = [] { return std::chrono::system_clock::now(); })
         : mint_(std::move(mint))
         , margin_(margin)
         , now_(std::move(now)) {}
@@ -98,7 +99,9 @@ public:
      * cache must outlive every provider it hands out.
      */
     partition_token_provider provider() {
-        return [this](const std::string& partition, bool renew) { return get(partition, renew); };
+        return [this](const std::string& partition, bool renew) {
+            return get(partition, renew);
+        };
     }
 
 private:

@@ -43,33 +43,32 @@ auto& lg() {
 }
 
 run_token_minter make_run_token_minter(ores::nats::service::nats_client& nats) {
-    return [&nats](const run_token_key& key, std::string_view tenant_id)
-               -> std::optional<run_token> {
-        messaging::exchange_run_grant_request request;
-        request.grant_id = key.grant_id;
-        request.run_id = key.run_id;
-        request.tenant_id = std::string(tenant_id);
-        const auto& codec = ores::nats::default_wire_codec();
-        try {
-            const auto reply = nats.authenticated_request(
-                messaging::exchange_run_grant_request::nats_subject, codec.encode(request));
-            auto response = codec.decode<messaging::exchange_run_grant_response>(reply.data);
-            if (!response || !response->success || response->token.empty()) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "No run token for grant " << key.grant_id << " run " << key.run_id << ": "
-                    << (response ? response->message : "the answer could not be read");
+    return
+        [&nats](const run_token_key& key, std::string_view tenant_id) -> std::optional<run_token> {
+            messaging::exchange_run_grant_request request;
+            request.grant_id = key.grant_id;
+            request.run_id = key.run_id;
+            request.tenant_id = std::string(tenant_id);
+            const auto& codec = ores::nats::default_wire_codec();
+            try {
+                const auto reply = nats.authenticated_request(
+                    messaging::exchange_run_grant_request::nats_subject, codec.encode(request));
+                auto response = codec.decode<messaging::exchange_run_grant_response>(reply.data);
+                if (!response || !response->success || response->token.empty()) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "No run token for grant " << key.grant_id << " run " << key.run_id
+                        << ": " << (response ? response->message : "the answer could not be read");
+                    return std::nullopt;
+                }
+                return run_token{.token = response->token,
+                                 .expires_at = std::chrono::system_clock::time_point{} +
+                                               std::chrono::seconds(response->expires_at)};
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "No run token for grant " << key.grant_id << " run "
+                                          << key.run_id << ": the exchange failed: " << e.what();
                 return std::nullopt;
             }
-            return run_token{
-                .token = response->token,
-                .expires_at = std::chrono::system_clock::time_point{} +
-                              std::chrono::seconds(response->expires_at)};
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "No run token for grant " << key.grant_id << " run "
-                                      << key.run_id << ": the exchange failed: " << e.what();
-            return std::nullopt;
-        }
-    };
+        };
 }
 
 }

@@ -44,9 +44,9 @@ TEST_CASE("register_history_provider_makes_has_provider_true", tags) {
     dispatch_registry registry;
 
     registry.register_history_provider(
-        "ores.refdata.currency",
-        "",
-        [](const context&, const std::string&) { return std::vector<entity_history_version>{}; });
+        "ores.refdata.currency", "", [](const context&, const std::string&) {
+            return std::vector<entity_history_version>{};
+        });
 
     CHECK(registry.has_provider("ores.refdata.currency"));
     CHECK(registry.provider_count() == 1);
@@ -58,18 +58,16 @@ TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_dup
     int first_call_count = 0;
     int second_call_count = 0;
 
-    registry.register_history_provider("ores.refdata.currency",
-                                       "",
-                                       [&](const context&, const std::string&) {
-                                           ++first_call_count;
-                                           return std::vector<entity_history_version>{};
-                                       });
-    registry.register_history_provider("ores.refdata.currency",
-                                       "",
-                                       [&](const context&, const std::string&) {
-                                           ++second_call_count;
-                                           return std::vector<entity_history_version>{};
-                                       });
+    registry.register_history_provider(
+        "ores.refdata.currency", "", [&](const context&, const std::string&) {
+            ++first_call_count;
+            return std::vector<entity_history_version>{};
+        });
+    registry.register_history_provider(
+        "ores.refdata.currency", "", [&](const context&, const std::string&) {
+            ++second_call_count;
+            return std::vector<entity_history_version>{};
+        });
 
     CHECK(registry.provider_count() == 1);
 
@@ -98,15 +96,14 @@ TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id",
     dispatch_registry registry;
     std::string received_id;
 
-    registry.register_history_provider("ores.refdata.currency",
-                                       "",
-                                       [&](const context&, const std::string& id) {
-                                           received_id = id;
-                                           entity_history_version v;
-                                           v.version = 1;
-                                           v.modified_by = "alice";
-                                           return std::vector<entity_history_version>{v};
-                                       });
+    registry.register_history_provider(
+        "ores.refdata.currency", "", [&](const context&, const std::string& id) {
+            received_id = id;
+            entity_history_version v;
+            v.version = 1;
+            v.modified_by = "alice";
+            return std::vector<entity_history_version>{v};
+        });
 
     const auto response = registry.dispatch(
         {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, h.context());
@@ -123,12 +120,11 @@ TEST_CASE("dispatch_passes_context_through_to_the_provider_unexamined", tags) {
     dispatch_registry registry;
     std::optional<ores::utility::uuid::tenant_id> received_tenant_id;
 
-    registry.register_history_provider("ores.refdata.currency",
-                                       "",
-                                       [&](const context& ctx, const std::string&) {
-                                           received_tenant_id = ctx.tenant_id();
-                                           return std::vector<entity_history_version>{};
-                                       });
+    registry.register_history_provider(
+        "ores.refdata.currency", "", [&](const context& ctx, const std::string&) {
+            received_tenant_id = ctx.tenant_id();
+            return std::vector<entity_history_version>{};
+        });
 
     const auto response = registry.dispatch(
         {.entity_type = "ores.refdata.currency", .entity_id = "USD"}, h.context());
@@ -144,18 +140,16 @@ TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type",
     bool currency_provider_called = false;
     bool party_provider_called = false;
 
-    registry.register_history_provider("ores.refdata.currency",
-                                       "",
-                                       [&](const context&, const std::string&) {
-                                           currency_provider_called = true;
-                                           return std::vector<entity_history_version>{};
-                                       });
-    registry.register_history_provider("ores.refdata.party",
-                                       "",
-                                       [&](const context&, const std::string&) {
-                                           party_provider_called = true;
-                                           return std::vector<entity_history_version>{};
-                                       });
+    registry.register_history_provider(
+        "ores.refdata.currency", "", [&](const context&, const std::string&) {
+            currency_provider_called = true;
+            return std::vector<entity_history_version>{};
+        });
+    registry.register_history_provider(
+        "ores.refdata.party", "", [&](const context&, const std::string&) {
+            party_provider_called = true;
+            return std::vector<entity_history_version>{};
+        });
 
     const auto response =
         registry.dispatch({.entity_type = "ores.refdata.party", .entity_id = "1"}, h.context());
@@ -218,11 +212,9 @@ TEST_CASE("dispatch_serves_a_caller_holding_the_read_permission", tags) {
                                            return std::vector<entity_history_version>{};
                                        });
 
-    const auto administrator =
-        h.context().with_roles({"iam::account_contact_informations:read"});
+    const auto administrator = h.context().with_roles({"iam::account_contact_informations:read"});
     const auto response = registry.dispatch(
-        {.entity_type = "ores.iam.account_contact_information", .entity_id = "x"},
-        administrator);
+        {.entity_type = "ores.iam.account_contact_information", .entity_id = "x"}, administrator);
 
     CHECK(response.success);
     CHECK(provider_called);
@@ -233,15 +225,14 @@ TEST_CASE("dispatch_refuses_a_caller_holding_no_permission_at_all", tags) {
     dispatch_registry registry;
     bool provider_called = false;
 
-    registry.register_history_provider("ores.iam.account",
-                                       "iam::accounts:read",
-                                       [&](const context&, const std::string&) {
-                                           provider_called = true;
-                                           return std::vector<entity_history_version>{};
-                                       });
+    registry.register_history_provider(
+        "ores.iam.account", "iam::accounts:read", [&](const context&, const std::string&) {
+            provider_called = true;
+            return std::vector<entity_history_version>{};
+        });
 
-    const auto response = registry.dispatch(
-        {.entity_type = "ores.iam.account", .entity_id = "x"}, h.context().with_roles({}));
+    const auto response = registry.dispatch({.entity_type = "ores.iam.account", .entity_id = "x"},
+                                            h.context().with_roles({}));
 
     CHECK_FALSE(response.success);
     CHECK_FALSE(provider_called);

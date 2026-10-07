@@ -583,9 +583,8 @@ struct ir_preview_inputs {
     std::vector<synthetic::domain::ir_curve_template_entry> entries;
 };
 
-std::optional<ir_preview_inputs> ir_preview(std::ostream& out,
-                                     const feed_listing& listing,
-                                     const std::string& config_id) {
+std::optional<ir_preview_inputs>
+ir_preview(std::ostream& out, const feed_listing& listing, const std::string& config_id) {
     const synthetic::domain::ir_curve_generation_config* config = nullptr;
     for (const auto& c : listing.ir_curve)
         if (boost::uuids::to_string(c.id) == config_id)
@@ -615,8 +614,8 @@ std::optional<ir_preview_inputs> ir_preview(std::ostream& out,
                       << " is not in the process parameter catalogue." << std::endl;
             return std::nullopt;
         }
-        preview.parameters.push_back({.parameter_name = it->second,
-                                      .parameter_value = v.parameter_value});
+        preview.parameters.push_back(
+            {.parameter_name = it->second, .parameter_value = v.parameter_value});
     }
     if (preview.parameters.empty()) {
         fail(out) << "Feed " << config->source_name
@@ -628,8 +627,8 @@ std::optional<ir_preview_inputs> ir_preview(std::ostream& out,
         if (boost::uuids::to_string(e.ir_curve_config_id) == config_id)
             preview.entries.push_back(e);
     if (preview.entries.empty()) {
-        fail(out) << "Feed " << config->source_name
-                  << " has no Curve Template entries to preview." << std::endl;
+        fail(out) << "Feed " << config->source_name << " has no Curve Template entries to preview."
+                  << std::endl;
         return std::nullopt;
     }
     std::ranges::sort(preview.entries, {}, [](const auto& e) { return e.sequence_index; });
@@ -719,8 +718,7 @@ bool send_planned_row(std::ostream& out,
                       nats_client& session,
                       const synthetic_commands::setup_row& row) {
     if (row.subject == synthetic_ms::put_market_data_generation_config_request::nats_subject)
-        return send_row<synthetic_ms::put_market_data_generation_config_request>(
-            out, session, row);
+        return send_row<synthetic_ms::put_market_data_generation_config_request>(out, session, row);
     if (row.subject == synthetic_ms::put_folder_request::nats_subject)
         return send_row<synthetic_ms::put_folder_request>(out, session, row);
     if (row.subject == synthetic_ms::put_fx_spot_generation_config_request::nats_subject)
@@ -817,12 +815,13 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
     // a reader asks for one thing at a time, and each one takes a different
     // feed family.
     auto preview_menu = std::make_unique<cli::Menu>("preview");
-    preview_menu->Insert("fx-spot",
-                         [&session](std::ostream& out, std::vector<std::string> args) {
-                             process_preview_fx_spot(std::ref(out), std::ref(session), args);
-                         },
-                         "Simulate the sample paths an FX spot feed would produce",
-                         {"<feed-id|ore-key|source-name> [--ticks <n>] [--paths <n>] [--seed <n>]"});
+    preview_menu->Insert(
+        "fx-spot",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_preview_fx_spot(std::ref(out), std::ref(session), args);
+        },
+        "Simulate the sample paths an FX spot feed would produce",
+        {"<feed-id|ore-key|source-name> [--ticks <n>] [--paths <n>] [--seed <n>]"});
     preview_menu->Insert("ir-shape",
                          [&session](std::ostream& out, std::vector<std::string> args) {
                              process_preview_ir_shape(std::ref(out), std::ref(session), args);
@@ -1017,8 +1016,8 @@ std::string synthetic_commands::format_feed_state(const feed_state& feed) {
                        feed.child_rows);
 }
 
-std::optional<feed_listing>
-synthetic_commands::read_feed_listing(std::ostream& out, nats_client& session) {
+std::optional<feed_listing> synthetic_commands::read_feed_listing(std::ostream& out,
+                                                                  nats_client& session) {
     feed_listing listing;
 
     synthetic_ms::list_market_data_generation_configs_request configs_req{.offset = 0,
@@ -1067,9 +1066,8 @@ synthetic_commands::read_feed_listing(std::ostream& out, nats_client& session) {
     listing.gmm_components = std::move(gmm->gmm_components);
 
     synthetic_ms::list_ir_curve_template_entries_request entries_req{.offset = 0, .limit = 1000};
-    auto entries =
-        do_auth_request<synthetic_ms::list_ir_curve_template_entries_response>(
-            out, session, std::string(entries_req.nats_subject), entries_req);
+    auto entries = do_auth_request<synthetic_ms::list_ir_curve_template_entries_response>(
+        out, session, std::string(entries_req.nats_subject), entries_req);
     if (!entries)
         return std::nullopt;
     if (entries->result.outcome != ores::utility::domain::outcome::ok) {
@@ -1111,8 +1109,8 @@ synthetic_commands::read_feed_listing(std::ostream& out, nats_client& session) {
     return listing;
 }
 
-std::optional<feed_listing>
-synthetic_commands::read_feed_context(std::ostream& out, nats_client& session) {
+std::optional<feed_listing> synthetic_commands::read_feed_context(std::ostream& out,
+                                                                  nats_client& session) {
     auto listing = read_feed_listing(out, session);
     if (!listing)
         return std::nullopt;
@@ -1398,7 +1396,8 @@ void synthetic_commands::process_preview_fx_spot(std::ostream& out,
             config = &c;
     if (!config) {
         fail(out) << "Feed " << feed->source_name
-                  << " is not an FX spot feed, so it has no FX spot paths to simulate." << std::endl;
+                  << " is not an FX spot feed, so it has no FX spot paths to simulate."
+                  << std::endl;
         return;
     }
     // A vintage-started feed takes its opening price from a stored
@@ -1456,9 +1455,10 @@ void synthetic_commands::process_preview_fx_spot(std::ostream& out,
 void synthetic_commands::process_preview_ir_shape(std::ostream& out,
                                                   nats_client& session,
                                                   const std::vector<std::string>& args) {
-    auto parsed = parse_args(args,
-                             {{.name = "seed", .requires_value = true, .default_value = "1"},
-                              {.name = "frequency", .requires_value = true, .default_value = "Annual"}});
+    auto parsed =
+        parse_args(args,
+                   {{.name = "seed", .requires_value = true, .default_value = "1"},
+                    {.name = "frequency", .requires_value = true, .default_value = "Annual"}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -1573,18 +1573,18 @@ void synthetic_commands::process_preview_ir_paths(std::ostream& out,
     }
 }
 
-std::vector<synthetic_commands::setup_row> synthetic_commands::plan_fx(
-    const std::string& sub_config_id,
-    const std::string& container_id,
-    const std::string& folder_id,
-    const std::string& party_id,
-    const std::string& source_name,
-    const std::string& base,
-    const std::string& quote,
-    const std::string& process_type,
-    std::uint32_t ticks_per_hour,
-    double initial_price,
-    const std::vector<std::array<double, 3>>& components) {
+std::vector<synthetic_commands::setup_row>
+synthetic_commands::plan_fx(const std::string& sub_config_id,
+                            const std::string& container_id,
+                            const std::string& folder_id,
+                            const std::string& party_id,
+                            const std::string& source_name,
+                            const std::string& base,
+                            const std::string& quote,
+                            const std::string& process_type,
+                            std::uint32_t ticks_per_hour,
+                            double initial_price,
+                            const std::vector<std::array<double, 3>>& components) {
     synthetic_ms::fx_spot_generation_config_write write;
     write.id = boost::lexical_cast<boost::uuids::uuid>(sub_config_id);
     write.party_id = boost::lexical_cast<boost::uuids::uuid>(party_id);
@@ -1714,8 +1714,9 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
         // A parameter the catalogue does not define has no row to point at, so
         // the plan carries a label with no subject and the flow stops on it.
         if (!definition) {
-            rows.push_back(
-                {.label = "process parameter " + parameter.parameter_name, .subject = "", .body = ""});
+            rows.push_back({.label = "process parameter " + parameter.parameter_name,
+                            .subject = "",
+                            .body = ""});
             continue;
         }
         synthetic_ms::ir_curve_generation_config_process_parameter_value_write value;
@@ -1745,23 +1746,24 @@ void synthetic_commands::process_setup(std::ostream& out,
 void synthetic_commands::process_setup(std::ostream& out,
                                        setup_session& session,
                                        const std::vector<std::string>& args) {
-    auto parsed = parse_args(args,
-                             {{.name = "kind", .requires_value = true, .default_value = ""},
-                              {.name = "name", .requires_value = true, .default_value = ""},
-                              {.name = "source", .requires_value = true, .default_value = ""},
-                              {.name = "base", .requires_value = true, .default_value = ""},
-                              {.name = "currency", .requires_value = true, .default_value = ""},
-                              {.name = "quote", .requires_value = true, .default_value = ""},
-                              {.name = "initial-price", .requires_value = true, .default_value = "1.0"},
-                              {.name = "ticks-per-hour", .requires_value = true, .default_value = "60"},
-                              {.name = "price-process", .requires_value = true, .default_value = "geometric"},
-                              {.name = "index-family", .requires_value = true, .default_value = ""},
-                              {.name = "tenor", .requires_value = true, .default_value = ""},
-                              {.name = "role", .requires_value = true, .default_value = "self_discounting"},
-                              {.name = "process", .requires_value = true, .default_value = ""},
-                              {.name = "gmm", .requires_value = true, .repeatable = true},
-                              {.name = "param", .requires_value = true, .repeatable = true},
-                              {.name = "curve-key", .requires_value = true, .repeatable = true}});
+    auto parsed =
+        parse_args(args,
+                   {{.name = "kind", .requires_value = true, .default_value = ""},
+                    {.name = "name", .requires_value = true, .default_value = ""},
+                    {.name = "source", .requires_value = true, .default_value = ""},
+                    {.name = "base", .requires_value = true, .default_value = ""},
+                    {.name = "currency", .requires_value = true, .default_value = ""},
+                    {.name = "quote", .requires_value = true, .default_value = ""},
+                    {.name = "initial-price", .requires_value = true, .default_value = "1.0"},
+                    {.name = "ticks-per-hour", .requires_value = true, .default_value = "60"},
+                    {.name = "price-process", .requires_value = true, .default_value = "geometric"},
+                    {.name = "index-family", .requires_value = true, .default_value = ""},
+                    {.name = "tenor", .requires_value = true, .default_value = ""},
+                    {.name = "role", .requires_value = true, .default_value = "self_discounting"},
+                    {.name = "process", .requires_value = true, .default_value = ""},
+                    {.name = "gmm", .requires_value = true, .repeatable = true},
+                    {.name = "param", .requires_value = true, .repeatable = true},
+                    {.name = "curve-key", .requires_value = true, .repeatable = true}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -1907,30 +1909,29 @@ void synthetic_commands::process_setup(std::ostream& out,
     container_req.change.write.name = name;
     container_req.change.write.description = "Authored by synthetic setup";
     container_req.change.write.enabled = true;
-    container_req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+    container_req.change.precondition.kind =
+        ores::utility::domain::precondition_kind::must_not_exist;
     container_req.intent = intent;
 
     std::vector<setup_row> rows;
     rows.push_back({.label = "market_data_generation_config " + name,
                     .subject = std::string(container_req.nats_subject),
                     .body = rfl::json::write(container_req)});
-    rows.push_back({.label = "folder " + name,
-                    .subject = std::string(synthetic_ms::put_folder_request::nats_subject),
-                    .body = folder_body(collection_folder, std::nullopt, name, "collection", collection)});
+    rows.push_back(
+        {.label = "folder " + name,
+         .subject = std::string(synthetic_ms::put_folder_request::nats_subject),
+         .body = folder_body(collection_folder, std::nullopt, name, "collection", collection)});
     const auto asset_name = kind == "fx" ? std::string("FX") : std::string("IR");
     rows.push_back({.label = "folder " + asset_name,
                     .subject = std::string(synthetic_ms::put_folder_request::nats_subject),
                     .body = folder_body(
                         asset_folder, collection_folder, asset_name, "asset_class", std::nullopt)});
-    const auto instrument_name =
-        kind == "fx" ? std::string("FX Rates") : std::string("IR Curves");
-    rows.push_back({.label = "folder " + instrument_name,
-                    .subject = std::string(synthetic_ms::put_folder_request::nats_subject),
-                    .body = folder_body(instrument_folder,
-                                        asset_folder,
-                                        instrument_name,
-                                        "instrument_type",
-                                        std::nullopt)});
+    const auto instrument_name = kind == "fx" ? std::string("FX Rates") : std::string("IR Curves");
+    rows.push_back(
+        {.label = "folder " + instrument_name,
+         .subject = std::string(synthetic_ms::put_folder_request::nats_subject),
+         .body = folder_body(
+             instrument_folder, asset_folder, instrument_name, "instrument_type", std::nullopt)});
 
     if (kind == "fx") {
         double initial_price = 0.0;

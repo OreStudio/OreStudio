@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 56719E3A-89CE-43F6-85EC-5BF68A7E9AED
+:END:
+#+title: Task: Describe the design the journey landed
+#+description: Rewrite the journey document around the approval-request design that was built, and state which of its seven gaps are closed.
+#+type: task
+#+level: s1
+#+filetags: :land-the-role-request-journey:sprint_27:v0:
+#+owner: marco
+#+branch: feature/describe-the-design-the-journey-landed
+#+pr:
+#+blocked_on: PR #2737, which rewrites the same document's subjects
+#+blocked_since: 2026-10-07
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The journey document still describes the design that was rejected. It puts the request in ores.workflow as an instance that suspends and resumes, names five IAM request subjects that were never built, and lists seven gaps of which five are answered. Rewrite it around the design that was built: an approval request is its own record with a kind, ores.inbox holds the queue and the decision, and IAM holds only the detail of a role grant. State which gaps are closed and how, and which the two new tasks close.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
+| Now          | Nothing.                               |
+| Waiting on   | PR #2737 to merge, because it rewrites the same document's subjects. |
+| Next         | Rewrite the document around the design that was built. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The document's Entities composed names the approval request, and not a workflow instance, as the request.
+- The document's Operations and messages names the subjects that exist, and drops the five that were never built.
+- Every one of the seven gaps is marked closed or open, and the two open ones point at their tasks.
+- No credential field is named, and no subject is spelled in a form the entity protocol forbids.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

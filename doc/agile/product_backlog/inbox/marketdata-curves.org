@@ -29,12 +29,12 @@ stored as a series.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG (paused)                     |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:2B39B97B-89F9-4320-8BAC-A603D805EBF3][Sprint 26]] |
-| Now           | The journey documents and their prototypes are written; the curve work itself is paused on purpose. |
-| Waiting on    | The synthetic data generation story (Sprint 27, =synthetic-data-against-market-data=, PR #2703) — a curve cannot be argued without data to plot, and the synthetic feeds are where the data comes from. Link it by ID once that story has merged, so this branch never carries a dangling link. |
-| Next          | Once the synthetic feeds drive the new model, check the data model against the journeys and start the representation. |
-| Last touched  | 2026-10-06                               |
+| Now           | The journey documents and their prototypes are written, and the synthetic feeds now drive the new market data model, so the curve work can resume. |
+| Waiting on    | Nothing. The synthetic data generation story [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] has merged and its feeds produce ticks into the model a curve reads. |
+| Next          | Check the data model against the journeys and start the representation. |
+| Last touched  | 2026-10-07                               |
 
 * What exists today
 
@@ -871,7 +871,7 @@ evolution second, the representation third.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
-|      |       |       |     |             |
+| [[id:412F1C3E-7C86-4E1D-9E4E-ECE6CF97AB6B][Check the curve model against the journeys and start the representation]] | BACKLOG | | | Settle the shape the journeys demand against the tables that exist, give a point its provenance and a manual key its author, and start the representation. |
 
 * Decisions
 

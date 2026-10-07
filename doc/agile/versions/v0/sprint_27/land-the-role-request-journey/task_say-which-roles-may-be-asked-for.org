@@ -8,7 +8,7 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/say-which-roles-may-be-asked-for
-#+pr:
+#+pr: 2754
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2754][#2754]] | [iam] Let a tenant say which roles a member may ask for |
 
 * Review
 

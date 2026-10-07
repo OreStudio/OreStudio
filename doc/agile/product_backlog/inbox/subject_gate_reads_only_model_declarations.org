@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: F6AE9298-68A5-460C-880C-936575B3079C
+:END:
+#+title: The subject gate reads only what a model declares
+#+description: check_subject_conformance.py reads :subject: in projects/*/modeling/*.org, which is where a subject is *declared*. Three places write a subject with no model declaring it, and the 2026-10-07 migration left all three on the old spelling: the target_subject values seeded into dq_artefact_types_populate.sql (50), the subjects a service subscribes to in its own registrar.cpp (74 tokens across 22 files), and the six subject_to_fn helpers that parse a subject back into a SQL function name. A recreated database plus the ACME bring-up caught what the gate could not.
+
+Widening the scan is worth doing and is not mechanical. A first attempt matched any token containing .v1. in C++ and SQL and found 14 subjects no model declares, of which these look genuine: synthetic.v1.tick, synthetic.v1.sandbox.tick, synthetic.v1.feed_configs.start, synthetic.v1.feed_configs.stop, synthetic.v1.fx_spot.simulate, synthetic.v1.ir_curve.preview_shape, synthetic.v1.ir_curve.simulate_paths, scheduler.v1.job-instance-events, reporting.v1.report-definition-templates.list, iam.v1.ops.provision_tenant-step. The rest were false positives the scan cannot yet tell apart: compute.v1.reap.stale_results and iam.v1.accounts are SQL job_name values, not subjects, and a 3-segment token ending in _events is the base an event action is appended to at run time.
+
+Two smaller findings from the same pass: the classifier checked the _events branch before the verb, so trading.v1.lifecycle_events.delete_many read as a bad event action when it is a request on the lifecycle_events resource (fixed, pinned by a case); and a comment quoting a subject must not be scanned, which the widening must handle.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:nats:drift:testing:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

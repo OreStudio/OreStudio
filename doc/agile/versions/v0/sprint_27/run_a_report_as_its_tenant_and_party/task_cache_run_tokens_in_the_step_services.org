@@ -33,12 +33,12 @@ the cache rules this task implements.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Cache, exchange adapter and the reporting wiring build. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire the =ores.ore= and =ores.compute= steps, then the story's live test. |
-| Last touched | 2026-10-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:16526A07-0976-43EA-BC1F-DCF5EF0B9011][Verify a run step acts as its party]] | PENDING | The token path is proven by the live run; the scenario's manual checklist is not yet walked. |
 
 * PRs
 
@@ -148,3 +148,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The cache and the exchange adapter are in =ores.service= and
+  =ores.iam.client=, and the three step services obtain run tokens through
+  them. The live test ran against a recreated =bright_faraday= database with
+  the full 25-unit fleet, ACME provisioned from =acme_demo= and the report
+  definitions imported.
+- The run's grant is recorded on the report instance at admission, so a
+  re-schedule cannot change an in-flight run's authority.
+- Evidence, run =fccf4a19-5927-4678-852c-0b2b45015b4f=:
+  =ores_iam_run_token_issues_tbl= holds four =issued= rows for that run id,
+  two from ReportingService and one each from OreService and ComputeService,
+  so every step service exchanged the grant through the cache and none was
+  refused. The chain reached =submit_compute= with =gather_trades=,
+  =gather_market_data=, =assemble_bundle= and =prepare_ore_package= complete,
+  and the compute dispatcher resolved the platform package and published the
+  triplet-qualified assignment a wrapper subscribes to.
+- The run does not reach =completed= in this environment, and that is not this
+  task: the wrapper fleet is bound to the system tenant, so no wrapper
+  subscribes to a tenant run's assignment, and =collect_compute_results= is
+  still the documented pass-through. Both belong to task
+  [[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][Make the reporting to compute
+  handoff drive a job]] in the =acme-report-grid-smoke-test= story.
+- Three defects blocked the run and were fixed on the way, each because a
+  check scoped a shared registry to the caller's own tenant: the report
+  instance FSM guard read its states under the row's tenant, and both the
+  workunit insert trigger and the workunit dispatcher refused or hid a
+  system-tenant app version and its per-platform package. The last two are
+  fixed in the codegen as a =:system_tenant_visible:= read scope on a soft
+  foreign key and on a junction, so the generated code states the rule
+  instead of a hand-written query.

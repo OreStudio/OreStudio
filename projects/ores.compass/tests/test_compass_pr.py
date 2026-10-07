@@ -167,3 +167,29 @@ def test_backlog_capture_slug_names_the_capture_not_story_org(tmp_path):
     assert compass_pr._backlog_capture_slug(tmp_path, "") == ""
     assert (compass_pr._backlog_capture_slug(
         tmp_path, "DDDD1111-2222-3333-4444-555566667777") == "")
+
+
+def test_a_duplicate_result_heading_does_not_hide_the_result():
+    """A doc with an empty * Result above a written one still has a result;
+    reading only the first heading refused a merge twice."""
+    text = ("* Review\n\n| a |\n\n"
+            "* Result\n\n"
+            "* Result\n\n"
+            "Delivered in PR 2771.\n")
+    sections = compass_pr._result_sections(text)
+    assert len(sections) == 2
+    assert sections[0] == ""
+    assert sections[1].startswith("Delivered in PR 2771.")
+    assert any(sections), "a written result must count even under a duplicate"
+
+
+def test_a_single_empty_result_reads_as_empty():
+    sections = compass_pr._result_sections("* Result\n\n* Next\n\nprose\n")
+    assert sections == [""]
+    assert not any(sections)
+
+
+def test_a_result_with_prose_and_no_duplicate_is_read_once():
+    sections = compass_pr._result_sections(
+        "* Result\n\nDelivered.\n\n* Review\n\n| a |\n")
+    assert sections == ["Delivered."]

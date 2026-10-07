@@ -21,11 +21,11 @@ Give the Zettelkasten page the half of the method it does not yet carry: the cra
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The page carries the writing discipline; the runbook points at it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit and open the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -38,8 +38,8 @@ Give the Zettelkasten page the half of the method it does not yet carry: the cra
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9E2B677C-813C-49B8-8AFA-7DCF09562E56][Scaffold story: Add the writing discipline the Zettelkasten page omits]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6AC37FF8-1247-4C28-8B0B-6DF870DAE3D5][Add the writing discipline to the Zettelkasten page]] | STARTED | 2026-10-07 | | The page says how much a note holds and nothing about what it does with it. Add the thesis discipline, the relation vocabulary, the improbable neighbour and the anti-patterns, and point the knowledge-doc runbook at them. |
+| [[id:9E2B677C-813C-49B8-8AFA-7DCF09562E56][Scaffold story: Add the writing discipline the Zettelkasten page omits]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6AC37FF8-1247-4C28-8B0B-6DF870DAE3D5][Add the writing discipline to the Zettelkasten page]] | DONE | 2026-10-07 | 2026-10-07 | The page says how much a note holds and nothing about what it does with it. Add the thesis discipline, the relation vocabulary, the improbable neighbour and the anti-patterns, and point the knowledge-doc runbook at them. |
 
 * Decisions
 
@@ -58,3 +58,12 @@ Give the Zettelkasten page the half of the method it does not yet carry: the cra
 * Out of scope
 
 -
+
+* Result
+
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] now states the
+cognitive half of the method it was missing — a page asserts or it is a
+reference, the relation vocabulary, who chooses the thread, the improbable
+neighbour, and the anti-patterns — and the add-a-knowledge-document runbook
+points at it. The structural half the page already carried is unchanged. Landed
+with PR #2734.

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E40D6E4F-CBDD-4007-8B7F-BEE205044B75][Add the writing discipline the Zettelkasten page omits]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2734][#2734]] | [doc] Add the writing discipline the Zettelkasten page omits |
 
 * Review
 
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass story new= created the story, its branch and the two tasks, and wired
+the story into sprint 27. Both tasks ride this branch, so the scaffold closes
+with PR #2734 rather than a separate scaffold PR.

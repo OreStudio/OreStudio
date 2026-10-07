@@ -26,11 +26,11 @@ Give the Zettelkasten page the half of the method it does not yet carry: the cra
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E40D6E4F-CBDD-4007-8B7F-BEE205044B75][Add the writing discipline the Zettelkasten page omits]] |
-| Now          | The page and the runbook are written; compass lint and the link checks pass. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit and open the PR.                |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -107,3 +107,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page now carries a Writing a note section — the thesis discipline and its
+scope, the four relations and who chooses the thread, and the improbable
+neighbour — and an Anti-patterns section. The add-a-knowledge-document runbook
+points at them. Existing gates pass: =compass lint=, =link_structure_notes.py
+--check= and =check_pattern_uses.py=.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F86177CA-202C-4488-9E4F-1C698E60F088][Report a refused request as a refusal]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make every client report a refusal as a refusal, naming the reason the server ga
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F86177CA-202C-4488-9E4F-1C698E60F088][Report a refused request as a refusal]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -86,3 +86,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A refusal is now read out of the reply and thrown before anything decodes
+it, so the caller is told what the server said instead of being sent after
+a payload that is not malformed at all.
+
+=refusal_code()= reports the =X-Error= code a reply carries, and reports
+nothing for =token_expired= and =max_session_exceeded=, which are not
+refusals and keep their own handling. =throw_if_refused()= raises
+=request_refused_error=, whose message names both the code and the subject:
+"the server refused 'iam.v1.accounts.list': forbidden".
+
+The check sits in the decode helpers, not in =nats_client=. The first
+attempt put it in =nats_client= and would have broken four callers that
+read the =X-Error= header off the reply the request returned: the reporting
+scheduler, the scheduler's publish action, the ORE service's NATS call, and
+the reporting execution handler. Those keep the reply; only a caller that
+decodes the body is stopped, and the shell is the sole real consumer of the
+decode helpers.
+
+Measured: =ores.nats.tests= passes with 14 assertions across 10 cases for
+the refusal, and the full shell suite still passes.
+
+One acceptance is met at unit level rather than end to end. Proving a live
+refusal needs an account that lacks a permission, and creating one is not
+reachable through the non-interactive script interface, while the bootstrap
+admin holds the wildcard and so is never refused. The unit cases pin each
+header value and the thrown message.
+
+The database was recreated for this work. It had been built from commit
+=2c042af04b= while the tree had moved to current =main=, so every test
+binary refused to start on a schema fingerprint mismatch. After the
+recreate the fingerprint matches, all 25 services start, the bootstrap
+admin holds the wildcard, and =accounts list= succeeds, which is what
+confirms the corrected diagnosis recorded in the shell commands task.
+

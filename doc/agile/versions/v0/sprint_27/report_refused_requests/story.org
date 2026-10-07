@@ -21,11 +21,11 @@ Make every client report a refusal as a refusal, naming the reason the server ga
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -39,11 +39,19 @@ Make every client report a refusal as a refusal, naming the reason the server ga
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A8327D88-FCCE-4C1A-B113-AFFD34AA0F15][Scaffold story: Report a refused request as a refusal]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A25E5BC5-C7E0-4A8B-981F-9A0C12125AD0][Surface a refusal instead of a decode failure]] | BACKLOG | | | Initial task for: Report a refused request as a refusal |
+| [[id:A8327D88-FCCE-4C1A-B113-AFFD34AA0F15][Scaffold story: Report a refused request as a refusal]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A25E5BC5-C7E0-4A8B-981F-9A0C12125AD0][Surface a refusal instead of a decode failure]] | DONE | | 2026-10-07 | Initial task for: Report a refused request as a refusal |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+A refusal now reaches the caller as a refusal. The check lives in the NATS
+decode helpers, so a caller that reads the =X-Error= header itself keeps
+the reply it inspects, and only a caller that would decode the empty body
+is stopped.
+

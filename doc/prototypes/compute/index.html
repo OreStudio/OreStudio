@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compute: the grid screens prototype, five use cases</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The compute grid's five use cases, from
+  doc/knowledge/journeys/compute/compute.org: watch the grid, follow a job,
+  diagnose a failure, plan the capacity, and keep what the grid runs. One
+  screen per use case, navigable with ?screen=watch|job|failure|capacity|versions.
+
+  Every chart in "The charts a grid needs" is drawn here, hand-rolled as
+  inline SVG from a seeded mock series, so the walk repeats exactly.
+
+  Two actor variants, switchable with ?variant=fleet|tenant. The fleet
+  variant is the super administrator reading the whole installation. The
+  tenant variant narrows the work rows to one tenant and withholds one
+  control, the node log download, because a node's logs are the
+  installation's and may carry another tenant's inputs. There is one set of
+  screens, not two.
+
+  The bar at the foot of the page prints the screen's whole state.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

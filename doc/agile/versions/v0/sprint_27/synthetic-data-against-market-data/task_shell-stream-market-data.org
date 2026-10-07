@@ -253,11 +253,13 @@ Two follow-ups were found while proving this, and neither is this task.
   to unpack msgpack data". This cost real time by sending the work after a
   wire-format defect that did not exist. The client should surface
   =forbidden= and =unauthorized= as such.
-- *The environment database is corrupted by repeated seeding.* No account
-  holds the =*= wildcard. demo_agent holds =SuperAdmin=, but its
-  =account_roles= rows point at =SuperAdmin= roles in twelve other tenants,
-  which the tenant-scoped permissions function correctly ignores, so the
-  account has only its =Member= grants. The catalogue holds 16 copies of
-  each permission code, and duplicate tenants, roles and accounts. A clean
-  recreate with a single seed should restore correct RBAC.
+- *The environment has no account that holds the wildcard.* No account
+  holds =*=. demo_agent holds =Member= and nothing else: its thirteen
+  =SuperAdmin= assignments were all created at 23:47:44 and soft-deleted at
+  23:48:02, so only the =Member= row is live, and every guarded read is
+  refused. An earlier note here called the database corrupted by repeated
+  seeding. That was wrong. The permission catalogue is correct, one row per
+  code per tenant across thirty tenants; the rows that looked like
+  duplicates were per-tenant rows and bitemporal versions of the same row.
+  What is real is that the account lost its grants.
 

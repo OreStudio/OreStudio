@@ -47,6 +47,7 @@ ones, and every caller reaches only the objects its credential names.
 |------+-------+-------+-----+-------------|
 | [[id:A26895DD-A991-4A69-8E40-058BA62CAACE][Scaffold story: Isolate tenant data in object storage and the compute grid]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:466DC2F4-C981-4205-BBAA-9C47F3973732][State the storage policy]] | DONE | 2026-10-07 | 2026-10-07 | The architecture page that settles object ownership, the bucket set, the key grammar, the object capability and the storage checks. |
+| [[id:8784C136-7B08-4650-BAE5-C90637ADEA41][Give a worker node a capability to reach its assignment's objects]] | STARTED | 2026-10-07 | | A worker node holds no storage credential at all: the wrapper passes an empty bearer token, so storage answers 401 and no job can download its package or input. IAM mints a short-lived object capability naming the tenant's bucket and the assignment's exact key prefixes; the compute dispatcher puts it in the assignment; the wrapper presents it; storage verifies it and checks the bucket's owner, the prefix and the operation. |
 
 * Decisions
 

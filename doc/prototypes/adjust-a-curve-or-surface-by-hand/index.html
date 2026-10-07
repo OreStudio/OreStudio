@@ -86,9 +86,9 @@ const PASTED = ['1Y', '2Y', '5Y', '10Y'];
 const SHIFT = 0.0005;
 
 const feed = [
-  {c:'1M',  role:'DEPOSIT', value:4.3120, source:'synthetic.v1.tick', at:'13:58'},
-  {c:'3M',  role:'DEPOSIT', value:4.3450, source:'synthetic.v1.tick', at:'13:58'},
-  {c:'6M',  role:'DEPOSIT', value:4.3760, source:'synthetic.v1.tick', at:'13:59'},
+  {c:'1M',  role:'DEPOSIT', value:4.3120, source:'synthetic.v1.ops.tick', at:'13:58'},
+  {c:'3M',  role:'DEPOSIT', value:4.3450, source:'synthetic.v1.ops.tick', at:'13:58'},
+  {c:'6M',  role:'DEPOSIT', value:4.3760, source:'synthetic.v1.ops.tick', at:'13:59'},
   {c:'1Y',  role:'SWAP',    value:4.4020, source:'ir_curve.usd',      at:'13:59'},
   {c:'2Y',  role:'SWAP',    value:4.3550, source:'ir_curve.usd',      at:'13:59'},
   {c:'5Y',  role:'SWAP',    value:4.2480, source:'ir_curve.usd',      at:'14:00'},
@@ -104,7 +104,7 @@ const overrides = {
   ],
   overwrite: [
     {c:'5Y', value:3.8800, reason:'Desk mark', actor:'a.reyes', at:'14:02',
-     feedTry:{value:3.8825, source:'synthetic.v1.tick', at:'14:07'}}
+     feedTry:{value:3.8825, source:'synthetic.v1.ops.tick', at:'14:07'}}
   ]
 }[state];
 

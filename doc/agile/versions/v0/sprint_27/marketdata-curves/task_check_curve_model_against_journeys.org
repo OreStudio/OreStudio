@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :inbox:product_backlog:agile:
 #+owner: marco
-#+branch: feature/check-curve-model-against-journeys
-#+pr:
+#+branch: feature/curve-point-provenance
+#+pr: 2750
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Settle the shape the curve story's journeys demand against the tables that exist
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -184,7 +184,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2750][#2750]] | [marketdata] Record a curve point's source kind and enforce manual precedence |
 
 * Review
 
@@ -193,3 +193,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR 2750.
+
+Every journey in the catalogue was mapped to a table, a read, or a named gap,
+and the mapping corrected the story in several places. The curve-to-points hop
+is not a hard foreign key: the market data tables carry none, and the hop is
+soft though indexed. The snapshot-permission defect the story recorded was
+already closed. `instrument_type::curve` and `to_curve_key()` no longer exist,
+so one open question is moot. And a republish has never run outside tests --
+one config, the output series still observed, no observations, no lineage rows.
+
+The representation is one column. `point_source_kind` on the cold per-point
+annex carries `derived` or `manual`; quoted is the absence of an annex row,
+so a quoted tick keeps writing one row to the hot hypertable and nothing else.
+The constraints that would have refused a manual row were relaxed, and a manual
+point's author, time and reason reuse the annex's existing record provenance, so
+the auditor trail costs nothing new.
+
+Precedence is read-time, so history keeps both the fed value and the manual one.
+The as-of rule is now stated rather than implied: an as-of timepoint is a market
+instant, and the read for it takes manually keyed points into account, decided
+by the point's own instant and not by when it was keyed.
+
+Measured. `ctest -R ores.marketdata` passes 5 of 5 suites. The four new
+provenance cases were re-run independently of the implementer: 32 assertions,
+all passing, against literal values. Reversing the precedence merge produced
+exactly four failures with concrete values at the snapshot read and in buckets
+two and three, and bucket one correctly stayed put because at that instant the
+manual point is already the latest observation; the reversal was reverted.
+Codegen drift reports no drift and the structure-note link check passes.
+
+Not done here, and both are recorded. A point cannot yet be keyed by hand in
+the product, because the write and clear path is its own task. No production
+consumer reads a curve, which is why the representation was kept minimal and
+reversible.
+

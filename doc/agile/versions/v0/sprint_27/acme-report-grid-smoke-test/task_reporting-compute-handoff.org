@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/reporting-compute-handoff
 #+pr: 2740
-#+blocked_on: The node's per-assignment storage capability, owned by the tenant-data isolation story
-#+blocked_since: 2026-10-07
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-07
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -39,11 +39,11 @@ onto the compute dispatcher and closed one of them, so two remain:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | The subject and URI defects are fixed and proven; the wrapper takes the run's assignment. The download stops at HTTP 401 because a node holds no storage credential yet. |
-| Waiting on   | The [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][tenant-data isolation story]]'s node capability, without which a wrapper cannot download. The two fixture tasks also gate a fresh run: [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][the schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][the risk report configurations]]. |
-| Next         | Re-run once a node can authenticate to storage. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -66,6 +66,16 @@ The URI fix belongs where the URI is built: =prepare_ore_package= builds it with
 for the package and the output.
 
 * Notes
+
+*Closed.* The handoff drives a job end to end. Report instance
+=0b6d9908-d699-49ae-b633-cbc363d4b8e6= of the "Intercompany Exposure Matrix"
+definition reached the terminal =completed= state, and its result
+=9fd17163-d2a4-43d8-83ef-0b25edb84069= came back Done with outcome 1 from host
+=ed10ef0f-ed48-5b3f-96ab-49e5eca325d7=. The node downloaded the package and the
+input and uploaded the output, each authorised by the assignment's capability;
+the same URLs answer =401= without one. The mechanism is recorded in
+[[id:8784C136-7B08-4650-BAE5-C90637ADEA41][give a worker node a capability to reach its assignment's objects]], which
+also records the two defects that had to be fixed first.
 
 The live run reached the wrapper. Run =f8275ac1-1ac5-4e2e-a485-97324ef3b13e=,
 tenant =51e855c0-ce99-4726-a590-7272c89cf8b1=:

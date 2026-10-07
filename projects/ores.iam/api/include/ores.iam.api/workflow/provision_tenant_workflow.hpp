@@ -70,7 +70,7 @@ inline constexpr std::string_view provision_party_target_kind = "party";
  * step kind is code in this component and needs no other component to change.
  */
 inline constexpr std::string_view provision_tenant_step_subject =
-    "iam.v1.ops.provision_tenant-step";
+    "iam.v1.ops.provision_tenant_step";
 
 /// The step kind that completes the tenant, appended to every run after the
 /// kinds the profile declares. A run finishes only by running its steps out, so

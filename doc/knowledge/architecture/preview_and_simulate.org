@@ -12,9 +12,9 @@
 * Summary
 
 Three operations let an editor see what a feed would produce before it runs.
-=synthetic.v1.fx_spot.simulate= returns sample FX spot paths,
-=synthetic.v1.ir_curve.simulate_paths= returns sample short rate paths, and
-=synthetic.v1.ir_curve.preview_shape= returns the curve a set of process
+=synthetic.v1.ops.simulate_fx_spot_paths= returns sample FX spot paths,
+=synthetic.v1.ops.simulate_ir_curve_paths= returns sample short rate paths, and
+=synthetic.v1.ops.preview_ir_curve_shape= returns the curve a set of process
 parameters and template rows implies. None of the three persists a row or
 publishes a tick. They exist so a change to a config is judged before it is
 saved, and they are the read side of the surface the Market Simulator drives.

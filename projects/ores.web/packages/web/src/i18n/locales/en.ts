@@ -170,6 +170,9 @@ export const en: SourceCatalogue = {
             startsEmpty: 'The role starts allowing nothing. You choose what it allows next.',
             notFound: 'No role has this identifier.',
             rename: 'Rename or describe',
+            requestable: 'Members may ask for this role',
+            requestableHint:
+                'A member who does not hold it can ask, and you decide. Clear this for a role nobody should be able to ask for.',
             delete: 'Delete role',
             heldCannotDelete: 'Take it away from everyone who holds it first.',
             heldBy: 'Held by',

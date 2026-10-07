@@ -18,9 +18,15 @@ that is genuinely a domain operation belongs here.
 
 The generator already refuses a bad verb when it *derives* a subject --
 ``request_subject`` and ``event_subject`` in org_loader.py raise on one -- so a
-violation enters the tree exactly one way: a model that declares the subject by
-hand, with a ``:subject:`` property. That is what this check reads. The census
-that wrote it found 159 such declarations, 127 of them outside the grammar.
+subject is only ever wrong where a person wrote it. There are two such places,
+and the check reads both: the ``:subject:`` a model declares, and the sites in
+``WRITING_SITES`` below, where a protocol header, a hand-written constant or a
+DQ seed writes one directly.
+
+Reading the second set is what the first version of this check missed. It found
+159 declarations and pronounced the tree clean while ten subjects written
+nowhere near a model were outside the grammar, and only a recreated database
+plus the ACME bring-up caught them.
 
 Accepted violations live in ``subject_conformance_baseline.json`` beside this
 script, each with the reason it is still there. The file is a ratchet: a
@@ -55,6 +61,34 @@ SPEC_VERBS = (
 LIST_BY = "list_by_"
 SPEC_EVENT_ACTIONS = ("created", "updated", "deleted")
 
+# Where a subject is written when no model declares it. Each site names the
+# paths and the shape the subject takes there, so that adding a new way to
+# write one is a deliberate act rather than a silent blind spot. The 2026-10-07
+# migration missed ten subjects precisely because this list did not exist.
+#
+# The shape matters as much as the path: a SQL job_name such as
+# compute.v1.reap.stale_results looks exactly like a subject, and an event base
+# such as trading.v1.trades_events is a prefix an action is appended to. Neither
+# is read here, because neither is written where these sites point.
+WRITING_SITES: tuple[tuple[tuple[str, ...], "re.Pattern[str]"], ...] = (
+    # A protocol header or a hand-written constant:
+    #   static constexpr std::string_view nats_subject = "refdata.v1.currencies.get";
+    #   inline constexpr std::string_view provision_tenant_step_subject =
+    #       "iam.v1.ops.provision_tenant_step";
+    # A name ending in _prefix holds a prefix, and carries its trailing dot.
+    (
+        ("projects/**/*.hpp", "projects/**/*.cpp"),
+        re.compile(r"\w*subject\w*\s*=\s*\n?\s*\"([^\"]+)\'"),
+    ),
+    # The target_subject every DQ artefact type seeds. Only this file holds that
+    # column; a scheduler job definition's job_name is not a subject and lives
+    # in another file, which this site does not read.
+    (
+        ("projects/ores.sql/populate/dq/dq_artefact_types_populate.sql",),
+        re.compile(r"\'([a-z_]+\.[a-z0-9_]+\.[a-z0-9_.]+)\'"),
+    ),
+)
+
 SUBJECT_LINE = re.compile(r"^\s*:subject:\s*(\S+)\s*$")
 SNAKE = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -69,6 +103,35 @@ def declared_subjects() -> list[tuple[str, int, str]]:
                 found.append(
                     (str(path.relative_to(REPO_ROOT)), number, match.group(1))
                 )
+    return found
+
+
+def written_subjects() -> list[tuple[str, int, str]]:
+    """Every subject written at a site no model declares.
+
+    Returns the path, the line and the subject, with a prefix's trailing dot
+    stripped so the remainder is classified as the subject it prefixes.
+    """
+    found: list[tuple[str, int, str]] = []
+    seen: set[tuple[str, int, str]] = set()
+    for globs, pattern in WRITING_SITES:
+        for glob in globs:
+            for path in sorted(REPO_ROOT.glob(glob)):
+                try:
+                    text = path.read_text(errors="replace")
+                except OSError:
+                    continue
+                for match in pattern.finditer(text):
+                    subject = match.group(1)
+                    if subject.endswith(".") or ">" in subject or "*" in subject:
+                        subject = subject.rstrip(".")
+                    if not subject:
+                        continue
+                    line = text.count("\n", 0, match.start()) + 1
+                    entry = (str(path.relative_to(REPO_ROOT)), line, subject)
+                    if entry not in seen:
+                        seen.add(entry)
+                        found.append(entry)
     return found
 
 
@@ -107,6 +170,14 @@ def classify(subject: str) -> tuple[bool, str]:
     if resource == "ops":
         return True, "a domain operation in the reserved ops namespace"
 
+    # The verb is checked before the event branch, because a resource may
+    # itself be named *_events: trading.v1.lifecycle_events.delete_many is a
+    # request on the lifecycle_events resource, not an event whose action is
+    # delete_many. An event's action is never a verb of the common set, so the
+    # order is unambiguous for every subject the grammar admits.
+    if suffix in SPEC_VERBS or suffix.startswith(LIST_BY):
+        return True, "a request"
+
     if resource.endswith("_events"):
         if suffix not in SPEC_EVENT_ACTIONS:
             return False, (
@@ -114,9 +185,6 @@ def classify(subject: str) -> tuple[bool, str]:
                 f"{', '.join(SPEC_EVENT_ACTIONS)}"
             )
         return True, "an event"
-
-    if suffix in SPEC_VERBS or suffix.startswith(LIST_BY):
-        return True, "a request"
 
     # Everything still standing here is an operation that acts on an entity
     # without being one of the eight. The specification's discriminator is that
@@ -156,6 +224,10 @@ def main(argv: list[str] | None = None) -> int:
     if not subjects:
         print("❌ no :subject: declarations found; the scan is not reading the models")
         return 1
+
+    # A subject a model declares, and a subject written at one of the sites
+    # above. The second is the set the migration missed.
+    subjects += written_subjects()
 
     violations: list[tuple[str, int, str, str]] = []
     for path, number, subject in subjects:

@@ -27,6 +27,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
@@ -35,9 +36,11 @@
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -415,6 +418,44 @@ market_observation_repository::read_latest_for_series(context ctx,
         "Reading latest market observations.");
 }
 
+namespace {
+
+/*
+ * The manual points that own their coordinate for reading: the observation
+ * each current manual annex row of this series keyed. The annex is cold and
+ * holds only hand-keyed points, so this read is small; keeping it separate
+ * from the observation scan leaves the tick path unchanged.
+ */
+std::vector<domain::market_observation>
+read_manual_points(market_observation_repository::context ctx,
+                   const boost::uuids::uuid& series_id,
+                   ores::logging::logger_t& log) {
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    static const std::string sql = R"(
+        SELECT o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
+               o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
+        FROM ores_marketdata_observation_lineages_tbl l
+        JOIN ores_marketdata_market_observations_tbl o
+          ON o.tenant_id = l.tenant_id AND o.party_id = l.party_id
+         AND o.series_id = l.series_id AND o.oresmd_uri = l.oresmd_uri
+         AND o.observation_datetime = l.observation_datetime AND o.valid_to = $3
+        WHERE l.tenant_id = $1 AND l.series_id = $2 AND l.point_source_kind = 'manual'
+            AND l.valid_to = $3
+    )";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
+
+    std::vector<domain::market_observation> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+    return result;
+}
+
+}
+
 std::vector<domain::market_observation> market_observation_repository::read_as_of(
     context ctx,
     const boost::uuids::uuid& series_id,
@@ -447,6 +488,20 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     result.reserve(rows.size());
     for (const auto& row : rows)
         result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+
+    // A current manual point owns its coordinate until cleared, overlaying the
+    // fed value and any later automatic write. One whose instant is after the
+    // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
+    for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
+        if (manual.observation_datetime > as_of_datetime)
+            continue;
+        const auto it =
+            std::ranges::find(result, manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+        if (it != result.end())
+            *it = manual;
+        else
+            result.push_back(manual);
+    }
     return result;
 }
 
@@ -512,7 +567,118 @@ market_observation_repository::read_as_of_buckets(
         result[ordinal].push_back(
             market_observation_mapper::map(as_of_observation(row, 1, "read_as_of_buckets")));
     }
+
+    // The manual overlay, once per bucket: a manual point owns its coordinate
+    // from the bucket whose boundary is at or after the manual point's own
+    // instant, and the buckets before it keep the fed value they showed. The
+    // boundaries mirror the generate_series() above, where bucket_ordinal 0 is
+    // the oldest.
+    for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
+        for (unsigned int i = 0; i < bucket_count; ++i) {
+            const auto offset = std::chrono::seconds(static_cast<long long>(bucket_count - 1 - i) *
+                                                     bucket_size.count());
+            if (manual.observation_datetime > latest_boundary - offset)
+                continue;
+            const auto it = std::ranges::find(
+                result[i], manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+            if (it != result[i].end())
+                *it = manual;
+            else
+                result[i].push_back(manual);
+        }
+    }
     return result;
+}
+
+void market_observation_repository::write_manual_point(
+    context ctx,
+    const boost::uuids::uuid& series_id,
+    const std::string& oresmd_uri,
+    std::chrono::system_clock::time_point observation_datetime,
+    const std::string& value,
+    const std::string& change_reason_code,
+    const std::string& change_commentary) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing manual point for series: " << series_id
+                               << " coordinate: " << oresmd_uri;
+    const auto party_id = ctx.party_id();
+    if (!party_id)
+        throw std::invalid_argument(
+            "market_observation_repository::write_manual_point: the context names no party");
+
+    // The actor names who keyed the point. A request context carries one; a
+    // system-initiated write falls back to the service account, exactly as the
+    // messaging stamp helper does.
+    const auto actor = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+
+    // One transaction writes the observation row and its annex: the read shows
+    // a manual point only when both are present, so a failure in either leaves
+    // neither behind.
+    unit_of_work uow(ctx);
+    const auto& txn_ctx = uow.ctx();
+
+    observation_lineage_repository lineage_repo;
+    const auto current = lineage_repo.read_latest_by_observation(
+        txn_ctx, series_id, observation_datetime, oresmd_uri);
+
+    domain::market_observation obs;
+    obs.id = boost::uuids::random_generator()();
+    obs.tenant_id = ctx.tenant_id();
+    obs.party_id = *party_id;
+    obs.series_id = series_id;
+    obs.observation_datetime = observation_datetime;
+    obs.oresmd_uri = oresmd_uri;
+    obs.value = value;
+    obs.source = "manual.operator";
+    insert(txn_ctx, obs);
+
+    domain::observation_lineage lineage;
+    // An annex row already at this natural key -- a derivation's or an earlier
+    // manual point's -- keeps its own id, so the insert trigger closes it and
+    // writes the new generation instead of colliding with the current-row key.
+    lineage.id = current ? current->id : boost::uuids::random_generator()();
+    lineage.tenant_id = ctx.tenant_id();
+    lineage.party_id = *party_id;
+    lineage.series_id = series_id;
+    lineage.observation_datetime = observation_datetime;
+    lineage.oresmd_uri = oresmd_uri;
+    lineage.point_source_kind = "manual";
+    lineage.derivation_config_id = std::nullopt;
+    lineage.source_as_of = std::nullopt;
+    lineage.source_series_ids = "[]";
+    lineage.modified_by = actor;
+    lineage.performed_by = ctx.service_account();
+    lineage.change_reason_code = change_reason_code;
+    lineage.change_commentary = change_commentary;
+    lineage_repo.write(txn_ctx, lineage);
+
+    uow.commit();
+}
+
+void market_observation_repository::clear_manual_point(
+    context ctx,
+    const boost::uuids::uuid& series_id,
+    const std::string& oresmd_uri,
+    std::chrono::system_clock::time_point observation_datetime) {
+    BOOST_LOG_SEV(lg(), debug) << "Clearing manual point for series: " << series_id
+                               << " coordinate: " << oresmd_uri;
+
+    // The read that finds the row and the close that withdraws it share one
+    // transaction, so a point that moved on between them is not closed twice.
+    unit_of_work uow(ctx);
+    const auto& txn_ctx = uow.ctx();
+
+    observation_lineage_repository lineage_repo;
+    const auto current = lineage_repo.read_latest_by_observation(
+        txn_ctx, series_id, observation_datetime, oresmd_uri);
+    // Only a manual point is withdrawn: a derived point's annex is not this
+    // operation's to close, and a coordinate with no annex is quoted.
+    if (!current || current->point_source_kind != "manual")
+        return;
+
+    // Closing, not deleting: the delete rule keeps the row in the annex's
+    // history, so a reader still sees what the over-key replaced.
+    lineage_repo.remove(txn_ctx, boost::uuids::to_string(current->id));
+    uow.commit();
 }
 
 }

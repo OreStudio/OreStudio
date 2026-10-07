@@ -41,6 +41,107 @@ begin;
 select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A recreated database carries the system party, the WRLD business centre and
+-- no counterparty at all, so the fixture writes every row this suite names.
+-- The suite rolls them back.
+insert into ores_refdata_business_centres_tbl (
+    code, tenant_id, version, coding_scheme_code, source, description,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    'GBLO', ores_utility_system_tenant_id_fn(), 0, 'NONE', 'Internal',
+    'London. Trading pgTAP fixture.',
+    current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_parties_tbl (
+    id, tenant_id, full_name, short_code, party_category, party_type,
+    business_center_code, parent_party_id, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    '00000000-0000-0000-0000-0000000cf001'::uuid, ores_utility_system_tenant_id_fn(),
+    'Acme Corporation', 'ACMCOR', 'Operational', 'CorporateGroup',
+    'WRLD', null, 'Active', current_user, current_user,
+    'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_counterparties_tbl (
+    id, tenant_id, version, full_name, short_code, party_type,
+    parent_counterparty_id, business_center_code, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values
+    ('00000000-0000-0000-0000-0000000cf111'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'Envelope Counterparty One', 'ENV-CP1', 'Corporate',
+     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf112'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'Envelope Counterparty Two', 'ENV-CP2', 'Corporate',
+     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf113'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'Envelope Counterparty Three', 'ENV-CP3', 'Corporate',
+     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
+-- The aliases the suite reads. CPTY_7 sorts before CPTY_B, so it is the one
+-- an unrecorded envelope name falls back to.
+insert into ores_refdata_counterparty_identifiers_tbl (
+    id, tenant_id, version, counterparty_id, id_scheme, id_value, description,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values
+    ('00000000-0000-0000-0000-0000000cf121'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf111'::uuid, 'ORE', 'CP', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf122'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf111'::uuid, 'ORE', 'CPTY', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf123'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf112'::uuid, 'ORE', 'CPTY_7', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf124'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf112'::uuid, 'ORE', 'CPTY_B', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf125'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf113'::uuid, 'ORE', 'CPTY_A', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_netting_sets_tbl (
+    id, tenant_id, version, code, counterparty_id, party_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values
+    ('00000000-0000-0000-0000-0000000cf131'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'ENV-NS1', '00000000-0000-0000-0000-0000000cf111'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf132'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'ENV-NS2', '00000000-0000-0000-0000-0000000cf112'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf133'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     'ENV-NS3', '00000000-0000-0000-0000-0000000cf112'::uuid,
+     '00000000-0000-0000-0000-0000000cf001'::uuid,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_netting_set_identifiers_tbl (
+    id, tenant_id, version, netting_set_id, id_scheme, id_value, description,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values
+    ('00000000-0000-0000-0000-0000000cf141'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf131'::uuid, 'ORE', 'NS', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf142'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf132'::uuid, 'ORE', 'CPTY_B', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf143'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf133'::uuid, 'ORE', 'CPTY_B_full', null,
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
+insert into ores_refdata_portfolios_tbl (
+    id, tenant_id, version, party_id, name, parent_portfolio_id, purpose_type,
+    is_virtual, status, modified_by, performed_by, change_reason_code, change_commentary
+) values
+    ('00000000-0000-0000-0000-0000000cf151'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf001'::uuid, 'PF1', null, 'Risk', false, 'Active',
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+    ('00000000-0000-0000-0000-0000000cf152'::uuid, ores_utility_system_tenant_id_fn(), 0,
+     '00000000-0000-0000-0000-0000000cf001'::uuid, 'PF2', null, 'Risk', false, 'Active',
+     current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 

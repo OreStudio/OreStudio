@@ -70,7 +70,7 @@ subscribes to this subject today; the payload is the shared
 
 | Subject | Description |
 |---------+-------------|
-| =scheduler.v1.job-instance-events= | A job execution changed state |
+| =scheduler.v1.job_instance_events.updated= | A job execution changed state |
 
 * Useful Pages
 

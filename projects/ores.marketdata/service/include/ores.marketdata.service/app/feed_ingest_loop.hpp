@@ -67,7 +67,7 @@ make_feed_series(const domain::feed_binding& binding,
  * @brief The ingest loop: one subscription over every producer's ticks, and one
  * path for every tick, whatever its asset class.
  *
- * A producer publishes a market_tick on "synthetic.v1.tick.<source>". The tick
+ * A producer publishes a market_tick on "synthetic.v1.ops.tick.<source>". The tick
  * names its datum by its oresmd quote URI and its producer by its source; it
  * carries no owner. refresh() caches the enabled feed bindings by source, and
  * each binding of the tick's source is one consumer: the tick is stored as a

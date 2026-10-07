@@ -36,12 +36,12 @@ namespace ores::synthetic::service {
  * @brief Registers NATS handlers for the FX spot and IR curve synthetic tick generation PoC.
  *
  * Wires:
- *   synthetic.v1.feed_configs.start  — starts a feed by config_id, any kind (auth + RBAC)
- *   synthetic.v1.feed_configs.stop   — stops a running feed by config_id or source_name
+ *   synthetic.v1.ops.start_feed  — starts a feed by config_id, any kind (auth + RBAC)
+ *   synthetic.v1.ops.stop_feed   — stops a running feed by config_id or source_name
  *   synthetic.v1.feed_configs.list   — lists running feed source_names, every kind
- *   synthetic.v1.fx_spot.simulate    — batch dry-run sample paths (auth + RBAC)
- *   synthetic.v1.ir_curve.simulate_paths — batch dry-run short-rate sample paths (auth + RBAC)
- *   synthetic.v1.ir_curve.preview_shape  — stateless curve-shape preview (auth + RBAC)
+ *   synthetic.v1.ops.simulate_fx_spot_paths    — batch dry-run sample paths (auth + RBAC)
+ *   synthetic.v1.ops.simulate_ir_curve_paths — batch dry-run short-rate sample paths (auth + RBAC)
+ *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (auth + RBAC)
  */
 class registrar {
 public:

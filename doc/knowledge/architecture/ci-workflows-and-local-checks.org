@@ -73,6 +73,13 @@ The classes and the heavy tier:
 |------+--------|
 | always | the class's fast checks: =compass lint=, the drift gates, the codegen and compass suites, the per-language checks |
 | heavy (=cpp=, =sql=, =services=, unclassified) | =build=, then =db recreate=, then =ctest= |
+| sql only, after =db recreate= | =pgtap= |
+
+=pgtap= runs =projects/ores.sql/test/run_tests.sh= over the database the
+check above it rebuilt. It stays in the =sql= class alone and stays after
+=db=, because it reads the schema that check recreates. Every suite writes
+the reference data it reads and rolls it back, so the corpus passes on a
+database that carries no tenant data beyond the seed.
 
 A documentation-only change therefore runs =compass site page= and the doc
 corpus checks and never reaches the compiler.

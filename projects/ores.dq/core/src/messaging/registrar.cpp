@@ -492,12 +492,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         static constexpr std::array<std::string_view, 6> subjects = {
-            "dq.v1.ip2country.publish-from-dq",
-            "dq.v1.coding-schemes.publish-from-dq",
-            "dq.v1.badge-severities.publish-from-dq",
-            "dq.v1.badge-definitions.publish-from-dq",
-            "dq.v1.code-domains.publish-from-dq",
-            "dq.v1.badge-mappings.publish-from-dq"};
+            "dq.v1.ops.publish_ip2country_from_dq",
+            "dq.v1.ops.publish_coding_schemes_from_dq",
+            "dq.v1.ops.publish_badge_severities_from_dq",
+            "dq.v1.ops.publish_badge_definitions_from_dq",
+            "dq.v1.ops.publish_code_domains_from_dq",
+            "dq.v1.ops.publish_badge_mappings_from_dq"};
         for (const auto subject : subjects)
             subs.push_back(
                 nats.queue_subscribe(subject, queue_group, [pdq](ores::nats::message msg) {

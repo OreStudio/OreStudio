@@ -49,7 +49,7 @@ struct parameter_spec {
  */
 struct simulate_ir_curve_paths_request {
     using response_type = struct simulate_ir_curve_paths_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ir_curve.simulate_paths";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.simulate_ir_curve_paths";
 
     /** @brief Shared batch-size limits, applied by the service clamp and the UI spinners. */
     static constexpr int max_num_ticks = 5000;

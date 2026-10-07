@@ -64,6 +64,32 @@ struct storage_paths {
     }
 
     /**
+     * @brief Splits an object path back into the bucket and key it names.
+     *
+     * The inverse of @ref make_object_path, for a caller that holds a path --
+     * an assignment names its package, input and output as paths, and the
+     * capability it carries must name the same objects as a bucket and a key.
+     *
+     * @return true when the path begins with the prefix and names a bucket and
+     *         a non-empty key.
+     */
+    static bool
+    split_object_path(std::string_view path, std::string& bucket, std::string& key) {
+        if (!path.starts_with(prefix))
+            return false;
+        auto rest = path.substr(prefix.size());
+        if (rest.empty() || rest.front() != '/')
+            return false;
+        rest.remove_prefix(1);
+        const auto slash = rest.find('/');
+        if (slash == std::string_view::npos || slash == 0 || slash + 1 >= rest.size())
+            return false;
+        bucket = std::string(rest.substr(0, slash));
+        key = std::string(rest.substr(slash + 1));
+        return true;
+    }
+
+    /**
      * @brief Constructs a full URL for a storage object.
      *
      * @param base_url  HTTP server base URL (e.g. "http://localhost:51000").

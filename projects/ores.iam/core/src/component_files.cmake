@@ -226,6 +226,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/session_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/session_operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/session_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/storage_capability_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/messaging/tenant_provisioning_handler.hpp"

@@ -45,12 +45,17 @@ render_observation_lineage_fields(const domain::observation_lineage& v) {
         {.name = "Observation Datetime",
          .value = ores::platform::time::datetime::to_iso8601_utc(v.observation_datetime)});
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
-    fields.push_back(
-        {.name = "Derivation Config ID", .value = boost::uuids::to_string(v.derivation_config_id)});
+    fields.push_back({.name = "Point Source Kind", .value = v.point_source_kind});
+    fields.push_back({.name = "Derivation Config ID",
+                      .value = v.derivation_config_id ?
+                                   boost::uuids::to_string(*v.derivation_config_id) :
+                                   std::string{}});
     fields.push_back({.name = "Derivation Config Version",
                       .value = std::to_string(v.derivation_config_version)});
     fields.push_back({.name = "Source As Of",
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.source_as_of)});
+                      .value = v.source_as_of ?
+                                   ores::platform::time::datetime::to_iso8601_utc(*v.source_as_of) :
+                                   std::string{}});
     fields.push_back({.name = "Source Series Ids", .value = v.source_series_ids});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

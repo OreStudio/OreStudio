@@ -37,6 +37,7 @@ export interface RoleWrite {
     name: string;
     description: string;
     is_registration_default: boolean;
+    is_requestable: boolean;
 }
 
 export interface RoleChange {

@@ -54,9 +54,10 @@ struct observation_lineage_entity {
 
     std::string oresmd_uri = "";
 
-    std::string derivation_config_id;
+    std::string point_source_kind = "derived";
+    std::optional<std::string> derivation_config_id;
     int derivation_config_version = 0;
-    std::string source_as_of;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> source_as_of;
     std::string source_series_ids;
     std::string modified_by;
     std::string performed_by;

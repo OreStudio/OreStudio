@@ -101,6 +101,30 @@ TEST_CASE("read_latest_role_by_id", tags) {
     CHECK(read_roles[0] == expected);
 }
 
+/**
+ * Whether a member may ask for a role is a value the tenant sets, not a
+ * constant: a role written as not askable comes back as not askable.
+ */
+TEST_CASE("write_role_members_may_not_ask_for", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+
+    role_repository repo;
+    auto r = generate_synthetic_role(gen_ctx);
+    r.is_requestable = false;
+
+    BOOST_LOG_SEV(lg, debug) << "Role: " << r;
+    repo.write(h.context(), r);
+
+    auto read_roles = repo.read_latest(h.context(), boost::uuids::to_string(r.id));
+    BOOST_LOG_SEV(lg, debug) << "Read roles: " << read_roles;
+
+    REQUIRE(read_roles.size() == 1);
+    CHECK_FALSE(read_roles[0].is_requestable);
+}
+
 TEST_CASE("read_nonexistent_role", tags) {
     auto lg(make_logger(test_suite));
 

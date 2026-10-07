@@ -32,6 +32,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.eventing.api.lib
         ores.platform.lib
+        ores.security.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx

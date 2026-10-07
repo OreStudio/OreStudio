@@ -69,8 +69,7 @@ namespace ores::iam::domain {
  * and a server-owned field never appears in one; a credential's only meaningful
  * field is server-derived, so the resource has no write record to carry, and "a
  * read-only resource simply declares no write verb". The credential's writes are
- * domain operations, iam.v1.ops.*, declared in
- * [[id:C6FC2B06-F8D6-4697-A54E-2399DB3665D3][ores.iam.operations]].
+ * domain operations, iam.v1.ops.*.
  */
 struct account_credential final {
     /**

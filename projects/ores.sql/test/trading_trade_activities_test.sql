@@ -38,13 +38,24 @@ begin;
 select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- A recreated database carries the WRLD business centre alone, so the fixture
+-- writes the GBLO one this suite names. The suite rolls it back.
+insert into ores_refdata_business_centres_tbl (
+    code, tenant_id, version, coding_scheme_code, source, description,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    'GBLO', ores_utility_system_tenant_id_fn(), 0, 'NONE', 'Internal',
+    'London. Trading pgTAP fixture.',
+    current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+
 select set_config('app.visible_party_ids',
     (select '{' || string_agg(id::text, ',') || '}' from ores_refdata_parties_tbl), true);
 
 create temp table t_ctx on commit drop as
 select (select id from ores_refdata_parties_tbl
-        where tenant_id = ores_utility_system_tenant_id_fn()
-          and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1) as party_id,
+        where tenant_id = ores_utility_system_tenant_id_fn() and short_code = 'system_party'
+          and valid_to = ores_utility_infinity_timestamp_fn()) as party_id,
        (select username from ores_iam_accounts_tbl
         where account_type = 'service' and valid_to = ores_utility_infinity_timestamp_fn()
         order by username limit 1) as owner_name;

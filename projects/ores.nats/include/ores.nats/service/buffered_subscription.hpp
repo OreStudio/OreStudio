@@ -44,7 +44,7 @@ namespace ores::nats::service {
  * Move-only. Must not outlive the @c client that created it.
  *
  * @code
- * auto sub = nats.subscribe_buffered("synthetic.v1.tick.eur.usd", 1000);
+ * auto sub = nats.subscribe_buffered("synthetic.v1.ops.tick.eur.usd", 1000);
  * // ... later, on the UI thread:
  * auto recent = sub.snapshot(); // vector<message>, oldest first
  * @endcode

@@ -66,7 +66,7 @@ drawn beside this page rather than listed here.
 | Provision request | =iam.v1.ops.provision_tenant=          | Creates the tenant and its administrator, validates the starting point and its parameters, and opens the workflow instance |
 | Provision answer  | the reply to the request            | Reports the tenant, its administrator, and the workflow instance the caller follows                            |
 | Start message     | =workflow.v1.ops.start_workflow=                 | Opens the workflow instance with the workflow type, the tenant, the request payload, the correlation identifier and the instance identifier |
-| Step command      | =iam.v1.ops.provision_tenant-step=     | Dispatches one operation to the component that performs it                                                     |
+| Step command      | =iam.v1.ops.provision_tenant_step=     | Dispatches one operation to the component that performs it                                                     |
 | Step completion   | =workflow.v1.ops.step_completed= | Reports the step's outcome: success with a result, success with warnings, or failure                            |
 | Progress read     | =workflow.v1.ops.get_workflow_steps=       | Returns the workflow instance's status and one summary per step                                                |
 | Retry action      | =workflow.v1.ops.retry_workflow_instance=       | Resumes a stopped workflow instance from its failed step                                                       |

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 4DC7605B-8D47-4EC6-B739-14F34052F48E
+:END:
+#+title: Story: Hotfix: The credential model links a model that was withdrawn
+#+description: ores.iam.account_credential.org links ores.iam.operations, a model that was withdrawn and never committed, so the link dangles and lint and site-page both fail on it.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:docs:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The credential model links nothing that does not exist.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- No id link in the tree resolves to nothing.
+- ores.iam regenerates byte-identically after the edit.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0E4DFEF0-03E5-4AC0-BD39-2721ED86943E][Scaffold story: Hotfix: The credential model links a model that was withdrawn]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A8CD3BF7-4300-4DA3-97F5-1470E34C934F][Drop the dangling operations link and regenerate ores.iam]] | DONE | 2026-10-07 | 2026-10-07 | Remove the link to the withdrawn model and regenerate the four artefacts the prose reaches. |
+
+* Decisions
+
+- The link is dropped rather than repointed. =ores.iam.operations= was
+  withdrawn deliberately (it duplicated the census migration, spelled the
+  operations with a hyphen, and invented a second shell menu), so no model
+  declares the credential's writes today. The sentence still carries the
+  claim, =iam.v1.ops.*=, and can link again when a model owns them.
+- The prose is emitted, not documentation-only. The same paragraph appears in
+  the domain header, the SQL create and the ER diagram, so the edit is a
+  codegen change and all three are regenerated with it.
+- The link is not repointed at the census story. Durable documents linking
+  into agile content is already an advisory with 242 instances; adding one
+  more to carry a pointer that will be stale once the migration lands would
+  make the page worse, not better.
+
+* Out of scope
+
+-
+
+* Result
+
+The credential model links nothing that does not exist, and ores.iam
+regenerates byte-identically. The stale reference to the withdrawn
+=ores.iam.operations= model is gone from the model, the domain header, the SQL
+create and the ER diagram. =lint= and =site-page= pass again.

@@ -30,9 +30,9 @@ salt
   }
   {#
     Market quotes | Quote (oresmd_uri) | Value | Source | Observed at
-    . | ir/USD ... tenor=1Y term=1Y | 21.4% | synthetic.v1.tick.vol | 16:00
-    . | ir/USD ... tenor=1Y term=5Y | 19.8% | synthetic.v1.tick.vol | 16:00
-    . | ir/USD ... tenor=5Y term=5Y | 18.1% | synthetic.v1.tick.vol | 16:00
+    . | ir/USD ... tenor=1Y term=1Y | 21.4% | synthetic.v1.ops.tick.vol | 16:00
+    . | ir/USD ... tenor=1Y term=5Y | 19.8% | synthetic.v1.ops.tick.vol | 16:00
+    . | ir/USD ... tenor=5Y term=5Y | 18.1% | synthetic.v1.ops.tick.vol | 16:00
   }
   [ Refresh from market ]
   --

@@ -70,3 +70,29 @@ TEST_CASE("key_with_slashes_survives_unchanged", tags) {
     CHECK(url == "http://localhost:51000/api/v1/storage/ores/"
                  "releases/1.2.3/oscar-1.2.3.tar.gz");
 }
+
+TEST_CASE("split_object_path_inverts_make_object_path", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::string bucket;
+    std::string key;
+    const std::string original("releases/1.2.3/oscar-1.2.3.tar.gz");
+    const auto path = storage_paths::make_object_path("ores", original);
+
+    REQUIRE(storage_paths::split_object_path(path, bucket, key));
+    BOOST_LOG_SEV(lg, info) << "Split: " << bucket << "/" << key;
+    CHECK(bucket == "ores");
+    CHECK(key == original);
+}
+
+TEST_CASE("split_object_path_refuses_a_path_outside_the_prefix", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::string bucket;
+    std::string key;
+    BOOST_LOG_SEV(lg, info) << "Splitting a foreign path";
+    CHECK_FALSE(storage_paths::split_object_path("/other/ores/k", bucket, key));
+    CHECK_FALSE(storage_paths::split_object_path("/api/v1/storage", bucket, key));
+    CHECK_FALSE(storage_paths::split_object_path("/api/v1/storage/ores/", bucket, key));
+    CHECK_FALSE(storage_paths::split_object_path("/api/v1/storage/ores", bucket, key));
+}

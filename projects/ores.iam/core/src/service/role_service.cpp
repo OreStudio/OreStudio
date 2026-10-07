@@ -98,6 +98,7 @@ domain::role to_domain(const messaging::role_write& write) {
     v.name = write.name;
     v.description = write.description;
     v.is_registration_default = write.is_registration_default;
+    v.is_requestable = write.is_requestable;
     return v;
 }
 

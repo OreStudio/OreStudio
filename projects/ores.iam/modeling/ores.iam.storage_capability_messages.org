@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 23880D72-201E-49D9-94F9-07960425067A
+:ores.ts.protocol.enabled: nil
+:ores.cpp.shell-command.enabled: nil
+:END:
+#+title: ores.iam.storage_capability_messages
+#+description: Codegen operation model for minting a storage capability, the short-lived object-scoped token a worker node presents to reach the objects of one assignment.
+#+type: ores.codegen.operation
+#+component: iam
+#+subcomponent: api
+#+entity_singular: storage_capability_operations
+#+namespace: ores::iam::messaging
+#+brief: Mint a storage capability.
+#+filetags: :model:operation:iam:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+Minting a storage capability. A capability is a signed, short-lived token
+whose claims name the buckets, key prefixes and operations its holder may use.
+It exists so a worker node reaches the objects of one assignment and nothing
+else, and so the storage service answers an object-scoped question without a
+permission lookup. [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]]
+states the rules.
+
+The grants reuse [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][the claims the token
+carries]], so a caller builds the same row the verifier reads and no second
+shape has to be kept in step.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <vector>
+#include "ores.security/jwt/jwt_claims.hpp"
+#+end_src
+
+* Messages
+
+** mint_storage_capability_request
+:PROPERTIES:
+:subject: iam.v1.storage_capabilities.mint
+:response: mint_storage_capability_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks IAM for a storage capability naming a tenant's objects.
+ *
+ * Sent by a service that dispatches work to a node, with its own token. The
+ * caller must hold the mint permission, and the tenant must be one it may act
+ * for. The grants are the exact rows the token will carry.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant whose objects the capability reaches.
+ */
+#+end_src
+
+*** grants
+:PROPERTIES:
+:cpp_type: std::vector<ores::security::jwt::storage_grant>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The grants the capability carries, one row per operation.
+ */
+#+end_src
+
+** mint_storage_capability_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The capability, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expires_at
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the capability stops working, in seconds since the epoch.
+ */
+#+end_src

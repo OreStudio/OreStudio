@@ -44,7 +44,7 @@ invoked by the loop, so the publishing path sits inside the producer.
 
 ** The subject a vendor producer must publish on
 
-Every producer publishes on =synthetic.v1.tick.<source_name>=, built by
+Every producer publishes on =synthetic.v1.ops.tick.<source_name>=, built by
 =synthetic_tick_subject= in
 =projects/ores.marketdata/api/include/ores.marketdata.api/domain/tick_subjects.hpp=.
 That subject grammar is stated in
@@ -53,7 +53,7 @@ subject the ingest loop subscribes to, through the wildcard
 =synthetic_tick_wildcard()=, which appends =>= because a source name may
 itself contain dots.
 
-A producer that publishes under =synthetic.v1.sandbox.tick.= is invisible to
+A producer that publishes under =synthetic.v1.ops.sandbox_tick.= is invisible to
 ingest. That prefix is the sandbox a generated feed uses when a person wants
 to run it without the data landing anywhere.
 
@@ -108,7 +108,7 @@ tree has a publisher behind it.
 
 ** Facts the code shape does not show
 
-- The subject prefix reads =synthetic.v1.tick.= and every producer uses it
+- The subject prefix reads =synthetic.v1.ops.tick.= and every producer uses it
   anyway. A vendor producer would publish vendor data on a subject whose
   name says synthetic. The prefix records the order the work landed in, and
   not a claim about the source.

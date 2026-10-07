@@ -390,6 +390,7 @@ function RenameDialog({
     const queries = useQueryClient();
     const [name, setName] = useState(role.name);
     const [description, setDescription] = useState(role.description);
+    const [requestable, setRequestable] = useState(role.requestable);
     const update = useMutation({
         mutationFn: () =>
             api.updateRole(role.id, {
@@ -397,6 +398,7 @@ function RenameDialog({
                 description,
                 version: role.version,
                 registrationDefault: role.registrationDefault,
+                requestable,
             }),
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['roles'] });
@@ -432,6 +434,15 @@ function RenameDialog({
                         onChange={(event) => setDescription(event.target.value)}
                     />
                 </Field>
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={requestable}
+                        onChange={(event) => setRequestable(event.target.checked)}
+                    />
+                    {t('access.roles.requestable')}
+                </label>
+                <p className="text-xs text-ink-muted">{t('access.roles.requestableHint')}</p>
                 {update.isError && <Notice tone="error">{update.error.message}</Notice>}
             </div>
         </Dialog>

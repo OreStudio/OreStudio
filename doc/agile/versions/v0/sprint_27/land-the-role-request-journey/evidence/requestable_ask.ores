@@ -1,0 +1,3 @@
+role_request_operations ask-for-roles c187867a-7676-4d22-adf9-ef11d89762eb "I would like the IAM service role"
+role_request_operations ask-for-roles cb4fad75-3d63-4dd6-a24d-d976c5556840 "I cover the trading desk next week"
+approval_operations list-my-approval-requests

@@ -154,9 +154,9 @@ a redesign of the artefact tables' own columns.
    - Returns one combined =(action, record_count)= result set (union
      of what the two functions return today).
 5. *NATS wiring*: today's two subjects
-   (=synthetic.v1.fx-spot-configs.publish-from-dq=,
-   =synthetic.v1.ir-curve-configs.publish-from-dq=) collapse to one
-   (=synthetic.v1.theme.publish-from-dq=) calling the merged function.
+   (=synthetic.v1.ops.publish_fx_spot_configs_from_dq=,
+   =synthetic.v1.ops.publish_ir_curve_configs_from_dq=) collapse to one
+   (=synthetic.v1.ops.publish_theme_from_dq=) calling the merged function.
    =publication_service::publish_dataset()= then calls exactly one
    NATS subject per theme dataset id — atomicity becomes a property of
    the single SQL function's transaction, not of the caller's loop.

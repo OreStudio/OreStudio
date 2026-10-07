@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 16FD540E-F5F6-4480-BA91-3342D436D3BC
+:END:
+#+title: The listener loss-window test races its own reconnect
+#+description: postgres_listener_service_reconnect_surfaces_loss_window kills the listener's backend, waits for the old backend to be gone, then sends a notification it asserts is lost forever. Nothing stops the listener reconnecting between those two steps, and when it does the notification is delivered like any other: received[0] is the lost payload and the test fails. Seen once in a full 94-suite run on 2026-10-07 (ores.database.tests, postgres_listener_service_tests.cpp:368) and passing on an immediate re-run of the suite alone and in an earlier full run of the same binary. The comment says the wait makes the loss 'guaranteed rather than racy', but expect_gone proves only that the old backend died, not that the listener has not already reissued its LISTEN. The fix is to make the window unambiguous rather than timing-dependent, for example by holding the listener from reconnecting until the lost notification has been sent, or by asserting on the connection-loss counter instead of on which payload arrived.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

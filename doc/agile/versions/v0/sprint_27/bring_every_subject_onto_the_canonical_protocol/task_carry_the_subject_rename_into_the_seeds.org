@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: C3D3A903-51D9-4878-8D3B-3775CCE107A0
+:END:
+#+title: Task: Carry the subject rename into the seeds and the registrars
+#+description: Three kinds of subject are declared nowhere in a model: the target_subject seeds, the subjects a registrar subscribes to, and the six subject_to_fn helpers. The migration left all three on the old spelling.
+#+type: task
+#+level: s1
+#+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/carry-the-subject-rename-into-the-seeds
+#+pr: 2753
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2753][#2753]] | [codegen] Carry the subject rename into the seeds and the registrars |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The rename reaches every subject the tree writes, not only the ones a model
+declares.
+
+50 =target_subject= values in =dq_artefact_types_populate.sql=, 74 subject
+tokens across 22 files including the registrars' subscriptions and dq's six
+internal orchestration subjects, and the six =subject_to_fn= helpers that turn
+a subject back into a SQL function name -- every one of which still looked for
+a =.publish-from-dq= suffix the migration had removed.
+
+The identity workflow's two hand-written subjects moved to the reserved
+namespace: =workflow.v1.ops.identity_step= and
+=workflow.v1.ops.identity_compensate=.
+
+The classifier now checks the verb before the event branch, so a resource
+named =*_events= reads as a request: =trading.v1.lifecycle_events.delete_many=.
+
+Verified end to end at =030d2d1e51=: a recreated database plus the ACME
+Corporation bring-up completes all eight steps, =attach_photos= included, and
+publishes both vendored ORE packages. 1262 codegen tests pass.
+
+Out of scope, captured: the gate still reads only model declarations, and the
+widened scan found fourteen more subjects no model declares.
+

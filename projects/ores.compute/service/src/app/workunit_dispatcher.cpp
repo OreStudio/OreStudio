@@ -27,21 +27,47 @@
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
+#include "ores.iam.client/client/storage_capability_minter.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::compute::service::app {
 
 using namespace ores::logging;
+using ores::security::jwt::storage_grant;
 using ores::service::messaging::stamp;
 
+namespace {
+
+/**
+ * @brief The grant that admits one operation on the object a path names.
+ *
+ * The key is the whole prefix, so the capability admits exactly the object the
+ * assignment names and nothing beside it.
+ */
+std::optional<storage_grant> grant_for_path(const std::string& path, std::string op) {
+    std::string bucket;
+    std::string key;
+    if (!ores::storage::net::storage_paths::split_object_path(path, bucket, key))
+        return std::nullopt;
+    return storage_grant{.bucket = std::move(bucket), .key_prefix = std::move(key), .op = std::move(op)};
+}
+
+}
+
 workunit_dispatcher::workunit_dispatcher(ores::nats::service::client& nats,
-                                         ores::database::context ctx)
+                                         ores::database::context ctx,
+                                         ores::nats::service::nats_client& service_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(std::move(ctx))
+    , minter_(ores::iam::client::make_storage_capability_minter(service_nats)) {}
 
 void workunit_dispatcher::dispatch(const ores::compute::eventing::workunit_changed_event& evt) {
     if (evt.workunit_ids.empty())
@@ -122,7 +148,38 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         result_svc.save_result(r);
 
         const auto result_id_str = boost::uuids::to_string(result_id);
+        const auto output_path =
+            ores::compute::net::compute_storage::output_path(result_id_str);
+
+        // The node holds no standing storage credential, so the assignment
+        // carries one for exactly the package, the input and the output. A
+        // grant that cannot be built is a dispatch that cannot run, so it is
+        // skipped and the next workunit event tops the workunit up.
+        std::vector<storage_grant> grants;
+        const struct {
+            const std::string& path;
+            const char* op;
+        } sources[] = {{avp.package_uri, "get"}, {wu->input_uri, "get"}, {output_path, "put"}};
+        for (const auto& source : sources) {
+            auto grant = grant_for_path(source.path, source.op);
+            if (!grant) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Cannot build a storage grant for " << source.path
+                    << "; cannot dispatch workunit " << workunit_id;
+                return;
+            }
+            grants.push_back(std::move(*grant));
+        }
+        const auto storage_token = minter_(tenant_uuid, grants);
+        if (!storage_token) {
+            BOOST_LOG_SEV(lg(), error)
+                << "No storage capability for result " << result_id_str
+                << "; cannot dispatch workunit " << workunit_id;
+            return;
+        }
+
         const auto event = ores::compute::messaging::work_assignment_event{
+            .tenant_id = tenant_uuid,
             .result_id = result_id_str,
             .workunit_id = workunit_id,
             .app_version_id = app_version_id,
@@ -130,7 +187,8 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
             .package_sha256 = avp.sha256,
             .input_uri = wu->input_uri,
             .config_uri = wu->config_uri,
-            .output_uri = ores::compute::net::compute_storage::output_path(result_id_str)};
+            .output_uri = output_path,
+            .storage_token = *storage_token};
         const std::string subject =
             std::string(ores::compute::messaging::work_assignment_event::nats_subject) + "." +
             tenant_uuid + "." + avp.platform_code;

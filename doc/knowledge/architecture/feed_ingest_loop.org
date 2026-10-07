@@ -22,7 +22,7 @@ class.
 ** The one pipeline rule
 
 The market data pipeline in ORE Studio is one path. A producer publishes a
-=market_tick= on ="synthetic.v1.tick.<source>"=. The tick names its datum
+=market_tick= on ="synthetic.v1.ops.tick.<source>"=. The tick names its datum
 by its oresmd quote URI and its producer by its source, and it carries no
 owner. The ingest loop plans the tick against the enabled bindings of that
 source, writes one observation per binding, and republishes the tick on the

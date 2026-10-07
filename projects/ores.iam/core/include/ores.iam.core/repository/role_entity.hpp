@@ -50,6 +50,7 @@ struct role_entity {
 
     std::string description;
     bool is_registration_default = false;
+    bool is_requestable = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

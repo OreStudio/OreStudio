@@ -1,0 +1,36 @@
+A member asks for a role the tenant has not offered, and for one it has.
+Run on a database recreated from scratch and provisioned with the ACME
+profile, at commit 36f1396b9d.
+
+Command:
+
+    ./compass.sh shell -u ashley.moore@acme_corporation -p Ashley-Pass-123 \
+        -l evidence/requestable_ask.ores
+
+Script:
+
+    role_request_operations ask-for-roles c187867a-7676-4d22-adf9-ef11d89762eb "I would like the IAM service role"
+    role_request_operations ask-for-roles cb4fad75-3d63-4dd6-a24d-d976c5556840 "I cover the trading desk next week"
+    approval_operations list-my-approval-requests
+
+The first id is IamService, which the seed clears the flag on. The second is
+Operations, which the seed leaves askable.
+
+Output:
+
+    ✓ Logged in as: ashley.moore
+      Tenant: Acme Corporation (da06e968-9390-4ea0-ac0b-ae151e6f9618)
+
+    > role_request_operations ask-for-roles c187867a-7676-4d22-adf9-ef11d89762eb "I would like the IAM service role"
+    {"result":{"outcome":"denied","code":"not_requestable","message":"This role is not one a member may ask for.","fields":[]},"request_id":""}
+    > role_request_operations ask-for-roles cb4fad75-3d63-4dd6-a24d-d976c5556840 "I cover the trading desk next week"
+    {"result":{"outcome":"ok","code":"","message":"","fields":[]},"request_id":"01a11724-9310-7993-b2c6-8f0403fe6019"}
+    > approval_operations list-my-approval-requests
+    {"result":{"outcome":"ok","code":"","message":"","fields":[]},"requests":[{"version":1,"tenant_id":"da06e968-9390-4ea0-ac0b-ae151e6f9618","id":"01a11724-9310-7993-b2c6-8f0403fe6019","kind_code":"iam.role_grant","state_code":"waiting","requested_by":"6a04a5db-03f9-4cb9-a041-5a8852e93ef0","requested_at":"2026-10-07 16:13:55Z","reason":"I cover the trading desk next week","modified_by":"ashley.moore","performed_by":"ores_eager_maxwell_inbox_service","change_reason_code":"system.new_record","change_commentary":"","recorded_at":"2026-10-07 16:13:55Z"}],"total":1}
+    Script complete: 3 commands executed.
+
+Three things to read from this. The refusal is a value, not a sentence to
+match: the outcome is denied and the code is not_requestable. The refusal
+leaves nothing behind, because request_id is empty and the member's own list
+holds one request and not two. And the ask the tenant does offer is unaffected:
+it raises a waiting request under kind iam.role_grant.

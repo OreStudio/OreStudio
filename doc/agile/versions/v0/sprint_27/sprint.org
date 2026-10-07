@@ -49,6 +49,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
 | [[id:3377D9CE-F74C-4D9C-ACB8-FA94940DAB1D][Open sprint 27]] | DONE | 2026-10-05 | 2026-10-05 | Scaffold sprint 27, set its mission, wire the version manifest and the agile index, and bump the project version to 0.0.27. |
+| [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] | STARTED | 2026-10-07 | | A curve is a derived series and nothing else. Settle the shape the journeys demand, give a point its provenance and a manual key its author, add the operator's write and clear path, and make staleness visible when a term structure is drawn. |
 | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] | STARTED | 2026-10-05 | | The ninth journey group: the installation's own life — the services running, the compute grid, the message bus, the logs, and the versions and database under them. |
 | [[id:EC15BD44-1660-48EA-84AA-E4062FAE0DFF][Keep the prototypes in git]] | DONE | 2026-10-05 | 2026-10-06 | The seven prototype branches merge into main, so each design record stays reachable after its sprint closes; the prototype hub answers the credentials, operations and onboarding screens. |
 | [[id:7CCED02B-8B95-4FF1-94F8-B67BE86C4256][Complete the ores.inbox approvals and notifications]] | DONE | 2026-10-05 | 2026-10-06 | Land the role request kind and build the request and notification screens; serving the approvals and notifications landed with PR #2652 before the close. |
@@ -107,6 +108,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:C07C3304-8605-44DE-8480-87577B9F8C86][Hotfix: Drop the libstdc++ internal header the include run added]] | DONE | | 2026-10-07 | The nightly include run added <bits/chrono.h> to two ores.refdata test files. It is a libstdc++ internal, it is not portable to libc++ or MSVC, and both files already include <chrono>. |
 | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] | BACKLOG | | | Give every object one owner: a tenant owns a bucket per data class, the platform owns the shared buckets, and access is an object capability scoped to exact keys. A step service presents its run token and a worker node presents a capability for one assignment, so no tenant can reach another tenant's bytes. |
 | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] | DONE | | 2026-10-07 | The local check gate fails on main for two reasons that are nobody's branch: six shell scripts tangle differently from what is committed, and the two DSH plugin packages still declare version 0.0.25 against a 0.0.27 product. |
+| [[id:4DC7605B-8D47-4EC6-B739-14F34052F48E][Hotfix: The credential model links a model that was withdrawn]] | DONE | | 2026-10-07 | ores.iam.account_credential.org links ores.iam.operations, a model that was withdrawn and never committed, so the link dangles and lint and site-page both fail on it. |
 
 * Achievements
 

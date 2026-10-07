@@ -73,7 +73,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
         subs.push_back(
-            nats.queue_subscribe("assets.v1.images.publish-from-dq",
+            nats.queue_subscribe("assets.v1.ops.publish_images_from_dq",
                                  "ores.assets.service",
                                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }

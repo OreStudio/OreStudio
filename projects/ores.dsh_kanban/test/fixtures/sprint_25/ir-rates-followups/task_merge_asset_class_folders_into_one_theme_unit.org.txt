@@ -228,7 +228,7 @@ for the theme, so a theme with just FX (the legacy
 forward from both original functions.
 
 Collapsed accordingly: the NATS subject (one
-=synthetic.v1.theme.publish-from-dq= queue subscription instead of
+=synthetic.v1.ops.publish_theme_from_dq= queue subscription instead of
 two), the =publish_from_dq_handler= allow-list, the =dq_artefact_types=
 row (=synthetic_theme= replacing the two per-asset-class rows), and
 each theme's DQ bundle membership (1 member instead of 2). FX seed

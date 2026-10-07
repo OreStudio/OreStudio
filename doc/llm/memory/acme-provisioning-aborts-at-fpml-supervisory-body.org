@@ -1,17 +1,61 @@
 :PROPERTIES:
 :ID: CBF5B340-FFE1-4F1F-987A-7BFADD1AF0C2
 :END:
-#+title: The ACME provisioning aborts at fpml.supervisory_body
-#+description: A recreate followed by bootstrap setup acme_demo fails: the FPML publish wants a coding scheme the target tenant does not have, because fpml.coding_schemes is deliberately not a bundle member.
+#+title: The ACME provisioning now completes end to end
+#+description: A recreate followed by bootstrap setup acme_demo runs all eight steps, attach_photos and the package publishes included. It used to abort at fpml.supervisory_body; that is fixed, and the subjects a rename must carry with it are the thing to watch instead.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
-#+filetags: :llm:memory:feedback:runtime:bootstrap:provisioning:
+#+filetags: :llm:memory:feedback:runtime:bootstrap:provisioning:nats:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-07
 
-The ACME provisioning run fails at the fpml.supervisory_body step with Invalid coding_scheme_code: FPML_SUPERVISORY_BODY. Coding scheme must exist. A fresh database therefore cannot be provisioned end to end with bootstrap setup --profile acme_demo.
+A fresh =compass db recreate -y -k= followed by =bootstrap setup ... --profile
+acme_demo= runs to completion. Verified on 2026-10-07 against a recreated
+database and a rebuilt tree:
 
-*Why:* ores_refdata_publish_supervisory_bodies_from_dq_fn inserts a row whose coding_scheme_code is FPML_SUPERVISORY_BODY, and the insert function requires that coding scheme to exist for the target tenant. fpml.coding_schemes is deliberately not a member of any bundle, because the coding schemes were meant to be published into the system tenant at database build time; nothing publishes them to a provisioned tenant.
+#+begin_example
+[1/2] system_provision: completed
+[2/2] publish_bundle: completed
+[3/3] import_lei_hierarchy: completed
+[4/4] provision_party: completed
+[5/5] load_staff: completed
+[6/6] attach_photos: completed
+[7/7] start_market_feeds: completed
+[8/8] complete_provisioning: completed
+✓ System provisioned. Tenant 'Acme Corporation'.
+#+end_example
 
-*How to apply:* Do not expect a recreate plus bootstrap setup to finish until this is fixed. Steps after publish_bundle, including attach_photos, do not run, so a change that rides attach_photos cannot be verified by a live bring-up on its own. Verify such a change by its seed and its suite instead, and say so in the task Result.
+Both ORE packages (1.8.16.0-4-g3b62ba248 and 1.8.17.0) publish under the
+system tenant. =attach_photos= runs, so a change carried by that step *can* be
+verified by a live bring-up again; the earlier guidance to verify it by its
+seed and suite instead no longer applies.
+
+*Why the old failure is gone:* the FPML publish wanted an
+=FPML_SUPERVISORY_BODY= coding scheme the target tenant did not have, because
+=fpml.coding_schemes= is deliberately not a bundle member. Whatever fixed that
+landed before 2026-10-07.
+
+*How to apply:* the bring-up is a usable end-to-end check again. It takes a few
+minutes, because it drives a workflow run through eight steps.
+
+*What bit us next, and what to check after a subject rename.* The bring-up is
+the only thing that exercises the *whole* fan-out of a subject, so it is where
+a rename breaks. The subject migration of 2026-10-07 left three kinds of
+staleness that the conformance gate did **not** see, because the gate reads
+only the =:subject:= a model declares:
+
+- the =target_subject= values seeded into =dq_artefact_types_populate.sql=,
+  50 of them, which nothing derives from a model;
+- the subjects a service subscribes to in its own =registrar.cpp=, which are
+  string literals in C++;
+- the subject each receiving service parses back into a SQL function name, in
+  a =subject_to_fn= helper duplicated per component -- six copies, and
+  =ores.dq='s uses its own =ores_dq_<entity>_publish_fn= convention rather
+  than =ores_<component>_<operation>_fn=.
+
+After any subject change, run the ACME bring-up and grep for the old subject
+string rather than trusting the gate alone.
+
+*See also:*
+[[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]].

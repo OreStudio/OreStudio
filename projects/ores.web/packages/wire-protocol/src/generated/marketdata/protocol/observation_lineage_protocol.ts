@@ -38,9 +38,10 @@ export interface ObservationLineageWrite {
     series_id: string;
     observation_datetime: string;
     oresmd_uri: string;
-    derivation_config_id: string;
+    point_source_kind: string;
+    derivation_config_id: string | null;
     derivation_config_version: number;
-    source_as_of: string;
+    source_as_of: string | null;
     source_series_ids: string;
 }
 

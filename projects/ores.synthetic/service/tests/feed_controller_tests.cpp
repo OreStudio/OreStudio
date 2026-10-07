@@ -145,8 +145,8 @@ struct producer_kinds {
 }
 
 TEST_CASE("producer_subject: bound publishes on the source's tick subject, for every kind", tags) {
-    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) == "synthetic.v1.tick.EUR_USD_GBM");
-    CHECK(producer_subject("usd.sofr", binding_mode::bound) == "synthetic.v1.tick.usd.sofr");
+    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) == "synthetic.v1.ops.tick.EUR_USD_GBM");
+    CHECK(producer_subject("usd.sofr", binding_mode::bound) == "synthetic.v1.ops.tick.usd.sofr");
 }
 
 TEST_CASE("producer_subject: sandboxed publishes on a distinct subject the "
@@ -155,15 +155,15 @@ TEST_CASE("producer_subject: sandboxed publishes on a distinct subject the "
     const auto bound_subject = producer_subject("EUR_USD_GBM", binding_mode::bound);
     const auto sandboxed_subject = producer_subject("EUR_USD_GBM", binding_mode::sandboxed);
 
-    CHECK(sandboxed_subject == "synthetic.v1.sandbox.tick.EUR_USD_GBM");
+    CHECK(sandboxed_subject == "synthetic.v1.ops.sandbox_tick.EUR_USD_GBM");
     CHECK(sandboxed_subject != bound_subject);
     CHECK(producer_subject("usd.sofr", binding_mode::sandboxed) ==
-          "synthetic.v1.sandbox.tick.usd.sofr");
-    // The ingest loop's one wildcard is "synthetic.v1.tick.>" (see
+          "synthetic.v1.ops.sandbox_tick.usd.sofr");
+    // The ingest loop's one wildcard is "synthetic.v1.ops.tick.>" (see
     // feed_ingest_loop.cpp) -- the sandboxed subject must not collide with
     // that prefix under any source_name, or the exclusion isn't real.
-    CHECK(sandboxed_subject.starts_with("synthetic.v1.sandbox.tick."));
-    CHECK_FALSE(bound_subject.starts_with("synthetic.v1.sandbox.tick."));
+    CHECK(sandboxed_subject.starts_with("synthetic.v1.ops.sandbox_tick."));
+    CHECK_FALSE(bound_subject.starts_with("synthetic.v1.ops.sandbox_tick."));
 }
 
 TEST_CASE("producer_subject: same source_name never collides across binding modes, "
@@ -181,7 +181,7 @@ TEST_CASE("producer_subject: unsafe characters are still replaced under sandboxe
           "binding mode, matching bound's sanitisation",
           tags) {
     CHECK(producer_subject("weird name!*>", binding_mode::sandboxed) ==
-          "synthetic.v1.sandbox.tick.weird_name___");
+          "synthetic.v1.ops.sandbox_tick.weird_name___");
 }
 
 TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike", tags) {

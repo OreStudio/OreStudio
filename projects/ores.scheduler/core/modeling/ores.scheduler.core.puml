@@ -277,7 +277,7 @@ end note
 note top of scheduler_loop
   Reads every active job across every tenant, fires each
   due one, records a job instance per execution and
-  publishes scheduler.v1.job-instance-events. Nothing in
+  publishes scheduler.v1.job_instance_events.updated. Nothing in
   the tree subscribes to that subject today.
 end note
 

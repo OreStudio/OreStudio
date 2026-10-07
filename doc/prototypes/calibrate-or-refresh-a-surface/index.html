@@ -76,12 +76,12 @@ const variant = params.get('variant') || 'a';
 const state = params.get('state') || 'converged';
 
 const quotes = [
-  {tenor:'1Y',  term:'1Y',  v:21.4, src:'synthetic.v1.tick.vol', at:'16:00'},
-  {tenor:'1Y',  term:'5Y',  v:19.8, src:'synthetic.v1.tick.vol', at:'16:00'},
-  {tenor:'2Y',  term:'5Y',  v:19.1, src:'synthetic.v1.tick.vol', at:'16:00'},
-  {tenor:'5Y',  term:'5Y',  v:18.1, src:'synthetic.v1.tick.vol', at:'16:00'},
-  {tenor:'1Y',  term:'10Y', v:17.6, src:'synthetic.v1.tick.vol', at:'16:02'},
-  {tenor:'10Y', term:'10Y', v:16.9, src:'synthetic.v1.tick.vol', at:'16:02'}
+  {tenor:'1Y',  term:'1Y',  v:21.4, src:'synthetic.v1.ops.tick.vol', at:'16:00'},
+  {tenor:'1Y',  term:'5Y',  v:19.8, src:'synthetic.v1.ops.tick.vol', at:'16:00'},
+  {tenor:'2Y',  term:'5Y',  v:19.1, src:'synthetic.v1.ops.tick.vol', at:'16:00'},
+  {tenor:'5Y',  term:'5Y',  v:18.1, src:'synthetic.v1.ops.tick.vol', at:'16:00'},
+  {tenor:'1Y',  term:'10Y', v:17.6, src:'synthetic.v1.ops.tick.vol', at:'16:02'},
+  {tenor:'10Y', term:'10Y', v:16.9, src:'synthetic.v1.ops.tick.vol', at:'16:02'}
 ];
 
 const slices = state === 'failed' ? [

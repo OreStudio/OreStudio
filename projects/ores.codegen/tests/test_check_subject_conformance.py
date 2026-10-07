@@ -43,6 +43,9 @@ SPEC.loader.exec_module(check_subject_conformance)
     "iam.v1.tenants_events.updated",
     "iam.v1.tenants_events.deleted",
     "iam.v1.ops.switch_party",
+    # A resource may itself be named *_events, and the verb decides:
+    # delete_many is a verb of the set, so this is a request.
+    "trading.v1.lifecycle_events.delete_many",
 ])
 def test_a_conforming_subject_passes(subject):
     ok, reason = check_subject_conformance.classify(subject)
@@ -89,6 +92,42 @@ def test_the_models_declare_subjects_to_check():
     subjects = check_subject_conformance.declared_subjects()
     assert subjects, "the scan found no :subject: declaration"
     assert all(subject for _, _, subject in subjects)
+
+
+# -- the subjects no model declares ----------------------------------------
+
+
+def test_the_writing_sites_are_read():
+    # The migration of 2026-10-07 missed ten subjects because the gate read
+    # only a model's :subject:. The sites it reads now must not go empty.
+    written = check_subject_conformance.written_subjects()
+    assert written, "the writing-site scan found nothing"
+    assert all(subject for _, _, subject in written)
+
+
+def test_a_sql_job_name_is_not_read_as_a_subject():
+    # A scheduler job definition's name has the shape of a subject and is not
+    # one. It lives in a file no site points at, and assuming otherwise is what
+    # stops a widened scan from being trusted.
+    subjects = {s for _, _, s in check_subject_conformance.written_subjects()}
+    assert "compute.v1.reap.stale_results" not in subjects
+
+
+def test_an_event_base_is_not_read_as_a_subject():
+    # c.v1.<resource>_events is the prefix an event's action is appended to at
+    # run time, not a subject in its own right.
+    subjects = {s for _, _, s in check_subject_conformance.written_subjects()}
+    assert "trading.v1.trades_events" not in subjects
+
+
+def test_every_written_subject_conforms():
+    offences = [
+        (path, line, subject, reason)
+        for path, line, subject in check_subject_conformance.written_subjects()
+        for ok, reason in [check_subject_conformance.classify(subject)]
+        if not ok
+    ]
+    assert not offences, offences
 
 
 def test_the_committed_tree_is_clean_against_its_baseline(capsys):

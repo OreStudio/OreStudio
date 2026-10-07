@@ -46,20 +46,20 @@ auto& lg() {
 /**
  * @brief Derives the SQL function name from the NATS subject.
  *
- * Converts "marketdata.v1.market-data-observations.publish-from-dq" to
+ * Converts "marketdata.v1.ops.publish_market_data_observations_from_dq" to
  * "ores_marketdata_publish_market_data_observations_from_dq_fn".
  */
 std::string subject_to_fn(std::string_view subject) {
-    const auto v1_pos = subject.find("v1.");
-    if (v1_pos == std::string_view::npos)
+    // The operation is the last segment of a reserved-namespace subject, so
+    // the function it expands through is named for the operation itself.
+    constexpr std::string_view ops = "v1.ops.";
+    const auto pos = subject.find(ops);
+    if (pos == std::string_view::npos)
         return {};
-    const auto start = v1_pos + 3;
-    const auto end = subject.rfind(".publish-from-dq");
-    if (end == std::string_view::npos || end <= start)
+    const auto operation = subject.substr(pos + ops.size());
+    if (operation.empty())
         return {};
-    auto entity = std::string(subject.substr(start, end - start));
-    std::replace(entity.begin(), entity.end(), '-', '_');
-    return "ores_marketdata_publish_" + entity + "_from_dq_fn";
+    return "ores_marketdata_" + std::string(operation) + "_fn";
 }
 
 /**

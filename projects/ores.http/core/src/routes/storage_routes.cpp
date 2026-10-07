@@ -97,6 +97,43 @@ std::string json_escape(std::string_view text) {
     return out;
 }
 
+/**
+ * @brief Whether a grant's prefix covers a key.
+ *
+ * The comparison is per segment, not by string prefix alone: a grant for
+ * =run/abc= must not admit =run/abcd=, so the key either ends at the prefix or
+ * continues on a segment boundary.
+ */
+bool prefix_covers(std::string_view prefix, std::string_view key) {
+    if (!key.starts_with(prefix))
+        return false;
+    if (key.size() == prefix.size() || prefix.empty())
+        return true;
+    if (prefix.back() == '/')
+        return true;
+    return key[prefix.size()] == '/';
+}
+
+/**
+ * @brief Whether a capability names this object for this operation.
+ *
+ * A capability reaches exactly what its grants name: the bucket, a key inside
+ * the granted prefix, and the operation. Nothing else is admitted, so knowing
+ * a key confers nothing.
+ */
+bool capability_allows(const ores::security::jwt::jwt_claims& claims,
+                       std::string_view op,
+                       std::string_view bucket,
+                       std::string_view key) {
+    for (const auto& grant : claims.storage_grants) {
+        if (grant.bucket != bucket || grant.op != op)
+            continue;
+        if (prefix_covers(grant.key_prefix, key))
+            return true;
+    }
+    return false;
+}
+
 }
 
 storage_routes::storage_routes(std::string storage_dir,
@@ -176,11 +213,26 @@ void storage_routes::register_routes(
 std::expected<storage_routes::auth_result, http_response>
 storage_routes::check_auth(const http_request& req,
                            std::string_view required_permission,
-                           std::string_view operation_name) {
+                           std::string_view operation_name,
+                           std::string_view grant_op,
+                           std::string_view bucket,
+                           std::string_view key) {
 
     if (!req.authenticated_user) {
         BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: not authenticated";
         return std::unexpected(http_response::unauthorized("Not authenticated"));
+    }
+
+    // A capability names the objects its holder may touch, so it answers here
+    // and no permission is looked up. A token with no grants is a session and
+    // reaches storage by its permissions, as it always has.
+    if (!req.authenticated_user->storage_grants.empty()) {
+        if (capability_allows(*req.authenticated_user, grant_op, bucket, key))
+            return auth_result{};
+        BOOST_LOG_SEV(lg(), warn)
+            << operation_name << " denied: the capability does not name " << grant_op << " on "
+            << bucket << "/" << key;
+        return std::unexpected(http_response::forbidden("Outside the capability's scope"));
     }
 
     boost::uuids::uuid account_id;
@@ -207,7 +259,7 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
     const auto bucket = req.get_path_param("bucket");
     const auto key = req.get_path_param("key");
 
-    if (auto auth = check_auth(req, objects_write, "put"); !auth)
+    if (auto auth = check_auth(req, objects_write, "put", "put", bucket, key); !auth)
         co_return auth.error();
 
     if (!store_.is_valid_key(bucket, key))
@@ -229,7 +281,7 @@ asio::awaitable<http_response> storage_routes::handle_get(const http_request& re
     const auto bucket = req.get_path_param("bucket");
     const auto key = req.get_path_param("key");
 
-    if (auto auth = check_auth(req, objects_read, "get"); !auth)
+    if (auto auth = check_auth(req, objects_read, "get", "get", bucket, key); !auth)
         co_return auth.error();
 
     if (!store_.is_valid_key(bucket, key))
@@ -255,7 +307,7 @@ asio::awaitable<http_response> storage_routes::handle_head(const http_request& r
     const auto bucket = req.get_path_param("bucket");
     const auto key = req.get_path_param("key");
 
-    if (auto auth = check_auth(req, objects_read, "head"); !auth)
+    if (auto auth = check_auth(req, objects_read, "head", "get", bucket, key); !auth)
         co_return auth.error();
 
     if (!store_.is_valid_key(bucket, key))
@@ -279,7 +331,7 @@ asio::awaitable<http_response> storage_routes::handle_delete(const http_request&
     const auto bucket = req.get_path_param("bucket");
     const auto key = req.get_path_param("key");
 
-    if (auto auth = check_auth(req, objects_delete, "delete"); !auth)
+    if (auto auth = check_auth(req, objects_delete, "delete", "delete", bucket, key); !auth)
         co_return auth.error();
 
     if (!store_.is_valid_key(bucket, key))
@@ -299,14 +351,16 @@ asio::awaitable<http_response> storage_routes::handle_delete(const http_request&
 
 asio::awaitable<http_response> storage_routes::handle_list(const http_request& req) {
     const auto bucket = req.get_path_param("bucket");
+    // The requested prefix is the object scope a capability is checked
+    // against, so it is read before the check.
+    const auto prefix = req.get_query_param("prefix");
 
-    if (auto auth = check_auth(req, objects_read, "list"); !auth)
+    if (auto auth = check_auth(req, objects_read, "list", "list", bucket, prefix); !auth)
         co_return auth.error();
 
     if (!storage::filesystem::local_store::is_valid_bucket(bucket))
         co_return http_response::bad_request("Invalid bucket: " + bucket);
 
-    const auto prefix = req.get_query_param("prefix");
     const auto offset = parse_u32(req.get_query_param("offset"), 0);
     const auto requested = parse_u32(req.get_query_param("limit"), 100);
     const auto limit = std::min(requested, k_max_list_limit);

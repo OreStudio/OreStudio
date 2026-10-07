@@ -203,7 +203,7 @@ function detailPanels(f){
   <div class="grid2">
     <div class="panel"><h2>Selected binding · ${f.src}</h2>${bindingTable(f)}
       <div class="row"><button class="btn primary" disabled>Start feed</button><button class="btn" disabled>Stop feed</button><button class="btn" disabled>Save binding</button></div>
-      <div class="notice">The start and stop subjects exist (synthetic.v1.feed_configs.start and .stop) but no web operation calls them and no permission gates them, so the controls are disabled and the shell is the way in.</div>
+      <div class="notice">The start and stop subjects exist (synthetic.v1.ops.start_feed and .stop) but no web operation calls them and no permission gates them, so the controls are disabled and the shell is the way in.</div>
     </div>
     <div class="panel"><h2>Producer behind the source</h2>${producerTable(f)}${folderRow()}</div>
   </div>

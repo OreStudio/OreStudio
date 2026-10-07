@@ -23,7 +23,7 @@ salt
   --
   {#
     Point | Kind | Value | Source | Actor
-    . | 3M | feed | 4.120% | synthetic.v1.tick | -
+    . | 3M | feed | 4.120% | synthetic.v1.ops.tick | -
     . | 5Y | ? | 3.880% | ? | ? (no actor on a point)
   }
   [ Refresh points ]

@@ -20,10 +20,10 @@ with two values, =bound= and =sandboxed=, and it is carried on
 
 ** What each mode does
 
-- A =bound= feed publishes on ="synthetic.v1.tick.<source>"=, the subjects
+- A =bound= feed publishes on ="synthetic.v1.ops.tick.<source>"=, the subjects
   the marketdata ingest loop subscribes to. Its ticks are stored and
   republished to the parties whose bindings name the source.
-- A =sandboxed= feed publishes under ="synthetic.v1.sandbox.tick."=, a
+- A =sandboxed= feed publishes under ="synthetic.v1.ops.sandbox_tick."=, a
   prefix the ingest loop never subscribes to. Its ticks cannot be stored
   whatever bindings exist.
 

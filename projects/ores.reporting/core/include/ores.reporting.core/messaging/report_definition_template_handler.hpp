@@ -37,7 +37,7 @@ namespace ores::reporting::messaging {
 struct get_report_definition_templates_request {
     using response_type = struct get_report_definition_templates_response;
     static constexpr std::string_view nats_subject =
-        "reporting.v1.report-definition-templates.list";
+        "reporting.v1.report_definition_templates.list";
     std::string bundle_code = "risk_management";
 };
 

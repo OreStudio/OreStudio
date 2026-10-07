@@ -57,7 +57,7 @@ namespace {
  * The loop owns this subject; it is not part of the generated entity
  * protocol, because the entity it reports on has no model of its own yet.
  */
-constexpr std::string_view job_instance_events_subject = "scheduler.v1.job-instance-events";
+constexpr std::string_view job_instance_events_subject = "scheduler.v1.job_instance_events.updated";
 
 constexpr std::string_view default_reason_code =
     dq::domain::change_reason_constants::codes::new_record;

@@ -1585,7 +1585,7 @@ note as OresMarketdataDomainHelpers
     role with a unit separator, so two feeds conflict when the key is
     equal: a discount curve and a projection curve for one qualifier
     coexist, and a feed with no role still has a deterministic key.
-    synthetic_tick_subject builds synthetic.v1.tick.<source>.
+    synthetic_tick_subject builds synthetic.v1.ops.tick.<source>.
     market_tick_subject extends market_tick's subject with the
     consumer and the datum's canonical ORE key, lower-cased with its
     slashes turned to dots. The two wildcards subscribe to every

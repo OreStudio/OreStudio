@@ -424,7 +424,7 @@ function shapeChart(){
     ],
     x, ticks, h:260, yFmt:pct, yLabel:'Rate',
     notes:[`${templateRows.length} template entries`, metaFor(chosenType).name],
-    caption:'Rate against tenor implied by the process parameters and the current Curve Template rows: one marker per template entry, at its end tenor, plus the starting rate. Tenors sit on a log scale so the short end stays readable. This is a closed-form mock; the real chart comes from synthetic.v1.ir_curve.preview_shape.'
+    caption:'Rate against tenor implied by the process parameters and the current Curve Template rows: one marker per template entry, at its end tenor, plus the starting rate. Tenors sit on a log scale so the short end stays readable. This is a closed-form mock; the real chart comes from synthetic.v1.ops.preview_ir_curve_shape.'
   });
 }
 
@@ -472,7 +472,7 @@ function pathsChart(){
   return PC.line({
     series, x, ticks, h:230, yFmt:pct, yLabel:'Short rate',
     notes:[`${pathCount} draws`, `seed ${seed}`, metaFor(chosenType).name],
-    caption:'Closed-form Euler-Maruyama draws of the short rate (dr = κ(θ − r)dt + σdW; CIR scales σ by √r, Black-Karasinski by r). The draws are generated in the page — the server endpoint synthetic.v1.ir_curve.simulate_paths returns this shape from the real engine at the matching seed.'
+    caption:'Closed-form Euler-Maruyama draws of the short rate (dr = κ(θ − r)dt + σdW; CIR scales σ by √r, Black-Karasinski by r). The draws are generated in the page — the server endpoint synthetic.v1.ops.simulate_ir_curve_paths returns this shape from the real engine at the matching seed.'
   });
 }
 

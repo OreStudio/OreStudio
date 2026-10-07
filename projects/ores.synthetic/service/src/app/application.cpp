@@ -294,19 +294,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     try {
         auto admin = nats.make_admin();
-        // The unified tick scheme (synthetic.v1.tick.<kind>.<source>) is fully covered
-        // by synthetic_ticks's "synthetic.v1.tick.>" filter; the retired
+        // The unified tick scheme (synthetic.v1.ops.tick.<kind>.<source>) is fully covered
+        // by synthetic_ticks's "synthetic.v1.ops.tick.>" filter; the retired
         // synthetic_curve_ticks stream (curve_family subjects) is no longer ensured —
         // a stale one on an already-running server is inert (no producers, no consumers).
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.tick.>")});
+                            {nats.make_subject("synthetic.v1.ops.tick.>")});
         // Sandboxed feeds (binding_mode::sandboxed, see feed_controller's
         // producer_subject) publish under a distinct
-        // "synthetic.v1.sandbox.tick.>" subject, not covered by
-        // synthetic_ticks's "synthetic.v1.tick.>" filter -- js_publish to a
+        // "synthetic.v1.ops.sandbox_tick.>" subject, not covered by
+        // synthetic_ticks's "synthetic.v1.ops.tick.>" filter -- js_publish to a
         // subject with no matching stream throws, so this needs its own stream.
         admin.ensure_stream(nats.make_stream_name("synthetic_sandbox_ticks"),
-                            {nats.make_subject("synthetic.v1.sandbox.tick.>")});
+                            {nats.make_subject("synthetic.v1.ops.sandbox_tick.>")});
         BOOST_LOG_SEV(lg(), info)
             << "JetStream streams ready: synthetic_ticks, synthetic_sandbox_ticks";
     } catch (const std::exception& e) {

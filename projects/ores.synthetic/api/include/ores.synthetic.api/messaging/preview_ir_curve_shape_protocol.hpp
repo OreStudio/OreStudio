@@ -50,7 +50,7 @@ struct preview_ir_curve_template_row {
  */
 struct preview_ir_curve_shape_request {
     using response_type = struct preview_ir_curve_shape_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ir_curve.preview_shape";
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.preview_ir_curve_shape";
 
     static constexpr int max_entries = 50;
 

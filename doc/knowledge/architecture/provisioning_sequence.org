@@ -72,7 +72,7 @@ Creating the tenant is a database write, so its failure arrives as an answer. Th
 returns.
 
 The engine creates the run in progress with the ordered operations the request declares, and advances
-one operation per completion. Every operation goes to one subject, =iam.v1.ops.provision_tenant-step=,
+one operation per completion. Every operation goes to one subject, =iam.v1.ops.provision_tenant_step=,
 and the payload names the work. The definition appends the completing operation after the starting
 point's operations, so marking the tenant ready is an operation.
 

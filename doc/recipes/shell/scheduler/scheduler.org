@@ -159,7 +159,7 @@ service reloads its schedule from the definition change event, so a job created
 while it runs fires at the next boundary without a restart, which is what makes
 the two sessions meet.
 
-It subscribes to =scheduler.v1.job-instance-events=, which the scheduler loop
+It subscribes to =scheduler.v1.job_instance_events.updated=, which the scheduler loop
 publishes and which no model declares yet, because the entity it reports on has
 no model of its own.
 

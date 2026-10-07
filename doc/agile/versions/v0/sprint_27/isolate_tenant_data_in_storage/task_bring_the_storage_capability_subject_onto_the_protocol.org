@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 85C844D3-A63B-49FC-81B2-5CFF40A6C2E2
+:END:
+#+title: Task: Bring the storage capability subject onto the protocol
+#+description: The storage capability mint landed outside the entity grammar and opted the TypeScript protocol facet out, so a clean trunk fails subject-conformance, protocol-twins and codegen-tests.
+#+type: task
+#+level: s1
+#+filetags: :isolate_tenant_data_in_storage:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/bring-the-storage-capability-subject-onto-the-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring iam.v1.storage_capabilities.mint inside the entity protocol, and give the storage grant the TypeScript projection that lets the model drop its facet opt-out.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
+| Now          | Renamed, projected and green on the four checks it exists to fix. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the full suite and open the hotfix PR. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- iam.v1.storage_capabilities.mint is renamed to the ops namespace.
+- The model no longer opts the TypeScript protocol facet out and its twin is generated.
+- subject-conformance, protocol-twins and codegen-tests pass on the branch.
+
+* Plan
+
+Two independent clauses, both landed on trunk without a check to stop them.
+
+1. *The subject left the grammar.* =iam.v1.storage_capabilities.mint= is
+   ={component}.v1.{resource}.{verb}= with =mint= outside the closed set of
+   eight. The mint is an operation, not an entity verb, so it moves to the
+   reserved ops namespace: =iam.v1.ops.mint_storage_capability=. The permission
+   =iam::storage_capabilities:mint= keeps its own grammar and does not move.
+
+2. *The model opted the TypeScript facet out.* =grants= is
+   =std::vector<ores::security::jwt::storage_grant>=, a hand-written struct
+   with no entity model, so the projection had nothing to render and the model
+   silenced the facet. The facet's own escape hatch and the =protocol-twins=
+   gate had opposite intentions, so the fix is to close the gap rather than
+   loosen the gate: =ores::security::jwt::storage_grant= joins
+   =_TS_UTILITY_DOMAIN_TYPES= with a hand-written =StorageGrant= interface in
+   =security/payload.ts=, beside the trading and diff payload modules that
+   exist for the same reason. Removing the opt-out then generates the twin.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The four checks the hotfix targets | all pass | =./compass.sh check --only subject-conformance --only protocol-twins --only codegen-tests --only format= | local tree |
+| Subjects outside the protocol | 0 | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_subject_conformance.py= | local tree |
+| TypeScript twins missing | 0 | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_protocol_twin_coverage.py= | local tree |
+
+* Notes
+
+Measured before the fix, on =9d12f82b8c=: =subject-conformance= reported one
+subject outside the protocol, =protocol-twins= reported the missing twin and the
+opt-out, and =codegen-tests= failed the two assertions that hold the ratchet
+fully wound.
+
+Found by the local check runner on the durable-consumer branch, not by a
+review: with no PR trigger left in GitHub, nothing else would have seen it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The mint subject is =iam.v1.ops.mint_storage_capability=, the model carries no
+TypeScript facet opt-out, and =storage_capability_operations_protocol.ts= is
+generated with a =StorageGrant= import from =security/payload.ts=.
+=subject-conformance=, =protocol-twins=, =codegen-tests= and =format= all pass,
+so a clean trunk is no longer red.
+
+The lesson for the local checks: the ratchet held the subject grammar to zero
+violations, and the first thing merged after the PR gates came out broke it. A
+gate that only runs when someone remembers to run it is a gate with a delay.

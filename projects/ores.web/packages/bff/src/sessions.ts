@@ -20,7 +20,27 @@
  */
 
 import { createHash, randomBytes } from 'node:crypto';
-import type { ActiveSession, OresClient, PartySummary, SessionMode } from '@ores/wire-protocol';
+import type {
+    ActiveSession,
+    DatabaseInfo,
+    OresClient,
+    PartySummary,
+    SessionMode,
+} from '@ores/wire-protocol';
+
+/**
+ * The database row a session states when the login answer carried none.
+ *
+ * The login answer always carries the row now, so this stands only for a
+ * session a test opened without one and for a read that failed. An empty row
+ * is not a claim: the versions screen states the database as unknown.
+ */
+const UNKNOWN_DATABASE: DatabaseInfo = {
+    fingerprint: '',
+    environment: '',
+    commit: '',
+    created: '',
+};
 
 /**
  * Server-side browser sessions.
@@ -46,6 +66,8 @@ interface SessionRecord {
     mode: SessionMode;
     /** The build the login was answered by. */
     version: string;
+    /** The database the login answer carried, beside the build it states. */
+    database: DatabaseInfo;
     /** Absent until a party has been chosen. */
     party: PartySummary | undefined;
     availableParties: readonly PartySummary[];
@@ -69,6 +91,8 @@ export interface LiveSession {
     readonly mode: SessionMode;
     /** The build the login was answered by. */
     readonly version: string;
+    /** The database the login answer carried, beside the build it states. */
+    readonly database: DatabaseInfo;
     /** Absent only while a login is waiting on party selection. */
     readonly party: PartySummary | undefined;
     readonly availableParties: readonly PartySummary[];
@@ -96,6 +120,7 @@ export interface SessionStore {
         readonly tenantName: string;
         readonly mode: SessionMode;
         readonly version: string;
+        readonly database?: DatabaseInfo;
         readonly availableParties: readonly PartySummary[];
         readonly accessLifetimeSeconds: number;
         readonly passwordResetRequired: boolean;
@@ -160,6 +185,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             tenantName: record.tenantName,
             mode: record.mode,
             version: record.version,
+            database: record.database,
             party: record.party,
             availableParties: record.availableParties,
             accessLifetimeSeconds: record.accessLifetimeSeconds,
@@ -181,6 +207,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             tenantName: input.tenantName,
             mode: input.mode,
             version: input.version,
+            database: input.database ?? UNKNOWN_DATABASE,
             party: session?.party,
             availableParties: input.availableParties,
             accessLifetimeSeconds: input.accessLifetimeSeconds,
@@ -223,6 +250,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             }
             record.party = session.party;
             record.version = session.version;
+            record.database = session.database;
             record.accessLifetimeSeconds = session.accessLifetimeSeconds;
             record.passwordResetRequired = session.passwordResetRequired;
             record.expiresAt = now() + ttlMs;

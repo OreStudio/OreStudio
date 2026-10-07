@@ -24,6 +24,7 @@ import type { ListSessionsRequest as GeneratedListSessionsRequest } from './gene
 import type { ListLoginInfoRequest as GeneratedListLoginInfoRequest } from './generated/iam/protocol/login_info_protocol.js';
 import type { ListAccountsRequest as GeneratedListAccountsRequest } from './generated/iam/protocol/account_protocol.js';
 import { z } from 'zod';
+import { databaseInfoSchema } from './contracts.js';
 import {
     accountSchema,
     partySummarySchema,
@@ -206,6 +207,13 @@ export const loginResponseSchema = z
         tenant_id: text,
         tenant_name: text,
         version: text,
+        /** The database the login answer carried, beside the build it states. */
+        database: databaseInfoSchema.default({
+            fingerprint: '',
+            environment: '',
+            commit: '',
+            created: '',
+        }),
         username: text,
         email: text,
         password_reset_required: flag,
@@ -227,6 +235,7 @@ export const loginResponseSchema = z
         tenantId: row.tenant_id,
         tenantName: row.tenant_name,
         version: row.version,
+        database: row.database,
         username: row.username,
         email: row.email,
         passwordResetRequired: row.password_reset_required,

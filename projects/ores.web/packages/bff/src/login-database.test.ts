@@ -29,14 +29,13 @@ import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
 /**
- * The build a session was opened against.
+ * The database row a login answer carries.
  *
- * A deployment that has already bootstrapped is signed in to, not set up, so
- * the version cannot come from the bootstrap read alone: the answer that opens
- * a session states it, and every later read of that session repeats it. What
- * is asserted here is both halves of that, because a client that signs in
- * should not have to ask a second question to say which build it is talking
- * to.
+ * The row rides with the build the answer already states, read once per login
+ * from ores_database_info_tbl. The BFF must keep it on the session record and
+ * repeat it on every later read, so the versions panel states the database
+ * from the answer that opened the session rather than asking the service
+ * again. What is asserted here is both halves of that.
  */
 
 const config: Config = {
@@ -66,8 +65,6 @@ const northwind = {
     businessCenterCode: 'GBLO',
 };
 
-const VERSION = 'v0.0.25 [x64-linux] (local abc1234)';
-
 const DATABASE = {
     fingerprint: 'e4803181e989327c',
     environment: 'local',
@@ -79,7 +76,11 @@ function buildTestServer(): ReturnType<typeof buildServer> {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const client = {
         async bootstrapStatus(): Promise<unknown> {
-            return { isInBootstrapMode: false, message: '', version: VERSION };
+            return {
+                isInBootstrapMode: false,
+                message: '',
+                version: 'v0.0.25 [x64-linux] (local abc1234)',
+            };
         },
         async login(): Promise<unknown> {
             return {
@@ -88,7 +89,7 @@ function buildTestServer(): ReturnType<typeof buildServer> {
                 accountId: '11111111-1111-1111-1111-111111111111',
                 tenantId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
                 tenantName: 'Northwind Capital',
-                version: VERSION,
+                version: 'v0.0.25 [x64-linux] (local abc1234)',
                 database: DATABASE,
                 username: 'tenant_admin',
                 email: 'admin@northwind.example.com',
@@ -111,8 +112,8 @@ function buildTestServer(): ReturnType<typeof buildServer> {
     });
 }
 
-describe('POST /api/session', () => {
-    it('states the build the session was opened against, and keeps stating it', async () => {
+describe('the database row on the login answer', () => {
+    it('travels with the answer that opens the session and every read of it', async () => {
         const server = buildTestServer();
 
         const login = await server.inject({
@@ -123,7 +124,7 @@ describe('POST /api/session', () => {
 
         expect(login.statusCode).toBe(200);
         expect(login.json()).toMatchObject({ outcome: 'active' });
-        expect(login.json().session.version).toBe(VERSION);
+        expect(login.json().session.database).toEqual(DATABASE);
 
         const cookie = login.cookies[0];
         const session = await server.inject({
@@ -133,7 +134,7 @@ describe('POST /api/session', () => {
         });
 
         expect(session.statusCode).toBe(200);
-        expect(session.json()).toMatchObject({ version: VERSION });
+        expect(session.json().database).toEqual(DATABASE);
 
         await server.close();
     });

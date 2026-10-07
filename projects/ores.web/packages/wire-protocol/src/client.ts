@@ -23,6 +23,7 @@ import type { ListPartiesRequest } from './generated/refdata/protocol/party_prot
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
+import type { DatabaseInfo } from './contracts.js';
 import type { PartySummary } from './domain.js';
 import {
     subjects as tenantSessionSubjects,
@@ -136,6 +137,8 @@ export interface ActiveSession {
     readonly tenantName: string;
     /** The build the session was opened against. */
     readonly version: string;
+    /** The database the login answer carried, beside the build it states. */
+    readonly database: DatabaseInfo;
     readonly username: string;
     readonly email: string;
     readonly party: PartySummary;
@@ -153,6 +156,8 @@ export interface PartySelectionRequired {
     readonly tenantName: string;
     /** The build the login was answered by. */
     readonly version: string;
+    /** The database the login answer carried, beside the build it states. */
+    readonly database: DatabaseInfo;
     readonly username: string;
     readonly email: string;
     readonly availableParties: readonly PartySummary[];
@@ -168,6 +173,8 @@ export interface LoginRejected {
     readonly message: string;
     /** The build that refused, which a caller can still state. */
     readonly version: string;
+    /** The database the refusal carried, beside the build it states. */
+    readonly database: DatabaseInfo;
 }
 
 export type LoginOutcome = ActiveSession | PartySelectionRequired | LoginRejected;
@@ -626,6 +633,7 @@ export class OresClient {
                 kind: 'rejected',
                 message: reply.errorMessage.length > 0 ? reply.errorMessage : reply.message,
                 version: reply.version,
+                database: reply.database,
             };
         }
 
@@ -651,6 +659,7 @@ export class OresClient {
             tenantId: reply.tenantId,
             tenantName: reply.tenantName,
             version: reply.version,
+            database: reply.database,
             username: reply.username,
             email: reply.email,
             availableParties: reply.availableParties,
@@ -699,6 +708,7 @@ export class OresClient {
             tenantId: input.expected.tenantId,
             tenantName: reply.tenantName.length > 0 ? reply.tenantName : input.expected.tenantName,
             version: input.expected.version,
+            database: input.expected.database,
             username: reply.username.length > 0 ? reply.username : input.expected.username,
             email: input.expected.email,
             party,
@@ -1104,6 +1114,7 @@ function toActive(reply: LoginResponse, party: PartySummary): ActiveSession {
         tenantId: reply.tenantId,
         tenantName: reply.tenantName,
         version: reply.version,
+        database: reply.database,
         username: reply.username,
         email: reply.email,
         party,

@@ -31,6 +31,7 @@ set(files
     "repository_account_party_repository_tests.cpp"
     "repository_account_repository_tests.cpp"
     "repository_account_role_repository_tests.cpp"
+    "repository_database_info_lookups_tests.cpp"
     "repository_login_info_repository_tests.cpp"
     "repository_permission_repository_tests.cpp"
     "repository_role_permission_repository_tests.cpp"

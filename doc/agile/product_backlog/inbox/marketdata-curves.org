@@ -927,9 +927,20 @@ hot observation row is untouched, and no value is duplicated.
 
 *How the precedence rule is enforced and tested.* *Decision: read-time
 precedence.* A current annex row with =point_source_kind='manual'= owns its
-=(series_id, oresmd_uri)= coordinate for reading until it is cleared. The rule
-is one pure predicate over the kind of the latest automatic value and the
-active manual value, applied by =read_as_of= and =read_as_of_buckets=
+=(series_id, oresmd_uri)= coordinate for reading until it is cleared.
+
+What an as-of instant means here, stated because it is easy to get backwards.
+An as-of timepoint is a *market* instant, and the read for that instant must
+take manually keyed points into account. A manual point whose own instant the
+snapshot covers belongs in that snapshot whenever it was keyed, this morning or
+five years ago: over-keying is an operator correcting what the curve is for
+that instant, not a statement about when they said so. So applicability is
+decided by the point's instant alone, and the annex's =valid_from= does not
+decide it. A manual point whose instant falls after the snapshot's instant
+belongs to a later instant and is not part of this snapshot.
+
+The rule is one pure predicate over the kind of the latest automatic value and
+the active manual value, applied by =read_as_of= and =read_as_of_buckets=
 (=market_observation_repository.cpp:418-516=) as a small overlay over the cold
 annex, not a join in the hot loop. Read-time is chosen over a write-time guard
 because the manual write is an ordinary bitemporal write
@@ -942,7 +953,8 @@ The test lives in =projects/ores.marketdata/core/tests/repository_market_observa
 beside the existing =read_as_of= cases (=:135-226=). It writes a feed point,
 writes a manual point for the same coordinate, writes a later feed point, and
 asserts =read_as_of= returns the manual value and =read_as_of_buckets= shows it
-in every bucket at or after the manual write. A second case flips the
+in every bucket whose boundary is at or after the point's instant, which is the
+bucket where it starts to apply. A second case flips the
 predicate's preference and asserts the feed value wins, so the test fails when
 the rule is reversed, which is the acceptance's own wording.
 

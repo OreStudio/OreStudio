@@ -36,10 +36,10 @@ TEST_CASE("a report definitions subject names its expansion function", tags) {
           "ores_reporting_publish_report_definitions_from_dq_fn");
 }
 
-TEST_CASE("a hyphen becomes an underscore and an underscore stays", tags) {
-    CHECK(publish_from_dq_function("reporting.v1.report_operations.publish-from-dq") ==
+TEST_CASE("the operation name is the function name", tags) {
+    CHECK(publish_from_dq_function("reporting.v1.ops.publish_report_operations_from_dq") ==
           "ores_reporting_publish_report_operations_from_dq_fn");
-    CHECK(publish_from_dq_function("reporting.v1.a-b_c.publish-from-dq") ==
+    CHECK(publish_from_dq_function("reporting.v1.ops.publish_a_b_c_from_dq") ==
           "ores_reporting_publish_a_b_c_from_dq_fn");
 }
 

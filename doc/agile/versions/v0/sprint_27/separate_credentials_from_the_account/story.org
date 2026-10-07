@@ -100,3 +100,7 @@ A profile write can never change a credential, and the history says which of the
 
 - =account_type= and =account_status=. They are not secrets, they round-trip
   through the generated domain type, and moving them is a separate story.
+
+* See also
+
+- [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] — the census of every subject in the tree against the same specification, and the gate that will hold it. This story takes the IAM subjects it has to move anyway; the rest of the component is that story's.

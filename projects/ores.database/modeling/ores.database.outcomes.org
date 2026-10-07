@@ -1,0 +1,285 @@
+:PROPERTIES:
+:ID: 974F054E-3BD5-4D16-9EA6-A995C21AFAAC
+:END:
+#+title: ores.database.outcomes
+#+description: The outcome catalogue. One literate entry per refusal this system can report, holding its code, its coarse outcome, the SQLSTATE the store raises, the arguments its message needs, and the message itself. Codegen renders the C++ outcome_code header and the PostgreSQL outcome functions from this document.
+#+type: ores.codegen.outcome_catalogue
+#+component: database
+#+filetags: :model:outcome:database:codegen:
+#+brief: The refusal vocabulary the C++ services and the PostgreSQL store share.
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This is the single source of truth for how a refused operation is named and
+described. The C++ services and the PostgreSQL store both read it, and codegen
+renders both artefacts from it, so the two cannot disagree about a code or about
+what it says.
+
+* Summary
+
+An outcome is one way a request can be refused. The catalogue gives each
+outcome four machine-readable values and one message.
+
+| value      | meaning                                                        |
+|------------+----------------------------------------------------------------|
+| =:code:=   | the string a reply carries in =result.code=                     |
+| =:outcome:=| the coarse =ores::utility::domain::outcome= the reply carries    |
+| =:producer:=| which side refuses: =store= or =request=                       |
+| =:sqlstate:=| the PostgreSQL SQLSTATE the store raises, for a =store= outcome |
+| =:args:=   | the named arguments the message needs                          |
+
+A =store= outcome is refused by a database trigger. Codegen renders a
+PostgreSQL function that composes its message, and one raiser the trigger
+calls. The trigger states the code and the field name; it never states the
+wording and never states a SQLSTATE.
+
+A =request= outcome is refused by a service before the store runs. Codegen
+renders it into the C++ header only.
+
+* Detail
+
+** One message, two renderers
+
+Codegen renders each message twice: once as a PL/pgSQL function in
+=ores.sql=, and once into =ores::database::describe= in C++. Both renderers
+substitute the same ={name}= placeholders with the same arguments, so a client
+reads the same sentence whichever side refused.
+
+** Where the artefacts live
+
+| artefact  | path                                                          |
+|-----------+---------------------------------------------------------------|
+| C++ header | =projects/ores.database/include/ores.database/domain/outcome_code.hpp= |
+| PostgreSQL | =projects/ores.sql/create/utility/outcome_functions_create.sql= |
+
+** Adding an outcome
+
+Add an entry under [[* Outcomes]]. Run =compass codegen regenerate --component
+database=. Commit the document and both rendered artefacts together.
+
+* Outcomes
+
+# Each entry holds its machine-readable values in a drawer, its prose in the
+# body, and its message in a named src block. The loader reads all three.
+
+** already_exists
+:PROPERTIES:
+:code: already_exists
+:outcome: conflict
+:producer: store
+:sqlstate: 23505
+:args: entity, field, value
+:END:
+
+A create states that no row exists, and the store holds one already. The store
+also raises this when a write replaces a row with the version-replace signal
+switched off.
+
+#+begin_src text :name message
+The {entity} with {field} '{value}' already exists. State the version you read to replace it, or ask for a version replace.
+#+end_src
+
+** version_conflict
+:PROPERTIES:
+:code: version_conflict
+:outcome: conflict
+:producer: store
+:sqlstate: P0002
+:args: entity, field, value, expected, current
+:END:
+
+A write states the version it read, and the row has moved on since. This is the
+optimistic-concurrency refusal. The write states the version it believes and the
+store states the version it holds.
+
+#+begin_src text :name message
+The {entity} with {field} '{value}' is at version {current}, and this write states version {expected}.
+#+end_src
+
+** missing_field
+:PROPERTIES:
+:code: missing_field
+:outcome: invalid
+:producer: store
+:sqlstate: 23502
+:args: entity
+:END:
+
+A validation function receives a null or an empty value where its entity
+requires one. The store refuses rather than storing a row that names nothing.
+
+#+begin_src text :name message
+Invalid {entity}: value cannot be null or empty.
+#+end_src
+
+** not_found
+:PROPERTIES:
+:code: not_found
+:outcome: missing
+:producer: request
+:args: entity
+:END:
+
+A read or a removal names a row the store does not hold. A create that states an
+existing row's version also lands here, because the row it means to replace is
+absent.
+
+#+begin_src text :name message
+The {entity} does not exist.
+#+end_src
+
+** order_not_supported
+:PROPERTIES:
+:code: order_not_supported
+:outcome: invalid
+:producer: request
+:args: entity, field
+:END:
+
+A paged read states an order field the read cannot order by. The read refuses
+rather than returning a page in an order nobody asked for.
+
+#+begin_src text :name message
+This read of the {entity} cannot order by {field}.
+#+end_src
+
+** filter_not_supported
+:PROPERTIES:
+:code: filter_not_supported
+:outcome: invalid
+:producer: request
+:args: entity
+:END:
+
+A read states a filter this operation does not accept.
+
+#+begin_src text :name message
+Filtering is not served for this {entity} yet.
+#+end_src
+
+** filter_too_large
+:PROPERTIES:
+:code: filter_too_large
+:outcome: invalid
+:producer: request
+:args: field, limit
+:END:
+
+A filter lists more values than the read accepts. The bound exists so one
+request cannot ask the store to match an unbounded set.
+
+#+begin_src text :name message
+The filter on {field} lists more than {limit} values.
+#+end_src
+
+** as_of_invalid
+:PROPERTIES:
+:code: as_of_invalid
+:outcome: invalid
+:producer: request
+:args: value
+:END:
+
+A read states an as-of instant it cannot parse as a UTC timestamp.
+
+#+begin_src text :name message
+The as-of time {value} is not a valid instant.
+#+end_src
+
+** scope_not_supported
+:PROPERTIES:
+:code: scope_not_supported
+:outcome: invalid
+:producer: request
+:args: entity
+:END:
+
+A read asks for a subtree of the {entity} hierarchy, and this resource holds a
+flat set. The read refuses rather than answering with the direct members, which
+would be a different question.
+
+#+begin_src text :name message
+This read of the {entity} has no subtree: it reads its direct members.
+#+end_src
+
+** relation_required
+:PROPERTIES:
+:code: relation_required
+:outcome: invalid
+:producer: request
+:args: entity, field
+:END:
+
+A read is scoped by a relation the request may leave unstated, and the request
+states none. Refusing keeps the read from returning every unset row.
+
+#+begin_src text :name message
+This read of the {entity} is scoped by {field}, and the request states none.
+#+end_src
+
+** precondition_not_supported
+:PROPERTIES:
+:code: precondition_not_supported
+:outcome: invalid
+:producer: request
+:args:
+:END:
+
+A removal requires that a row is absent. No row is ever absent at the moment of
+its own removal, so the claim is unsatisfiable and the request is refused.
+
+#+begin_src text :name message
+A removal cannot require that a row is absent.
+#+end_src
+
+** precondition_incomplete
+:PROPERTIES:
+:code: precondition_incomplete
+:outcome: invalid
+:producer: request
+:args:
+:END:
+
+A removal states that the version must match, and states no version. The claim
+is incomplete without one.
+
+#+begin_src text :name message
+A versioned removal must state the version it expects.
+#+end_src
+
+** batch_removal_is_unconditional
+:PROPERTIES:
+:code: batch_removal_is_unconditional
+:outcome: invalid
+:producer: request
+:args:
+:END:
+
+A batch removal states a precondition. The store removes a set in one
+statement, which carries no per-row version, so serving a conditional batch
+would leave a partial batch behind as soon as one row had moved on.
+
+#+begin_src text :name message
+A batch removal is unconditional; remove the rows one at a time to state a version.
+#+end_src
+
+** internal_error
+:PROPERTIES:
+:code: internal_error
+:outcome: failed
+:producer: request
+:args: reason
+:END:
+
+The store refused a write for a reason the caller did not ask about, or the
+write failed below the service. The reply carries the store's own words.
+
+#+begin_src text :name message
+The store refused the write: {reason}
+#+end_src
+
+* See also
+
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that creates the rendered PostgreSQL functions.
+- [[id:3B697CE6-B0D0-49C4-93BF-88CDA8919AAF][SQL naming conventions]] — the object-name patterns the rendered functions follow.
+- [[file:component_overview.org][ores.database]] — the component that owns the rendered C++ header.

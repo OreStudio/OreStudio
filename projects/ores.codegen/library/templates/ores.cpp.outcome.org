@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 7730438A-2908-4658-ADA1-0491891EA86C
+:END:
+#+title: ores.cpp.outcome
+#+description: C++ outcome vocabulary rendered from the outcome catalogue.
+#+type: facet
+#+model_types: outcome_catalogue
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is the node for the =ores.cpp.outcome= facet of the codegen
+template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+One template: the outcome vocabulary, rendered from the outcome
+catalogue rather than from an entity. =outcome_catalogue= profile.
+
+* The ores.cpp.outcome facet
+
+A standalone model format: an outcome catalogue is a first-class codegen
+input that produces exactly one header. Sibling to
+[[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]].
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:C1D56724-A192-4BCF-923A-602808773335][ores.cpp.outcome.outcome_code_header]] | The =outcome_code= enum with its coarse-outcome map and its message renderer, from the outcome catalogue. =outcome_catalogue= profile. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — the domain-concept overview of this technical space.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

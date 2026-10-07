@@ -45,6 +45,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.operation":         "operation",
     "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
     "ores.codegen.trade_type_catalogue": "trade_type_catalogue",
+    "ores.codegen.outcome_catalogue": "outcome_catalogue",
 }
 
 # The type flags cpp_domain_type_entity.hpp.mustache switches on to give a
@@ -1165,6 +1166,7 @@ def load_model(model_path):
             load_org_operation_model,
             load_org_asset_class_catalogue_model,
             load_org_trade_type_catalogue_model,
+            load_org_outcome_catalogue_model,
         )
         # Prefer #+type: frontmatter over filename suffix.
         org_type = _read_org_type(model_path)
@@ -1190,6 +1192,8 @@ def load_model(model_path):
             return load_org_asset_class_catalogue_model(model_path)
         if org_type == 'trade_type_catalogue':
             return load_org_trade_type_catalogue_model(model_path)
+        if org_type == 'outcome_catalogue':
+            return load_org_outcome_catalogue_model(model_path)
 
         # Fallback: no recognised #+type: — use filename suffix (legacy).
         if path_str.endswith('_field_group.org'):
@@ -2865,6 +2869,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if (model_type == 'trade_type_catalogue' and isinstance(model, dict)
             and 'trade_type_catalogue' in model):
         data['trade_type_catalogue'] = model['trade_type_catalogue']
+
+    # The outcome catalogue renders at a top-level key of its own name: the C++
+    # header and the PostgreSQL functions read the same entries, so the
+    # vocabulary is stated once.
+    if (model_type == 'outcome_catalogue' and isinstance(model, dict)
+            and 'outcome_catalogue' in model):
+        data['outcome_catalogue'] = model['outcome_catalogue']
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:

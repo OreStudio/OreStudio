@@ -107,9 +107,13 @@ begin
 
     if found then
         if new.version != 0 and new.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                new.version, current_version
-                using errcode = 'P0002';
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'badge_mappings',
+                'code_domain_code',
+                new.code_domain_code::text,
+                new.version::text,
+                current_version::text);
         end if;
         new.version = current_version + 1;
 

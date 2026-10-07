@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: C1D56724-A192-4BCF-923A-602808773335
+:END:
+#+title: ores.cpp.outcome.outcome_code_header
+#+description: The =outcome_code= enum with its coarse-outcome map and its message renderer, from the outcome catalogue. =outcome_catalogue= profile.
+#+type: archetype
+#+output: projects/ores.database/include/ores.database/domain/outcome_code.hpp
+#+facet: ores.cpp.outcome
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+The =outcome_code= enum with its coarse-outcome map and its message renderer,
+from the outcome catalogue. =outcome_catalogue= profile.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct codegen_templates= to regenerate
+=library/templates/cpp_outcome_code.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_outcome_code.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.outcome.outcome_code_header.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_DATABASE_DOMAIN_OUTCOME_CODE_HPP
+#define ORES_DATABASE_DOMAIN_OUTCOME_CODE_HPP
+
+#include "ores.utility/domain/protocol.hpp"
+
+#include <string>
+#include <string_view>
+
+namespace ores::database::domain {
+
+/**
+ * @brief The values a refusal's message is filled from.
+ *
+ * Every name in the outcome catalogue's argument vocabulary is a member here,
+ * whether or not the outcome being described uses it. A message names only the
+ * members its own entry declared, so an unfilled member is never read.
+ */
+struct outcome_args {
+    std::string entity;
+    std::string field;
+    std::string value;
+    std::string expected;
+    std::string current;
+    std::string reason;
+    std::string limit;
+};
+
+/**
+ * @brief Every way this system refuses a request.
+ *
+ * Rendered from the outcome catalogue, which is the single source of truth for
+ * the code, the coarse outcome, the SQLSTATE and the wording. A store outcome
+ * is refused by a PostgreSQL trigger, which composes the same sentence through
+ * the matching ores_outcome_<code>_fn; a request outcome is refused here.
+ */
+enum class outcome_code {
+{{#outcome_catalogue.outcomes}}
+    {{code}},
+{{/outcome_catalogue.outcomes}}
+};
+
+/**
+ * @brief The string a reply carries in @c result.code.
+ */
+[[nodiscard]] constexpr std::string_view to_string(outcome_code v) noexcept {
+    switch (v) {
+{{#outcome_catalogue.outcomes}}
+    case outcome_code::{{code}}: return "{{code}}";
+{{/outcome_catalogue.outcomes}}
+    default: return {};
+    }
+}
+
+/**
+ * @brief The coarse outcome a reply carries for @p v.
+ */
+[[nodiscard]] constexpr ores::utility::domain::outcome outcome_of(outcome_code v) noexcept {
+    switch (v) {
+{{#outcome_catalogue.outcomes}}
+    case outcome_code::{{code}}: return ores::utility::domain::outcome::{{class}};
+{{/outcome_catalogue.outcomes}}
+    default: return ores::utility::domain::outcome::failed;
+    }
+}
+
+namespace detail {
+
+inline void replace_all(std::string& text, std::string_view from, std::string_view to) {
+    for (auto pos = text.find(from); pos != std::string::npos;
+         pos = text.find(from, pos + to.size()))
+        text.replace(pos, from.size(), to);
+}
+
+/**
+ * @brief Fills a message template's {name} placeholders from @p a.
+ *
+ * The one renderer, shared by every outcome. It substitutes each name whether
+ * the template names it or not, so a template that names a subset is filled
+ * from the same call as one that names every member.
+ */
+inline std::string fill(std::string_view tmpl, const outcome_args& a) {
+    std::string text(tmpl);
+    replace_all(text, "{entity}", a.entity);
+    replace_all(text, "{field}", a.field);
+    replace_all(text, "{value}", a.value);
+    replace_all(text, "{expected}", a.expected);
+    replace_all(text, "{current}", a.current);
+    replace_all(text, "{reason}", a.reason);
+    replace_all(text, "{limit}", a.limit);
+    return text;
+}
+
+}
+
+/**
+ * @brief The sentence a caller reads for @p v, filled from @p a.
+ *
+ * The same sentence the store composes through ores_outcome_<code>_fn, so a
+ * client cannot tell which side refused from the words alone.
+ */
+[[nodiscard]] inline std::string describe(outcome_code v, const outcome_args& a) {
+    switch (v) {
+{{#outcome_catalogue.outcomes}}
+    case outcome_code::{{code}}: return detail::fill("{{message_cpp}}", a);
+{{/outcome_catalogue.outcomes}}
+    default: return {};
+    }
+}
+
+/**
+ * @brief The reply for a refusal the caller can name but not describe.
+ *
+ * A repository reports a status, not the row behind it, so a service that
+ * refuses on that status has no arguments to fill a sentence with. The code
+ * and the coarse outcome still come from the catalogue, so nothing restates
+ * them; the reply carries no message.
+ */
+[[nodiscard]] inline ores::utility::domain::result refuse(outcome_code v) {
+    ores::utility::domain::result r;
+    r.outcome = outcome_of(v);
+    r.code = std::string(to_string(v));
+    return r;
+}
+
+/**
+ * @brief The reply for a refusal, with its catalogue sentence filled from @p a.
+ *
+ * The one constructor for a described refusal, so a service states which
+ * outcome it reached and nothing else about how to say it.
+ */
+[[nodiscard]] inline ores::utility::domain::result refuse(outcome_code v,
+                                                          const outcome_args& a) {
+    auto r = refuse(v);
+    r.message = describe(v, a);
+    return r;
+}
+
+}
+
+#endif
+#+end_src
+
+* See also
+
+- Parent facet: [[id:7730438A-2908-4658-ADA1-0491891EA86C][ores.cpp.outcome]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

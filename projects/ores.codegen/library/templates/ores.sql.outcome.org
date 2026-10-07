@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 16F878D3-10D8-4CBB-BEE8-87418F5DC4D3
+:END:
+#+title: ores.sql.outcome
+#+description: PostgreSQL outcome functions rendered from the outcome catalogue.
+#+type: facet
+#+model_types: outcome_catalogue
+#+level: cross
+#+facet_group: ores.sql
+#+filetags: :codegen:physical-space:sql:
+#+created: 2026-10-07
++#+updated: 2026-10-07
+
+This page is the node for the =ores.sql.outcome= facet of the codegen
+template library, part of the [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+One template: the message functions and the raiser the entity triggers
+call, rendered from the outcome catalogue. =outcome_catalogue= profile.
+
+* The ores.sql.outcome facet
+
+The SQL projection of the /outcome catalogue/ model: each =store= outcome
+becomes a function that composes its sentence, and one raiser maps the code to
+its SQLSTATE. A trigger states the code and the field name and nothing else, so
+the wording and the SQLSTATE exist once.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:8784D4CC-97D3-47F3-B9A4-684F37ACE473][ores.sql.outcome.outcome_functions_create]] | The message functions and =ores_outcome_raise_fn=, from the outcome catalogue. =outcome_catalogue= profile. |
+
+* See also
+
+- [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — the domain-concept overview of this technical space.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

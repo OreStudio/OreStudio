@@ -131,14 +131,20 @@ begin
         -- client, rather than by a check each client has to remember.
         if NEW.version = 0 then
             if not ores_utility_version_replace_allowed_fn() then
-                raise exception
-                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
-                    using errcode = '23505';
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'payment_frequency',
+                    'code',
+                    NEW.code::text);
             end if;
         elsif NEW.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                NEW.version, current_version
-                using errcode = 'P0002';
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'payment_frequency',
+                'code',
+                NEW.code::text,
+                NEW.version::text,
+                current_version::text);
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
@@ -190,8 +196,7 @@ create or replace function ores_refdata_validate_payment_frequency_fn(
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
-        raise exception 'Invalid payment_frequency: value cannot be null or empty'
-            using errcode = '23502';
+        perform ores_outcome_raise_fn('missing_field', 'payment_frequency');
     end if;
 
     -- Allow pass-through during bootstrap (no active rows for system tenant).

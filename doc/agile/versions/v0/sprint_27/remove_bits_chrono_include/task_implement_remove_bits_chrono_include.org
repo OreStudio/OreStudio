@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C07C3304-8605-44DE-8480-87577B9F8C86][Hotfix: Drop the libstdc++ internal header the include run added]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Both test files include <chrono> and not the libstdc++ internal.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C07C3304-8605-44DE-8480-87577B9F8C86][Hotfix: Drop the libstdc++ internal header the include run added]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both test files include =<chrono>= and no longer include =<bits/chrono.h>=.
+No file under =projects/ores.refdata= names a libstdc++ internal, and both
+translation units pass =clang++ -fsyntax-only= under the project's flags.

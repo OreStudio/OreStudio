@@ -21,11 +21,11 @@ Both test files include <chrono> and not the libstdc++ internal.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -36,11 +36,16 @@ Both test files include <chrono> and not the libstdc++ internal.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:5C80BF16-4456-4B94-997C-F4DF28E8E527][Scaffold story: Hotfix: Drop the libstdc++ internal header the include run added]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:EB083B46-1885-4BDF-A769-75018716793E][Remove the bits/chrono.h includes from the two test files]] | BACKLOG | | | Initial task for: Hotfix: Drop the libstdc++ internal header the include run added |
+| [[id:5C80BF16-4456-4B94-997C-F4DF28E8E527][Scaffold story: Hotfix: Drop the libstdc++ internal header the include run added]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EB083B46-1885-4BDF-A769-75018716793E][Remove the bits/chrono.h includes from the two test files]] | DONE | | 2026-10-07 | Initial task for: Hotfix: Drop the libstdc++ internal header the include run added |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+The two test files that carried =<bits/chrono.h>= no longer include it, and
+none of ores.refdata names a libstdc++ internal. Landed with PR #2741.

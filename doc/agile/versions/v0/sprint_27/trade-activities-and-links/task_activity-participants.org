@@ -2,17 +2,17 @@
 :ID: BB871463-761B-496E-9ABD-EB2000AB8A28
 :END:
 #+title: Task: Name each trade an activity touches
-#+description: Add trade_activity_participant (activity, trade, role), so an act that touches several trades names each one and the part it plays, replacing the activity's single unit.
+#+description: Add the participation table a process run carries, naming each trade the run read or wrote and the role it played. The trade activity is a stamp on an amendment and is not the parent of this table.
 #+type: task
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: A process run model: an enumeration of the processes, a table per run with its own id and a state machine, and the run id as the key the trade groups carry for their inputs and outputs. Captured in the inbox; it needs analysis before this task can hang its table off the right parent.
+#+blocked_since: 2026-10-07
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-07
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,23 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-An activity names every trade it touches and the role each plays.
+A process run names every trade it read or wrote and the role each played.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Waiting on   | The process run model, so the participation table has the right parent. |
+| Next         | Settle the run, then key this table by the run. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- trade_activity_participant is keyed by activity and trade, carries a role from a reference list, and references both with enforced foreign keys.
-- A single-trade activity writes one participant; a pgTAP test covers a multi-trade activity.
+- The participation table is keyed by process run and trade, carries a role from a reference list, and references both with enforced foreign keys.
+- The roles distinguish an input from an output, because a run reads trades it does not change.
+- A single-trade run writes one participant; a pgTAP test covers a run over several trades.
+- No row of this table references a trade activity: the activity is the stamp on an amendment, and the run is the parent here.
 
 * Plan
 

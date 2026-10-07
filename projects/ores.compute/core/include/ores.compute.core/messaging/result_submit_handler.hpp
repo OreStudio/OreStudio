@@ -26,6 +26,7 @@
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -76,7 +77,12 @@ public:
         BOOST_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;
         if (auto req = decode<submit_result_request>(msg)) {
             try {
-                service::result_service result_svc(ctx_);
+                // The result row is tenant-scoped and the service's own context
+                // is the system tenant, so the write is scoped to the tenant
+                // the assignment named. Anything else reads back as "not found".
+                const auto tenant_ctx =
+                    ores::database::service::tenant_context::with_tenant(ctx_, req->tenant_id);
+                service::result_service result_svc(tenant_ctx);
                 auto existing =
                     result_svc.get_result(boost::lexical_cast<boost::uuids::uuid>(req->result_id));
                 if (!existing) {
@@ -106,13 +112,13 @@ public:
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = req->error_message.empty() ? "Output received from wrapper" :
                                                                    req->error_message;
-                stamp(r, ctx_);
+                stamp(r, tenant_ctx);
                 result_svc.save_result(r);
 
                 // Validator: once the redundancy target is met, accept the
                 // canonical result on the workunit. The shell drain watch
                 // treats a set canonical_result_id as the terminal state.
-                service::workunit_service wu_svc(ctx_);
+                service::workunit_service wu_svc(tenant_ctx);
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
                 const auto wu_opt = wu_svc.get_workunit(r.workunit_id);
                 if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
@@ -125,7 +131,7 @@ public:
                         wu.canonical_result_id = r.id;
                         wu.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                         wu.change_commentary = "Canonical result accepted";
-                        stamp(wu, ctx_);
+                        stamp(wu, tenant_ctx);
                         wu_svc.save_workunit(wu);
                         BOOST_LOG_SEV(result_submit_handler_lg(), info)
                             << "Validator: canonical result set for workunit " << wu_id_str;
@@ -140,7 +146,7 @@ public:
                             return w.canonical_result_id != boost::uuids::uuid{};
                         });
                         if (all_done) {
-                            service::batch_service batch_svc(ctx_);
+                            service::batch_service batch_svc(tenant_ctx);
                             const auto batch_opt = batch_svc.get_batch(wu.batch_id);
                             if (batch_opt) {
                                 auto batch = *batch_opt;
@@ -148,7 +154,7 @@ public:
                                 batch.change_reason_code =
                                     ores::dq::domain::change_reasons::system_new_record;
                                 batch.change_commentary = "All workunits complete";
-                                stamp(batch, ctx_);
+                                stamp(batch, tenant_ctx);
                                 batch_svc.save_batch(batch);
                                 BOOST_LOG_SEV(result_submit_handler_lg(), info)
                                     << "Assimilator: batch " << batch_id_str << " closed";

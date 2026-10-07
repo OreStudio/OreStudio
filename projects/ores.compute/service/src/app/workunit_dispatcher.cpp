@@ -179,6 +179,7 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         }
 
         const auto event = ores::compute::messaging::work_assignment_event{
+            .tenant_id = tenant_uuid,
             .result_id = result_id_str,
             .workunit_id = workunit_id,
             .app_version_id = app_version_id,

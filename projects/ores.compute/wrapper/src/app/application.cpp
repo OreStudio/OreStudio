@@ -329,6 +329,7 @@ private:
  */
 void submit_result(ores::nats::service::client& nats,
                    const std::string& result_id,
+                   const std::string& tenant_id,
                    const std::string& host_id,
                    const std::string& output_uri,
                    int outcome,
@@ -336,7 +337,8 @@ void submit_result(ores::nats::service::client& nats,
                    auto& lg) {
 
     const auto& codec = ores::nats::default_wire_codec();
-    const compute::messaging::submit_result_request req{.result_id = result_id,
+    const compute::messaging::submit_result_request req{.tenant_id = tenant_id,
+                                                        .result_id = result_id,
                                                         .host_id = host_id,
                                                         .output_uri = output_uri,
                                                         .outcome = outcome,
@@ -624,7 +626,14 @@ void process_assignment(ores::nats::service::client& nats,
             reporter->record_task_failed();
     }
 
-    submit_result(nats, evt.result_id, cfg.host_id, output_uri, outcome, error_message, lg);
+    submit_result(nats,
+                  evt.result_id,
+                  evt.tenant_id,
+                  cfg.host_id,
+                  output_uri,
+                  outcome,
+                  error_message,
+                  lg);
 }
 
 } // namespace

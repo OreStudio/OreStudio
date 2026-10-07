@@ -182,6 +182,21 @@ result. No person types them, and nothing in the shell sends them.
  */
 #+end_src
 
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant that owns the result the node must fill in.
+ *
+ * The node hands it back on submit. A wrapper fleet is shared across tenants,
+ * so the work a node takes does not tell it which tenant it is serving, and
+ * the result row is tenant-scoped.
+ */
+#+end_src
+
 *** result_id
 :PROPERTIES:
 :cpp_type: std::string
@@ -340,6 +355,21 @@ result. No person types them, and nothing in the shell sends them.
  * generated save_result CRUD flow: wrapper nodes hold no user JWT, so the
  * user-session-gated save flow rejects them. Like the heartbeat, the submit
  * is trusted at the transport layer.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant that owns the result, echoed from the assignment.
+ *
+ * The service scopes the write to this tenant, so the node must return the
+ * one it was given. Without it the tenant-scoped result row is invisible to
+ * the service's own system context.
  */
 #+end_src
 

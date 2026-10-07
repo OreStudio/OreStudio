@@ -105,6 +105,32 @@ ORES_ORE_CORE_EXPORT input_files export_run(const database::context& ctx,
  */
 ORES_ORE_CORE_EXPORT input_files archive_layout(const input_files& files);
 
+/**
+ * @brief Where the engine reads the run's own data from.
+ *
+ * The run document names a market data file, a fixings file and a portfolio,
+ * and the engine reads each from the run's @c inputPath. An import does not
+ * store them, because they are a run's data and not a definition's
+ * configuration, so whoever builds the engine's working directory places them
+ * here. A slot the run document leaves unset is empty.
+ */
+struct run_data_files {
+    /** The path the engine reads the market data from. */
+    std::string market_data;
+    /** The path the engine reads the fixings from. */
+    std::string fixings;
+    /** The path the engine reads the portfolio from. */
+    std::string portfolio;
+};
+
+/**
+ * @brief The paths the run document names for the run's own data.
+ *
+ * Throws when a name would write outside the package, because the run document
+ * is a tenant's to edit.
+ */
+ORES_ORE_CORE_EXPORT run_data_files declared_data_files(const input_files& files);
+
 }
 
 #endif

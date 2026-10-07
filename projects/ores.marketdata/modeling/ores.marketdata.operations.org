@@ -868,17 +868,16 @@ rows, only new market observation ones.
 :response: export_market_data_to_storage_response
 :END:
 
-Exports every market data series to object storage. The service fetches all
-active market series for the tenant, serialises them to JSON, compresses
-with gzip, and uploads the result.
+Exports the tenant's market data to object storage as the text an ORE run
+reads, so the engine can be handed the file its run document names.
 
 #+begin_src cpp :name comment
 /**
- * @brief Exports all market data series to object storage.
+ * @brief Exports the tenant's market data to object storage as ORE text.
  *
- * Fetches all active market series for the tenant, serialises to JSON,
- * compresses with gzip, and uploads to storage. Returns the storage key
- * on success.
+ * The engine reads a market data file its run document names, and nothing else
+ * can fill that file, so what is written here is that body and no other form
+ * of the data.
  */
 #+end_src
 
@@ -891,6 +890,27 @@ with gzip, and uploads the result.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the market data body goes.
+ */
+#+end_src
+
+*** fixings_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the fixings body goes.
+ *
+ * The engine reads fixings from a file of their own, so the body goes to an
+ * object of its own. An empty body is written too, because a run whose run
+ * document names the file must find it.
+ */
+#+end_src
 
 ** export_market_data_to_storage_response
 
@@ -915,6 +935,17 @@ with gzip, and uploads the result.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** fixings_storage_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the fixings body was written.
+ */
+#+end_src
 
 ** export_market_data_request
 :PROPERTIES:

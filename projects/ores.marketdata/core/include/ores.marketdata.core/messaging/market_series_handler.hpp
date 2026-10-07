@@ -30,6 +30,7 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
+#include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -38,7 +39,6 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include <optional>
-#include <rfl/msgpack.hpp>
 
 namespace ores::marketdata::messaging {
 
@@ -500,23 +500,26 @@ public:
                 return;
             }
 
-            service::market_series_service svc(ctx);
-            const auto total = svc.count_market_series();
-            const auto series = svc.list_market_series(0, total ? total : 1);
+            service::ore_export_service svc(ctx);
+            const auto written = svc.write_all();
 
-            const auto blob = rfl::msgpack::write(series);
             ores::storage::net::storage_transfer transfer(http_base_url,
                                                           ores::nats::service::extract_bearer(msg));
-            transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
+            transfer.upload_blob(req->storage_bucket, req->storage_key, written.market_data);
+            transfer.upload_blob(req->storage_bucket, req->fixings_storage_key, written.fixings);
 
             resp.success = true;
-            resp.series_count = static_cast<int>(series.size());
+            resp.series_count = written.series_count;
             resp.storage_key = req->storage_key;
-            resp.message = "Exported " + std::to_string(series.size()) + " series to storage.";
+            resp.fixings_storage_key = req->fixings_storage_key;
+            resp.message = "Exported " + std::to_string(written.series_count) +
+                           " series as ORE market data to storage.";
 
             BOOST_LOG_SEV(market_series_handler_lg(), info)
-                << "export_to_storage: exported " << series.size() << " series, " << blob.size()
-                << " bytes to " << req->storage_bucket << "/" << req->storage_key;
+                << "export_to_storage: wrote " << written.market_data.size()
+                << " bytes of ORE market data for " << written.series_count << " series ("
+                << written.observation_count << " observations, " << written.fixing_count
+                << " fixings) to " << req->storage_bucket << "/" << req->storage_key;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_series_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

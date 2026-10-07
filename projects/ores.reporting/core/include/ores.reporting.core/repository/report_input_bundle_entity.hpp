@@ -45,6 +45,7 @@ struct report_input_bundle_entity {
     std::string definition_id;
     std::string trades_storage_key;
     std::string market_data_storage_key;
+    std::string fixings_storage_key;
     int trade_count = 0;
     int series_count = 0;
     db_timestamp created_at;

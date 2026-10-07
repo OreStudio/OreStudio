@@ -188,6 +188,7 @@ TEST_CASE("packaging names the report definition the run belongs to", tags) {
     trades.storage_key = "trades";
     msg::gather_market_data_result market_data;
     market_data.storage_key = "market";
+    market_data.fixings_storage_key = "fixings";
     const std::vector<svc::workflow_step_result> prev{
         {.name = "gather_trades", .response_json = rfl::json::write(trades)},
         {.name = "gather_market_data", .response_json = rfl::json::write(market_data)},
@@ -198,6 +199,7 @@ TEST_CASE("packaging names the report definition the run belongs to", tags) {
     REQUIRE(cmd.has_value());
     CHECK(cmd->definition_id == "definition");
     CHECK(cmd->bundle_id == "bundle");
+    CHECK(cmd->fixings_storage_key == "fixings");
 }
 
 TEST_CASE("a configuration nobody implements builds no chain", tags) {

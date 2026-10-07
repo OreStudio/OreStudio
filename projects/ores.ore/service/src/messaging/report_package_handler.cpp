@@ -108,23 +108,53 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                                boost::uuids::to_string(boost::uuids::random_generator()());
         std::filesystem::create_directories(stage_dir);
 
-        // ── Download trades blob ──────────────────────────────────────
-        BOOST_LOG_SEV(lg(), debug) << "Downloading trades blob: " << req.trades_storage_key;
-        const auto trades_blob =
+        // ── The run's own data ────────────────────────────────────────
+        // The engine reaches the run's market data through a file its run
+        // document names, so the gathered body goes where that name points and
+        // not under a name of the packaging step's own. The run document comes
+        // from its owner through the owner's operation, carrying the run token.
+        auto owners = service_nats_.with_delegation(run_token);
+        const auto run_input =
+            ores::ore::service::messaging::export_run(owners, req.definition_id);
+        const auto places = ores::ore::store::declared_data_files(run_input);
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Downloading market data: " << req.market_data_storage_key;
+        const auto market_data =
+            transfer.download_blob(std::string(platform_bucket), req.market_data_storage_key);
+        if (places.market_data.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The run document names no market data file, so the gathered market data "
+                   "cannot be placed for run "
+                << req.report_instance_id;
+        } else {
+            const auto target = stage_dir / places.market_data;
+            std::filesystem::create_directories(target.parent_path());
+            std::ofstream f(target, std::ios::binary | std::ios::trunc);
+            f.write(market_data.data(), static_cast<std::streamsize>(market_data.size()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Downloading fixings: " << req.fixings_storage_key;
+        const auto fixings =
+            transfer.download_blob(std::string(platform_bucket), req.fixings_storage_key);
+        if (places.fixings.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The run document names no fixings file, so the gathered fixings cannot be "
+                   "placed for run "
+                << req.report_instance_id;
+        } else {
+            const auto target = stage_dir / places.fixings;
+            std::filesystem::create_directories(target.parent_path());
+            std::ofstream f(target, std::ios::binary | std::ios::trunc);
+            f.write(fixings.data(), static_cast<std::streamsize>(fixings.size()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Downloading trades: " << req.trades_storage_key;
+        const auto trades =
             transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
         {
             std::ofstream f(stage_dir / "trades.msgpack", std::ios::binary | std::ios::trunc);
-            f.write(trades_blob.data(), static_cast<std::streamsize>(trades_blob.size()));
-        }
-
-        // ── Download market data blob ─────────────────────────────────
-        BOOST_LOG_SEV(lg(), debug)
-            << "Downloading market data blob: " << req.market_data_storage_key;
-        const auto md_blob =
-            transfer.download_blob(std::string(platform_bucket), req.market_data_storage_key);
-        {
-            std::ofstream f(stage_dir / "market_data.msgpack", std::ios::binary | std::ios::trunc);
-            f.write(md_blob.data(), static_cast<std::streamsize>(md_blob.size()));
+            f.write(trades.data(), static_cast<std::streamsize>(trades.size()));
         }
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
@@ -132,9 +162,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // engine reads them. The documents come from their owners through the
         // owners' operations, carrying the run token, so ore never reads their
         // tables.
-        auto owners = service_nats_.with_delegation(run_token);
-        const auto input = ores::ore::store::archive_layout(
-            ores::ore::service::messaging::export_run(owners, req.definition_id));
+        const auto input = ores::ore::store::archive_layout(run_input);
         for (const auto& [path, content] : input) {
             const auto target = stage_dir / path;
             std::filesystem::create_directories(target.parent_path());
@@ -161,8 +189,8 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         result.message =
             std::format("Packaged {} input files, {} bytes trades + {} bytes market data into {}",
                         input.size(),
-                        trades_blob.size(),
-                        md_blob.size(),
+                        trades.size(),
+                        market_data.size(),
                         tarball_key);
 
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="

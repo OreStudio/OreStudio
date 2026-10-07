@@ -120,7 +120,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
             process_assemble_bundle(std::ref(out), std::ref(session), std::move(args));
         },
         "assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> "
-        "<trades_storage_key> <market_data_storage_key> [--trade_count <v>] [--series_count <v>]");
+        "<trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>] "
+        "[--series_count <v>]");
 
     menu->Insert(
         "prepare-ore-package",
@@ -128,8 +129,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
             process_prepare_ore_package(std::ref(out), std::ref(session), std::move(args));
         },
         "prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id> "
-        "<party_id> <run_grant_id> <correlation_id> <trades_storage_key> "
-        "<market_data_storage_key>");
+        "<party_id> <run_grant_id> <correlation_id> <trades_storage_key> <market_data_storage_key> "
+        "<fixings_storage_key>");
 
     menu->Insert(
         "submit-compute",
@@ -480,7 +481,7 @@ void report_operations_operations_commands::process_assemble_bundle(
         return;
     }
 
-    constexpr std::size_t positional_count = 6;
+    constexpr std::size_t positional_count = 7;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -496,6 +497,7 @@ void report_operations_operations_commands::process_assemble_bundle(
         req.correlation_id = parsed->positionals[next++];
         req.trades_storage_key = parsed->positionals[next++];
         req.market_data_storage_key = parsed->positionals[next++];
+        req.fixings_storage_key = parsed->positionals[next++];
         if (const auto& raw_trade_count = parsed->flag("trade_count"); !raw_trade_count.empty()) {
             req.trade_count = ores::shell::app::from_token<int>(raw_trade_count, "trade_count");
         }
@@ -544,7 +546,7 @@ void report_operations_operations_commands::process_prepare_ore_package(
         return;
     }
 
-    constexpr std::size_t positional_count = 9;
+    constexpr std::size_t positional_count = 10;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -563,6 +565,7 @@ void report_operations_operations_commands::process_prepare_ore_package(
         req.correlation_id = parsed->positionals[next++];
         req.trades_storage_key = parsed->positionals[next++];
         req.market_data_storage_key = parsed->positionals[next++];
+        req.fixings_storage_key = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

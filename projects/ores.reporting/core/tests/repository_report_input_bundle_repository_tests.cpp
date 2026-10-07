@@ -47,7 +47,8 @@ make_bundle(const std::string& tenant_id,
     bundle.report_instance_id = instance_id;
     bundle.definition_id = definition_id;
     bundle.trades_storage_key = instance_id + "/trades.msgpack";
-    bundle.market_data_storage_key = instance_id + "/market_data.msgpack";
+    bundle.market_data_storage_key = instance_id + "/market_data.txt";
+    bundle.fixings_storage_key = instance_id + "/fixings.txt";
     bundle.trade_count = 3;
     bundle.series_count = 5;
     bundle.created_at =
@@ -81,7 +82,8 @@ TEST_CASE("create_and_find_report_input_bundle_by_instance_id", tags) {
     CHECK(found->report_instance_id == instance_id);
     CHECK(found->definition_id == definition_id);
     CHECK(found->trades_storage_key == instance_id + "/trades.msgpack");
-    CHECK(found->market_data_storage_key == instance_id + "/market_data.msgpack");
+    CHECK(found->market_data_storage_key == instance_id + "/market_data.txt");
+    CHECK(found->fixings_storage_key == instance_id + "/fixings.txt");
     CHECK(found->trade_count == 3);
     CHECK(found->series_count == 5);
 }

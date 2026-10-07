@@ -158,6 +158,14 @@ struct gather_market_data_result {
     std::string message;
     int series_count = 0;
     std::string storage_key;
+    /**
+     * @brief Where the gather step put the fixings body.
+     *
+     * The engine reads fixings through a file its run document names, and the
+     * export writes them apart from the market data, so the run carries the key
+     * the packaging step fetches it from.
+     */
+    std::string fixings_storage_key;
 };
 
 struct assemble_bundle_request {
@@ -176,6 +184,14 @@ struct assemble_bundle_request {
     std::string correlation_id;
     std::string trades_storage_key;
     std::string market_data_storage_key;
+    /**
+     * @brief Where the gather step put the fixings body.
+     *
+     * The engine reads fixings through a file its run document names, and the
+     * export writes them apart from the market data, so the run carries the key
+     * the packaging step fetches it from.
+     */
+    std::string fixings_storage_key;
     int trade_count = 0;
     int series_count = 0;
 };
@@ -205,6 +221,11 @@ struct prepare_ore_package_request {
     std::string correlation_id;
     std::string trades_storage_key;
     std::string market_data_storage_key;
+    /**
+     * @brief Where the run's fixings body is, so the package can place it where
+     * the engine reads it.
+     */
+    std::string fixings_storage_key;
 };
 
 struct prepare_ore_package_result {

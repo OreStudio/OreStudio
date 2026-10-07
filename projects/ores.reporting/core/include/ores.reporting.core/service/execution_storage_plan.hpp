@@ -41,6 +41,15 @@ trades_storage_key(const std::string& report_instance_id);
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
 market_data_storage_key(const std::string& report_instance_id);
 
+/**
+ * @brief Where one execution's gathered fixings land.
+ *
+ * Apart from the market data because the engine reads them from a file of
+ * their own.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
+fixings_storage_key(const std::string& report_instance_id);
+
 }
 
 #endif

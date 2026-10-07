@@ -93,6 +93,14 @@ export interface GatherMarketDataResult {
     message: string;
     series_count: number;
     storage_key: string;
+    /**
+     * @brief Where the gather step put the fixings body.
+     *
+     * The engine reads fixings through a file its run document names, and the
+     * export writes them apart from the market data, so the run carries the key
+     * the packaging step fetches it from.
+     */
+    fixings_storage_key: string;
 }
 
 export interface AssembleBundleRequest {
@@ -102,6 +110,14 @@ export interface AssembleBundleRequest {
     correlation_id: string;
     trades_storage_key: string;
     market_data_storage_key: string;
+    /**
+     * @brief Where the gather step put the fixings body.
+     *
+     * The engine reads fixings through a file its run document names, and the
+     * export writes them apart from the market data, so the run carries the key
+     * the packaging step fetches it from.
+     */
+    fixings_storage_key: string;
     trade_count: number;
     series_count: number;
 }
@@ -122,6 +138,11 @@ export interface PrepareOrePackageRequest {
     correlation_id: string;
     trades_storage_key: string;
     market_data_storage_key: string;
+    /**
+     * @brief Where the run's fixings body is, so the package can place it where
+     * the engine reads it.
+     */
+    fixings_storage_key: string;
 }
 
 export interface PrepareOrePackageResult {

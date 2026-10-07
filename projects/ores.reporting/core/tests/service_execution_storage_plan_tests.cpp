@@ -41,7 +41,9 @@ TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
     CHECK(trades_storage_key(instance) ==
           "reporting/runs/11111111-2222-3333-4444-555555555555/trades.msgpack");
     CHECK(market_data_storage_key(instance) ==
-          "reporting/runs/11111111-2222-3333-4444-555555555555/market_data.msgpack");
+          "reporting/runs/11111111-2222-3333-4444-555555555555/market_data.txt");
+    CHECK(fixings_storage_key(instance) ==
+          "reporting/runs/11111111-2222-3333-4444-555555555555/fixings.txt");
 }
 
 TEST_CASE("every key the plan builds is one the protocol parses", tags) {
@@ -57,7 +59,7 @@ TEST_CASE("every key the plan builds is one the protocol parses", tags) {
     const auto market_data =
         ores::storage::api::object_keys::parse(market_data_storage_key(instance));
     REQUIRE(market_data.has_value());
-    CHECK(market_data->name == "market_data.msgpack");
+    CHECK(market_data->name == "market_data.txt");
 }
 
 TEST_CASE("the two sets one run gathers stay apart", tags) {

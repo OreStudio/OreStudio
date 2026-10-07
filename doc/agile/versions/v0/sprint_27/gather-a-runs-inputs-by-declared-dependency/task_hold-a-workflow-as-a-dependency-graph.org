@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: E3988B3F-BB78-4E9C-850A-78CA4CEAF72D
+:END:
+#+title: Task: Hold a workflow as a dependency graph
+#+description: The chain is a std::vector built in code and the instance stores each step's ordinal, so the only edges are the ordinals. Persist the graph with the run — steps as vertices, artifact dependencies as edges — and reconstruct it as a boost::adjacency_list for dispatch, the way ores.dq's publish_service already orders datasets. A step with several producers then has a defined completion condition rather than an ordinal that no longer describes it.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: Declare what a step consumes and produces: a graph needs inputs to put edges on.
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The chain is a =std::vector<workflow_step_def>= built in code, and the
+instance stores each step's ordinal, so the only edge in the graph is the
+ordinal. That is enough while every step produces exactly one artifact and the
+chain is a line, and it stops being enough the moment a step gathers per trade set:
+an ordinal says which step is next, not what a step is waiting for.
+
+Persist the graph with the run — steps as vertices, artifact dependencies as
+edges — and reconstruct it as a =boost::adjacency_list= to decide what is
+dispatchable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- A step's dependencies are persisted with the run and read back at dispatch;
+  the ordinal alone no longer decides what runs.
+- The engine dispatches a step only when its declared inputs exist, whatever
+  position it holds.
+- A consumer of an artifact that N producers write runs only once all N have
+  finished, and runs once, not N times.
+- A run in progress can be resumed after a restart by reconstructing the graph
+  from the database, not from the code that built the chain.
+
+* Plan
+
+Vertices are steps; an edge runs from the producer of an artifact to each of
+its consumers. The ready set is every vertex whose incoming edges are all
+satisfied, which is what the engine dispatches from in place of the ordinal.
+
+The precedent is in this tree: =ores.dq='s =publish_service.cpp= builds a
+=boost::adjacency_list= over datasets and their declared dependencies, orders
+it with =boost::topological_sort=, and publishes in that order. The same shape
+serves here, and a reviewer already knows how to read it.
+
+Two things must survive the change. Compensation is a saga walk of the
+satisfied prefix in reverse, so it needs a defined order from a structure that
+is no longer a line; and =recover_in_progress= must rebuild the graph from the
+database, which is what makes persistence the point rather than a convenience.
+
+Where the edges are persisted is a decision to take with the schema in hand:
+an edge table keeps a step's dependencies open-ended, while a =depends_on=
+column on the step keeps the read simple and would have to become a list. The
+edge table is the one that survives a step with two producers without a second
+migration.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

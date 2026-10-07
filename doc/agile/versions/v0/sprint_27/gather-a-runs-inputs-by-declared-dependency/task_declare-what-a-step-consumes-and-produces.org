@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C
+:END:
+#+title: Task: Declare what a step consumes and produces
+#+description: A step is dispatched by its ordinal position and nothing else, so nothing states what it needs before it can run or what it leaves behind for the next step to read. Give a step a declared set of input artifacts and output artifacts, and make the engine refuse to dispatch a step whose inputs do not exist. This is the declaration half: without it the engine cannot know whether a run is waiting on work or is simply broken.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A step carries an ordinal and nothing else: the engine dispatches step /n+1/
+when step /n/ succeeds, and no part of the system states what a step reads or
+what it leaves behind. A consumer therefore discovers a missing input when it
+runs and fails, which is why a run still gathering and a run that is broken
+look the same from outside.
+
+Give a step a declared set of input artifacts and output artifacts, and make
+the engine consult that declaration before it dispatches.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- A step definition names the artifacts it consumes and the artifacts it
+  produces.
+- The engine refuses to dispatch a step whose declared inputs do not all
+  exist, and names the ones that are missing.
+- An artifact's state is readable per run: missing, in progress, or present.
+- A step that declares no inputs is dispatchable, so the declaration is not a
+  tax on work that has none.
+
+* Plan
+
+The declaration belongs beside the step definition the registry already holds,
+because that is where a step's identity and command subject live. The graph
+task persists it per run; this task is the vocabulary.
+
+An artifact is named by a key the storage plan already builds —
+=reporting/runs/{instance}/...=. Reusing that namespace means the declaration
+and the object cannot drift, and no second registry of names appears.
+
+An artifact's state is *derived*, never stored twice: present means the object
+exists and its producing step reached success, in progress means its producer
+is running, and missing means neither. A stored state column beside the
+objects would be a second truth that a crash could disagree with; the
+principle that makes the run recoverable is that the objects are the record.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

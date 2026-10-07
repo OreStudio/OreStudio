@@ -86,8 +86,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Delivered. =compass pr create= no longer refuses with the bare "No story.org
 next to <task>". It now states that a task belongs in a sprint story, that a
 backlog capture takes no task and no PR until it is promoted, and it names the

@@ -195,48 +195,51 @@ describe('a person’s own requests', () => {
     it('offers only the roles the tenant lets a member ask for', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['roles'], [
-                    {
-                        id: 'role-trading',
-                        version: 1,
-                        name: 'Trading',
-                        description: 'Trading desk access',
-                        service: false,
-                        registrationDefault: false,
-                        requestable: true,
-                        permissionCodes: ['refdata::currencies:read'],
-                    },
-                    {
-                        id: 'role-admin',
-                        version: 1,
-                        name: 'TenantAdmin',
-                        description: 'Runs the tenant',
-                        service: false,
-                        registrationDefault: false,
-                        requestable: false,
-                        permissionCodes: ['iam::accounts:create'],
-                    },
-                    {
-                        id: 'role-service',
-                        version: 1,
-                        name: 'IamService',
-                        description: 'IAM domain service',
-                        service: true,
-                        registrationDefault: false,
-                        requestable: false,
-                        permissionCodes: [],
-                    },
-                    {
-                        id: 'role-held',
-                        version: 1,
-                        name: 'Member',
-                        description: 'What everyone starts with',
-                        service: false,
-                        registrationDefault: false,
-                        requestable: true,
-                        permissionCodes: [],
-                    },
-                ]);
+                client.setQueryData(
+                    ['roles'],
+                    [
+                        {
+                            id: 'role-trading',
+                            version: 1,
+                            name: 'Trading',
+                            description: 'Trading desk access',
+                            service: false,
+                            registrationDefault: false,
+                            requestable: true,
+                            permissionCodes: ['refdata::currencies:read'],
+                        },
+                        {
+                            id: 'role-admin',
+                            version: 1,
+                            name: 'TenantAdmin',
+                            description: 'Runs the tenant',
+                            service: false,
+                            registrationDefault: false,
+                            requestable: false,
+                            permissionCodes: ['iam::accounts:create'],
+                        },
+                        {
+                            id: 'role-service',
+                            version: 1,
+                            name: 'IamService',
+                            description: 'IAM domain service',
+                            service: true,
+                            registrationDefault: false,
+                            requestable: false,
+                            permissionCodes: [],
+                        },
+                        {
+                            id: 'role-held',
+                            version: 1,
+                            name: 'Member',
+                            description: 'What everyone starts with',
+                            service: false,
+                            registrationDefault: false,
+                            requestable: true,
+                            permissionCodes: [],
+                        },
+                    ],
+                );
                 client.setQueryData(['my-access'], { roles: [{ roleId: 'role-held' }] });
             },
             <AskForRoleDialog onClose={() => {}} />,

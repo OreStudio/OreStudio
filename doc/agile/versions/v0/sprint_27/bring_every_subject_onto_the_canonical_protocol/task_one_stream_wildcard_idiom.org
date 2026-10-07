@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9
+:END:
+#+title: Task: State the stream wildcard once
+#+description: Task for: Bring every subject onto the canonical entity protocol
+#+type: task
+#+level: s1
+#+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-every-subject-onto-the-canonical-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One way to state the subjects below a prefix, used at every stream-provisioning and subscription site, so a bare nats_subject constant stops looking like the natural thing to pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- One helper states the prefix and its children, and the market data, synthetic, compute wrapper and workflow services all use it
+- The literal synthetic.v1.tick.> that duplicates synthetic_tick_wildcard() is gone
+- A test that provisions a stream and then publishes through the ingest loop finds a stream, from an empty JetStream
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+A =nats_subject= constant names a prefix. A JetStream stream and a
+subscription need the prefix *and its children*, which is a different
+string, and nothing in the tree says so. Four sites need that string and
+spell it three ways:
+
+| Site | Subject passed to =ensure_stream= | Spelling |
+|------+-----------------------------------+----------|
+| =marketdata/service/app/application.cpp= | =market_tick_wildcard()=, =synthetic_tick_wildcard()= | named helper |
+| =synthetic/service/app/application.cpp= | ="synthetic.v1.tick.>"=, ="synthetic.v1.sandbox.tick.>"= | hardcoded literal, and the first duplicates the helper above |
+| =compute/wrapper/app/application.cpp= | =work_assignment_event::nats_subject + ".>"= | inline concatenation |
+| =workflow/service/app/application.cpp= | two exact leaf subjects | no wildcard needed, nothing publishes below them |
+
+The bare constant sitting beside the wildcard is what makes the mistake
+easy, and it is not hypothetical: the ingest loop test at
+=marketdata/service/tests/app_feed_ingest_loop_tests.cpp= passed the bare
+=market_tick::nats_subject= to =ensure_stream=. A stream on a prefix
+matches none of its children, so the republish to
+=marketdata.v1.tick.<tenant>.<party>.<key>= found no stream and threw
+=No responders available for request=. Fixed in PR 2735.
+
+That test passed on a developer machine for a reason worth keeping: the
+service had provisioned the stream correctly weeks earlier, and
+=ensure_stream= returns early when the stream already exists, so the
+fixture's narrower subject was never applied. The defect only appears
+against an empty JetStream, which is what CI starts from.
+
+This task also carries the =marketdata.v1.tick= rename that the census
+lists as one of the five three-segment subjects. The prefix appears in the
+stream name, the consumer subject, both wildcard helpers and both market
+data test files, so the rename and the idiom should land together.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

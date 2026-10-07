@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment: eager_maxwell
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -116,6 +116,7 @@ gate is a migration that grows back.
 | [[id:02756820-A373-4E59-84C7-BA2CB0E7B69B][Bring the renamed common verbs onto the closed set]] | BACKLOG | | | Six subjects use save or update where the specification's closed set has put. iam.v1.accounts.save, iam.v1.accounts.update and iam.v1.accounts.update-email are the clearest; the rest are the same defect under a different component. |
 | [[id:6596D066-5050-475A-BA3B-6EF0F3E01E10][Move the entity operations into the reserved ops namespace]] | BACKLOG | | | About forty subjects act on an entity without being one of the eight verbs and were never moved to the reserved namespace: iam.v1.accounts.{lock,unlock,change-password,reset-password,update-self,select-party,switch-party,set-default-party,attach-pictures,publish-from-dq} among them. The specification's discriminator is explicit, and the models that already comply -- ores.variability.operations and ores.reporting.operations -- show the shape and the justification each message owes. |
 | [[id:4F84DD5B-FC4E-4E02-BC1B-7CA6EF72448F][Give each resource one spelling and publish the adopted-components list]] | BACKLOG | | | Three subject-parts exist twice, once snake_case and once kebab-case: dq.v1.lei-entities and dq.v1.lei_entities, inbox.v1.approval-requests and inbox.v1.approval_requests, reporting.v1.report-definitions and reporting.v1.report_definitions. Separately, the specification's Conformance section says the components that have adopted it are named by one list, and no such list exists anywhere in the tree. |
+| [[id:63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9][State the stream wildcard once]] | BACKLOG | | | A nats_subject constant names a prefix, but a stream or a subscription needs the prefix and its children. Four sites spell that three ways, and a test that passed the bare constant failed only against an empty JetStream. |
 
 * Decisions
 

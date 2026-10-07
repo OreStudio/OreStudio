@@ -165,11 +165,14 @@ agree until somebody recreates the database under a running service. The
 accepted design gives the row a second reader: the login answer carries it to
 the session.
 
-The versions screen needs a hand-written BFF route like the other operations
-screens on the [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves it yet; the prototype adds
-=GET /api/operations/versions=, which reads the session's version and states
-the database from the login answer. A session whose answer carried no row
-states the database as unknown.
+The versions screen needs no route of its own. The session already carries the
+build the login answer stated, and the database row beside it, so the screen
+reads the session and asks for nothing. The hand-written BFF route pattern
+belongs to the services screen instead, which reads the roster through
+=GET /api/operations/services= on the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]] — see
+[[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]]. A
+session whose answer carried no row states the database as unknown.
 
 * What is missing
 

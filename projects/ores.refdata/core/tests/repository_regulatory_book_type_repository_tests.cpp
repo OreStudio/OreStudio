@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/regulatory_book_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/regulatory_book_type_generator.hpp"
@@ -27,8 +27,11 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <string_view>
 
 namespace {
 

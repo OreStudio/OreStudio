@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: F04483D1-9B8C-4358-91FA-FB1C77C6B72C
+:END:
+#+title: Task: Separate the nightly include fixes by layer and guard generated files
+#+description: Classify PR #2738's files by the codegen generated marker, keep the hand-crafted fixes, reject the suggestions that name implementation headers, and make check_includes.sh skip generated files.
+#+type: task
+#+level: s1
+#+filetags: :nightly_includes_and_generated_files:sprint_27:v0:
+#+owner: marco
+#+branch: feature/nightly-includes-and-generated-files
+#+pr: 2739
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:079FA16E-82FB-45AB-AA1C-A8BDF43B7E40][Keep the nightly include-cleaner out of generated files]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every include fix from the nightly run lands in the layer that owns the file: hand-crafted sources directly, generated sources through their templates.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:079FA16E-82FB-45AB-AA1C-A8BDF43B7E40][Keep the nightly include-cleaner out of generated files]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The changes in PR #2738 are classified as generated or hand-crafted, with the method recorded.
+- The nightly fixer leaves generated files alone and reports them instead.
+- The sound hand-crafted fixes land and the unsound suggestions are dropped.
+
+* Plan
+
+The method, in the order that settles each file:
+
+1. List the run's files with =git diff --name-only origin/main...origin/bot/nightly-includes=.
+2. Mark each by the marker the codegen writes into every output it produces: =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY=, emitted for C++, CMake and org by =core.py=.
+3. Cross-check against the generator itself. =codegen.py regenerate --component refdata --address ores.cpp --dry-run= lists the files the models produce, and =check_component_drift.py --component refdata --dry-run= proves the checked-in generated tree still matches its templates.
+4. Reject any suggestion that names an implementation header where a public one exists.
+
+/Result./ All 49 files are hand-crafted. None carries the marker, none appears in the generator's output list, and applying the whole patch leaves the refdata drift gate clean — so this run needs no archetype change. The codegen half of the problem is therefore preventative: the fixer scanned 5115 generated translation units of 6183, and a future run will find one of them include-dirty and edit output that the next regeneration overwrites.
+
+=check_includes.sh= now removes the marked files from the clang-tidy list and prints each one on stderr. A generated file with an include problem is fixed in its =ores.*.org= archetype, re-tangled with =compass build --direct tangle_codegen_templates= and regenerated.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Translation units in the preset's compile_commands.json | 6183 | python3 -c "import json; print(len({e['file'] for e in json.load(open('build/output/linux-clang-debug-ninja/compile_commands.json'))}))" | a94740de42 |
+| Of those, generated (carry the marker) | 5115 | grep the AUTO-GENERATED marker over the same file list | a94740de42 |
+| Files changed by PR #2738 | 49 | git diff --name-only origin/main...origin/bot/nightly-includes | a94740de42 |
+| Of those, generated | 0 | marker scan over the 49 | a94740de42 |
+| Codegen drift for refdata with the whole patch applied | clean | check_component_drift.py --component refdata --dry-run | a94740de42 |
+
+* Notes
+
+The 49 files split into three kinds of change. Most are plain missing direct includes: =<string>=, =<vector>=, =<cstdint>=, =<optional>=, =<utility>=, =<chrono>= and the project headers the file's own symbols come from. Some narrow an umbrella include to the headers actually used, and those are sound: =options.cpp= keeps only =<rfl/json/write.hpp>= because it calls only =rfl::json::write=, and =parser.cpp= keeps =errors.hpp= and =options_description.hpp= because it names only =boost::program_options::error= and =options_description=.
+
+Four suggestions name implementation headers and were dropped:
+
+- =<bits/chrono.h>=, a libstdc++ internal, alongside the =<chrono>= the same hunk adds.
+- =<boost/asio/impl/co_spawn.hpp>=, swapped in for =<boost/asio/co_spawn.hpp>= in two files.
+- =ores.service/service/domain_service_runner_impl.hpp= and
+  =host_runner_impl.hpp=, swapped in for the public headers. Both public
+  headers include their =_impl= at the end, so the public include is
+  sufficient and is the interface to keep.
+
+The codegen question the story was opened for turned out to have no
+present-day instance: nothing in this run needed a template change. The
+guard is what keeps it that way.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2739][#2739]] | [format] Land the nightly include fixes and keep the fixer out of generated files |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The 49 fixes from the nightly run are applied to ores.refdata with the four
+implementation-header suggestions dropped, and =check_includes.sh= now skips
+the 5115 generated translation units and names them. All 49 changed translation
+units pass =clang++ -fsyntax-only= under the project's own flags, and the
+codegen drift gate for refdata stays clean with the whole run applied.

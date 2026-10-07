@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 #include "ores.refdata.api/generators/ibor_index_convention_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
-#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <vector>
 
 namespace {
 

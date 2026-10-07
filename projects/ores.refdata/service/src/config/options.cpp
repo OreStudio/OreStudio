@@ -18,8 +18,8 @@
  *
  */
 #include "ores.refdata.service/config/options.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <ostream>
+#include <rfl/json/write.hpp>
 
 namespace ores::refdata::service::config {
 

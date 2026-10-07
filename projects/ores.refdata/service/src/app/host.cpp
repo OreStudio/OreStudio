@@ -21,6 +21,11 @@
 #include "ores.refdata.service/app/application.hpp"
 #include "ores.refdata.service/config/parser.hpp"
 #include "ores.service/service/host_runner.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service::app {
 

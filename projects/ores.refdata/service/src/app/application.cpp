@@ -18,21 +18,28 @@
  *
  */
 #include "ores.refdata.service/app/application.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/database_options.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
-#include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
-#include "ores.eventing.core/service/registrar.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
+#include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
+#include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <cstddef>
+#include <memory>
+#include <string_view>
 
 namespace ores::refdata::service::app {
 

@@ -18,16 +18,26 @@
  *
  */
 #include "ores.refdata.core/messaging/configuration_document_handler.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/error_code.hpp"
 #include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <exception>
+#include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace ores::refdata::messaging {
 

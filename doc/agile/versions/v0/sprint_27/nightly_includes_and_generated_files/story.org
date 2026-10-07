@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 079FA16E-82FB-45AB-AA1C-A8BDF43B7E40
+:END:
+#+title: Story: Keep the nightly include-cleaner out of generated files
+#+description: The nightly include-cleaner PR edits projects/ blindly. Classify its changes against the codegen generated marker, keep the hand-crafted fixes, and make the fixer skip generated files so their includes are fixed in the archetype templates.
+#+type: story
+#+level: s2
+#+filetags: :codegen:ci:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every include fix from the nightly run lands in the layer that owns the file: hand-crafted sources directly, generated sources through their templates.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- The changes in PR #2738 are classified as generated or hand-crafted, with the method recorded.
+- The nightly fixer leaves generated files alone and reports them instead.
+- The sound hand-crafted fixes land and the unsound suggestions are dropped.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A8B65E02-1526-4B88-84D8-007FE538908C][Scaffold story: Keep the nightly include-cleaner out of generated files]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F04483D1-9B8C-4358-91FA-FB1C77C6B72C][Separate the nightly include fixes by layer and guard generated files]] | DONE | 2026-10-07 | 2026-10-07 | Classify the run's files by the codegen marker, apply the hand-crafted fixes, drop the suggestions that name implementation headers, and make check_includes.sh skip generated files. |
+
+* Decisions
+
+- The classification is the codegen's own marker, not the file name or
+  path. Every output carries =AUTO-GENERATED FILE - DO NOT EDIT MANUALLY=,
+  and =check_component_drift.py= independently confirms that applying the
+  whole run leaves the refdata generated tree clean. File naming would have
+  mis-classified several files: =asset_class_service.cpp= is hand-written
+  while =asset_class_code_service.cpp= is generated.
+- The fixer skips generated files rather than formatting them and failing
+  the drift gate later. A generated file's includes belong to its archetype
+  in =library/templates/ores.*.org=, so the script names the skipped files
+  and the fix goes to the template, the tangle and the regeneration.
+- Implementation-header suggestions are refused. clang-tidy names the
+  header that defines a symbol even when a public header forwards to it, so
+  =<bits/chrono.h>=, =<boost/asio/impl/co_spawn.hpp>= and the =_impl= runner
+  headers are dropped in favour of their public equivalents.
+
+* Out of scope
+
+-
+
+* Result
+
+The nightly run's changes are classified by the codegen's own marker, applied
+where they are hand-crafted, and refused where they name an implementation
+header. The fixer now skips generated files and names them, so a generated
+file's includes are fixed in its archetype instead of in output the next
+regeneration overwrites. Landed with PR #2739.

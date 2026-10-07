@@ -9,7 +9,9 @@
 # std::to_string without the string header), or an include nothing
 # uses. Without --fix it dry-runs; with --fix it applies the suggested
 # changes in place, which is what the nightly workflow uses before it
-# opens its bot PR.
+# opens its bot PR. Generated files are skipped and named: their
+# includes belong to the archetype templates, not to the checked-in
+# output.
 #
 # Usage (from the checkout root):
 #   cmake --preset <preset>
@@ -49,13 +51,30 @@ echo "Checking include hygiene against ${cc}..."
 # script; a stray translation unit that fails to parse is tolerated
 # (clang-tidy prints the reason to stderr) so one broken file cannot
 # block the nightly bot PR.
+#
+# Generated files are skipped. Their includes come from the archetype
+# templates under library/templates/, so a fix applied here is
+# overwritten by the next regeneration and rejected by the codegen drift
+# gate. The skipped paths are printed, because a generated file with an
+# include problem is a real defect: it is fixed in its ores.*.org
+# archetype, re-tangled with 'compass build --direct
+# tangle_codegen_templates', and regenerated.
 files="$(python3 - "${cc}" <<'PYEOF'
 import json
 import pathlib
 import sys
 
+MARKER = "AUTO-GENERATED FILE - DO NOT EDIT MANUALLY"
+
 cc = json.loads(pathlib.Path(sys.argv[1]).read_text())
-print("\n".join(sorted({entry["file"] for entry in cc})))
+files = sorted({entry["file"] for entry in cc})
+generated = [f for f in files
+             if MARKER in pathlib.Path(f).read_text(errors="ignore")]
+for path in generated:
+    print(f"skipping generated file (fix its template instead): {path}",
+          file=sys.stderr)
+skip = set(generated)
+print("\n".join(f for f in files if f not in skip))
 PYEOF
 )"
 

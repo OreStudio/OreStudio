@@ -18,12 +18,17 @@
  *
  */
 #include "ores.refdata.service/config/parser.hpp"
+#include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
 #include "ores.utility/version/version.hpp"
-#include <boost/program_options.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/options_description.hpp>
 #include <boost/throw_exception.hpp>
+#include <optional>
 #include <ostream>
+#include <string>
+#include <vector>
 
 namespace {
 

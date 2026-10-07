@@ -72,6 +72,8 @@ const wireRoleSchema = z.object({
     name: z.string(),
     description: z.string().default(''),
     is_registration_default: z.boolean().default(false),
+    /** Absent from a peer that predates the flag, and then not on offer. */
+    is_requestable: z.boolean().default(false),
 });
 
 const accessReplySchema = z.object({
@@ -210,6 +212,7 @@ export async function readRoles(caller: AuthenticatedCaller): Promise<RoleSummar
                 description: role.description,
                 service,
                 registrationDefault: role.is_registration_default,
+                requestable: role.is_requestable,
                 permissionCodes: service ? [] : await readRolePermissions(caller, role.id),
             };
         }),
@@ -294,8 +297,8 @@ export async function takeRoleAway(
 }
 
 /**
- * Writes a role's name and description: a new role when no id is given, or a
- * new version of the one named.
+ * Writes a role's name, description and whether a member may ask for it: a
+ * new role when no id is given, or a new version of the one named.
  */
 export async function saveRole(
     caller: AuthenticatedCaller,
@@ -305,6 +308,7 @@ export async function saveRole(
         readonly name: string;
         readonly description: string;
         readonly registrationDefault: boolean;
+        readonly requestable: boolean;
     },
 ): Promise<AccessWrite> {
     const request: PutRoleRequest = {
@@ -314,6 +318,7 @@ export async function saveRole(
                 name: input.name,
                 description: input.description,
                 is_registration_default: input.registrationDefault,
+                is_requestable: input.requestable,
             },
             precondition:
                 input.version === null

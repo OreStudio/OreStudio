@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: D9A7405C-99CF-410E-AED5-223337A9C25B
+:END:
+#+title: Test Scenario: Verify a member may ask only for the roles the tenant offers
+#+description: A member asks for a role the tenant offers and for one it does not, and reads the refusal.
+#+type: test_scenario
+#+level: s1
+#+filetags: :land-the-role-request-journey:sprint_27:v0:
+#+target_dialog:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] in [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The database must be freshly provisioned with Acme Corporation, so the
+  tenant holds the seeded roles and their flags:
+  =compass db recreate -y -k=, then
+  =compass shell -f build/evidence/bootstrap_acme.ores=. Confirm the run
+  reports no failed steps.
+- The services must be up: =compass services start=.
+- The member's password must be set, because provisioning does not set one:
+  =compass shell -l doc/agile/versions/v0/sprint_27/land-the-role-request-journey/evidence/requestable_reset.ores=.
+- The role ids below are the ones a fresh provisioning run generates, so read
+  them again before you start:
+  =compass sql -- -f doc/agile/versions/v0/sprint_27/land-the-role-request-journey/evidence/requestable_roles.sql=.
+  The scenario uses =IamService=, which nobody may ask for, and =Operations=,
+  which the tenant offers.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] |
+| Parent story  | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]]   |
+| Target screen | The shell, then *My access* in =ores.web=. |
+| Clients       |                                          |
+| State         | BACKLOG                               |
+
+* Steps
+
+** Log in as the member
+
+- Log in as =ashley.moore@acme_corporation= with the password
+  =Ashley-Pass-123=, with
+  =compass shell -u ashley.moore@acme_corporation -p Ashley-Pass-123=.
+- The banner names =ashley.moore= and the Acme Corporation tenant. A member
+  is who this scenario needs: an administrator holds the permission that
+  decides requests, so the refusal would be a different one.
+
+** Ask for a role nobody offers
+
+- Run
+  =role_request_operations ask-for-roles <IamService id> "I would like the IAM service role"=.
+- The answer is
+  ={"result":{"outcome":"denied","code":"not_requestable","message":"This role is not one a member may ask for.","fields":[]},"request_id":""}=.
+- Three things confirm the step: the outcome is =denied=, the code is
+  =not_requestable= rather than a sentence to match, and =request_id= is
+  empty, so no request was raised.
+
+** Ask for a role the tenant offers
+
+- Run
+  =role_request_operations ask-for-roles <Operations id> "I cover the trading desk next week"=.
+- The answer carries ={"outcome":"ok"}= and a =request_id=.
+- The accepted ask is unaffected by the refusal before it.
+
+** Read your own requests
+
+- Run =approval_operations list-my-approval-requests=.
+- The list holds exactly one request, the accepted one, waiting under kind
+  =iam.role_grant=.
+- The refused ask left nothing in the queue. Two rows here means the refusal
+  half-wrote a request.
+
+** Ask from the screen
+
+- In =ores.web=, sign in as the same member and open *My access*.
+- Open *Ask for a role*. The picker lists the roles the tenant offers and
+  not =IamService=, =TenantAdmin= or the other service roles.
+- The screen narrows the list and the server decides: the step passes when
+  the picker omits the roles the shell just refused.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+The same walk was run as evidence at commit =36f1396b9d= and recorded in
+=evidence/requestable_ask.txt= and =evidence/requestable_roles.txt=.

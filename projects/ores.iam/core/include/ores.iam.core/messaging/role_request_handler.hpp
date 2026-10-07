@@ -154,9 +154,10 @@ private:
     /**
      * @brief Why a request may not be made, or nothing when it may.
      *
-     * Every role must exist in the tenant, must not be held already, and must
-     * not be waiting in another request: a second request for the same role
-     * would only queue twice.
+     * Every role must exist in the tenant, must be one the tenant offers to
+     * its members, must not be held already, and must not be waiting in
+     * another request: a second request for the same role would only queue
+     * twice.
      */
     std::optional<ores::utility::domain::result> check(const ores::database::context& ctx,
                                                        const ask_for_roles_request& req) {
@@ -175,8 +176,13 @@ private:
             } catch (const std::exception&) {
                 return role_request_result(outcome::invalid, "unknown_role", "No such role: " + id);
             }
-            if (roles.read_latest(ctx, id).empty())
+            const auto found = roles.read_latest(ctx, id);
+            if (found.empty())
                 return role_request_result(outcome::invalid, "unknown_role", "No such role: " + id);
+            if (!found.front().is_requestable)
+                return role_request_result(outcome::denied,
+                                           "not_requestable",
+                                           "This role is not one a member may ask for.");
         }
 
         const auto me = account_id(ctx);

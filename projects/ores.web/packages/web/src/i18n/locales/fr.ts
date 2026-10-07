@@ -165,6 +165,9 @@ const fr: SourceCatalogue = {
                 'Le rôle ne permet rien au départ. Vous choisissez ensuite ce qu’il permet.',
             notFound: 'Aucun rôle n’a cet identifiant.',
             rename: 'Renommer ou décrire',
+            requestable: 'Les membres peuvent demander ce rôle',
+            requestableHint:
+                'Un membre qui ne le détient pas peut le demander, et vous décidez. Décochez ceci pour un rôle que personne ne doit pouvoir demander.',
             delete: 'Supprimer le rôle',
             heldCannotDelete: 'Retirez-le d’abord à tous ceux qui l’ont.',
             heldBy: 'Détenu par',

@@ -713,11 +713,16 @@ $$ language plpgsql;
 
 /**
  * Upsert a role.
+ *
+ * A member may ask for a role the tenant offers. A service's role and the role
+ * that grants everything are not roles a person asks for, so the callers that
+ * create those pass p_is_requestable false.
  */
 create or replace function ores_iam_roles_upsert_fn(
     p_tenant_id uuid,
     p_name text,
-    p_description text
+    p_description text,
+    p_is_requestable boolean default true
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_name, 'Role name');
@@ -734,9 +739,9 @@ begin
         return;
     end if;
 
-    insert into ores_iam_roles_tbl (tenant_id, id, version, name, description, modified_by,
-        performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-    values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, current_user,
+    insert into ores_iam_roles_tbl (tenant_id, id, version, name, description, is_requestable,
+        modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+    values (p_tenant_id, gen_random_uuid(), 1, p_name, p_description, p_is_requestable, current_user,
             current_user, 'system.new_record', 'System seed data',
             current_timestamp, ores_utility_infinity_timestamp_fn());
 

@@ -41,6 +41,7 @@ std::vector<ores::diff::domain::field_value> render_role_fields(const domain::ro
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back(
         {.name = "Is Registration Default", .value = v.is_registration_default ? "true" : "false"});
+    fields.push_back({.name = "Is Requestable", .value = v.is_requestable ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

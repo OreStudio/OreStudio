@@ -169,6 +169,9 @@ const pt: SourceCatalogue = {
             startsEmpty: 'O papel começa sem permitir nada. Escolhe depois o que permite.',
             notFound: 'Nenhum papel tem este identificador.',
             rename: 'Mudar o nome ou a descrição',
+            requestable: 'Os membros podem pedir este papel',
+            requestableHint:
+                'Um membro que não o tenha pode pedi-lo, e você decide. Desmarque isto para um papel que ninguém deve poder pedir.',
             delete: 'Apagar papel',
             heldCannotDelete: 'Retire-o primeiro a todos os que o têm.',
             heldBy: 'Atribuído a',

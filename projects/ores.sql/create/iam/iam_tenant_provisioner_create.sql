@@ -141,13 +141,15 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % permissions', v_copied_count;
 
-    -- Copy roles (versioned table with audit columns)
+    -- Copy roles (versioned table with audit columns). The askable flag comes
+    -- across, so a provisioned tenant offers its members the same roles the
+    -- starting point does and no others.
     insert into ores_iam_roles_tbl (
-        id, tenant_id, name, description,
+        id, tenant_id, name, description, is_requestable,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
-        gen_random_uuid(), v_tenant_id, r.name, r.description,
+        gen_random_uuid(), v_tenant_id, r.name, r.description, r.is_requestable,
         v_actor, v_actor, 'system.new_record', 'Copied from system tenant during provisioning'
     from ores_iam_roles_tbl r
     where r.tenant_id = v_system_tenant_id

@@ -1,0 +1,48 @@
+What the browser is served for a member's role list, read from the running
+BFF rather than from the database. This is the path the *Ask for a role*
+picker reads, so it shows the flag reaching the screen.
+
+Command:
+
+    curl -sS -c /tmp/ashley_cookie.txt -X POST http://localhost:21402/api/session \
+        -H 'Content-Type: application/json' \
+        -d '{"username":"ashley.moore@acme_corporation","password":"Ashley-Pass-123"}'
+    curl -sS -b /tmp/ashley_cookie.txt http://localhost:21402/api/roles
+
+Output, the requestable flag first and the role name after it:
+
+    total 30
+    no   ComputeService
+    ASK  DataPublisher
+    ASK  ReportRun
+    no   RefdataService
+    no   SchedulerService
+    no   OreService
+    no   TelemetryService
+    no   ReportingService
+    no   AnalyticsService
+    ASK  Support
+    no   AssetsService
+    ASK  Trading
+    no   DqService
+    no   WorkspaceService
+    no   TradingService
+    no   HttpService
+    no   SyntheticService
+    ASK  Member
+    no   VariabilityService
+    no   MarketdataService
+    no   StorageService
+    no   InboxService
+    no   IamService
+    ASK  Sales
+    no   WorkflowService
+    ASK  Operations
+    no   ComputeWrapperService
+    ASK  Viewer
+    no   SuperAdmin
+    no   TenantAdmin
+
+Eight of thirty roles are offered, and they are the eight the seed leaves
+askable. The BFF derives nothing: it passes the row's own flag through, where
+it used to work the answer out from the role's name.

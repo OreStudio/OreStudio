@@ -64,6 +64,7 @@ create table if not exists "ores_iam_roles_tbl" (
     "name" text not null,
     "description" text not null,
     "is_registration_default" boolean not null default false,
+    "is_requestable" boolean not null default true,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

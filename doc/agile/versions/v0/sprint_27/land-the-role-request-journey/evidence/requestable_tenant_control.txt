@@ -1,0 +1,38 @@
+The tenant administrator withdraws a role through the browser's own route and
+puts it back. This is what "the tenant can say which roles a member may ask
+for" means as behaviour rather than as a column, and it is the half a seed
+cannot show.
+
+Commands, in one session against the running BFF on port 21402:
+
+    POST /api/session           as tenant_admin@acme_corporation
+    POST /api/session/party     the tenant administrator holds several parties
+    GET  /api/roles
+    PUT  /api/roles/<Operations id>   {"...","requestable": false}
+    GET  /api/roles
+    ... then the member asks for it from the shell ...
+
+Output:
+
+    before:   cb4fad75-3d63-4dd6-a24d-d976c5556840 version 1 requestable True
+    PUT status:204
+    after:    version 2 requestable False
+
+The member, asking for the same role that was accepted in
+=evidence/requestable_ask.txt=, now reads:
+
+    > role_request_operations ask-for-roles cb4fad75-3d63-4dd6-a24d-d976c5556840 "I cover the trading desk next week"
+    {"result":{"outcome":"denied","code":"not_requestable","message":"This role is not one a member may ask for.","fields":[]},"request_id":""}
+
+The role was taken back up afterwards, so the environment is as it was:
+
+    now:      version 2 requestable False
+    PUT back status:204
+    restored: version 3 requestable True
+    offered count: 8
+
+Two things follow. The answer is the tenant's and not the platform's, because
+the same role and the same member give opposite outcomes either side of one
+write. And the write goes through the ordinary role path, so the row carries
+the version and the audit tail every role change carries rather than a special
+one for this flag.

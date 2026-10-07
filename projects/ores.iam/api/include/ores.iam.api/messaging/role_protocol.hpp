@@ -44,6 +44,7 @@ struct role_write {
     std::string name;
     std::string description;
     bool is_registration_default;
+    bool is_requestable;
 };
 
 struct role_change {

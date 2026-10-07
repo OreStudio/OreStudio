@@ -49,6 +49,7 @@ domain::role generate_synthetic_role(utility::generation::generation_context& ct
     r.name = std::string("Role_") + ctx.alphanumeric(6) + "-" + std::to_string(idx);
     r.description = std::string("Synthetic test role");
     r.is_registration_default = false;
+    r.is_requestable = true;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -1,0 +1,50 @@
+Every role the ACME tenant holds, and whether a member may ask for it.
+ACME is a provisioned tenant, so this also shows the tenant provisioner
+carrying the flag across. Run at commit 36f1396b9d on a database recreated
+from scratch.
+
+Command:
+
+    ./compass.sh sql -- -f evidence/requestable_roles.sql
+
+Output:
+
+             name          | is_requestable 
+    -----------------------+----------------
+     AnalyticsService      | f
+     AssetsService         | f
+     ComputeService        | f
+     ComputeWrapperService | f
+     DqService             | f
+     HttpService           | f
+     IamService            | f
+     InboxService          | f
+     MarketdataService     | f
+     OreService            | f
+     RefdataService        | f
+     ReportingService      | f
+     SchedulerService      | f
+     StorageService        | f
+     SuperAdmin            | f
+     SyntheticService      | f
+     TelemetryService      | f
+     TenantAdmin           | f
+     TradingService        | f
+     VariabilityService    | f
+     WorkflowService       | f
+     WorkspaceService      | f
+     DataPublisher         | t
+     Member                | t
+     Operations            | t
+     ReportRun             | t
+     Sales                 | t
+     Support               | t
+     Trading               | t
+     Viewer                | t
+    (30 rows)
+
+Twenty-two rows are not askable: the twenty roles a platform service signs in
+with, and the two that grant every permission. Eight are askable: the roles a
+person takes on to do a job. That is the rule the screens used to hold as a
+name suffix and a permission count, now stated by the tenant and carried to
+every tenant it provisions.

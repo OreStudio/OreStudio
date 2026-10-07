@@ -28,6 +28,7 @@ import type { InboxNotificationView, InboxRequestView } from '@ores/wire-protoco
 import { TranslationProvider } from '../i18n/Provider.js';
 import { MyAccessPage } from '../access/MyAccessPage.js';
 import { AppShell } from '../components/AppShell.js';
+import { AskForRoleDialog } from './AskForRoleDialog.js';
 import { NotificationBell, notificationRoute } from './NotificationBell.js';
 import { RequestDetailPage } from './RequestDetailPage.js';
 import { RequestsPage } from './RequestsPage.js';
@@ -190,6 +191,63 @@ describe('a person’s own requests', () => {
 
         expect(html).toContain('Ask for a role');
     });
+
+    it('offers only the roles the tenant lets a member ask for', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['roles'], [
+                    {
+                        id: 'role-trading',
+                        version: 1,
+                        name: 'Trading',
+                        description: 'Trading desk access',
+                        service: false,
+                        registrationDefault: false,
+                        requestable: true,
+                        permissionCodes: ['refdata::currencies:read'],
+                    },
+                    {
+                        id: 'role-admin',
+                        version: 1,
+                        name: 'TenantAdmin',
+                        description: 'Runs the tenant',
+                        service: false,
+                        registrationDefault: false,
+                        requestable: false,
+                        permissionCodes: ['iam::accounts:create'],
+                    },
+                    {
+                        id: 'role-service',
+                        version: 1,
+                        name: 'IamService',
+                        description: 'IAM domain service',
+                        service: true,
+                        registrationDefault: false,
+                        requestable: false,
+                        permissionCodes: [],
+                    },
+                    {
+                        id: 'role-held',
+                        version: 1,
+                        name: 'Member',
+                        description: 'What everyone starts with',
+                        service: false,
+                        registrationDefault: false,
+                        requestable: true,
+                        permissionCodes: [],
+                    },
+                ]);
+                client.setQueryData(['my-access'], { roles: [{ roleId: 'role-held' }] });
+            },
+            <AskForRoleDialog onClose={() => {}} />,
+            '/access',
+        );
+
+        expect(html).toContain('Trading desk access');
+        expect(html).not.toContain('Runs the tenant');
+        expect(html).not.toContain('IAM domain service');
+        expect(html).not.toContain('What everyone starts with');
+    });
 });
 
 describe('the request queue', () => {
@@ -266,6 +324,7 @@ describe('answering one request', () => {
                             description: 'Trading desk access',
                             service: false,
                             registrationDefault: false,
+                            requestable: true,
                             permissionCodes: ['refdata::currencies:read'],
                         },
                     ],

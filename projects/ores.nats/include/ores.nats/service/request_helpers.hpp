@@ -22,6 +22,7 @@
 
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/refusal.hpp"
 #include "ores.nats/service/timeouts.hpp"
 #include <chrono>
 #include <string>
@@ -51,6 +52,7 @@ request_and_decode(nats_client& session, std::string_view subject, const Request
     const auto bytes = codec.encode(req);
     const std::string body(reinterpret_cast<const char*>(bytes.data()), bytes.size());
     const auto reply = session.request(subject, body);
+    throw_if_refused(reply, subject);
     return codec.decode<Response>(reply.data);
 }
 
@@ -66,6 +68,7 @@ authenticated_request_and_decode(nats_client& session,
                                  std::chrono::milliseconds timeout = default_request_timeout) {
     const auto& codec = default_wire_codec();
     const auto reply = session.authenticated_request(subject, codec.encode(req), timeout);
+    throw_if_refused(reply, subject);
     return codec.decode<Response>(reply.data);
 }
 
@@ -92,6 +95,7 @@ request_and_decode(nats_client& session,
             session.authenticated_request(subject, bytes, timeout) :
             session.request(subject,
                             std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size()));
+    throw_if_refused(reply, subject);
     return codec.decode<Response>(reply.data);
 }
 

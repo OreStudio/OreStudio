@@ -8,7 +8,7 @@
 #+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
 #+owner: marco
 #+branch: feature/reporting-compute-handoff
-#+pr:
+#+pr: 2740
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2740][#2740]] | [compute] Let the shared wrapper fleet take a tenant's work |
 
 * Review
 

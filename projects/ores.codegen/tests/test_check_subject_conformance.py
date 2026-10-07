@@ -94,6 +94,42 @@ def test_the_models_declare_subjects_to_check():
     assert all(subject for _, _, subject in subjects)
 
 
+# -- the subjects no model declares ----------------------------------------
+
+
+def test_the_writing_sites_are_read():
+    # The migration of 2026-10-07 missed ten subjects because the gate read
+    # only a model's :subject:. The sites it reads now must not go empty.
+    written = check_subject_conformance.written_subjects()
+    assert written, "the writing-site scan found nothing"
+    assert all(subject for _, _, subject in written)
+
+
+def test_a_sql_job_name_is_not_read_as_a_subject():
+    # A scheduler job definition's name has the shape of a subject and is not
+    # one. It lives in a file no site points at, and assuming otherwise is what
+    # stops a widened scan from being trusted.
+    subjects = {s for _, _, s in check_subject_conformance.written_subjects()}
+    assert "compute.v1.reap.stale_results" not in subjects
+
+
+def test_an_event_base_is_not_read_as_a_subject():
+    # c.v1.<resource>_events is the prefix an event's action is appended to at
+    # run time, not a subject in its own right.
+    subjects = {s for _, _, s in check_subject_conformance.written_subjects()}
+    assert "trading.v1.trades_events" not in subjects
+
+
+def test_every_written_subject_conforms():
+    offences = [
+        (path, line, subject, reason)
+        for path, line, subject in check_subject_conformance.written_subjects()
+        for ok, reason in [check_subject_conformance.classify(subject)]
+        if not ok
+    ]
+    assert not offences, offences
+
+
 def test_the_committed_tree_is_clean_against_its_baseline(capsys):
     assert check_subject_conformance.main([]) == 0
     assert "none new" in capsys.readouterr().out

@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 2A705A0A-DCEB-4DB4-93D7-A16E23F19F00
+:END:
+#+title: Task: Read the subjects no model declares
+#+description: The gate reads a model's :subject: and nothing else, so a subject written in a protocol header, a hand-written constant or a DQ seed is invisible to it. Read those sites precisely enough to tell a subject from a job name or an event base.
+#+type: task
+#+level: s1
+#+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-the-undeclared-subjects-onto-the-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The gate reads a subject wherever a person writes one, not only where a model
+declares it.
+
+=WRITING_SITES= is a registry of the places a subject is written without a
+model: a protocol header or hand-written constant (the
+=std::string_view ..._subject[_prefix] = "..."= shape, wrapped or not), and the
+=target_subject= a DQ artefact type seeds. Each site names its paths *and* the
+shape the subject takes there, so adding a new way to write one is a deliberate
+act rather than a silent blind spot.
+
+Reading 212 subjects where it read 159, and still reporting none outside the
+grammar. The precision is the point: the registry reads where a subject is
+written rather than guessing from what it looks like, so a scheduler job name
+(=compute.v1.reap.stale_results=) and an event base
+(=trading.v1.trades_events=) are not read at all. Both are pinned by tests, so
+a future widening that reintroduces them fails rather than being noticed in
+review.
+
+Four cases hold the widening: the sites are read and not empty, a job name is
+not read, an event base is not read, and every written subject conforms. The
+codegen suite is 1266 cases.
+
+The capture that scoped this is deleted, and its false-positive analysis lives
+on in the registry's comment and those cases.
+

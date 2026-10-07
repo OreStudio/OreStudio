@@ -1141,6 +1141,7 @@ evolution second, the representation third.
 | [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
 | [[id:412F1C3E-7C86-4E1D-9E4E-ECE6CF97AB6B][Check the curve model against the journeys and start the representation]] | BACKLOG | | | Settle the shape the journeys demand against the tables that exist, give a point its provenance and a manual key its author, and start the representation. |
 | [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] | BACKLOG | | | A term structure is drawn from points that rarely share an observation instant, so a plot can mix market horizons without saying so. Every point carries its age and the view shows it. |
+| [[id:8A1B795A-91B7-4157-86BF-87CD5DD5D234][Let an operator key and clear a curve point by hand]] | BACKLOG | | | A manual point can be recorded and read, but nothing in the product can key one. Add the write and clear path, so an operator over-keys a coordinate and withdraws it, with the actor and reason recorded. |
 
 * Decisions
 

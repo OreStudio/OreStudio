@@ -20,28 +20,58 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Collapse the spurious asset-class forks that remain in the synthetic
+generation control plane onto the one pipeline, so an asset class varies
+only in its datum shape, its configuration fields and its process maths.
+Every other concern — the tick clock, the vintage read, the registry
+instance, and the handler plumbing — exists once over registered kinds
+instead of once per asset class. A collapse deletes one of two copies; it
+does not add a branch that moves the fork.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Not yet started.                       |
+| Now          | Three forks collapsed and committed at =20a45d6a50= (tick clock, vintage read, factory instance). The other seven spurious forks are confirmed present at =b72fc67e44= and untouched. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-06                               |
+| Next         | Collapse the per-kind control plane: the =feed_config_handler= repository probe and its =start_fx=/=start_ir= split, the folder per-kind start/stop loops, and the per-kind permission strings. These three share one registry seam and are best done together. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- The tick clock, the vintage read and the registry instance exist once,
+  and both asset classes run through them.
+- No asset class's observable behaviour changes. Any difference that could
+  not be removed without choosing a side is recorded under =* Notes=.
+- =ores.synthetic.api.tests=, =ores.synthetic.core.tests=,
+  =ores.synthetic.service.tests= and =ores.marketdata.service.tests= pass.
+- =check_component_drift.py --all= and =link_structure_notes.py --check=
+  pass.
+- Every spurious fork left uncollapsed is named with the reason it was not
+  collapsed in this pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Re-verify every =** ... — SPURIOUS= entry of the fork inventory against
+   the code at the base commit =b72fc67e44=, because the survey predates it.
+   Result: of 13 spurious forks, two were already fixed and one was already
+   gone; ten were still present.
+2. Collapse the smallest, most self-contained forks first, each as its own
+   verifiable commit: the duplicated tick clock, then the triplicated
+   vintage observation lookup, then the registry rebuilt at every call site.
+   Each is a deletion of a second copy, not a new branch.
+3. Run the two suites, the component-drift gate and the link-structure gate
+   after the collapses.
+4. The ten-minus-three remaining forks all turn on one missing seam: a
+   per-kind registry that supplies, alongside the factory builder, the
+   kind's config permission and a =config_id -> feed_build_input= resolver.
+   Build that seam once and collapse =feed_config_handler=, the folder
+   handler and the permission strings together; do not attempt them one at
+   a time, because each would otherwise grow its own private registry.
+   =vintage_validity_handler=, the simulate/preview envelope and the config
+   plumbing fields hang off the same seam and follow it.
 
 * Measurements
 
@@ -55,9 +85,62 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Spurious forks in the inventory | 13 | count of =** ... — SPURIOUS= entries in =evidence/asset-class-fork-inventory.org= | =9c1c4af10e= (survey) |
+| Spurious forks already fixed or gone at base | 3 | grep for =producer_subject(=, =binding_mode=, =ensure_feed_binding= | =b72fc67e44= |
+| Spurious forks still present at base | 10 | as above, minus the three | =b72fc67e44= |
+| Forks collapsed in this pass | 3 | tick clock, vintage read, factory instance | =20a45d6a50= |
+| Lines removed vs added by the collapses | 120 insertions, 280 deletions | =git diff --stat b72fc67e44..20a45d6a50= | =20a45d6a50= |
+| =ores.synthetic= test suites | 3 suites, 3 passed | =ctest --test-dir build/output/linux-clang-debug-make -R 'ores.synthetic' --output-on-failure= | =20a45d6a50= |
+| =ores.marketdata.service= test suites | 1 suite, 1 passed | =ctest --test-dir build/output/linux-clang-debug-make -R 'ores.marketdata.service' --output-on-failure= | =20a45d6a50= |
+| New tick-clock test cases | 3 | =ores.synthetic.api.tests=, =tick_clock_tests.cpp= | =20a45d6a50= |
+| Component drift | none reported | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all= | =20a45d6a50= |
+| Link-structure notes | 16 notes, all linked back | =python3 build/scripts/link_structure_notes.py --check= | =20a45d6a50= |
 
 * Notes
+
+** Behaviour deltas introduced by the collapses
+
+- The shared tick clock's catch-and-continue guard now covers the whole
+  tick, including the process step. Both producers previously advanced the
+  process /outside/ the guard, so a process that threw would have
+  terminated the service rather than skipping the tick. Neither process can
+  throw on any exercised path, and no test covers it, but the change is a
+  real one and is recorded rather than chosen silently.
+- Unifying the vintage read's lookup-failure text changed one string for IR
+  only: "Failed to look up series '<uri>':" became "Failed to look up
+  series for '<uri>':". FX and =feed_controller= already used the "for"
+  form, so the helper matches the majority. No test asserts either string.
+- The "no vintage data" message stays caller-owned and is unchanged for all
+  three callers: they name different anchors (FX's SPOT datum, IR's anchor
+  pillar, an ORE key), and the helper takes that message as an argument.
+
+** Coverage limits
+
+- =find_vintage_observation()='s paged scan needs a live marketdata
+  service, so it has no unit test; it is covered by the build and by the
+  handler suites, which exercise the fixed/disabled/error surface but not
+  the paging loop. =select_vintage_anchor_entry()= remains unit-tested.
+- The tick clock has three new unit cases in =tick_clock_tests.cpp=; the
+  producers' own =start()= loops are still only covered indirectly.
+
+**Spurious forks confirmed present and not yet collapsed
+
+- =feed_config_handler= resolves the kind by probing the FX then the IR
+  repository, in both =start()= and =stop()=.
+- =feed_config_handler::start_fx= and =start_ir= each re-implement the auth,
+  enabled-and-container gate, child loading and error reply.
+- =folder_feed_control_handler= runs one start loop and one stop loop per
+  kind, and assembles =by_kind=/=stopped_by_kind= from two hardcoded entries.
+- The config-read permission pair is hardcoded at every verb.
+- =vintage_validity_handler= reads only FX rows and returns an FX-shaped
+  response.
+- The simulate and preview sampling loop and protocol envelope are
+  duplicated between =simulate_handler= and =ir_curve_preview_handler=.
+- The common config plumbing fields (=source_name=, =ticks_per_hour=,
+  =process_type=, =enabled=, =auto_start=, =price_source=, =vintage_source=,
+  =vintage_date=, =folder_id= and the audit block) are copied across the two
+  config entities. Collapsing these changes the persisted schema, so it
+  needs a model change and regeneration rather than a code edit.
 
 * Test Scenarios
 

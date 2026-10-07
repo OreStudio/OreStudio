@@ -56,6 +56,26 @@ rest of the run reads.
 - A later strategy can partition differently — by grid behaviour, by size —
   without a producer or the package step changing.
 
+* Requirements the strategy machinery must carry
+
+Recorded here while the batching subsystem's own documentation is pending (it
+arrives with Merry Newton's trade-set work). These are requirements, not a
+design; the design lands with the subsystem's docs.
+
+- *A strategy is associated with a report.* Which batching a report uses is the
+  report's to state, not a global setting.
+- *Strategies compose.* "Simple report batching" is =batch by book= *and* =at
+  most 1000 trades= — a composite over two strategies, not a third strategy
+  that reimplements both. The simplest strategy is still the only leaf at the
+  start, but the composition must already be expressible.
+- *A strategy's parameters are configured in tables,* so a parameter is data
+  and changing it is not a deploy. What a strategy reads must therefore be
+  declared the same way its behaviour is.
+- *A strategy may be marked default,* for a report that states none.
+- *The leaf set starts at one.* =batch by book= ships first; the machinery
+  around it ships with it rather than after it, because retrofitting composition
+  onto a hard-coded first strategy is the thing this task exists to avoid.
+
 * Plan
 
 *The set is the unit, not the book.* A book is one way to slice trades and it is

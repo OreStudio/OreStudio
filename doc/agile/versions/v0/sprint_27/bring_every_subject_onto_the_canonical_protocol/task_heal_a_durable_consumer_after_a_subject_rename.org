@@ -28,9 +28,9 @@ Make a durable JetStream consumer heal itself after a subject rename: when the c
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified against a planted stale durable. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fix the protocol-twin regression this run found on main. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -41,9 +41,29 @@ Make a durable JetStream consumer heal itself after a subject rename: when the c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=ensure_stream= already compares a stream's subject filter and updates it, so
+the stream side of a rename heals. A durable consumer stores its own filter,
+which nothing compared, so the consumer kept the old spelling and
+=js_QueueSubscribe= refused to attach it.
+
+Add the same reconcile on the consumer side, at the one place every durable
+subscriber goes through:
+
+1. =js_queue_subscribe= takes an optional trailing =stream_name=. When it is
+   given, the call reads the durable's stored filter first.
+2. On a mismatch it deletes the consumer, so the subscribe that follows
+   recreates it against the current subject. A consumer that is absent or
+   unreadable is left alone and the subscribe reports the real reason.
+3. Each durable subscribe site names its stream: the workflow engine's two
+   consumers and the compute wrapper's one.
+
+Deleting the consumer discards its position, so the recreated one delivers from
+its start policy again. That is at-least-once by design: a consumer whose filter
+is wrong has no position worth keeping.
+
+No unit test covers this. JetStream behaviour needs a live server, which the
+unit suite does not start, and =ensure_stream='s reconcile is verified the same
+way. The proof is the plant-and-heal run recorded under Notes.
 
 * Measurements
 
@@ -57,9 +77,37 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Local checks | 30 of 34 pass; build, db and ctest pass | =./compass.sh check= | =053b2e81ab= |
+| Failing checks | =format= (fixed), =subject-conformance=, =protocol-twins=, =codegen-tests= | =./compass.sh check= | =053b2e81ab= |
+| Fleet | 25 running, 0 failed | =./compass.sh services status= | =053b2e81ab= |
+| Healed durable filter | =...workflow.v1.ops.step_completed= | =nats consumer info ores_dev_festive_dijkstra_workflow workflow-engine-step-completed= | =053b2e81ab= |
+
+=format= is fixed in this branch. The other three fail on =origin/main=
+without this branch: =iam.v1.storage_capabilities.mint= landed outside the
+grammar and its model opts the TypeScript protocol facet out.
 
 * Notes
+
+The plant-and-heal proof, run on 2026-10-07 against the festive_dijkstra fleet:
+
+1. Stop =ores.workflow.service=.
+2. Create the durable with the pre-rename filter:
+   =nats consumer add ores_dev_festive_dijkstra_workflow
+   workflow-engine-step-completed --filter
+   ores.dev.festive.dijkstra.workflow.v1.events.step-completed --deliver all
+   --ack explicit --pull --replay instant --defaults=.
+3. Start =ores.workflow.service=.
+4. =nats consumer info= then reports =created= at the start time and
+   =Filter Subject: ores.dev.festive.dijkstra.workflow.v1.ops.step_completed=,
+   with =Active Interest: Active using Queue Group ores.workflow.service=.
+
+Before the change step 3 failed with =js_QueueSubscribe failed= and the service
+exited. The same defect stranded four consumers in another environment after the
+subject migration.
+
+Discovered while verifying: =compass services logs= died with
+=UnicodeDecodeError= when a service logged a binary body. Fixed here with
+=errors="replace"=.
 
 * Test Scenarios
 
@@ -85,3 +133,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=js_queue_subscribe= reconciles the durable when the caller names its stream.
+The workflow engine and the compute wrapper name theirs. A durable planted on
+the pre-rename filter was replaced on the next service start and the service
+came up running, so a subject rename no longer strands a consumer.
+
+The full check suite found three failures that belong to =origin/main=, not to
+this branch: =iam.v1.storage_capabilities.mint= is outside the entity protocol
+and its model opts the TypeScript protocol facet out, so =subject-conformance=,
+=protocol-twins= and =codegen-tests= fail on a clean trunk. They are recorded
+here and need their own task: the subject wants the ops namespace, and the
+TypeScript twin wants a projection for =ores::security::jwt::storage_grant=,
+which today is hand-written C++ with no org model.

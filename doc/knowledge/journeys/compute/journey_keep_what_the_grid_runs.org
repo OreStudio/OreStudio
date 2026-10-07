@@ -86,28 +86,41 @@ the journey does not run a job.
    are on the service heartbeat, so the two halves of the matrix come from two
    reads
    ([[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]]).
-6. *Read the concurrency policy.* The system states the concurrency policy that
+6. *Read the jobs per release.* The system draws the jobs grouped by the
+   release they pinned: one bar per =app_version=, each marked as its app's
+   newest or an older one, and a count of how many jobs still run an older
+   release. The job's release is the workunit's =app_version_id=, a fact about
+   the work written when the job was stored, so the chart counts what actually
+   runs and never guesses from the machine. The node cannot supply this: the
+   wrapper heartbeat carries the release and no host, and the node sample
+   carries the host and no release, so nothing places a release on a node
+   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries
+   no host]]). A count above zero on an older bar is a half-finished upgrade,
+   and the chart is where it shows. The newest release is the highest
+   =engine_version= of the app, which is the version the submit handler already
+   picks; *What is missing* states why the model should say so itself.
+7. *Read the concurrency policy.* The system states the concurrency policy that
    governs a run of one definition when another is already in flight. The
    policy is reporting's: =skip= records the new run as skipped, =queue= lets it
    wait in the queued state, and =fail= records it as failed without executing.
    A report definition carries the policy code
    ([[id:4597D5A9-C591-4992-ABEE-8822C10D8D96][ores.reporting.concurrency_policy]],
    [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]).
-7. *Read how close a policy is to its limit.* The system draws the in-flight
+8. *Read how close a policy is to its limit.* The system draws the in-flight
    work against the policy's cap. The policy states a behaviour, not a number,
    so the screen must say what the cap is or that there is none. This panel is
    the one the use cases name and the data does not yet answer; *What is
    missing* states why.
-8. *Publish or retire, a super administrator only.* The writer adds an app, a
+9. *Publish or retire, a super administrator only.* The writer adds an app, a
    version or a platform row, attaches a package and its digest, or retires a
    platform with =is_active=. The package upload is the shell's =compute
    publish-package=, which computes and verifies the SHA256 server-side, and
    the generated writes cover the rows. A non-writer finds the controls
    withheld and the screen says why: the catalogue is the installation's.
-9. *An empty catalogue.* No app is registered, or an app has no version. The
+10. *An empty catalogue.* No app is registered, or an app has no version. The
    system says the grid has nothing to run and does not offer a dispatch. That
    is the first-run state, before any package is published.
-10. *Leave, or go on.* A reader who now knows the version continues in
+11. *Leave, or go on.* A reader who now knows the version continues in
     [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]] or
     [[id:01238DF2-9745-451A-B288-7C0F141E35B6][Plan the grid's capacity]]. The
     super administrator who needs the deployment's own build continues in
@@ -117,11 +130,11 @@ the journey does not run a job.
 * Screens and wireframes
 
 One screen. The app list, the version table, the platform and package table, the
-versions-in-flight matrix and the concurrency panel are panels of that screen,
-because the person reads them as one answer. The screen reads for everyone and
-writes for the super administrator: the write controls are the only part of the
-screen withheld from a reader, and they are withheld by permission and not by a
-second screen.
+versions-in-flight matrix, the jobs-per-release bars and the concurrency panel
+are panels of that screen, because the person reads them as one answer. The
+screen reads for everyone and writes for the super administrator: the write
+controls are the only part of the screen withheld from a reader, and they are
+withheld by permission and not by a second screen.
 
 The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
 journeys]] names for keeping what the grid runs:
@@ -129,11 +142,23 @@ journeys]] names for keeping what the grid runs:
 | Panel | Chart | Answers |
 |-------+-------+---------|
 | Node grid | *Versions in flight* | Which release is running where? |
+| Release bars | *Jobs per release* | How many jobs still run an older release? |
 | Concurrency | *Concurrency against the cap* | Am I throttling myself? |
 
-The versions-in-flight matrix is a node-by-version grid. The concurrency panel
-plots in-flight work against a cap, and the cap must be a real number the screen
-can cite.
+The versions-in-flight matrix is a node-by-version grid. The jobs-per-release
+bars are drawn from the workunits' =app_version_id=, not from the nodes, so the
+panel states the release each job runs and marks each app version newest or
+older. The concurrency panel plots in-flight work against a cap, and the cap
+must be a real number the screen can cite.
+
+Every list on the screen pages on the server, per the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The app
+list, the version table and the platform and package table each carry First,
+Previous, Next, Last, a page size and Load all, with the page and the page size
+held in the address. A new search, a new filter, a new order or a new page size
+returns to page one, and Load all is offered only when the server's total is
+1000 or less. No list reads with a fixed large limit, and none pages to the end
+to show everything.
 
 The wireframe is not drawn yet. This journey is written before the prototype,
 and the prototype must draw these charts from mock series at the sizes the real
@@ -178,6 +203,7 @@ without losing the others.
 | Read the versions in flight | Read the host registry | =compute.v1.hosts.list= | exists |
 | Read the versions in flight | Read the running wrappers' release and host | =telemetry.v1.services.list= | exists |
 | Read the versions in flight | Read which build each job pinned, over a range | (no aggregate subject) | missing |
+| Read the jobs per release | Read the jobs grouped by the release they pinned, with each app version marked newest or older | (no aggregate subject) | missing |
 | Read the concurrency policy | Read the policies | =reporting.v1.concurrency_policies.list= | exists |
 | Read how close a policy is to its limit | Read the in-flight work against the policy's cap | (no cap row exists) | missing |
 | Publish a package and register the rows | Upload the package, verify the digest, register the app, version and platform rows | =compute publish-package= (shell) | exists |
@@ -245,6 +271,15 @@ a compute screen yet.
    "the grid may run this" is not yet a promise the fleet will
    ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
    tenant's work]]).
+8. *Nothing marks a release newest.* The jobs-per-release chart marks each bar
+   as the app's newest release or an older one, and the =app_version= model
+   states no flag and no ordering that says which build that is. The only rule
+   today is the highest =engine_version=, and =engine_version= is text, so the
+   comparison is a string comparison. That is the rule the submit handler
+   already uses when it picks a version for a report, so the chart and the
+   dispatcher would agree; a model that states the newest version, or a
+   version-aware type, would make the mark a fact rather than a convention
+   ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]).
 
 * Related journeys
 

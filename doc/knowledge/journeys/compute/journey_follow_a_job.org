@@ -85,20 +85,52 @@ control, and it is deferred.
    system can show only what it stores: the job was queued, then it ran, then
    its output arrived. The phases between those points are not recorded, and
    the waterfall must say so rather than draw a guessed split.
-7. *Read the app that ran it.* The system states the workunit's
-   =app_version_id= and, through it, the =engine_version= and
-   =wrapper_version= the run used, so a job that behaved differently from its
-   neighbours can be told apart by its build
+7. *Read the release that ran it.* The system states the workunit's
+   =app_version_id= and, through it, the app's =engine_version= and the
+   =wrapper_version=. This is the release the job runs: the version of ORE
+   behind the work, written on the workunit when the job was stored, so a job
+   that behaved differently from its neighbours can be told apart by its build.
+   It is also the trustworthy answer, because the node cannot give one. The
+   wrapper heartbeat carries the release and no host, and the node sample
+   carries the host and no release, so nothing places a release on a node
+   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries
+   no host]]). The job's own =app_version_id= is a fact about the work rather
+   than an inference from the machine that happened to run it
    ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]).
-8. *Compare the job with its neighbours.* The system draws the batch's jobs as
+8. *Follow the lineage.* The system draws the chain that put this job on the
+   grid: the scheduled job, the report definition, the report run, the batch,
+   the workunit and the result. The selected job is the highlighted workunit,
+   and its siblings in the same batch stay visible beside it, so the person
+   reads what this job belongs to and what else the batch carried. The flow
+   chart is one column of nodes, top to bottom:
+
+   #+begin_example
+   scheduler.job_definition      the job the scheduler fires
+     └─ report_definition        scheduler_job_id
+          └─ report_instance     definition_id, trigger_run_id
+               └─ batch          external_ref = report instance id
+                    ├─ workunit   batch_id  ← the selected job
+                    │    └─ result   workunit_id, outcome
+                    ├─ workunit   batch_id  ← a sibling
+                    │    └─ result   workunit_id, outcome
+                    └─ workunit   batch_id  ← a sibling
+                         └─ result   workunit_id, outcome
+   #+end_example
+
+   Every hop is stored except the batch's link to the report run, which is the
+   batch's =external_ref= and not a checked relationship; *What is missing*
+   states that. A shell-dispatched batch carries an operator string in
+   =external_ref= and has no report behind it, and the screen must say so
+   rather than draw an empty report.
+9. *Compare the job with its neighbours.* The system draws the batch's jobs as
    a timeline, and, when the range holds enough neighbours, a duration
    distribution and a duration by node. The person asks whether this job is
    normal, whether one node is slow, and whether the batch is nearly done.
-9. *No such job.* The reference matches nothing, the job belongs to another
-   tenant, or the person's rows do not include it. The screen says so and offers
-   the way back to the batch list. It does not present the empty answer as a
-   job with no state.
-10. *Leave, or go on.* A failed run continues in
+10. *No such job.* The reference matches nothing, the job belongs to another
+    tenant, or the person's rows do not include it. The screen says so and offers
+    the way back to the batch list. It does not present the empty answer as a
+    job with no state.
+11. *Leave, or go on.* A failed run continues in
     [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a
     failure]], where the error and the node's logs are read. The load the job
     sat in continues in
@@ -107,9 +139,9 @@ control, and it is deferred.
 * Screens and wireframes
 
 One screen. The finder bar, the job header, the run table, the timeline, the
-duration charts and the file panel are panels of that screen, because the
-person reads them as one answer. The screen is read-only: it creates nothing,
-changes nothing and destroys nothing.
+lineage chart, the duration charts and the file panel are panels of that screen,
+because the person reads them as one answer. The screen is read-only: it creates
+nothing, changes nothing and destroys nothing.
 
 The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
 journeys]] names for following a job:
@@ -120,11 +152,25 @@ journeys]] names for following a job:
 | Run bar | *Job waterfall* | Where did this job's time go? |
 | Distribution | *Duration distribution* | Is this job normal? |
 | Node comparison | *Duration by node* | Is one node slow? |
+| Lineage | *Job lineage* | What report caused this job, and what ran with it? |
 
 The timeline is the cluster Gantt: one row per job of the batch, a bar per run.
 The waterfall is the one job's own bar, split by phase as far as the stored
-times allow. The two duration charts compare the job with its neighbours, and
+times allow. The lineage chart is the chain from the scheduled job to the
+results, with the selected job's workunit highlighted and its batch siblings
+beside it; this screen owns the chart, and
+[[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]
+reuses it. The two duration charts compare the job with its neighbours, and
 they need a range of finished runs to say anything.
+
+Every list on the screen pages on the server, per the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The batch
+rows, the run table and the lineage's workunit list each carry First, Previous,
+Next, Last, a page size and Load all, with the page and the page size held in
+the address. A new search, a new filter, a new order or a new page size returns
+to page one, and Load all is offered only when the server's total is 1000 or
+less. No list reads with a fixed large limit, and none pages to the end to show
+everything.
 
 The wireframe is not drawn yet. This journey is written before the prototype,
 and the prototype must draw these charts from mock series at the sizes the real
@@ -146,12 +192,28 @@ record is the use-case analysis on
 | =result= | One run of the job: =workunit_id=, =host_id=, =server_state=, =outcome=, =output_uri=, =error_message= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
 | =host= | The node a run ran on: =external_id=, =display_name=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
 | =app_version= | The wrapper and engine build the job used: =wrapper_version= and =engine_version= | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
+| =report_definition= | The report whose run submitted the batch: =scheduler_job_id= | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_instance= | One run of that definition: =definition_id= and =trigger_run_id= | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =job_definition= | The scheduled job that fired the run: =job_name= and =schedule_expression= | [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]] |
 | =node_sample= | A node's work in an interval, for the duration comparison: =tasks_since_last=, =avg_task_duration_ms= and =max_task_duration_ms= | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
 
 The job's identity is the workunit's id. The runs are the results that carry
 that =workunit_id=, and the run that counted is the workunit's
 =canonical_result_id=. A job with =target_redundancy= above one has several
 runs, and the timeline shows them as one row's bars.
+
+The lineage chain is stored hop by hop. The report definition names its
+scheduler job in =scheduler_job_id=, and the report run names its definition in
+=definition_id= and the firing in =trigger_run_id=, which is the scheduler job
+instance's id. The run the scheduler fired is joined to its definition through
+the job's action payload, which names the definition
+([[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]).
+The batch names the report run in its =external_ref=, which the submit handler
+writes as the report instance's id, and the workunits name the batch in
+=batch_id=. The last two hops are confirmed in
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]. The
+batch-to-run hop is the one the model does not state as a relationship; see
+*What is missing*.
 
 The duration charts read =node_sample=, which describes a node's interval and
 not a result. Its =avg_task_duration_ms= and =max_task_duration_ms= are means
@@ -172,7 +234,12 @@ nodes rather than following one job. The result itself carries no duration.
 | Read the state and the timings | Read one run | =compute.v1.results.get= | exists |
 | Read the node | Read the host registry | =compute.v1.hosts.list= | exists |
 | Read the node | Read one host | =compute.v1.hosts.get= | exists |
-| Read the app that ran it | Read the app versions | =compute.v1.app_versions.list= | exists |
+| Read the release that ran it | Read the app versions | =compute.v1.app_versions.list= | exists |
+| Follow the lineage | Read the report definition and the run behind the batch | =reporting.v1.report_definitions.get=, =reporting.v1.report_instances.get= | exists |
+| Follow the lineage | Read the scheduled job that fired the run | =scheduler.v1.status= | exists |
+| Follow the lineage | Read the batch whose =external_ref= is the report run | =compute.v1.batches.get= | exists |
+| Follow the lineage | Read the scheduler job instance behind the run | (a paged list only, with no read by id) | missing |
+| Follow the lineage | Read the batches linked to a report run | (no read lists batches by =external_ref=) | missing |
 | Read the waterfall phases | Read the per-phase times of one run | (no field on any row) | missing |
 | Read the duration charts | Read the per-result durations over a range | (no field on any row) | missing |
 | Find the job across tenants | Read another tenant's jobs as that tenant | (token exchange, not built here) | missing |
@@ -235,6 +302,42 @@ a compute screen yet.
    holds. The gap is not these reads' alone
    ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
    operation handler]]).
+9. *The batch names its report run in a text field, not a relationship.* The
+   submit handler writes the report instance's id into =batch.external_ref=, so
+   the hop from a job back to its report is real in the implementation. It is
+   not in the model: the compute batch model describes =external_ref= as "the
+   originating finance system or project" and states no link to a report run,
+   and no read lists batches by =external_ref=. =compute.v1.batches.get=
+   resolves one batch once the report run's id is known, and the reverse
+   question, "which jobs does this report have", has no subject. A report
+   instance id on the batch, or a batch filter on =external_ref=, is the
+   missing piece
+   ([[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]).
+10. *The report run names neither its batch nor its workflow instance.*
+    =report_instance= carries =definition_id= and =trigger_run_id= and no
+    =batch_id=, so the run cannot state what it produced.
+    [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]
+    places "the workflow instance that ran" on the instance, and the model has
+    no such column; the workflow instance id is carried in the run's start
+    message and read through =workflow.v1.instances.list=. A run that named its
+    batch would let the lineage be read from the report end without the
+    =external_ref= convention
+    ([[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]]).
+11. *The scheduler firing is recorded but not readable by id.* The report run's
+    =trigger_run_id= is the scheduler job instance's id, and the only scheduler
+    instance read is the paged =scheduler.v1.job-instances.list=; no read
+    returns one instance by id, and the =job_instance= table has no generated
+    entity model. The lineage reaches the scheduled job through the
+    definition's =scheduler_job_id=, which is cleared when the definition is
+    suspended or archived, so a run whose definition has since been paused
+    loses its live schedule link
+    ([[id:3D1E9A64-7C2B-4F58-9E01-6A5D2C4B8E17][ores.scheduler.scheduling_operations]]).
+12. *The bridge row is not a lineage.* =workflow_batch_link= names the batch,
+    the workflow step and the workflow instance, and the bridge deletes the row
+    when the batch reaches a terminal state. It is a live note that a step is
+    waiting, not a durable link, and it names a workflow step rather than a
+    report run, so the lineage chart cannot be built on it
+    ([[id:5A9D3E27-8C14-4B6E-9F2A-1E7B4D0C8A53][ores.compute.workflow_batch_link]]).
 
 * Related journeys
 

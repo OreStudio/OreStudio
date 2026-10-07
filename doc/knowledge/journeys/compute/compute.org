@@ -131,6 +131,29 @@ by deciding the question does not matter.
 | *Duration distribution* | Is this job normal? | histogram, with p50/p90/p99 over time |
 | *Duration by node* | Is one node slow? | box or scatter per node |
 
+** The lineage of a job
+
+The job is the anchor of a chain that spans three components: the scheduler
+holds the job that fires, reporting holds the definition and the run it fired,
+and compute holds the batch, the workunits and the results that run produced.
+The chain is one picture, because the question "what caused this job, and what
+else ran with it" cannot be answered inside any one of the three.
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Job lineage* | What report caused this job, and what ran with it? | the scheduled job, the report definition, the report run, the batch, the workunit and the result, as one chain with the selected job highlighted and its siblings in the same batch beside it |
+
+The chart belongs to the *Follow a job* screen, because a person reaches the
+chain from a job and the compute rows are where the chain is read.
+[[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]]
+reuses the same chart from the failed run, which is the same chain with one
+result chosen. The reporting run screen and the scheduler monitor read the
+chain from their own ends and reuse the same chart rather than inventing a
+parallel one. The chain is the answer to the open question "jobs versus
+reports" below, and
+[[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] is where
+its middle is confirmed.
+
 ** Diagnosing a failure
 
 | Chart | Answers | Reads |
@@ -154,6 +177,7 @@ by deciding the question does not matter.
 | Chart | Answers | Reads |
 |-------+---------+-------|
 | *Versions in flight* | Which release is running where? | a node-by-version matrix |
+| *Jobs per release* | Is the grid on one release, or half upgraded? | the jobs grouped by the release they pinned, each app version marked newest or older, with the jobs still on an older release counted |
 | *Concurrency in flight* | Is work piling up behind a policy? | in-flight work per reporting concurrency policy. The policy is a behaviour, skip or queue or fail, and not a number, so there is no cap to draw against; the chart shows the pile-up |
 
 ** What the charts ask of the data

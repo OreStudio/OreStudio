@@ -126,6 +126,14 @@ journeys]] names for watching the grid, and each one answers one question:
 The panels share one time axis and one range selector, and the heatmap is the
 same chart whether it is coloured by work, failures or bytes.
 
+Every list on the screen pages on the server, per the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The
+per-node table carries First, Previous, Next, Last, a page size and Load all,
+with the page and the page size held in the address. A new search, a new
+filter, a new order or a new page size returns to page one, and Load all is
+offered only when the server's total is 1000 or less. The table never reads
+with a fixed large limit, and it never pages to the end to show everything.
+
 The wireframe is not drawn yet. This journey is written before the prototype,
 and the prototype must draw these charts from mock series at the sizes the real
 screen gives them, so the walk can judge whether a heatmap of nodes is legible

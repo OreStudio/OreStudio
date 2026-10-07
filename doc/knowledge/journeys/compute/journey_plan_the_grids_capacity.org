@@ -129,6 +129,15 @@ GPUs per interval. The grid does not measure a node's used cores, memory or
 GPUs, so the panel can draw only the part the samples support, and it must not
 draw a used line it cannot fill.
 
+Every list on the screen pages on the server, per the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The host
+capacity table, the requirements matrix and the arrivals timeline each carry
+First, Previous, Next, Last, a page size and Load all, with the page and the
+page size held in the address. A new search, a new filter, a new order or a new
+page size returns to page one, and Load all is offered only when the server's
+total is 1000 or less. No list reads with a fixed large limit, and none pages to
+the end to show everything.
+
 The wireframe is not drawn yet. This journey is written before the prototype,
 and the prototype must draw these charts from mock series at the sizes the real
 screen gives them.

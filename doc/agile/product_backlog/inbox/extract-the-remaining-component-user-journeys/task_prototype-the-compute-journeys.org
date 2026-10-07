@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extract-the-remaining-component-user-journeys:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/read-the-whole-grid
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:952AE445-1470-40D1-8824-9618DF6A73EF][Story: Extract the ores.compute user journeys]] story. It captures the goal, current status, acceptance, and any notes or results.

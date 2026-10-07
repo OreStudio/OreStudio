@@ -1,0 +1,60 @@
+subjects declared in the tree : 2455
+conforming                    : 2328
+not conforming                : 127
+  -- of which in the reserved ops namespace: 5
+
+    73  an operation that never moved to the ops namespace
+    31  kebab-case verb; every segment must be snake_case
+    10  a common verb renamed
+     8  5 segments instead of four
+     5  3 segments instead of four
+
+== the subjects that are not four segments ==
+   iam.v1.roles.permissions.put
+   marketdata.v1.export
+   marketdata.v1.import
+   marketdata.v1.tick
+   ore.v1.ore.import.execute
+   ore.v1.ore.import.rollback
+   ore.v1.run_configuration.import.execute
+   ore.v1.run_configuration.import.rollback
+   scheduler.v1.status
+   telemetry.v1.nats.server-samples.list
+   telemetry.v1.nats.stream-samples.list
+   trading.v1.trades.portfolio.export
+   workflow.v1.start
+
+== one resource, two spellings ==
+   ['approval-requests', 'approval_requests']
+        inbox.v1.approval-requests.decide
+        inbox.v1.approval-requests.mine
+        inbox.v1.approval-requests.queue
+        inbox.v1.approval-requests.raise
+        inbox.v1.approval-requests.withdraw
+        inbox.v1.approval_requests.delete
+        inbox.v1.approval_requests.delete_many
+        inbox.v1.approval_requests.get
+        inbox.v1.approval_requests.get_many
+        inbox.v1.approval_requests.list
+        inbox.v1.approval_requests.list_by_kind_code
+        inbox.v1.approval_requests.put
+        inbox.v1.approval_requests.put_many
+   ['lei-entities', 'lei_entities']
+        dq.v1.lei-entities.search
+        dq.v1.lei-entities.summary
+        dq.v1.lei_entities.get
+        dq.v1.lei_entities.get_many
+        dq.v1.lei_entities.list
+   ['report-definitions', 'report_definitions']
+        dq.v1.report_definitions.get
+        dq.v1.report_definitions.get_many
+        dq.v1.report_definitions.list
+        reporting.v1.report-definitions.schedule
+        reporting.v1.report-definitions.unschedule
+        reporting.v1.report_definitions.delete
+        reporting.v1.report_definitions.delete_many
+        reporting.v1.report_definitions.get
+        reporting.v1.report_definitions.get_many
+        reporting.v1.report_definitions.list
+        reporting.v1.report_definitions.put
+        reporting.v1.report_definitions.put_many

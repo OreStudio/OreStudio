@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 02756820-A373-4E59-84C7-BA2CB0E7B69B
+:END:
+#+title: Task: Bring the renamed common verbs onto the closed set
+#+description: Ten subjects rename a verb the closed set already has. Six use save or update -- iam.v1.accounts.save, iam.v1.accounts.update, iam.v1.accounts.update-email, the analytics and refdata document saves -- and the rest use create or set for the same operation. Every one of them is a put.
+#+type: task
+#+level: s1
+#+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
+#+owner: marco
+#+branch: feature/bring-every-subject-onto-the-canonical-protocol
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A create or a replace is a put and nothing else, on every resource the tree declares.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- No subject ends in save or update; a create or a replace is put or put_many.
+- Every consumer of a renamed subject, in other components, the shell and the CLI, is migrated in the same piece of work.
+- No compatibility subject is left behind.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

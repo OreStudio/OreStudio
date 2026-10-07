@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/carry-the-subject-rename-into-the-seeds
-#+pr:
+#+pr: 2753
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2753][#2753]] | [codegen] Carry the subject rename into the seeds and the registrars |
 
 * Review
 

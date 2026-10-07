@@ -238,6 +238,19 @@ public:
                        const std::chrono::seconds& bucket_size,
                        unsigned int bucket_count);
 
+    void write_manual_point(context ctx,
+                            const boost::uuids::uuid& series_id,
+                            const std::string& oresmd_uri,
+                            std::chrono::system_clock::time_point observation_datetime,
+                            const std::string& value,
+                            const std::string& change_reason_code,
+                            const std::string& change_commentary);
+
+    void clear_manual_point(context ctx,
+                            const boost::uuids::uuid& series_id,
+                            const std::string& oresmd_uri,
+                            std::chrono::system_clock::time_point observation_datetime);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

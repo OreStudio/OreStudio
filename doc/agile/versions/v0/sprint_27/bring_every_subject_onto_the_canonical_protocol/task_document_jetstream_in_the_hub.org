@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: DA3321DC-463E-4F6F-8C82-663C5EA7787E
+:END:
+#+title: Task: Document JetStream in the NATS hub
+#+description: The cluster documents a message and a subject but not the streams that hold them. Add the page: what JetStream adds, why we use it, the streams and durable consumers, and what a rename strands.
+#+type: task
+#+level: s1
+#+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
+#+owner: marco
+#+branch: feature/document-jetstream-in-the-nats-hub
+#+pr: 2764
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2764][#2764]] | [nats] Document JetStream in the hub |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=doc/knowledge/architecture/jetstream_streams_and_consumers.org=, wired into
+the reading order of [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]]
+after the library page.
+
+It covers what JetStream adds against plain NATS and the three consequences that
+decide where we use it; why the ticks, the workflow engine and compute
+assignments need it and nothing else does; the two calls that are the whole
+surface, =ensure_stream= and =js_queue_subscribe=, with the naming rules that
+make a subject address the right bus; the five streams and their subject
+filters with the service that creates each; the three durable consumers with
+the subject each reads; and what a subject rename strands, with the command to
+read a stored filter and a pointer to the memory.
+
+Every stream, filter, consumer and default was read out of the tree rather than
+recalled: the four =ensure_stream= call sites, the three =js_queue_subscribe=
+call sites, =make_subject= and =make_stream_name=, and the =max_age_days=7=
+default.
+
+The gap it closes is that the cluster explained a message and a subject and
+never the state that holds them, which is why the stranded-consumer failure had
+to be rediscovered rather than looked up.
+

@@ -68,8 +68,10 @@ def test_a_source_change_builds_and_tests():
     }
 
 
-def test_a_sql_change_rebuilds_the_database():
-    assert heavy(["projects/ores.sql/create/x.sql"]) == {"build", "db", "ctest"}
+def test_a_sql_change_rebuilds_the_database_and_runs_the_sql_suites():
+    assert heavy(["projects/ores.sql/create/x.sql"]) == {
+        "build", "db", "ctest", "pgtap",
+    }
 
 
 def test_a_web_change_runs_the_web_checks_and_nothing_heavy():
@@ -175,12 +177,18 @@ def test_every_check_has_a_title_and_a_command():
         assert check.argv, check.id
 
 
-def test_the_heavy_checks_are_the_build_the_database_and_ctest():
+def test_the_heavy_checks_are_the_build_the_database_ctest_and_pgtap():
     heavy_ids = {
         check.id for check in local_checks.CATALOGUE
         if check.phase == local_checks.HEAVY
     }
-    assert heavy_ids == {"build", "db", "ctest"}
+    assert heavy_ids == {"build", "db", "ctest", "pgtap"}
+
+
+def test_only_a_sql_change_runs_the_sql_suites():
+    assert "pgtap" not in heavy(["projects/ores.iam/core/src/a.cpp"])
+    assert not heavy(["projects/ores.trading/modeling/ores.trading.trade.org"])
+    assert "pgtap" in heavy(["projects/ores.sql/test/x_test.sql"])
 
 
 # -- the command line -------------------------------------------------------

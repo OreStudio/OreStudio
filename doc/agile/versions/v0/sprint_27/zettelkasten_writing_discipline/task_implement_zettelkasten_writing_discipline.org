@@ -8,7 +8,7 @@
 #+filetags: :zettelkasten_writing_discipline:sprint_27:v0:
 #+owner: marco
 #+branch: feature/zettelkasten-writing-discipline
-#+pr:
+#+pr: 2734
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2734][#2734]] | [doc] Add the writing discipline the Zettelkasten page omits |
 
 * Review
 

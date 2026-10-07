@@ -33,11 +33,11 @@ states the failures beside the completions.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Fields, mapping and shell rows are written; verification runs. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build, suite, live read, then close.   |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -75,7 +75,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build (linux-clang-debug-make) | exit 0, every target built | =./compass.sh build= | 379132dbce |
+| Test suite | 94/94 passed, 0 failed, 1089.62 s | =./compass.sh test run= | 379132dbce |
+| Component drift | No drift | =check_component_drift.py --all= | 379132dbce |
+| Codegen suite | 1288 passed, 2 pre-existing failures | =pytest projects/ores.codegen/tests -q= | 379132dbce |
+| Docs validation | 42/42 components pass | =validate_docs.sh= | 379132dbce |
+| Prototype inventory | 46 prototypes, all listed | =check_prototype_inventory.py= | 379132dbce |
 
 * Notes
 
@@ -103,3 +108,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four acceptance bullets hold. =node_stats_summary= declares both fields with
+their defaults; =get_grid_stats= sets =s.tasks_failed= and
+=s.max_task_duration_ms= from each node's newest sample; the shell's node table
+prints both beside the completions and its new header row names them; and the
+capture moved to the discarded bucket with this task's evidence.
+
+Verified:
+
+- =./compass.sh build= exit 0 under =linux-clang-debug-make=.
+- =./compass.sh test run= 94/94 passed, 0 failed (1089.62 s).
+- =check_component_drift.py --all= reports no drift.
+- =pytest projects/ores.codegen/tests -q= is 1288 passed with the two
+  pre-existing =test_check_subject_conformance= failures about
+  =ores.iam.storage_capability_messages.org=, unchanged by this task.
+- =validate_docs.sh= passes; =check_prototype_inventory.py= lists 46 prototypes.
+- The mapping was read on the live fleet. A row was inserted for the system
+  tenant with =tasks_failed= 7 and =max_task_duration_ms= 9876, and =compute
+  grid-stats= returned
+  =11111111-2222-4333-8444-555555555555 3 7 3 111 9876 4096 2048 5= under the
+  header row; the row was then deleted.
+
+What is not tested: the handler has no automated test. It is header-only, holds
+an injected NATS client and a database context, constructs its repositories
+inline, and replies over NATS, so no test can call the mapping without a live
+broker and database. A model test would only assert that the generated struct
+declares the fields, which would still pass if =get_grid_stats= dropped both
+assignments, so none was added. The live read above is the proof; a future edit
+that removes the two assignments would fail no automated test.
+
+Environment note: the mandated =compass db recreate -y -k= left the database
+unprovisioned. The standard Acme provisioning created the initial =super_admin=
+but its =system_provision= step never answered
+=iam.v1.ops.provision_tenant_step= and timed out after 20 minutes, so the Acme
+tenant is not fully provisioned. The iam service journal shows no error. The
+change touches compute telemetry only, so this is not its cause; it was reported
+rather than chased.

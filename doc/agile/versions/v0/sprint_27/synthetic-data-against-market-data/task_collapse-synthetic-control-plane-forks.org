@@ -167,8 +167,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 First pass. Three of the thirteen spurious forks are collapsed; seven remain
 and moved to [[id:9DC69ED9-A405-43D0-A68B-CC29CFDD2C29][Give the synthetic control plane one per-kind registry]],
 because they all need the same missing seam rather than four separate fixes.

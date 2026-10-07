@@ -995,12 +995,19 @@ it needs no storage at all.
   carries a point's provenance and not only a derivation's lineage. It is a
   mechanical codegen rename with no behavioural effect, and it is left to the
   task that adds the column.
-- The exact vocabulary for =point_source_kind=. Quoted, derived and manual are
-  the acceptance's three; the provenance proposal adds interpolated,
-  extrapolated, flattened and back-filled
-  (=curve_point_provenance.org:68-83=), and a journey must decide whether the
-  column is the three-value acceptance set or the wider proposal. The
-  representation is the same either way.
+- The exact vocabulary for =point_source_kind=. Settled: the column carries
+  =derived= or =manual=, and *quoted is the absence of an annex row*. The
+  acceptance's three kinds are all answerable, because a reader classifies a
+  point in one step: no annex row means quoted, and a row names the other two.
+  Absence carries quoted rather than a third stored value because of the
+  hot/cold split. A quoted tick is the common case and writes one row to the
+  hot hypertable and nothing else; storing 'quoted' explicitly would write a
+  cold annex row for every tick in the system, which is the cost the split
+  exists to avoid. The invariant this rests on is that a point a derivation
+  created always has an annex row, so absence cannot mean derived. The wider
+  set the provenance proposal carries -- interpolated, extrapolated, flattened,
+  back-filled -- stays open, and adding it later changes no representation,
+  only the check on this one column.
 
 * Journey catalogue, signed off 2026-10-06
 

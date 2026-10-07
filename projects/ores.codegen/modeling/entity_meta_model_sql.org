@@ -183,7 +183,7 @@ The bundle as a feature model:
 | =:party_id_from_session:= | bool | false | Set =party_id= from the session GUC =app.current_party_id=. |
 | =:rls_tenant_isolation:= | bool | false | Emit =enable row level security= + a permissive tenant-isolation policy (T1) as a trailer of the create file, and its drop in the drop file. |
 | =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
-| =:rls_system_tenant_visible:= | bool | false | Widen the tenant-isolation policy body to own-tenant *or* system-tenant (T2); requires =:rls_tenant_isolation:=. |
+| =:rls_system_tenant_visible:= | bool | false | Emit the *a system-tenant session sees every tenant* widening — =tenant_id = current or current = system=. Requires =:rls_tenant_isolation:=, and every use is listed by =check_rls_system_tenant_widenings.py=; read the ownership classes below before reaching for it. |
 
 *Current-state is a distinct axis from =:no_audit_columns:=.* A
 =:no_audit_columns:= entity (a TimescaleDB hypertable) drops only the
@@ -283,6 +283,28 @@ temporal table; a current-state row has no versions to compare.
 tenant-scoping policy ∈ {standard, system, nullable}. If they migrate
 anywhere, it is into the logical model as a tenant-scoping attribute
 (they lean structural despite being authored as knobs).
+
+*Name the row's owner before choosing its policy.* Every row belongs to a
+*tenant*, to the *system tenant*, or to the *installation* — the deployment's
+own facts, which no tenant owns: the services roster, hosts and wrapper
+nodes, grid and node samples, telemetry logs, the database and build row.
+The owner decides the policy, and the three are not interchangeable:
+
+| Owner | Policy the table wants | How a model states it |
+|-------+------------------------+-----------------------|
+| A tenant | Own tenant only (T1). | =:rls_tenant_isolation:=, the default. |
+| The system tenant: shared reference | Own tenant *or* system-tenant rows — every tenant reads the system's, and writes stay its own. | No flag yet: hand-written as =tenant_id = current or tenant_id = system=. |
+| The installation | The same shape: the system tenant appears as a *constant*, not an owner, so the rows carry no tenant's data. | No flag yet, and it wants one. |
+| A tenant's data read from outside it | None. Act inside the tenant. | =tenant_context::with_tenant=, or internal impersonation. |
+
+=:rls_system_tenant_visible:= is *not* how a table says it is installation- or
+shared-scoped. It emits a different shape — *a system-tenant session sees
+every tenant* — which admits one tenant's data to another and is exactly what
+=check_rls_system_tenant_widenings.py= exists to stop. The two shapes spell
+differently and mean differently: =tenant_id = system= admits only the
+installation's own rows; =current = system= admits everybody's. Read
+[[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]
+before widening or hand-writing either.
 
 *Row-level security emission is an explicit intent flag, not a
 consequence of having a tenant column.* The =:rls_*:= features above

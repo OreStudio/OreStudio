@@ -8,6 +8,19 @@ identity see every tenant, and makes the system tenant's own reads list every
 tenant's rows. A service that needs a tenant's data acts inside that tenant,
 with a token for it (Token Exchange), instead.
 
+*This guard flags one shape, not every mention of the system tenant.* A row
+belongs to a tenant, to the system tenant, or to the installation, and the
+three want different policies -- see
+doc/knowledge/architecture/tenant_ownership_and_the_information_flow.org.
+
+- ``tenant_id = current or tenant_id = system`` admits only the system
+  tenant's own rows to everyone: the shared-reference and
+  installation-scoped shape. This guard does not flag it, and should not.
+- ``tenant_id = current or current = system`` admits every tenant's rows to
+  a system-tenant session. This guard flags it.
+
+The difference is which side of the comparison the *session* sits on.
+
 Each policy that still widens is named below with the reason it stays, until
 its audit decides. A new widening fails this check.
 
@@ -69,9 +82,11 @@ def main():
     unlisted = [w for w in found if w[0] not in EXCEPTIONS]
     stale = sorted(set(EXCEPTIONS) - {w[0] for w in found})
     for name, table, path in unlisted:
-        print(f"error: {path}: policy {name} on {table} lets the system tenant "
-              f"see every tenant; act inside the tenant instead, or list it "
-              f"with its reason")
+        print(f"error: {path}: policy {name} on {table} lets a system-tenant "
+              f"session see every tenant, which hands one tenant's rows to "
+              f"another. Act inside the tenant instead, or list it with its "
+              f"reason. A policy that admits only the system tenant's own "
+              f"rows does not have this shape and is not flagged.")
     for name in stale:
         print(f"error: exception {name} names no widening policy; remove it")
     if unlisted or stale:

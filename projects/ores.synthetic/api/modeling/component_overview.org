@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :synthetic:api:component:
 #+created: 2026-05-19
-#+updated: 2026-09-08
+#+updated: 2026-10-07
 
 * Diagram
 
@@ -48,7 +48,8 @@ template resolver.
   enums, with JSON and table I/O.
 - Per-entity data generators used by tests and seeds.
 - NATS protocol headers for entity CRUD and history, feed configuration and
-  control, simulation, and preview requests.
+  control, simulation, and preview requests, including the shared
+  =simulate_paths_common.hpp= bounds both simulate requests alias.
 - Feed classes that produce synthetic FX spot rates and IR curves.
 
 * Entry points
@@ -61,9 +62,27 @@ template resolver.
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
+Public, because the domain and protocol headers name their types:
+
+- =ores.marketdata.api= — the =IFeed= interface and the market tick.
+- =ores.refdata.api=, =ores.iam.api=, =ores.dq.api=, =ores.analytics.quant=
+  — types the generated entities and the feed classes carry.
+- =ores.database= — the context the IR template resolver reads reference data
+  through.
 - =ores.eventing.api= — entity change event types.
+- =ores.nats=, =ores.platform=.
+
+Private:
+
+- =ores.marketdata.client= and =ores.marketdata.core= — the paged vintage
+  observation read.
+- =ores.refdata.core= — the reference data the IR resolver resolves.
+- =rfl= — JSON serialisation via reflection.
 - =ores.utility= — UUID and timestamp helpers.
+
+The facet cannot depend on =ores.synthetic.core=, because core links api.
+Anything that reads a synthetic repository therefore lives in the service
+facet.
 
 * See also
 

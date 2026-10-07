@@ -454,7 +454,7 @@
         heatMetric: 'work',
         job: null,
         showState: true,
-        watchTab: 'dashboard',
+        tab: {},
         updatedAt: clock(NOW_MIN),
         logsDownloaded: 0
     };
@@ -1491,23 +1491,59 @@
     }
 
     // -------------------------------------------------------------- screens
-    /* One screen's panels, split so the dashboard is a page and not a scroll.
-       The hero stays above the tabs; the tabs divide what supports it. */
-    function subTabs(tabs, current, note) {
-        return '<div class="subtabs">' + tabs.map(function (t) {
-            return '<button data-act="tab" data-tab="' + t.id + '"' +
-                (current === t.id ? ' class="on"' : '') + '>' + esc(t.name) + '</button>';
-        }).join('') + (note ? '<span class="count">' + esc(note) + '</span>' : '') + '</div>';
+    /* One screen's panels, split so a screen is a page and not a scroll. Each
+       tab names the question it answers and the strip carries it, so the tabs
+       say where to go rather than only what they are called. */
+    var TABS = {
+        watch: [
+            { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?' },
+            { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when' },
+            { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' }
+        ],
+        job: [
+            { id: 'jobs', name: 'The job', note: 'where it is, and where its time went' },
+            { id: 'timeline', name: 'Timeline', note: 'what ran when, and what overlapped' },
+            { id: 'spread', name: 'Spread', note: 'is this job normal, and is one node slow' }
+        ],
+        failure: [
+            { id: 'rates', name: 'Rates', note: 'when it started, and whether a node or a release is bad' },
+            { id: 'where', name: 'Where', note: 'which nodes are failing, and when' },
+            { id: 'detail', name: 'Detail', note: 'what the job and the node said' }
+        ],
+        capacity: [
+            { id: 'headroom', name: 'Headroom', note: 'can the grid take more, and who is using it' },
+            { id: 'arrivals', name: 'Arrivals', note: 'what kicks in soon, and what it needs' }
+        ],
+        versions: [
+            { id: 'flight', name: 'In flight', note: 'which release is running where' },
+            { id: 'catalogue', name: 'Catalogue', note: 'what the grid may run' }
+        ]
+    };
+
+    function tabsFor(screenId) { return TABS[screenId] || null; }
+
+    function activeTab(screenId) {
+        var tabs = tabsFor(screenId);
+        if (!tabs) return null;
+        var want = S.tab[screenId];
+        for (var i = 0; i < tabs.length; i++) if (tabs[i].id === want) return want;
+        return tabs[0].id;
     }
 
-    var WATCH_TABS = [
-        { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?' },
-        { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when' },
-        { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' }
-    ];
+    function subTabs(screenId) {
+        var tabs = tabsFor(screenId);
+        if (!tabs || tabs.length < 2) return '';
+        var current = activeTab(screenId);
+        var note = '';
+        for (var i = 0; i < tabs.length; i++) if (tabs[i].id === current) note = tabs[i].note;
+        return '<div class="subtabs">' + tabs.map(function (t) {
+            return '<button data-act="tab" data-screen="' + screenId + '" data-tab="' + t.id + '"' +
+                (current === t.id ? ' class="on"' : '') + '>' + esc(t.name) + '</button>';
+        }).join('') + '<span class="count">' + esc(note) + '</span></div>';
+    }
 
     function watchScreen() {
-        var tab = S.watchTab;
+        var tab = activeTab('watch');
         var body;
         if (tab === 'nodes')
             body = heatmapChart(S.heatMetric, true) + ribbonChart();
@@ -1516,44 +1552,119 @@
         else
             body = summaryPanel() + loadChart() + throughputChart() +
                 outcomesChart() + queueChart();
-        var active = WATCH_TABS[0];
-        for (var i = 0; i < WATCH_TABS.length; i++) if (WATCH_TABS[i].id === tab) active = WATCH_TABS[i];
-        return subTabs(WATCH_TABS, tab, active.note) + body;
+        return subTabs('watch') + body;
     }
 
     function jobScreen() {
         var jobs = filteredJobs();
         var job = selectedJob();
-        return ganttPanel(jobs) +
-            waterfallChart(job) +
-            histogramChart(jobs) +
-            durationByNodeChart() +
-            jobsTablePanel(jobs);
+        var tab = activeTab('job');
+        var body;
+        if (tab === 'timeline')
+            body = ganttPanel(jobs);
+        else if (tab === 'spread')
+            body = histogramChart(jobs) + durationByNodeChart();
+        else
+            body = jobsTablePanel(jobs) + waterfallChart(job);
+        return subTabs('job') + body;
     }
 
     function failureScreen() {
-        return failureRateChart() +
-            failuresByNodeChart() +
-            failuresByVersionChart() +
-            heatmapChart('failures', false) +
-            failureDetailPanel() +
-            nodeLogsPanel();
+        var tab = activeTab('failure');
+        var body;
+        if (tab === 'where')
+            body = heatmapChart('failures', false);
+        else if (tab === 'detail')
+            body = failureDetailPanel() + nodeLogsPanel();
+        else
+            body = failureRateChart() + failuresByNodeChart() + failuresByVersionChart();
+        return subTabs('failure') + body;
     }
 
     function capacityScreen() {
         var arrivals = isTenant()
             ? ARRIVALS.filter(function (a) { return a.tenant === TENANT_VARIANT; })
             : ARRIVALS;
-        return capacityChart() +
-            arrivalsChart(arrivals) +
-            requirementsMatrix(filteredJobs()) +
-            allocationChart();
+        var tab = activeTab('capacity');
+        var body = tab === 'arrivals'
+            ? arrivalsChart(arrivals) + requirementsMatrix(filteredJobs())
+            : capacityChart() + allocationChart();
+        return subTabs('capacity') + body;
+    }
+
+    /* Releases are dotted numbers, so a plain string compare would put 2.10
+       before 2.9 and call an upgrade half done when it is not. */
+    function cmpVersion(a, b) {
+        var x = String(a).split('.'), y = String(b).split('.');
+        for (var i = 0; i < Math.max(x.length, y.length); i++) {
+            var d = (parseInt(x[i], 10) || 0) - (parseInt(y[i], 10) || 0);
+            if (d) return d;
+        }
+        return 0;
+    }
+
+    /* Which jobs run which release of each app. The failure screen says which
+       release is bad; this says which one is running, how many jobs it holds,
+       and how many are still on an older one. */
+    function jobsByReleaseChart() {
+        var visible = filteredJobs();
+        var rows = APP_VERSIONS.map(function (av) {
+            var jobs = visible.filter(function (j) { return j.app === av.app && j.version === av.version; });
+            return {
+                label: av.app.replace('ores.', '') + ' ' + av.version,
+                app: av.app,
+                version: av.version,
+                total: jobs.length,
+                failed: jobs.filter(function (j) { return j.state === 'failed'; }).length
+            };
+        }).filter(function (r) { return r.total > 0; });
+        var newest = {};
+        rows.forEach(function (r) {
+            if (!newest[r.app] || cmpVersion(r.version, newest[r.app]) > 0) newest[r.app] = r.version;
+        });
+        rows.forEach(function (r) { r.current = r.version === newest[r.app]; });
+        rows.sort(function (a, b) {
+            return a.app === b.app ? cmpVersion(b.version, a.version) : (a.app < b.app ? -1 : 1);
+        });
+
+        var w = 1000, left = 190, right = 170, top = 16, bottom = 34;
+        var p = { x: left, y: top, w: w - left - right, h: rows.length * 26 };
+        var h2 = p.y + p.h + bottom;
+        var maxTotal = Math.max(1, Math.max.apply(null, rows.map(function (r) { return r.total; })));
+        var out = '';
+        rows.forEach(function (row, i) {
+            var y = p.y + i * 26;
+            var bw = (row.total / maxTotal) * p.w;
+            out += '<text class="tick rowlabel" x="' + (left - 8) + '" y="' + (y + 15) + '">' + esc(row.label) + '</text>';
+            out += '<rect x="' + p.x + '" y="' + (y + 4) + '" width="' + p.w + '" height="18" fill="' + C.greyDark + '" fill-opacity="0.18"/>';
+            out += '<rect x="' + p.x + '" y="' + (y + 4) + '" width="' + Math.max(1, bw).toFixed(1) + '" height="18" fill="' +
+                (row.current ? C.blue : C.amber) + '" fill-opacity="0.85"><title>' +
+                esc(row.label + ' \u00b7 ' + row.total + ' jobs' + (row.failed ? ', ' + row.failed + ' failed' : '')) + '</title></rect>';
+            out += '<text class="tick start' + (row.current ? '' : ' strong') + '" x="' + (p.x + p.w + 8) + '" y="' + (y + 17) + '">' +
+                esc(row.total + ' job' + (row.total === 1 ? '' : 's') + (row.current ? ' \u00b7 newest' : ' \u00b7 behind')) + '</text>';
+        });
+        out += '<text class="axis-label" x="' + p.x + '" y="' + (p.y - 4) + '">jobs per release, jobs</text>';
+        var behindJobs = rows.filter(function (r) { return !r.current; })
+            .reduce(function (a, r) { return a + r.total; }, 0);
+        var question = 'Which version of ORE is each job running?';
+        var meta = visible.length + ' jobs across ' + rows.length + ' releases';
+        var foot = '<p class="rowfoot">' + (behindJobs > 0
+            ? behindJobs + ' job' + (behindJobs === 1 ? '' : 's') + ' still run a release behind their app\u2019s newest, so an upgrade is half done.'
+            : 'Every job runs its app\u2019s newest release.') +
+            ' A job names the app version it runs, so this is a fact about the work rather than a guess from the node it landed on.</p>' +
+            miniLegend([
+                { label: 'newest release', color: C.blue },
+                { label: 'an older release', color: C.amber }
+            ]);
+        return chartCard('releases', question, meta, svgEl(w, h2, out, 'releases', question + ', ' + meta), foot, '', true);
     }
 
     function versionsScreen() {
-        return versionsInFlightChart() +
-            concurrencyChart() +
-            cataloguePanel();
+        var tab = activeTab('versions');
+        var body = tab === 'catalogue'
+            ? cataloguePanel()
+            : jobsByReleaseChart() + versionsInFlightChart() + concurrencyChart();
+        return subTabs('versions') + body;
     }
 
     function screenBody() {
@@ -1672,8 +1783,9 @@
         if (screenById(p.get('screen')).id === p.get('screen')) S.screen = p.get('screen');
         if (variantById(p.get('variant')).id === p.get('variant')) S.variant = p.get('variant');
         if (p.get('metric') === 'failures' || p.get('metric') === 'work') S.heatMetric = p.get('metric');
-        for (var i = 0; i < WATCH_TABS.length; i++)
-            if (WATCH_TABS[i].id === p.get('tab')) S.watchTab = p.get('tab');
+        var tabs = tabsFor(S.screen);
+        if (tabs) for (var i = 0; i < tabs.length; i++)
+            if (tabs[i].id === p.get('tab')) S.tab[S.screen] = p.get('tab');
         if (p.get('job')) S.job = p.get('job');
     }
 
@@ -1682,7 +1794,8 @@
         p.set('screen', S.screen);
         p.set('variant', S.variant);
         p.set('metric', S.heatMetric);
-        p.set('tab', S.watchTab);
+        var tab = activeTab(S.screen);
+        if (tab) p.set('tab', tab);
         p.set('job', selectedJob().id);
         window.history.replaceState(null, '', window.location.pathname + '?' + p.toString());
     }
@@ -1708,8 +1821,9 @@
             S.heatMetric = el.getAttribute('data-metric');
             log.push('heatmap metric \u00b7 ' + S.heatMetric);
         } else if (act === 'tab') {
-            S.watchTab = el.getAttribute('data-tab');
-            log.push('tab \u00b7 ' + S.watchTab);
+            var tabScreen = el.getAttribute('data-screen') || S.screen;
+            S.tab[tabScreen] = el.getAttribute('data-tab');
+            log.push('tab \u00b7 ' + tabScreen + ' \u00b7 ' + S.tab[tabScreen]);
         } else if (act === 'job') {
             S.job = el.getAttribute('data-job');
             log.push('job \u00b7 ' + S.job);

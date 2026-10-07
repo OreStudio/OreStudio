@@ -30,6 +30,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -80,6 +81,25 @@ messaging::permission_key key_from(const domain::permission& v) {
     messaging::permission_key key;
     key.code = v.code;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::permission& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("code", v.code);
+    return text.str();
 }
 
 /**
@@ -315,6 +335,11 @@ permission_service::prepare_change(const messaging::permission_change& change,
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A permission with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back({"code", "already_exists", "This value is already taken."});
                 return result;
             }
             break;

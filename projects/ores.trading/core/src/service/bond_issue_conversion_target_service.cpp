@@ -32,6 +32,7 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -86,6 +87,26 @@ key_from(const domain::bond_issue_conversion_target& v) {
     key.issue_id = v.issue_id;
     key.sequence_number = v.sequence_number;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::bond_issue_conversion_target& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("issue_id", v.issue_id);
+    append("sequence_number", v.sequence_number);
+    return text.str();
 }
 
 /**
@@ -361,6 +382,14 @@ ores::utility::domain::result bond_issue_conversion_target_service::prepare_chan
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A bond_issue_conversion_target with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back(
+                    {"issue_id", "already_exists", "This value is already taken."});
+                result.fields.push_back(
+                    {"sequence_number", "already_exists", "This value is already taken."});
                 return result;
             }
             break;
@@ -368,6 +397,11 @@ ores::utility::domain::result bond_issue_conversion_target_service::prepare_chan
             if (current.empty()) {
                 result.outcome = outcome::missing;
                 result.code = "not_found";
+                result.message =
+                    "No bond_issue_conversion_target with " + describe_key(out) + " exists.";
+                result.fields.push_back({"issue_id", "not_found", "No record holds this value."});
+                result.fields.push_back(
+                    {"sequence_number", "not_found", "No record holds this value."});
                 return result;
             }
             // The protocol states the version as a uint32 and the row carries it
@@ -377,6 +411,15 @@ ores::utility::domain::result bond_issue_conversion_target_service::prepare_chan
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
+                result.message = "The bond_issue_conversion_target with " + describe_key(out) +
+                                 " is at version " + std::to_string(current.front().version) +
+                                 ", and the write states " +
+                                 std::to_string(*change.precondition.version) + ".";
+                result.fields.push_back(
+                    {"version",
+                     "version_conflict",
+                     "The record moved since it was read. Read it again and state the "
+                     "version you read."});
                 return result;
             }
             break;

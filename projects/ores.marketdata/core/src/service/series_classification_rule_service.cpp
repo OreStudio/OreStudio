@@ -37,6 +37,7 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -81,6 +82,26 @@ messaging::series_classification_rule_key key_from(const domain::series_classifi
     key.series_type = v.series_type;
     key.metric = v.metric;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::series_classification_rule& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("series_type", v.series_type);
+    append("metric", v.metric);
+    return text.str();
 }
 
 /**
@@ -352,6 +373,14 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A series_classification_rule with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back(
+                    {"series_type", "already_exists", "This value is already taken."});
+                result.fields.push_back(
+                    {"metric", "already_exists", "This value is already taken."});
                 return result;
             }
             break;
@@ -359,6 +388,11 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
             if (current.empty()) {
                 result.outcome = outcome::missing;
                 result.code = "not_found";
+                result.message =
+                    "No series_classification_rule with " + describe_key(out) + " exists.";
+                result.fields.push_back(
+                    {"series_type", "not_found", "No record holds this value."});
+                result.fields.push_back({"metric", "not_found", "No record holds this value."});
                 return result;
             }
             // The protocol states the version as a uint32 and the row carries it
@@ -368,6 +402,15 @@ ores::utility::domain::result series_classification_rule_service::prepare_change
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
+                result.message = "The series_classification_rule with " + describe_key(out) +
+                                 " is at version " + std::to_string(current.front().version) +
+                                 ", and the write states " +
+                                 std::to_string(*change.precondition.version) + ".";
+                result.fields.push_back(
+                    {"version",
+                     "version_conflict",
+                     "The record moved since it was read. Read it again and state the "
+                     "version you read."});
                 return result;
             }
             break;

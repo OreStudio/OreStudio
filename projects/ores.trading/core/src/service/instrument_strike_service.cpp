@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <iterator>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -83,6 +84,25 @@ messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
     messaging::instrument_strike_key key;
     key.trade_id = v.trade_id;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::instrument_strike& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("trade_id", v.trade_id);
+    return text.str();
 }
 
 /**
@@ -352,6 +372,12 @@ instrument_strike_service::prepare_change(const messaging::instrument_strike_cha
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A instrument_strike with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back(
+                    {"trade_id", "already_exists", "This value is already taken."});
                 return result;
             }
             break;
@@ -359,6 +385,8 @@ instrument_strike_service::prepare_change(const messaging::instrument_strike_cha
             if (current.empty()) {
                 result.outcome = outcome::missing;
                 result.code = "not_found";
+                result.message = "No instrument_strike with " + describe_key(out) + " exists.";
+                result.fields.push_back({"trade_id", "not_found", "No record holds this value."});
                 return result;
             }
             // The protocol states the version as a uint32 and the row carries it
@@ -368,6 +396,15 @@ instrument_strike_service::prepare_change(const messaging::instrument_strike_cha
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
+                result.message = "The instrument_strike with " + describe_key(out) +
+                                 " is at version " + std::to_string(current.front().version) +
+                                 ", and the write states " +
+                                 std::to_string(*change.precondition.version) + ".";
+                result.fields.push_back(
+                    {"version",
+                     "version_conflict",
+                     "The record moved since it was read. Read it again and state the "
+                     "version you read."});
                 return result;
             }
             break;

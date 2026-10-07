@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/messaging/market_series_asset_class_protocol.hpp"
 #include <cstdint>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -72,6 +73,26 @@ messaging::market_series_asset_class_key key_from(const domain::market_series_as
     key.market_series_id = v.market_series_id;
     key.asset_class_code = v.asset_class_code;
     return key;
+}
+
+/**
+ * @brief The record a refusal names, so a message says which row it refused.
+ *
+ * The key's fields are joined rather than rendered one at a time, because a
+ * key of several columns has no single member a message could name.
+ */
+std::string describe_key(const domain::market_series_asset_class& v) {
+    std::ostringstream text;
+    bool first = true;
+    const auto append = [&text, &first](const char* field, const auto& value) {
+        if (!first)
+            text << ", ";
+        first = false;
+        text << field << "=" << value;
+    };
+    append("market_series_id", v.market_series_id);
+    append("asset_class_code", v.asset_class_code);
+    return text.str();
 }
 
 /**
@@ -316,6 +337,11 @@ ores::utility::domain::result market_series_asset_class_service::prepare_change(
             if (!current.empty()) {
                 result.outcome = outcome::conflict;
                 result.code = "already_exists";
+                result.message =
+                    "A  with " + describe_key(out) +
+                    " already exists. State the version you read to replace it, or ask "
+                    "for a version replace.";
+                result.fields.push_back({"", "already_exists", "This value is already taken."});
                 return result;
             }
             break;
@@ -323,6 +349,8 @@ ores::utility::domain::result market_series_asset_class_service::prepare_change(
             if (current.empty()) {
                 result.outcome = outcome::missing;
                 result.code = "not_found";
+                result.message = "No  with " + describe_key(out) + " exists.";
+                result.fields.push_back({"", "not_found", "No record holds this value."});
                 return result;
             }
             // The protocol states the version as a uint32 and the row carries it
@@ -332,6 +360,15 @@ ores::utility::domain::result market_series_asset_class_service::prepare_change(
                     *change.precondition.version) {
                 result.outcome = outcome::conflict;
                 result.code = "version_conflict";
+                result.message = "The  with " + describe_key(out) + " is at version " +
+                                 std::to_string(current.front().version) +
+                                 ", and the write states " +
+                                 std::to_string(*change.precondition.version) + ".";
+                result.fields.push_back(
+                    {"version",
+                     "version_conflict",
+                     "The record moved since it was read. Read it again and state the "
+                     "version you read."});
                 return result;
             }
             break;

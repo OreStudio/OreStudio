@@ -83,5 +83,9 @@ ones, and every caller reaches only the objects its credential names.
 - How a tenant node reaches the platform across the network: mutually
   authenticated TLS is the deployment's, and the node credential's shape is an
   open question on the policy page.
+- The journey that enrols a tenant's machine — download a binary, run it,
+  register it, remove it — with its distribution and trust issues:
+  [[id:119BA28D-5300-4055-9511-9079342A82A2][A tenant downloads a compute node
+  and registers it against the platform]] captures it for a story of its own.
 - The engine's own sandboxing, beyond the node holding one assignment at a
   time and removing a job's directory when the job ends.

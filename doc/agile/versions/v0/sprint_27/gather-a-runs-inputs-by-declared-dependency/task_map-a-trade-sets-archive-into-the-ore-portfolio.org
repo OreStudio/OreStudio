@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82
 :END:
-#+title: Task: Map a book's archive into the ORE portfolio
-#+description: No trades-to-ORE-portfolio exporter exists. trade_mapper and the instrument mappers walk the import direction only, so prepare_ore_package copies the trades blob into the tarball and ORE never opens it, which is why the engine stops at 'Build Portfolio'. ores.ore owns the ORE schema and its mappers, so it rebuilds the mapper's input types from the archive, maps them, renders the book's portfolio XML, and uploads it as the run's portfolio input.
+#+title: Task: Map a trade set's archive into the ORE portfolio
+#+description: No trades-to-ORE-portfolio exporter exists. trade_mapper and the instrument mappers walk the import direction only, so prepare_ore_package copies the trades blob into the tarball and ORE never opens it, which is why the engine stops at 'Build Portfolio'. ores.ore owns the ORE schema and its mappers, so it reads a trade set's archive, rebuilds the mapper's input types, maps them, renders the portfolio XML, and uploads it as the run's portfolio input.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
@@ -27,8 +27,8 @@ stops at "Pricing: Build Portfolio" with "Failed to run analytics
 PRICING,XVA".
 
 =ores.ore= owns the ORE schema and the mappers, so the reverse walk belongs
-there: read the book's archive, rebuild the mapper's input types, map them,
-render the book's portfolio XML, and upload it as the run's portfolio input.
+there: read a trade set's archive, rebuild the mapper's input types, map them,
+render the portfolio XML, and upload it as the run's portfolio input.
 
 * Status
 
@@ -37,7 +37,7 @@ render the book's portfolio XML, and upload it as the run's portfolio input.
 | State        | BACKLOG                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
 | Now          | Not yet started.                       |
-| Waiting on   | [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a book's trades as an archive at an as-of]] |
+| Waiting on   | [[id:8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807][Export a trade set as an archive]] |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-07                               |
 
@@ -50,12 +50,12 @@ render the book's portfolio XML, and upload it as the run's portfolio input.
   as =portfolioFile=, and the engine proceeds past "Build Portfolio".
 - A trade the mapper cannot express fails the step and names the trade, rather
   than producing a portfolio that is quietly missing it.
-- The output is one portfolio per book, uploaded as a declared artifact the
-  package step can wait on.
+- The output is one portfolio per trade set, uploaded as a declared artifact
+  the package step can wait on, named by the batch key.
 
 * Plan
 
-=save_data(const portfolio&)= already exists, and every mappers' forward
+=save_data(const portfolio&)= already exists, and every mapper's forward
 function already exists because the import path uses it. The work is the
 reverse direction, and the decision to take first is whether to add a reverse
 to each mapper or to build the portfolio by walking the archive directly

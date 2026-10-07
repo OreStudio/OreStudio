@@ -2,7 +2,7 @@
 :ID: 75159083-58A4-4266-A64B-4FDC94EF0426
 :END:
 #+title: Task: Hand each configuration to its owner by id at an as-of
-#+description: The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over books and configurations must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it.
+#+description: The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over trade sets must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:

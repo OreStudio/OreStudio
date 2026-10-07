@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: D054BDD3-351F-42D3-9638-7D3BAEEAD332
+:END:
+#+title: Task: Partition a run's trade population into trade sets
+#+description: Nothing in ores.trading can group trades. The run resolves its scope once, in gather_trades, and treats it as one bag of books, so one export object answers for every book. Give ores.trading a batcher with a pluggable strategy that partitions a report's trade population into trade sets, each with a name and an as-of; the simplest strategy batches by book. The set name is the batch key the rest of the run fans out over.
+#+type: task
+#+level: s1
+#+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: Trade sets, which ores.trading does not have yet (Merry Newton's work): a batcher partitions trades into sets that do not exist to partition into. The dependency graph, for the fan-in condition.
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Nothing in =ores.trading= groups trades. The run resolves its scope once,
+inside =gather_trades=, and treats it as one bag of books: the handler asks the
+risk report configuration for its books and hands the whole list to one export.
+A report covers hundreds to thousands of books, and each needs its own trades
+archive, its own market data and its own portfolio XML.
+
+Give =ores.trading= a batcher: a subsystem that partitions a report's trade
+population into **trade sets**, driven by a **strategy**. The sets are what the
+rest of the run reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Trade sets in ores.trading (Merry Newton), and [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] for the fan-in condition. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-07                               |
+
+
+* Acceptance
+
+- A batcher partitions a report's trade population into trade sets, and a
+  strategy decides how it partitions.
+- "Batch by book" is the first strategy, and it is one implementation behind an
+  interface rather than a special case in the caller.
+- A trade set carries a name and an as-of date. The name is the **batch key**,
+  a plain string of the form =REPORT_NAME:BOOK_ID:ASOF= for the book strategy,
+  and nothing downstream parses it beyond using it as the artifact key.
+- The batcher records the sets it created against the run, so the run knows its
+  fan-out width before any producer starts.
+- A later strategy can partition differently — by grid behaviour, by size —
+  without a producer or the package step changing.
+
+* Plan
+
+*The set is the unit, not the book.* A book is one way to slice trades and it is
+the first way, not the shape of the system. Everything downstream addresses a
+*trade set by its batch key*, so a strategy that groups by desk, by counterparty
+or by whatever the grid is doing next needs no subscriber to change.
+
+*The dependency is real and it is not ours.* Trade sets do not exist yet:
+they are being built in =ores.trading= by Merry Newton. This task is blocked on
+that landing, and the batcher is the second thing to be built rather than the
+first. What the batcher needs from the set is small and worth stating so the
+two efforts agree early: a name, an as-of, and the trades in it.
+
+*Why the strategy is an interface and not a switch.* Grid behaviour is the
+stated reason for wanting more than one strategy — how work is best split
+depends on what the grid is doing — and that is a thing that changes while the
+system runs. A switch in the caller would put grid knowledge in the report
+path; a strategy boundary keeps it in trading where the population is known.
+
+*The batch key is opaque downstream.* =REPORT_NAME:BOOK_ID:ASOF= is a
+convention, not a grammar. Nothing downstream splits it: the key names an
+artifact and the as-of travels on the set, so a future strategy may use any
+string without a producer being able to tell.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

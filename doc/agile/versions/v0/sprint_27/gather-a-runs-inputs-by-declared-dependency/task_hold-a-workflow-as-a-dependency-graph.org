@@ -23,7 +23,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 The chain is a =std::vector<workflow_step_def>= built in code, and the
 instance stores each step's ordinal, so the only edge in the graph is the
 ordinal. That is enough while every step produces exactly one artifact and the
-chain is a line, and it stops being enough the moment a step gathers per book:
+chain is a line, and it stops being enough the moment a step gathers per trade set:
 an ordinal says which step is next, not what a step is waiting for.
 
 Persist the graph with the run — steps as vertices, artifact dependencies as

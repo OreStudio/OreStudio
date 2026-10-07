@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF
 :END:
-#+title: Task: Resolve a book's market data requirements
-#+description: gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a book's trades actually need. Resolve it: from a book to its trades, from the trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. Decide how much of that resolution belongs in SQL, where the joins already live, and how much in the services.
+#+title: Task: Resolve a trade set's market data requirements
+#+description: gather_market_data exports every series the tenant holds, at whatever the database happens to contain now, because no one can say which market data a set of trades actually needs. Resolve it, for one trade set: from its trades to the market data requirements they imply, expressed as oresmd, and from those requirements to the series, observations and fixings that answer them. The as-of is the set's.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
+#+blocked_on: The batcher, whose batch keys name the trade set this reads.
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
@@ -22,13 +22,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 =gather_market_data= exports every series the tenant holds, at whatever the
 database contains at the moment it runs. Nothing can say which market data a
-book's trades actually need, so nothing can narrow the export, and nothing ties
-the data to the run's date.
+set of trades actually needs, so nothing can narrow the export, and nothing
+ties the data to the run's date.
 
-Resolve it, for one book at one as-of: from the book to its trades, from the
-trades to the market data requirements they imply, expressed as =oresmd=, and
-from those requirements to the series, observations and fixings that answer
-them.
+Resolve it, for one trade set: from its trades to the market data requirements
+they imply, expressed as =oresmd=, and from those requirements to the series,
+observations and fixings that answer them. The as-of is the set's.
 
 * Status
 
@@ -37,17 +36,17 @@ them.
 | State        | BACKLOG                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]], which produces the batch keys this reads. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-07                               |
 
 
 * Acceptance
 
-- The resolution answers, for one book and one date, which oresmd data a run
-  of that book requires.
+- The resolution answers, for one trade set, which oresmd data a run requires.
 - A requirement that no series answers is reported as a gap, not skipped.
-- The resolution is reproducible for an as-of date.
+- The resolution reads at the set's as-of date, so two runs that share a set's
+  membership but not its date resolve against different rows.
 - Where the resolution lives is decided and recorded, with the reason.
 
 * Plan
@@ -60,15 +59,15 @@ already exist as rows. But an =oresmd= requirement is spelled by C++ codecs —
 restating that grammar in SQL or moving it into SQL and having C++ read it.
 That is the decision this task exists to take, and the two honest shapes are:
 
-- a SQL function that resolves book to series and returns the rows, with the
-  oresmd spelling left to the caller that already knows the grammar; or
+- a SQL function that resolves a trade set to series and returns the rows, with
+  the oresmd spelling left to the caller that already knows the grammar; or
 - the grammar expressed once in SQL and consumed from both sides.
 
-A split — SQL for book to trades to instrument attributes, C++ for the
+A split — SQL for set to trades to instrument attributes, C++ for the
 requirement spelling — is the third shape and probably the first one built,
-because it needs no grammar to move and still removes the per-trade round
-trip. It should be recorded as a starting point rather than a resting place if
-the grammar then has two homes.
+because it needs no grammar to move and still removes the per-trade round trip.
+It should be recorded as a starting point rather than a resting place if the
+grammar then has two homes.
 
 *What the requirements are derived from* is the other half. The candidates are
 the trades' instruments and the curve configurations the run binds; both are

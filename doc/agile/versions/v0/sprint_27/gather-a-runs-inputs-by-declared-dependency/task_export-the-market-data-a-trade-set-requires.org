@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 86994A25-E1C5-41AF-BE1D-E13F0667EFB1
 :END:
-#+title: Task: Export the market data a book requires
-#+description: marketdata.v1.ops.export_market_data_to_storage takes no book and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per book needs the export narrowed to the resolved requirements and read as of the run's date, so two runs of one book on different dates read different rows.
+#+title: Task: Export the market data a trade set requires
+#+description: marketdata.v1.ops.export_market_data_to_storage takes no trade set and no date and writes the whole tenant's market data as one market file and one fixings file. A run that gathers per trade set needs the export narrowed to that set's resolved requirements and read at the set's as-of, so two runs of one set on different dates read different rows.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
@@ -20,13 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=marketdata.v1.ops.export_market_data_to_storage= takes no book and no date.
+=marketdata.v1.ops.export_market_data_to_storage= takes no set and no date.
 Its own documentation states the stance: an ORE market file "is a snapshot of
 everything a run needs, not a slice of one series, and an export that could
 name a subset would produce a file that does not reproduce anything". That was
-true of a whole-tenant run. A run that gathers per book needs the export
-narrowed to the requirements that book resolves and read as of the run's date,
-so two runs of one book on different dates read different rows.
+true of a whole-tenant run. A run that gathers per trade set needs the export
+narrowed to the requirements that set resolves and read at the set's as-of, so
+two runs of one set on different dates read different rows.
 
 * Status
 
@@ -35,16 +35,16 @@ so two runs of one book on different dates read different rows.
 | State        | BACKLOG                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
 | Now          | Not yet started.                       |
-| Waiting on   | [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a book's market data requirements]] |
+| Waiting on   | [[id:7D9C535D-ED63-43A6-AD1D-54E6E73CF2CF][Resolve a trade set's market data requirements]] |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-07                               |
 
 
 * Acceptance
 
-- The request names a book and an as-of date, and the export writes only the
-  series that book's resolution requires.
-- The rows are read as of the date, not as of now.
+- The request names a trade set, and the as-of comes from the set.
+- The export writes only the series that set's resolution requires.
+- The rows are read as of the set's date, not as of now.
 - A requirement that no series answers fails the step and names the missing
   data, because ORE cannot price a curve whose quotes are quietly absent.
 - The market and fixings bodies remain what ORE parses, as they are today.
@@ -59,9 +59,9 @@ is mostly about the resolution task's output reaching it.
 The documented stance above has to be reversed deliberately rather than
 quietly: the comment argues that a subset does not reproduce anything, and the
 answer is that the *resolution* is what makes a subset reproducible — the set
-is derived from the book's own trades at a stated date, not chosen by a caller
-who might choose badly. When the stance changes, that reasoning belongs in the
-same comment.
+is derived from the trade set's own members at a stated date, not chosen by a
+caller who might choose badly. When the stance changes, that reasoning belongs
+in the same comment.
 
 Fixings are read the same way and stay a separate file, because the engine
 reads them from one of its own.

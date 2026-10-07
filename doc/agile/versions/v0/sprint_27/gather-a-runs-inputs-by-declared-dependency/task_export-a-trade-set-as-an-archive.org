@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: 8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807
 :END:
-#+title: Task: Export a book's trades as an archive at an as-of
-#+description: trading.v1.ops.export_trades_to_storage takes book ids and no date and writes one gzipped msgpack of trade_export_item rows for all of them, which is not something the ORE mapper can consume: it carries instruments as an opaque payload and no shape the mapper can walk. Export one book at a time at a stated as-of, source everything the portfolio needs — trade headers, instruments and envelopes — and write a zip whose shape is declared.
+#+title: Task: Export a trade set as an archive
+#+description: trading.v1.ops.export_trades_to_storage takes book ids and no date and writes one gzipped msgpack of trade_export_item rows for all of them, which is not something the ORE mapper can consume: it carries instruments as an opaque payload and no shape the mapper can walk. Export one trade set at a time, by its batch key, and source everything the portfolio needs - trade headers, instruments and envelopes - into a zip whose shape is declared. The as-of travels on the set.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
+#+blocked_on: The batcher, whose batch keys name the trade set this reads.
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
@@ -27,9 +27,10 @@ trading's own transport encoding: an instrument is carried as an opaque
 =instrument_payload=, because reflect-cpp cannot name the active alternative
 of the instrument variant.
 
-The ORE mapper cannot be driven from that. Export one book at a time, at a
-stated as-of, and source everything the portfolio needs — trade headers,
-instruments and envelopes — into a zip whose shape is declared.
+The ORE mapper cannot be driven from that. Export **one trade set at a time, by
+its batch key**, and source everything the portfolio needs — trade headers,
+instruments and envelopes — into a zip whose shape is declared. The as-of
+travels on the set, so the request does not restate it.
 
 * Status
 
@@ -38,42 +39,41 @@ instruments and envelopes — into a zip whose shape is declared.
 | State        | BACKLOG                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:D054BDD3-351F-42D3-9638-7D3BAEEAD332][Partition a run's trade population into trade sets]], which produces the batch keys this reads. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-07                               |
 
 
 * Acceptance
 
-- The request names one book and one as-of date.
-- The archive holds everything the ORE portfolio mapper needs: the trade's
+- The request names a trade set's batch key, and the as-of comes from the set.
+- The archive holds everything the ORE portfolio mapper needs: each trade's
   anchor, its instrument as something the mapper can walk, and its envelope
   (counterparty, netting set, portfolios, additional fields).
 - The archive's shape is declared — the set of members, their names, their
   encodings, and a manifest to check them against — so a reader validates
   before it maps.
-- The same book exported at two as-of dates yields archives that answer the
-  two dates.
+- The archive is named by the batch key, so the package step can tell which
+  sets have arrived and which are missing.
 
 * Plan
 
-*One archive per book, with members split by instrument type.* The book is the
-unit the run fans out over and the unit the package counts, so the archive is
-per book. Inside it, a manifest plus one member per instrument type (and one
-for the headers and envelopes) is the shape that lets the mapper stream type
-by type, lets a new instrument family arrive without touching the others, and
-localises a mapping failure to a type rather than to a book.
+*One archive per trade set, with members split by instrument type.* The trade
+set is the unit the run fans out over and the unit the package counts, so the
+archive is per set. Inside it, a manifest plus one member per instrument type
+(and one for the headers and envelopes) is the shape that lets the mapper
+stream type by type, lets a new instrument family arrive without touching the
+others, and localises a mapping failure to a type rather than to a set.
 
-The alternative — a separate archive per book per instrument type — multiplies
+The alternative — a separate archive per set per instrument type — multiplies
 the object count by the number of types and makes the fan-in set's size vary
-with each book's contents, which is the thing the waiting logic least wants.
+with each set's contents, which is the thing the waiting logic least wants.
 This is a decision to confirm when the shape is drawn: it is recorded here
 because it is the question, not because it is closed.
 
-*Where the as-of comes from.* Every market and trade table is bitemporal, so
-an as-of read is a =valid_at= read rather than new machinery. The run already
-holds a date — the run document's =asofDate= — and it is currently passed to
-nothing.
+*Where the as-of comes from.* It is on the trade set, and every market and
+trade table is bitemporal, so reading it is a =valid_at= read rather than new
+machinery. Nothing in this path needs a date parameter.
 
 *What the encoding is.* The members stay in an encoding this tree can read
 without a new parser; the point of the change is the shape and the completeness

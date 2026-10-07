@@ -8,7 +8,7 @@
 #+filetags: :isolate_tenant_data_in_storage:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-a-node-a-storage-capability
-#+pr:
+#+pr: 2757
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2757][2757]] | Give a worker node a capability to reach its assignment's objects |
 
 * Review
 

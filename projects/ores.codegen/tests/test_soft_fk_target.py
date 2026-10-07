@@ -21,6 +21,7 @@ CODEGEN = REPO_ROOT / "projects/ores.codegen"
 DATA_DIR = CODEGEN / "library" / "data"
 TEMPLATES_DIR = CODEGEN / "library" / "templates"
 TRADING = REPO_ROOT / "projects/ores.trading/modeling"
+COMPUTE = REPO_ROOT / "projects/ores.compute/modeling"
 
 
 def _create_sql(tmp_path, model):
@@ -57,3 +58,21 @@ def test_a_check_against_a_temporal_target_reads_its_current_row(tmp_path):
 
     assert table == "ores_refdata_books_tbl"
     assert "valid_to = ores_utility_infinity_timestamp_fn()" in body
+
+
+def test_a_key_into_an_ordinary_entity_matches_the_writers_tenant(tmp_path):
+    sql = _create_sql(tmp_path, COMPUTE / "ores.compute.workunit.org")
+
+    _, body = _check(sql, "batch_id")
+
+    assert "tenant_id = NEW.tenant_id" in body
+    assert "ores_utility_system_tenant_id_fn()" not in body
+
+
+def test_a_key_into_a_global_registry_matches_own_or_system_tenant(tmp_path):
+    sql = _create_sql(tmp_path, COMPUTE / "ores.compute.workunit.org")
+
+    _, body = _check(sql, "app_version_id")
+
+    assert "tenant_id = NEW.tenant_id" in body
+    assert "or tenant_id = ores_utility_system_tenant_id_fn()" in body

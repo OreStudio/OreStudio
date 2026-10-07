@@ -487,9 +487,11 @@ begin
     -- Validate {{column}} (soft FK to {{table}})
     if not exists (
         select 1 from {{table}}
-        where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
-          and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
-          and {{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
+        where {{^use_no_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+          and {{/use_system_tenant}}{{#system_tenant_visible}}(tenant_id = NEW.tenant_id
+           or tenant_id = ores_utility_system_tenant_id_fn())
+          and {{/system_tenant_visible}}{{^use_system_tenant}}{{^system_tenant_visible}}tenant_id = NEW.tenant_id
+          and {{/system_tenant_visible}}{{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
 {{^target_immutable}}
           and valid_to = ores_utility_infinity_timestamp_fn()
 {{/target_immutable}}
@@ -504,9 +506,11 @@ begin
     if NEW.{{column}} is not null then
         if not exists (
             select 1 from {{table}}
-            where {{^use_no_tenant}}{{^use_system_tenant}}tenant_id = NEW.tenant_id
-              and {{/use_system_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
-              and {{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
+            where {{^use_no_tenant}}{{#use_system_tenant}}tenant_id = ores_utility_system_tenant_id_fn()
+              and {{/use_system_tenant}}{{#system_tenant_visible}}(tenant_id = NEW.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
+              and {{/system_tenant_visible}}{{^use_system_tenant}}{{^system_tenant_visible}}tenant_id = NEW.tenant_id
+              and {{/system_tenant_visible}}{{/use_system_tenant}}{{/use_no_tenant}}{{target_column}} = NEW.{{column}}
 {{^target_immutable}}
               and valid_to = ores_utility_infinity_timestamp_fn()
 {{/target_immutable}}

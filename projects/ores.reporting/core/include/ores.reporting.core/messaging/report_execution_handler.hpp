@@ -26,7 +26,9 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.service/service/cache/run_token_cache.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <optional>
 #include <string>
 
 namespace ores::reporting::messaging {
@@ -77,9 +79,27 @@ private:
                               const std::string& instance_id,
                               const std::string& error_message);
 
+    /**
+     * @brief A client that carries the run's token, for calls to an owner.
+     *
+     * The token comes from the cache, keyed by the grant the report instance
+     * recorded at admission and the run. @p renew drops the held token first,
+     * which is how a caller that read =token_expired= exchanges once and
+     * repeats its request.
+     *
+     * @return The client, or nothing when the instance holds no grant or the
+     * exchange refuses; @p error then says why.
+     */
+    std::optional<ores::nats::service::nats_client>
+    run_token_client(const std::string& tenant_id,
+                     const std::string& run_id,
+                     bool renew,
+                     std::string& error);
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::nats::service::nats_client svc_nats_;
+    ores::service::service::cache::run_token_cache run_tokens_;
     ores::workflow::service::fsm_state_map instance_states_;
     std::string http_base_url_;
 };

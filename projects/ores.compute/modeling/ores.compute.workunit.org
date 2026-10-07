@@ -119,11 +119,20 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 
 ** app_version_id
 :PROPERTIES:
-:table:         ores_compute_app_versions_tbl
-:target_column: id
-:nullable:      false
+:table:                  ores_compute_app_versions_tbl
+:target_column:          id
+:nullable:               false
+:system_tenant_visible:  true
 :error_message: Invalid app_version_id: %. No active app version found with this id.
 :END:
+
+App versions are a global registry: the platform publishes the canonical
+ones under the system tenant, and every tenant's compute runs reference
+them. The soft-FK check therefore admits the row's own tenant or the
+system tenant, matching the read visibility the app_version repository and
+its row-level policy already grant. Without the flag the check would scope
+to the row's own tenant and reject a platform-managed app version, so no
+tenant could run a report at all.
 
 ** canonical_result_id
 :PROPERTIES:

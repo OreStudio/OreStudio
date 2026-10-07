@@ -17,28 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_REGISTRAR_HPP
-#define ORES_COMPUTE_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_IAM_CLIENT_CLIENT_RUN_TOKEN_MINTER_HPP
+#define ORES_IAM_CLIENT_CLIENT_RUN_TOKEN_MINTER_HPP
 
-#include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.nats/service/client.hpp"
+#include "ores.iam.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include <optional>
-#include <vector>
+#include "ores.service/service/cache/run_token_cache.hpp"
 
-namespace ores::compute::messaging {
+namespace ores::iam::client {
 
-class ORES_COMPUTE_CORE_EXPORT registrar {
-public:
-    static std::vector<ores::nats::service::subscription> register_handlers(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        ores::nats::service::nats_client outbound_nats);
-};
+/**
+ * @brief Exchanges a run grant for a run token over NATS, with the service's
+ * own token.
+ *
+ * The client must carry the calling service's identity, so build it with
+ * @ref make_service_token_provider. The returned minter calls
+ * =iam.v1.run_grants.exchange= and answers the token and its expiry, or nothing
+ * when IAM refuses or does not answer.
+ *
+ * @param nats The service's own client; it must outlive the minter.
+ */
+ORES_IAM_CLIENT_EXPORT ores::service::service::cache::run_token_minter
+make_run_token_minter(ores::nats::service::nats_client& nats);
 
 }
 

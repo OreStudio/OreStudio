@@ -117,6 +117,8 @@ export interface PrepareOrePackageRequest {
     definition_id: string;
     bundle_id: string;
     tenant_id: string;
+    party_id: string;
+    run_grant_id: string;
     correlation_id: string;
     trades_storage_key: string;
     market_data_storage_key: string;
@@ -131,6 +133,8 @@ export interface PrepareOrePackageResult {
 export interface SubmitComputeRequest {
     report_instance_id: string;
     tenant_id: string;
+    party_id: string;
+    run_grant_id: string;
     correlation_id: string;
     tarball_uris: string[];
 }
@@ -180,6 +184,8 @@ export interface ReportExecutionRequest {
     report_instance_id: string;
     definition_id: string;
     tenant_id: string;
+    party_id: string;
+    run_grant_id: string;
     correlation_id: string;
     pre_processing: string;
     prepared_input_key: string;

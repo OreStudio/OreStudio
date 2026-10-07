@@ -38,6 +38,7 @@ export interface ReportInstance {
     description: string;
     party_id: string;
     definition_id: string;
+    run_grant_id: string | null;
     fsm_state_id: string | null;
     trigger_run_id: number;
     output_message: string;

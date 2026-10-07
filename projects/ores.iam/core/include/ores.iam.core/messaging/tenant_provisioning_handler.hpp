@@ -898,6 +898,12 @@ private:
 
         dq::messaging::publish_bundle_params params;
         params.opted_in_datasets = arguments.opted_in_datasets;
+        // A bundle may publish party-scoped rows — the market data observations
+        // a synthetic theme carries, for one — and those publications read the
+        // party from here. The step acts for the tenant's system party, which
+        // is where a shared stream belongs.
+        if (!actor.party_id.is_nil())
+            params.party_id = boost::uuids::to_string(actor.party_id);
         const auto params_json = dq::messaging::build_params_json(params);
         for (const auto& bundle_code : arguments.bundles)
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
@@ -1085,8 +1091,8 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Publishes the configuration bundles against the tenant's system party,
-    /// binds every party the tenant holds to the theme the step names, and
+    /// Binds every party the tenant holds to the theme the step names, through
+    /// the configurations the tenant's bundle publication already stored, and
     /// starts that theme's feeds.
     void start_market_feeds_step(const ores::service::messaging::workflow_step_context& wf,
                                  const ores::iam::workflow::provision_tenant_step_command& command,
@@ -1098,16 +1104,10 @@ private:
         const auto system_party = find_system_party(discover);
         if (!system_party)
             throw std::runtime_error(
-                "The tenant holds no system party to publish its market configuration against.");
+                "The tenant holds no system party to resolve its market configuration against.");
 
         auto system_client =
             make_step_client(command.tenant_id, actor.account_id, system_party->id, actor.username);
-        dq::messaging::publish_bundle_params params;
-        params.party_id = boost::uuids::to_string(system_party->id);
-        const auto params_json = dq::messaging::build_params_json(params);
-        for (const auto& bundle_code : arguments.bundles)
-            publish_bundle_or_throw(
-                system_client, bundle_code, actor.username, params_json, system_party->full_name);
 
         // Every party the tenant holds consumes the shared stream through its
         // own bindings, which is how the consistent world reaches each party.
@@ -1138,7 +1138,6 @@ private:
             throw std::runtime_error("The theme '" + arguments.theme + "' feeds were not started.");
 
         wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
-                                                           .bundles = arguments.bundles,
                                                            .parties = bound,
                                                            .datasets = {arguments.theme}}));
     }
@@ -1560,6 +1559,9 @@ private:
             req.change.write.producer_kind = "SYNTHETIC";
             req.change.write.enabled = true;
             req.change.write.party_id = sg(party_id_str);
+            // The stream these bindings consume is the tenant's own simulated
+            // one, not a real feed.
+            req.change.write.producer_kind = "SYNTHETIC";
             // The write states no expectation, because the store's
             // must-not-exist claim is keyed on the source alone while the
             // binding's natural key is the party with the source. A

@@ -221,6 +221,10 @@
 
 - ores_reporting_publish_
 
+** Extra args
+
+- --http-base-url http://localhost:{http_port}
+
 * ores.telemetry.service
 :PROPERTIES:
 :psql_var:    telemetry_service
@@ -260,6 +264,10 @@
 ** DML prefixes
 
 - ores_trading_
+
+** Extra args
+
+- --http-base-url http://localhost:{http_port}
 
 * ores.compute.service
 :PROPERTIES:
@@ -381,6 +389,10 @@
 
 - ores_refdata_
 - ores_ore_
+
+** Extra args
+
+- --http-base-url http://localhost:{http_port}
 
 * ores.analytics.service
 :PROPERTIES:

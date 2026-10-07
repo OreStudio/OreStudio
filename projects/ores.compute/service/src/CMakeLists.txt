@@ -46,7 +46,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.core.lib
     PRIVATE
-        ores.workflow.api.lib)
+        ores.workflow.api.lib
+        ores.iam.client.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

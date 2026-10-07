@@ -224,24 +224,17 @@ TEST_CASE("a photo step's party logo key is optional", tags) {
     CHECK(arguments.party_logo.empty());
 }
 
-TEST_CASE("a market feed step reads its configuration bundles and its theme", tags) {
-    const auto arguments = parse_market_feed_arguments(
-        R"({"bundles": ["synthetic_realistic_2026", "marketdata.reference_vintage_2026_05_05"],
-            "theme": "synthetic.themes.realistic_2026"})");
+TEST_CASE("a market feed step reads its theme", tags) {
+    const auto arguments =
+        parse_market_feed_arguments(R"({"theme": "synthetic.themes.realistic_2026"})");
 
-    CHECK(arguments.bundles == std::vector<std::string>{"synthetic_realistic_2026",
-                                                        "marketdata.reference_vintage_2026_05_05"});
     CHECK(arguments.theme == "synthetic.themes.realistic_2026");
 }
 
 TEST_CASE("a market feed step that names no theme is refused", tags) {
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"bundles": ["synthetic_realistic_2026"]})"),
+    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({})"),
                       "The step names no 'theme' argument.");
-    CHECK_THROWS_WITH(
-        parse_market_feed_arguments(R"({"theme": "synthetic.themes.realistic_2026"})"),
-        "The step names no 'bundles' argument.");
-    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"bundles": ["synthetic_realistic_2026"],
-                                                       "theme": 7})"),
+    CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"theme": 7})"),
                       "The step's argument 'theme' is not a string.");
 }
 

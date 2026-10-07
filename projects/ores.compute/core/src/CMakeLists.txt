@@ -44,13 +44,14 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.dq.api.lib
         ores.diff.lib
-    PRIVATE
         ores.service.lib
+    PRIVATE
         ores.security.lib
         ores.utility.lib
         ores.logging.lib
         ores.platform.lib
         ores.reporting.api.lib
+        ores.iam.client.lib
         ores.history.core.lib
         faker-cxx::faker-cxx
         libfort::fort)

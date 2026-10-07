@@ -123,7 +123,16 @@ std::string(faker::crypto::sha256())
 :name_singular_words: app version platform
 :name_words:          app version platforms
 :order_column:        platform_id
+:system_tenant_visible: true
 :END:
+
+The junction carries the per-platform package of an app version, and the
+app version is a global registry: the platform publishes the canonical
+rows under the system tenant and every tenant dispatches against them. The
+flag makes the repository read own-tenant OR system-tenant rows on every
+read path, matching the app_version repository and the row-level policy in
+compute_rls_policies_create.sql, so a dispatch in a tenant finds the
+package the platform published. Mutations stay own-tenant scoped.
 
 * C++
 

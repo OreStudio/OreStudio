@@ -42,6 +42,7 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "description" text not null,
     "party_id" uuid not null,
     "definition_id" uuid not null,
+    "run_grant_id" uuid null,
     "fsm_state_id" uuid null,
     "trigger_run_id" bigint not null,
     "output_message" text not null,

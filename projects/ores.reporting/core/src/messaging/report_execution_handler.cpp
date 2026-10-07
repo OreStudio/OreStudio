@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -37,6 +38,7 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
+#include <string_view>
 
 namespace ores::reporting::messaging {
 
@@ -71,6 +73,14 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
     }
 }
 
+/**
+ * @brief Drops a run's cached run tokens when its step ends.
+ *
+ * Nothing the cache holds outlives the step, so no token sits in memory between
+ * steps. The destructor runs on every return, including the failure paths.
+ */
+using run_token_step_scope = ores::service::service::cache::run_token_step_scope;
+
 } // namespace
 
 
@@ -78,6 +88,9 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
                                                     const std::string& instance_id,
                                                     const std::string& error_message) {
     try {
+        // A failed run holds no token, whether or not this instance already
+        // recorded its failure.
+        run_tokens_.evict_run(instance_id);
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
         service::report_instance_service inst_svc(tenant_ctx);
         boost::uuids::string_generator sg;
@@ -113,8 +126,40 @@ report_execution_handler::report_execution_handler(
     : nats_(nats)
     , ctx_(std::move(ctx))
     , svc_nats_(std::move(svc_nats))
+    , run_tokens_(ores::iam::client::make_run_token_minter(svc_nats_))
     , instance_states_(std::move(instance_states))
     , http_base_url_(std::move(http_base_url)) {}
+
+std::optional<ores::nats::service::nats_client>
+report_execution_handler::run_token_client(const std::string& tenant_id,
+                                           const std::string& run_id,
+                                           bool renew,
+                                           std::string& error) {
+    try {
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
+        service::report_instance_service instances(tenant_ctx);
+        boost::uuids::string_generator sg;
+        const auto instance = instances.get_instance(sg(run_id));
+        if (!instance || !instance->run_grant_id) {
+            error = "The report instance records no run grant, so its run cannot act.";
+            return std::nullopt;
+        }
+        const ores::service::service::cache::run_token_key key{
+            .grant_id = boost::uuids::to_string(*instance->run_grant_id), .run_id = run_id};
+        if (renew)
+            run_tokens_.invalidate(key);
+        const auto token = run_tokens_.token_for(key, tenant_id);
+        if (token.empty()) {
+            error = "No run token is available for this run.";
+            return std::nullopt;
+        }
+        return svc_nats_.with_delegation(token);
+    } catch (const std::exception& e) {
+        error = std::string("Could not obtain a run token: ") + e.what();
+        return std::nullopt;
+    }
+}
 
 void report_execution_handler::gather_trades(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
@@ -128,6 +173,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_trades starting | instance=" << req.report_instance_id
                               << " definition=" << req.definition_id;
@@ -182,7 +228,17 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         exp_req.storage_key = key;
 
         std::string err;
-        auto exp_resp = nats_call(svc_nats_, exp_req, err);
+        auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
+        std::optional<decltype(exp_req)::response_type> exp_resp;
+        if (owner)
+            exp_resp = nats_call(*owner, exp_req, err);
+        // An expired token costs one exchange and one repeat of the request.
+        if (!exp_resp && err.find("token_expired") != std::string::npos) {
+            err.clear();
+            owner = run_token_client(req.tenant_id, req.report_instance_id, true, err);
+            if (owner)
+                exp_resp = nats_call(*owner, exp_req, err);
+        }
         if (!exp_resp || !exp_resp->success) {
             const auto failure =
                 "export_trades_to_storage failed: " +
@@ -224,6 +280,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         return;
     }
     const auto& req = *parsed;
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
     BOOST_LOG_SEV(lg(), info) << "gather_market_data starting | instance="
                               << req.report_instance_id;
@@ -236,7 +293,17 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
         md_req.storage_key = key;
 
         std::string err;
-        auto md_resp = nats_call(svc_nats_, md_req, err);
+        auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
+        std::optional<decltype(md_req)::response_type> md_resp;
+        if (owner)
+            md_resp = nats_call(*owner, md_req, err);
+        // An expired token costs one exchange and one repeat of the request.
+        if (!md_resp && err.find("token_expired") != std::string::npos) {
+            err.clear();
+            owner = run_token_client(req.tenant_id, req.report_instance_id, true, err);
+            if (owner)
+                md_resp = nats_call(*owner, md_req, err);
+        }
         if (!md_resp || !md_resp->success) {
             const auto failure =
                 "export_market_data_to_storage failed: " +
@@ -434,6 +501,8 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         inst->completed_at = std::chrono::system_clock::now();
         inst->output_message = "Report execution completed.";
         inst_svc.save_instance(*inst);
+        // The run is terminal, so no token of it may stay in memory.
+        run_tokens_.evict_run(req.report_instance_id);
 
         BOOST_LOG_SEV(lg(), info) << "finalise complete | instance=" << req.report_instance_id;
 

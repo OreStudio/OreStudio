@@ -25,6 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.service/service/cache/run_token_cache.hpp"
 #include <string>
 
 namespace ores::ore::service::messaging {
@@ -77,6 +78,7 @@ private:
     ores::database::context ctx_;
     std::string http_base_url_;
     ores::nats::service::nats_client service_nats_;
+    ores::service::service::cache::run_token_cache run_tokens_;
 };
 
 }

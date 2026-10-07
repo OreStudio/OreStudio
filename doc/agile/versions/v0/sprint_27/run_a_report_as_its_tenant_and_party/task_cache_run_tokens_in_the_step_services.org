@@ -7,41 +7,77 @@
 #+level: s1
 #+filetags: :run_a_report_as_its_tenant_and_party:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/cache-run-tokens-in-the-step-services
+#+pr: 2712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-05
-#+environment:
+#+updated: 2026-10-06
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Each step service obtains a run token through one shared cache in
+=ores.service=, keyed by grant id and run id. The cache exchanges again when a
+token is close to its expiry, so a run of hours lives through many tokens, and
+it lets a caller that an owner refused as =token_expired= exchange once and
+retry the same request.
+
+[[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+the cache rules this task implements.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:423962A1-8381-4CC3-A0D7-8391A53C4C8D][Run a report as its tenant and party]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A step service obtains a run token through one cache keyed by grant id and
+  run id.
+- The cache answers the held token while more than 20 percent of its life
+  remains, and exchanges again after that. Concurrent misses for one key share
+  one exchange.
+- An exchange the minter cannot make holds nothing and answers no token.
+- A caller that an owner refused as =token_expired= exchanges once and retries
+  the same request.
+- The end of a step, and the end of a run, drop the run's entries.
+- The cache is bounded, so a missed event costs memory for at most one token
+  lifetime. It never writes to disk, a database, a message or a log.
+- A restart or a second replica starts with an empty cache.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The cache is one header-only class in =ores.service=, and one small adapter in
+=ores.iam.client=.
+
+1. *The cache.* =run_token_cache= in
+   =ores.service/include/ores.service/service/cache/run_token_cache.hpp=. It
+   holds one entry per =run_token_key= of grant id and run id. The key is a
+   value, so the cache never parses a joined string. The cache is bounded and
+   drops the least recently used entry when full, and it can drop every entry of
+   one run. The clock and the exchange are injected, so a test moves time and
+   answers the exchange itself instead of calling IAM.
+2. *The exchange.* =run_token_minter= in =ores.iam.client= wraps a NATS client
+   and the service's own token provider, calls =iam.v1.run_grants.exchange= and
+   answers the token and the instant it expires. =ores.service= does not link
+   =ores.iam.api=, so the adapter lives where that dependency already is, and
+   the cache stays free of it.
+3. *The retry.* The cache offers =invalidate=, so a caller whose request an
+   owner refused as =token_expired= exchanges once and repeats the request. The
+   repeat stays with the caller, because only it knows how to make the request
+   again.
+4. *Wiring each step service* is the story's live test, not this task. This task
+   builds the cache and the exchange adapter the wiring calls.
 
 * Measurements
 
@@ -59,12 +95,34 @@ task and name that file in the Command column.
 
 * Notes
 
-- Hold until the worktree clever dijkstra lands its story "Read each tenant's
-  cache partition inside its tenant", branch
-  =feature/read-each-tenant-cache-partition-inside-its-tenant=. It adds IAM's
-  in-process Token Exchange with delegation semantics, the =act= claim, the issue
-  log and a generic =partition_token_cache= in =ores.eventing=. Build on those
-  rather than a second set.
+- The hold is satisfied. Clever dijkstra's story landed as PR #2679, which added
+  =partitioned_cache= and =partition_token_cache= in =ores.eventing=, and the
+  exchange task added the =act=, =grant_id= and =run_id= claims and the issue
+  log. Neither generic cache fits a run token. =partitioned_cache= mirrors
+  another service's entity per tenant, and =partition_token_cache= is keyed by
+  one string, has no bound and cannot drop one run. This task builds the bounded
+  cache the run token needs, and leaves both generic caches alone.
+
+- The reporting service is wired first. Its =gather_trades= and
+  =gather_market_data= steps call their owner with a run token from the cache,
+  and an owner that answers =token_expired= costs one exchange and one repeat of
+  the request. The grant id is read from the report instance's =run_grant_id=.
+  The trigger handler records that field at admission, copied from the
+  definition, so the run keeps the grant it was admitted under even if the
+  definition is later re-scheduled or unscheduled. An earlier cut read the
+  definition's =run_grant_id= at step time and shared the definition's current
+  consent across every run; the instance field removes that.
+- The other two step services are wired. The workflow request carries the run's
+  party and grant id, and the chain builders state them to the
+  =prepare_ore_package= and =submit_compute= steps. =ores.ore= exchanges the
+  grant for a run token, calls storage with it, and scopes its export of the run
+  document and configuration to the party. =ores.compute= exchanges the grant and
+  scopes the batch and its workunits to the party, so the run's authority is
+  checked before the grid sees the work.
+- Eviction is wired for the reporting steps. A step-scoped guard drops the run's
+  entries when the step ends, on every return, and the terminal handlers drop
+  them again when the run completes or fails. The bounded LRU remains the
+  backstop for an event nobody sees.
 
 * Test Scenarios
 
@@ -75,13 +133,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:16526A07-0976-43EA-BC1F-DCF5EF0B9011][Verify a run step acts as its party]] | PENDING | The token path is proven by the live run; the scenario's manual checklist is not yet walked. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2712][#2712]] | [reporting] Cache run tokens in the step services |
 
 * Review
 
@@ -90,3 +148,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The cache and the exchange adapter are in =ores.service= and
+  =ores.iam.client=, and the three step services obtain run tokens through
+  them. The live test ran against a recreated =bright_faraday= database with
+  the full 25-unit fleet, ACME provisioned from =acme_demo= and the report
+  definitions imported.
+- The run's grant is recorded on the report instance at admission, so a
+  re-schedule cannot change an in-flight run's authority.
+- Evidence, run =fccf4a19-5927-4678-852c-0b2b45015b4f=:
+  =ores_iam_run_token_issues_tbl= holds four =issued= rows for that run id,
+  two from ReportingService and one each from OreService and ComputeService,
+  so every step service exchanged the grant through the cache and none was
+  refused. The chain reached =submit_compute= with =gather_trades=,
+  =gather_market_data=, =assemble_bundle= and =prepare_ore_package= complete,
+  and the compute dispatcher resolved the platform package and published the
+  triplet-qualified assignment a wrapper subscribes to.
+- The run does not reach =completed= in this environment, and that is not this
+  task: the wrapper fleet is bound to the system tenant, so no wrapper
+  subscribes to a tenant run's assignment, and =collect_compute_results= is
+  still the documented pass-through. Both belong to task
+  [[id:4DEAE6E4-6C1E-4B9A-A4C6-E28770EBD1D3][Make the reporting to compute
+  handoff drive a job]] in the =acme-report-grid-smoke-test= story.
+- Three defects blocked the run and were fixed on the way, each because a
+  check scoped a shared registry to the caller's own tenant: the report
+  instance FSM guard read its states under the row's tenant, and both the
+  workunit insert trigger and the workunit dispatcher refused or hid a
+  system-tenant app version and its per-platform package. The last two are
+  fixed in the codegen as a =:system_tenant_visible:= read scope on a soft
+  foreign key and on a junction, so the generated code states the rule
+  instead of a hand-written query.

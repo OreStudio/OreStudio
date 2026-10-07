@@ -98,6 +98,7 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     v.name = write.name;
     v.description = write.description;
     v.definition_id = write.definition_id;
+    v.run_grant_id = write.run_grant_id;
     v.fsm_state_id = write.fsm_state_id;
     v.trigger_run_id = write.trigger_run_id;
     v.output_message = write.output_message;

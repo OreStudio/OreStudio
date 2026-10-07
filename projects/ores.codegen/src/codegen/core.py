@@ -4019,6 +4019,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         f"{model_path}: foreign key {fk.get('column')} has "
                         ":enforce: true and :use_system_tenant: true; a "
                         "constraint can only match the row's own tenant.")
+                if fk.get('system_tenant_visible'):
+                    raise ValueError(
+                        f"{model_path}: foreign key {fk.get('column')} has "
+                        ":enforce: true and :system_tenant_visible: true; a "
+                        "constraint can only match the row's own tenant.")
                 fk['matches_tenant'] = not fk.get('use_no_tenant')
                 if fk['matches_tenant'] != (
                         parent['immutable_tenant_key']
@@ -5706,6 +5711,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'repository' in junction:
             for key, value in junction['repository'].items():
                 junction[key] = value
+        # System-tenant read scope, the junction counterpart of the
+        # domain_entity flag of the same name: a junction that associates
+        # rows with a platform-managed registry (the compute app version
+        # platforms, say) reads its own tenant's rows PLUS the system
+        # tenant's, so a tenant-scoped dispatch still finds the package the
+        # platform published. Every read where-clause splices the union in
+        # via tenant_where / sys_decl; mutations stay own-tenant scoped, so
+        # a tenant can never widen a delete onto a system row.
+        junction['system_tenant_visible'] = bool(
+            junction.get('system_tenant_visible', False))
+        if junction['system_tenant_visible']:
+            junction['tenant_where'] = (
+                '("tenant_id"_c == tid || "tenant_id"_c == sys)')
+            junction['sys_decl'] = (
+                '\n    static const std::string sys('
+                'ores::database::service::tenant_context::system_tenant_id);')
+        else:
+            junction['tenant_where'] = '"tenant_id"_c == tid'
+            junction['sys_decl'] = ''
         data['junction'] = junction
 
     # Special processing for field-group models

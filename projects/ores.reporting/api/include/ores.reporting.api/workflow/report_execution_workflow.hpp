@@ -271,6 +271,8 @@ template <typename Command>
                                         .definition_id = req.definition_id,
                                         .bundle_id = bundle.bundle_id,
                                         .tenant_id = req.tenant_id,
+                                        .party_id = req.party_id,
+                                        .run_grant_id = req.run_grant_id,
                                         .correlation_id = req.correlation_id,
                                         .trades_storage_key = trades.storage_key,
                                         .market_data_storage_key = market_data.storage_key});
@@ -305,6 +307,8 @@ template <typename Command>
 
         return rfl::json::write(submit_compute_request{.report_instance_id = req.report_instance_id,
                                                        .tenant_id = req.tenant_id,
+                                                       .party_id = req.party_id,
+                                                       .run_grant_id = req.run_grant_id,
                                                        .correlation_id = req.correlation_id,
                                                        .tarball_uris = input.tarball_uris});
     };

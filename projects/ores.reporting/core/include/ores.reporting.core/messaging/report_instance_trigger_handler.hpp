@@ -278,6 +278,10 @@ private:
         inst.tenant_id = def->tenant_id;
         inst.party_id = def->party_id;
         inst.definition_id = def->id;
+        // The run's authority is fixed at admission: the instance records the
+        // grant the definition held now, so a later schedule or unschedule
+        // cannot change the authority of this run.
+        inst.run_grant_id = def->run_grant_id;
         // An instance is one occurrence of the definition, and the natural key
         // is unique per tenant, so two runs of one definition cannot share a
         // name. The run's start is what distinguishes them.
@@ -377,6 +381,11 @@ private:
         report_execution_request exec_req{.report_instance_id = instance_id,
                                           .definition_id = boost::uuids::to_string(def.id),
                                           .tenant_id = boost::uuids::to_string(req.tenant_id),
+                                          .party_id = boost::uuids::to_string(def.party_id),
+                                          .run_grant_id = def.run_grant_id ?
+                                                              boost::uuids::to_string(
+                                                                  *def.run_grant_id) :
+                                                              std::string{},
                                           .correlation_id = instance_id,
                                           .pre_processing = def.pre_processing,
                                           .prepared_input_key = def.prepared_input_key,

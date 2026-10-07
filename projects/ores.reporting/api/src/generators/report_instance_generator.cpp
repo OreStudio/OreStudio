@@ -51,6 +51,7 @@ generate_synthetic_report_instance(utility::generation::generation_context& ctx)
     r.description = std::string(faker::lorem::sentence());
     r.party_id = ctx.generate_uuid();
     r.definition_id = ctx.generate_uuid();
+    r.run_grant_id = std::nullopt;
     r.fsm_state_id = std::nullopt;
     r.trigger_run_id = faker::number::integer<std::int64_t>(1, 1000000);
     r.output_message = std::string();

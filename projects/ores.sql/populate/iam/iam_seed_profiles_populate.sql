@@ -131,7 +131,7 @@ cross join (values
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
-    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management"], "opted_in_datasets": ["gleif.lei_counterparties.small", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "risk_management", "synthetic_realistic_2026", "synthetic_ore_samples_2016", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.small", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
     ('acme_demo', 'load_staff', 40, '{"parties": [
@@ -146,7 +146,7 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    ('acme_demo', 'start_market_feeds', 60, '{"bundles": ["synthetic_realistic_2026", "synthetic_ore_samples_2016", "marketdata.reference_vintage_2026_05_05"], "theme": "synthetic.themes.realistic_2026"}'::jsonb)
+    ('acme_demo', 'start_market_feeds', 60, '{"theme": "synthetic.themes.realistic_2026"}'::jsonb)
 ) as v(code, step_kind, display_order, arguments_json)
 where p.code = v.code
   and p.valid_to = ores_utility_infinity_timestamp_fn()

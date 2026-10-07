@@ -34,6 +34,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/workflow_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/ores.service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/cache/run_token_cache.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/domain_service_runner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/domain_service_runner_impl.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/service/exit_codes.hpp"

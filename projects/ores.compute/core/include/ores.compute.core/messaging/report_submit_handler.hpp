@@ -25,6 +25,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.service/service/cache/run_token_cache.hpp"
 #include <string>
 
 namespace ores::compute::messaging {
@@ -51,13 +53,17 @@ private:
     }
 
 public:
-    report_submit_handler(ores::nats::service::client& nats, ores::database::context ctx);
+    report_submit_handler(ores::nats::service::client& nats,
+                          ores::database::context ctx,
+                          ores::nats::service::nats_client service_nats);
 
     void submit(ores::nats::message msg);
 
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
+    ores::nats::service::nats_client service_nats_;
+    ores::service::service::cache::run_token_cache run_tokens_;
 };
 
 }

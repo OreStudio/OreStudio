@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-report_instances add <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
+report_instances add <name> <description> <definition_id> <run_grant_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.report_instances.put=.
 
 #+name: report_instances-add
 #+begin_src ores-shell :tangle report_instances-add.ores :exports none
-report_instances add __none__ __none__ 00000000-0000-0000-0000-000000000000 - 0 __none__ - - system.new_record generated_script
+report_instances add __none__ __none__ 00000000-0000-0000-0000-000000000000 - - 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-report_instances set <id> <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary> [--version <n>]
+report_instances set <id> <name> <description> <definition_id> <run_grant_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =reporting.v1.report_instances.put=.
 
 #+name: report_instances-set
 #+begin_src ores-shell :tangle report_instances-set.ores :exports none
-report_instances set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - 0 __none__ - - system.new_record generated_script
+report_instances set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - - 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-report_instances put-many --count <n> <id> <name> <description> <definition_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
+report_instances put-many --count <n> <id> <name> <description> <definition_id> <run_grant_id> <fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =reporting.v1.report_instances.put_many=.
 
 #+name: report_instances-put-many
 #+begin_src ores-shell :tangle report_instances-put-many.ores :exports none
-report_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - 0 __none__ - - system.new_record generated_script
+report_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - - 0 __none__ - - system.new_record generated_script
 #+end_src
 
 ** =delete=

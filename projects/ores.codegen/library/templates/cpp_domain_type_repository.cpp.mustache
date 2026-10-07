@@ -1085,6 +1085,9 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 #include "ores.{{component_core}}/repository/{{name_singular}}_repository.hpp"
 
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
+{{#system_tenant_visible}}
+#include "ores.database/service/tenant_context.hpp"
+{{/system_tenant_visible}}
 {{^read_only}}
 #include <cstddef>
 #include <optional>
@@ -1219,9 +1222,9 @@ std::vector<domain::{{name_singular}}>
 {{name_singular}}_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
         order_by("{{left.column}}"_c, "{{order_column}}"_c);
 {{/has_tenant_id}}
 {{^has_tenant_id}}
@@ -1242,9 +1245,9 @@ std::vector<domain::{{name_singular}}>
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "valid_to"_c == max.value()) |
         order_by("{{left.column}}"_c, "{{order_column}}"_c) |
         sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
@@ -1272,9 +1275,9 @@ std::vector<domain::{{name_singular}}>
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid &&
+        where({{{tenant_where}}} &&
 {{#left.query_needs_str}}
               "{{left.column}}"_c == {{left.column}}_str &&
 {{/left.query_needs_str}}
@@ -1320,9 +1323,9 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     struct count_result { long long count; };
 
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "valid_to"_c == max.value()) |
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
 {{^has_tenant_id}}
@@ -1349,9 +1352,9 @@ std::vector<domain::{{name_singular}}>
 {{#left.query_needs_str}}
     const auto {{left.column}}_str = {{#left.is_uuid}}boost::uuids::to_string({{left.column}}){{/left.is_uuid}}{{#left.is_date}}ores::platform::time::datetime::to_iso8601_date({{left.column}}){{/left.is_date}}{{#left.is_timestamp}}ores::platform::time::datetime::to_iso8601({{left.column}}){{/left.is_timestamp}}{{^left.query_needs_str}}{{left.column}}{{/left.query_needs_str}};
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1360,9 +1363,9 @@ std::vector<domain::{{name_singular}}>
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1419,9 +1422,9 @@ std::vector<domain::{{name_singular}}>
 {{#right.query_needs_str}}
     const auto {{right.column}}_str = {{#right.is_uuid}}boost::uuids::to_string({{right.column}}){{/right.is_uuid}}{{#right.is_date}}ores::platform::time::datetime::to_iso8601_date({{right.column}}){{/right.is_date}}{{#right.is_timestamp}}ores::platform::time::datetime::to_iso8601({{right.column}}){{/right.is_timestamp}}{{^right.query_needs_str}}{{right.column}}{{/right.query_needs_str}};
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1430,9 +1433,9 @@ std::vector<domain::{{name_singular}}>
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
-        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/has_tenant_id}}
 {{^has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
@@ -1494,13 +1497,13 @@ std::vector<domain::{{name_singular}}>
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
 {{#left.query_needs_str}}
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-        where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
         order_by("{{order_column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
@@ -1568,13 +1571,13 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     struct count_result { long long count; };
 
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
 {{#left.query_needs_str}}
-                       where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}}_str && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
 {{^left.query_needs_str}}
-                       where("tenant_id"_c == tid && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "{{left.column}}"_c == {{left.column}} && "valid_to"_c == max.value()) |
 {{/left.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}
@@ -1612,13 +1615,13 @@ std::vector<domain::{{name_singular}}>
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{name_singular}}_entity>> |
 {{#right.query_needs_str}}
-        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-        where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+        where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
         order_by("{{left.column}}"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 {{/has_tenant_id}}
@@ -1686,13 +1689,13 @@ std::uint32_t {{name_singular}}_repository::get_total_{{name_singular_short}}_co
     struct count_result { long long count; };
 
 {{#has_tenant_id}}
-    const auto tid = ctx_.tenant_id().to_string();
+    const auto tid = ctx_.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::select_from<{{name_singular}}_entity>(sqlgen::count().as<"count">()) |
 {{#right.query_needs_str}}
-                       where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}}_str && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
 {{^right.query_needs_str}}
-                       where("tenant_id"_c == tid && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
+                       where({{{tenant_where}}} && "{{right.column}}"_c == {{right.column}} && "valid_to"_c == max.value()) |
 {{/right.query_needs_str}}
                        sqlgen::to<count_result>;
 {{/has_tenant_id}}

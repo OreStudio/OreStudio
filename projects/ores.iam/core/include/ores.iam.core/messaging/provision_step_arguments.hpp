@@ -435,10 +435,8 @@ struct photo_step_arguments {
     return result;
 }
 
-/// The configuration bundles a start_market_feeds step publishes against the
-/// system party, and the theme whose feeds it starts.
+/// The theme whose feeds a start_market_feeds step starts.
 struct market_feed_step_arguments {
-    std::vector<std::string> bundles;
     std::string theme;
 };
 
@@ -447,13 +445,13 @@ struct market_feed_step_arguments {
  *
  * The theme names the dataset the feeds' configurations belong to; the kind
  * reads every other fact — the system party, the bindings' parties, the
- * folder — from the deployment.
+ * folder — from the deployment. The theme's configurations are published with
+ * the tenant's own bundles, so this step only binds and starts.
  */
 [[nodiscard]] inline market_feed_step_arguments
 parse_market_feed_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     market_feed_step_arguments result;
-    result.bundles = detail::read_bundles(arguments);
     result.theme = detail::read_string(arguments, "theme");
     if (result.theme.empty())
         throw std::runtime_error("The step names no 'theme' argument.");

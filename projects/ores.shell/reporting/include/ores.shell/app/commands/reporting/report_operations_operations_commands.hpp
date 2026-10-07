@@ -107,14 +107,15 @@ public:
 
     /**
      * @brief prepare-ore-package <report_instance_id> <definition_id> <bundle_id> <tenant_id>
-     * <correlation_id> <trades_storage_key> <market_data_storage_key>
+     * <party_id> <run_grant_id> <correlation_id> <trades_storage_key> <market_data_storage_key>
      */
     static void process_prepare_ore_package(std::ostream& out,
                                             ores::nats::service::nats_client& session,
                                             const std::vector<std::string>& args);
 
     /**
-     * @brief submit-compute <report_instance_id> <tenant_id> <correlation_id> <tarball_uris>
+     * @brief submit-compute <report_instance_id> <tenant_id> <party_id> <run_grant_id>
+     * <correlation_id> <tarball_uris>
      */
     static void process_submit_compute(std::ostream& out,
                                        ores::nats::service::nats_client& session,

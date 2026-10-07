@@ -44,6 +44,7 @@ struct report_instance_write {
     std::string name;
     std::string description;
     boost::uuids::uuid definition_id;
+    std::optional<boost::uuids::uuid> run_grant_id;
     std::optional<boost::uuids::uuid> fsm_state_id;
     std::int64_t trigger_run_id;
     std::string output_message;

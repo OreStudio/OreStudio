@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/reporting-compute-handoff
 #+pr: 2740
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: The node's per-assignment storage capability, owned by the tenant-data isolation story
+#+blocked_since: 2026-10-07
 #+created: 2026-09-27
 #+updated: 2026-09-27
 #+environment: bright_faraday
@@ -39,7 +39,7 @@ onto the compute dispatcher and closed one of them, so two remain:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
 | Now          | The subject and URI defects are fixed and proven; the wrapper takes the run's assignment. The download stops at HTTP 401 because a node holds no storage credential yet. |
 | Waiting on   | The [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][tenant-data isolation story]]'s node capability, without which a wrapper cannot download. The two fixture tasks also gate a fresh run: [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][the schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][the risk report configurations]]. |

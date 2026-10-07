@@ -43,19 +43,36 @@ A profile write can never change a credential, and the history says which of the
 
 * Decisions
 
-- *The credential entity is internal.* It renders the SQL schema, the domain
-  type, the generator and the repository, and nothing else. Every wire facet
-  is withdrawn in its * Physical space table, so "no credential column
-  travels on the wire" is structural: there is no wire surface to carry one.
-  =:no_wire:= on each secret column is kept anyway, so a later facet that
-  turns a wire surface back on still cannot serialise one.
-- *There is no credential read code.* No caller reads a credential; a caller
-  proves one it already holds. The paths that touch credential material are
-  the unauthenticated service and password login, and the session-owned
-  change-password, so the only code the resource has is the write. That is
-  the one gating =iam.v1.accounts.reset-password=, and it is deliberately
-  separate from =iam::accounts:reset_password=: a role that may edit a
-  profile cannot thereby change what an account signs in with.
+- *The credential entity is projected across the whole stack*, exactly as the
+  account is. The first cut withdrew every wire facet and left only the SQL
+  schema, the domain type, the generator and the repository. That was wrong.
+  "No credential column travels on the wire" is what =:no_wire:= is for: it
+  keeps the member in C++ and skips it when the struct is serialised, so the
+  entity can be projected like any other and still carry nothing. Removing
+  the surface sidestepped the mechanism rather than using it. See the task's
+  * Not done, and why.
+- *The credential's generated half is reads-only.* =:read_only: true=, the
+  same flag the account sets, so the generated CRUD service and its write
+  verbs are absent and the repository's =write= stays for the hand-written
+  service. A generated update is not harmless here: it deserialises a record
+  whose =:no_wire:= secrets were skipped and replaces the row whole, which is
+  the blanking bug this story exists to kill.
+- *The resource carries both codes.* =iam::account_credentials:read= is what
+  the generated reads check, so an administrator may ask which accounts hold
+  a credential and when it changed, and may not see one.
+  =iam::account_credentials:write= gates the administrative password reset,
+  deliberately separate from =iam::accounts:reset_password=: a role that may
+  edit a profile cannot thereby change what an account signs in with.
+- *Writes stay hand-written.* A credential write is a service method over
+  =account_credential_repository::write=, because a generated verb cannot
+  carry a secret and must not blank one. Change-password and reset-password
+  are built; TOTP enrolment, verification and disable are not.
+- *A secret that must cross the wire travels on a purpose-built message.*
+  TOTP enrolment hands the person a secret to scan, and =:no_wire:= skips the
+  member in both directions, so it cannot be a field of the credential
+  record. It is its own operation field, as =password= is on
+  =save_account_request=. See the task's * Open decision on which namespace
+  the write verbs are addressed from.
 - *=password_salt= is gone.* The stored hash embeds its own salt, nothing
   read the column, and every writer wrote it empty. It is not carried into
   the new entity.

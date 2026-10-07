@@ -39,6 +39,7 @@ ones, and every caller reaches only the objects its credential names.
 - A worker node holds a capability for one assignment and no standing storage credential.
 - A step service reaches its tenant's buckets with its run token.
 - A run's inputs are pruned when the run ends, and a tenant's data leaves with its buckets.
+- A tenant may run nodes of its own; they receive only that tenant's work and hold only a per-assignment capability.
 
 * Tasks
 
@@ -62,16 +63,24 @@ ones, and every caller reaches only the objects its credential names.
   own run and no other run of the same tenant.
 - *IAM is the only signer,* so storage keeps one verifier and the orchestrator
   holds no signing key.
-- *Outputs are retained under one policy per tenant,* with a per-definition
-  override only if a report later needs one.
+- *Outputs are retained under one policy per tenant,* defaulting to 365 days
+  and raisable by the tenant.
 - *No scratch bucket class.* An engine's in-flight bytes are a run input or a
   node-local working file.
+- *The engine package is served straight from =platform.packages=,* with no
+  regional mirror.
+- *A tenant may run its own nodes.* They form a pool of their own, carry a
+  tenant-scoped identity, and present the same assignment capability a platform
+  node does.
 
 * Out of scope
 
-- The grid's routing key and its dedicated pools, and the dispatcher's fair
-  share across tenants: [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report
-  execution at scale]] owns them. This story owns what a caller may reach,
-  not where the work is sent.
+- How the dispatcher picks a pool for a run, and the fair share across tenants:
+  [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] owns
+  them. This story owns what a caller or a node may reach, not where the work
+  is sent.
+- How a tenant node reaches the platform across the network: mutually
+  authenticated TLS is the deployment's, and the node credential's shape is an
+  open question on the policy page.
 - The engine's own sandboxing, beyond the node holding one assignment at a
   time and removing a job's directory when the job ends.

@@ -8,7 +8,7 @@
 #+filetags: :next:product_backlog:agile:
 #+owner: marco
 #+branch: doc/record-where-the-arrival-process-plugs-in
-#+pr: 2767
+#+pr: 2768
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -77,6 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2768][#2768]] | [agile] Give the arrival capture its own task |
 | [[https://github.com/OreStudio/OreStudio/pull/2767][#2767]] | [agile] Record where stochastic tick arrival plugs into the clock |
 
 * Review

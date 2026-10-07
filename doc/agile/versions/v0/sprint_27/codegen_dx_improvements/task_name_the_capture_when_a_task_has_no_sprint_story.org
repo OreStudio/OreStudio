@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 606FD02F-0278-433F-9F98-E62CFC2FB05A
+:END:
+#+title: Task: Name the capture when a task has no sprint story
+#+description: compass pr create refuses a task whose story is a backlog capture with only No story.org next to task. The workflow is that a capture is promoted into the sprint before it takes a task or a PR, so say that, name the capture, and give the promote command.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_27:v0:
+#+owner: marco
+#+branch: feature/collapse-synthetic-control-plane-forks
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make compass pr create tell the reader that a backlog capture must be promoted before it takes a task or a PR, naming the capture and the command.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- A task whose story is a backlog capture is refused with a message that says the capture must be promoted before it takes a task or a PR
+- The message names the capture and prints the exact promote command, with the slug resolved rather than left as a placeholder
+- A task whose parent cannot be resolved still gets a message that states the rule
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Delivered. =compass pr create= no longer refuses with the bare "No story.org
+next to <task>". It now states that a task belongs in a sprint story, that a
+backlog capture takes no task and no PR until it is promoted, and it names the
+capture and the command:
+
+#+begin_example
+❌ doc/agile/product_backlog/next/task_record_where_the_arrival_process_plugs_in.org
+   has no story.org beside it, so its story is not in a sprint.
+   A task belongs in a sprint story: a backlog capture takes no task and no PR
+   until it is promoted.
+   Its story is the backlog capture 'stochastic-tick-arrival-times'. Promote it
+   into the sprint first:
+     compass capture promote stochastic-tick-arrival-times --to story
+   then open the PR from the promoted story.
+#+end_example
+
+Resolving the capture needs two steps, because a capture is named after itself
+rather than =story.org=, which is the whole reason the lookup failed. The
+parent story is read from the task's =Parent story= row, falling back to its
+first foreign id link =_parent_story_id=; the slug is then found by scanning
+the backlog buckets for the file whose =:ID:= matches
+=_backlog_capture_slug=.
+
+Measured. The compass suite passes 13 tests, of which three are new: the
+=Parent story= row, the fallback to the first foreign link, and the slug
+lookup including the two negative cases (no id, and an id no capture carries).
+The message above is the actual output of the command that previously gave the
+bare refusal.

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: E40D6E4F-CBDD-4007-8B7F-BEE205044B75
+:END:
+#+title: Story: Add the writing discipline the Zettelkasten page omits
+#+description: The page covers identifiers, atomicity and structure notes, and says nothing about how a note argues, how a link is chosen, or what goes wrong. Compare it with the Luhmann writing skill and add what transfers to this corpus.
+#+type: story
+#+level: s2
+#+filetags: :knowledge:documentation:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give the Zettelkasten page the half of the method it does not yet carry: the craft of composing and filing a note.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The page carries the writing discipline; the runbook points at it. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit and open the PR.                |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- The page states the thesis discipline and says which pages it binds.
+- The page names the four link relations and the rule that the author chooses the thread.
+- The page lists the anti-patterns.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9E2B677C-813C-49B8-8AFA-7DCF09562E56][Scaffold story: Add the writing discipline the Zettelkasten page omits]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6AC37FF8-1247-4C28-8B0B-6DF870DAE3D5][Add the writing discipline to the Zettelkasten page]] | STARTED | 2026-10-07 | | The page says how much a note holds and nothing about what it does with it. Add the thesis discipline, the relation vocabulary, the improbable neighbour and the anti-patterns, and point the knowledge-doc runbook at them. |
+
+* Decisions
+
+- Add to the existing page rather than start a new one. The page already
+  carries the method, its implementation here, and structure notes; the craft
+  of composing a note is the same topic, and a second page would either
+  duplicate it or need a hub neither would earn.
+- The thesis discipline is scoped, not universal. Most pages here are
+  definitions and catalogues, where a topic title is correct; the discipline
+  binds the pages that argue. The source skill has no such distinction,
+  because a personal vault has no reference corpus.
+- The four relations are documentation, not a checked field. They describe the
+  prose annotation a See also link already carries, so no schema change and no
+  gate is introduced for them.
+
+* Out of scope
+
+-

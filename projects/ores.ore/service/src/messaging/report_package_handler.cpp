@@ -24,6 +24,7 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -147,7 +148,12 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // ── Clean up staging directory ────────────────────────────────
         std::filesystem::remove_all(stage_dir);
 
-        const auto tarball_uri = std::string(platform_bucket) + "/" + tarball_key;
+        // The downstream compute step hands this URI to a worker, which fetches
+        // it over the storage HTTP interface, so it has to be a path and not
+        // the bucket-and-key the store speaks. The compute dispatcher builds the
+        // package and output URIs the same way.
+        const auto tarball_uri =
+            ores::storage::net::storage_paths::make_object_path(platform_bucket, tarball_key);
 
         prepare_ore_package_result result;
         result.success = true;

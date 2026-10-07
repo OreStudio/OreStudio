@@ -20,7 +20,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The reporting submit path cannot run anything: it publishes an assignment on a subject no wrapper subscribes to, leaves result_id, package_uri, config_uri and output_uri empty, and hands over a bucket-prefixed URI where the wrapper fetches an HTTP path. The compute-side dispatch path does all three correctly and is the model to follow.
+Make the reporting path's workunit reach a wrapper and run. The original note
+listed three defects in the submit path; the run-token task moved submission
+onto the compute dispatcher and closed one of them, so two remain:
+
+- *The subject has no consumer.* The dispatcher publishes each assignment on
+  =compute.v1.work.assignments.{run_tenant}.{platform}=, and every wrapper
+  subscribes on its own configured tenant, the system tenant, so a tenant's
+  run is published where nobody listens. The platform's wrapper fleet is the
+  deployment's shared pool and must consume every tenant's work.
+- *The input URI is the wrong shape.* =prepare_ore_package= answers with
+  =ores/ore/packages/{instance}/ore_package.tar.gz=, a bucket and key, and the
+  wrapper fetches it over the storage HTTP interface, which speaks
+  =/api/v1/storage/{bucket}/{key}=. The package and output URIs the dispatcher
+  sets are already paths.
 
 * Status
 
@@ -28,10 +41,10 @@ The reporting submit path cannot run anything: it publishes an assignment on a s
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Now          | Both defects fixed and built. The live proof waits on the two fixture tasks the same run needs. |
+| Waiting on   | [[id:C88607A4-C6A5-4D17-B2A0-7834398CCBE5][Correct the seeded report definition schedule expression]] and [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]]. A run cannot be scheduled or admitted without them. |
+| Next         | Run a definition through the chain and watch a wrapper take the assignment, once the fixtures can supply a run. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -41,9 +54,16 @@ The reporting submit path cannot run anything: it publishes an assignment on a s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The subject fix belongs in the wrapper, not the dispatcher: the stream already
+captures =assignments.>=, and the tenant segment is the routing key a tenant's
+own pool will filter on later, so the shared fleet widens its consumer to
+=assignments.*.{platform}= and keeps the tenant in the subject. The node's
+=--tenant-id= stays its own identity for the host row and telemetry; it is no
+longer a filter on the work it takes.
+
+The URI fix belongs where the URI is built: =prepare_ore_package= builds it with
+=storage_paths::make_object_path=, the same helper the compute dispatcher uses
+for the package and the output.
 
 * Notes
 

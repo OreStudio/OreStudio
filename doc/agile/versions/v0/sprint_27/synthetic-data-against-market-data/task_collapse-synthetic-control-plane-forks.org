@@ -8,12 +8,12 @@
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
 #+branch: feature/collapse-synthetic-control-plane-forks
-#+pr:
+#+pr: 2757
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-06
 #+updated: 2026-10-06
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ does not add a branch that moves the fork.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Three forks collapsed and committed at =20a45d6a50= (tick clock, vintage read, factory instance). The other seven spurious forks are confirmed present at =b72fc67e44= and untouched. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Collapse the per-kind control plane: the =feed_config_handler= repository probe and its =start_fx=/=start_ir= split, the folder per-kind start/stop loops, and the per-kind permission strings. These three share one registry seam and are best done together. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -166,3 +166,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+First pass. Three of the thirteen spurious forks are collapsed; seven remain
+and moved to [[id:9DC69ED9-A405-43D0-A68B-CC29CFDD2C29][Give the synthetic control plane one per-kind registry]],
+because they all need the same missing seam rather than four separate fixes.
+
+Collapsed. The duplicated tick clock is now one =tick_clock= in the synthetic
+api: the period, the sliced stop-responsive sleep, the publish counter and the
+catch-and-continue guard exist once, and a producer supplies only what one tick
+does. The triplicated vintage lookup is now one paged =(source, datum, date)=
+read and one =date_part=. =make_default_feed_factory= is rebuilt per call site
+no longer: there is one =default_feed_factory()= shared by the four sites. Net
+120 insertions against 280 deletions in code, so the collapse removes more than
+it adds.
+
+Already done before this task started, and recorded so nobody reopens them: the
+IR producer subject honours =binding_mode=, IR auto-start forwards it, and the
+FX-only =start(ore_key, ...)= path is gone along with =ensure_feed_binding=.
+
+Two behaviour deltas, reported rather than hidden. The shared guard now covers
+the whole tick including the process step, where both producers previously ran
+the process outside it, so a throwing process no longer terminates the service;
+no test or exercised path throws. And unifying the lookup-failure text changed
+IR only, from "Failed to look up series '<uri>'" to "...for '<uri>'", matching
+what FX and the feed controller already said.
+
+Why the rest is one unit and not seven. Forks 4 to 8 and 11 all need a per-kind
+registry carrying, beside the factory builder, the kind's config permission and
+a =config_id= to =feed_build_input= resolver. Collapsed one at a time, each
+handler grows a private registry, which is the duplication this task exists to
+remove. The last fork, the duplicated config plumbing fields, changes the
+persisted schema and needs a model change plus a regeneration.
+
+Measured at 20a45d6a50. =ctest -R ores.synthetic= passes 3 of 3;
+=ctest -R ores.marketdata.service= passes 1 of 1; the codegen drift check
+reports no drift; the structure-note link check passes. Not covered:
+=find_vintage_observation='s paging path has no unit test because it needs a
+live marketdata service.

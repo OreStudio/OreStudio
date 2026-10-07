@@ -65,9 +65,10 @@ A profile write can never change a credential, and the history says which of the
   =iam.v1.ops.*=, whose discriminator the spec states outright: "an operation
   that acts on an entity the common way belongs in the common set, and an
   operation that merely has an unusual name does not qualify as a domain
-  operation." A password write fails both tests. This is why
-  =iam.v1.accounts.change-password= moves, and it settles the question without
-  a per-entity judgement.
+  operation." A password write fails both tests, which is why
+  =iam.v1.accounts.change-password= becomes =iam.v1.ops.change_password=; the
+  census story owns that move and has it in flight, and this story does not
+  duplicate it.
 - *The resource carries both codes.* =iam::account_credentials:read= is what
   the generated reads check, so an administrator may ask which accounts hold
   a credential and when it changed, and may not see one.
@@ -75,9 +76,10 @@ A profile write can never change a credential, and the history says which of the
   deliberately separate from =iam::accounts:reset_password=: a role that may
   edit a profile cannot thereby change what an account signs in with.
 - *Writes stay hand-written.* A credential write is a service method over
-  =account_credential_repository::write=, declared in =ores.iam.operations.org=
-  so its messages generate from the model the way the specification's P04
-  requires. Change-password and reset-password are built; TOTP enrolment,
+  =account_credential_repository::write=, reached by an operation the account
+  already serves. Whether those operations are declared in a model of their own
+  is a separate question, and belongs with the migration rather than with this
+  story. Change-password and reset-password are built; TOTP enrolment,
   verification and disable are not.
 - *A secret that must cross the wire travels on a purpose-built message.*
   TOTP enrolment hands the person a secret to scan, and =:no_wire:= skips the

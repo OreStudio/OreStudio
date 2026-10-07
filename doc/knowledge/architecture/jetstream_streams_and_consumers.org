@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 45D4751E-5089-4C82-9B37-63EFBD4A0B18
+:END:
+#+title: JetStream streams and durable consumers
+#+description: What JetStream adds to NATS, which streams ORE Studio creates and why, the durable consumers that read them, and what a subject rename strands.
+#+type: knowledge
+#+level: cross
+#+filetags: :nats:jetstream:messaging:knowledge:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+JetStream is the persistence and delivery layer of NATS. Plain NATS delivers a
+message to whoever is subscribed at that instant and forgets it; JetStream
+writes messages into a named *stream* and lets a *consumer* read them later,
+from where it left off. ORE Studio uses it for three things and no more: the
+market data a service must not lose while its consumer is restarting, the
+workflow engine's commands, and compute work assignments. Five streams exist,
+each with a subject filter, and a durable consumer is the one kind of
+subscription that survives a service restart. The failure to know about is that
+a *subject rename* reconciles the stream and strands the consumers, so the
+services that read durably never start.
+
+* What JetStream adds
+
+| | Plain NATS | JetStream |
+|---+------------+-----------|
+| Delivery | to whoever is subscribed now | to a stored message, read at the reader's pace |
+| A service that is down | misses the message | reads it on return |
+| Retention | none | a stream keeps messages for a stated age |
+| Competing readers | a queue group | a *durable* queue group, which remembers its position |
+| Where it lives | memory | a stream is file-backed by default here |
+
+Three consequences decide where we use it. A message published while no one is
+listening is lost without a stream and kept with one. A durable consumer is
+identified by *name*, so a service that comes back attaches to the same
+position it left. And it is the only part of the bus with state outside a
+process — a stream, and the consumers on it, live in the server's file store and
+outlive both the publisher and the subscriber.
+
+* Why we use it
+
+- *Market and synthetic ticks.* A producer publishes continuously and the
+  ingest loop stores what it reads. Plain pub/sub would drop every tick
+  published while the loop was restarting, and the corpus would show gaps
+  nobody could explain.
+- *The workflow engine.* A workflow run is a sequence of persisted steps. The
+  engine subscribes durably, so a run that is mid-flight when the engine
+  restarts resumes rather than stalls.
+- *Compute assignments.* A wrapper takes work from a shared stream, so a
+  wrapper that is down does not lose an assignment meant for it and a fleet of
+  wrappers shares the queue.
+
+Nothing else uses JetStream. An entity operation has its answer in the reply
+and needs no history, so it stays on plain request/reply.
+
+* How we use it
+
+Two calls in =ores.nats= are the whole surface. Everything else is naming.
+
+#+begin_src cpp :results verbatim
+// The publisher side: create the stream if it is absent, then keep it honest.
+admin.ensure_stream(stream_name, {subject_filter});
+
+// The reader side: a durable queue group that survives a restart.
+nats.js_queue_subscribe(subject, durable_name, queue_group, handler);
+#+end_src
+
+Three rules make the names line up:
+
+- =make_subject= prepends the deployment's prefix to a relative subject, so the
+  same code addresses a different bus per environment. =_INBOX= subjects are
+  exempt: the server creates them and a prefix would break request/reply.
+- =make_stream_name= turns the prefix's dots into underscores, because a
+  JetStream stream name may not contain one. =ores.dev.local2= plus =workflow=
+  is =ores_dev_local2_workflow=.
+- A stream's *subject filter* is a wildcard over the subjects it holds. A
+  broadcast subject that carries a source name or a key below its prefix — a
+  tick, an assignment — is covered with a trailing =.>=.
+
+Every stream is file-backed and retains for seven days
+(=ensure_stream='s =max_age_days= default). A stream's subject filter is the
+contract that decides which publishes it holds, so =ensure_stream= compares it
+against the one asked for and *updates* it when it differs. That reconcile is
+what makes a renamed subject heal on the stream side.
+
+* The streams we create
+
+Five exist, and each is created by the service that owns the data in it:
+
+| Stream (after the prefix) | Subject filter | Created by |
+|---------------------------+----------------+------------|
+| =marketdata_ticks= | =marketdata.v1.ops.market_tick.>= | =ores.marketdata.service= |
+| =synthetic_ticks= | =synthetic.v1.ops.tick.>= | =ores.marketdata.service= and =ores.synthetic.service= |
+| =synthetic_sandbox_ticks= | =synthetic.v1.ops.sandbox_tick.>= | =ores.synthetic.service= |
+| =workflow= | =workflow.v1.ops.start_workflow= and =workflow.v1.ops.step_completed= | =ores.workflow.service= |
+| =compute_assignments= | =compute.v1.ops.work_assignment.>= | =ores.compute.wrapper= |
+
+=synthetic_ticks= is created by two services on purpose: the marketdata ingest
+loop has to be able to read synthetic ticks whether or not the synthetic
+service has ever run in this deployment. =ensure_stream= is idempotent, so the
+second caller finds it and reconciles rather than failing.
+
+* The durable consumers
+
+| Consumer | Subject | Held by |
+|----------+---------+---------|
+| =workflow-engine-start= | =workflow.v1.ops.start_workflow= | =ores.workflow.service= |
+| =workflow-engine-step-completed= | =workflow.v1.ops.step_completed= | =ores.workflow.service= |
+| =compute_wrapper_shared_<triplet>= | =compute.v1.ops.work_assignment.<triplet>.>= | one per =ores.compute.wrapper= |
+
+A durable is named, so the wrapper's name carries its platform triplet: several
+wrapper shapes may run against one deployment, and each needs its own position.
+The two engine consumers are a single position each, because the engine is a
+single logical reader.
+
+* What a subject rename strands
+
+This is the one failure that costs a service its start, and it fails closed.
+
+A rename rewrites the subject a service subscribes to. =ensure_stream= then
+reconciles the *stream*, so the stream carries the new filter and everything
+looks right. But a durable consumer's filter is stored in the consumer, not the
+stream, and *nothing reconciles a consumer*. JetStream refuses to attach a
+durable whose stored filter differs from the one the code now asks for, so
+=js_QueueSubscribe= fails, the service exits, and the fleet reads one short
+with nothing in that service's own log but =js_QueueSubscribe failed=.
+
+The remedy is to delete the stale consumers after a rename — they are recreated
+with the correct filter on the next subscribe, and are safe to delete when
+ack-pending and unprocessed are both zero. To see the stored filter:
+
+#+begin_src sh :results verbatim
+nats --server "$ORES_NATS_URL" --tlsca build/keys/nats/ca.crt \
+     --tlscert build/keys/nats/<service>.crt --tlskey build/keys/nats/<service>.key \
+     consumer ls <stream>
+#+end_src
+
+The structural fix, not yet made, is for =js_queue_subscribe= to reconcile the
+consumer the way =ensure_stream= reconciles the stream: compare the stored
+filter, and on a mismatch delete and retry. Until then this is a hand step in
+every environment that has run across a rename. See
+[[id:C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE][A subject rename strands every
+durable consumer]] for the check to run.
+
+* See also
+
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the structure
+  note that orders this cluster, and where to read this page in it.
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — the substrate: subjects
+  and wildcards, pub/sub against request/reply, queue groups, and what a stream
+  is in NATS's own terms.
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the library that
+  wraps it, where =ensure_stream= and =js_queue_subscribe= live.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol
+  Specification]] — the grammar a stream's subjects have to obey.
+- [[id:C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE][A subject rename strands every
+  durable consumer]] — the memory: the instruction to apply after a rename.

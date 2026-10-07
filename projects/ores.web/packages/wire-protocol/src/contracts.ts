@@ -76,6 +76,27 @@ export const tenantTypesResponseSchema = z.object({
 });
 export type TenantTypesResponse = z.infer<typeof tenantTypesResponseSchema>;
 
+/**
+ * The database the deployment stores into, as the login answer stated it.
+ *
+ * The row travels with the build the answer already states: one reader of
+ * =ores_database_info_tbl= fills it at login, the BFF keeps it on the session,
+ * and the versions panel reads it from the answer that opened the session
+ * rather than asking again. An empty row is a database whose record could not
+ * be read, which the screen states as unknown.
+ */
+export const databaseInfoSchema = z.object({
+    /** The hash of the SQL scripts the database was built from. */
+    fingerprint: z.string(),
+    /** The build environment the database was built in. */
+    environment: z.string(),
+    /** The git commit the database was built from. */
+    commit: z.string(),
+    /** When the database was created or recreated. */
+    created: z.string(),
+});
+export type DatabaseInfo = z.infer<typeof databaseInfoSchema>;
+
 /** The signed-in session as the browser sees it. */
 export const sessionViewSchema = z.object({
     username: z.string(),
@@ -87,6 +108,8 @@ export const sessionViewSchema = z.object({
     mode: sessionModeSchema,
     /** The build the session was opened against, as the server stated it. */
     version: z.string(),
+    /** The database the login answer carried, beside the build it states. */
+    database: databaseInfoSchema,
     party: partySummarySchema,
     availableParties: z.array(partySummarySchema),
     /** Seconds the token remains valid for, so the browser can renew early. */
@@ -109,6 +132,8 @@ export const partyChoiceSchema = z.object({
     tenantName: z.string(),
     /** The build the login was answered by. */
     version: z.string(),
+    /** The database the login answer carried, beside the build it states. */
+    database: databaseInfoSchema,
     availableParties: z.array(partySummarySchema),
     defaultPartyId: z.string().nullable(),
     passwordResetRequired: z.boolean(),

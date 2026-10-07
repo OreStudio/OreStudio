@@ -23,9 +23,15 @@ a sample is a fact about an instant, so the bi-temporal pair has no
 meaning on it.
 
 The per-node newest read stays hand-written. It is a
-=DISTINCT ON (host_id)= over the tenant's rows, which no generated read
+=DISTINCT ON (host_id)= over the installation's rows, which no generated read
 expresses: a read by host_id returns one node's rows, and a read of the
 newest returns the grid's newest and not one row per node.
+
+A sample describes the installation's own fleet, not one tenant's slice of
+it, so the table carries =:rls_own_or_system_tenant_rows:=: every session
+reads the system tenant's rows, and writes stay the current tenant's. The
+C++ read states =:tenant_read_scope: shared=, so it adds no tenant
+predicate and the policy decides.
 
 * Flags
 :PROPERTIES:
@@ -141,6 +147,15 @@ Seconds since the node last heartbeated.
 
 * C++
 
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:END:
+
+The node rows describe the installation's fleet, not one tenant's slice
+of it, so the read states no tenant filter and the row-level-security
+policy is what decides. Mutations stay tenant-scoped.
+
 ** Conventions
 :PROPERTIES:
 :iterator_var: ns
@@ -159,10 +174,13 @@ Seconds since the node last heartbeated.
 :no_audit_columns:              true
 :suppress_nk_index:             true
 :rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 The retention policy keeps thirty days, which is what the hand-written
-table set.
+table set. The installation's own rows are readable by every session the
+=compute::grid_samples:read= permission admits, and writes stay the
+current tenant's.
 
 ** Indexes
 

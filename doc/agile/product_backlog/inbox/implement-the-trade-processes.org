@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 61590415-C7E0-4BB9-8845-8BB794896EE0
+:END:
+#+title: Implement the processes that act on sets of trades
+#+description: Seed the process enumeration the reference table is waiting for, then implement the processes one at a time, piloting a single one and adding the rest only once its shape is settled.
+#+type: capture
+#+level: cross
+#+filetags: :trading:process:trade_set:trade_activity:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The tree describes nine processes that act on a set of trades, and
+implements none of them. Implement them, one at a time, starting with a
+single pilot.
+
+The processes, as
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]]
+names them:
+
+| Process | What it does | Roles of the trades | Detail |
+|---------+--------------+---------------------+--------|
+| Compression | Replaces offsetting trades with fewer trades of the same net risk | terminated, partially terminated, replacement | [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] |
+| Merge | Combines several trades into one | contributor, result, bridge | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Allocation | Splits a block trade across the accounts it was dealt for | block, allocation, bridge | [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] |
+| Funding roll | Rolls a book's currency balances to the next day | generated | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
+| Sweep run | Centralises residual balances | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
+| Cleardown | Resets book results at a period boundary | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
+| Bulk book move | Moves many trades to another book in one operation | moved | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
+| Import | Brings trades, market data and configuration into a sandbox | created | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] |
+
+* Why
+
+Each of these is described in the domain notes and reachable from
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]],
+and several are named by a task that cannot be built without them. The
+tree can describe a compression and cannot perform one.
+
+* The enumeration has a home
+
+=ores_refdata_business_processes_tbl= already exists and is empty. It
+is the reference table a process code belongs in, in the same way
+=trade_link_types= holds the reasons two trades are joined. Seeding it
+is the first step, and it is the enumeration the domain notes already
+carry.
+
+* Approach
+
+Pilot one process end to end, then add the rest. The roll and the sweep
+are the better pilots than the compression, because both have a book in
+the tree that describes them and both run over a population rather than
+over a pair of trades.
+
+Each process brings the same shape: an input set, an output set, the
+attributes of that kind of act in its own table, and a stamp on every
+trade amendment it generates.
+
+* References
+
+- [[id:A7381409-AFD0-4F0E-BAB4-61CD35341AA8][Trace a process run over a set of trades]] — the run table, its state machine and the keys that make a run undoable and repeatable.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — what an act is, and the properties every one of these carries.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the standing group these acts are not.
+
+* See also
+
+- [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] — the story whose remaining tasks wait on these processes being implemented.

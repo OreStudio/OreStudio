@@ -1542,24 +1542,49 @@ def validate_cache_aux_type(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cache_aux_type requires cached_by")
 
 
-def validate_rls_isolation(domain_entity):
+def validate_rls_isolation(model):
     """
-    Validate the rls_party_isolation sql flag: the AS RESTRICTIVE party
-    policy is emitted inside the tenant-isolation block (it ANDs with the
-    permissive tenant policy), so party isolation without tenant isolation
-    would silently emit no RLS at all for the entity.
+    Validate the rls_* sql flags that shape the emitted tenant policy.
+
+    The AS RESTRICTIVE party policy is emitted inside the tenant-isolation
+    block (it ANDs with the permissive tenant policy), so party isolation
+    without tenant isolation would silently emit no RLS at all for the
+    entity. The own-or-system-tenant-rows shape is also emitted inside that
+    block, so it too would silently vanish, and it must not be combined with
+    rls_system_tenant_visible: the two describe different policies, and a
+    model that asked for both would emit a system-tenant widening under a
+    name that promises it is not one.
+
+    Both the domain-entity and the junction archetypes parse the same
+    ``* SQL / ** Flags`` drawer and carry the same tenant-policy body, so
+    both call this validator: a junction that set one of these flags on its
+    own would otherwise fail silently, exactly as a domain entity would.
 
     Args:
-        domain_entity (dict): not mutated.
+        model (dict): a domain_entity or junction dict; not mutated.
 
     Raises:
-        ValueError: if rls_party_isolation is set without rls_tenant_isolation.
+        ValueError: if rls_party_isolation is set without rls_tenant_isolation,
+            if rls_own_or_system_tenant_rows is set without
+            rls_tenant_isolation, or if rls_own_or_system_tenant_rows and
+            rls_system_tenant_visible are both set.
     """
-    sql_section = domain_entity.get('sql', {})
+    sql_section = model.get('sql', {})
+    name = model.get('entity_singular') or model.get('name_singular') or '?'
     if sql_section.get('rls_party_isolation') and not sql_section.get('rls_tenant_isolation'):
         raise ValueError(
-            f"{domain_entity.get('entity_singular', '?')}: rls_party_isolation requires "
+            f"{name}: rls_party_isolation requires "
             f"rls_tenant_isolation")
+    if (sql_section.get('rls_own_or_system_tenant_rows')
+            and not sql_section.get('rls_tenant_isolation')):
+        raise ValueError(
+            f"{name}: rls_own_or_system_tenant_rows requires "
+            f"rls_tenant_isolation")
+    if (sql_section.get('rls_own_or_system_tenant_rows')
+            and sql_section.get('rls_system_tenant_visible')):
+        raise ValueError(
+            f"{name}: rls_own_or_system_tenant_rows and "
+            f"rls_system_tenant_visible are mutually exclusive")
 
 
 def validate_explorer_interface(domain_entity):
@@ -5429,6 +5454,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Special processing for junction models
     if is_junction and isinstance(model, dict) and 'junction' in model:
         junction = model['junction']
+        # A junction parses the same * SQL / ** Flags drawer as a domain
+        # entity and its template emits the same tenant-policy body, so the
+        # same rules apply here. Without this call a junction could set
+        # rls_own_or_system_tenant_rows without rls_tenant_isolation and
+        # silently emit no policy at all, or combine it with
+        # rls_system_tenant_visible and emit the widening the flag exists to
+        # avoid. The junction does have a real use for the own-or-system
+        # shape (a system-tenant-readable registry junction), so the flag
+        # stays wired and the rules are enforced instead of removed.
+        validate_rls_isolation(junction)
         # The junction artefact template renders a declared staging body the
         # way the domain_entity one does, so its commas need the same mark.
         if 'artefact_columns' in junction:

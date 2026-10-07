@@ -26,6 +26,7 @@
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
+#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <atomic>
@@ -366,15 +367,6 @@ public:
     }
 
 private:
-    // ISO date part of a observation_datetime, e.g. "2016-02-05" from a
-    // timestamp at any time-of-day on that date (observations are always
-    // recorded at midnight UTC for date-only vintages, but this tolerates
-    // otherwise).
-    static std::string date_part(std::chrono::system_clock::time_point tp) {
-        const auto days = std::chrono::floor<std::chrono::days>(tp);
-        return std::format("{:%F}", days);
-    }
-
     // The one binding rule, applied by every start path: a bound feed is
     // bound, a sandboxed feed never is. Skipped when there is no caller
     // bearer token — an internal start with no end-user session has no party
@@ -402,91 +394,50 @@ private:
         return *bindings_;
     }
 
-    // Core vintage-availability check shared by start() and validate(). Uses a
-    // market_data_client delegated with the caller's own bearer token when
-    // available, so the lookup runs in the caller's tenant/party context
-    // rather than this service's own (system-tenant) service account, which
-    // cannot see another tenant's market_observation rows under RLS. Falls
-    // back to the service's own client if no token is supplied (e.g. an
+    // Core vintage-availability check shared by start() and validate(). Delegates
+    // to the one paged vintage read, which looks the series and the row up with the
+    // caller's own bearer token when available, so the lookup runs in the caller's
+    // tenant/party context rather than this service's own (system-tenant) service
+    // account, which cannot see another tenant's market_observation rows under RLS.
+    // Falls back to the service's own client if no token is supplied (e.g. an
     // internal/ad-hoc call with no end-user session).
     //
     // On success, @p resolved_price (if non-null) is set to the matching
-    // observation's value — the real imported spot, not a placeholder — so
-    // callers in "vintage" mode can seed the process from it instead of an
-    // arbitrary/zero initial price.
+    // observation's value — the real imported spot, not a placeholder.
     bool vintage_data_available(const std::string& ore_key,
                                 const std::string& vintage_source,
                                 const std::string& vintage_date,
                                 std::string& error_detail,
                                 const std::string& caller_bearer_token = {},
                                 double* resolved_price = nullptr) {
-        const auto missing_message = [&] {
-            return "No vintage data found for source=" + vintage_source + ", date=" + vintage_date +
-                   ".";
-        };
-
         const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key);
         if (!datum) {
             error_detail = "ORE key '" + ore_key + "': " + datum.error();
             return false;
         }
-        const auto oresmd_uri = ores::marketdata::datum::oresmd_uri_codec::write(
+        const auto series_uri = ores::marketdata::datum::oresmd_uri_codec::write(
                                     ores::marketdata::datum::series_of(*datum))
                                     .value();
-        const auto datum_uri = ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
+        const auto datum_uri =
+            ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
 
-        auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
-        ores::marketdata::client::market_data_client md_client(delegated_nats);
-
-        auto series = md_client.find_series_by_uri(oresmd_uri);
-        if (!series) {
-            error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
+        const auto missing_message =
+            "No vintage data found for source=" + vintage_source + ", date=" + vintage_date + ".";
+        const auto found = ores::synthetic::feed::find_vintage_observation(auth_nats_,
+                                                                          caller_bearer_token,
+                                                                          series_uri,
+                                                                          datum_uri,
+                                                                          vintage_source,
+                                                                          vintage_date,
+                                                                          missing_message,
+                                                                          ore_key);
+        if (!found) {
+            error_detail = found.error();
             return false;
         }
-        if (!series->has_value()) {
-            error_detail = missing_message();
-            return false;
-        }
-
-        // Paged scan, not a single unbounded fetch: a series with a long
-        // tick history (this service's own synthetic ticks accumulate
-        // fast) can produce a response larger than NATS's max payload,
-        // which fails silently -- the handler completes server-side but
-        // the reply never arrives, so the caller just sees a timeout.
-        // Observations come back newest-first, so a vintage lookup for a
-        // recent-ish date converges in the first page or two; only a very
-        // old vintage date pays for a full scan.
-        constexpr std::uint32_t page_size = 200;
-        const auto series_id_str = boost::uuids::to_string((*series)->id);
-        std::uint32_t offset = 0;
-        for (;;) {
-            auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
-            if (!observations) {
-                error_detail =
-                    "Failed to look up observations for '" + ore_key + "': " + observations.error();
-                return false;
-            }
-            for (const auto& obs : *observations) {
-                if (obs.source == vintage_source && obs.oresmd_uri == datum_uri &&
-                    date_part(obs.observation_datetime) == vintage_date) {
-                    if (resolved_price) {
-                        try {
-                            *resolved_price = std::stod(obs.value);
-                        } catch (const std::exception& e) {
-                            error_detail = "Vintage observation value '" + obs.value +
-                                           "' is not a valid number: " + e.what();
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-            if (observations->size() < page_size)
-                break;
-            offset += page_size;
-        }
-        error_detail = missing_message();
-        return false;
+        if (resolved_price)
+            *resolved_price = *found;
+        return true;
     }
 
     static constexpr std::chrono::minutes status_interval_{1};

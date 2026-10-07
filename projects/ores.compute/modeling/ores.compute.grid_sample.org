@@ -28,6 +28,12 @@ is a =DISTINCT ON (host_id)= and the live summary is a call to
 =ores_compute_grid_stats_fn=, so both stay hand-written in
 =compute_telemetry_repository=.
 
+A sample describes the installation's own grid, not one tenant's slice of
+it, so the table carries =:rls_own_or_system_tenant_rows:=: every session
+reads the system tenant's rows, and writes stay the current tenant's. The
+C++ read states =:tenant_read_scope: shared=, so it adds no tenant
+predicate and the policy decides.
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -180,6 +186,15 @@ Results that finished with outcome 4 in the last day.
 
 * C++
 
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:END:
+
+The grid rows describe the installation's fleet, not one tenant's slice of
+it, so the read states no tenant filter and the row-level-security policy
+is what decides. Mutations stay tenant-scoped.
+
 ** Conventions
 :PROPERTIES:
 :iterator_var: gs
@@ -198,12 +213,16 @@ Results that finished with outcome 4 in the last day.
 :no_audit_columns:              true
 :suppress_nk_index:             true
 :rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
 :newest_by:                     sampled_at
 :END:
 
 The newest read exists because the dashboard wants the last sample and a
 paged read walks the key from its oldest end. The retention policy keeps
-thirty days, which is what the hand-written table set.
+thirty days, which is what the hand-written table set. The installation's
+own rows are readable by every session the
+=compute::grid_samples:read= permission admits, and writes stay the
+current tenant's.
 
 ** Indexes
 

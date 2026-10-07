@@ -43,6 +43,12 @@ it: what a call site looks like, the shared configuration knobs, and the
 request/reply helpers. Read second, because it is the concrete form the
 substrate takes in this codebase.
 
+[[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
+consumers]] — what JetStream adds, the five streams this system creates and the
+durable consumers that read them. Read after the library page, because it is
+where the bus acquires state that outlives a process, and that state is the one
+thing a subject change can strand.
+
 ** Where a subject may live
 
 [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging

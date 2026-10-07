@@ -34,9 +34,15 @@
  * meaning on it.
  *
  * The per-node newest read stays hand-written. It is a
- * DISTINCT ON (host_id) over the tenant's rows, which no generated read
+ * DISTINCT ON (host_id) over the installation's rows, which no generated read
  * expresses: a read by host_id returns one node's rows, and a read of the
  * newest returns the grid's newest and not one row per node.
+ *
+ * A sample describes the installation's own fleet, not one tenant's slice of
+ * it, so the table carries :rls_own_or_system_tenant_rows:: every session
+ * reads the system tenant's rows, and writes stay the current tenant's. The
+ * C++ read states :tenant_read_scope: shared, so it adds no tenant
+ * predicate and the policy decides.
  */
 
 create table if not exists "ores_compute_node_samples_tbl" (
@@ -122,6 +128,8 @@ end $$;
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Node Sample
+-- Every session reads the system tenant's own rows; writes stay the
+-- current tenant's.
 -- =============================================================================
 alter table ores_compute_node_samples_tbl enable row level security;
 
@@ -132,6 +140,7 @@ create policy node_samples_tbl_tenant_isolation_policy
 on ores_compute_node_samples_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

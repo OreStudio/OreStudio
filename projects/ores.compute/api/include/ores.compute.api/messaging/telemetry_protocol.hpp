@@ -63,6 +63,10 @@ struct node_stats_summary {
      */
     int tasks_completed = 0;
     /**
+     * @brief Failed tasks the grid summary attributes to the node.
+     */
+    int tasks_failed = 0;
+    /**
      * @brief Tasks the node finished since its previous sample.
      */
     int tasks_since_last = 0;
@@ -70,6 +74,10 @@ struct node_stats_summary {
      * @brief Mean task duration over the tasks since the last sample.
      */
     std::int64_t avg_task_duration_ms = 0;
+    /**
+     * @brief The node's slowest task in the interval the summary covers.
+     */
+    std::int64_t max_task_duration_ms = 0;
     /**
      * @brief Bytes the node fetched for those tasks.
      */

@@ -67,6 +67,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "rls_tenant_isolation": "sql",
     "rls_party_isolation": "sql",
     "rls_system_tenant_visible": "sql",
+    "rls_own_or_system_tenant_rows": "sql",
     "has_pagination": "presentation",
     "has_uuid_primary_key": "presentation",
     "has_change_reason_cache": "presentation",
@@ -2506,6 +2507,7 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
     "ores::trading::domain::instrument_payload": ("InstrumentPayload", "trading/payload"),
     "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
+    "ores::security::jwt::storage_grant": ("StorageGrant", "security/payload"),
 }
 
 # The same qualified name inside a larger C++ type, e.g.

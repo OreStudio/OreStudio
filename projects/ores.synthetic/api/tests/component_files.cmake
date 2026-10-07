@@ -25,4 +25,5 @@ set(files
     "domain_synthetic_catalog_tests.cpp"
     "feed_factory_tests.cpp"
     "main.cpp"
+    "tick_clock_tests.cpp"
 )

@@ -132,3 +132,64 @@ def test_missing_testing_flags_empty_when_all_present():
     ns = argparse.Namespace(testing_plan="p", testing_evidence="e",
                             testing_limitations="l")
     assert compass_pr._missing_testing_flags(ns) == []
+
+
+def test_parent_story_id_reads_the_status_row():
+    task = (
+        "* Status\n\n"
+        "| Field        | Value |\n"
+        "|--------------+-------|\n"
+        "| Parent story | [[id:AAAA1111-2222-3333-4444-555566667777][The story]] |\n"
+    )
+    assert (compass_pr._parent_story_id(task, "BBBB1111-2222-3333-4444-555566667777")
+            == "AAAA1111-2222-3333-4444-555566667777")
+
+
+def test_parent_story_id_falls_back_to_the_first_foreign_link():
+    task = ("This page documents a "
+            "[[id:BBBB1111-2222-3333-4444-555566667777][task]] in the "
+            "[[id:AAAA1111-2222-3333-4444-555566667777][story]] story.")
+    assert (compass_pr._parent_story_id(task, "BBBB1111-2222-3333-4444-555566667777")
+            == "AAAA1111-2222-3333-4444-555566667777")
+
+
+def test_backlog_capture_slug_names_the_capture_not_story_org(tmp_path):
+    """A capture is named after itself, which is why a task under it has no
+    story.org beside it, and the error can still name the promote command."""
+    bucket = tmp_path / "doc" / "agile" / "product_backlog" / "next"
+    bucket.mkdir(parents=True)
+    (bucket / "stochastic-tick-arrival-times.org").write_text(
+        ":PROPERTIES:\n:ID: CCCC1111-2222-3333-4444-555566667777\n:END:\n",
+        encoding="utf-8")
+    assert (compass_pr._backlog_capture_slug(
+        tmp_path, "CCCC1111-2222-3333-4444-555566667777")
+        == "stochastic-tick-arrival-times")
+    assert compass_pr._backlog_capture_slug(tmp_path, "") == ""
+    assert (compass_pr._backlog_capture_slug(
+        tmp_path, "DDDD1111-2222-3333-4444-555566667777") == "")
+
+
+def test_a_duplicate_result_heading_does_not_hide_the_result():
+    """A doc with an empty * Result above a written one still has a result;
+    reading only the first heading refused a merge twice."""
+    text = ("* Review\n\n| a |\n\n"
+            "* Result\n\n"
+            "* Result\n\n"
+            "Delivered in PR 2771.\n")
+    sections = compass_pr._result_sections(text)
+    assert len(sections) == 2
+    assert sections[0] == ""
+    assert sections[1].startswith("Delivered in PR 2771.")
+    assert any(sections), "a written result must count even under a duplicate"
+
+
+def test_a_single_empty_result_reads_as_empty():
+    sections = compass_pr._result_sections("* Result\n\n* Next\n\nprose\n")
+    assert sections == [""]
+    assert not any(sections)
+
+
+def test_a_result_with_prose_and_no_duplicate_is_read_once():
+    sections = compass_pr._result_sections(
+        "* Result\n\nDelivered.\n\n* Review\n\n| a |\n")
+    assert sections == ["Delivered."]

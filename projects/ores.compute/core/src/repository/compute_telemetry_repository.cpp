@@ -36,10 +36,10 @@ using ores::platform::time::datetime;
 
 std::vector<domain::node_sample> compute_telemetry_repository::latest_node_samples(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
-    const auto tid = ctx.tenant_id().to_string();
 
     // DISTINCT ON (host_id) returns exactly one row per host, the most recent,
-    // in a single query.
+    // in a single query. The row-level-security policy decides which rows the
+    // session sees: its own tenant's and the system tenant's.
     const std::string sql = R"(
         SELECT DISTINCT ON (host_id)
             id, sampled_at, tenant_id, host_id,
@@ -48,12 +48,11 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
             input_bytes_fetched, output_bytes_uploaded,
             seconds_since_hb
         FROM ores_compute_node_samples_tbl
-        WHERE tenant_id = $1
         ORDER BY host_id, sampled_at DESC
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid}, lg(), "reading latest node samples");
+        ctx, sql, {}, lg(), "reading latest node samples");
 
     std::vector<domain::node_sample> result;
     result.reserve(rows.size());

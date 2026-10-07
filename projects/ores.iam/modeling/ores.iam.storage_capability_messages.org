@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 23880D72-201E-49D9-94F9-07960425067A
-:ores.ts.protocol.enabled: nil
 :ores.cpp.shell-command.enabled: nil
 :END:
 #+title: ores.iam.storage_capability_messages

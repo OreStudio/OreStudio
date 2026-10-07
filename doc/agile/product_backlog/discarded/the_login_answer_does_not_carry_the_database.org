@@ -7,9 +7,11 @@
 #+level: cross
 #+filetags: :iam:database:data_model:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-07
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Closed ([[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]], 2026-10-07)*: =login_response= now carries a nested =database_info= (fingerprint, environment, commit, created), read once per login from =ores_database_info_tbl= and filled on every reply path; the BFF keeps the row on the session record and =GET /api/session= repeats it, so the versions panel adds no request. No new subject, permission or route. The read is tested against the real table; the header-only login handler has no seam and is not unit-tested.
 
 * What
 

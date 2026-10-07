@@ -133,5 +133,12 @@ private:
  */
 ORES_SYNTHETIC_API_EXPORT feed_factory make_default_feed_factory();
 
+/**
+ * @brief The one default registry instance, built on first use and shared by every control-plane
+ * handler and the auto-start walk. Callers register nothing into it, so a single instance is
+ * enough and no call site rebuilds the map.
+ */
+ORES_SYNTHETIC_API_EXPORT const feed_factory& default_feed_factory();
+
 }
 #endif

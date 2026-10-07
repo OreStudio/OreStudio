@@ -52,7 +52,7 @@ Four slices, each built and verified before the next:
 1. *The claims.* =jwt_claims= carries a list of =storage_grant= values, and the
    signer and both verifiers round-trip them. *Landed*: 13 assertions pass in
    =ores.security.tests=.
-2. *IAM mints.* A =iam.v1.ops.mint_storage_capability= operation, held by the
+2. *IAM mints.* An =iam.v1.ops.mint_storage_capability= operation, held by the
    services that dispatch work, that signs a capability naming a tenant and its
    grants. The signer is the one IAM already holds, so storage keeps one
    verifier. *Landed*: the operation is modelled, the protocol reuses the

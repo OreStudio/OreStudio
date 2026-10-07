@@ -48,6 +48,12 @@ namespace ores::compute::domain {
  * is a DISTINCT ON (host_id) and the live summary is a call to
  * ores_compute_grid_stats_fn, so both stay hand-written in
  * compute_telemetry_repository.
+ *
+ * A sample describes the installation's own grid, not one tenant's slice of
+ * it, so the table carries :rls_own_or_system_tenant_rows:: every session
+ * reads the system tenant's rows, and writes stay the current tenant's. The
+ * C++ read states :tenant_read_scope: shared, so it adds no tenant
+ * predicate and the policy decides.
  */
 struct grid_sample final {
     /**

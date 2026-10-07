@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-07T15:37:17.722540Z
+' Generated: 2026-10-07T18:51:04.853088Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -504,6 +504,7 @@ package "iam" #E8F4FD {
         * name : text
         * description : text
         * is_registration_default : boolean
+        * is_requestable : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -12507,6 +12508,11 @@ package "compute" #EDE7F6 {
     is a DISTINCT ON (host_id) and the live summary is a call to
     ores_compute_grid_stats_fn, so both stay hand-written in
     compute_telemetry_repository.
+    A sample describes the installation's own grid, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
     end note
 
     entity ores_compute_hosts_tbl <<temporal>> #C6F0D8 {
@@ -12568,9 +12574,14 @@ package "compute" #EDE7F6 {
     a sample is a fact about an instant, so the bi-temporal pair has no
     meaning on it.
     The per-node newest read stays hand-written. It is a
-    DISTINCT ON (host_id) over the tenant's rows, which no generated read
+    DISTINCT ON (host_id) over the installation's rows, which no generated read
     expresses: a read by host_id returns one node's rows, and a read of the
     newest returns the grid's newest and not one row per node.
+    A sample describes the installation's own fleet, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
     end note
 
     entity ores_compute_platforms_tbl <<temporal>> #C6F0D8 {
@@ -13019,9 +13030,10 @@ package "marketdata" #E3F2FD {
         * series_id : uuid <<FK>>
         * observation_datetime : timestamptz
         * oresmd_uri : text
-        * derivation_config_id : uuid <<FK>>
+        * point_source_kind : text
+          derivation_config_id : uuid <<FK>>
         * derivation_config_version : integer
-        * source_as_of : timestamptz
+          source_as_of : timestamptz
         * source_series_ids : jsonb
         * modified_by : text
         * performed_by : text
@@ -13036,13 +13048,19 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Observation Lineage Table
-    Per-observation provenance for a *derived* market_observation row: which
-    derivation config/version produced it, and which upstream source
-    series/as-of it read. Written only alongside a derived observation --
-    never for the common OBSERVED case, and never as a column on
+    Per-observation provenance for a bare market_observation row whose source
+    is not the market's own quote: which derivation config/version produced it,
+    and which upstream source series/as-of it read, or -- for a point an operator
+    keyed by hand -- which kind of point it is, who keyed it and why. Written
+    never for the common quoted case, and never as a column on
     market_observations_tbl itself (a TimescaleDB hypertable explicitly
     documented as carrying no audit columns because tick-level volumes make
-    that impractical). A row's existence *is* the "derived" marker.
+    that impractical).
+    point_source_kind names the two kinds that carry an annex row: derived
+    for a point a derivation created, and manual for one keyed by hand.
+    *Quoted is the absence of a row*, so a quoted tick keeps writing one row to
+    the hot hypertable and nothing else; the invariant this rests on is that a
+    point a derivation created always has an annex row.
     Deliberately generic, not curve-specific: this is what lets CRM's own
     derived-cross publishing (currently pull-only -- see the CRM
     architecture decision to never broadcast the full derived set as

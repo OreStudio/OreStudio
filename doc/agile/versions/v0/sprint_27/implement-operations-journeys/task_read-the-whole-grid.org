@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
-#+branch: feature/read-the-whole-grid
-#+pr:
+#+branch: feature/close-read-the-whole-grid
+#+pr: 2765
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-07
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -36,20 +36,23 @@ separate decisions.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- =latest_node_samples= and the grid summary read carry no tenant filter, and
-  a test proves the whole fleet comes back whatever tenant the session
-  carries.
-- The read checks the permission the journey records, so the read serves the
-  whole grid and only the people allowed to see it.
+- =latest_node_samples= and the newest grid sample carry no tenant filter, and
+  a test proves a session the permission admits reads every node the
+  installation reports. The policy admits the session's own tenant's rows plus
+  the system tenant's, so a third tenant's rows stay invisible: the fleet comes
+  back because the installation's samples are the system tenant's.
+- The work counts are superseded: they are the installation's observed ledger,
+  which [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]]
+  owns. This task no longer claims them.
 - The shell's grid stats command reaches the same read.
 - The capture [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]]
   moves out of the inbox with this task's evidence.
@@ -91,12 +94,50 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2765][#2765]] | [agile] Close the whole-grid read on the evidence that landed |
+| [[https://github.com/OreStudio/OreStudio/pull/2761][#2761]] | [compute,codegen] Name the installation's own data |
 
 * Review
 
+The implementation was reviewed with PR #2761, on the standards and spec axes.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A junction could set the new flag without tenant isolation and emit no policy at all | codegen core.py | Accepted | Fixed in #2761; junctions are now validated |
+| 2 | A junction could pair the new flag with the system-tenant widening | codegen core.py | Accepted | Fixed in #2761; the pair now raises |
+| 3 | The new test logged only at debug | repository_compute_telemetry_repository_tests.cpp | Accepted | One info line per case, as the conventions require |
+| 4 | The story's acceptance claimed more than its tasks deliver | story.org | Accepted | Re-scoped in #2761; the rest moved to a successor story |
 
 * Result
+
+The read is whole and the record is closed.
+
+=latest_node_samples= states no tenant predicate, and both sample models state
+=:tenant_read_scope: shared= with =:rls_own_or_system_tenant_rows:=, the codegen
+feature that emits the installation's policy shape: a session reads its own
+tenant's rows plus the system tenant's, and writes stay confined to its own
+tenant. The newest grid sample loses its predicate through the same shared
+scope.
+
+The fleet comes back because the installation's own samples are the system
+tenant's, not because the read was widened to everything. The test states that
+honestly: it proves a permitted session reads every node the installation
+reports, and proves a third tenant's rows stay invisible. It would fail if the
+predicate came back, which is the property a test for this change needs.
+
+Two of the four acceptance items needed no work here. The read already checks
+=compute::grid_samples:read= on =origin/main=, and the shell's =compute
+grid-stats= command already sends =get_grid_stats_request=, so it reaches the
+same read. Both are recorded rather than re-implemented.
+
+The work counts are not this task's and never were, once the design settled:
+they are the installation's own ledger, which
+[[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]]
+builds. The acceptance now says so, and the capture moves out of the inbox with
+this evidence.
+
+Verified in #2761: build exit 0; 94 of 94 ctest targets, 0 failed; the codegen
+pytest suite 1288 passed with 2 pre-existing failures that are main's; the RLS
+guard unchanged at 10 widenings, all listed; and no component drift. The ER
+diagram was regenerated rather than hand-merged when main moved twice under the
+branch.

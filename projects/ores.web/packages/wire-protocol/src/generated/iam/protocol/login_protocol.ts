@@ -29,6 +29,27 @@ export interface PartySummary {
     business_center_code: string;
 }
 
+/**
+ * @brief The database row the deployment was built against.
+ *
+ * The four values =ores_database_info_tbl= records when the database is
+ * created or recreated: the hash of the schema it was built from, the build
+ * environment, the commit, and when the database was created. The table holds
+ * exactly one row. It is declared by hand and owes nothing to the generators,
+ * because it records the checkout that built the database before any service
+ * runs.
+ */
+export interface DatabaseInfo {
+    /** @brief The hash of the SQL scripts the database was built from. */
+    fingerprint: string;
+    /** @brief The build environment the database was built in. */
+    environment: string;
+    /** @brief The git commit the database was built from. */
+    commit: string;
+    /** @brief When the database was created or recreated. */
+    created: string;
+}
+
 export interface LoginRequest {
     principal: string;
     password: string;
@@ -49,6 +70,16 @@ export interface LoginResponse {
      * answers agree.
      */
     version: string;
+    /**
+     * @brief The database the deployment stores into, in full.
+     *
+     * The row travels with the build the answer already states, because the two
+     * answer one question — what am I talking to — and the database is its third.
+     * Its audience is the build's audience: everyone who may open a session may
+     * read it, so it needs no subject, no permission and no read of its own. The
+     * iam service reads it once per login from =ores_database_info_tbl=.
+     */
+    database: DatabaseInfo;
     username: string;
     email: string;
     password_reset_required: boolean;

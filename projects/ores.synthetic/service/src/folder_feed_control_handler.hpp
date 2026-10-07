@@ -123,7 +123,7 @@ public:
         // another tenant's market_observation rows (RLS).
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
-        const auto factory = ores::synthetic::feed::make_default_feed_factory();
+        const auto& factory = ores::synthetic::feed::default_feed_factory();
 
         namespace repo = ores::synthetic::repository;
         repo::fx_spot_generation_config_repository fx_repo;

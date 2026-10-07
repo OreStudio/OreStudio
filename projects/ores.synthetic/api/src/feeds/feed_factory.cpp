@@ -83,4 +83,9 @@ feed_factory make_default_feed_factory() {
     return factory;
 }
 
+const feed_factory& default_feed_factory() {
+    static const feed_factory factory = make_default_feed_factory();
+    return factory;
+}
+
 }

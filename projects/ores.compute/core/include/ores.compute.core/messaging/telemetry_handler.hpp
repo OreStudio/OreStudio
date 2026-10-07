@@ -114,8 +114,10 @@ public:
                 node_stats_summary s;
                 s.host_id = boost::uuids::to_string(n.host_id);
                 s.tasks_completed = n.tasks_completed;
+                s.tasks_failed = n.tasks_failed;
                 s.tasks_since_last = n.tasks_since_last;
                 s.avg_task_duration_ms = n.avg_task_duration_ms;
+                s.max_task_duration_ms = n.max_task_duration_ms;
                 s.input_bytes_fetched = n.input_bytes_fetched;
                 s.output_bytes_uploaded = n.output_bytes_uploaded;
                 s.seconds_since_hb = n.seconds_since_hb;

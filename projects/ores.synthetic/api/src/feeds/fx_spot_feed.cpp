@@ -21,19 +21,18 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
+#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
 #include <random>
 #include <stdexcept>
-#include <thread>
 
 namespace ores::synthetic::feed {
 
@@ -46,14 +45,6 @@ auto& lg() {
     return instance;
 }
 
-// ISO date part of an observation_datetime -- the same one-liner duplicated in
-// ir_curve_feed.cpp (the two live in the same component but keep their own copy
-// rather than share a header for a one-line helper).
-std::string date_part(std::chrono::system_clock::time_point tp) {
-    const auto days = std::chrono::floor<std::chrono::days>(tp);
-    return std::format("{:%F}", days);
-}
-
 // Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
 // mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
 // (from its ore_key), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
@@ -62,10 +53,8 @@ std::string date_part(std::chrono::system_clock::time_point tp) {
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
                                      const ores::synthetic::domain::fx_spot_generation_config& cfg,
                                      const std::string& caller_bearer_token) {
-    const auto missing_message = [&] {
-        return "No vintage data found for source=" + cfg.vintage_source +
-               ", date=" + cfg.vintage_date + ", datum=" + cfg.ore_key + ".";
-    };
+    const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
+                                 ", date=" + cfg.vintage_date + ", datum=" + cfg.ore_key + ".";
 
     // The series and the row are found by the URIs the key's datum writes as: the
     // same codecs the marketdata service's ingest loop applies to a tick's key, so
@@ -78,43 +67,18 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
         ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*datum))
             .value();
 
-    auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
-    ores::marketdata::client::market_data_client md_client(delegated_nats);
-
-    auto series = md_client.find_series_by_uri(series_uri, boost::uuids::to_string(cfg.party_id));
-    if (!series)
-        throw vintage_data_missing_error("Failed to look up series for '" + cfg.ore_key +
-                                         "': " + series.error());
-    if (!series->has_value())
-        throw vintage_data_missing_error(missing_message());
-
-    // Paged scan -- see ir_curve_feed.cpp's resolve_vintage_initial_rate() for why an unbounded
-    // fetch is unsafe here (NATS max payload).
-    constexpr std::uint32_t page_size = 200;
-    const auto series_id_str = boost::uuids::to_string((*series)->id);
-    std::uint32_t offset = 0;
-    for (;;) {
-        auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
-        if (!observations) {
-            throw vintage_data_missing_error("Failed to look up observations for '" + cfg.ore_key +
-                                             "': " + observations.error());
-        }
-        for (const auto& obs : *observations) {
-            if (obs.source == cfg.vintage_source && obs.oresmd_uri == datum_uri &&
-                date_part(obs.observation_datetime) == cfg.vintage_date) {
-                try {
-                    return std::stod(obs.value);
-                } catch (const std::exception& e) {
-                    throw vintage_data_missing_error("Vintage observation value '" + obs.value +
-                                                     "' is not a valid number: " + e.what());
-                }
-            }
-        }
-        if (observations->size() < page_size)
-            break;
-        offset += page_size;
-    }
-    throw vintage_data_missing_error(missing_message());
+    const auto found = find_vintage_observation(auth_nats,
+                                                caller_bearer_token,
+                                                series_uri,
+                                                datum_uri,
+                                                cfg.vintage_source,
+                                                cfg.vintage_date,
+                                                missing_message,
+                                                cfg.ore_key,
+                                                boost::uuids::to_string(cfg.party_id));
+    if (!found)
+        throw vintage_data_missing_error(found.error());
+    return *found;
 }
 
 } // namespace
@@ -183,12 +147,12 @@ fx_spot_feed::fx_spot_feed(
     , ore_key_(std::move(ore_key))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
-    , ticks_per_hour_(ticks_per_hour)
+    , clock_(ticks_per_hour)
     , nats_subject_(std::move(nats_subject)) {
 
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
-    if (ticks_per_hour_ <= 0.0)
+    if (ticks_per_hour <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
 
     const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key_);
@@ -222,60 +186,37 @@ std::string fx_spot_feed::conflict_key() const {
 }
 
 void fx_spot_feed::start() {
-    using namespace std::chrono;
+    clock_.run(
+        [this] {
+            ores::marketdata::messaging::market_tick tick;
+            tick.oresmd_uri = oresmd_uri_;
+            tick.value = std::format("{}", process_->next());
+            tick.observation_time = std::chrono::system_clock::now();
+            tick.source = source_name_;
 
-    const auto period_us =
-        duration_cast<microseconds>(hours(1)) / static_cast<long long>(ticks_per_hour_);
-
-    // Note: stop_flag_ is already false from the member initialiser. We must NOT
-    // reset it here — a stop() that arrives between thread spawn and this point
-    // would be clobbered, and the loop (and join()) would hang forever.
-
-    // Sleep the tick period in small slices so stop() is observed promptly
-    // (the period can be minutes; we must not block stop()/join() that long).
-    constexpr auto slice = milliseconds(100);
-
-    while (!stop_flag_.load(std::memory_order_relaxed)) {
-        auto remaining = duration_cast<microseconds>(period_us);
-        while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
-            const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);
-            std::this_thread::sleep_for(nap);
-            remaining -= nap;
-        }
-
-        if (stop_flag_.load(std::memory_order_relaxed))
-            break;
-
-        ores::marketdata::messaging::market_tick tick;
-        tick.oresmd_uri = oresmd_uri_;
-        tick.value = std::format("{}", process_->next());
-        tick.observation_time = system_clock::now();
-        tick.source = source_name_;
-
-        // A tick-loop thread has no caller to propagate an exception to -- an uncaught throw
-        // here would std::terminate() the whole service process, taking down every other feed
-        // and NATS handler with it. Log and skip this tick instead; the next tick tries again.
-        try {
             const auto& codec = ores::nats::default_wire_codec();
             BOOST_LOG_SEV(lg(), trace)
-                << "Encoding market_tick for " << nats_subject_ << ": wire_format="
+                << "Encoding market_tick for " << nats_subject_
+                << ": wire_format="
                 << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
             nats_.js_publish(nats_subject_, codec.encode(tick));
-            const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
+            return tick.value;
+        },
+        [this](std::uint64_t n, const std::string& value) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
                     << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
-                    << "' count=" << n << " value=" << tick.value;
+                    << "' count=" << n << " value=" << value;
             }
-        } catch (const std::exception& ex) {
+        },
+        [this](const std::exception& ex) {
             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_
                                        << "' ore_key='" << ore_key_ << "': " << ex.what();
-        }
-    }
+        });
 }
 
 void fx_spot_feed::stop() {
-    stop_flag_.store(true, std::memory_order_relaxed);
+    clock_.stop();
 }
 
 }

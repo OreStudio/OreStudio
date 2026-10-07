@@ -68,6 +68,13 @@ const northwind = {
 
 const VERSION = 'v0.0.25 [x64-linux] (local abc1234)';
 
+const DATABASE = {
+    fingerprint: 'e4803181e989327c',
+    environment: 'local',
+    commit: 'abc1234',
+    created: '2026-10-07 21:17:00+00',
+};
+
 function buildTestServer(): ReturnType<typeof buildServer> {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const client = {
@@ -82,6 +89,7 @@ function buildTestServer(): ReturnType<typeof buildServer> {
                 tenantId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
                 tenantName: 'Northwind Capital',
                 version: VERSION,
+                database: DATABASE,
                 username: 'tenant_admin',
                 email: 'admin@northwind.example.com',
                 party: northwind,

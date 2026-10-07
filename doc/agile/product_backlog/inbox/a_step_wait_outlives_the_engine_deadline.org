@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 404C8F41-8EB7-422F-8347-183173F49E3D
+:END:
+#+title: A step's wait outlives the engine's deadline
+#+description: A provisioning step waits 7200 seconds for a command it publishes, while the workflow engine expires a step at 1200. A command that is never received is therefore reported as twenty minutes of silence rather than a named failure, which is how a subject mismatch between a stale service and the engine stayed invisible.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:iam:provisioning:defect:observability:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

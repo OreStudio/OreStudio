@@ -190,3 +190,43 @@ Notes from the survey reading:
   deferred out of.
 - [[id:D1234E9D-D79A-4C59-991C-988D1D8F515F][Synthetic data collections: Basic and Realistic]] — sibling story this
   connects to via the Basic/Realistic arrival-profile split.
+
+* Where this plugs in, recorded 2026-10-07
+
+The fixed clock this story replaces is now one class rather than two. The
+duplicated per-producer clocks collapsed into =tick_clock= in
+=projects/ores.synthetic/api/include/ores.synthetic.api/feeds/tick_clock.hpp=,
+which owns the period, the sliced stop-responsive sleep, the publish counter and
+the catch-and-continue guard. A producer supplies only what one tick does:
+advance its process and publish its datum. Both producers now delegate to it,
+so there is exactly one place to change and both asset classes get the change.
+
+That shape is what makes this story cheap, and it is worth stating precisely
+which seam the arrival process takes. The clock currently answers one question,
+"when is the next tick", by computing a constant period from =ticks_per_hour=.
+The change is to have it ask an *arrival model* for that instant instead of
+computing it. Nothing else moves: the producer still supplies what one tick
+does, so the price process stays decoupled from the arrival process, which is
+what the goal above requires.
+
+Where the variation lives matters, and this is the part the current code cannot
+express. Intensity is not only per asset class. A G11 currency pair ticks far
+more often than an emerging-market pair, so the intensity is a property of the
+*feed*, not of the class, and the scalar =ticks_per_hour= is too coarse for it.
+The arrival model should therefore be configured per feed, and its parameters
+carried on the generation config beside the process parameters it already holds.
+
+Regimes follow from that. Under a Markov-modulated Poisson process the
+intensity switches between discrete states through a hidden chain, and the state
+machine belongs to the arrival model. The clock stays regime-agnostic: it never
+learns that regimes exist, it only asks for the next instant. That keeps this
+story from reopening the clock, and it means a regime model and a homogeneous
+Poisson model are interchangeable from the clock's point of view.
+
+Two consequences for whoever picks this up. The first tick currently sleeps a
+full period before publishing, which a draw-based clock must not inherit, since
+an arrival model says when the next tick falls and the first is not special.
+And the stop-responsiveness the clock already has must survive, because a sleep
+sliced short by a stop must not be confused with an inter-arrival draw that
+happened to be short.
+

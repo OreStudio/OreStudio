@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: E05BC423-3B67-4119-AAAE-EFF61F7944DC
+:END:
+#+title: Feature: rls_own_or_system_tenant_rows
+#+description: T2 policy shape for installation- and shared-scoped rows: every session reads its own tenant's rows and the system tenant's, and writes stay the current tenant's.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:rls_own_or_system_tenant_rows:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Modifier on =:rls_tenant_isolation=: emits the shared-reference and
+installation-scoped policy shape. The =using= clause admits a row when
+its =tenant_id= equals the session's tenant or the system tenant, and
+the =with check= clause confines every write to the session's tenant:
+
+#+begin_src sql
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+#+end_src
+
+The name states the rows the policy admits and puts =tenant_id= on the
+left of both comparisons. That is deliberate. The existing
+=:rls_system_tenant_visible:= names the *session* and emits =current =
+system=, which admits one tenant's rows to another and is the shape
+=check_rls_system_tenant_widenings.py= flags. This feature admits only
+the system tenant's own rows to everyone, so the guard does not flag
+it. The two names never mean the same thing, and the two flags are
+mutually exclusive, so a model cannot ask for both.
+
+Requires =:rls_tenant_isolation:=; without it the model's policy block
+is not emitted at all. The permission decides who may call the read,
+exactly as =compute::grid_samples:read= does today.
+
+* Structural consequence
+
+None on the logical shape — only the generated policy body differs.
+
+* Used by
+
+=ores.compute.grid_sample= and =ores.compute.node_sample=, the
+installation's fleet samples. Deliberately not fixed by any profile.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — the three owners and the policy each wants.

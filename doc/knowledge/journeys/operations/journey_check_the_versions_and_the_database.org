@@ -72,9 +72,9 @@ This journey writes nothing.
    built from, the build environment, the commit and its date, and when the
    database was created. The four values arrive with the login answer — the
    same answer that states the server build — so the panel reads them without
-   a second request. Today the answer carries the build and not the database
-   — see *What is missing* — so the panel says the database is unknown rather
-   than showing an empty row as though it were a fact.
+   a second request. The answer carries the row today; a database whose row
+   could not be read is stated as unknown
+   ([[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]).
 6. *Compare the three.* Together the values answer what no single one can: a
    browser older than the deployment (a stale bundle), a deployment whose
    build does not match the schema the database records — which every service
@@ -107,10 +107,10 @@ kept there as the record; the accepted commit names the state.
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
 
 The prototype settled where the database row comes from. The panel needs no
-read of its own: the login answer that already states the server build must
-state the database row beside it, and the session keeps both. Until it does, a
-real session states the database as unknown, and the prototype shows that
-state beside the settled one. The panel's shape is settled too: fingerprint,
+read of its own: the login answer that already states the server build states
+the database row beside it, and the session keeps both. A session whose answer
+carried no row states the database as unknown, which the prototype shows
+beside the settled one. The panel's shape is settled too: fingerprint,
 environment, commit and created, in that order, which is the question "which
 checkout built this database".
 
@@ -133,12 +133,11 @@ database table is the other extreme: it is declared by hand in
 owes nothing to the code generators, because it records the checkout that
 built the database before any service runs.
 
-The login answer's job grows by one row under the accepted design. It states
-the deployment's build today, and it must state the database beside it —
-fingerprint, environment, commit and created — read once per login from
-=ores_database_info_tbl=. The row's only reader today is each service's
-startup check; the login answer becomes its second, and no subject of its own
-is needed — see *What is missing*.
+The login answer's job grows by one row. It states the deployment's build, and
+it states the database beside it — fingerprint, environment, commit and
+created — read once per login from =ores_database_info_tbl=. The row's only
+reader was each service's startup check; the login answer is its second, and
+no subject of its own is needed — see *What is missing*.
 
 * Operations and messages
 
@@ -149,7 +148,7 @@ is needed — see *What is missing*.
 | Read the server version, before sign-in | The bootstrap answer states the build the service runs | =iam.v1.ops.bootstrap_status= | exists |
 | Read the server version, at sign-in | The login answer states the same build in full | =iam.v1.ops.login= | exists |
 | Read the server version, on every screen | The session carries the build it was opened against | carried by the BFF route =GET /api/session= | exists |
-| Read the database fingerprint | The login answer states the database row | =iam.v1.ops.login= | missing |
+| Read the database fingerprint | The login answer states the database row | =iam.v1.ops.login= | exists |
 | Read the per-instance versions | List the latest sample of every running instance | =telemetry.v1.services.list= | exists |
 
 The server version is composed by =ores.utility::version::full_version_string()=
@@ -169,19 +168,17 @@ the session.
 The versions screen needs a hand-written BFF route like the other operations
 screens on the [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves it yet; the prototype adds
 =GET /api/operations/versions=, which reads the session's version and states
-the database from the login answer. While the answer carries no database row,
-the screen states the database as unknown.
+the database from the login answer. A session whose answer carried no row
+states the database as unknown.
 
 * What is missing
 
-1. *The login answer does not carry the database row.* The row exists and its
-   only reader is each service's startup check, which compares the fingerprint
-   and refuses to start on a mismatch. The accepted design gives it a second
-   reader: the login answer states the deployment's build already, and it must
-   state the database row beside it
-   ([[id:B7AE6C4F-5597-419D-A396-AD64D871C900][The login answer does not carry the database]]).
-   No subject of its own is needed, and the screen states *unknown* until the
-   answer carries the row.
+1. *The login answer carries the database row.* Closed by
+   [[id:9B13FEDD-E6E5-43F2-B7A9-DF5BEF9230A7][Carry the database on the login answer]]:
+   the row is read once per login and travels on the answer and the session,
+   with no subject, permission or route of its own. The versions screen still
+   reads it from the session rather than a read of its own, which the screens
+   task builds. A row that could not be read is stated as *unknown*.
 2. *The database row's audience rides the login answer.* The fingerprint names
    the commit and build environment the database was made from — build
    forensics, not customer data. Riding the login answer settles the audience

@@ -184,6 +184,7 @@ The bundle as a feature model:
 | =:rls_tenant_isolation:= | bool | false | Emit =enable row level security= + a permissive tenant-isolation policy (T1) as a trailer of the create file, and its drop in the drop file. |
 | =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
 | =:rls_system_tenant_visible:= | bool | false | Emit the *a system-tenant session sees every tenant* widening — =tenant_id = current or current = system=. Requires =:rls_tenant_isolation:=, and every use is listed by =check_rls_system_tenant_widenings.py=; read the ownership classes below before reaching for it. |
+| =:rls_own_or_system_tenant_rows:= | bool | false | Emit the shared-reference and installation-scoped policy shape — =tenant_id = current or tenant_id = system=, with writes confined to the current tenant. Requires =:rls_tenant_isolation:=, and is mutually exclusive with =:rls_system_tenant_visible:=; the guard does not flag it, because it admits only the system tenant's own rows. |
 
 *Current-state is a distinct axis from =:no_audit_columns:=.* A
 =:no_audit_columns:= entity (a TimescaleDB hypertable) drops only the
@@ -293,8 +294,8 @@ The owner decides the policy, and the three are not interchangeable:
 | Owner | Policy the table wants | How a model states it |
 |-------+------------------------+-----------------------|
 | A tenant | Own tenant only (T1). | =:rls_tenant_isolation:=, the default. |
-| The system tenant: shared reference | Own tenant *or* system-tenant rows — every tenant reads the system's, and writes stay its own. | No flag yet: hand-written as =tenant_id = current or tenant_id = system=. |
-| The installation | The same shape: the system tenant appears as a *constant*, not an owner, so the rows carry no tenant's data. | No flag yet, and it wants one. |
+| The system tenant: shared reference | Own tenant *or* system-tenant rows — every tenant reads the system's, and writes stay its own. | =:rls_own_or_system_tenant_rows:=. |
+| The installation | The same shape: the system tenant appears as a *constant*, not an owner, so the rows carry no tenant's data. | =:rls_own_or_system_tenant_rows:=. |
 | A tenant's data read from outside it | None. Act inside the tenant. | =tenant_context::with_tenant=, or internal impersonation. |
 
 =:rls_system_tenant_visible:= is *not* how a table says it is installation- or
@@ -306,6 +307,20 @@ installation's own rows; =current = system= admits everybody's. Read
 [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]
 before widening or hand-writing either.
 
+*Why the flag is named =:rls_own_or_system_tenant_rows:=, and not after
+the classes it serves.* The old hand-written idiom and the new flag must
+be told apart by name alone, because a reader who confuses them reaches
+for the flagged widening. =:rls_system_tenant_visible:= names the
+*session* — it is the system tenant that sees more — and emits =current =
+system=. The new flag names the *rows* it admits and keeps =tenant_id=
+on the left of both comparisons: =tenant_id = current or tenant_id =
+system=. So the name says what is admitted (the row's own tenant, or the
+system tenant's own rows) rather than who is asking, and it can never be
+read as a widening. It serves both ownership classes that want this
+shape, shared reference and installation, because they want the same
+rows and the same write rule; naming it after one class would invite a
+second identical flag for the other.
+
 *Row-level security emission is an explicit intent flag, not a
 consequence of having a tenant column.* The =:rls_*:= features above
 emit =enable row level security= and the matching policy blocks inline
@@ -316,8 +331,9 @@ fixes them: many tenant-column tables deliberately skip RLS
 entries in =validation_ignore.txt=), and a =party_id= column is not
 party isolation scope on its own (e.g. market_series). The emitted
 blocks are verbatim copies of the dominant hand-written shapes from
-the components' =*_rls_policies_create.sql= files (T1 tenant-only, T2
-own-or-system-tenant, T3 =restrictive= party membership). Because
+the components' =*_rls_policies_create.sql= files (T1 tenant-only, the
+own-or-system-tenant shape, the =:rls_system_tenant_visible:= widening,
+T3 =restrictive= party membership). Because
 =create policy= resolves =ores_iam_current_tenant_id_fn= at creation
 time, inline emission is only legal for components created after the
 iam section of =create/create.sql=; the pre-iam components keep their

@@ -26,11 +26,11 @@ Every include fix from the nightly run lands in the layer that owns the file: ha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:079FA16E-82FB-45AB-AA1C-A8BDF43B7E40][Keep the nightly include-cleaner out of generated files]] |
-| Now          | The PR's fixes are applied with the unsound suggestions dropped, and the fixer skips generated files. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify the changed translation units and open the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -111,3 +111,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The 49 fixes from the nightly run are applied to ores.refdata with the four
+implementation-header suggestions dropped, and =check_includes.sh= now skips
+the 5115 generated translation units and names them. All 49 changed translation
+units pass =clang++ -fsyntax-only= under the project's own flags, and the
+codegen drift gate for refdata stays clean with the whole run applied.

@@ -21,11 +21,11 @@ Every include fix from the nightly run lands in the layer that owns the file: ha
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | #2738's files are classified and applied; the fixer skips generated files. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Verify and open the PR.                |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -38,8 +38,8 @@ Every include fix from the nightly run lands in the layer that owns the file: ha
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A8B65E02-1526-4B88-84D8-007FE538908C][Scaffold story: Keep the nightly include-cleaner out of generated files]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F04483D1-9B8C-4358-91FA-FB1C77C6B72C][Separate the nightly include fixes by layer and guard generated files]] | STARTED | 2026-10-07 | | Classify the run's files by the codegen marker, apply the hand-crafted fixes, drop the suggestions that name implementation headers, and make check_includes.sh skip generated files. |
+| [[id:A8B65E02-1526-4B88-84D8-007FE538908C][Scaffold story: Keep the nightly include-cleaner out of generated files]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F04483D1-9B8C-4358-91FA-FB1C77C6B72C][Separate the nightly include fixes by layer and guard generated files]] | DONE | 2026-10-07 | 2026-10-07 | Classify the run's files by the codegen marker, apply the hand-crafted fixes, drop the suggestions that name implementation headers, and make check_includes.sh skip generated files. |
 
 * Decisions
 
@@ -61,3 +61,11 @@ Every include fix from the nightly run lands in the layer that owns the file: ha
 * Out of scope
 
 -
+
+* Result
+
+The nightly run's changes are classified by the codegen's own marker, applied
+where they are hand-crafted, and refused where they name an implementation
+header. The fixer now skips generated files and names them, so a generated
+file's includes are fixed in its archetype instead of in output the next
+regeneration overwrites. Landed with PR #2739.

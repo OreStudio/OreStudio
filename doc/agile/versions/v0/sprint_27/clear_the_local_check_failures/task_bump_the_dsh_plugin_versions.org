@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Both DSH plugin packages carry the product version.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | Not yet started.                       |
+| Now          | Both manifests declare 0.0.27 and pass their check. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the local gate and open the PR.    |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -40,9 +40,12 @@ Both DSH plugin packages carry the product version.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=check-manifest.mjs= reads the product version from =CMakeLists.txt= and fails
+when =package.json= disagrees. =CMakeLists.txt= declares =OreStudio VERSION
+0.0.27=; both plugins declared =0.0.25=. Set each =package.json= version to
+=0.0.27=. The check is deliberate, not incidental: a plugin ships with the
+product and is upgraded with it, and a missed bump installs cleanly and looks
+fine.
 
 * Measurements
 
@@ -56,9 +59,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files declaring the stale version | 2 | grep -rn 0.0.25 projects/ores.dsh_environment projects/ores.dsh_kanban | 5e7b5285b8 |
+| Product version | 0.0.27 | project(OreStudio VERSION 0.0.27 in CMakeLists.txt | 5e7b5285b8 |
 
 * Notes
+
+Both manifests pass =node scripts/check-manifest.mjs=, which also checks the
+loader headings, the client bundle's loader call, the patch file and the
+browser roster.
 
 * Test Scenarios
 

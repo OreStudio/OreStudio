@@ -2,18 +2,18 @@
 :ID: 0725298C-D015-4ECB-A72D-DE6ABD387206
 :END:
 #+title: Task: Regenerate the drifted shell scripts
-#+description: Initial task for: Clear the local-check failures on main
+#+description: Six committed shell scripts drifted from their recipes and six more the account_credential recipe produces were never committed.
 #+type: task
 #+level: s1
 #+filetags: :clear_the_local_check_failures:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/clear-the-local-check-failures
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,23 +26,36 @@ The local check gate stops failing on drift that predates any branch.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | Not yet started.                       |
+| Now          | The tangle output is committed.        |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the local gate and open the PR.    |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- The six shell scripts match what their recipes tangle to.
-- The DSH plugin package versions match the product version.
+- The six drifted scripts match what their recipes tangle to.
+- The six scripts the =account_credential= recipe produces are committed.
+- The gate's =tangle-shell= and =component-drift= checks pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The tangle is the source of truth. =./compass.sh build --direct
+tangle_shell_scripts= regenerates every script under
+=projects/ores.shell/scripts/library/= from =doc/recipes/shell/=, and on main
+it leaves twelve changes, which are the whole defect:
+
+- Six tracked scripts differ from their recipe. =report_operations
+  submit-compute= and =prepare-ore-package= gained two arguments;
+  =report_instances add=, =set= and =put-many= had two arguments reorder;
+  =account_operations save-account= lost one.
+- Six scripts are missing altogether. The =account_credential= recipe landed
+  in =f8289850b5= without its tangled output, so =account_credentials list=,
+  =get=, =get-many=, =by-account-id=, =version= and =versions= exist as
+  recipes and not as scripts.
+
+Nothing is hand-edited: the change is the tangle output, committed.
 
 * Measurements
 
@@ -56,9 +69,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Drifted tracked scripts | 6 | git status --porcelain after the tangle | 5e7b5285b8 |
+| Scripts a committed recipe produces but does not commit | 6 | git ls-files --others --exclude-standard -- projects/ores.shell/scripts/library | 5e7b5285b8 |
+| Scripts the tangle writes | 3274 | ./compass.sh build --direct tangle_shell_scripts | 5e7b5285b8 |
 
 * Notes
+
+=git diff --exit-code= cannot see a file that was never added, so before the
+untracked-files step was added to =shell-script-drift.yml= the missing
+=account_credentials= scripts were invisible to the gate. The local
+classification has no rule for =projects/ores.shell/scripts/library/**= either,
+so it falls to the =unknown= class and runs every check; both are worth a
+follow-up.
 
 * Test Scenarios
 

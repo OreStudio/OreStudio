@@ -2,10 +2,10 @@
 :ID: 4DA2D408-7141-4D8A-8476-D06EE64F44D5
 :END:
 #+title: Is a steady_timer spawned from on_started the right design for periodic work?
-#+description: Two services put recurring work in a boost::asio steady_timer loop spawned from the domain service runner's on_started callback: compute_grid_poller samples grid telemetry every interval_seconds, and the time a service is expected to be up is exactly the time its timer runs. The pattern depends on on_started being invoked, and on 2026-10-07 it was not: the inbox service started, registered its handlers and served requests, but logged no startup sequence at all -- no 'Registered N subscription(s)', no 'Service ready.', no 'Waiting for requests...' -- and neither the heartbeat publisher nor a new expiry sweeper, both spawned from that one callback, ever ran. The process was demonstrably alive, because it published entity-change events minutes later. Root cause not found. Whatever it turns out to be, the question the incident raises is whether periodic work belongs in a process-local timer at all: the scheduler component exists to fire actions at stated times, it already fires system jobs from no-tenant rows, and a job that publishes a subject survives the service restarting, is visible in the job list, can be rescheduled without a build, and does not share a fate with a lifecycle hook. The counter-argument is real and should be weighed rather than waved away: a grid sample every interval is telemetry about this running process, and reaching into the scheduler for it may be heavier than the loop. Decide which recurring behaviours belong in the job catalogue and which are genuinely process-local, and say so, so the next one is not decided by copying whichever example is nearest.
+#+description: Compute keeps two recurring behaviours and both hardcode their timing, one as a boost::asio steady_timer loop spawned from the runner's on_started callback and one as a seeded scheduler job. Neither can be tuned for a given system, and the timer's fate is tied to a lifecycle hook.
 #+type: capture
 #+level: cross
-#+filetags: 
+#+filetags: :capture:architecture:scheduler:variability:
 #+created: 2026-10-07
 #+updated: 2026-10-07
 
@@ -13,16 +13,67 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Every recurring behaviour a component owns should state *that* it recurs, and
+take *when* it recurs from a system configuration option, so that a given
+installation can tune it without a build. Concretely: the timing of each of
+these schedules becomes a setting seeded through variability with
+=ores_variability_system_settings_upsert_fn=, and the code reads it rather than
+holding a constant or a seeded cron.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Compute owns two recurring behaviours today, and both fix their timing in a
+place an operator cannot reach:
+
+- =compute_grid_poller= samples grid telemetry on =interval_seconds=, a
+  constant in the service, in a =boost::asio steady_timer= loop spawned from
+  the domain service runner's =on_started= callback.
+- =compute.v1.reap.stale_results= is a seeded scheduler job, so its cron
+  expression is reachable only by editing a populate script and recreating the
+  database.
+
+The same is true of =ores.mq.metrics_scrape=, which is the subject of
+[[id:9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77][its own capture]].
+
+Fixed behaviour is the wrong default for a schedule. How often a grid sample
+is worth taking, or how long a stale result is left before it is reaped,
+depends on the deployment: a small installation and a busy one want different
+answers, and neither wants to rebuild to get one. The variability model already
+carries system settings for exactly this kind of installation-level knob —
+=iam.token.access_lifetime_seconds= and =system.signup_requires_authorization=
+are both such keys — so the mechanism exists and is not being used here.
+
+The second reason is the one the incident raised. A timer spawned from
+=on_started= lives and dies with one lifecycle hook, and on 2026-10-07 that
+hook did not run for the inbox service at all: the service started, registered
+its handlers and served requests, but logged no startup sequence — no
+=Registered N subscription(s)=, no =Service ready.= — and neither the heartbeat
+publisher nor a new expiry sweeper, both spawned from that one callback, ever
+ran. The process was demonstrably alive, because it published entity-change
+events minutes later. Root cause not found. Whatever it turns out to be, work
+that only exists inside a timer shares a fate with a hook that can silently not
+fire.
+
+A job in the catalogue, by contrast, survives the service restarting, is
+visible in the job list, and can be rescheduled by an operator. What none of
+these shapes should be is compiled-in.
 
 * References
 
--
+- =projects/ores.compute/service/src/app/compute_grid_poller.cpp= — the timer
+  and its =interval_seconds=.
+- =projects/ores.compute/service/src/app/application.cpp= — where the poller is
+  spawned from =on_started=.
+- =projects/ores.sql/populate/compute/compute_populate.sql= — the seeded
+  =compute.v1.reap.stale_results= job and its cron expression.
+- =projects/ores.sql/populate/variability/variability_system_settings_populate.sql=
+  — the settings mechanism these schedules should use.
+- =projects/ores.scheduler/modeling/ores.scheduler.job_definition.org= — a job
+  fires either SQL or a subject, which is how a schedule reaches a service.
 
 * See also
 
--
+- [[id:9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77][The metrics scrape fixes its schedule in a seed]] — the same
+  argument for the MQ scrape.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the
+  flow that raised this, and the sweep that should take its timing from here.

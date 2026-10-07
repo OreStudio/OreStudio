@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77
+:END:
+#+title: The metrics scrape fixes its schedule in a seed
+#+description: ores.mq.metrics_scrape runs every minute because a populate script says so, and moving it means editing that script and recreating the database. How often an installation scrapes metrics is an installation-level question, so the schedule belongs in a variability system setting.
+#+type: capture
+#+level: cross
+#+filetags: :capture:scheduler:variability:metrics:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.mq.metrics_scrape= should take its schedule from a system configuration
+option rather than from the seed that happens to create it, so that an
+installation can decide how often it scrapes without a database recreate.
+
+* Why
+
+The job is seeded in
+=projects/ores.sql/populate/scheduler/scheduler_populate.sql= with everything
+about it decided in SQL:
+
+#+begin_example
+'ores.mq.metrics_scrape', 'Scrape MQ queue stats every minute',
+'SELECT ores_mq_queue_stats_scrape_fn()', '* * * * *', 'execute_sql'
+#+end_example
+
+Every minute is a reasonable default and a poor constant. A quiet development
+box and a production installation under load want different answers, and today
+neither can say so: the cron expression is reachable only by editing a populate
+script and recreating the database, which is not a knob an operator has.
+
+The mechanism for the knob already exists. Variability carries system settings,
+seeded with =ores_variability_system_settings_upsert_fn(tenant, key, value,
+type, description)= — =iam.token.access_lifetime_seconds=,
+=system.signup_requires_authorization= and =system.bootstrap_mode= are all such
+keys — and a schedule is the same kind of installation-level choice.
+
+This is the same argument as
+[[id:4DA2D408-7141-4D8A-8476-D06EE64F44D5][the compute schedules]], which is
+where it was first raised. It is filed separately because the scrape is a
+different component's job and can be moved on its own.
+
+One note for whoever does it: this job is =execute_sql= while the expiry sweep
+is =nats_publish=. The difference is deliberate — closing a request and telling
+the person who asked are one act and the notice is raised in the service,
+whereas a scrape writes what it reads. Reading the schedule from a setting does
+not change that.
+
+* References
+
+- =projects/ores.sql/populate/scheduler/scheduler_populate.sql= — the seeded
+  job, its =* * * * *= expression and its =execute_sql= action.
+- =projects/ores.sql/populate/variability/variability_system_settings_populate.sql=
+  — the settings mechanism this should use.
+
+* See also
+
+- [[id:4DA2D408-7141-4D8A-8476-D06EE64F44D5][Is a steady_timer spawned from on_started the right design for periodic work?]]
+  — the same argument for compute's two schedules.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the
+  flow that raised this, and the sweep whose timing should be a setting too.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Let an operator over-key one coordinate of a curve and withdraw it, with who key
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -86,3 +86,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered in PR 2751.
+
+An operator can now over-key one coordinate of a series and withdraw the
+over-key. =write_manual_point()= records the observation row the read returns
+and the cold annex row that names it =manual=, in one transaction. The actor
+comes from the context rather than an argument, so the auditor trail names who
+keyed the point rather than who the caller claimed to be, and the caller's
+reason code and commentary land beside it. =clear_manual_point()= closes the
+current manual row bitemporally rather than deleting it, so the history keeps
+the value the over-key replaced and the read returns the fed value again.
+
+Atomicity is the part that mattered. The two rows cannot diverge: both writes
+run inside one =unit_of_work=, one pooled connection and one transaction, and
+the single commit covers both. A failure in the annex write rolls the
+observation back with it, which the forced-failure case proves by passing a
+reason code the annex refuses and asserting the read still returns the fed
+value. This is what stops a point being silently mislabelled as quoted, since
+an observation with no annex row reads as quoted.
+
+Measured. Re-run independently of the implementer: 26 assertions across the
+four new cases, all passing. The clear test was proven to bite by making
+=clear_manual_point()= a no-op, regenerating and rebuilding, which failed the
+fed-value case with ="0.050000"= where ="0.045000"= was expected and failed
+the history case on its no-current-manual-row check; the no-op was reverted.
+Codegen drift reports no drift and the structure-note link check passes.
+
+Not done here. There is no service, wire or UI endpoint, so an operator reaches
+these operations from code rather than from the shell or a screen; that surface
+is what makes the journey real and is not yet scoped.
+

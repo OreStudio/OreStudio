@@ -207,7 +207,7 @@ is a key on the trade's booking rather than a membership table.
   CSA at a time.
 - Moving a trade to another set is a change to the trade's booking and
   is versioned with it. Re-papering — moving a population of trades to
-  a new agreement — is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity,
+  a new agreement — is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade group]] with an identity,
   because an operation attaches to the population as a whole.
 
 ** Not to be confused with operational netting
@@ -257,7 +257,7 @@ rules are this page's own analysis.
 * See also
 
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a netting set is a set whose identity is the netting set itself.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — why a netting set is a set whose identity is the netting set itself.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] — the envelope that names a trade's netting set.
 - [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] — deal and expiry netting, which share the word only.
 - [[id:04C68B55-E0B5-41CD-B90E-D670C17530B6][Risk Reporting]] — the reports exposure feeds.

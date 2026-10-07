@@ -37,10 +37,10 @@ told from one that read two. Undo and repeat both need to know what the
 inputs were *and at which time point the process read them*, because a
 repeat has to reconstruct the same input set rather than today's.
 
-[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]]
-already states what an act must carry — identity, provenance, explicit
-roles, created together, and undone as a whole. What is missing is the
-run that those properties hang on.
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]]
+now states what a trade group is: a trade set created for a run of a
+process, with the run supplying the identity, the provenance, the roles
+and the undo. What is missing is the run itself.
 
 * Approach
 
@@ -68,10 +68,11 @@ beside it rather than behind it.
 
 * References
 
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — the act's properties, and the test a set must pass.
-- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the group that is also a product, and why it is not a run.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the trade group, and the test a set must pass.
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] — the set a run creates, and the roles its process fixes.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the trade set that is also a product, and why it is not a run.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the catalogue of relations between trades, including the groups.
-- [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]], [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] and [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the acts with the most structure.
+- [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]], [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] and [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the trade groups with the most structure.
 - [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] and [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] — the two candidate pilots.
 
 * See also

@@ -214,8 +214,9 @@ an official report cannot include any sandbox.
 
 ** Imports
 
-An import is an act with an identity: who ran it, when, from what
-source, and what it created (see [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]]).
+An import is a run of a process with an identity: who ran it, when, from
+what source, and what it created (see
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]]).
 
 - /An import to inspect, reconcile or rehearse/ runs into a sandbox
   whose purpose is import, anchored where the importing team works. It

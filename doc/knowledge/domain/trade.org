@@ -29,10 +29,10 @@ every change.
 *What does it need, and what does it become?* Market data in order to
 be valued, and a position once aggregated with its neighbours.
 
-*What does it link to, and what does it belong to?* Other trades,
-sets and groups. A trade belongs to sets through its attributes — its
-book, its counterparty, its netting set — and to groups that operations
-create: a structure, a merge, a compression. A
+*What does it link to, and what does it belong to?* Other trades, and
+sets of trades. A trade belongs to sets through its attributes — its
+book, its counterparty, its netting set — and to a set a process
+created: a merge, a compression, a funding roll. A
 [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][trade link]] records every
 other relation, with a type that names the reason.
 
@@ -146,10 +146,19 @@ or not its terms have been confirmed.
 
 ** What a trade belongs to
 
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and
-  links]] — start here. The three ways trades relate, the test that
-  tells them apart, and why a set's entity and every group carry an
-  identity of their own.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade
+  groups]] — start here. The primitive, the test that separates the
+  kinds, and the taxonomy: every way a collection of trades comes into
+  being, and what an operation adds to it.
+
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]],
+  [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]] and
+  [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] — the
+  primitive, how its membership is resolved, and why the nested sets
+  are part of a trade's identity.
+
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] — the set a
+  run of a process creates, and the roles the process fixes.
 
 - [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the
   trades whose values may legally offset for credit exposure: the

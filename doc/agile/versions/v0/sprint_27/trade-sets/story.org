@@ -15,7 +15,11 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Lay the domain knowledge of grouping trades on one foundation. A trade
+set is the primitive: a well-defined set of trades. A trade group is the
+set a run of a process creates, a structure is the set that is also a
+product, and a link is neither. Batching, every process and every report
+then stands on a stated model rather than an assumed one.
 
 * Status
 
@@ -23,14 +27,14 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | The cluster is written and the taxonomy diagram renders. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Review the pages, then open the PR.    |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
 
-- The grouping vocabulary is stated once, in one place: trade set, membership, the set of sets, act, structure and link.
+- The grouping vocabulary is stated once, in one place: trade set, trade group, structure and link.
 - A taxonomy diagram shows how the groupings relate to each other and to the constructs above them.
 - Each document names what it excludes, so batching, the processes and the reports keep their own homes.
 
@@ -39,7 +43,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:3BB2CFD1-8E91-4AAA-BFC0-78A2D8C2624E][Scaffold story: Define the trade set model]] | STARTED | 2026-10-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8DE41619-363C-4F8A-A99C-C39DF5DDD028][Write the trade set knowledge documents]] | BACKLOG | | | Initial task for: Define the trade set model |
+| [[id:8DE41619-363C-4F8A-A99C-C39DF5DDD028][Write the trade set knowledge documents]] | STARTED | 2026-10-07 | | Write the trade-set cluster: the primitive, its membership, the nesting test, the trade group and its run, the taxonomy diagram, and the rewiring of the documents that carried the old vocabulary. |
 
 * Decisions
 

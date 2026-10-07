@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :trade-sets:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trade-sets
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,22 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Lay the domain knowledge of grouping trades on one foundation. A trade
+set is the primitive, a trade group is the set a run of a process
+creates, a structure is the set that is also a product, and a link is
+neither. Write that down once, with the taxonomy, so that batching, the
+processes and the reports are built on a stated model rather than an
+assumed one.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] |
-| Now          | Not yet started.                       |
+| Now          | The cluster is written and the taxonomy diagram renders. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review the pages, then open the PR.    |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
-- The grouping vocabulary is stated once, in one place: trade set, membership, the set of sets, act, structure and link.
+- The grouping vocabulary is stated once, in one place: trade set, trade group, structure and link.
 - A taxonomy diagram shows how the groupings relate to each other and to the constructs above them.
 - Each document names what it excludes, so batching, the processes and the reports keep their own homes.
 

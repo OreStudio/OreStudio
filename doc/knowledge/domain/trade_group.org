@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B
+:END:
+#+title: Trade group
+#+description: A trade set created for a run of a process. The foreign key to the run, the two levels of role the process declares, the catalogue of processes, and the mathematical root of the word with its limits.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_groups:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+A trade group is a trade set created for a run of a process. It differs
+from every other set in one way: the context that defines it is an
+operation. The group carries a foreign key to the run, the run is an
+instance of the process, and the process decides which roles are
+available at both levels. A funding roll and a compression each produce
+an input group and an output group. A batch produces a single group and
+gives its members no role at all.
+
+* Detail
+
+** What makes a set a group
+
+An operation. Every other [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][trade set]] exists because something
+in the business names it: a book, a netting agreement, a structure. A
+trade group exists because a process ran.
+
+Earlier notes on this cluster called the same concept an /act/. This page
+uses the name the domain uses.
+
+** The chain
+
+A /process/ is a kind of operation, such as a funding roll or a
+compression. A /run/ is one instance of it, with an identity, a time and
+an actor. A /trade group/ is a trade set created for one run. Membership
+is the rows of that group, each naming a trade and the role it played.
+
+The group carries the foreign key to the run, and the run carries the
+foreign key to the process. That key is not bookkeeping. It is what makes
+the inputs, the outputs and the undo reachable from one another, and it
+is what determines the roles.
+
+** Roles come from the process, at two levels
+
+| Level | Batching | Funding roll | Compression |
+|-------+----------+--------------+-------------|
+| The group's role in its run | one group, no role | =input=, =output= | =input=, =output= |
+| The trade's role in its group | none; membership only | =generated= | =terminated=, =partially terminated=, =replacement= |
+
+The foreign key to the run fixes the vocabulary. The role column's
+allowed values belong to the process, not to a global list, so a batch's
+members carry no role and a funding run's groups have to be told apart.
+
+A batch is the case that shows the rule. It selects trades and values
+them, and it says nothing about what any of them is. It reads and writes
+no trade, so it needs one group and has no second group to tell apart,
+and its members carry no role.
+
+** Input and output are read and write, and they overlap
+
+The two group roles say what the run did with the set. =input= is what
+the run read and =output= is what it wrote. They are a property of the
+run's reading and writing rather than a partition of the trades, so a
+trade can be in both.
+
+Compression is the case that shows it. A negotiated run terminates some
+trades in full, reduces others, and creates replacements. A terminated
+trade is in the input only, a reduced trade is in both because the same
+trade survives with a smaller notional, and a replacement is in the
+output only. The member's role says which, so the role and the groups a
+trade belongs to have to agree. [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] gives the
+mechanics.
+
+Compression does not always cancel the population out. It preserves net
+risk, so where the population's net exposure is not zero the output
+carries it, as surviving trades or as replacements. Even the firm's own
+tear-up process books a deal for each trade it removes. Netting is the
+opposite case: it refuses a residual, where compression absorbs one.
+
+** The processes
+
+| Process | What a run does | The trade's role in its group | Detail |
+|---------+-----------------+-------------------------------+--------|
+| Batching | Partitions a trade set for valuation or for a report | none; membership only | [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] |
+| Compression | Replaces offsetting trades with fewer trades of the same net risk | terminated, partially terminated, replacement | [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] |
+| Merge | Combines several trades into one | contributor, result, bridge | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
+| Allocation | Splits a block trade across the accounts it was dealt for | block, allocation, bridge | [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] |
+| Funding roll | Rolls a book's currency balances to the next day | generated | [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]] |
+| Sweep run | Centralises residual balances | generated | [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] |
+| Cleardown | Resets book results at a period boundary | generated | [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] |
+| Bulk book move | Moves many trades to another book in one operation | moved | [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] |
+| Import | Brings trades, market data and configuration into a sandbox | created | [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] |
+
+A run of a process that writes no trade still produces a group, because
+the set it read is the thing a repeat has to reconstruct.
+
+** Run properties are the process's, not the group's
+
+What a run promises follows from what a run of that process does, so the
+process declares it.
+
+A funding roll creates and ends trades. Its run has to create them
+together or not at all, and it has to be undoable as a whole, and the undo
+has to leave profit and loss where it was. A batch changes no trade, so
+there is nothing to create together, nothing to undo, and no economic
+effect to reverse.
+
+Putting either obligation on the group would give a batch a funding roll's
+duties. Putting them on the process gives each run the promises its own
+kind of operation can keep.
+
+** The mathematical root, and its limit
+
+In mathematics a /group/ is a set together with a binary operation that
+satisfies closure, associativity, and the existence of an identity and
+inverses. The weakest rung of the same idea is a /magma/, which is a set
+with a binary operation and no axioms at all. Both take the operation to
+be closed on the set and to combine two members into one.
+
+A process does not do that. It reads a trade set and writes a trade set,
+which is a function from the collection of trade sets to itself. The
+mathematical reading is a transition rather than an operation, and the
+structure is a transition system: states, and the moves between them. The
+word "group" is right for the set-plus-operation idea and wrong for the
+algebra those axioms describe.
+
+The clearest evidence that the axioms do not hold is already in the
+analysis notes on netting: netting is not allowed if there is a residual.
+A residual is the operation failing to close.
+
+** What follows for the model
+
+- A group is a table with a key and a foreign key to its run.
+- Membership is a table keyed by the group and the trade, with the role
+  column whose values the process fixes.
+- A process declares the group-level roles and the trade-level roles a run
+  of it may use.
+- Undo belongs to the run, so it reverses a run rather than deleting a
+  group.
+
+* Sources
+
+- The process catalogue and the trade-level roles come from the internal
+  analysis notes on structures, deal composition and bulk trade
+  processing.
+- [[https://en.wikipedia.org/wiki/Group_(mathematics)][Group (mathematics)]] — the definition and its axioms.
+- [[https://en.wikipedia.org/wiki/Magma_(algebra)][Magma (algebra)]] — a set with a binary operation and no axioms.
+
+* See also
+
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the hub that orders this cluster.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] — the primitive, and the contexts beside an operation.
+- [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]] — why a group records its members and their time point.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] — why a group's membership is not part of a trade's identity.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the set that is a product rather than a run.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the relations that are not groups.
+- [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the stamp an amendment carries, which is not the run.

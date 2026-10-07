@@ -38,22 +38,23 @@ deal as one row and the legs as children of it. The confirmer needs to
 know which changes to the legs the customer must agree to again. The
 ledger and the netting engine need the leaves, not the container.
 
-Loose usage of the words causes defects. "Structure", "group" and "set"
-are not synonyms:
+Loose usage of the words causes defects. "Structure", "trade group" and
+"trade set" are not synonyms:
 
 - A /structure/ binds its parts economically. The parts have roles, and
   the whole prices differently from the sum of the parts. A straddle is
-  a structure.
-- A /group/ is a set of trades associated with an operation, such as
-  authorise, cancel or compress. It has an identity of its own, and it
-  is not a product. A compression run is a group.
-- A /set/ is an assortment of trades that share an attribute, with no
-  operation attached. The trades in a book are a set.
+  a structure. It is a trade set that is also a product.
+- A /trade group/ is a trade set created for a run of a process, such as
+  a compression, an allocation or a funding roll. It has an identity of
+  its own, and it is not a product.
+- A /trade set/ is any set of trades, defined by a context. The trades
+  in a book are a set, and so are a structure's legs.
 
-Reserve "structure" for the first case: a structure is a product
-implemented as a group. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] states the
-test that separates the three, and why each group and the entity
-behind each set is modelled with an identity of its own.
+A structure is a trade set rather than a degenerate trade group: the same
+trades can be read either way, and the structure adds a product on top of
+the set. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] states the
+test that separates the three, and why the context's entity and every
+trade group is modelled with an identity of its own.
 
 ** The composition ladder
 
@@ -202,13 +203,14 @@ Split, link, unstructure and lock change only what the system records
 about the deal. Merge, roll and any change to a term change the deal
 itself, and they travel to the customer as a confirmation.
 
-** Structures among groups and links
+** Structures among sets, groups and links
 
-A structure is the strongest relation between trades, and it is a
-group rather than a link: it has an identity of its own, and its legs
-reference it. [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] sets out the
-difference, and the other groups — merges, compressions, allocations
-and process runs.
+A structure is the strongest relation between trades. It is a trade set
+whose context is a product, so it is not a link: it has an identity of
+its own, and its legs reference it.
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] sets out the
+difference, and the trade groups beside it, which a compression, a merge
+or a funding roll creates.
 
 Trades are also related by links that hold nothing — close-outs,
 novations, rolls, exercises, fixings, book moves and the rest — which
@@ -374,8 +376,8 @@ Development on structures should ground on four rules:
   satisfies.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the
   catalogue of links between trades.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a structure
-  is a group, and the other groups beside it.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — why a
+  structure is a trade set, and the trade groups beside it.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
   operate on a structure.
 - [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional

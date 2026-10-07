@@ -152,10 +152,10 @@ This section is analysis rather than reported practice.
 - /Undo is a version./ Undoing a move is a further version of the
   booking that restores the source book, with its own reason; the
   erroneous version stays in the record.
-- /Bulk moves are a group./ A bulk move of many trades is one operation
-  over a set of trades, so it is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an
-  identity: who moved them, when, why, and whether historic cash flows
-  moved.
+- /Bulk moves are one trade group./ A bulk move of many trades is one
+  operation over a set of trades. The trades it moved are one
+  [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade group]], and the run records who moved them, when,
+  why, and whether historic cash flows moved.
 
 * Sources
 

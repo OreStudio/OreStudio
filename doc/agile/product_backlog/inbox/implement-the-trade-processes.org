@@ -18,7 +18,7 @@ implements none of them. Implement them, one at a time, starting with a
 single pilot.
 
 The processes, as
-[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]]
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]]
 names them:
 
 | Process | What it does | Roles of the trades | Detail |
@@ -55,14 +55,14 @@ the tree that describes them and both run over a population rather than
 over a pair of trades.
 
 Each process brings the same shape: an input set, an output set, the
-attributes of that kind of act in its own table, and a stamp on every
+attributes of that kind of run in its own table, and a stamp on every
 trade amendment it generates.
 
 * References
 
 - [[id:A7381409-AFD0-4F0E-BAB4-61CD35341AA8][Trace a process run over a set of trades]] — the run table, its state machine and the keys that make a run undoable and repeatable.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — what an act is, and the properties every one of these carries.
-- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the standing group these acts are not.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — what a trade group is, and that a run's properties depend on its process.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the trade set that is also a product, and is therefore not a trade group.
 
 * See also
 

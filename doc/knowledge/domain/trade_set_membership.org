@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 55269F2C-18DD-4A33-B1CE-770EF5F56BB5
+:END:
+#+title: Trade set membership
+#+description: How a context resolves the membership of a set: by derivation from trade attributes or from a recorded list, and how membership holds at a point in time.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_groups:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+A context resolves membership in one of two ways. Derivation reads the
+trades' own attributes, so the set is a query and stores nothing.
+Recording writes a row per member, so the set has a key and holds still.
+Every set is read at a point in time, and that time is part of the
+definition rather than a filter applied after the fact.
+
+* Detail
+
+** Derived membership
+
+A derived set is a predicate over trade attributes. The trades in a book
+are the trades whose book is that book. The predicate is the whole of the
+set's definition, and nothing is stored for the set itself.
+
+Two consequences follow. The set is always current, because the next read
+evaluates the predicate again. And the set cannot be referred to on its
+own, because it has no key beyond the context's entity.
+
+** Recorded membership
+
+A recorded set is a list. It holds one row per member, and it is the rows
+that make the set, not any attribute of the trades in it. A recorded set
+of trades that share nothing is a perfectly good set.
+
+The list is what lets the set be read later. A batch that selected a
+thousand trades in the morning must value those thousand trades in the
+afternoon, even if a hundred of them were cancelled in between.
+
+** Why both exist
+
+A derived set answers "what is in this book now". A recorded set answers
+"which trades did this run read". The first answer must move, or the
+book would be wrong. The second must not, or the run could not be
+described after the fact. A run that recomputed its input later would
+read a different set, and the difference would be invisible.
+
+** The point in time
+
+A derived set read twice gives two answers, and neither is wrong. The
+time of the reading belongs to the reading, not to the set.
+
+For that reason a set that a [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]] records carries the moment it
+was read. A process that read a hundred trades and changed two has to be
+distinguishable from one that read two, and a repeat has to reconstruct
+the same input rather than take today's. Recording the membership is the
+mechanism, and the time point is the part of it that makes the record
+mean something.
+
+** Where membership lives
+
+- A derived set is a key on the trade's booking. There is no membership
+  table, and the [[id:80760020-5896-4C1C-805D-87B93982F0C0][nesting]] rule decides whether
+  that key is part of the trade's identity.
+- A recorded set is a membership table, keyed by the set and the trade.
+
+** How membership changes
+
+A trade joins a book when someone books it there, and leaves when the
+book changes. That change is versioned with the rest of the booking, as
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] describes.
+
+A trade leaves a derived set of live trades when it expires or is
+cancelled, and nobody writes to the set to make that happen. The set
+moved because its predicate moved.
+
+A recorded set never changes. It is superseded by a new reading, or it
+goes away with the record that owns it. Editing the list would destroy
+the only evidence of what was read.
+
+** What follows for the model
+
+- Derivation costs a query at read time and no storage.
+- Recording costs storage and gives a stable, referable set.
+- A recorded set that must be undone belongs to a record that can be
+  undone, rather than to a delete.
+
+* Sources
+
+The derived-versus-recorded split and the time-point rule are this page's
+synthesis, from the internal analysis notes on process runs and the
+requirement that a run be repeatable.
+
+* See also
+
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the hub that orders this cluster.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] — the primitive this page resolves membership for.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] — how a derived membership becomes part of a trade's identity.
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] — the recorded set a run leaves behind.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — how a change of book is recorded on the trade.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — why a stored relationship is a row and a derived one is a key.

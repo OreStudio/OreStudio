@@ -37,13 +37,20 @@ namespace ores::marketdata::domain {
  * @brief Per-observation provenance -- which config/version/source produced a derived observation's
  * generation.
  *
- * Per-observation provenance for a *derived* market_observation row: which
- * derivation config/version produced it, and which upstream source
- * series/as-of it read. Written only alongside a derived observation --
- * never for the common OBSERVED case, and never as a column on
+ * Per-observation provenance for a bare market_observation row whose source
+ * is not the market's own quote: which derivation config/version produced it,
+ * and which upstream source series/as-of it read, or -- for a point an operator
+ * keyed by hand -- which kind of point it is, who keyed it and why. Written
+ * never for the common quoted case, and never as a column on
  * market_observations_tbl itself (a TimescaleDB hypertable explicitly
  * documented as carrying no audit columns because tick-level volumes make
- * that impractical). A row's existence *is* the "derived" marker.
+ * that impractical).
+ *
+ * point_source_kind names the two kinds that carry an annex row: derived
+ * for a point a derivation created, and manual for one keyed by hand.
+ * *Quoted is the absence of a row*, so a quoted tick keeps writing one row to
+ * the hot hypertable and nothing else; the invariant this rests on is that a
+ * point a derivation created always has an annex row.
  *
  * Deliberately generic, not curve-specific: this is what lets CRM's own
  * derived-cross publishing (currently pull-only -- see the CRM
@@ -108,10 +115,19 @@ struct observation_lineage final {
     std::string oresmd_uri = "";
 
     /**
-     * @brief The derivation config (soft reference; table depends on the owning
-     * market_series.derivation_kind) that produced this observation.
+     * @brief Which kind of point this annex row describes: derived for a point a derivation
+     * created, manual for one keyed by hand. The two values are validated by a check constraint. A
+     * point with no annex row is quoted, which is the absence of a row rather than a third stored
+     * value.
      */
-    boost::uuids::uuid derivation_config_id;
+    std::string point_source_kind = "derived";
+
+    /**
+     * @brief The derivation config (soft reference; table depends on the owning
+     * market_series.derivation_kind) that produced this observation. Null for a manual point, which
+     * was not produced by any derivation.
+     */
+    std::optional<boost::uuids::uuid> derivation_config_id;
 
     /**
      * @brief The derivation config's version this observation was produced under.
@@ -121,15 +137,16 @@ struct observation_lineage final {
     /**
      * @brief The upstream source data's as-of timestamp this derivation read (e.g. the raw
      * instrument grid's as-of for a curve bootstrap, or the oldest contributing driver tick's
-     * timestamp for a CRM triangulation).
+     * timestamp for a CRM triangulation). Null for a manual point, which read no upstream source.
      */
-    std::chrono::system_clock::time_point source_as_of;
+    std::optional<std::chrono::system_clock::time_point> source_as_of;
 
     /**
      * @brief Serialised JSON array of the upstream market_series ids this observation was derived
      * from (e.g. the raw series for a Funding curve bootstrap; the raw series plus the discount
      * curve's own output series for a Projection curve bootstrap; the walked driver series for a
-     * CRM triangulation).
+     * CRM triangulation). Empty ([]) for a manual point, which read no upstream series; the check
+     * admits the empty array while still refusing a value that is not a JSON array.
      */
     std::string source_series_ids;
 

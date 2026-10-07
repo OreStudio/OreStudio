@@ -141,15 +141,16 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <derivation_config_id> "
-        "<derivation_config_version> <source_as_of> <source_series_ids> <reason> <commentary>");
+        "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <point_source_kind> "
+        "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
+        "set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <point_source_kind> "
         "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
         "<reason> <commentary> [--version <n>]");
 
@@ -159,8 +160,8 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
-        "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
-        "<reason> <commentary>");
+        "<point_source_kind> <derivation_config_id> <derivation_config_version> <source_as_of> "
+        "<source_series_ids> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -354,8 +355,8 @@ void observation_lineage_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -366,6 +367,8 @@ void observation_lineage_commands::process_add(std::ostream& out,
                    parsed->positionals[next++],
                    "observation_datetime");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        read_token(
+            req.change.write.point_source_kind, parsed->positionals[next++], "point_source_kind");
         read_token(req.change.write.derivation_config_id,
                    parsed->positionals[next++],
                    "derivation_config_id");
@@ -417,8 +420,8 @@ void observation_lineage_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -429,6 +432,8 @@ void observation_lineage_commands::process_set(std::ostream& out,
                    parsed->positionals[next++],
                    "observation_datetime");
         read_token(req.change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+        read_token(
+            req.change.write.point_source_kind, parsed->positionals[next++], "point_source_kind");
         read_token(req.change.write.derivation_config_id,
                    parsed->positionals[next++],
                    "derivation_config_id");
@@ -492,8 +497,8 @@ void observation_lineage_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -506,6 +511,8 @@ void observation_lineage_commands::process_put_many(std::ostream& out,
                        parsed->positionals[next++],
                        "observation_datetime");
             read_token(change.write.oresmd_uri, parsed->positionals[next++], "oresmd_uri");
+            read_token(
+                change.write.point_source_kind, parsed->positionals[next++], "point_source_kind");
             read_token(change.write.derivation_config_id,
                        parsed->positionals[next++],
                        "derivation_config_id");

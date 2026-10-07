@@ -20,10 +20,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.api/generators/observation_lineage_generator.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
@@ -128,6 +131,47 @@ make_observation(ores::utility::generation::generation_context& ctx,
     o.observation_datetime = observation_datetime;
     o.value = std::to_string(value);
     return o;
+}
+
+// The cold annex row that stamps a point's provenance. A manual point carries
+// no derivation config and reads no source series, so the two nullable columns
+// are cleared and the source list is the empty JSON array the relaxed check
+// admits; a derived point carries all three.
+ores::marketdata::domain::observation_lineage
+make_lineage(ores::utility::generation::generation_context& ctx,
+             const ores::marketdata::domain::market_observation& obs,
+             const std::string& point_source_kind) {
+    auto l = generate_synthetic_observation_lineage(ctx);
+    l.party_id = obs.party_id;
+    l.series_id = obs.series_id;
+    l.observation_datetime = obs.observation_datetime;
+    l.oresmd_uri = obs.oresmd_uri;
+    l.point_source_kind = point_source_kind;
+    if (point_source_kind == "manual") {
+        l.derivation_config_id = std::nullopt;
+        l.source_as_of = std::nullopt;
+        l.source_series_ids = "[]";
+    } else {
+        l.derivation_config_id = ctx.generate_uuid();
+        l.source_as_of = ctx.past_timepoint();
+        l.source_series_ids = R"(["00000000-0000-0000-0000-000000000001"])";
+    }
+    l.change_reason_code = "system.test";
+    l.change_commentary = "curve point provenance test";
+    return l;
+}
+
+// How a reader classifies a point's source kind: a point with no annex row is
+// quoted, and an annex row names one of the other two. Kept here so the
+// assertion reads the design's own vocabulary.
+std::string reported_source_kind(
+    ores::marketdata::repository::observation_lineage_repository& lineage_repo,
+    market_observation_repository::context ctx,
+    const boost::uuids::uuid& series_id,
+    const ores::marketdata::domain::market_observation& obs) {
+    const auto lineage = lineage_repo.read_latest_by_observation(
+        ctx, series_id, obs.observation_datetime, obs.oresmd_uri);
+    return lineage ? lineage->point_source_kind : std::string("quoted");
 }
 
 }
@@ -255,4 +299,148 @@ TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
     CHECK(buckets[0].front().value == "0.040000");
     CHECK(buckets[1].front().value == "0.040100");
     CHECK(buckets[2].front().value == "0.040200");
+}
+
+TEST_CASE("read_as_of_manual_point_is_readable_and_reports_manual", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    auto manual = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0500);
+    obs_repo.insert(h.context(), manual);
+    const auto lineage = make_lineage(ctx, manual, "manual");
+    lineage_repo.write(h.context(), lineage);
+
+    const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(snapshot.size() == 1);
+    CHECK(snapshot.front().value == "0.050000");
+    CHECK(snapshot.front().oresmd_uri == datum_uri("SPOT-1M"));
+
+    // The annex is what reports the kind, and it names who keyed the point,
+    // why, and the bitemporal instant it was keyed.
+    const auto read = lineage_repo.read_latest_by_observation(
+        h.context(), s.id, manual.observation_datetime, manual.oresmd_uri);
+    REQUIRE(read.has_value());
+    CHECK(read->point_source_kind == "manual");
+    CHECK(read->modified_by == lineage.modified_by);
+    CHECK(read->change_reason_code == "system.test");
+    CHECK(read->change_commentary == "curve point provenance test");
+    CHECK_FALSE(read->derivation_config_id.has_value());
+    CHECK_FALSE(read->source_as_of.has_value());
+    CHECK(read->source_series_ids == "[]");
+}
+
+TEST_CASE("read_as_of_derived_point_reports_derived", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    auto derived = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0410);
+    obs_repo.insert(h.context(), derived);
+    lineage_repo.write(h.context(), make_lineage(ctx, derived, "derived"));
+
+    const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(snapshot.size() == 1);
+    CHECK(snapshot.front().value == "0.041000");
+
+    CHECK(reported_source_kind(lineage_repo, h.context(), s.id, derived) == "derived");
+}
+
+TEST_CASE("read_as_of_quoted_point_without_annex_row_reports_quoted", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    // A quoted tick: a hot observation row and nothing in the cold annex.
+    auto quoted = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    obs_repo.insert(h.context(), quoted);
+
+    const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(snapshot.size() == 1);
+    CHECK(snapshot.front().value == "0.040000");
+
+    CHECK_FALSE(
+        lineage_repo
+            .read_latest_by_observation(
+                h.context(), s.id, quoted.observation_datetime, quoted.oresmd_uri)
+            .has_value());
+    CHECK(reported_source_kind(lineage_repo, h.context(), s.id, quoted) == "quoted");
+}
+
+TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto keyed_at = t0 + std::chrono::minutes(10);
+    const auto feed_after = t0 + std::chrono::minutes(20);
+
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    auto manual = make_observation(ctx, s.id, "SPOT-1M", keyed_at, 0.0500);
+    obs_repo.insert(h.context(), manual);
+    lineage_repo.write(h.context(), make_lineage(ctx, manual, "manual"));
+    // The automatic write that would silently undo the manual point.
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", feed_after, 0.0450));
+
+    // Before the manual point was keyed, the fed value stands.
+    const auto before =
+        obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(5));
+    REQUIRE(before.size() == 1);
+    CHECK(before.front().value == "0.040000");
+
+    // After it, the manual point owns the coordinate whatever the feed writes.
+    const auto after = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(30));
+    REQUIRE(after.size() == 1);
+    CHECK(after.front().value == "0.050000");
+    CHECK(after.front().value != "0.045000");
+
+    // The bucketed evolution agrees from the manual write onward, and the
+    // earlier bucket keeps the fed value.
+    const auto buckets = obs_repo.read_as_of_buckets(
+        h.context(), s.id, t0 + std::chrono::minutes(30), std::chrono::minutes(10), 4);
+    REQUIRE(buckets.size() == 4);
+    REQUIRE(buckets[0].size() == 1);
+    REQUIRE(buckets[1].size() == 1);
+    REQUIRE(buckets[2].size() == 1);
+    REQUIRE(buckets[3].size() == 1);
+    CHECK(buckets[0].front().value == "0.040000");
+    CHECK(buckets[1].front().value == "0.050000");
+    CHECK(buckets[2].front().value == "0.050000");
+    CHECK(buckets[3].front().value == "0.050000");
 }

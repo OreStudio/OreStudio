@@ -39,6 +39,32 @@ namespace ores::security::jwt {
 inline constexpr std::string_view party_selection_audience = "select_party_only";
 
 /**
+ * @brief One object grant inside a storage capability.
+ *
+ * A capability names the buckets and key prefixes a node may reach and the
+ * operations it may perform, so the storage service answers an object-scoped
+ * question without asking IAM for the caller's permissions. It is the
+ * capability the Storage policy page describes: a node holds one for the job
+ * it is running and nothing else.
+ */
+struct storage_grant final {
+    /**
+     * @brief The bucket the grant names.
+     */
+    std::string bucket;
+
+    /**
+     * @brief The key prefix the grant is confined to.
+     */
+    std::string key_prefix;
+
+    /**
+     * @brief The operations allowed: get, put, delete or list.
+     */
+    std::vector<std::string> ops;
+};
+
+/**
  * @brief Represents the claims extracted from a JWT token.
  */
 struct jwt_claims final {
@@ -154,6 +180,15 @@ struct jwt_claims final {
      * two runs under one grant never share a token.
      */
     std::optional<std::string> run_id;
+
+    /**
+     * @brief Object grants a storage capability allows, when the token is one.
+     *
+     * A session or run token carries none and reaches storage by its
+     * permissions. A capability carries them and reaches only the objects they
+     * name, so a node never holds a caller's whole authority.
+     */
+    std::vector<storage_grant> storage_grants;
 
     /**
      * @brief Create a claims object with issued_at set to now and

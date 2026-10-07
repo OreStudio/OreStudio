@@ -30,6 +30,33 @@ namespace ores::security::jwt {
 using json_traits = ::jwt::traits::boost_json;
 using namespace ores::logging;
 
+namespace {
+
+/**
+ * @brief Reads the object grants a storage capability carries, if it carries any.
+ *
+ * A session or run token names none, and the caller falls back to permissions.
+ */
+template <typename Decoded>
+void read_storage_grants(const Decoded& decoded, jwt_claims& claims) {
+    if (!decoded.has_payload_claim("storage_grants"))
+        return;
+    for (const auto& entry : decoded.get_payload_claim("storage_grants").as_array()) {
+        const auto& object = entry.as_object();
+        storage_grant grant;
+        if (const auto* bucket = object.if_contains("bucket"))
+            grant.bucket = std::string(bucket->as_string());
+        if (const auto* prefix = object.if_contains("prefix"))
+            grant.key_prefix = std::string(prefix->as_string());
+        if (const auto* ops = object.if_contains("ops"))
+            for (const auto& op : ops->as_array())
+                grant.ops.push_back(std::string(op.as_string()));
+        claims.storage_grants.push_back(std::move(grant));
+    }
+}
+
+}
+
 jwt_authenticator jwt_authenticator::create_hs256(const std::string& secret,
                                                   const std::string& issuer,
                                                   const std::string& audience) {
@@ -203,6 +230,8 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(const std::stri
         if (decoded.has_payload_claim("run_id"))
             claims.run_id = decoded.get_payload_claim("run_id").as_string();
 
+        read_storage_grants(decoded, claims);
+
         BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: " << claims.subject
                                    << ", roles: " << claims.roles.size();
 
@@ -334,6 +363,8 @@ jwt_authenticator::validate_allow_expired(const std::string& token) const {
             claims.grant_id = decoded.get_payload_claim("grant_id").as_string();
         if (decoded.has_payload_claim("run_id"))
             claims.run_id = decoded.get_payload_claim("run_id").as_string();
+
+        read_storage_grants(decoded, claims);
 
         BOOST_LOG_SEV(lg(), debug)
             << "JWT claims extracted (allow expired), subject: " << claims.subject;
@@ -467,6 +498,22 @@ std::optional<std::string> jwt_authenticator::create_token(const jwt_claims& cla
         if (claims.run_id) {
             token = token.set_payload_claim(
                 "run_id", ::jwt::basic_claim<json_traits>(std::string(*claims.run_id)));
+        }
+
+        if (!claims.storage_grants.empty()) {
+            boost::json::array grants;
+            for (const auto& grant : claims.storage_grants) {
+                boost::json::array ops;
+                for (const auto& op : grant.ops)
+                    ops.push_back(boost::json::value(op));
+                boost::json::object entry;
+                entry["bucket"] = grant.bucket;
+                entry["prefix"] = grant.key_prefix;
+                entry["ops"] = std::move(ops);
+                grants.push_back(std::move(entry));
+            }
+            token = token.set_payload_claim("storage_grants",
+                                            ::jwt::basic_claim<json_traits>(grants));
         }
 
         std::string signed_token;

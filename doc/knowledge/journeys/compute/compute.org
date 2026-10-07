@@ -103,6 +103,86 @@ Drain a node for maintenance, requeue stuck work, stop a runaway.
 *Deferred.* This is control, not observation, and the Operations area's mode
 is reading. It may belong with the scheduler journeys.
 
+* The charts a grid needs
+
+A grid read as tables is a grid nobody can read. The house wants the *Data &
+Analysis* direction here — chart-optimised, numbers first-class — and most of
+these charts are the grid's idioms rather than inventions: every cluster
+dashboard has a node heatmap and a job timeline, and an operator expects them.
+
+Each is named with the question it answers, so a screen can omit a chart only
+by deciding the question does not matter.
+
+** Watching the grid
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Node load heatmap* | Which node was hot, and when? | one row per node, one column per interval, colour = work done in that interval |
+| *Node state ribbon* | Which node was quiet, lost or draining? | one row per node, bands over time |
+| *Load over time* | How much work is in flight, and of what sort? | stacked area over the result states |
+| *Fleet size* | How many nodes do I have, and how many are up? | area over total, online and idle |
+| *Throughput* | How much is finishing? | bar per interval |
+| *Outcomes* | Is it succeeding? | stacked bar over success, client error, no reply |
+| *Queue depth* | Is the grid keeping up? | line over unsent and in-progress work |
+| *Per-node sparklines* | Which row of this table is the problem? | a mini trend in each node row |
+
+** Following a job
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Job timeline* | What ran when, and what overlapped? | one row per job, a bar per run — the cluster Gantt |
+| *Job waterfall* | Where did this job's time go? | its phases: queued, dispatched, downloaded, running, uploaded, validated |
+| *Duration distribution* | Is this job normal? | histogram, with p50/p90/p99 over time |
+| *Duration by node* | Is one node slow? | box or scatter per node |
+
+** Diagnosing a failure
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Failure rate over time* | When did it start? | line per interval |
+| *Failures by node* | Is one node bad? | bar per node |
+| *Failures by app version* | Is one release bad? | bar per version |
+| *The load heatmap, on failures* | Where is it failing? | the first chart, a different metric |
+
+** Planning capacity
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Capacity headroom* | Can the grid take more? | stacked area of used against total cores, memory and GPU per interval |
+| *Upcoming arrivals* | What kicks in soon? | a timeline of scheduled runs ahead of now, with their requirements |
+| *Requirements matrix* | What does each job need? | jobs against resources, as a heat or bubble |
+| *Allocation by tenant* | Who is using the grid? | stacked area or treemap — a cross-tenant aggregate, so the one chart here with a permission question |
+
+** Keeping what the grid runs
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Versions in flight* | Which release is running where? | a node-by-version matrix |
+| *Concurrency against the cap* | Am I throttling myself? | in-flight against the policy's cap, per policy |
+
+** What the charts ask of the data
+
+- *A time range, not the newest row.* Every chart above spans time, and the
+  grid's read serves one stored sample today. This is
+  [[id:E7035C69-EB6E-4158-B384-825A8CDACA8A][The grid has no usage history]],
+  and it is why [[id:91EBB242-A9B2-4B09-8DFE-CC440078E4B5][Expose the telemetry stats surface]]
+  matters: the charts are the demand for that read, not a nice-to-have on top
+  of it.
+- *A range selector and one shared axis.* The poller keeps thirty days, so
+  last hour, day and week are all answerable; the panels must share one time
+  axis so a spike lines up across them.
+- *A metric per panel, not a chart type per panel.* The heatmap is the same
+  chart whether it is coloured by work, failures or bytes.
+- *Nothing here needs a new write.* =grid_sample= and =node_sample= already
+  carry every series named above, and =host= carries the capacity; the gap is
+  reads, not collection.
+
+** The prototype must show them.** A prototype of these screens with empty
+frames would not answer the question the walk is for. The charts are drawn
+from mock series in the prototype's own idiom, at the sizes the real screen
+would give them, so the walk can judge whether a heatmap of nodes is legible
+and whether the timeline earns its space.
+
 * The journeys proposed
 
 1. *Watch the grid* — the fleet, the load, and how it moved.

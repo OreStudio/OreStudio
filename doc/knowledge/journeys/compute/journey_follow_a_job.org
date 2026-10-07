@@ -90,12 +90,12 @@ control, and it is deferred.
    =wrapper_version=. This is the release the job runs: the version of ORE
    behind the work, written on the workunit when the job was stored, so a job
    that behaved differently from its neighbours can be told apart by its build.
-   It is also the trustworthy answer, because the node cannot give one. The
-   wrapper heartbeat carries the release and no host, and the node sample
-   carries the host and no release, so nothing places a release on a node
-   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries
-   no host]]). The job's own =app_version_id= is a fact about the work rather
-   than an inference from the machine that happened to run it
+   It is also the answer about this job rather than about the machine. The
+   wrapper heartbeat carries the wrapper's release and the host, so the build a
+   node runs is known; the node sample carries the host and no release. Neither
+   names the app version the job pinned, so the job's own =app_version_id= is
+   the fact about the work rather than an inference from the machine that
+   happened to run it
    ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]]).
 8. *Follow the lineage.* The system draws the chain that put this job on the
    grid: the scheduled job, the report definition, the report run, the batch,
@@ -172,9 +172,9 @@ to page one, and Load all is offered only when the server's total is 1000 or
 less. No list reads with a fixed large limit, and none pages to the end to show
 everything.
 
-The wireframe is not drawn yet. This journey is written before the prototype,
-and the prototype must draw these charts from mock series at the sizes the real
-screen gives them.
+#+caption: Follow a job: the finder bar, the job header, the run table, the timeline, the lineage chart, the duration charts and the file panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_follow_a_job.png]]
 
 * Prototype
 
@@ -250,11 +250,12 @@ workunit read carries a =list_by_batch_id= variant, and the result read carries
 a =list_by_workunit_id= variant, so the batch, its jobs and their runs are
 three reads that line up by id.
 
-None of these reads is gated by a permission. The generated handler
-authenticates the token and serves the session's tenant, and the row-level
-policy does the narrowing. A dedicated permission, =compute::workunits:read=,
-=compute::results:read= or =compute::batches:read=, exists in the seed but no
-handler checks it.
+Each of these reads is gated by a permission. The generated handler
+authenticates the token, checks the entity's read code
+(=compute::batches:read=, =compute::workunits:read= or
+=compute::results:read=), and serves the session's tenant, with the row-level
+policy doing the narrowing. The dedicated codes the seed holds are the ones the
+handlers check.
 
 The browser reads the screen through a hand-written BFF route on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
@@ -296,13 +297,7 @@ a compute screen yet.
    cannot state a node's failures
    ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
    failure fields]]).
-8. *Nothing gates the reads.* The workunit, result and batch handlers check no
-   permission. The candidate is the =compute::workunits:read=,
-   =compute::results:read= and =compute::batches:read= codes the seed already
-   holds. The gap is not these reads' alone
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
-   operation handler]]).
-9. *The batch names its report run in a text field, not a relationship.* The
+8. *The batch names its report run in a text field, not a relationship.* The
    submit handler writes the report instance's id into =batch.external_ref=, so
    the hop from a job back to its report is real in the implementation. It is
    not in the model: the compute batch model describes =external_ref= as "the
@@ -313,7 +308,7 @@ a compute screen yet.
    instance id on the batch, or a batch filter on =external_ref=, is the
    missing piece
    ([[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]]).
-10. *The report run names neither its batch nor its workflow instance.*
+9. *The report run names neither its batch nor its workflow instance.*
     =report_instance= carries =definition_id= and =trigger_run_id= and no
     =batch_id=, so the run cannot state what it produced.
     [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]]
@@ -323,7 +318,7 @@ a compute screen yet.
     batch would let the lineage be read from the report end without the
     =external_ref= convention
     ([[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]]).
-11. *The scheduler firing is recorded but not readable by id.* The report run's
+10. *The scheduler firing is recorded but not readable by id.* The report run's
     =trigger_run_id= is the scheduler job instance's id, and the only scheduler
     instance read is the paged =scheduler.v1.job-instances.list=; no read
     returns one instance by id, and the =job_instance= table has no generated
@@ -332,7 +327,7 @@ a compute screen yet.
     suspended or archived, so a run whose definition has since been paused
     loses its live schedule link
     ([[id:3D1E9A64-7C2B-4F58-9E01-6A5D2C4B8E17][ores.scheduler.scheduling_operations]]).
-12. *The bridge row is not a lineage.* =workflow_batch_link= names the batch,
+11. *The bridge row is not a lineage.* =workflow_batch_link= names the batch,
     the workflow step and the workflow instance, and the bridge deletes the row
     when the batch reaches a terminal state. It is a live note that a step is
     waiting, not a durable link, and it names a workflow step rather than a

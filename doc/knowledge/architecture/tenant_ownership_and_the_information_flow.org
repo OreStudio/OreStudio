@@ -37,14 +37,23 @@ runs whatever work the installation gives it.
 
 ** What the schema does today
 
-Measured across =projects/ores.sql/create= on 2026-10-07:
+Measured across =projects/ores.sql/create= on 2026-10-07, by a throwaway
+script that matched every =create policy= statement and classified its body
+by the tenant functions it names: a widening compares the session to the
+system tenant, a system-owned policy compares =tenant_id= to the system
+tenant, an own-tenant policy names the current tenant and no system
+function, and a policy that names neither is scoped by party, sandbox or
+role. The same run reproduced the guard's count of
+=check_rls_system_tenant_widenings.py=:
 
 | Policy shape                                        | Count | Meaning |
 |-----------------------------------------------------+-------+---------|
-| Own tenant only                                     |   335 | =tenant_id = ores_iam_current_tenant_id_fn()= |
-| Party or sandbox scoping                            |   154 | keyed on =party_id= or a sandbox, with no tenant predicate |
-| A system-tenant session sees every tenant           |    17 | =current = system=; ten pre-existing and under audit, seven added by a study and reverted |
+| Own tenant only                                     |   353 | =tenant_id = ores_iam_current_tenant_id_fn()= |
+| Party or sandbox scoping                            |   152 | keyed on =party_id= or a sandbox, with no tenant predicate |
+| A system-tenant session sees every tenant           |    10 | =current = system=; every one is listed as under audit by the guard |
 | System-owned rows readable by every tenant          |    14 | =tenant_id = system=; the shared-reference idiom |
+| A role-scoped cross-tenant read                     |     3 | =using (true)= granted to the market-data service role, keyed on neither tenant nor party |
+| *Total*                                             |   532 | every policy in =projects/ores.sql/create= |
 
 The guarded shape is the third. =check_rls_system_tenant_widenings.py=
 fails any new one, and its message is the rule: *"A service that needs a

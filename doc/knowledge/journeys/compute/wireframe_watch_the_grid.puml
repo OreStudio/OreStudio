@@ -1,0 +1,100 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - OPERATIONS: WATCH THE GRID</b>
+  --
+  {
+    (Load) | Usage    Allocation by tenant lives on the Usage tab
+  }
+  Range: (last hour) | last day | last week | [ Refresh ]
+  Fleet: nodes total 6 | (online 5) | (idle 2) | sampled 14:31:02
+  --
+  <b>LOAD OVER TIME</b> | stacked over result states
+  {#
+    State | 14:00 | 14:05 | 14:10 | 14:15 | 14:20
+    inactive | ..... | ..... | ..... | ..... | .....
+    unsent | XX... | XX... | X.... | XX... | X....
+    in progress | XXXXX | XXXXX | XXXXX | XXXXX | XXX..
+    done | XXXXX | XXXXX | XXXXX | XXXXX | XXXXX
+  }
+  <b>FLEET SIZE</b> | total / online / idle over time
+  {#
+    Series | 14:00 | 14:05 | 14:10 | 14:15 | 14:20
+    total | XXXXX | XXXXX | XXXXX | XXXXX | XXXXX
+    online | XXXXX | XXXXX | XXXXX | XXXX. | XXXXX
+    idle | XX... | X.... | XX... | ..... | X....
+  }
+  --
+  <b>NODE LOAD HEATMAP</b> | . quiet  - light  + busy  X full
+  {#
+    Node | 14:00 | 14:05 | 14:10 | 14:15 | 14:20 | 14:25
+    grid-01 | + | + | X | X | + | +
+    grid-02 | . | - | + | X | X | +
+    grid-03 | - | . | . | - | + | X
+    grid-04 | X | + | - | . | . | -
+    grid-05 | . | . | . | . | . | .
+  }
+  --
+  <b>NODE STATE RIBBON</b> | online / quiet / lost over time
+  {#
+    grid-01 | online | online | online    grid-04 | online | online | quiet
+    grid-02 | online | quiet | online     grid-05 | lost | quiet | quiet
+    grid-03 | quiet | quiet | lost
+  }
+  --
+  <b>THROUGHPUT</b> | results done per five minutes
+  {#
+    Interval | Results
+    14:00 | XXXXX
+    14:05 | XXXXXX
+    14:10 | XXXX
+    14:15 | XXXXXX
+    14:20 | XXX
+  }
+  <b>OUTCOMES</b> | today
+  {#
+    Outcome | Bar | Today
+    success | XXXXXXXXXXXXXXXXXXXXXXXX | 412
+    client error | X | 3
+    no reply | X | 1
+  }
+  <b>QUEUE DEPTH</b> | unsent / in progress, per interval
+  {#
+    Queue | 14:00 | 14:05 | 14:10 | 14:15 | 14:20
+    unsent | XXXX | XXX | XX | XXX | XX
+    in progress | XXXX | XXXXX | XXX | XXXX | XXXXX
+  }
+  --
+  <b>PER-NODE TABLE</b> | sparkline of results per interval
+  {#
+    Node | Sparkline | Done | Mean time | Heartbeat
+    grid-01 | ..xxXx.. | 1284 | 42 s | 8 s
+    grid-02 | ..xxXx.. | 903 | 38 s | 12 s
+    grid-03 | .-xXx-. | 411 | 61 s | 21 s
+    grid-04 | .xXx.... | 208 | 55 s | 9 s
+    grid-05 | ........ | 101 | - | (3 h 12 m)
+  }
+  [ First ] [ Previous ] [ Next ] [ Last ] | page 1 of 2 | size 25 | [ Load all ]
+  --
+  Read-only. The grid serves every tenant. A node keeps its row while it is quiet.
+}
+
+@enduml

@@ -597,7 +597,7 @@ completes.
   tenant admits every tenant's rows to that session.
   =check_rls_system_tenant_widenings.py= lists every one and fails a new one,
   and [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache
-  partition inside its tenant]] is removing them
+  partition inside its tenant]] is removing them.
 
 ** Session Isolation
 

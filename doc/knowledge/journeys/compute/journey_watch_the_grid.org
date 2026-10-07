@@ -37,14 +37,15 @@ the database already knows which set applies. The journey does not split on the
 actor
 ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]]).
 
-Two kinds of row sit on the screen, and they narrow differently. The fleet rows
-are the installation's: the nodes and their samples describe machines the
-installation owns, so every account the permission admits reads them whole. The
-work counts are a tenant's: workunits, batches and results belong to the tenant
-that owns them, so they narrow to the session's tenant. A cross-tenant total is
-a fact about several tenants at once and is not a fact about the installation.
-The ownership study places that aggregate with the audit, and this journey must
-not present one tenant's counts as the grid's totals.
+Two kinds of row sit on the screen, and both belong to the installation. The
+fleet rows are the installation's: the nodes and their samples describe
+machines the installation owns, so every account the permission admits reads
+them whole. The work counts are the installation's own ledger: the service is
+already inside each tenant when it dispatches that tenant's work and when it
+takes the result back, so it records what it did as a fact about its own
+operation, and the counts do not narrow to a tenant. The tenant rows behind
+them, the workunits, batches and results, stay the tenant's, and the ledger
+carries the operation and not the tenant's content.
 
 The trigger is work in flight: a batch was submitted, results are late, or
 somebody asks whether the grid is the reason. The person opens the load screen
@@ -92,22 +93,28 @@ deferred.
    its own work, so the person spots the odd row in the table without reading
    the heatmap. The row opens the node's own view, which is out of this
    journey's scope.
-9. *A grid with no history.* The deployment is up but the range holds no
-   samples, which is the state before the sampler's first pass or after a long
-   stop. The screen says the range is empty and does not present a flat line at
-   zero as a fact about the grid.
-10. *Leave, or go on.* The person leaves the screen, follows one node, or
+9. *Read who is using the grid, on the Usage tab.* The system draws the
+   allocation by tenant from the installation's own ledger: what it observed
+   about the work it dispatched, not a read across the tenants' tables. The
+   person reads which tenant is using the grid without the screen entering any
+   tenant.
+10. *A grid with no history.* The deployment is up but the range holds no
+    samples, which is the state before the sampler's first pass or after a long
+    stop. The screen says the range is empty and does not present a flat line at
+    zero as a fact about the grid.
+11. *Leave, or go on.* The person leaves the screen, follows one node, or
     follows one job into
     [[id:1439FB25-A388-40C7-930A-3A814B703DDD][Follow a job]]. The paths out
     are the related journeys at the foot of the screen.
 
 * Screens and wireframes
 
-One screen. The range bar, the counters, the node load heatmap, the node state
-ribbon, the load over time, the fleet size, the throughput, the outcomes, the
-queue depth and the per-node table with its sparklines are panels of that
-screen, because the person reads them as one answer. The screen is read-only:
-it creates nothing, changes nothing and destroys nothing.
+One screen, with a Load tab and a Usage tab. The range bar, the counters, the
+node load heatmap, the node state ribbon, the load over time, the fleet size,
+the throughput, the outcomes, the queue depth and the per-node table with its
+sparklines are panels of the Load tab; the allocation by tenant is the Usage
+tab. The person reads them as one answer. The screen is read-only: it creates
+nothing, changes nothing and destroys nothing.
 
 The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
 journeys]] names for watching the grid, and each one answers one question:
@@ -122,9 +129,12 @@ journeys]] names for watching the grid, and each one answers one question:
 | Outcome bars | *Outcomes* | Is it succeeding? |
 | Depth line | *Queue depth* | Is the grid keeping up? |
 | Node table | *Per-node sparklines* | Which row of this table is the problem? |
+| Usage tab | *Allocation by tenant* | Who is using the grid? |
 
 The panels share one time axis and one range selector, and the heatmap is the
-same chart whether it is coloured by work, failures or bytes.
+same chart whether it is coloured by work, failures or bytes. The Usage tab
+reads the installation's own ledger rather than the fleet's samples, and it
+needs no tenant's rows.
 
 Every list on the screen pages on the server, per the
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The
@@ -134,10 +144,9 @@ filter, a new order or a new page size returns to page one, and Load all is
 offered only when the server's total is 1000 or less. The table never reads
 with a fixed large limit, and it never pages to the end to show everything.
 
-The wireframe is not drawn yet. This journey is written before the prototype,
-and the prototype must draw these charts from mock series at the sizes the real
-screen gives them, so the walk can judge whether a heatmap of nodes is legible
-and whether the chart earns its space.
+#+caption: Watch the grid: the range bar, the fleet counters, the load over time, the node heatmap and ribbon, the throughput, outcomes and queue charts, the per-node table and the Usage tab.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_watch_the_grid.png]]
 
 * Prototype
 
@@ -166,8 +175,10 @@ and its indexes are (=host_id=, =sampled_at= desc) and (=tenant_id=,
 shape on =grid_sample=.
 
 A node with no matching =host= row shows its id and says no host names it. The
-node sample carries no release, so the panels cannot say which build a busy
-node ran; the service heartbeat carries the release but not the node's work.
+node sample carries no release, and the service heartbeat now carries both the
+release and the host, so a join on the host id can say which wrapper build a
+node ran. The heartbeat still carries no work, so the counts themselves come
+from the node sample.
 
 * Operations and messages
 
@@ -181,7 +192,7 @@ node ran; the service heartbeat carries the release but not the node's work.
 | Read the load, the fleet, the throughput, the outcomes and the queue depth | Read the grid samples in the range | (no subject: the model generates no protocol) | missing |
 | Name the nodes | Join the host registry onto each node row | =compute.v1.hosts.list= | exists |
 | Read the newest sample alone | Read one stored grid sample and the newest node row | =compute.v1.telemetry.get_grid_stats= | exists |
-| The read is not gated | Check the caller's permission | (no check in the handler) | missing |
+| Read the newest sample alone | Check the caller's permission | =compute::grid_samples:read=, checked by the handler | exists |
 | Refresh, or watch | Read the range again | (no subject) | missing |
 
 =compute.v1.telemetry.get_grid_stats= carries no request fields and answers
@@ -238,19 +249,18 @@ a compute screen yet.
    =last_rpc_time= and =seconds_since_hb=. There is no draining state and no
    maintenance flag on =host=, so the deferred control of use case 6 has no row
    to set.
-6. *The work counts and the fleet have different owners.* The fleet is the
-   installation's and the work counts are a tenant's, so the screen must not
-   add one tenant's counts to another's nodes and call the sum the grid's. The
-   cross-tenant aggregate needs the mechanism the ownership study places with
-   the audit
+6. *The installation's own ledger is not built.* The work counts come from the
+   stored grid sample, whose totals =ores_compute_grid_stats_fn= computes for
+   one tenant, so the stored summary is that tenant's slice rather than the
+   installation's own accounting. The ledger the ownership study decides on
+   records the operation as an installation fact and is the missing piece
    ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
    information flow]]).
-7. *The read checks no permission.* The handler authenticates the token and
-   then serves any signed-in account. The candidate is the dedicated
-   =compute::grid_samples:read= permission the model names, as the tenant reads
-   guard =iam::tenants:read=. The gap is not this read's alone
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
-   operation handler]]).
+7. *The newest-sample read is gated; the range read is not built.*
+   =compute.v1.telemetry.get_grid_stats= checks =compute::grid_samples:read=
+   before it serves, so the newest sample is not open to every signed-in
+   account. The range read this journey needs has no subject and therefore no
+   gate yet.
 8. *A wrapper consumes one tenant's work.* The dispatcher routes each workunit
    to its own tenant's assignment subject, and a wrapper subscribes to the
    system tenant's subject alone, so another tenant's work is dispatched and

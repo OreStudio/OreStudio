@@ -21,26 +21,24 @@ each step needs.
 
 "I want to know whether the grid can take what is coming." The person picks a
 horizon and reads one screen: what capacity the nodes have, how much of it the
-grid is using, what a job needs to run, what is scheduled to arrive inside the
-horizon, and who is using the grid. The journey is done when the person can say
-whether the grid has headroom for the work that is about to arrive, and which
-resource is the constraint.
+grid is using, what a job needs to run, and what is scheduled to arrive inside
+the horizon. The journey is done when the person can say whether the grid has
+headroom for the work that is about to arrive, and which resource is the
+constraint.
 
 * Actor and trigger
 
 The actor is what the rows admit, and the session decides the rows. A tenant
-sees its own arrivals and its own share of the grid; the super administrator
-sees the installation's. This is one journey: the activity is the same "can the
-grid take this" at two visible sets.
+sees its own arrivals; the super administrator sees the installation's fleet.
+This is one journey: the activity is the same "can the grid take this" at two
+visible sets.
 
 The fleet rows are the installation's: the nodes and their capacity describe
 machines the installation owns, so they are read whole. The arrivals are a
 tenant's, so they narrow to the session's tenant. The allocation by tenant is
-different in kind: it is a fact about several tenants at once and no single
-tenant owns it. The ownership study calls that aggregate Class T and says the
-sanctioned way to compute it is to act inside each tenant, which is the
-mechanism the audit is building. Until that mechanism exists, the allocation
-chart is the installation's aggregate and its audience is a permission decision
+not this journey's panel: it moved to the Watch the grid screen's Usage tab,
+where the installation reads the usage ledger it keeps about its own operation.
+This journey reads the fleet and the arrivals
 ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
 information flow]]).
 
@@ -92,27 +90,25 @@ change a schedule or stop a job.
    submits a batch, and the batch's jobs and their requirements exist only after
    submission. The timeline shows when, and the requirements matrix shows what,
    and the two join only for work that has been submitted.
-7. *Read who is using the grid.* The system draws the allocation by tenant over
-   the horizon. This is the cross-tenant aggregate, so it is the one panel here
-   whose rows are not the session's alone.
-8. *Judge the constraint.* The person compares the three: the ceiling, the
+7. *Judge the constraint.* The person compares the three: the ceiling, the
    usage and the arrivals. The answer is a sentence about one resource, for
    example "the grid has memory for tomorrow's batch and no node runs its
    platform".
-9. *No capacity data.* No sample is stored for the horizon, or no host row
+8. *No capacity data.* No sample is stored for the horizon, or no host row
    describes the fleet. The screen says the capacity is unmeasured and does not
    draw a ceiling from an empty table.
-10. *Leave, or go on.* A constraint that is a busy grid continues in
-    [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]. A constraint
-    that is a release's memory need continues in
-    [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]].
+9. *Leave, or go on.* A constraint that is a busy grid continues in
+   [[id:32ECF41B-B27B-4A69-B7F0-A4131F993297][Watch the grid]]. A constraint
+   that is a release's memory need continues in
+   [[id:19A796E3-A594-4C3E-8ACA-646D743BB496][Keep what the grid runs]].
 
 * Screens and wireframes
 
 One screen. The horizon bar, the host capacity table, the headroom chart, the
-requirements matrix, the arrivals timeline and the allocation chart are panels
-of that screen, because the person reads them as one answer. The screen is
-read-only: it creates nothing, changes nothing and destroys nothing.
+requirements matrix and the arrivals timeline are panels of that screen,
+because the person reads them as one answer. The screen is read-only: it
+creates nothing, changes nothing and destroys nothing. The allocation chart
+left this screen for the watch screen's Usage tab.
 
 The panels are the charts [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute
 journeys]] names for planning capacity:
@@ -122,12 +118,11 @@ journeys]] names for planning capacity:
 | Headroom | *Capacity headroom* | Can the grid take more? |
 | Arrivals | *Upcoming arrivals* | What kicks in soon? |
 | Matrix | *Requirements matrix* | What does each job need? |
-| Allocation | *Allocation by tenant* | Who is using the grid? |
 
-The headroom chart is a stacked area of used against total cores, memory and
-GPUs per interval. The grid does not measure a node's used cores, memory or
-GPUs, so the panel can draw only the part the samples support, and it must not
-draw a used line it cannot fill.
+The headroom chart is a stacked area of used against total. The grid does not
+measure a node's used cores, memory or GPUs, so the panel can draw only the
+part the samples support, in hosts, and it must not draw a used line it cannot
+fill.
 
 Every list on the screen pages on the server, per the
 [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. The host
@@ -138,9 +133,9 @@ page size returns to page one, and Load all is offered only when the server's
 total is 1000 or less. No list reads with a fixed large limit, and none pages to
 the end to show everything.
 
-The wireframe is not drawn yet. This journey is written before the prototype,
-and the prototype must draw these charts from mock series at the sizes the real
-screen gives them.
+#+caption: Plan the grid's capacity: the horizon bar, the host capacity table, the headroom chart, the requirements matrix and the arrivals timeline.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_plan_the_grids_capacity.png]]
 
 * Prototype
 
@@ -182,8 +177,6 @@ usage only in the units the samples carry.
 | Read what a job needs | Read the waiting jobs | =compute.v1.workunits.list=, =compute.v1.batches.list= | exists |
 | Read the arrivals | Read the scheduler's job status | =scheduler.v1.status= | exists |
 | Read the arrivals | Read what a scheduled run will need | (nothing until it submits) | missing |
-| Read the allocation by tenant | Read one tenant's work as that tenant, for every tenant | (token exchange, not built here) | missing |
-| Read the allocation by tenant | Read the cross-tenant aggregate | (Class T: needs an owner allowed to enter tenants) | missing |
 | Refresh | Read the horizon again | (the reads above) | missing |
 
 =scheduler.v1.status= carries no request fields and answers with every job the
@@ -192,8 +185,8 @@ It is the arrivals read, and it is the scheduler's, not the grid's.
 
 The grid's own reads are the host registry, which is complete, and the sample
 range read, which does not exist. The requirements matrix reads two entity
-lists that already exist. The allocation chart has no read at all, because the
-aggregate it needs has no owner.
+lists that already exist. The allocation chart's reads live with the watch
+screen's Usage tab, which owns that chart now.
 
 The browser reads the screen through a hand-written BFF route on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
@@ -218,35 +211,22 @@ a compute screen yet.
    question the use cases raise, that "what is scheduled to kick in soon" is the
    scheduler's question and the grid's is what it does to the load
    ([[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]]).
-4. *The allocation by tenant has no read and no owner.* A cross-tenant
-   aggregate is Class T: it is a fact about several tenants at once, and the
-   sanctioned way to compute it is to act inside each tenant. Until that
-   mechanism exists, the chart is either absent or computed by a widening the
-   policy guard exists to stop
-   ([[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
-   information flow]]).
-5. *The grid serves one tenant's slice.* The grid read filters by the session
+4. *The grid serves one tenant's slice.* The grid read filters by the session
    tenant, so a headroom chart drawn from it would report one tenant's hosts as
    the fleet ([[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is
    scoped to the session tenant]]).
-6. *A wrapper consumes one tenant's work.* Capacity that is planned per tenant
+5. *A wrapper consumes one tenant's work.* Capacity that is planned per tenant
    must account for the wrapper subscribing to the system tenant's assignment
    subject alone, which leaves another tenant's dispatched work with no node to
    run it. The plan would reserve capacity for work the fleet cannot pick up
    ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
    tenant's work]]).
-7. *The quotas and the fair share are targets, not rows.* The design for
+6. *The quotas and the fair share are targets, not rows.* The design for
    thousands of runs gives each tenant a weight and a cap on its assignments in
    flight, and each tenant and party a limit on running runs. Those numbers are
    capacity-test targets, and no table holds them, so the requirements matrix
    cannot state a tenant's own cap
    ([[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]]).
-8. *Nothing gates the reads.* The host, workunit and app version handlers check
-   no permission. The candidate is the =compute::hosts:read=,
-   =compute::workunits:read= and =compute::app_versions:read= codes the seed
-   already holds
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
-   operation handler]]).
 
 * Related journeys
 

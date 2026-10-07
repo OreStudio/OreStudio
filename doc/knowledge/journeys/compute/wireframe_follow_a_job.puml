@@ -1,0 +1,93 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - COMPUTE: FOLLOW A JOB</b>
+  --
+  {
+    Batch ref [ batch_2026_07_14_a ] | job id [         ] | result id [         ] | [ Find ]
+  }
+  --
+  <b>JOB HEADER</b>
+  {#
+    State | Node | Dispatched at | Output received at
+    succeeded | grid-02.example.com | 14:02:11 | 14:02:53
+  }
+  --
+  <b>RUNS OF THE JOB</b>
+  {#
+    Run | State | Outcome | Node | Received
+    1 | done | success | grid-02.example.com | 14:02:53
+    2 | done | success | grid-02.example.com | 14:02:54
+    3 | failed | client error | grid-04.example.com | 14:05:10
+  }
+  --
+  <b>JOB TIMELINE</b> | one row per job of the batch, a bar per run
+  {#
+    Job | 14:00 | 14:05 | 14:10 | 14:15 | 14:20
+    report_daily_uk | XXxx.. | XXxx..
+    report_daily_us | ...XXx | ...XXx
+    report_monthly | .....X | .....X
+    curve_build_gbp | ....... | XXxx..
+  }
+  --
+  <b>JOB WATERFALL</b> | queued, then running, then output arrived
+  {#
+    Stage | Start | Duration
+    queued | 14:01:58 | 3 s
+    running | 14:02:01 | 52 s
+    output arrived | 14:02:53 | 1 s
+  }
+  <b>DURATION DISTRIBUTION</b> | seconds
+  {#
+    Bucket | Count
+    0-10 | XXXXX
+    10-30 | XXXXXX
+    30-60 | XXXXXXXX
+    60+ | XXX
+  }
+  <b>DURATION BY NODE</b> | mean seconds
+  {#
+    Node | Mean | Bar
+    grid-01 | 42 | XXXXXX
+    grid-02 | 38 | XXXXX
+    grid-04 | 61 | XXXXXXXXX
+  }
+  --
+  <b>LINEAGE</b>
+  {
+    scheduler.job_definition -> report_definition -> report_instance -> batch
+    batch -> workunit -> result
+    selected workunit 6f2c19a1 (highlighted); it carries the files below
+  }
+  --
+  <b>FILES</b>
+  {#
+    File | URI | Action
+    input bundle | s3://ore/in/6f2c19a1.zip | [ Download ]
+    config | s3://ore/cfg/6f2c19a1.yaml | [ Download ]
+    output archive | s3://ore/out/6f2c19a1.tar.gz | [ Download ]
+  }
+  [ First ] [ Previous ] [ Next ] [ Last ] | batch rows page 1 of 3 | size 25 | [ Load all ]
+  --
+  Read-only. The lineage joins the scheduler to the result.
+}
+
+@enduml

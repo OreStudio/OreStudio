@@ -52,9 +52,11 @@ doing, how much work is in flight, and how that load moved over the last day
 and week.
 
 *Security:* the fleet is the installation's and carries no tenant's data, so
-everyone the permission admits may read it whole. The work counts are
-cross-tenant aggregates and are the only part with a real question — answered
-by a permission on a panel, not by a second journey.
+everyone the permission admits may read it whole. The work counts are the
+installation's own observed ledger: the service is already inside each tenant
+when it dispatches that tenant's work and when it takes the result back, so it
+records what it did as a fact about its own operation. They need no
+cross-tenant read — the ledger is installation data — and no second journey.
 
 ** 2. Where is one job?
 
@@ -122,6 +124,13 @@ by deciding the question does not matter.
 | *Queue depth* | Is the grid keeping up? | line over unsent and in-progress work |
 | *Per-node sparklines* | Which row of this table is the problem? | a mini trend in each node row |
 
+The watch screen's Usage tab carries one more chart, from the installation's
+own ledger rather than from the fleet's samples:
+
+| Chart | Answers | Reads |
+|-------+---------+-------|
+| *Allocation by tenant* | Who is using the grid? | stacked area or treemap — the usage ledger the installation keeps about its own operation |
+
 ** Following a job
 
 | Chart | Answers | Reads |
@@ -170,7 +179,9 @@ its middle is confirmed.
 | *Capacity headroom* | Can the grid take more? | stacked area of used against total cores, memory and GPU per interval |
 | *Upcoming arrivals* | What kicks in soon? | a timeline of scheduled runs ahead of now, with their requirements |
 | *Requirements matrix* | What does each job need? | jobs against resources, as a heat or bubble |
-| *Allocation by tenant* | Who is using the grid? | stacked area or treemap — a cross-tenant aggregate, so the one chart here with a permission question |
+
+Allocation left this use case for the Usage view; the planning capacity use
+case no longer claims it.
 
 ** Keeping what the grid runs
 
@@ -193,9 +204,13 @@ its middle is confirmed.
   axis so a spike lines up across them.
 - *A metric per panel, not a chart type per panel.* The heatmap is the same
   chart whether it is coloured by work, failures or bytes.
-- *Nothing here needs a new write.* =grid_sample= and =node_sample= already
-  carry every series named above, and =host= carries the capacity; the gap is
-  reads, not collection.
+- *Almost nothing here needs a new write.* =grid_sample= and =node_sample=
+  carry the load, throughput, outcome and queue series, and =host= carries the
+  capacity, so those gaps are reads and not collection. The capacity headroom
+  series is the exception: it wants a used-against-total figure, and =host=
+  states only the total (=cpu_count=, =ram_mb=, =gpu_type=). No row states the
+  cores, memory or GPU in use, so that one series needs collection as well as
+  a read.
 
 ** The prototype must show them.** A prototype of these screens with empty
 frames would not answer the question the walk is for. The charts are drawn
@@ -223,10 +238,10 @@ screens to say what the session already says.
 
 | Use case | Single-tenant deployment | Multi-tenant deployment | Fragment? |
 |----------+---------------------------+--------------------------+-----------|
-| Watch the grid | The operator sees it whole | The super administrator sees it whole; a tenant administrator sees the fleet and no other tenant's counts | No — one journey, a gated panel |
+| Watch the grid | The operator sees it whole | The super administrator sees the fleet and the installation's ledger whole; a tenant administrator sees the fleet and the tenant's own work rows | No — one journey, a permission on the ledger read |
 | Follow a job | Everyone sees every job | Rows: own, tenant's, all | No — rows |
 | Diagnose a failure | The operator sees everything | The job's detail narrows; the node's logs are withheld | No — one control withheld |
-| Plan capacity | The operator sees it whole | Own arrivals and own share; totals are the installation's | No — rows |
+| Plan capacity | The operator sees it whole | Own arrivals; the fleet and its ceiling are the installation's | No — rows |
 | Keep what the grid runs | The operator reads and writes | Everyone reads; the super administrator writes | No — a permission on the write |
 | Keep the grid running | The operator acts | Super administrator only | Deferred |
 

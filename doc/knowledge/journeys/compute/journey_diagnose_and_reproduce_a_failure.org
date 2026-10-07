@@ -76,10 +76,11 @@ person does on their own machine with the shell.
    ([[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]],
    [[id:E0010C05-D225-462B-A194-330F12A41B28][ores.compute.app_version_platform]]).
 5. *Read the command and the stderr.* The system states the exact command the
-   wrapper ran. The wrapper logs the command line and the engine's
-   stdout and stderr to =engine.log=, and publishes its lines to the telemetry
-   logs tagged with the run's result id, so the person reads what the engine
-   said and with which arguments
+   wrapper ran. The wrapper writes the command line to its own process log as
+   =Engine command: <exe> <args>=, and captures the engine's stdout and stderr
+   into =engine.log=, which it publishes to the telemetry logs tagged with the
+   run's result id. The engine's lines therefore carry what the engine said;
+   the command line is not among them
    ([[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]]).
 6. *Read the exit code.* The system states the engine's exit code. The result
    carries no exit-code field; the wrapper writes it into =error_message= as
@@ -136,9 +137,9 @@ page size returns to page one, and Load all is offered only when the server's
 total is 1000 or less. No list reads with a fixed large limit, and none pages to
 the end to show everything.
 
-The wireframe is not drawn yet. This journey is written before the prototype,
-and the prototype must draw these charts from mock series at the sizes the real
-screen gives them.
+#+caption: Diagnose and reproduce a failure: the failure charts, the job detail, the command and stderr panel, the node logs control and the reproduce panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_diagnose_and_reproduce_a_failure.png]]
 
 * Prototype
 
@@ -232,9 +233,11 @@ a compute screen yet.
    and the output has =compute download-output=; the package has neither. The
    storage HTTP path works, and the journey must not pretend a verb exists.
 6. *A failed run writes no output archive.* On a non-zero exit the wrapper
-   uploads nothing, so =output_uri= stays empty and there is no =Output/= to
-   inspect beyond the lines. The screen must say the archive is absent and not
-   present an empty field as a missing file.
+   uploads nothing, so no archive exists at the run's =output_uri=. The result
+   still carries the =output_uri= the assignment pre-assigned to it: the
+   wrapper initialises it from the event and always submits it, so the field is
+   not empty and it names a URI with no file behind it. The screen must say the
+   archive is absent and not present the field as a missing file.
 7. *The node summary drops the failure fields.* =node_sample= carries
    =tasks_failed= and =max_task_duration_ms=, and =node_stats_summary= carries
    neither, so the failures by node chart cannot be driven from the summary read

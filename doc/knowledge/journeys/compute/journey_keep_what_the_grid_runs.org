@@ -91,11 +91,10 @@ the journey does not run a job.
    newest or an older one, and a count of how many jobs still run an older
    release. The job's release is the workunit's =app_version_id=, a fact about
    the work written when the job was stored, so the chart counts what actually
-   runs and never guesses from the machine. The node cannot supply this: the
-   wrapper heartbeat carries the release and no host, and the node sample
-   carries the host and no release, so nothing places a release on a node
-   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries
-   no host]]). A count above zero on an older bar is a half-finished upgrade,
+   runs and never guesses from the machine. The wrapper heartbeat carries the
+   release and the host, so a node's running build is known; that build is the
+   wrapper's, not the app version this job pinned, and the node sample carries
+   the host and no release. A count above zero on an older bar is a half-finished upgrade,
    and the chart is where it shows. The newest release is the highest
    =engine_version= of the app, which is the version the submit handler already
    picks; *What is missing* states why the model should say so itself.
@@ -160,9 +159,9 @@ returns to page one, and Load all is offered only when the server's total is
 1000 or less. No list reads with a fixed large limit, and none pages to the end
 to show everything.
 
-The wireframe is not drawn yet. This journey is written before the prototype,
-and the prototype must draw these charts from mock series at the sizes the real
-screen gives them.
+#+caption: Keep what the grid runs: the app list, the version table, the platform and package table, the versions-in-flight matrix, the jobs-per-release bars and the concurrency panel.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/compute/wireframe_keep_what_the_grid_runs.png]]
 
 * Prototype
 
@@ -209,14 +208,14 @@ without losing the others.
 | Publish a package and register the rows | Upload the package, verify the digest, register the app, version and platform rows | =compute publish-package= (shell) | exists |
 | Write a row | Write an app, a version or a platform row | =compute.v1.apps.put=, =compute.v1.app_versions.put=, =compute.v1.platforms.put=, =compute.v1.app_version_platforms.put= | exists |
 | Retire a platform | Mark a triplet inactive | =compute.v1.platforms.put= | exists |
-| Withhold the writes | Check the caller's permission | (no check in the handlers) | missing |
+| Withhold the writes | Check the caller's permission | =compute::apps:write=, =compute::app_versions:write=, =compute::platforms:write= and =compute::app_version_platforms:write=, checked by the handlers | exists |
 
 =compute publish-package= is the one write that is not a generated entity
 operation. It uploads the tarball to storage under the app's package key,
 computes and verifies the SHA256 server-side, and registers the =app=,
 =app_version= and =app_version_platform= rows. The generated =put= operations
-cover the rows on their own, and the package bytes have no HTTP or browser
-path: the shell is the only one today.
+cover the rows on their own. The shell uploads the package bytes over HTTP to
+storage, and no browser upload path exists: the shell is the only client today.
 
 =reporting.v1.concurrency_policies.list= is reporting's read, not compute's. The
 policy is a property of a report definition, and the grid reads the definition's
@@ -244,34 +243,27 @@ a compute screen yet.
    release and its host are on the service heartbeat, and the engine build a
    job pinned is on the workunit. A range read that joins results to workunits
    and app versions is the missing piece.
-3. *No read gates the catalogue writes.* The generated handlers authenticate the
-   token and check no permission. The seed already holds =compute::apps:write=,
-   =compute::app_versions:write=, =compute::platforms:write= and
-   =compute::app_version_platforms:write=, and nothing checks them, so any
-   signed-in account can write the registry today
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written
-   operation handler]]).
-4. *A package cannot be published from a browser.* The upload is a shell verb.
-   The journey's writer reaches the package step through the shell and the rows
-   through a screen, and the two are not one action. A browser package upload,
-   or an explicit statement that publishing stays a shell operation, is the
-   missing decision.
-5. *A version with no package is not marked.* The catalogue can state a version
+3. *A package cannot be published from a browser.* The upload is a shell verb,
+   which uploads over HTTP to storage. The journey's writer reaches the package
+   step through the shell and the rows through a screen, and the two are not one
+   action. A browser package upload, or an explicit statement that publishing
+   stays a shell operation, is the missing decision.
+4. *A version with no package is not marked.* The catalogue can state a version
    whose platform rows carry no package, and the dispatcher will store its jobs
    and never publish an assignment. The screen must state that, and the model
    could state it too.
-6. *The registry has no history view.* A package's digest changes when it is
+5. *The registry has no history view.* A package's digest changes when it is
    republished, and the model keeps the current row only. The journey shows the
    current catalogue and cannot say what a job ran if the version's package was
    replaced. The result's =output_uri= and the log lines are the only record of
    the old run.
-7. *One tenant's work is dispatched to nobody.* The catalogue is what a tenant
+6. *One tenant's work is dispatched to nobody.* The catalogue is what a tenant
    reads before submitting, and the wrapper's single assignment subject means
    the tenant's submission may not be picked up. A catalogue screen that says
    "the grid may run this" is not yet a promise the fleet will
    ([[id:0072F772-F879-4DDB-8944-96433843CE17][The wrapper consumes one
    tenant's work]]).
-8. *Nothing marks a release newest.* The jobs-per-release chart marks each bar
+7. *Nothing marks a release newest.* The jobs-per-release chart marks each bar
    as the app's newest release or an older one, and the =app_version= model
    states no flag and no ordering that says which build that is. The only rule
    today is the highest =engine_version=, and =engine_version= is text, so the

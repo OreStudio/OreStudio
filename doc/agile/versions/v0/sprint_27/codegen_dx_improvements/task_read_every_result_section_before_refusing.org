@@ -2,24 +2,7 @@
 :ID: 2F546AFE-9DE4-48FD-8FC4-5D8C2A48B540
 :END:
 #+title: Task: Read every result section before refusing a merge
-#+description: A task doc with an empty * Result
-
-Delivered.
-
-The merge guard read only the first * Result heading, so a document with an
-empty heading above a written one was refused with "task Result section is
-empty" while the prose sat directly below it. It happened twice today.
-
-The guard now reads every section and treats the result as present when any
-carries prose, and it names the document and the number of headings when
-there is more than one, because a duplicate heading is a defect in the
-document even when it no longer hides anything. Reading is extracted into
-=_result_sections= so the rule is testable without a live merge.
-
-Measured: the compass suite passes 16 tests, three of them new, covering a
-duplicate above prose, a single empty section that must still refuse, and a
-single section with prose.
- heading above a written one made compass pr merge refuse with 'result section is empty' while the prose sat directly below it. Read every section and treat the result as present when any carries prose, and name the duplicate.
+#+description: A task doc with an empty * Result heading above a written one made compass pr merge refuse while the prose sat below it. Read every section before refusing.
 #+type: task
 #+level: s1
 #+filetags: :codegen_dx_improvements:sprint_27:v0:
@@ -102,3 +85,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered.
+
+The merge guard read only the first * Result heading, so a document with an
+empty heading above a written one was refused with "task Result section is
+empty" while the prose sat directly below it. It happened twice today.
+
+The guard now reads every section and treats the result as present when any
+carries prose, and it names the document and the number of headings when
+there is more than one, because a duplicate heading is a defect in the
+document even when it no longer hides anything. Reading is extracted into
+=_result_sections= so the rule is testable without a live merge.
+
+Measured: the compass suite passes 16 tests, three of them new, covering a
+duplicate above prose, a single empty section that must still refuse, and a
+single section with prose.
+

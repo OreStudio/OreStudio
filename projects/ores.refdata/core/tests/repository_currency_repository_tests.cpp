@@ -32,7 +32,6 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
-#include <bits/chrono.h>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>

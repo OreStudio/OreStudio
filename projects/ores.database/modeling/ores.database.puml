@@ -31,8 +31,6 @@ namespace ores #F2F2F2 {
             -policy_ : pool_acquire_policy
             -service_account_ : string
             -roles_ : vector<string>
-            -workspace_id_ : string
-            -workspace_resolution_ : vector<string>
         }
         class database_options <<struct>> {
             +user : string

@@ -20,14 +20,7 @@
  */
 
 import { z } from 'zod';
-import {
-    LIVE_WORKSPACE_ID,
-    SYSTEM_TENANT_ID,
-    toWireTimestamp,
-    uuid,
-    wireTimestamp,
-    type Uuid,
-} from './primitives.js';
+import { SYSTEM_TENANT_ID, toWireTimestamp, uuid, wireTimestamp, type Uuid } from './primitives.js';
 
 /**
  * The account classifications the server understands.
@@ -460,7 +453,7 @@ export const activePartySchema = z.object({
 export type ActiveParty = z.infer<typeof activePartySchema>;
 
 /** Re-exported so consumers do not import the sentinels from two places. */
-export { LIVE_WORKSPACE_ID, SYSTEM_TENANT_ID, toWireTimestamp };
+export { SYSTEM_TENANT_ID, toWireTimestamp };
 
 /**
  * One role an account holds: what it is, what it grants, and the grant's own

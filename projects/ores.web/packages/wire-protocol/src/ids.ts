@@ -44,7 +44,7 @@ export const portableIdGenerator: IdGenerator = () => {
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };
 
-/** Headers every authenticated call carries, before any workspace overrides. */
+/** Headers every authenticated call carries. */
 export function tracingHeaders(sessionId: string, generateId: IdGenerator): Record<string, string> {
     const headers: Record<string, string> = {
         'Nats-Correlation-Id': generateId(),

@@ -247,30 +247,6 @@ public:
     [[nodiscard]] nats_client with_session_id(std::string sid) const;
 
     /**
-     * @brief Returns a new nats_client that forwards an X-Workspace-Id
-     * header on every authenticated_request call.
-     *
-     * Set from WorkspaceContext.id on the Qt client side; forwarded on
-     * inter-service calls so repositories can filter on workspace_id.
-     * Absence means Live workspace (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa).
-     *
-     * Thread-safe: the returned value is independent of *this.
-     */
-    [[nodiscard]] nats_client with_workspace_id(std::string wid) const;
-
-    /**
-     * @brief Returns a new nats_client that forwards an X-Workspace-Resolution
-     * header on every authenticated_request call.
-     *
-     * The chain is forwarded as comma-separated UUID strings, enabling
-     * repository-level workspace inheritance queries. Call after
-     * with_workspace_id() when the selected workspace is not Live.
-     *
-     * Thread-safe: the returned value is independent of *this.
-     */
-    [[nodiscard]] nats_client with_workspace_resolution(std::vector<std::string> chain) const;
-
-    /**
      * @brief The connection underneath, for a caller that subscribes.
      *
      * Request and reply cover a command that asks one question and prints
@@ -304,12 +280,6 @@ private:
 
     // Optional session ID forwarded as Nats-Session-Id.
     std::string session_id_;
-
-    // Optional workspace ID forwarded as X-Workspace-Id.
-    std::string workspace_id_;
-
-    // Optional resolution chain forwarded as X-Workspace-Resolution.
-    std::vector<std::string> workspace_resolution_;
 };
 
 /**

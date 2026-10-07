@@ -38,8 +38,6 @@ const std::string issuer("ores.service.tests");
 const std::string audience("ores.service.tests");
 const std::string tenant("11111111-1111-1111-1111-111111111111");
 const std::string party("22222222-2222-2222-2222-222222222222");
-const std::string workspace("33333333-3333-3333-3333-333333333333");
-const std::string ancestor("44444444-4444-4444-4444-444444444444");
 
 ores::security::jwt::jwt_authenticator make_authenticator(const std::string& key) {
     return ores::security::jwt::jwt_authenticator::create_hs256(key, issuer, audience);
@@ -230,22 +228,6 @@ TEST_CASE("a token that only chooses a party is unauthorized", tags) {
     REQUIRE_FALSE(choosing.has_value());
     CHECK(choosing.error() == error_code::unauthorized);
     CHECK(request("").has_value());
-}
-
-TEST_CASE("the workspace headers scope the context to the requested workspace and chain", tags) {
-    ores::testing::database_helper h;
-    ores::nats::message msg;
-    msg.headers[std::string(ores::nats::headers::authorization)] =
-        bearer(make_token(std::chrono::minutes(5)));
-    msg.headers[std::string(ores::nats::headers::x_workspace_id)] = workspace;
-    msg.headers[std::string(ores::nats::headers::x_workspace_resolution)] =
-        workspace + "," + ancestor;
-
-    const auto result = make_request_context(h.context(), msg, make_authenticator(secret));
-
-    REQUIRE(result.has_value());
-    REQUIRE(result->workspace_id() == workspace);
-    REQUIRE(result->workspace_resolution() == std::vector<std::string>{workspace, ancestor});
 }
 
 TEST_CASE("a delegated bearer token builds the original user's context", tags) {

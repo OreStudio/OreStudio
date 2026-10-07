@@ -31,7 +31,6 @@
 
 // Data and schemas.
 export {
-    LIVE_WORKSPACE_ID,
     SYSTEM_TENANT_ID,
     fromWireTimestamp,
     isUuid,

@@ -208,48 +208,6 @@ public:
     }
 
     /**
-     * @brief Gets the workspace ID for this context.
-     *
-     * Defaults to the Live workspace sentinel UUID if not set.
-     */
-    const std::string& workspace_id() const {
-        return workspace_id_;
-    }
-
-    /**
-     * @brief Returns a copy of this context scoped to a specific workspace.
-     *
-     * Does not rebuild the connection pool — Phase 2 uses explicit WHERE
-     * clauses, so pool re-init is not needed. Chain after with_tenant() or
-     * with_party() since those builders create fresh contexts.
-     */
-    [[nodiscard]] context with_workspace(std::string workspace_id) const {
-        auto copy = *this;
-        copy.workspace_id_ = std::move(workspace_id);
-        return copy;
-    }
-
-    /**
-     * @brief Gets the workspace resolution chain for this context.
-     *
-     * When non-empty, repositories should use WHERE workspace_id = ANY(chain)
-     * to return definitions from the selected workspace and all its ancestors.
-     * Empty means single-workspace query (exact workspace_id match).
-     */
-    const std::vector<std::string>& workspace_resolution() const {
-        return workspace_resolution_;
-    }
-
-    /**
-     * @brief Returns a copy of this context with the given resolution chain.
-     */
-    [[nodiscard]] context with_workspace_resolution(std::vector<std::string> chain) const {
-        auto copy = *this;
-        copy.workspace_resolution_ = std::move(chain);
-        return copy;
-    }
-
-    /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
      * The service_account, the pool acquisition policy and the permissions are
@@ -298,8 +256,6 @@ private:
     pool_acquire_policy policy_;
     std::string service_account_;
     std::optional<std::vector<std::string>> roles_;
-    std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-    std::vector<std::string> workspace_resolution_;
     std::optional<sqlgen::Ref<transaction_type>> active_transaction_;
 };
 

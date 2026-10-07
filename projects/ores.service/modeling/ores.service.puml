@@ -186,8 +186,7 @@ note as OresServiceRequestContext
     Free function in ores::service::service:
     make_request_context(base_ctx, msg, verifier) : expected<context, error_code>
     Validates the Bearer JWT in the message headers and returns
-    a context scoped to its tenant, party and roles, narrowed by
-    the X-Workspace-Id and X-Workspace-Resolution headers. With
+    a context scoped to its tenant, party and roles. With
     no verifier the base context is returned unchanged.
     X-Delegated-Authorization is checked before Authorization,
     and an expired delegated token is a hard reject.

@@ -234,7 +234,6 @@ describe('OresClient authenticated calls', () => {
         const headers = transport.calls[1]?.headers ?? {};
         expect(headers['Authorization']).toBe('Bearer token-one');
         expect(headers['Nats-Session-Id']).toBe('33333333-3333-3333-3333-333333333333');
-        expect(headers['X-Workspace-Id']).toBe('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
         expect(headers['Nats-Correlation-Id']).toMatch(/^[0-9a-f-]{36}$/);
     });
 

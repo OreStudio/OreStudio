@@ -85,7 +85,7 @@ it declares no subject and produces no protocol header of its own.
 - A registered, ready and gracefully draining NATS service, with the
   subscription count logged.
 - A per-request =ores::database::context= scoped to the JWT's tenant,
-  party, roles and workspace.
+  party and roles.
 - A =READY=1= notification to systemd where =NOTIFY_SOCKET= is set.
 - Heartbeat messages on the telemetry service's subject.
 - Step-completion events on the workflow engine's subject.

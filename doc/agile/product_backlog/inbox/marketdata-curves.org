@@ -1112,6 +1112,10 @@ evolution second, the representation third.
   object.
 - *A node's provenance is readable per instant*: what it was built from, by
   which recipe, and when.
+- *Staleness is visible whenever a term structure is drawn.* A curve's points
+  rarely share one observation instant, so a plot can mix horizons without
+  saying so. Every point carries how old it is, and the view shows it, so a
+  reader never mistakes a composite for a single market state.
 - *A point can be keyed by hand.* A manual point or override is written as an
   ordinary point, and the history keeps the value it replaced.
 - *A manual point is attributable.* A point says whether it is quoted, derived
@@ -1136,6 +1140,7 @@ evolution second, the representation third.
 |------+-------+-------+-----+-------------|
 | [[id:2E7D5FD0-E63B-4803-85B7-4ABB120E1E56][Add prototypes for all market data journeys]] | DONE | 2026-10-06 | 2026-10-06 | One prototype per market data journey, the oresmd URL editor every screen calls, and the plotting for term structures and surfaces. |
 | [[id:412F1C3E-7C86-4E1D-9E4E-ECE6CF97AB6B][Check the curve model against the journeys and start the representation]] | BACKLOG | | | Settle the shape the journeys demand against the tables that exist, give a point its provenance and a manual key its author, and start the representation. |
+| [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] | BACKLOG | | | A term structure is drawn from points that rarely share an observation instant, so a plot can mix market horizons without saying so. Every point carries its age and the view shows it. |
 
 * Decisions
 
@@ -1196,6 +1201,47 @@ are kept as the record of what was asked.
 - **How does a curve relate to =feed_binding= and =observation_lineage=?=
   Lineage is documented as deliberately generic, and feed bindings map a raw
   producer channel to a series. A curve's inputs are a series, not a channel.
+
+* Staleness, 2026-10-07
+
+A term structure is drawn from points that rarely share one observation
+instant. One pillar may have ticked a minute ago and the next three days ago,
+and the plot looks like a single market read when it is a composite of several.
+Worse, the mix is usually invisible: a stale pillar's value is a real value, in
+the right place, at the wrong time.
+
+The rule: *whenever a term structure is drawn, every point carries how old it
+is, and the view shows it.* The reader must be able to tell a curve built from
+one market state from a curve stitched across several, without asking.
+
+What each point needs, and where it already is:
+
+| Fact | Source |
+|------|--------|
+| The instant the point represents | =market_observation.observation_datetime= |
+| When that value was recorded | the row's bitemporal =valid_from= |
+| Whether it is fed, derived or manual | =point_source_kind= on the annex, or the absence of a row |
+
+Two ages are readable and they answer different questions. *Market staleness*,
+the snapshot instant minus the point's instant, says the point belongs to an
+older market state than the snapshot claims. *Record staleness*, now minus the
+point's =valid_from=, says how long ago the value arrived. A curve read as of
+one instant has the first for its spread; a curve read as of now shows the
+second. Both are derivable from rows already selected, so no column is added
+and no new table is needed.
+
+Proposed encoding, for the prototype to settle:
+
+- Per point: an age band, so a stale pillar is visible without reading a number.
+- Per curve: the oldest point's age, and the spread between the oldest and the
+  newest, because the spread is what measures the mixing.
+- A warning when the spread crosses a threshold the journey states, rather than
+  a silent plot.
+
+This is a requirement on the read as well as the drawing: a consumer that
+returns points without their instants cannot draw it. The aligned evolution
+read is the first place it lands, since that read already returns instants by
+nodes, so the age comes with the matrix rather than from a second call.
 
 * References
 

@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 2F546AFE-9DE4-48FD-8FC4-5D8C2A48B540
+:END:
+#+title: Task: Read every result section before refusing a merge
+#+description: A task doc with an empty * Result heading above a written one made compass pr merge refuse while the prose sat below it. Read every section before refusing.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_27:v0:
+#+owner: marco
+#+branch: feature/collapse-synthetic-control-plane-forks
+#+pr: 2772
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stop a duplicate * Result heading from hiding the result that was written and blocking a merge.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- A task doc carrying an empty * Result heading above a written one is accepted, because the result was written
+- A task doc whose only * Result section is empty is still refused
+- A duplicate heading is named on stderr so it gets cleaned up rather than silently tolerated
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2772][#2772]] | [compass] Read every result section before refusing a merge |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered.
+
+The merge guard read only the first * Result heading, so a document with an
+empty heading above a written one was refused with "task Result section is
+empty" while the prose sat directly below it. It happened twice today.
+
+The guard now reads every section and treats the result as present when any
+carries prose, and it names the document and the number of headings when
+there is more than one, because a duplicate heading is a defect in the
+document even when it no longer hides anything. Reading is extracted into
+=_result_sections= so the rule is testable without a live merge.
+
+Measured: the compass suite passes 16 tests, three of them new, covering a
+duplicate above prose, a single empty section that must still refuse, and a
+single section with prose.
+

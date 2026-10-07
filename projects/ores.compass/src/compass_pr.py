@@ -199,6 +199,20 @@ def _parent_story_id(task_text, task_id):
     return ""
 
 
+def _result_sections(task_text):
+    """The bodies of every * Result section in a task doc.
+
+    More than one is a writer's slip, but the reader takes the result as
+    present when any section carries prose, so a duplicate heading cannot
+    hide the result that was written.
+    """
+    return [
+        m.group(1).strip()
+        for m in re.finditer(r"^\* Result[ \t]*$(.*?)(?=^\* |\Z)",
+                             task_text, re.M | re.S)
+    ]
+
+
 def _backlog_capture_slug(project_root, story_id):
     """The capture slug of the backlog story with this id, or "".
 
@@ -456,13 +470,17 @@ def _cmd_merge(args, project_root):
             task_id = _org_id(task_text)
             m = re.search(r"^\| State\s*\|\s*([A-Z]+)", task_text, re.M)
             task_state = m.group(1) if m else ""
-            # Guard: * Result section must have substantive prose.
-            result_m = re.search(
-                r"^\* Result\s*$(.*?)(?=^\* |\Z)",
-                task_text, re.M | re.S)
-            if result_m:
-                result_body = result_m.group(1).strip()
-                task_result_empty = not result_body
+            # Guard: a * Result section must have substantive prose. A doc can
+            # carry more than one heading, which is a writer's slip, but it
+            # must not hide the result they did write: read every section, and
+            # name the duplicate so it gets cleaned up.
+            result_sections = _result_sections(task_text)
+            if result_sections:
+                task_result_empty = not any(result_sections)
+                if len(result_sections) > 1:
+                    print(f"⚠️  {task_path.name} carries "
+                          f"{len(result_sections)} '* Result' headings; keep "
+                          f"one.", file=sys.stderr)
 
     # Guard rails: unresolved review threads, CI state, empty Result.
     import compass_review

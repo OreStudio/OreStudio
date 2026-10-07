@@ -1,0 +1,272 @@
+:PROPERTIES:
+:ID: B8602F8B-AE64-4A45-8462-A3B17282D410
+:END:
+#+title: User Journey: Onboard a counterparty
+#+description: A tenant administrator brings a new trading counterparty on board: its legal identity, its identifiers, its contacts, and the netting agreements and collateral terms the tenant trades under.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator brings a new trading counterparty on board: its legal identity, its identifiers, its contacts, and the netting agreements and collateral terms the tenant trades under.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to bring a new counterparty on board once — the legal entity, the names
+we recognise it by, the people we contact, and the agreements and collateral
+terms we trade under — so that the desk can trade with it and every screen
+resolves it to the same entity." The journey is done when the counterparty reads
+in the list, resolves by an authoritative identifier, and its agreements, netting
+sets and collateral terms read back.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. The trigger is a new trading relationship, a
+legal name or group change, or an ORE document that names a counterparty the
+tenant does not hold. The journey starts at *Counterparties*, or at the
+*Onboard a counterparty* button there, and ends at *Outcome*, at *History*, or
+at *Refused*.
+
+A counterparty is a tenant-wide record. The party-counterparty junction decides
+which of the tenant's parties can see it, and a party sees only the
+counterparties its junction rows name.
+
+* Steps
+
+1. *See the counterparties.* The person opens *Counterparties*. The system lists
+   the tenant's counterparties: short code, full name, party type, status,
+   business centre, identifiers, contact count, version, and last modifier. The
+   person searches by code, name or identifier value, and filters by *Active*,
+   *Closed* or *All*. The person chooses *Onboard a counterparty*.
+2. *Identity.* The person enters the short code, the full name, the
+   transliterated name when the registered name is not Latin, the party type,
+   the status, the business centre, and the parent counterparty. The system
+   offers the party types, the party statuses, the business centres, and the
+   counterparties already stored. The short code is the natural key and is
+   unique in the tenant. The full name need not be unique: branches share a name
+   under distinct short codes. The parent is optional.
+3. *Identifiers.* The person adds each identifier the tenant recognises this
+   counterparty by: a scheme and a value. The system shows the list, marks the
+   identifier the tenant resolves the counterparty by, and refuses a duplicate.
+   The system takes the LEI first, then the BIC, as the authoritative
+   identifier. An ORE alias is unique across the tenant. The system also shows
+   which parties may trade with the counterparty.
+4. *Contacts.* The person adds a contact for each purpose the tenant uses:
+   Legal, Operations, Settlement and Billing. A contact carries the street
+   address, the city, the state, the country, the postal code, the phone, the
+   email and the web page. The natural key is the counterparty and the contact
+   type, so the system keeps one row per type.
+5. *Legal agreements.* The person records each netting agreement with the
+   counterparty: the agreement number, the type, the governing law and a
+   description. Under an agreement the person records its netting sets, and
+   under a set its identifiers, its collateral terms (the CSA), and the
+   currencies the CSA accepts as collateral. The two parties of an agreement are
+   fixed and never change across its versions. A set with no agreement holds
+   trades that do not net.
+6. *Review.* The system shows one summary of everything the person entered and
+   the operations the confirm will send. Nothing is written yet.
+7. *Confirm.* The person chooses *Confirm and write*. The system writes the
+   counterparty, its identifiers, its contacts, its agreements, its netting
+   sets, its netting set identifiers, its collateral terms, its eligible
+   currencies, and the visibility rows. It then shows the outcome: the short
+   code, the identifiers, the contacts, the agreements, and the version
+   written, with links to trade with the counterparty, to see who can see it,
+   and to onboard another.
+8. *Check the history.* The person opens the history. The system lists every
+   version with who changed it, when, and why, and shows the field-level
+   difference from the version before. The person can read the counterparty,
+   its identifiers and its contacts as they stood in a version, and can revert
+   to an older version, which the system writes as a new version.
+9. *Handle a refusal.* When the server refuses a write, the system keeps what
+   the person typed and states what was refused, from which step, and that the
+   record did not change. The person corrects the value, or keeps the value
+   already stored, and continues.
+
+No step waits on the server after its reply, and the journey keeps no state.
+
+* Screens and wireframes
+
+One list screen and one journey screen. *Counterparties* is the list, with its
+search and its tabs. *Onboard a counterparty* is one screen: a flat step rail on
+the left, and the current step on the right. The steps are Identity,
+Identifiers, Contacts, Legal agreements, Review, Outcome and History. Nothing is
+written until the person confirms on Review, so Review is the last step that
+reads and Outcome is the first that reports a write.
+
+#+caption: Counterparty onboarding: the counterparty list, the step rail with the identity step, and the identifiers, contacts, agreements, review, outcome, history and refused states.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/parties/wireframe_onboard_a_counterparty.png]]
+
+* Prototype
+
+The prototype is the design record for the screens above.
+
+- Directory :: =doc/prototypes/onboard-a-counterparty/=
+- States :: =landing=, =counterparty=, =identifiers=, =contacts=, =agreements=,
+  =review=, =done=, =refused=, =history=
+- Refusals :: =?fail=duplicate=, =?fail=missing= and
+  =?fail=duplicate_set_id=, with =?fail=1= for the first kind
+
+The landing screen carries the list and its search. The journey screen carries
+the rail and one step at a time. The state is chosen from the query string and
+is reachable from the foot bar.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =counterparty= | The list row and the identity form: short code, full name, transliterated name, party type, status, business centre, parent counterparty | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
+| =counterparty_identifier= | The identifiers list and the add form: scheme, value, description | [[id:3ABD31C8-417D-4655-8115-371EFDC119AF][ores.refdata.counterparty_identifier]] |
+| =counterparty_contact_information= | The contacts list and the contact editor: type, address, phone, email, web page | [[id:AF9130F0-D095-401B-B3D1-06605057FFB7][ores.refdata.counterparty_contact_information]] |
+| =netting_agreement= | The agreement panel: number, type, governing law, description | [[id:6AADB1A7-1229-4D10-8951-58446788957F][ores.refdata.netting_agreement]] |
+| =netting_set= | The sets under an agreement: code, call type, initial margin type, risk weight, description | [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]] |
+| =netting_set_identifier= | A set's names: scheme and value, such as the ORE id | [[id:2A4B8FD6-62B5-406C-A3E7-88AA0B6B4A46][ores.refdata.netting_set_identifier]] |
+| =csa= | The collateral terms of a set: thresholds, minimum transfer amounts, frequencies, MPOR | [[id:29A8E20A-0F02-4D54-830E-8DDD668E86C0][ores.refdata.csa]] |
+| =csa_eligible_currency= | The eligible collateral list: currency and position | [[id:25090994-3093-470E-BB3F-7832EDCA26A4][ores.refdata.csa_eligible_currency]] |
+| =business_centre= | The business centre picker and the list column | [[id:5A1341B7-1501-456E-8D8D-2E46D1B7BF0A][ores.refdata.business_centre]] |
+| =party_counterparty= | The visibility rows: which parties may trade with the counterparty | [[id:77870EE2-3123-4881-AF13-F35D432FC237][ores.refdata.party_counterparty]] |
+| =party_type= | The party type picker | [[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]] |
+| =party_status= | The status picker | [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]] |
+| =party_id_scheme= | The identifier scheme picker, with =max_cardinality= and =display_order= | [[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] |
+| =contact_type= | The contact type picker | [[id:EB3BE18B-A99C-464E-992B-C98AC421A7B9][ores.refdata.contact_type]] |
+| =currency= | The eligible collateral picker | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
+
+The counterparty and its agreements, sets and CSAs are versioned, so each has a
+history. The agreement's two parties are fixed. The identifiers, the contacts,
+the netting set identifiers and the eligible currencies are versioned child
+rows, and the junction keeps versions too, but no operation reads them for this
+screen; see /What is missing/.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| See the counterparties | List the counterparties with their identifiers and contacts | =refdata.v1.counterparties.list=, =refdata.v1.counterparty_identifiers.list_by_counterparty_id=, =refdata.v1.counterparty_contact_informations.list_by_counterparty_id= | partial |
+| Identity | Offer the party types | =refdata.v1.party_types.list= | exists |
+| Identity | Offer the party statuses | =refdata.v1.party_statuses.list= | exists |
+| Identity | Offer the business centres | =refdata.v1.business_centres.list= | exists |
+| Identity | Offer the parent counterparties | =refdata.v1.counterparties.list= | exists |
+| Identifiers | Offer the identifier schemes | =refdata.v1.party_id_schemes.list= | exists |
+| Identifiers | Read the identifiers | =refdata.v1.counterparty_identifiers.list_by_counterparty_id= | exists |
+| Identifiers | Read who can see this counterparty | =refdata.v1.party_counterparties.list_by_party_id= | partial |
+| Identifiers | Read who can see it, from the counterparty side | (no subject; candidate =refdata.v1.party_counterparties.list_by_counterparty_id=) | missing |
+| Contacts | Offer the contact types | =refdata.v1.contact_types.list= | exists |
+| Legal agreements | List the counterparty's agreements and their sets | =refdata.v1.netting_agreements.list_by_counterparty_id=, =refdata.v1.netting_sets.list_by_netting_agreement_id= | partial |
+| Legal agreements | List a set's identifiers | =refdata.v1.netting_set_identifiers.list_by_netting_set_id= | exists |
+| Legal agreements | Read a set's CSA | =refdata.v1.csas.list_by_netting_set_id= | exists |
+| Legal agreements | Read the CSA's eligible currencies | =refdata.v1.csa_eligible_currencies.list_by_csa_id= | exists |
+| Legal agreements | Fill the eligible currency picker | =refdata.v1.currencies.list= | exists |
+| Confirm | Write the counterparty | =refdata.v1.counterparties.put= | exists |
+| Confirm | Write the identifiers | =refdata.v1.counterparty_identifiers.put_many= | exists |
+| Confirm | Write the contacts | =refdata.v1.counterparty_contact_informations.put_many= | exists |
+| Confirm | Write the agreements | =refdata.v1.netting_agreements.put= | exists |
+| Confirm | Write the netting sets | =refdata.v1.netting_sets.put= | exists |
+| Confirm | Write the netting set identifiers | =refdata.v1.netting_set_identifiers.put_many= | exists |
+| Confirm | Write the collateral terms | =refdata.v1.csas.put= | exists |
+| Confirm | Write the eligible currencies | =refdata.v1.csa_eligible_currencies.put_many= | exists |
+| Confirm | Record which parties can see it | =refdata.v1.party_counterparties.put= | exists |
+| Confirm | Stage the eight writes as one act | (no subject; candidate is a composite write) | missing |
+| Check the history | List the versions | =refdata.v1.counterparties_versions.list= | exists |
+| Check the history | Read one version | =refdata.v1.counterparties_versions.get= | exists |
+| Check the history | Read the composite as of a version | =refdata.v1.counterparties.composite_as_of= | exists |
+| Check the history | Read the identifiers' versions | =refdata.v1.counterparty_identifiers_versions.list= | exists |
+| Check the history | Read the contacts' versions | =refdata.v1.counterparty_contact_informations_versions.list= | exists |
+| Check the history | Read the field-level difference in one reply | (no subject; candidate is a diff reply) | missing |
+| Check the history | Revert by writing the old values | =refdata.v1.counterparties.put= | exists |
+| Handle a refusal | Read the record, the version and the field the refusal left behind | the error on the subject that failed | missing |
+
+The review step sends no operation of its own: it shows what the confirm will
+send. The child rows also register history providers, so
+=refdata.v1.counterparty_identifiers_versions.list= and
+=refdata.v1.counterparty_contact_informations_versions.list= carry a child row's
+own versions.
+
+* What is missing
+
+1. *No authoritative-identifier flag exists.* The model stores no flag that
+   names the identifier the tenant resolves a counterparty by, so the screen
+   infers one: the LEI first, then the BIC. If the tenant must state which
+   identifier is authoritative, the column does not exist. The candidate is a
+   flag on =counterparty_identifier=, with the precedence as its default. Until
+   then the screen shows the inferred one and says it is inferred.
+2. *A counterparty carries one business centre.* The journey must show every
+   centre the counterparty deals through, and there is no counterparty-to-centre
+   row. Either the single column is the answer, or a junction like
+   =party_country_junction= is needed. A second centre is drawn as a gap, not as
+   a field. Until a junction exists the screen offers the one column and says
+   so.
+3. *No counterparty-side call reads the party-counterparty junction.* The
+   junction calls =refdata.v1.party_counterparties.put= and
+   =refdata.v1.party_counterparties.list_by_party_id= exist, but the subject
+   reads by party, and the junction's right column carries no read of its own.
+   The counterparty protocol has no call that reads the rows from the
+   counterparty side, so the screen cannot list the parties that may trade with
+   this counterparty. The candidate is
+   =refdata.v1.party_counterparties.list_by_counterparty_id= and an index on the
+   junction's counterparty column to serve it. Until then the screen shows the
+   parties it already knows.
+4. *The confirm is one act over eight subjects, with no composite write and no
+   rollback.* The review draws the write as one act over the counterparty and
+   its seven owned subjects. The server offers each write alone, so a failure
+   half way leaves a counterparty with some of its rows. The prototype draws the
+   outcome as one act; the server cannot yet promise it. The candidate is a
+   composite write that stages the eight, or a rollback that closes the rows
+   already written. The visibility row is a ninth write, and it is not part of
+   the eight.
+5. *No field-level diff in any reply.* Version history is read with
+   =refdata.v1.counterparties_versions.list= and
+   =refdata.v1.counterparties_versions.get=, and the screen computes the
+   difference from the version before. No reply carries it. The child rows have
+   their own history subjects, so a full difference of identifiers and contacts
+   needs a read each. The candidate is a reply that carries the field-level
+   difference. Until then the screen computes the difference and the child reads
+   are one call each.
+6. *A refusal names neither the record, the version, nor the field.* Each
+   refusal arrives as a plain error on one subject. No reply names the record,
+   the version it left behind, or the field that collided, so the refused screen
+   composes those three from the step that failed. The candidate is a typed
+   refusal that carries them.
+7. *The landing list carries the counterparty alone.* The identifier and
+   contact columns read from the owning rows, one call per row. The candidate is
+   a list reply that carries the counterparty with its identifiers and contacts,
+   or a filtered child read per page. Until then the screen pages through the
+   child rows once.
+8. *A counterparty's agreements and sets are not read in one reply.* The screen
+   reads the agreements, then one call per agreement for its sets, then one call
+   per set for its identifiers, its CSA and the CSA's eligible currencies. The
+   candidate is a composite read of the counterparty's agreements, sets and
+   collateral terms.
+9. *Only a tenant administrator can run this journey.* No role below
+   =TenantAdmin= holds the counterparty permissions; =Operations= holds the
+   currency permissions and no counterparty permission.
+
+* Related journeys
+
+- [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][Keep a party's details current]] — the tenant's own legal entity; its identifier and contact panels are the same shape, and it owns the party side of the visibility junction
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — a counterparty is visible only to the parties that journey creates, so a person goes there before the counterparty can be traded by a new party
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the party type, party status, contact type and party identifier scheme pickers read lists from there
+
+* Related knowledge
+
+- [[id:6E9A1D3C-8F52-4A67-B1DE-3C7A9F0E2B4D][Counterparties]] — the manual chapter: the entity, its hierarchy, its identifiers, its contacts and its history
+- [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] — the internal mirror of the counterparty; the identifier schemes and the contact shape live there
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the agreements, the netting sets and the collateral terms this journey records
+- [[id:17F85A71-2186-490A-B9CE-C9937A3FF16A][Business Centres]] — the centre code the identity step picks
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+
+* See also
+
+- [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:3CAA0C52-5049-4FC7-9967-96863D2E46BC][Task: Prototype the refdata party, book, convention and tenor journeys]] — the task that drew this prototype

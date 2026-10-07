@@ -1,0 +1,127 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+@startuml
+
+salt
+{
+  <b>DEFINE THE CONVENTIONS FOR AN INSTRUMENT</b>  { <b>Instrument</b> | Convention | Terms | Review | Outcome }
+  --
+  {
+    {
+      <b>1. Choose the instrument</b>
+      --
+      {#
+        Filter the families | "^swap                    "
+      }
+      {#
+        Family | Convention entity | Conventions
+        Deposit | refdata.deposit_conventions | 2
+        <b>Swap</b> | refdata.swap_conventions | 3
+        OIS | refdata.ois_conventions | 1
+        FRA | refdata.fra_conventions | 0
+        ... 21 more families ...
+      }
+      [ Continue ]
+      <i>A family with no convention opens the terms step with an empty form.</i>
+    } | {
+      <b>2. Choose the convention</b>
+      --
+      {#
+        Search EUR-6M | "^EUR-6M                  "
+      }
+      {#
+        Convention | Modified by | Recorded at | Version | Actions
+        <b>EUR-6M-SWAP-CONVENTIONS</b> | m.okafor | 2026-09-14 11:02 | v3 | [ Edit ] [ History ]
+        USD-3M-SWAP-CONVENTIONS | j.smith | 2026-08-30 16:41 | v2 | [ Edit ] [ History ]
+      }
+      [ Back ] | [ New swap convention ]
+      <i>The filter takes id_one_of only: it filters by id, not by a term.</i>
+    }
+  }
+  --
+  {
+    {
+      <b>3. Author its terms</b>
+      --
+      {#
+        Convention | swap_convention
+      }
+      <b>Fixed leg</b>
+      {#
+        Field | Value | Source
+        Fixed Calendar | ^TARGET^ | from calendars
+        Fixed Frequency | ^Annual^ | from payment frequencies
+        Fixed Convention | ^ModifiedFollowing^ | from business day conventions
+        Fixed Day Count Fraction | ^30/360^ | from day count fractions
+        Index | ^EUR-EURIBOR-6M^ | from floating indices
+        Float Frequency | ^Semiannual^ | from payment frequencies
+        Sub-Periods Coupon Type | ^Compounding^ | from sub-period coupon types
+      }
+      [ Edit calendars... ] | [ Back ] | [ Review ]
+      <i>Every field the model carries. A term that is a pick is not edited here.</i>
+      --
+      <b>3b. History (the Terms step's own view)</b>
+      version: { v1 | v2 | <b>v3</b> } | [ hide the diff ]
+      {#
+        Field | version 2 to version 3
+        Fixed Frequency | Annual -> Annual
+        Fixed Day Count Fraction | 30/360 -> 30/360
+        Sub-Periods Coupon Type | (empty) -> Compounding
+      }
+      by m.okafor at 2026-09-14 11:02, with the diff against version 2
+      [ Back to the terms ] | [ Close ]
+      <i>The server has no draft version: history.get returns saved versions only.</i>
+    } | {
+      <b>4. Review</b>
+      --
+      {#
+        Field | Value
+        Fixed leg |
+        Fixed Calendar | TARGET
+        Fixed Frequency | Annual
+        Fixed Day Count Fraction | 30/360
+        Floating leg |
+        Index | EUR-EURIBOR-6M
+      }
+      3 fields differ from the version read.
+      [ ] Prototype: make the referenced lookup missing
+      [ Back ] | [ Save the convention ]
+      --
+      <b>5. Outcome</b>
+      **EUR-6M-SWAP-CONVENTIONS is saved as version 4**
+      A trade that picks Swap reads these terms.
+      [ See its history ] | [ Back to the list ] | [ Another instrument ]
+      --
+      <b>6. Refused</b>  (its own screen, no rail place)
+      **The write was refused**
+      swap_convention was not changed. It keeps version 3.
+      {#
+        Refusal | Detail
+        Convention | EUR-6M-SWAP-CONVENTIONS
+        Version | 3 - unchanged by this attempt
+        Raised on | Author its terms
+        Refusal kind | a term references a value the list does not hold
+      }
+      [ Clear the refusal ] | [ Back to the terms ]
+      <i>result.success = false carries no field-level record.</i>
+    }
+  }
+}
+
+@enduml

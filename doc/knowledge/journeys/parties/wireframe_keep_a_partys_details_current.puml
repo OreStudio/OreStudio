@@ -1,0 +1,133 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>PARTIES</b> | Search parties | "Northwind                    " | [ Search ] | [ New party ]
+  The legal entities this tenant trades as. A party is corrected in place.
+  {#
+    <b>Code</b> | <b>Name</b> | <b>Type</b> | <b>Status</b> | <b>Business Center</b> | <b>Version</b> | <b>Modified By</b> | .
+    .NWCAP. | Northwind Capital Ltd | Corporate | Active | GBLO | 7 | tenant_admin | [ Open ]
+    NWMKT | Northwind Markets LLC | Corporate | Active | USNY | 3 | j.silva | [ Open ]
+    NWAPAC | Northwind Asia Pacific Pte Ltd | Corporate | Pending | SGSL | 2 | a.reyes | [ Open ]
+    NWFUND | Northwind Alpha Fund ICAV | Fund | Active | IEDU | 1 | tenant_admin | [ Open ]
+  }
+  <b>GAP.</b> The list filter is refdata.v1.parties.list with a search term; a dated list would need the versions read.
+  --
+  <b>PARTY DETAILS - NWCAP</b> | Corporate | Active | v7
+  Steps: (Overview) Identifiers Contacts Memberships Structure Review Outcome History Refused
+  --
+  {#
+    <b>(1) Overview</b> - a correction, not a replacement: the write states must_match_version 7.
+    Short Code | "NWCAP                        " | Full Name | "Northwind Capital Holdings Ltd"
+    Codename | "brave_harbor_af              " | Transliterated Name | "Northwind Capital         "
+    Party Type | ^Corporate^ | Status | ^Active^
+    Parent Party | ^No Parent^ | Business Center | ^GBLO - London^
+    Registration default | [X] is_registration_default | Party Category | Operational (no form control)
+    Logo (image_id) | - none - | Audit | v7 tenant_admin 2026-09-30 11:04
+  } | {
+    <b>(2) Identifiers</b> - a value is part of its row's key, so it is retired and replaced, never edited.
+    <b>Scheme</b> | <b>Value</b> | <b>Description</b> | <b>Card. | <b>Ver.</b> | .
+    LEI | 549300NWCAPITAL00001 | GLEIF LEI, registered 2014-06-12 | 1 | 3 | [ Record a new value ]
+    BIC | NWCAGB2L | Head office BIC | 3 | 2 | [ Record a new value ]
+    MIC | XNWC | Northwind Capital, London | 2 | 1 | [ Record a new value ]
+    NATIONAL_ID | 08874521 | UK Companies House registration | 1 | 5 | [ Record a new value ]
+    New value under LEI | "549300NWCAPITAL00002" | .delete. the old value then .put. the new one | . | . | [ Write ]
+    A change of legal name is one field on the party row; a change of identifier is a row of its own.
+  }
+  --
+  {#
+    <b>(3) Contacts</b> - one row per contact type; the screen marks one primary.
+    <b>Type</b> | <b>Primary</b> | <b>Address</b> | <b>Version</b> | .
+    Legal | ( ) | 1 Fenchurch Avenue, London EC3M 5AD | 2 | [ Mark primary ] | [ Show ]
+    .Operations. | .(o). | 25 Bank Street, Canary Wharf, London E14 5JP | 4 | .[ Mark primary ]. | .[ Shown ]
+    Settlement | ( ) | 25 Bank Street, Canary Wharf, London E14 5JP | 3 | [ Mark primary ] | [ Show ]
+    Billing | ( ) | 1 Fenchurch Avenue, London EC3M 5AD | 1 | [ Mark primary ] | [ Show ]
+    Contact - Operations: 25 Bank Street, Canary Wharf, London E14 5JP | +44 20 7000 0100 | operations@northwind.example
+  } | {
+    <b>GAP.</b> party_contact_information carries no primary flag. "Primary" is a client convention with no operation
+    behind it; the candidate is an is_primary column with a one-per-party constraint.
+    --
+    <b>(4) Memberships</b> - a visibility link, not a definition. Closing one ends this party's access.
+    <b>Countries this party operates in</b> | <b>Currencies this party operates in</b>
+    refdata.v1.party_countries.list_by_party_id | refdata.v1.party_currencies.list_by_party_id
+    GB United Kingdom | [ Close ] | GBP Pound sterling | [ Close ]
+    US United States | [ Close ] | USD US dollar | [ Close ]
+    .SG Singapore. | .[ Close ]. | EUR Euro | [ Close ]
+    DE Germany | [ Close ] | SGD Singapore dollar | [ Close ]
+    JP Japan | [ Close ] | JPY Yen | [ Close ]
+  }
+  --
+  {#
+    <b>(5) Structure</b> - the counterparties this party sees and the business units it is made of.
+    Northwind Capital Holdings Ltd sits under nothing: it is the tenant's root party (parent_party_id).
+    <b>Counterparties this party can see</b> | <b>Business units this party is made of</b>
+    Atlas Clearing House Ltd CP-ATLAS | [ Remove link ] | Markets MKT - DIVISION - GBLO - Active | ^DIVISION level 0^
+    Meridian Bank plc CP-MERIDIAN | [ Remove link ] | \-- Rates Trading RATES - under Markets | ^DESK level 1^
+    Kestrel Futures S.A. CP-KESTREL | [ Remove link ] | \-- FX Options FXOPT - under Markets | ^DESK level 1^
+    Available to link | . | Finance FIN - DIVISION - GBLO - Active | ^DIVISION level 0^
+    Vantage Securities LLC CP-VANTAGE | [ Link to this party ] | \-- Treasury TRSY - under Finance | ^TEAM level 2^
+  } | {
+    <b>GAP.</b> The junction tables keep closed versions, but no operation reads them: there is no
+    party_countries_versions subject, so a closed membership has no on-screen record of when it closed or who closed it.
+    --
+    <b>(6) Review</b> - nothing is written until you confirm.
+    <b>What</b> | <b>Before</b> | <b>After</b> | <b>Operation</b>
+    Legal name (full_name) | Northwind Capital Ltd | Northwind Capital Holdings Ltd | refdata.v1.parties.put
+    Country membership | Singapore (SG) | closed | refdata.v1.party_countries.delete
+    Identifier value (LEI) | 549300NWCAPITAL00001 | 549300NWCAPITAL00002 | party_identifiers.delete + .put
+    Primary contact | Operations | Legal | none - no primary flag (gap)
+    Change reason | ^common.rectification^ | Commentary | "                    " | dq.v1.change_reasons.list
+  }
+  --
+  {#
+    <b>(7) Outcome</b> - the correction is written as a new version of the same party.
+    Saved. Northwind Capital Holdings Ltd is now version 8. The party kept its id and its codename.
+    A child write bumps the party's version, so a party write prepared against the old version is refused.
+    [ Back to the list ] | [ Open its history ]
+  } | {
+    <b>GAP.</b> The primary-contact row of Review has no operation behind it: the model has no primary flag, so it would
+    write nothing. It is listed so the reviewer sees the choice the screen makes.
+    --
+    <b>(Refused)</b> - the write did not land. The record is exactly as it was.
+    Business unit type level 0 cannot be contained by a unit of the same or higher level 0
+    Unit Type BRANCH on the business unit Rates Trading was refused. refdata.v1.business_units.put | outcome = refused
+    <b>What the server checked</b> | <b>What to do instead</b>
+    The business-unit insert trigger: a child's type level | Choose a type below the parent: DESK (level 1) or
+    must be strictly greater than its parent's. | TEAM (level 2) under Markets.
+  }
+  --
+  {#
+    <b>(8) History</b> - every version of the party, each with the field difference from the version before.
+    refdata.v1.history.get | entity_type ores.refdata.party | [ v7 ] | [ v6 ] | [ v5 ] | [ v4 ] | [ v3 ] | [ v2 ] | [ v1 ]
+    <b>Version 7</b>: modified_by j.silva | recorded_at 2026-09-30 11:04 | reason common.activation
+    <b>Field</b> | <b>Before</b> | <b>After</b>
+    Status | Pending | Active
+    Registration default | no | yes
+    Identifiers and contacts as of v7: read with refdata.v1.parties.composite_as_of | LEI 549300NWCAPITAL00001
+  } | {
+    <b>(Revert)</b> - there is no revert subject: the old values are written back with refdata.v1.parties.put as a
+    new version, and history is append-only. [ Revert to v7 ]
+    --
+    <b>GAP.</b> The refusal text above is the trigger's own message, not a typed refusal that names the field and the rule.
+    <b>GAP.</b> No operation reads one identifier row's own field diff; the versions subjects return raw rows only.
+  }
+}
+
+@enduml

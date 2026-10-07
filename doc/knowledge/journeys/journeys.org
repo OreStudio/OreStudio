@@ -44,6 +44,10 @@ not to the folder the code happens to live in.
 | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs |
 | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce |
 | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] | The short code lists that classify reference data |
+| [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]] | The tenant's own legal entities and the counterparties it trades with: their identifiers, contacts, and the countries, currencies and units they connect to |
+| [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it |
+| [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions]] | The market terms an instrument is built on, and the reference data lists each convention picks from |
+| [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] | Tenor codes and the resolution the system computes from them, down to the date a tenor produces on a named calendar |
 | [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time |
 
 * How to read a journey

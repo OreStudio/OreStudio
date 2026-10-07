@@ -1,0 +1,136 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>SHAPE THE BOOK STRUCTURE</b> | Northwind Capital Ltd  ·  RATES.EUR  ·  EUR_SWAPS_01
+  --
+  {
+    {#
+      <b>STEPS</b>
+      (1) Book tree
+      (2) Choose the portfolio
+      (3) Create or open the book
+      <b>(4) Set its classification</b>
+      (5) Set the rights
+      (6) Review
+      (7) Outcome
+      [ Refused ]  [ History ]
+    } | {
+      <b>Set its classification</b>  ·  this tenant's data
+      Each picker names one row of a shared list. The list itself is not this tenant's.
+      --
+      {#
+        Field | Value | Source
+        Status | ^Active^ | shared list
+        Regulatory book type | ^Trading^ | shared list
+        Book purpose type | ^Trading^ | shared list, no wire field
+        Ledger feed type | ^Automatic^ | shared list, no wire field
+        Rates centre | ^GBLO^ | business centres
+        Sweepable | [x] | this tenant
+      }
+      --
+      <b>Status transition check</b>
+      {#
+        Transition | Rule
+        Active to Frozen | allowed
+        Active to Closed | refused while the book holds open activity
+        Frozen to Closed | refused, return it to Active first
+        Closed to any | refused, terminal
+      }
+      --
+      [ Review the write ]
+    }
+  }
+  --
+  {
+    <b>Book tree</b> | portfolios and the books under them
+    --
+    {#
+      Portfolio | Purpose | Books
+      Global Trading | Risk | 2
+      Global Rates | Risk | 4
+      EUR Rates | Risk | 2
+      USD Rates | Risk | 3
+      APAC Credit | Regulatory | 1
+    }
+    --
+    {#
+      Book | Status | Purpose | Open activity
+      EUR_SWAPS_01 | Active | Trading | 14
+      EUR_VOL_01 | Active | Trading | 3
+      RESERVE_01 | Frozen | Reserve | none
+    }
+    --
+    [ New book ]  [ Search ]
+  } | {
+    <b>Direct rights at EUR Rates</b>  ·  this tenant's data
+    A right at a node covers every node below it, and not its siblings.
+    --
+    {#
+      Account | read | open_sandbox
+      tenant_admin | [x] | [x]
+      j.smith | [ ] | [ ]
+      a.tanaka | [x] | [ ]
+      m.okafor | [x] | [ ]
+    }
+    --
+    <b>Effective rights</b>
+    {#
+      Account | read | open_sandbox
+      a.tanaka | inherited from RATES | direct at RATES
+      m.okafor | no right | no right
+    }
+    --
+    [ Review the write ]
+  }
+  --
+  <b>Review</b> | nothing is written until you confirm
+  {#
+    Change | From | To | Write
+    Set ledger feed type | None | Automatic | books.put
+    Set rates centre | WRLD | GBLO | books.put
+    Grant read to a.tanaka | - | at RATES.EUR | portfolio_rights.put_many
+  }
+  --
+  <b>Shared taxonomy</b> | the system tenant's lists, read only here
+  {#
+    List | Values
+    Book statuses | Active, Closed, Frozen
+    Book purpose types | Trading, Reserve, Funding, Wash, WriteOff, Test, Sales, SweepTarget, RemittanceTarget
+    Ledger feed types | None, Automatic, Manual
+    Regulatory book types | Trading, Banking
+    Purpose types | Risk, Regulatory, ClientReporting, Internal
+  }
+  --
+  <b>Refused</b> | the server returns an error
+  Book EUR_SWAPS_01 cannot move from Active to Closed: the ledger still shows 14 open trades against it.
+  [ Back to the classification ]  [ History ]
+  --
+  <b>History</b> | version 3 of EUR_SWAPS_01, with the field diff from version 2
+  {#
+    Version | Changed by | Reason
+    <b>3</b> | a.tanaka | book classification changed
+    (2) | j.smith | book classification changed
+    (1) | system | new record
+  }
+  [ Revert this version ]
+}
+
+@enduml

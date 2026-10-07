@@ -1,0 +1,85 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>DEFINE HOW TENORS RESOLVE</b>
+  Tenant Acme Capital - tenant_admin
+  Refdata > Tenors - 3M under RATES_SPOT_FORWARD - horizon 2026-03-16 - GB.LOIOB - Following
+  --
+  {
+    {
+      <b>Steps</b>
+      . Tenors
+      . The tenor
+      . Its resolution
+      . The schedule
+      . The resolved dates
+      . Review
+      . The outcome
+      ..
+      . History
+      . The refusal
+    } | {
+      <b>Tenors</b>
+      "Search: 3M, one month, or part of a description" | Kind: (all) (PERIOD) (SPECIAL)
+      {#
+        Code | Display Name | Kind | Unit | Order | Resolves to (RATES_SPOT_FORWARD) | Version
+        <b>O/N</b> | Overnight | SPECIAL | NONE | 10 | 2026-03-18 | v1
+        T/N | Tomorrow next | SPECIAL | NONE | 20 | 2026-03-19 | v1
+        <b>3M</b> | Three month | PERIOD | MONTH x 3 | 60 | 2026-06-18 | v2
+        1Y1Y | One year, one year forward | PERIOD | YEAR x 1 | 100 | 2027-06-18 | v2
+      }
+      [ Open the tenor ] | [ Add tenor ]
+      --
+      <b>The code a person reads</b> | <b>The resolution the system computes</b>
+      <b>3M</b> | Anchor SPOT, plus 3 month.
+      Three month | RATES_SPOT_FORWARD / ANCHOR_OFFSET / SPOT
+      --
+      {#
+        Tenor | Convention | Calendar | Roll rule | Horizon
+        ^3M^ | ^RATES_SPOT_FORWARD^ | ^GB.LOIOB^ | ^Following^ | "2026-03-16"
+      }
+      {#
+        Step | What it is | Date
+        Horizon | the as-of date every anchor is measured from | Mon 16 Mar 2026
+        Anchor | SPOT, from the convention RATES_SPOT_FORWARD | Wed 18 Mar 2026
+        Offset | +3 month from the anchor | Thu 18 Jun 2026
+        Roll | Following on GB.LOIOB | Thu 18 Jun 2026
+        <b>Resolved</b> | 3M under RATES_SPOT_FORWARD | Thu 18 Jun 2026
+      }
+      ! Refused at the schedule. ROLL_QUARTER has 9 dates on or after the walk start, and 1Y12RQ asks for 12.
+      --
+      {#
+        Version | Changed by | Change reason | Commentary
+        v2 | j.smith | DATA_FIX | Three months is a calendar quarter, not ninety days.
+        v1 | tenant_admin | SEED | Seeded with the tenant.
+      }
+      {#
+        Field | Version before | This version | Kind
+        Display Name | - | Three month | added
+        Unit | DAY | MONTH | changed
+        Multiplier | 90 | 3 | changed
+      }
+      [ Revert to this version ]
+    }
+  }
+}
+
+@enduml

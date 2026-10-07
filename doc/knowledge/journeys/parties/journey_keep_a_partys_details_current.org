@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: 55A8F48F-0072-4DD6-98FC-0BAB62C7DA43
+:END:
+#+title: User Journey: Keep a party's details current
+#+description: A tenant administrator corrects one of the tenant's own legal entities: its names and type, its identifiers, its contacts, and the countries, currencies, counterparties and business units it connects to.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator corrects one of the tenant's own legal entities: its names and type, its identifiers, its contacts, and the countries, currencies, counterparties and business units it connects to.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this legal entity to read correctly everywhere it is used: its name and
+short code, the schemes it is known by, the people to reach for what, and the
+countries, currencies, counterparties and units it connects to." The journey is
+done when the party reads correctly and its history shows why each field
+changed.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. The trigger is a legal name that changed at the
+registry, an identifier that was reissued, a contact or a desk that moved, or a
+wrong value found in a run or a report. The journey starts at *Parties*, or at a
+link from any screen that names a party, and ends when the person leaves the
+party.
+
+The journey corrects a party that already exists. It does not create one and it
+does not provision it: [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] does
+that. The distinction is load-bearing, because the party keeps its id, its
+codename and its registration default across every correction here.
+
+* Steps
+
+1. *Find the party.* The person opens *Parties*. The system lists the tenant's
+   legal entities: short code, full name, type, status, business center, version
+   and the account that last modified the row. The person searches by name,
+   short code or codename, or opens a party from a link elsewhere. The tenant's
+   =System= party is not offered: =party_category= is not user-editable.
+2. *Correct the party record.* The person edits the short code, the full name,
+   the party type, the status, the parent party, the business center or the
+   registration default. The codename and the category are shown read-only. The
+   person states a change reason and a commentary, and the system writes the
+   party with =must_match_version=, so an edit made meanwhile is refused instead
+   of lost.
+3. *Correct the identifiers.* The system lists the party's identifiers, one row
+   per scheme, with the scheme's cardinality. The person records a new value
+   under a scheme. Because the value is part of the row's key, the system
+   retires the old value with a delete and writes the new one, and the scheme's
+   =max_cardinality= decides how many values one party may hold. A change of
+   legal name and a change of identifier do not read the same on screen, and
+   this step says why.
+4. *Correct the contacts.* The system lists one row per contact type: Legal,
+   Operations, Settlement and Billing. The person opens a row and edits its
+   address, phone, email and web page, and writes it with the row's own version
+   as its precondition. The screen marks one row primary. See /What is missing/:
+   the model carries no flag behind that mark.
+5. *Set the memberships.* The system lists the countries and the currencies the
+   party operates in, each with the junction read for this party. The person
+   closes a membership the party no longer needs, or links another. Closing
+   writes a closed version of the junction row; the country or currency
+   definition is tenant-level and is untouched.
+6. *Set the structure.* The system shows the counterparties the party can see
+   and the business units it is made of. The person links or unlinks a
+   tenant-wide counterparty, and reclassifies a business unit by choosing its
+   unit type. A unit type carries a level, and the system refuses a child unit
+   whose level is not strictly greater than its parent's; the refusal keeps the
+   unit and its parent on screen so the person sees what broke.
+7. *Review.* The system lists every change as one row: what changes, the value
+   before, the value after and the operation that writes it. Nothing is written
+   until the person confirms. The change reason and the commentary are written
+   with every row, and the party write states the version it read.
+8. *Confirm.* The system writes each operation. The party moves to a new
+   version; the previous version is untouched. A child write, such as an
+   identifier or a contact, bumps the party's version on its own, so a party
+   write prepared against the old version is refused.
+9. *Check the history.* The person opens *History*. The system reads every
+   version of the party with the generic history request and shows the actor,
+   the reason and the field-level difference from the version before. It also
+   reads the party with its identifiers and contacts as they stood in that
+   version's window, so the two kinds of change stay comparable after the fact.
+10. *Revert.* The person chooses an older version. The system writes its values
+    back with =refdata.v1.parties.put= as a new version, with a reason. There
+    is no revert subject; history is append-only.
+11. *Leave.* The person goes back. Every screen that names the party reads the
+    corrected values.
+
+No step waits on the server after its reply, and the journey keeps no state of
+its own. A refused write leaves the record exactly as it was and the person can
+try again. The journey is a run of screens over immediate operations, so it
+needs no [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]].
+
+* Screens and wireframes
+
+One screen, ten states. The first state is the party list, which the person
+starts from and returns to. The other nine are the walk: a flat left rail with
+eight steps, plus the history and the refusal as side states. Each step draws
+the one view it needs. The party header, the short code, the type, the status
+and the version, stays above the body so the person never loses which record is
+open.
+
+#+caption: Keep a party's details current: the list, the eight-step walk (overview, identifiers, contacts, memberships, structure, review, outcome), the refusal and the history.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/parties/wireframe_keep_a_partys_details_current.png]]
+
+* Prototype
+
+A clickable prototype is merged at
+=doc/prototypes/keep-a-partys-details-current/=, and it is the design record for
+this journey. It is plain HTML, CSS and JavaScript over mock data, with no
+service behind it. It draws the same screens as the wireframe, and it adds the
+three refusal variants the wireframe states in words:
+
+- =list= — the party list, its search and its create action;
+- =overview= — the party's own record, with the correction notice, the
+  read-only codename and category, and the audit line;
+- =identifiers= — the identifier rows, the scheme picker, the cardinality note,
+  and the comparison of a name change against an identifier change;
+- =contacts= — the contact rows, the primary mark and the full contact form;
+- =memberships= — the country and currency junctions, what closing one means,
+  and the gap it leaves;
+- =structure= — the party hierarchy, the counterparty links, the business units
+  and the unit-type level ladder;
+- =review= — one row per change, with the before and after value and the
+  operation, above the change reason;
+- =outcome= — what was written and what changed as a side effect;
+- =refused= — three refusals, selected with =?fail= =level=, =cardinality= or
+  =stale=: a business-unit level broken, an identifier cardinality exceeded, and
+  a stale party write;
+- =history= — the version buttons, the field diff of the chosen version, the
+  composite as-of read and the revert.
+
+The design questions the prototype settles, and which this document carries:
+
+1. *Is a correction a replacement?* No. The party keeps its id and its
+   codename, and each correction appends a version. The write states the version
+   it read, so a stale write is refused rather than overwriting a concurrent
+   edit. That decision fixes the whole shape of the journey: there is no create
+   form here and no destructive action.
+2. *Do a name change and an identifier change read the same?* No. The legal name
+   is one field on the party row; an identifier is a row whose value is part of
+   its key, so it is retired and replaced. The identifiers step draws the two
+   side by side to make the difference visible before the person acts.
+3. *Is a membership an edit or a link?* A link. Closing a country or a currency
+   membership hides it from this party and leaves every other party and the
+   tenant-level definition alone, and it is reversible. The screen states this,
+   because the action reads like a delete and is not one.
+4. *How is a rule that lives in the database shown?* As a state, not a toast.
+   The refusal keeps the unit, its parent and both levels on screen, so the
+   person can see the record the change would have broken.
+5. *Where does the party's own view of its children come from?* From the
+   junction reads scoped to this party, one per panel, so a slow panel does not
+   hold the others, and from the party write for the record itself.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =party= | The party record, the list, the header and the history | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =party_identifier= | The identifiers step: the scheme, the value and its description | [[id:CDB0273E-8DBA-417D-A31E-0475BF7538B7][ores.refdata.party_identifier]] |
+| =party_id_scheme= | The scheme picker and the scheme's =max_cardinality= | [[id:8111CC42-FD5E-4148-8F0F-809FC267440D][ores.refdata.party_id_scheme]] |
+| =party_contact_information= | The contacts step: one row per contact type | [[id:B2497625-247E-4B80-A5D2-926A453FB338][ores.refdata.party_contact_information]] |
+| =contact_type= | The contact type each row is keyed by | [[id:EB3BE18B-A99C-464E-992B-C98AC421A7B9][ores.refdata.contact_type]] |
+| =party_country= | The country membership rows | [[id:BA74C9F6-DA2C-43F9-9EFA-4E9EFF7356E2][ores.refdata.party_country]] |
+| =party_currency= | The currency membership rows | [[id:0BB9EF29-22CD-4088-9D9B-40AE4E7FF099][ores.refdata.party_currency]] |
+| =party_counterparty= | The counterparty links this party can see | [[id:77870EE2-3123-4881-AF13-F35D432FC237][ores.refdata.party_counterparty]] |
+| =business_unit= | The units this party is made of, and their hierarchy | [[id:ADC87ED3-153E-4FD9-BB87-DC9E184DA315][ores.refdata.business_unit]] |
+| =business_unit_type= | The unit type picker, and the level the rule reads | [[id:3F8A5C1E-9B7D-4A2F-8E6C-1D4B7A9F3E2C][ores.refdata.business_unit_type]] |
+| =party_type= | The party type picker | [[id:E8FD507C-D426-46A3-B81C-670CB448B2E8][ores.refdata.party_type]] |
+| =party_status= | The status picker | [[id:5B635069-1662-4E77-9FBE-5D0D01737AB7][ores.refdata.party_status]] |
+| =counterparty= | The tenant-wide counterparties offered for linking | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
+
+The party, the identifier and the contact are versioned, and each registers a
+history provider. The three junctions keep closed versions in their tables, but
+no operation reads them, so the membership panels have no history of their own;
+see /What is missing/. The party's own history is what carries the story of a
+membership that closed, because the junction write bumps the party's version.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the party | List and search the parties | =refdata.v1.parties.list= | exists |
+| Find the party | Read one party | =refdata.v1.parties.get= | exists |
+| Find the party | Fill the parent party picker | =refdata.v1.parties.list= | exists |
+| Correct the party record | Fill the party type picker | =refdata.v1.party_types.list= | exists |
+| Correct the party record | Fill the status picker | =refdata.v1.party_statuses.list= | exists |
+| Correct the party record | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Correct the party record | Write the party with =must_match_version= | =refdata.v1.parties.put= | exists |
+| Correct the identifiers | List the party's identifiers | =refdata.v1.party_identifiers.list_by_party_id= | exists |
+| Correct the identifiers | Fill the scheme picker | =refdata.v1.party_id_schemes.list= | exists |
+| Correct the identifiers | Refuse a value over the scheme's cardinality | =refdata.v1.party_identifiers.put= | exists |
+| Correct the identifiers | Retire the old value | =refdata.v1.party_identifiers.delete= | exists |
+| Correct the identifiers | Write the new value | =refdata.v1.party_identifiers.put= | exists |
+| Correct the contacts | List the party's contacts | =refdata.v1.party_contact_informations.list_by_party_id= | exists |
+| Correct the contacts | Fill the contact type picker | =refdata.v1.contact_types.list= | exists |
+| Correct the contacts | Write a contact row | =refdata.v1.party_contact_informations.put= | exists |
+| Correct the contacts | Mark a contact primary | none | missing |
+| Set the memberships | List the party's countries | =refdata.v1.party_countries.list_by_party_id= | exists |
+| Set the memberships | List the party's currencies | =refdata.v1.party_currencies.list_by_party_id= | exists |
+| Set the memberships | Fill the country picker | =refdata.v1.countries.list= | exists |
+| Set the memberships | Fill the currency picker | =refdata.v1.currencies.list= | exists |
+| Set the memberships | Close a country membership | =refdata.v1.party_countries.delete= | exists |
+| Set the memberships | Close a currency membership | =refdata.v1.party_currencies.delete= | exists |
+| Set the memberships | Read a membership's own versions | none | missing |
+| Set the structure | List the party's counterparty links | =refdata.v1.party_counterparties.list_by_party_id= | exists |
+| Set the structure | Fill the counterparty picker | =refdata.v1.counterparties.list= | exists |
+| Set the structure | Link or unlink a counterparty | =refdata.v1.party_counterparties.put=, =.delete= | exists |
+| Set the structure | List the party's business units | =refdata.v1.business_units.list= | partial |
+| Set the structure | Fill the unit type picker | =refdata.v1.business_unit_types.list= | exists |
+| Set the structure | Reclassify a business unit | =refdata.v1.business_units.put= | exists |
+| Review | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Confirm | Write every change as one unit | none | missing |
+| Confirm | Read the party back | =refdata.v1.parties.get= | exists |
+| Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.party=) | exists |
+| Check the history | Read the party with its identifiers and contacts as of one version | =refdata.v1.parties.composite_as_of= | exists |
+| Check the history | Read one identifier's own field diff | none | missing |
+| Revert | Write the old values as a new version | =refdata.v1.parties.put= | exists |
+
+=Partial= marks an operation the server carries and this journey cannot use
+whole, and each is explained under /What is missing/. =Missing= marks an
+operation or a field the journey needs and the tree does not carry.
+
+The generic history request is the one =ores.history= defines: the subject is
+derived from the entity type, and the reply carries every version's full field
+render and the field-level diff from the version before. The per-entity
+=refdata.v1.parties_versions.list= and =.get= also exist and return the raw
+rows; the screen needs the diff, so it uses the generic request, and it uses
+=refdata.v1.parties.composite_as_of= for the children as they stood.
+
+* What is missing
+
+Items 1 to 5 are the missing rows of the coverage table above. Item 6 is the
+one =partial= row, the read the journey does not get whole. Item 7 is a gap the
+coverage table cannot carry, because the operation exists and the failure does
+not.
+
+1. *A contact has no primary flag.* =party_contact_information= carries no
+   =is_primary= column. The model gives one row per =contact_type=, so the rows
+   are (Legal, Operations, Settlement, Billing) and nothing says which of them
+   is the primary contact. The prototype marks one row primary as a client
+   convention, and its review step records that choice with no operation behind
+   it, so the mark is lost on reload. The candidate is an =is_primary= column
+   with a one-per-party constraint, in the shape the party already has for
+   =is_registration_default=. Until it exists, the screen keeps the primary mark
+   in the session only and says so on the contacts step.
+2. *A membership leaves no readable version.* The =party_countries= and
+   =party_currencies= tables keep closed versions, but the generated protocol
+   carries =list=, =.get=, =.put=, =.delete= and =.list_by_party_id= and no
+   versions subject. A closed membership therefore leaves the panel with no
+   on-screen record of when it closed or who closed it. The candidate is a
+   versions read for the two junctions, in the shape the party's children
+   already have. Until it exists, the screen shows the memberships that are open,
+   marks the one being closed in this session, and gives the party's own history
+   as the only trail.
+3. *A refusal is the trigger's text, not a typed refusal.* When a unit type
+   breaks the level rule, the business-unit insert trigger raises its own
+   message, and the client can read it only as a string. It names no field and
+   no rule that a screen can act on, so the person cannot be told which unit or
+   identifier to correct without the message being parsed. The candidate is a
+   typed refusal from the server that carries the field, the rule and the value
+   it found. Until it exists, the screen shows the message with the unit and its
+   parent beside it, as the refused state draws.
+4. *An identifier row has no field diff of its own.* =refdata.v1.party_identifiers_versions.list=
+   and =.get= return raw rows, so they show that a value existed at a version
+   and not what about it changed. =refdata.v1.parties.composite_as_of= returns
+   the identifiers as they stood in one version window, which is enough to
+   compare two versions by hand, and that is what the history step does. The
+   candidate is a diff for the child rows, in the shape the generic history
+   request gives the party.
+5. *There is no unit that writes a party and its children together.* Each change
+   is its own operation, and the operations are independent: the party write,
+   the identifier pair, the contact write and the junction writes are separate
+   calls. The review step states each one, and a failure part-way leaves the
+   earlier rows written. The candidate is one composite change for a party with
+   its children, so a confirmed review is one transaction. Until it exists, the
+   screen writes the party first and the children after it, and reports which
+   calls landed.
+6. *The business unit is not filtered by party.* =business_units_filter= carries
+   =id_one_of= and nothing else, and the protocol has no =list_by_party_id=, so
+   listing one party's units means paging the tenant's units and grouping them
+   on the client. The candidate is the party filter, in the shape the three
+   junctions already have.
+7. *The business unit level rule has no refusal of its own.* The rule is real
+   and the screen draws it, but the only way to learn it is to break it, as item
+   3 says.
+
+* Related journeys
+
+- [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] — the create and provision path; a person goes there when the legal entity is missing rather than wrong
+- [[id:B8602F8B-AE64-4A45-8462-A3B17282D410][Onboard a counterparty]] — the same identity, identifier and contact panels for the external entity the tenant trades with
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the tenant whose legal entities these are, and its registration default
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — correct the party types, party statuses and contact types the pickers offer
+- [[id:FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C][Shape the book structure]] — the books and portfolios the business units of this party carry
+
+* Related knowledge
+
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the journey screen and the badge semantics this screen follows
+- [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the business center a party carries
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business Unit]] — the hierarchy the units and their levels form
+- [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] — the user manual chapter for this screen
+
+* See also
+
+- [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- =doc/prototypes/keep-a-partys-details-current/= — the merged prototype that answers the design questions above

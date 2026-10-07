@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 93E2D898-6098-4C1C-9C4E-0E8BFDF4E799
+:END:
+#+title: Story: Write the refdata party, book, convention and tenor journeys
+#+description: Write journeys 5 to 9 of the agreed ores.refdata catalogue: onboard a counterparty, keep a party's details current, shape the book structure, define the conventions for an instrument, and define how tenors resolve. Each journey needs a wireframe, a coverage table checked against the generated protocol headers, and a group in the journeys index.
+#+type: story
+#+level: s2
+#+filetags: :refdata:journeys:ux:sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The five refdata journeys of the agreed catalogue that no document
+covers have one, so that a tenant administrator onboarding a
+counterparty, keeping a party's details current, shaping the book
+structure, defining the conventions for an instrument or defining how
+tenors resolve has a screen design to build against.
+
+The remaining five of the twelve agreed journeys are Onboard a
+counterparty, Keep a party's details current, Shape the book structure,
+Define the conventions for an instrument, and Define how tenors resolve.
+The catalogue was agreed with the product owner on 2026-10-04 and
+recorded on
+[[id:CF56CCC7-CB07-4FFD-9A7E-C210BD5E2437][Extract the ores.refdata
+user journeys]]; journeys 1 to 4 and 10 are written, and 11 and 12 are
+written as steps of those. See
+[[id:1BDBC708-2749-41D0-9E2F-6B0EB7FBE645][Extract the remaining
+component user journeys]] for the component-level account.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-07                               |
+
+* Acceptance
+
+- Journeys 5 to 9 are written under the
+  [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction
+  Standard]], each with a goal, its steps, a wireframe, and a coverage
+  table whose subjects are checked against the generated protocol
+  headers.
+- Each journey has a group, and the group is added to the journeys
+  index.
+- Each journey has a plain-HTML prototype under =doc/prototypes/=,
+  listed in the inventory and published by the site build, and the
+  product owner has reviewed it.
+- The remaining items of the extraction standard, Q04, D01 to D05 and
+  X05, pass for the whole component.
+- Every gap the five journeys find is recorded, and every Qt action the
+  extraction left without a disposition has one.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8D9A80D7-3DDC-48DB-B67A-28E653542C76][Scaffold story: Write the refdata party, book, convention and tenor journeys]] | DONE | 2026-10-07 | 2026-10-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3CAA0C52-5049-4FC7-9967-96863D2E46BC][Prototype the refdata party, book, convention and tenor journeys]] | DONE | 2026-10-07 | 2026-10-07 | Draw all five journeys as plain-HTML prototypes under =doc/prototypes/=, one directory each, listed in the inventory and published by the site build. |
+
+* Decisions
+
+- *Prototype before implementation.* Each journey is drawn as a
+  plain-HTML prototype and reviewed by the product owner before it is
+  written or broken into implementation tasks. A screen argues better
+  than a paragraph, and the review is cheaper on a prototype than on a
+  branch.
+- *One prototype per journey, in the journey's own vocabulary.* The five
+  are separate documents because a person's goal is separate, even
+  though they share the party, book and convention models.
+- *The prototypes are throwaway and stay on main.* They are the design
+  record of what was agreed, not the product. The product is
+  ores.web.
+
+* Out of scope
+
+- The other components' journeys. They are tasks of
+  [[id:1BDBC708-2749-41D0-9E2F-6B0EB7FBE645][Extract the remaining
+  component user journeys]].
+- Curve configuration, the =crm_*= entities and the volatility configs.
+  The extraction assigned those to the marketdata and analytics
+  journeys.
+- Sandboxes and sandbox members, and =portfolio_right=, which the
+  refdata catalogue assigned to the Access group.
+
+Note: the catalogue recorded that journey 8 waited on the workspace
+removal, because the conventions then bound the
+=workspace-scoped-lookup= profile. That is no longer true. Commit
+=d0de221445= dropped the =workspace= column, no refdata entity binds
+that profile, and no =workspace= reference is left in the refdata
+models. Journey 8 waits on nothing.
+
+* Result
+
+The five journeys are drawn and written, and the product owner accepted
+the screens.
+
+Each journey has a plain-HTML prototype under =doc/prototypes/= and a
+=user_journey= document under =doc/knowledge/journeys/= with a PlantUML
+salt wireframe beside it and a coverage table checked against the
+generated protocol headers. Four journey groups are new: Parties, Books
+and portfolios, Conventions and Tenors.
+
+The 24 gaps the documents record become the tasks of the
+implementation story that follows this one, grouped by concern rather
+than by journey where several journeys need the same thing.
+
+Delivered in PR #2729.

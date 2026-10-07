@@ -1,0 +1,147 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>COUNTERPARTIES</b>
+  --
+  "Search by code, name or identifier value" | [ Active ] [ Closed ] [ All ]
+  {#
+    Code | Name | Type | Status | Business center | Identifiers
+    NWCAP | Northwind Capital Ltd | Bank | Active | GBLO London | LEI 549300NWCAPITAL00001
+    MRDN | Meridian Bank AG | Bank | Active | DEFF Frankfurt | LEI 529900MRIDIANBANK7
+    HLDN | Holding North America Inc | Corporate | Closed | USNY New York | No identifier
+  }
+  [ Onboard a counterparty ]
+  --
+  <b>ONBOARD A COUNTERPARTY</b> -- the step rail
+  --
+  {
+    {
+      > Counterparties
+      1 Identity
+      2 Identifiers
+      > 3 Contacts
+      4 Legal agreements
+      5 Review
+      6 Outcome
+      7 History
+    } | {
+      <b>IDENTITY</b>
+      {#
+        Short Code | "NWCAP               "
+        Full Name | "Northwind Capital Ltd"
+        Transliterated Name | "                    "
+        Party Type | Bank
+        Status | Active
+        Business Center | GBLO -- London
+        Parent Counterparty | No parent
+      }
+      Where it trades: one business center column, GBLO -- London
+      _Gap: no counterparty-to-centre row; a second centre is not a field_
+      [ Continue ]
+    }
+  }
+  --
+  <b>IDENTIFIERS</b>
+  {#
+    Scheme | Value
+    LEI | 549300NWCAPITAL00001 (authoritative)
+    BIC | NWCAGB2L
+  }
+  Add an identifier: Scheme ^LEI^ Value "549300NWCAPITAL00001" [ Add identifier ]
+  How this counterparty resolves: Authoritative LEI 549300NWCAPITAL00001, ORE alias none,
+  Visible to Ore Capital Markets
+  _Gap: the model stores no authoritative flag; the junction is read from the party side only_
+  --
+  <b>CONTACTS</b>
+  {#
+    Type | Address | Phone | Email
+    Legal | 456 Test Avenue, Floor 10, New York, NY, 10001 | -- | legal@northwind.example
+    Operations | No address yet | -- | --
+  }
+  Contact of type Legal: Street Line 1, Street Line 2, City, State, Country Code,
+  Postal Code, Phone, Email, Web Page
+  [ Add this contact type ]
+  --
+  <b>LEGAL AGREEMENTS</b>
+  [ ISDA-2026-014 ] [ GMRA-2026-002 ]
+  {#
+    Agreement | Type | Governing law | Parties | Description
+    ISDA-2026-014 | ISDA Master Agreement | English law | Ore Capital Markets / Northwind Capital Ltd | --
+  }
+  {#
+    Netting set | CSA | Collateral (CSA) | Eligible collateral
+    NS-NWCAP-IRS | CSA active | Bilateral, EUR, EUR-EONIA, MPOR 2W | EUR position 0
+  }
+  Identifiers of NS-NWCAP-IRS: ORE NS-NWCAP-IRS
+  Collateral terms (CSA): Bilateral, Currency, Index, MPOR, Threshold pay and receive,
+  MTA pay and receive, Independent amount, Call frequency, Post frequency,
+  Compounding spreads, Non-exempt IM regulations
+  [ Add a netting set ] [ Add a netting agreement ]
+  _Gap: agreements and sets are not read in one reply and not staged together_
+  --
+  <b>REVIEW</b> -- nothing is written until you confirm
+  Short code NWCAP, Full name Northwind Capital Ltd, Business center GBLO -- London
+  Identifiers LEI 549300NWCAPITAL00001, Contacts Legal, Operations
+  Netting agreements ISDA-2026-014, Netting sets ISDA-2026-014 / NS-NWCAP-IRS
+  Visible to Ore Capital Markets
+  _
+  _What the confirm writes (eight subjects):_
+  {#
+    Subject | Rows
+    refdata.v1.counterparties.put | 1
+    refdata.v1.counterparty_identifiers.put_many | 1
+    refdata.v1.counterparty_contact_informations.put_many | 2
+    refdata.v1.netting_agreements.put | 2
+    refdata.v1.netting_sets.put | 1
+    refdata.v1.netting_set_identifiers.put_many | 1
+    refdata.v1.csas.put | 1
+    refdata.v1.csa_eligible_currencies.put_many | 1
+  }
+  [ Confirm and write ]
+  --
+  <b>OUTCOME</b>
+  Northwind Capital Ltd is on board. It resolves by LEI 549300NWCAPITAL00001.
+  Short code NWCAP, Contacts Legal, Operations, Version written 1
+  [ Trade with it ] [ See who can see it ] [ Onboard another ]
+  _Gap: the confirm is one act over eight subjects; no composite write and no rollback_
+  --
+  <b>HISTORY</b>
+  {#
+    Version | Changed by | At | Reason
+    > 4 | a.tanaka | 2026-10-06 09:14 | Opened NS-NWCAP-IRS under the ISDA agreement
+    3 | a.tanaka | 2026-10-06 09:02 | Onboarding, step 4: the ISDA agreement recorded
+  }
+  {#
+    Field | From | To
+    Business center | WRLD | GBLO
+    Netting agreement | not set | ISDA-2026-014
+  }
+  [ Revert to this version ] [ Open read-only ]
+  _Gap: no reply carries a field-level difference; the screen computes the diff_
+  --
+  <b>REFUSED</b>
+  The server refused LEI 549300NWCAPITAL00001 on Identifiers.
+  tenant_id, id_scheme, id_value is already taken on NWCAP. Nothing was written, your work is kept.
+  Version 1, unchanged.
+  [ Correct the value ] [ Keep the identifier already stored ] [ Back to Identifiers ] [ See the history ]
+}
+
+@enduml

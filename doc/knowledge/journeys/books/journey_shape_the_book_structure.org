@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C
+:END:
+#+title: User Journey: Shape the book structure
+#+description: A tenant administrator walks the portfolio tree, opens or creates a book, classifies it, sets the portfolio rights, and reviews the write.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator walks the portfolio tree, opens or creates a book, classifies it, sets the portfolio rights, and reviews the write.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the book structure to say exactly what we mean by it: which portfolio
+each book sits in, what that book is for, how it is classified, and who may see
+it." The journey is done when the tree reads correctly, each changed book shows
+its new version, and the rights at the portfolio node are the ones the
+administrator intended.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. The trigger is a new desk, a book that must be
+opened or reclassified, a book the desk no longer uses, or a colleague who needs
+sight of a portfolio. The journey starts at *Book tree*, or at a book or
+portfolio link on another screen, and ends at the outcome when the writes land,
+or at the refused screen when the server rejects one. The journey keeps no
+server-side state: every step completes when the server replies.
+
+* Steps
+
+1. *See the tree.* The person opens *Book tree*. The system shows the tenant's
+   portfolios and the books under them, with a search over both. Every row is
+   the tenant's own data. Each book row carries its status, its regulatory type
+   and its purpose.
+2. *Choose the portfolio.* The person chooses the portfolio that will hold the
+   book, or creates a new one. The system shows what the book reads from that
+   node: the aggregation currency, the owner business unit, the portfolio
+   purpose, the sandbox, and who may see it. A book copies none of these. It
+   reads them from its portfolio, and the portfolio's rights cover the book.
+   The model says the book's owner unit must be one named in the portfolio
+   ancestry chain, and the owner-unit picker marks a unit that is not.
+3. *Create or open the book.* The person names the book and gives it the fields
+   finance and the ledger use: the functional currency, the GL account
+   reference, the cost center, the owner unit, and a description. The name is
+   the natural key and does not change after the write. A book belongs to
+   exactly one portfolio. The system writes =refdata.v1.books.put= with
+   =must_not_exist= for a new book and =must_match_version= for a change.
+4. *Set its classification.* The person sets the status and the three
+   independent classification axes, plus the rates centre and the sweepable
+   flag. The axes combine freely: regulatory type, ledger feed and book purpose
+   are not correlated by any check. The book carries exactly one purpose. Each
+   picker names one row of a shared system-tenant list, so the person can choose
+   a value here and cannot edit the list here. The person can also close the
+   book. The close the book cannot make is the one with activity still open: the
+   system must refuse it and name the trades that remain. See /What is missing/.
+5. *Set the rights.* The person grants or removes =read= and =open_sandbox= at
+   the portfolio node. The system shows the effective rights for every account,
+   with the ancestor a right was inherited from. A right at a node covers every
+   node below it, and not its siblings. A right granted to a closed account
+   stays on record, and the function stops honouring it.
+6. *Review.* Nothing is written until the person confirms. The system lists each
+   change with its field, its old value and its new value, and the subject that
+   will carry it. The person picks a reason code.
+7. *Read the outcome.* The system writes the book and the rights, and shows the
+   book's new version. The person can open the history, go to the rights, or
+   return to the tree.
+
+Two states sit beside the steps. *Refused* shows the error the server returns
+when a write is not allowed, with the subject, the intent, the error code and
+the record version. *History* shows every version of one book with the
+field-level difference from the version before it, and offers a revert, which
+the system writes as a new version.
+
+No step waits on the server after its reply, and the journey keeps no state.
+
+* Screens and wireframes
+
+One screen with a step rail: the seven steps in order, with the two side states
+beneath them. The step in view is a card. The tree step splits into the tree on
+the left and the chosen book or portfolio on the right. The classification step
+splits into the book's own pickers on the left and the shared taxonomy on the
+right. The rights step splits into the direct-rights editor on the left and the
+effective-rights table on the right. The person moves between books and
+portfolios without leaving the screen.
+
+#+caption: Shape the book structure: the step rail, the classification with its transition rule, the tree, the rights, the review, the shared taxonomy, and the two side states.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/books/wireframe_shape_the_book_structure.png]]
+
+* Prototype
+
+A static page at =doc/prototypes/shape-the-book-structure/index.html=: mock data
+only, no backend, no build step and no session. It is the design record for this
+journey. It settles three questions. First, what a book reads from its portfolio
+rather than copies: the aggregation currency, the owner unit ancestry, the
+portfolio purpose, the sandbox, and the rights. Second, which rows are the
+tenant's own data and which are the shared taxonomy: portfolios, books and
+rights are the tenant's, and the five classification lists are the system
+tenant's. Third, the close the book cannot make: a close while the ledger still
+shows open activity.
+
+- States :: =?state=tree=, =?state=portfolio=, =?state=book=, =?state=classify=, =?state=rights=, =?state=review=, =?state=outcome=, =?state=refused=, =?state=history=
+- Params :: =?new=1= a new book, =?book=<name>= the book already open, =?portfolio=<node>= the chosen node, =?status=, =?purpose=, =?regulatory=, =?ledger=, =?sweepable=, =?account=, =?right=, =?fail=open_activity|transition=, =?version=<n>=
+- Source :: =doc/prototypes/shape-the-book-structure/index.html=
+- Open :: the file directly, or =/OreStudio/doc/prototypes/shape-the-book-structure/= once the site is built
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =book= | The book form and the "This book" panel: name, description, functional currency, GL account ref, cost center, owner business unit, status, regulatory book type, sweepable, rates centre, and open activity | [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] |
+| =portfolio= | The tree, the new-portfolio form, and the "Inherited from the portfolio" panel: name, purpose type, aggregation currency, owner business unit, status, virtual, sandbox | [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] |
+| =portfolio_right= | The direct-rights editor and the effective-rights table: account, portfolio, right code | [[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][ores.refdata.portfolio_right]] |
+| =business_unit= | The owner-unit picker, constrained by the portfolio ancestry chain | [[id:ADC87ED3-153E-4FD9-BB87-DC9E184DA315][ores.refdata.business_unit]] |
+| =book_status= | The status picker and the transition rule | [[id:7D4A2C19-E8B1-4F3A-9C6D-1A5E8B2F7D03][ores.refdata.book_status]] |
+| =regulatory_book_type= | The regulatory book type picker | [[id:03728847-1C53-4B1D-AFB1-E83B2C3F3E14][ores.refdata.regulatory_book_type]] |
+| =book_purpose_type= | The book purpose picker. The picker is drawn; the book has no wire field for it. | [[id:F2DD5F1F-759C-44E3-8BBD-EB451494E9A0][ores.refdata.book_purpose_type]] |
+| =ledger_feed_type= | The ledger feed picker. The picker is drawn; the book has no wire field for it. | [[id:3C284FE3-1DFC-46BA-A242-33F9A9A634C1][ores.refdata.ledger_feed_type]] |
+| =purpose_type= | The portfolio's purpose picker | [[id:770F93B6-4363-413A-B923-3BC399125957][ores.refdata.purpose_type]] |
+
+The book is a composite child of the portfolio: a book write bumps the parent
+portfolio's version, so the portfolio's own version shows the change. The book
+registers a history provider, and the portfolio is versioned too. The book never
+writes its portfolio's fields, and it copies none of them.
+
+* Operations and messages
+
+=partial= marks a subject that exists but cannot carry this journey yet, and the
+reason is in /What is missing/.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| See the tree | List the portfolios | =refdata.v1.portfolios.list= | exists |
+| See the tree | List the books | =refdata.v1.books.list= | exists |
+| See the tree | List one portfolio's books | =refdata.v1.books.list_by_parent_portfolio_id= | exists |
+| Choose the portfolio | Read the portfolio | =refdata.v1.portfolios.get= | exists |
+| Choose the portfolio | Create a portfolio | =refdata.v1.portfolios.put= | exists |
+| Choose the portfolio | Fill the owner-unit picker | =refdata.v1.business_units.list= | exists |
+| Create or open the book | Read the book | =refdata.v1.books.get= | exists |
+| Create or open the book | Fill the currency picker | =refdata.v1.currencies.list= | exists |
+| Create or open the book | Fill the rates-centre picker | =refdata.v1.business_centres.list= | exists |
+| Create or open the book | Write the book | =refdata.v1.books.put= | partial |
+| Set its classification | Fill the five pickers | =refdata.v1.book_statuses.list=, =.regulatory_book_types.list=, =.book_purpose_types.list=, =.ledger_feed_types.list=, =.purpose_types.list= | exists |
+| Set its classification | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Set its classification | Refuse a status change the transition rule forbids | no subject | missing |
+| Set its classification | Refuse a close while activity is open | no subject | missing |
+| Set the rights | List the rights at the node | =refdata.v1.portfolio_rights.list= | exists |
+| Set the rights | Fill the account list | =iam.v1.accounts.list= | exists |
+| Set the rights | Grant the rights | =refdata.v1.portfolio_rights.put_many= | exists |
+| Set the rights | Remove the rights | =refdata.v1.portfolio_rights.delete_many= | exists |
+| Review | Read the change reasons | =dq.v1.change_reasons.list= | exists |
+| Read the outcome | Write the book | =refdata.v1.books.put= | partial |
+| Read the outcome | Write the rights | =refdata.v1.portfolio_rights.put_many= | exists |
+| Refused | Read the refused write | =refdata.v1.books.put= | partial |
+| History | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.book=) | exists |
+| History | Revert by writing the old values | =refdata.v1.books.put= | partial |
+
+* What is missing
+
+1. *The book cannot carry its purpose or its ledger feed.* The book record
+   carries =book_status= and =regulatory_book_type=, but =book_purpose_type= and
+   =ledger_feed_type= are absent from the model and from =refdata.v1.books.put=.
+   Both lookup tables exist and both are drawn on the classification step,
+   because book classification says every book carries them. The candidate is
+   the two columns, each an FK to its lookup, and the two fields on =book_write=.
+   Until then the screen can show the value but cannot save it.
+2. *Nothing refuses closing a book with open activity.* No operation checks a
+   book's open activity. The candidate is a refusal on the close that names the
+   open trades, unsettled cash flows and open positions the book still holds. A
+   closed book keeps its trades and its history, accepts no new trades, and is
+   not deleted. Until the refusal exists, the screen must check before it
+   writes, and the refused state shows what the server would say.
+3. *No status transition rule exists beyond "the code is known".*
+   =ores_refdata_validate_book_status_fn= only checks that the status code
+   exists among the shared book statuses. Nothing refuses a move from one status
+   to another. The candidate is the transition rule the journey draws: from
+   =Active= to =Frozen= or =Closed=, from =Frozen= back to =Active= only, and
+   =Closed= terminal. The rule keeps a freeze reversible and a close deliberate.
+   Until it exists, the store accepts any status the person picks.
+4. *The rights panel is drawn here, although the catalogue assigned
+   =portfolio_right= to the Access group.* The panel belongs to that group's
+   journey, which owns the permissions and the change reason. This journey draws
+   it because a book carries no rights of its own and inherits its visibility
+   from the portfolio node. Until the rights journey exists, this screen carries
+   the panel and links to the Access group.
+5. *The owner unit is not checked against the ancestry chain.* The book model
+   says =owner_unit_id= should name a unit that is an =owner_unit_id= in the
+   book's portfolio ancestry chain. The insert trigger checks the sandbox only.
+   The picker marks a unit outside the chain but the server accepts it. The
+   candidate is the same ancestry check in the write.
+
+* Related journeys
+
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the five Books and portfolios lists on the classification step are the shared taxonomy; each picker opens its list there
+- [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access]] — the group the catalogue assigns the portfolio-rights journey to; the rights step here draws that journey's subject until it exists
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the same pattern for the identity lookups
+
+* Related knowledge
+
+- [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]] — the three independent axes, the mutual exclusivity of the purpose, and why a Basel rule never forces a correlation
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the hub note
+- [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — the hierarchy, and how a classified book sits in it
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] — the permission model books inherit, and access review
+- [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — the rates centre and the revaluation snapshot it selects
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — virtual books, and the portfolio and the book that share one sandbox
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]
+- [[id:6A63AAC7-4869-493A-97E7-55B919874784][The journey runtime]] — the step, the rail, and the rule that a final step cannot be returned past
+
+* See also
+
+- [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios journeys]]
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+- [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] — the entity model
+- [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] — the entity model
+- [[id:F783F38A-C123-489A-881D-5BCB5DE6D05D][ores.refdata.portfolio_right]] — the entity model

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 72375ADC-BD12-4821-AE1C-C895EB084872
+:END:
+#+title: Conventions journeys
+#+description: The market terms an instrument is built on: the convention entities, what each one fixes, and the picks from the reference data lists that a person must not edit from a convention.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+A convention is the set of market terms an instrument is built on: the day
+count, the calendars, the payment frequency, the index, and whatever else the
+instrument family fixes before a trade exists. There are 25 convention entities,
+one per instrument family, from the deposit convention up to the cross-currency
+basis swap.
+
+A person starts from the instrument they want to trade, never from the entity
+name. The journey walks from the instrument family to the convention that serves
+it. Most of a convention's fields are picks from the reference data lists the
+classifications journey maintains, so a convention references those lists and
+never edits them.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Define the conventions for an instrument]] | tenant administrator | Pick an instrument family, choose or create its convention, author its terms, and save them with a versioned history |
+
+* Related
+
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] — the lists a convention picks from
+- [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] — how the tenors a convention names resolve
+- [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] — the calendars a convention names
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

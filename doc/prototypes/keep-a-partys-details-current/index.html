@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep a party's details current prototype — Reference data journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no fetch.
+
+  The tenant administrator's "Keep a party's details current" journey
+  (refdata journey 6): the party list with search, then the walk over the
+  party's own record, its identifiers, its contacts, the countries and
+  currencies it operates in, and the business units and counterparties it
+  is linked to, then the review, the outcome, the refusal and the history.
+
+  States are chosen from the query string, as the sibling prototypes do:
+
+    ?fail=<kind>                       which refusal the failure state draws:
+                                       level|cardinality|stale, or 1|2|3 for
+                                       the same kinds in that order (1 = level)
+    ?state=list|overview|identifiers|contacts|memberships|structure|review|outcome|refused|history
+    ?party=NWCAP                       the open party, by short code
+    ?query=Northwind                   the party list search, as typed
+    ?name=Northwind%20Capital%20Holdings%20Ltd   the corrected legal name
+    ?shortname=NWCAP                   the corrected short code
+    ?scheme=LEI                        the identifier scheme being corrected
+    ?value=549300NWCAPITAL00002        the identifier value being recorded
+    ?contact=Operations                the contact shown in full
+    ?primary=Operations                the contact the screen marks primary (a gap)
+    ?close=SG                          the country membership being closed
+    ?closeccy=CHF                      the currency membership being closed
+    ?bu=Rates%20Trading                the business unit in the structure step
+    ?unittype=BRANCH                   the business unit type chosen for it
+    ?type=Corporate                    the edited party type
+    ?status=Active                     the edited party status
+    ?parent=NWCAP                      the edited parent party
+    ?with=1                            the registration-default flag
+    ?reason=common.rectification       the change reason code
+    ?version=7                         the history version whose diff is shown
+
+  The bar at the foot mirrors the states, the refusals, and the fail switch.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

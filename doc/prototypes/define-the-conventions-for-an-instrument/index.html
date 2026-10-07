@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Define the conventions for an instrument journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Define the conventions for an instrument, on the shared journey page: a flat
+  step rail on the left, one step on the right. A convention is the set of
+  market terms an instrument is built on, and the person starts from the
+  instrument they want to trade, not from the entity name. The states are
+  chosen from the query string, the same way the navigation prototype chooses
+  its own:
+
+    ?state=instrument|convention|terms|review|outcome|history|refused
+    ?family=swap                        the instrument family, already chosen
+    ?id=EUR-6M-SWAP-CONVENTIONS         the convention, already chosen
+    ?q=EUR-6M                           the convention list search, as typed
+    ?field=fixed_calendar               focus this field on the terms step
+    ?value=BUSINESS                      override that field's mock value
+    ?fail=1                             refuse the write: 1 is the missing
+                                        lookup. ?refusal=1 is the alias
+    ?version=3                          the version the history step shows
+    ?diff=1                             show the history field diff (default on)
+
+  The bar at the foot mirrors the states as buttons, lists the families, and
+  carries the two demo toggles (fail, diff).
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

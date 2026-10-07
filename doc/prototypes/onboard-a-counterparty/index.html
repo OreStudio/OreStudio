@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboard a counterparty journey prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The counterparty onboarding journey: a landing list with search, then a flat
+  step rail on the left and one step on the right. The states are chosen from
+  the query string, the same way the navigation prototype chooses its own:
+
+    ?state=landing|counterparty|identifiers|contacts|agreements|review|done|history|refused
+    ?list=active|closed|all                the list tab on the landing screen
+    ?query=Northwind                       the search, as typed
+    ?cp=NWCAP                              the counterparty, already on board
+    ?scheme=LEI                            the identifier scheme under the cursor
+    ?value=549300NWCAPITAL00001            the identifier value, as typed
+    ?contact=Legal                         the contact type under the cursor
+    ?agreement=ISDA-2026-014               the netting agreement under the cursor
+    ?set=NS-NWCAP-IRS                      the netting set under the cursor
+    ?fail=duplicate|missing|duplicate_set_id   the server's refusal; ?fail=1 is the first kind
+    ?refuse=duplicate                      an alias of ?fail
+    ?version=3                             the history version to read
+
+  The bar at the foot mirrors the states as buttons.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+:PROPERTIES:
+:ID: 857206FA-DA09-4920-8713-D28E613C8BCC
+:END:
+#+title: User Journey: Define the conventions for an instrument
+#+description: A tenant administrator picks an instrument family, chooses or creates its convention, authors its terms, and reviews and saves them.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator picks an instrument family, chooses or creates its convention, authors its terms, and reviews and saves them.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the terms ORE uses for one instrument to be the terms we actually trade
+them on, so that a trade I book and a curve I bootstrap read the same
+convention." The journey is done when the convention is saved, and its history
+shows what changed and why.
+
+* Actor and trigger
+
+The actor is the tenant administrator: an account with the =TenantAdmin= role,
+acting inside their own tenant. No narrower role holds these permissions today.
+The trigger is a new instrument the tenant wants to trade, a term that has
+moved (a fixing calendar, a day count, an index), or a curve whose bootstrap
+reads the wrong convention. The journey starts at *Conventions*, or at a link
+beside a convention picker on a curve or a trade, and ends when the person
+leaves the convention.
+
+A convention is a lookup that other records point at, so the person starts from
+the instrument they want to trade, not from the entity name. The instrument
+family decides which convention entity serves it.
+
+The journey keeps no server state. No step waits on the server after its reply.
+
+* Steps
+
+The journey has six steps, one per screen. The rail shows them in this order.
+The history is not a seventh step: it is the Terms step's own record view, and a
+step marked final cannot be returned past.
+
+1. *Choose the instrument.* The person opens *Conventions*. The system shows the
+   convention families this tenant actually keeps, each as a card: the family
+   name, one line on what instrument it serves, the whole convention entity it
+   resolves to, and how many conventions it already holds. A filter narrows the
+   list by family name, entity or description. The person picks a family, or
+   arrives with one already chosen from a picker's link. A family with no
+   convention yet opens the terms step with an empty form.
+2. *Choose the convention.* The system lists the chosen family's convention
+   rows: the id, a one-line summary of its terms, who modified it, when, and its
+   version. The person searches by id, opens a row to edit it, or chooses *New
+   <family> convention*. The search field says on screen that the filter takes
+   =id_one_of= only, so it filters by id and not by a term. See /What is
+   missing/.
+3. *Author its terms.* The system shows every field the convention model
+   carries, grouped by the leg or the part of the schedule it belongs to. Each
+   field carries a badge: *from the list* when the value is a pick from another
+   refdata list, and *free text* when this convention is the only place the
+   value lives. The stored value is the list's code, never its label. The person
+   changes the terms, or leaves the values a new convention starts from. A term
+   that is a pick is not edited here: the screen links to the list that owns it.
+   For the swap convention the screen groups the columns into a fixed leg and a
+   floating leg, and says on screen that the grouping is the screen's, not the
+   row's: the model carries no leg objects. The person opens *History* from this
+   step to see the versions. The system writes nothing on this step.
+4. *Review.* The system shows what will change: the convention's fields in the
+   model's own order, grouped as in step 3, and a count of the fields that
+   differ from the version it read. The person confirms. Nothing is written
+   until they do.
+5. *Save.* The person saves. The system writes the record with one request,
+   =refdata.v1.<plural>.put=, carrying the change, the precondition and the
+   intent. It creates with =must_not_exist= and changes with
+   =must_match_version=, so a duplicate create or a concurrent edit is refused
+   instead of overwritten.
+6. *See the result.* The system reports that the convention is saved, with its
+   new version, and says that a trade that picks this family reads these terms.
+   The person can open the history, return to the list, or start again from
+   another instrument.
+
+*Refused* is a screen of its own, not a step of the walk. It holds no rail
+place, because the person does not walk to it. The system shows what was
+refused, that the record keeps its version and was not changed, the step that
+raised it, and the way back to that step.
+
+*History* is the Terms step's own view. The system shows every saved version
+with the field-level difference from the one before, and the person can switch
+version or hide the diff. A revert is not a history operation: it reads the old
+version and writes its values as a new version, through the same =put= with a
+new change reason.
+
+* Screens and wireframes
+
+The journey is one screen: a flat step rail on the left and the current step on
+the right. The instrument family and the chosen convention stay in the header
+while the person walks the steps.
+
+#+caption: Conventions: the instrument family, the convention list, the terms step with its history view, the review, the outcome and the refusal.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_define_the_conventions_for_an_instrument.png]]
+
+The terms step is drawn in full for two families only, the *swap* convention and
+the *deposit* convention. The swap convention is the worked example, because it
+carries both a fixed leg and a floating leg and every field is also a pick. The
+deposit convention is the simpler contrast: eight columns, most of them
+optional, and every field inherited from the index when =index_based= is set.
+
+The other 23 families are named on the picker and their rows are listed, but
+their terms step is *not* drawn here and not drawn in the prototype. Each one
+resolves to its own entity, and the picker says so on the card rather than
+inventing a form.
+
+* Prototype
+
+A clickable prototype exists and is the design record for the screens, the
+fields, the refusal kinds and the gaps.
+
+- Directory :: =doc/prototypes/define-the-conventions-for-an-instrument/=
+- States :: =instrument=, =convention=, =terms=, =review=, =outcome=,
+  =refused=, =history=
+- Contract :: =index.html= carries the parameter legend, =prototype.js= the
+  screens and the mock rows. The states are chosen from the query string, the
+  same way the navigation prototype chooses its own: =?state=,
+  =?family=, =?id=, =?q=, =?field=, =?value=, =?fail=, =?version=, =?diff=.
+
+The prototype draws the terms step of the swap and deposit conventions in full.
+It lists a row for every other family so the picker is honest about the
+catalogue, and marks the row as not drawn.
+
+* Entities composed
+
+The picker offers 25 instrument families. Each one is a convention entity of its
+own, with =list=, =get=, =get_many=, =put=, =put_many=, =delete=,
+=delete_many= and its versioned history under the plural shown. Every one binds
+the =simple-lookup= profile, every one is versioned, and every one registers a
+history provider.
+
+#+ATTR_HTML: :class hug-leading
+| Family on the picker | Convention entity | Subject prefix |
+|----------------------+-------------------+----------------|
+| Deposit | =deposit_convention= | =deposit_conventions= |
+| FRA | =fra_convention= | =fra_conventions= |
+| Future | =future_convention= | =future_conventions= |
+| OIS | =ois_convention= | =ois_conventions= |
+| Average OIS | =average_ois_convention= | =average_ois_conventions= |
+| Swap | =swap_convention= | =swap_conventions= |
+| Tenor basis swap | =tenor_basis_swap_convention= | =tenor_basis_swap_conventions= |
+| Tenor basis two swap | =tenor_basis_two_swap_convention= | =tenor_basis_two_swap_conventions= |
+| Cross-currency basis | =cross_currency_basis_convention= | =cross_currency_basis_conventions= |
+| Cross-currency fix-float | =cross_currency_fix_float_convention= | =cross_currency_fix_float_conventions= |
+| Bond yield | =bond_yield_convention= | =bond_yield_conventions= |
+| CDS | =cds_convention= | =cds_conventions= |
+| CMS spread option | =cms_spread_option_convention= | =cms_spread_option_conventions= |
+| Commodity forward | =commodity_forward_convention= | =commodity_forward_conventions= |
+| Commodity future | =commodity_future_convention= | =commodity_future_conventions= |
+| FX option | =fx_option_convention= | =fx_option_conventions= |
+| BMA basis swap | =bma_basis_swap_convention= | =bma_basis_swap_conventions= |
+| Zero coupon | =zero_convention= | =zero_conventions= |
+| Inflation swap | =inflation_swap_convention= | =inflation_swap_conventions= |
+| Intraday power load | =intraday_power_load_convention= | =intraday_power_load_conventions= |
+| IBOR index | =ibor_index_convention= | =ibor_index_conventions= |
+| Overnight index | =overnight_index_convention= | =overnight_index_conventions= |
+| Named swap index | =swap_index_convention= | =swap_index_conventions= |
+| Tenor resolution | =tenor_convention= | =tenor_conventions= |
+| Currency pair | =currency_pair_convention= | =currency_pair_conventions= |
+
+The tables below give each entity's own model, if the model exists, and the term
+lists the fields pick from.
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The worked example: the fixed-leg schedule and the floating-leg index. The header, the terms step, the review and the history. | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | The simpler contrast: settlement lag, calendar and day count, or the same inherited from the index. | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =calendar_name= | The calendars the fixed calendar and the settlement calendar pick from. | |
+| =business_day_convention_type= | The business day conventions the fixed convention and the settlement convention pick from. | |
+| =day_count_fraction_type= | The day count fractions the fixed and settlement day count fractions pick from. | |
+| =floating_index_type= | The floating-leg index and the deposit index pick from. | |
+| =payment_frequency= | The fixed and floating payment frequencies pick from. | |
+| =tenor= | The tenor labels the family pickers read. Not every family reads one: the swap and the deposit conventions drawn here carry no tenor column. | |
+| =currency= | The currency a currency-pair convention names. | |
+| =dq.change_reason= | The change reason every write carries. | |
+
+The 23 families the prototype does not draw in full are listed, not modelled
+here. Their entity names and subject prefixes are given above; their fields are
+the models' own and the journey does not invent them.
+
+* Operations and messages
+
+The subjects below are given for one family; every family has the same set under
+its own plural. The convention's id is its primary key, and the tenant and the
+party come from the session that writes the record, so no subject string carries
+either.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the instrument | List the families | =refdata.v1.<plural>.list= | exists |
+| Choose the instrument | Count each family's conventions | =refdata.v1.<plural>.list= (=total=) | exists |
+| Choose the convention | List the family's conventions | =refdata.v1.<plural>.list= | partial |
+| Choose the convention | Read one convention | =refdata.v1.<plural>.get= | exists |
+| Choose the convention | Read several conventions | =refdata.v1.<plural>.get_many= | exists |
+| Choose the convention | Create a convention | =refdata.v1.<plural>.put= (=must_not_exist=) | exists |
+| Author its terms | Fill the calendar picker | =refdata.v1.calendar_names.list= | exists |
+| Author its terms | Fill the business day convention picker | =refdata.v1.business_day_convention_types.list= | exists |
+| Author its terms | Fill the day count fraction picker | =refdata.v1.day_count_fraction_types.list= | exists |
+| Author its terms | Fill the floating index picker | =refdata.v1.floating_index_types.list= | exists |
+| Author its terms | Fill the payment frequency picker | =refdata.v1.payment_frequencies.list= | exists |
+| Author its terms | Fill the currency picker | =refdata.v1.currencies.list= | exists |
+| Author its terms | Fill the sub-period coupon type picker | =refdata.v1.sub_periods_coupon_types.list= | missing |
+| Author its terms | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = ores.refdata.<entity>=) | partial |
+| Review | Nothing is written until the person confirms | none | n/a |
+| Save | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Save | Write a new or changed convention | =refdata.v1.<plural>.put= (=must_not_exist= or =must_match_version=) | partial |
+| See the result | Announce the write | =refdata.v1.<plural>_events.created= or .updated= | exists |
+| Refused | Report the failure | the response's =result= | partial |
+
+The current status of every =put= is =partial= for one reason: the refusal the
+journey must handle is drawn on screen but the server cannot produce it. The
+generated =result= carries a =fields= vector and the assets and IAM services
+fill it, but no generated refdata convention service does. A refused write
+therefore arrives as a plain error with a code and a message, and the screen has
+to name the offending field itself. See /What is missing/.
+
+* What is missing
+
+1. *The convention list cannot be searched by a term.* The filter a generated
+   =list= accepts is =id_one_of= and nothing else, so the search field filters
+   the page the client already holds and cannot reach a convention by an index,
+   a calendar or a day count. The candidate is a term filter on the convention
+   lists. Until it exists the screen says on the field that the filter takes
+   =id_one_of= only, and loads the list in pages the client filters.
+2. *The history has no draft version.* =refdata.v1.history.get= returns saved
+   versions only. The prototype draws a *now* version that holds the values
+   before the write, and says on screen that the server has no draft version, so
+   a real screen shows *now* only after the write. Until a draft exists the
+   history view is a post-write view.
+3. *The refusal carries no field-level record.* The one refusal this journey
+   must handle is a term that references a value the list no longer holds, and
+   it is drawn as its own screen. But the generated =result= is a plain error:
+   the =fields= vector exists in the shared protocol and the assets and IAM
+   services fill it, and no generated refdata convention service does. The
+   server therefore cannot name the field it refused, and the screen has to
+   match the code and the message itself. The candidate is for the generated
+   refdata services to report a =field_failure= per refused field. Until then
+   the screen shows the plain error, as the prototype draws it.
+4. *The family-to-entity mapping is the client's.* The server carries one list
+   per convention entity, so nothing lets a client ask "which convention serves
+   this instrument family". The mapping is the screen's. The candidate is a
+   refdata list that names the family and the entity it resolves to, so the
+   journey and any other client agree. Until then the list is authored once, in
+   the application.
+5. *No convention field validates its term.* A convention's term columns are
+   plain text, and the models declare no foreign key and no lookup check on
+   them. The server therefore stores any text, and a term that references a
+   value the list no longer holds is written rather than refused. The candidate
+   is the same existence check the other refdata writes make. Until then the
+   refusal in /Steps/ describes a check the server does not make, and the screen
+   offers only codes it has read from the lists.
+6. *The sub-period coupon type list does not exist.* The prototype draws the
+   field as a pick from =refdata.v1.sub_periods_coupon_types.list=, and no such
+   list is in the tree: =sub_periods_coupon_type= is a text column on the swap
+   and tenor basis swap conventions, whose own description names its two values,
+   =Compounding= and =Averaging=. The candidate is to author the list, as the
+   other term lists were authored, so the value is a pick like its neighbours and
+   not a free text. Until then the screen offers the two values the model's own
+   description names.
+7. *Only a tenant administrator can run this journey.* No role below
+   =TenantAdmin= holds these permissions.
+
+** The workspace note does not apply
+
+The agreed catalogue expected this journey to wait on the workspace removal,
+because the instrument conventions then bound the =workspace-scoped-lookup=
+profile and a convention set would be curated per trading desk. That is stale.
+Commit =d0de221445= ("Drop the workspace column from every entity") dropped the
+=workspace= column, no refdata entity binds that profile, and no =workspace=
+reference is left in the refdata models. All 25 conventions bind
+=simple-lookup=. A convention is tenant-wide, there is no desk step to draw, and
+this journey waits on nothing.
+
+* Related journeys
+
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the calendars, day counts, business day conventions and floating indices a convention picks from are list rows, and a missing value is corrected there
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — a cross-currency or an FX convention names the currencies whose pair it serves
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — a currency-pair convention is 1:1 with its pair, so the pair screen and this one edit the two faces of one record
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the change reasons a convention write carries are tenant data
+
+* Related knowledge
+
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the badge and form vocabulary this journey's badges follow
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the calendars and the business day conventions the terms pick
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — how a tenor resolves, and the tenors a schedule reads
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE conventions.xml elements these entities correspond to
+
+* See also
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group hub
+- [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] — the worked example's model
+- [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] — the simpler contrast's model
+- =doc/prototypes/define-the-conventions-for-an-instrument/= — the design record
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

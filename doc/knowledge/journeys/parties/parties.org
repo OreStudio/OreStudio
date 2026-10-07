@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 86CB724A-66E3-4FB3-A943-3CE22D41213A
+:END:
+#+title: Parties journeys
+#+description: A party is the tenant's own legal entity and a counterparty is the entity it trades with: both are described by identifiers and contacts, and by the countries, currencies, books and units they are connected to.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+A party is the tenant's own legal entity. A counterparty is the entity the
+tenant trades with. The model holds both, and a junction says which parties may
+trade with which counterparties. Each is described the same way: a name, the
+identifiers that name it in the world, the people to contact, and the
+memberships that connect it to countries, currencies and business units. A
+counterparty carries more: the netting agreements, the sets under them, and the
+credit support that governs them.
+
+The two journeys are separate because the goals are separate. A person brings a
+counterparty on board once, and a person keeps a party's own record current.
+Both are tenant-administrator work.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:B8602F8B-AE64-4A45-8462-A3B17282D410][Onboard a counterparty]] | tenant administrator | Bring a new trading counterparty on board once: its legal identity, identifiers, contacts, netting agreements and collateral terms |
+| [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][Keep a party's details current]] | tenant administrator | Correct one of the tenant's own legal entities: its names and type, its identifiers, its contacts, and what it connects to |
+
+* Related
+
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] — the type, status and contact lists both journeys pick from
+- [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] — the books a party's business units trade
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

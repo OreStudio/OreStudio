@@ -36,11 +36,11 @@ component user journeys]] for the component-level account.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The five journeys are drawn and written; awaiting review of the screens.       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The product owner reviews the prototypes, then each journey is written and broken into implementation tasks. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-07                               |
 
 * Acceptance
@@ -98,3 +98,20 @@ removal, because the conventions then bound the
 =d0de221445= dropped the =workspace= column, no refdata entity binds
 that profile, and no =workspace= reference is left in the refdata
 models. Journey 8 waits on nothing.
+
+* Result
+
+The five journeys are drawn and written, and the product owner accepted
+the screens.
+
+Each journey has a plain-HTML prototype under =doc/prototypes/= and a
+=user_journey= document under =doc/knowledge/journeys/= with a PlantUML
+salt wireframe beside it and a coverage table checked against the
+generated protocol headers. Four journey groups are new: Parties, Books
+and portfolios, Conventions and Tenors.
+
+The 24 gaps the documents record become the tasks of the
+implementation story that follows this one, grouped by concern rather
+than by journey where several journeys need the same thing.
+
+Delivered in PR #2729.

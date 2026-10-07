@@ -507,6 +507,14 @@ hold the permission.
 # accounts, roles and permissions IAM holds.
 - ores_iam_
 
+** Execute prefixes
+
+# Security-definer sweep that closes, across every tenant, the approval
+# requests nobody answered before their kind's deadline (see
+# ores_inbox_expire_approval_requests_fn). The inbox owns the requests, so it
+# is the service that runs it.
+- ores_inbox_expire_approval_requests_
+
 * ores.compute.wrapper
 :PROPERTIES:
 :description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).

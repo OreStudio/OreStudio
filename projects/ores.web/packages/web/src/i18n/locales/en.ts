@@ -301,6 +301,8 @@ export const en: SourceCatalogue = {
     'notification.inbox.approval_waiting': '{requester} asks for {kind}. They wrote: {reason}',
     'notification.inbox.approval_decided':
         'Your request for {kind} is {state}. {decider} wrote: {comment}',
+    'notification.inbox.approval_expired':
+        'Your request for {kind} expired before anybody answered it. Ask again if you still need it.',
 
     signIns: {
         title: 'Sign-ins',

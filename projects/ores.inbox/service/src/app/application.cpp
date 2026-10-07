@@ -23,6 +23,7 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
+#include "ores.inbox.service/app/approval_expiry_sweeper.hpp"
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
@@ -41,6 +42,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <cstdint>
 #include <vector>
 
 namespace ores::inbox::service::app {
@@ -66,6 +68,11 @@ namespace {
 
 constexpr std::string_view service_name = "ores.inbox.service";
 constexpr std::string_view service_version = ORES_VERSION;
+
+// How often the sweep closes requests nobody answered. The policy is the
+// kind's own deadline, which is measured in days; this only decides how soon
+// after it a request stops being offered to a decider, so minutes are plenty.
+constexpr std::uint32_t sweep_interval_seconds = 300;
 
 } // namespace
 
@@ -104,6 +111,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
+    // The sweep closes what nobody answered, including what ran out while this
+    // service was down, so it owns a context of its own and starts with the
+    // service.
+    auto sweeper = std::make_shared<approval_expiry_sweeper>(sweep_interval_seconds,
+                                                            make_context(cfg.database));
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
@@ -113,10 +126,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             return ores::inbox::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [&nats](boost::asio::io_context& ioc) {
+        [&nats, sweeper](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+            boost::asio::co_spawn(
+                ioc, [sweeper]() { return sweeper->run(); }, boost::asio::detached);
         });
 
     event_source.stop();

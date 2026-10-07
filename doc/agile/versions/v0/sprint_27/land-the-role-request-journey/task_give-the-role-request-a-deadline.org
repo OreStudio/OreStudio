@@ -26,7 +26,7 @@ A role request that nobody answers closes on its own, so a queue cannot rot. The
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -36,15 +36,45 @@ A role request that nobody answers closes on its own, so a queue cannot rot. The
 * Acceptance
 
 - The iam.role_grant kind carries a deadline, seeded, and a request raised under it records expires_at.
-- A request past its deadline closes as expired, and both the asker and the deciders are told.
+- A request past its deadline closes as expired, and the person who asked is
+  told. The deciders are not told: the queue is where they look, and the
+  request leaves it. The journey's separate candidate, a reminder *before* the
+  deadline, is not built here and is captured instead.
 - An untouched queue does not hold an expired request: the sweep decision is recorded and implemented.
 - The journey records gap 7 as closed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The deadline is a column the kind already has. =approval_kind.expires_after_days=
+and =approval_request.expires_at= both exist, and the raise path already turns
+one into the other, so seeding fourteen days on =iam.role_grant= is the whole
+of the first acceptance criterion. The seed states it as the review window a
+member waits, which is a fortnight and not a number the code should hold.
+
+The sweep is the part that does not exist. The decide function closes an
+overdue request when a decider reaches for it, which is no help to a queue
+nobody opens, and an untouched queue is exactly the case the journey names. So
+=ores_inbox_expire_approval_requests_fn= closes every overdue open request in
+one statement and answers one row per request it closed, and the inbox service
+runs it: once at start, which catches what ran out while the service was down,
+and then every five minutes. That shape is the one the IAM service already uses
+for approved role grants, which is the nearest problem to this one.
+
+The function reads every tenant, so it is a security-definer function and the
+inbox service is the only role granted execute, exactly as
+=ores_iam_unapplied_role_grants_fn= is. The read-write role the suites sign in
+under keeps it too, so the sweep can be tested.
+
+An expiry is not a decision. The message a decision raises reads "{decider}
+wrote: {comment}", which for an expiry would name somebody who did nothing, so
+the expiry gets a notification kind of its own rather than borrowing the
+other's wording.
+
+The sweep interval is a constant in the service, not a setting. The policy a
+tenant would want to change is the kind's deadline, which is already data;
+how soon afterwards a request stops being offered to a decider is not
+something a tenant can hold an opinion about, and five minutes is well inside
+the fortnight it follows.
 
 * Measurements
 

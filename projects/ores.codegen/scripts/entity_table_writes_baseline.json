@@ -368,6 +368,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_inbox_expire_approval_requests_fn",
+      "file": "projects/ores.sql/create/inbox/inbox_approval_expire_fn_create.sql",
+      "reason": "closes overdue approval requests across every tenant, which the tenant-scoped repositories cannot express"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_inbox_mark_notifications_read_fn",
       "file": "projects/ores.sql/create/inbox/inbox_notification_fn_create.sql",
       "reason": "predates the check"

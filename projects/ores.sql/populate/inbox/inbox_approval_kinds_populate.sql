@@ -24,6 +24,11 @@
  * Seeds the kinds of approval request. Each kind names the permission a
  * decider needs, so this script runs after the IAM permissions. This script is
  * idempotent.
+ *
+ * A role request carries a review window, because an administrator who never
+ * answers asks the member to wait forever. The inbox closes it when a decider
+ * reaches for it, and again on its own sweep, so a queue nobody opens does not
+ * rot either.
  */
 
 \echo '--- Approval Kinds ---'
@@ -36,7 +41,7 @@ insert into ores_inbox_approval_kinds_tbl (
 ) values
     (ores_utility_system_tenant_id_fn(), 'iam.role_grant', 0, 'Role request',
      'A person asks to be given a role', 'iam::roles:assign',
-     false, false, null, 1, 10,
+     false, false, 14, 1, 10,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

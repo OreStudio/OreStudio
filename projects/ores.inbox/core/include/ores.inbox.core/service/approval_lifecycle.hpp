@@ -55,6 +55,16 @@ struct request_page {
 };
 
 /**
+ * @brief A request the sweep closed because nobody answered it.
+ */
+struct expired_request {
+    std::string request_id;
+    std::string tenant_id;
+    std::string kind_code;
+    std::string requested_by;
+};
+
+/**
  * @brief The approval request lifecycle: raising, deciding and the two reads
  * a person works from.
  *
@@ -125,7 +135,26 @@ public:
      */
     request_page raised_by(const boost::uuids::uuid& account_id, int offset, int limit);
 
+    /**
+     * @brief Closes every open request past its kind's deadline, across every
+     * tenant, and tells each person who asked.
+     *
+     * A request nobody looks at is the case a queue rots on, so this runs on
+     * its own rather than waiting for a decider to reach for one. It is
+     * idempotent: a request it already closed is no longer open, so a repeated
+     * run changes nothing.
+     */
+    std::vector<expired_request> expire_overdue();
+
 private:
+    /**
+     * @brief Tells the person who asked that their request ran out of time.
+     *
+     * Telling is never the closing: a request closed and untold is better than
+     * one told and not closed, so a failure here is logged and swallowed.
+     */
+    void tell_expired(const expired_request& expired);
+
     ores::database::context ctx_;
 };
 

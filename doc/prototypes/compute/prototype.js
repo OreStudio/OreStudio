@@ -2284,29 +2284,29 @@
        say where to go rather than only what they are called. */
     var TABS = {
         watch: [
-            { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?' },
-            { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when' },
-            { id: 'fleet', name: 'Fleet', note: 'the estate, node by node' },
-            { id: 'usage', name: 'Usage', note: 'which tenant is using what, from the installation\u2019s own ledger' }
+            { id: 'dashboard', name: 'Dashboard', note: 'is the grid healthy right now?', reach: 'installation' },
+            { id: 'nodes', name: 'Nodes', note: 'which node was hot, and when', reach: 'installation' },
+            { id: 'fleet', name: 'Fleet', note: 'the estate, node by node', reach: 'installation' },
+            { id: 'usage', name: 'Usage', note: 'which tenant is using what, from the installation\u2019s own ledger', reach: 'installation' }
         ],
         job: [
-            { id: 'jobs', name: 'The job', note: 'where it is, what the models carry, and where its time went' },
-            { id: 'lineage', name: 'Lineage', note: 'what report caused it, and what jobs its batch holds' },
-            { id: 'timeline', name: 'Timeline', note: 'what ran when, and what overlapped' },
-            { id: 'spread', name: 'Spread', note: 'is this job normal, and is one node slow' }
+            { id: 'jobs', name: 'The job', note: 'where it is, what the models carry, and where its time went', reach: 'your tenant' },
+            { id: 'lineage', name: 'Lineage', note: 'what report caused it, and what jobs its batch holds', reach: 'your tenant; the host is the installation\u2019s' },
+            { id: 'timeline', name: 'Timeline', note: 'what ran when, and what overlapped', reach: 'your tenant' },
+            { id: 'spread', name: 'Spread', note: 'is this job normal, and is one node slow', reach: 'your tenant' }
         ],
         failure: [
-            { id: 'rates', name: 'Rates', note: 'when it started, and whether a node or a release is bad' },
-            { id: 'where', name: 'Where', note: 'which nodes are failing, and when' },
-            { id: 'detail', name: 'Detail', note: 'what the job and the node said' }
+            { id: 'rates', name: 'Rates', note: 'when it started, and whether a node or a release is bad', reach: 'your tenant' },
+            { id: 'where', name: 'Where', note: 'which nodes are failing, and when', reach: 'your tenant' },
+            { id: 'detail', name: 'Detail', note: 'what the job said, and the node\u2019s logs', reach: 'your tenant; the node\u2019s logs are the installation\u2019s' }
         ],
         capacity: [
-            { id: 'headroom', name: 'Headroom', note: 'can the grid take more' },
-            { id: 'arrivals', name: 'Arrivals', note: 'what kicks in soon, and what it needs' }
+            { id: 'headroom', name: 'Headroom', note: 'can the grid take more', reach: 'installation' },
+            { id: 'arrivals', name: 'Arrivals', note: 'what kicks in soon, and what it needs', reach: 'your tenant' }
         ],
         versions: [
-            { id: 'flight', name: 'In flight', note: 'which release is running where' },
-            { id: 'catalogue', name: 'Catalogue', note: 'what the grid may run' }
+            { id: 'flight', name: 'In flight', note: 'which release is running where', reach: 'your tenant\u2019s jobs; the nodes are the installation\u2019s' },
+            { id: 'catalogue', name: 'Catalogue', note: 'what the grid may run', reach: 'installation' }
         ]
     };
 
@@ -2324,12 +2324,15 @@
         var tabs = tabsFor(screenId);
         if (!tabs || tabs.length < 2) return '';
         var current = activeTab(screenId);
-        var note = '';
-        for (var i = 0; i < tabs.length; i++) if (tabs[i].id === current) note = tabs[i].note;
+        var note = '', reach = '';
+        for (var i = 0; i < tabs.length; i++) {
+            if (tabs[i].id === current) { note = tabs[i].note; reach = tabs[i].reach; }
+        }
         return '<div class="subtabs">' + tabs.map(function (t) {
             return '<button data-act="tab" data-screen="' + screenId + '" data-tab="' + t.id + '"' +
                 (current === t.id ? ' class="on"' : '') + '>' + esc(t.name) + '</button>';
-        }).join('') + '<span class="count">' + esc(note) + '</span></div>';
+        }).join('') + '<span class="count">' + esc(note) +
+            (reach ? ' <span class="reach">' + esc(reach) + '</span>' : '') + '</span></div>';
     }
 
     function watchScreen() {

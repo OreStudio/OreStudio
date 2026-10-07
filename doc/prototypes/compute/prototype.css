@@ -225,6 +225,19 @@ p { margin: 0; }
 .subtabs button:hover { background: var(--panel-2); color: var(--ink); }
 .subtabs button.on { color: var(--ink); border-bottom-color: var(--ink); }
 .subtabs .count { font-size: 12px; color: var(--ink-dim); margin-left: auto; }
+/* Who the panel is for. The scope toggle says which rows you are looking at;
+   this says whose rows they are, which is a different question and the one a
+   reader needs on a screen that mixes the installation's panels with a
+   tenant's. */
+.subtabs .reach {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+}
 .modechip {
     margin-left: auto;
     font-size: 11px;

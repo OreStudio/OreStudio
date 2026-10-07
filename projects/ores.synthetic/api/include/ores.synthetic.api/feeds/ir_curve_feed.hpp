@@ -30,9 +30,9 @@
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <atomic>
 #include <functional>
 #include <memory>
 #include <stdexcept>
@@ -97,7 +97,7 @@ public:
     void start() override;
     void stop() override;
     std::uint64_t publish_count() const override {
-        return publish_count_.load(std::memory_order_relaxed);
+        return clock_.publish_count();
     }
     std::string_view kind() const override {
         return ir_curve_feed_kind;
@@ -139,10 +139,8 @@ private:
     std::string qualifier_;
     std::string role_;
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process_;
-    double ticks_per_hour_;
+    tick_clock clock_;
     std::vector<ir_curve_resolved_entry> entries_;
-    std::atomic<bool> stop_flag_{false};
-    std::atomic<std::uint64_t> publish_count_{0};
 };
 
 /**

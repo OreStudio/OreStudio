@@ -21,19 +21,19 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
+#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <format>
 #include <stdexcept>
-#include <thread>
 
 namespace ores::synthetic::feed {
 
@@ -63,46 +63,23 @@ ir_curve_feed::ir_curve_feed(
     , qualifier_(std::move(qualifier))
     , role_(std::move(role))
     , process_(std::move(process))
-    , ticks_per_hour_(ticks_per_hour)
+    , clock_(ticks_per_hour)
     , entries_(std::move(entries)) {
 
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
-    if (ticks_per_hour_ <= 0.0)
+    if (ticks_per_hour <= 0.0)
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
 }
 
 void ir_curve_feed::start() {
-    using namespace std::chrono;
+    clock_.run(
+        [this] {
+            process_->next();
+            const auto now = std::chrono::system_clock::now();
 
-    const auto period_us =
-        duration_cast<microseconds>(hours(1)) / static_cast<long long>(ticks_per_hour_);
-
-    // See fx_spot_feed::start() -- stop_flag_ must not be reset here, and the sleep is sliced so
-    // stop() is observed promptly even though the tick period itself can be minutes long.
-    constexpr auto slice = milliseconds(100);
-
-    while (!stop_flag_.load(std::memory_order_relaxed)) {
-        auto remaining = duration_cast<microseconds>(period_us);
-        while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
-            const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);
-            std::this_thread::sleep_for(nap);
-            remaining -= nap;
-        }
-
-        if (stop_flag_.load(std::memory_order_relaxed))
-            break;
-
-        process_->next();
-        const auto now = system_clock::now();
-
-        // A tick-loop thread has no caller to propagate an exception to --
-        // an uncaught throw here would std::terminate() the whole service
-        // process, taking down every other feed and NATS handler with it.
-        // Log and skip this batch instead; the next tick tries again.
-        try {
             for (const auto& e : entries_) {
                 // Each tick names one pillar: the datum the resolver builds from
                 // the entry's own dates, so the series it lands in carries the
@@ -118,23 +95,24 @@ void ir_curve_feed::start() {
 
                 nats_.js_publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
             }
-
-            const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
+            return std::to_string(entries_.size());
+        },
+        [this](std::uint64_t n, const std::string& points) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
                     << "SYNTHETIC CURVE PUBLISH: subject='" << nats_subject_ << "' source='"
-                    << source_name_ << "' batch=" << n << " points=" << entries_.size();
+                    << source_name_ << "' batch=" << n << " points=" << points;
             }
-        } catch (const std::exception& ex) {
+        },
+        [this](const std::exception& ex) {
             BOOST_LOG_SEV(lg(), error)
                 << "SYNTHETIC CURVE PUBLISH FAILED: subject='" << nats_subject_ << "' source='"
                 << source_name_ << "': " << ex.what();
-        }
-    }
+        });
 }
 
 void ir_curve_feed::stop() {
-    stop_flag_.store(true, std::memory_order_relaxed);
+    clock_.stop();
 }
 
 ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
@@ -157,19 +135,10 @@ std::string lowercase(std::string s) {
     return s;
 }
 
-// ISO date part of an observation_datetime -- see feed_controller::date_part()'s own copy of this
-// (duplicated rather than shared: the two live in different components with no natural common
-// header for a one-line helper).
-std::string date_part(std::chrono::system_clock::time_point tp) {
-    const auto days = std::chrono::floor<std::chrono::days>(tp);
-    return std::format("{:%F}", days);
-}
-
 // Resolves initial_rate from a real market_observation when cfg.price_source is "vintage",
-// mirroring feed_controller::vintage_data_available() -- but keyed on the resolved entries'
-// shortest-tenor DEPOSIT entry rather than any one coordinate, since an IR curve feed has no
-// single scalar equivalent to FX spot (see make_ir_curve_feed's own doc comment for why DEPOSIT
-// is the anchor).
+// keyed on the resolved entries' shortest-tenor DEPOSIT entry rather than any one coordinate,
+// since an IR curve feed has no single scalar equivalent to FX spot (see make_ir_curve_feed's
+// own doc comment for why DEPOSIT is the anchor).
 //
 // @throws vintage_data_missing_error if there is no DEPOSIT entry to anchor on, or no matching
 // observation is found.
@@ -183,10 +152,8 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
             "Cannot resolve vintage initial_rate: config has no DEPOSIT entry to anchor on.");
     }
 
-    const auto missing_message = [&] {
-        return "No vintage data found for source=" + cfg.vintage_source +
-               ", date=" + cfg.vintage_date + ", point=" + anchor->point_id + ".";
-    };
+    const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
+                                 ", date=" + cfg.vintage_date + ", point=" + anchor->point_id + ".";
 
     // The row the vintage is read from is the anchor pillar's own datum: the series
     // the config names at the pillar's point. The codecs compose both, so the read
@@ -207,48 +174,18 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                          "' at point '" + anchor->point_id +
                                          "': " + anchor_uri.error());
 
-    auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
-    ores::marketdata::client::market_data_client md_client(delegated_nats);
-
-    // The series is the one the config names, looked up by its URI: the dataset that
-    // publishes the vintage names its rows' own ORE keys, so the deposit grid the
-    // config reads is a real MM series. Which observation of it is the vintage is
-    // vintage_source/vintage_date.
-    auto series =
-        md_client.find_series_by_uri(cfg.vintage_series_uri, boost::uuids::to_string(cfg.party_id));
-    if (!series)
-        throw vintage_data_missing_error("Failed to look up series '" + cfg.vintage_series_uri +
-                                         "': " + series.error());
-    if (!series->has_value())
-        throw vintage_data_missing_error(missing_message());
-
-    // Paged scan -- see feed_controller::vintage_data_available()'s own comment on why an
-    // unbounded fetch is unsafe here (NATS max payload).
-    constexpr std::uint32_t page_size = 200;
-    const auto series_id_str = boost::uuids::to_string((*series)->id);
-    std::uint32_t offset = 0;
-    for (;;) {
-        auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
-        if (!observations) {
-            throw vintage_data_missing_error("Failed to look up observations for '" +
-                                             cfg.vintage_series_uri + "': " + observations.error());
-        }
-        for (const auto& obs : *observations) {
-            if (obs.source == cfg.vintage_source && obs.oresmd_uri == *anchor_uri &&
-                date_part(obs.observation_datetime) == cfg.vintage_date) {
-                try {
-                    return std::stod(obs.value);
-                } catch (const std::exception& e) {
-                    throw vintage_data_missing_error("Vintage observation value '" + obs.value +
-                                                     "' is not a valid number: " + e.what());
-                }
-            }
-        }
-        if (observations->size() < page_size)
-            break;
-        offset += page_size;
-    }
-    throw vintage_data_missing_error(missing_message());
+    const auto found = find_vintage_observation(auth_nats,
+                                                caller_bearer_token,
+                                                cfg.vintage_series_uri,
+                                                *anchor_uri,
+                                                cfg.vintage_source,
+                                                cfg.vintage_date,
+                                                missing_message,
+                                                cfg.vintage_series_uri,
+                                                boost::uuids::to_string(cfg.party_id));
+    if (!found)
+        throw vintage_data_missing_error(found.error());
+    return *found;
 }
 
 }

@@ -270,7 +270,7 @@ private:
 
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
-        const auto factory = ores::synthetic::feed::make_default_feed_factory();
+        const auto& factory = ores::synthetic::feed::default_feed_factory();
         try {
             const auto feed =
                 factory.make(std::string(ores::synthetic::feed::fx_spot_feed_kind),
@@ -359,7 +359,7 @@ private:
 
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
-        const auto factory = ores::synthetic::feed::make_default_feed_factory();
+        const auto& factory = ores::synthetic::feed::default_feed_factory();
         try {
             const auto feed = factory.make(
                 std::string(ores::synthetic::feed::ir_curve_feed_kind),

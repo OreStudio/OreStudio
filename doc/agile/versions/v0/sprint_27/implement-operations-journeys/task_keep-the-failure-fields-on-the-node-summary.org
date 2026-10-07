@@ -33,12 +33,12 @@ states the failures beside the completions.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Fields, mapping and shell rows are written; verification runs. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-04                               |
+| Next         | Build, suite, live read, then close.   |
+| Last touched | 2026-10-07                               |
 
 * Acceptance
 
@@ -54,9 +54,14 @@ states the failures beside the completions.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add =tasks_failed= and =max_task_duration_ms= to =node_stats_summary= in
+  the telemetry model and regenerate the =compute-cpp= component.
+- Fill both in =get_grid_stats= from each node's newest sample.
+- Print both in the shell's =compute grid-stats= node table and name them in
+  its header row.
+- No handler unit test: the class is header-only with an injected NATS client
+  and inline repositories, so the mapping has no seam. Verify it on the live
+  fleet instead, and write plainly in the Result what stays unproven.
 
 * Measurements
 

@@ -199,6 +199,30 @@ p { margin: 0; }
 }
 .appnav button:hover { background: var(--panel-2); color: var(--ink); }
 .appnav button.here { background: var(--panel-2); color: var(--ink); }
+/* Sub-tabs divide one screen's panels so a dashboard does not become a
+   scroll. They span the chart grid and sit directly under the hero. */
+.subtabs {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+    margin: 4px 0 -6px;
+}
+.subtabs button {
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.subtabs button:hover { background: var(--panel-2); color: var(--ink); }
+.subtabs button.on { color: var(--ink); border-bottom-color: var(--ink); }
+.subtabs .count { font-size: 12px; color: var(--ink-dim); margin-left: auto; }
 .modechip {
     margin-left: auto;
     font-size: 11px;

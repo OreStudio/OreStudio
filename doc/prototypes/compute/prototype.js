@@ -454,6 +454,7 @@
         heatMetric: 'work',
         job: null,
         showState: true,
+        watchTab: 'fleet',
         updatedAt: clock(NOW_MIN),
         logsDownloaded: 0
     };
@@ -1490,16 +1491,31 @@
     }
 
     // -------------------------------------------------------------- screens
+    /* One screen's panels, split so the dashboard is a page and not a scroll.
+       The hero stays above the tabs; the tabs divide what supports it. */
+    function subTabs(tabs, current, note) {
+        return '<div class="subtabs">' + tabs.map(function (t) {
+            return '<button data-act="tab" data-tab="' + t.id + '"' +
+                (current === t.id ? ' class="on"' : '') + '>' + esc(t.name) + '</button>';
+        }).join('') + (note ? '<span class="count">' + esc(note) + '</span>' : '') + '</div>';
+    }
+
+    var WATCH_TABS = [
+        { id: 'fleet', name: 'Fleet' },
+        { id: 'work', name: 'Work' }
+    ];
+
     function watchScreen() {
+        var tab = S.watchTab;
+        var support = tab === 'work'
+            ? loadChart() + throughputChart() + outcomesChart() + queueChart()
+            : ribbonChart() + fleetSizeChart() + nodeTablePanel();
         return summaryPanel() +
             heatmapChart(S.heatMetric, true) +
-            ribbonChart() +
-            loadChart() +
-            fleetSizeChart() +
-            throughputChart() +
-            outcomesChart() +
-            queueChart() +
-            nodeTablePanel();
+            subTabs(WATCH_TABS, tab, tab === 'work'
+                ? 'the work the grid is doing'
+                : 'the nodes it is doing it on') +
+            support;
     }
 
     function jobScreen() {
@@ -1653,6 +1669,7 @@
         if (screenById(p.get('screen')).id === p.get('screen')) S.screen = p.get('screen');
         if (variantById(p.get('variant')).id === p.get('variant')) S.variant = p.get('variant');
         if (p.get('metric') === 'failures' || p.get('metric') === 'work') S.heatMetric = p.get('metric');
+        if (p.get('tab') === 'fleet' || p.get('tab') === 'work') S.watchTab = p.get('tab');
         if (p.get('job')) S.job = p.get('job');
     }
 
@@ -1661,6 +1678,7 @@
         p.set('screen', S.screen);
         p.set('variant', S.variant);
         p.set('metric', S.heatMetric);
+        p.set('tab', S.watchTab);
         p.set('job', selectedJob().id);
         window.history.replaceState(null, '', window.location.pathname + '?' + p.toString());
     }
@@ -1685,6 +1703,9 @@
         } else if (act === 'metric') {
             S.heatMetric = el.getAttribute('data-metric');
             log.push('heatmap metric \u00b7 ' + S.heatMetric);
+        } else if (act === 'tab') {
+            S.watchTab = el.getAttribute('data-tab');
+            log.push('tab \u00b7 ' + S.watchTab);
         } else if (act === 'job') {
             S.job = el.getAttribute('data-job');
             log.push('job \u00b7 ' + S.job);

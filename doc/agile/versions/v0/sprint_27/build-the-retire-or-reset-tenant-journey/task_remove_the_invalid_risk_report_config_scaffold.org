@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 823F2149-EB9B-45DF-B929-D74F75F194FF
+:END:
+#+title: Task: Remove the invalid risk report config scaffold
+#+description: ores.dq.risk_report_config.org is an unfinished scaffold with placeholder prose and no Columns section, and it fails model validation. component-drift aborts at the first invalid model, so its presence stops the tree-wide gate at dq and every component after it goes unregenerated.
+#+type: task
+#+level: s1
+#+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
+#+owner: marco
+#+branch: fix/the-risk-report-config-model
+#+pr: 2877
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record why the invalid scaffold stopped being a removal, and what the gate still needs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- component-drift --all completes over every component and finds no drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2877][#2877]] | [codegen] Remove the invalid risk report config scaffold |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+No removal. The branch that carried one is abandoned, and this is the record.
+
+ores.dq.risk_report_config.org was invalid when this started: placeholder
+prose, a TODO for its natural keys, no Columns section, and a validation
+failure that aborted component-drift at dq, which left every component after it
+unregenerated. Deleting it made the gate complete, and the deletion was raised.
+
+While it sat open, 97051b9fd0 completed the model on main: real profiles, a
+Columns section, a primary key. Deleting it then would have destroyed finished
+work, so the deletion is dropped and only this record lands.
+
+The defect it was going to fix is still there, one model further on.
+component-drift aborts at the first model that fails validation, so a single
+bad file turns a tree-wide check into a partial one and the report names drift
+rather than the model. Collecting every invalid model before failing is the
+fix, and it needs its own task.
+
+What the model change did need landed separately: 97051b9fd0 committed the
+model without everything it generates, so the dq TypeScript twins were
+untracked and two other components' output moved with it. That was fixed by
+committing the regenerated output.
+

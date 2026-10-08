@@ -834,7 +834,11 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Re
     for check in selected:
         by_phase.setdefault(check.phase, []).append(check)
 
-    known = {check.id for check in selected}
+    # Every check that exists, not every check that was selected: a
+    # dependency names a check, and whether it runs this time is a separate
+    # question. A narrow selection that picks site-page without
+    # component-drift must not look like a typo.
+    known = {check.id for check in CATALOGUE}
     for phase in sorted(by_phase):
         group = in_dependency_order(by_phase[phase], known)
         print(f"\n▶  {PHASE_NAMES.get(phase, phase)} ({len(group)})", flush=True)

@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 7354AE40-FF6F-4769-80CD-EA2BADF8CA83
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.structure_template_role
+#+description: Codegen entity model for the trading =structure_template_role= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One role a structure template allows, and how many legs it holds.
+#+entity_singular: structure_template_role
+#+entity_plural: structure_template_roles
+#+entity_title: Structure Template Role
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The roles a structure template allows, each with the number of legs it
+holds. The table is what makes a template a mould: a straddle allows one
+role holding exactly two legs, a butterfly allows a body of one and wings
+of two.
+
+The row is keyed by its template and its role, because a template states
+each role once. The leg counts are inclusive at both ends, and a role that
+holds any number of legs states a maximum of zero meaning no upper bound.
+
+Examples: 'Straddle' / 'leg' / 2 to 2, 'Butterfly' / 'wing' / 2 to 2.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** template_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The template the role belongs to.
+
+#+begin_src cpp :name generator
+std::string("Straddle")
+#+end_src
+
+** role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The part the leg plays in the deal, in the template's own words: the body
+of a butterfly, the wing of a risk reversal, the premium leg.
+
+Examples: 'leg', 'body', 'wing', 'premium'.
+
+#+begin_src cpp :name generator
+std::string("leg")
+#+end_src
+
+** min_legs
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The fewest legs this role may hold, counting from zero.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** max_legs
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The most legs this role may hold. Zero means the role states no upper
+bound, which is what a dynamically typed product needs.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the role is for, when the name alone does not say.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_structure_template_roles_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+A role holds a count, not a negative number of legs, and its bounds are in
+order.
+
+| expression                    |
+|-------------------------------|
+| "min_legs" >= 0               |
+| "max_legs" >= 0               |
+| "max_legs" = 0 or "max_legs" >= "min_legs" |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_structure_template_role_fn;
+#+end_src
+* Foreign keys
+
+** template_code
+:PROPERTIES:
+:table:             ores_trading_structure_templates_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid template_code: %. No active structure template found with this code.
+:END:
+
+The template catalogue is system reference data.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: template_role
+:entity_plural_short:   template_roles
+:entity_singular_words: structure template role
+:entity_plural_words:   structure template roles
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: str
+:END:
+
+** Table display
+
+| column        | header       |
+|---------------+--------------|
+| template_code | Template     |
+| role          | Role         |
+| min_legs      | Min legs     |
+| max_legs      | Max legs     |
+| modified_by   | Modified By  |
+| version       | Version      |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the leg roles the templates encode.

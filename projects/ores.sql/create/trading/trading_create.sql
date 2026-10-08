@@ -57,6 +57,17 @@
 \ir ./trading_trade_link_types_create.sql
 \ir ./trading_trade_link_types_notify_trigger_create.sql
 
+-- The structure reference data: the rungs of the composition ladder, the
+-- templates that shape a rung, and the roles each template allows. The roles
+-- name their template and the templates name their kind, so the order is
+-- kinds, templates, roles.
+\ir ./trading_structure_kinds_create.sql
+\ir ./trading_structure_kinds_notify_trigger_create.sql
+\ir ./trading_structure_templates_create.sql
+\ir ./trading_structure_templates_notify_trigger_create.sql
+\ir ./trading_structure_template_roles_create.sql
+\ir ./trading_structure_template_roles_notify_trigger_create.sql
+
 -- Closed-set reference data. Each set is the ORE simple type of the same
 -- name, so the spellings round-trip through the ORE XML unchanged. The
 -- instrument tables reference them, so they load before the instruments.

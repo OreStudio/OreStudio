@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 9455D6ED-4935-4DAC-AAA9-C26C49E031B1
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.structure_kind
+#+description: Codegen entity model for the trading =structure_kind= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: A rung of the composition ladder, and whether it confirms as a whole.
+#+entity_singular: structure_kind
+#+entity_plural: structure_kinds
+#+entity_title: Structure Kind
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Reference data table defining the rungs of the composition ladder. A kind
+says how strongly the structure binds its legs, and the one consequence
+that follows for the customer: whether the deal is confirmed as one
+document or trade by trade.
+
+Examples: 'Strategy', 'Typed', 'Dynamic', 'Package'.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The structure kind code.
+
+Examples: 'Strategy', 'Typed', 'Package'.
+
+#+begin_src cpp :name generator
+std::string("Strategy")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the rung binds its legs by, and how far it is priced as a whole.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** confirms_as_whole
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the structure is confirmed as one document. False when the deal
+confirms trade by trade, which is what a package does: it binds its legs
+to nothing economic, so each leg is its own confirmation.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_structure_kinds_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_structure_kind_fn;
+#+end_src
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: structure_kind
+:entity_plural_short:   structure_kinds
+:entity_singular_words: structure kind
+:entity_plural_words:   structure kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sk
+:END:
+
+** Table display
+
+| column            | header         |
+|-------------------+----------------|
+| code              | Code           |
+| description       | Description    |
+| confirms_as_whole | Confirms whole |
+| modified_by       | Modified By    |
+| version           | Version        |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.trading.api/domain/structure_kind.hpp
+:domain_class:           trading::domain::structure_kind
+:protocol_include:       ores.trading.api/messaging/structure_kind_protocol.hpp
+:collection_name:        structure_kinds
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field             | label          | widget               | type      | is_key | is_required | placeholder                 |
+|-------------------+----------------+----------------------+-----------+--------+-------------+-----------------------------|
+| code              | Code           | codeEdit             | line_edit | true   | true        | Enter structure kind code   |
+| description       | Description    | descriptionEdit      | text_edit |        |             | Enter a description         |
+| confirms_as_whole | Confirms whole | confirmsAsWholeEdit  | checkbox  |        |             |                             |
+
+*** Columns
+
+| enum_name         | field             | header         | type    | width |
+|-------------------+-------------------+----------------+---------+-------|
+| Code              | code              | Code           | string  | 120   |
+| Description       | description       | Description    | string  | 300   |
+| ConfirmsAsWhole   | confirms_as_whole | Confirms whole | boolean | 130   |
+| Version           | version           | Version        | int     | 80    |
+| ModifiedBy        | modified_by       | Modified By    | string  | 120   |
+| RecordedAt        | recorded_at       | Recorded At    | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the ladder these kinds are the rungs of.

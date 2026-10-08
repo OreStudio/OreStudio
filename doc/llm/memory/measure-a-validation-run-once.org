@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 78637F1C-2BB7-422D-956F-09893B779F28
+:END:
+#+title: Measure a validation run once, and timebox the diagnosis
+#+description: A validation run measures the tree once and fixes from that single list. It does not re-run the whole check suite after merging main, and a warning that a few reads do not explain becomes a finding for the next run rather than a long chase.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A validation run measures the tree once, fixes from that single list, and commits. It does not run the whole check suite a second time after merging main.
+
+*Why:* Both runs in the first session overshot the hourly cadence. The second full pass cost about fifteen minutes and found nothing the first had not, because a branch cut from main with no commits of its own measures main either way, and merging main mid-run only makes the tree a third thing. Trunk moves while the run works, so a second measurement is a measurement of a different tree.
+
+*How to apply:* Cut the branch from latest main and run the suite once, `compass check --all --exclude-heavy`. Work that failure list and commit. Timebox any single diagnosis to two or three reads; if a warning is not explained by then, write it up as a finding for the next run and move on. Open projects/ores.sql/utility/validation_ignore.txt early, not late: most validation warnings are already answered there, with the reason. Fetch immediately before committing and check whether main has already fixed the item, because two commits in the first session were dead on arrival that way.

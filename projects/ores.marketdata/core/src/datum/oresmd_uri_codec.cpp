@@ -156,8 +156,8 @@ std::string spelling_of(const market_datum& datum) {
 
     auto params = u.params(query_encoding());
     params.append({"type", datum.is_series() ? series_type_value : quote_type_value});
-    params.append({"instrument", instrument_spelling(datum.type())});
-    params.append({"quote", quote_spelling(datum.quote())});
+    params.append({"instrument", oresmd_uri_codec::instrument_spelling(datum.type())});
+    params.append({"quote", oresmd_uri_codec::quote_spelling(datum.quote())});
     for (const auto& fv : datum.fields()) {
         if (fv.name == row.subject || std::holds_alternative<none_t>(fv.held))
             continue;
@@ -188,10 +188,10 @@ std::expected<market_datum, std::string> oresmd_uri_codec::read(std::string_view
     const bool series = *type_text == series_type_value;
 
     const auto instrument = instrument_type_named(upper(*instrument_text));
-    if (!instrument || lower(ore_name(*instrument)) != *instrument_text)
+    if (!instrument || oresmd_uri_codec::instrument_spelling(*instrument) != *instrument_text)
         return refuse(uri, std::format("'{}' is not an ORE instrument type", *instrument_text));
     const auto quote = quote_type_named(upper(*quote_text));
-    if (!quote || lower(ore_name(*quote)) != *quote_text)
+    if (!quote || oresmd_uri_codec::quote_spelling(*quote) != *quote_text)
         return refuse(uri, std::format("'{}' is not an ORE quote type", *quote_text));
 
     const auto& row = schema_of(*instrument);

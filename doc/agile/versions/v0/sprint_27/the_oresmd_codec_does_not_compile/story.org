@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8D6BEBC3-A56A-4A00-B9B0-B7A7B364A616
+:END:
+#+title: Story: Hotfix: the oresmd codec does not compile
+#+description: The market data URI codec calls two static members of its own class from a free function, so ores.marketdata.core does not compile and the build stops at 70%.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:marketdata:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make ores.marketdata.core compile again on main.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The fix is merged in PR #2879 and awaits the hourly validation build. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Close the story once that build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The build compiles past oresmd_uri_codec.cpp.
+- The reader and the writer both spell the instrument and quote through oresmd_uri_codec.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B9B27793-7A06-4896-AD0E-C9C3038A5030][Scaffold story: Hotfix: the oresmd codec does not compile]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0B0CC14C-373C-41F3-8B87-A370796193B3][Implement Hotfix: the oresmd codec does not compile]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the oresmd codec does not compile |
+
+* Decisions
+
+- *Qualify the two calls; do not move the spelling helpers.* =spelling_of= is a
+  free function in the file's anonymous namespace and =instrument_spelling= /
+  =quote_spelling= are static members of =oresmd_uri_codec=, so the call needs the
+  class name. The alternative — making =spelling_of= a static member too — fixes
+  the same lookup but moves four helpers and both overloads to buy nothing.
+- *Route the reader through the same two members.* The header says the helpers
+  exist so that the spelling a reader compares against is the spelling the writer
+  produces. =read()= still re-derived =lower(ore_name(...))= itself, so the claim
+  was not true. Both directions now call one function.
+
+* Out of scope
+
+- Why the break reached =main=. It landed through the merge-without-checks
+  workflow and the hourly validation build had not yet reached it.

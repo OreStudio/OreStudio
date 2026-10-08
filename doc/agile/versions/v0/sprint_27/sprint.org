@@ -124,6 +124,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:1716A3FE-59C1-4E34-875E-A259D5E6131F][Mop up after the workspace removal]] | DONE | | 2026-10-08 | The avatars populate script lost an insert header when the workspace avatar was removed, so the database could not recreate. The eventing worked example and several knowledge and manual pages still described the deleted table, feature flag and permission codes. Repair both. |
 | [[id:5CCE6FE6-18B6-4002-907A-B8BF321CC1A6][Quote the offset column in the marketdata identity view]] | DONE | | 2026-10-08 | The commodity identity view selects a column named offset, which PostgreSQL reserves, so the schema cannot load and no database can be recreated. |
 | [[id:14A7E71E-F5FD-461B-9A2C-A4CC2B7B3B08][Order the structure members after the trades they reference]] | DONE | | 2026-10-08 | The structure members table carries a foreign key to the trade table, but its include runs before the trade table is created, so the schema fails to load and no database can be recreated. |
+| [[id:8D6BEBC3-A56A-4A00-B9B0-B7A7B364A616][Hotfix: the oresmd codec does not compile]] | STARTED | 2026-10-08 | | The market data URI codec calls two static members of its own class from a free function, so ores.marketdata.core does not compile and the build stops at 70%. |
 
 * Achievements
 

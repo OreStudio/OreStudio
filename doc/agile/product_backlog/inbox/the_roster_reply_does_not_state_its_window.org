@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 6554142D-52A1-4559-A57B-37B884758ECF
+:END:
+#+title: The services roster reply does not state its running window
+#+description: The roster read decides running from lost against the server's service_running_window constant, and the reply carries no window, so a screen that states the window in words must write the number itself. The services screen states five minutes; if the constant changes, the screen asserts a window the read does not use.
+#+type: capture
+#+level: cross
+#+filetags: :telemetry:compute:defect:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=telemetry.v1.ops.get_service_roster= answers running for an instance that
+reported inside the running window, lost for one that reported earlier, and
+missing for a slot no instance fills. The window is the server's own
+=service_running_window= constant, applied in the repository when it dates each
+row. The reply states the state per row and does not state the window those
+states were decided against.
+
+The screen that presents the roster therefore has to write the number itself if
+it wants to say it in words, and the services screen does: it states "reported
+in the last five minutes". The web now holds a copy of a server constant it
+cannot see.
+
+* Why
+
+The two can drift with nothing failing. Shorten or lengthen
+=service_running_window= and the read answers differently while the screen goes
+on stating the old window, so the screen asserts a boundary the read does not
+apply — a false claim on screen, which is the same defect class as a stale gap
+statement. Nothing in the response, and so nothing in the BFF route or the
+screen, can detect the change.
+
+The fix is for =get_service_roster_response= to carry =window_seconds=, so the
+screen renders the window the read actually applied, the web's copy of the
+number is deleted, and the three locales stop restating it. The same question
+applies to any other read whose answer depends on a server threshold and whose
+screen names that threshold in words.
+
+This is deliberately not part of [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]].
+Adding a field to the reply is a data-model change that needs the codegen
+regeneration and the drift gates, which is a different unit of work from
+building the screens; the screen unit took the bounded fix of naming the number
+once in the web with a comment that names the C++ constant.
+
+* References
+
+- [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the screen whose text states the window.
+- [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] — where the roster operation is modelled.
+
+* See also
+
+- [[id:5E83118A-1342-4088-B371-3367EF63FF17][Build the operations screens in ores.web]] — the task that took the bounded fix.

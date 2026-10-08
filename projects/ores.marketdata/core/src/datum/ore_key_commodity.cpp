@@ -91,7 +91,7 @@ market_datum read_commodity(instrument_type t, quote_type q, tokens rest) {
             require_size(rest, {5});
             return datum_builder(t, q)
                 .set(f::commodity_name, text(rest[0]))
-                .set(f::offset, integer(rest[1]))
+                .set(f::spread_offset, integer(rest[1]))
                 .set(f::ccy, text(rest[2]))
                 .set(f::expiry, expiry(rest[3]))
                 .set(f::strike, base_strike(rest[4]))

@@ -39,17 +39,6 @@ VIEW_COLUMNS = (
     "identity_kind",
 )
 
-# Field names a column cannot carry, and the column that carries them instead.
-# A reserved word in PostgreSQL is refused by the data layer, which names its
-# columns without quoting them, so the column is renamed and the asset-class
-# views expose it under the field's own name.
-COLUMN_RENAMES = {"offset": "offset_value"}
-
-
-def column_of(field: str) -> str:
-    """The column that holds @p field."""
-    return COLUMN_RENAMES.get(field, field)
-
 # A per-type row names its field list, its asset class and its subject:
 # {detail::t::cds, detail::cds, asset_class::credit, field::underlying_name}
 SCHEMA_ROW = re.compile(
@@ -222,10 +211,9 @@ def main() -> int:
     problems: list[str] = []
 
     # 1. The table's columns are exactly the context columns and the identity
-    #    fields, renamed only where a field name is one the store refuses, and
-    #    nothing else.
+    #    fields, and nothing else.
     columns = table_columns()
-    expected = set(CONTEXT_COLUMNS) | {column_of(f) for f in identity}
+    expected = set(CONTEXT_COLUMNS) | identity
     for missing in sorted(expected - columns):
         problems.append(f"{CREATE_TABLE} has no column '{missing}'.")
     for extra in sorted(columns - expected):
@@ -238,10 +226,10 @@ def main() -> int:
             problems.append(f"the projector's switch does not name field '{f}'.")
             continue
         written = placed[f]
-        if f in identity and written != column_of(f):
+        if f in identity and written != f:
             problems.append(
                 f"the projector places field '{f}' in column '{written or 'nothing'}'; "
-                f"it is an identity field and belongs in '{column_of(f)}'."
+                f"it is an identity field and belongs in '{f}'."
             )
         if f in coordinate and written:
             problems.append(

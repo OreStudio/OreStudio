@@ -212,11 +212,11 @@ suspends, so nothing follows a run's steps.
 
 =iam.v1.ops.assign_role= checks =iam::roles:assign= before it writes, so the
 administrator's decision carries the check the member's ask must not.
-=inbox.v1.ops.expire_overdue_approvals= arrives with the deadline this story
-gives the role request, and is fired by the scheduler rather than by a person,
-so it presents no session; it closes only what is already past its deadline,
-which is why that is affordable. The reads a person makes of their own requests
-and notices are the inbox's, and each is scoped to the person the session names.
+=inbox.v1.ops.expire_overdue_approvals= is the one subject here no person calls:
+the scheduler fires it, so it presents no session, and it closes only what is
+already past its deadline, which is why that is affordable. The reads a person
+makes of their own requests and notices are the inbox's, and each is scoped to
+the person the session names.
 
 * The seven gaps, and where each stands
 
@@ -237,10 +237,11 @@ building what the gap asked for.
 | 7 | A request that nobody answers waits forever | half closed | The deadline is closed: the kind carries one, the request takes it, and a scheduled sweep closes what nobody answered. The *reminder before* the deadline is open. |
 
 The reminder is the one piece of this journey still unbuilt. It is captured as
-"nobody reminds a decider that a request is about to lapse", because it is a
-different behaviour from the deadline: closing a queue that has stopped moving
-is housekeeping, and warning somebody that it is about to stop moving is a nudge
-with its own timing and its own audience.
+[[id:BF4009D1-1254-43F9-A8A3-BE9374DB5F30][nobody reminds a decider that a
+request is about to lapse]], because it is a different behaviour from the
+deadline: closing a queue that has stopped moving is housekeeping, and warning
+somebody that it is about to stop moving is a nudge with its own timing and its
+own audience.
 
 * Related journeys
 
@@ -270,6 +271,6 @@ with its own timing and its own audience.
 - [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] — the codes a role bundles
 - [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — where a request waits, and what answered the workflow question
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, its kinds, and the rule that answers one
-- "Approval request expiry" — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, and the scheduled sweep that closes what nobody answered
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, and the scheduled sweep that closes what nobody answered
 - [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Task: Create the role-request journey]] — the task this document answers
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

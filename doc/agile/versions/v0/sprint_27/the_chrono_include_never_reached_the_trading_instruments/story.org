@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: C6A0AB65-D503-474C-95AA-462D8B46C06E
+:END:
+#+title: Story: Hotfix: the chrono include never reached the trading instruments
+#+description: 177a2d6196 gated <chrono> on has_audit_columns in the domain class header template and regenerated the components under the drift gate, but six trading instrument headers kept the output they had before it. trading-cpp is in the gate's registry, so check_component_drift.py --all fails on it: bond_instrument, composite_instrument, composite_leg, equity_position_instrument, scripted_instrument and swap_leg each need the include the template now emits.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:trading:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring trading-cpp back under the drift gate, so check_component_drift.py reports no drift for it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The six instrument headers carry the <chrono> include the domain class header template emits.
+- check_component_drift.py --component trading-cpp reports no drift.
+- No file outside projects/ores.trading changes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E0E057D6-EF78-4B91-A6CF-8715B7A9A833][Scaffold story: Hotfix: the chrono include never reached the trading instruments]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:89F304DA-61CA-4B13-87DC-B6F4B4EA395B][Regenerate the six drifted trading instrument headers]] | DONE | | 2026-10-08 | Initial task for: Hotfix: the chrono include never reached the trading instruments |
+
+* Decisions
+
+- *Commit the generator's output, do not edit the models.* The models are
+  current; the six headers are simply output the gate never regenerated. Nothing
+  in a model needs to move for the gate to go green.
+- *Leave the template alone.* Its include sits behind =has_audit_columns=, while
+  the =std::chrono::= member it serves sits behind =has_audit_columns= and not
+  =has_audit_group=. An entity that carries =audit_record audit= therefore gets
+  the include without the member. That is the template's shape on main and these
+  six are its only instances. Whether the template should exclude them is a
+  separate question, and this hotfix does not reach it.
+
+* Out of scope
+
+- Whether the domain class header template should skip the include for an entity
+  with an audit group. See the second decision.
+- The broad trading model sweep in [[id:C203937E-BB91-48F4-995D-523D3866D60C][Fix trading entity model drift]], which
+  is a different, larger piece of work.
+
+* Result
+
+Done. `check_component_drift.py --component trading-cpp` reports no drifted
+trading file. The six instrument headers carry the `#include <chrono>` the
+template emits.
+
+No model changed: the drift was a regeneration the gate's own commit never ran
+for this component.

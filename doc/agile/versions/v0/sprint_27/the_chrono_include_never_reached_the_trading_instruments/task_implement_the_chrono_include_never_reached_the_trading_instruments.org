@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 89F304DA-61CA-4B13-87DC-B6F4B4EA395B
+:END:
+#+title: Task: Regenerate the six drifted trading instrument headers
+#+description: Initial task for: Hotfix: the chrono include never reached the trading instruments
+#+type: task
+#+level: s1
+#+filetags: :the_chrono_include_never_reached_the_trading_instruments:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-chrono-include-never-reached-the-trading-instruments
+#+pr: 2893
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C6A0AB65-D503-474C-95AA-462D8B46C06E][Hotfix: the chrono include never reached the trading instruments]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring trading-cpp back under the drift gate, so check_component_drift.py reports no drift for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C6A0AB65-D503-474C-95AA-462D8B46C06E][Hotfix: the chrono include never reached the trading instruments]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The six instrument headers carry the <chrono> include the domain class header template emits.
+- check_component_drift.py --component trading-cpp reports no drift.
+- No file outside projects/ores.trading changes.
+
+* Plan
+
+Run the drift gate's own regeneration for trading-cpp and commit what it
+writes. No model changes: the models are already current, and the six headers
+are simply output the gate never regenerated.
+
+The template is not touched. Its include sits behind =has_audit_columns= while
+the =std::chrono::= member sits behind =has_audit_columns= and not
+=has_audit_group=, so an entity that carries =audit_record audit= gets the
+include without the member. That is the template's shape on main, these six are
+its only instances, and changing it is a separate question about the template
+rather than drift in trading.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| drifted trading-cpp files before | 6 | =check_component_drift.py --component trading-cpp= | 3e5353df09 |
+| drifted trading-cpp files after | 0 | =check_component_drift.py --component trading-cpp= | bea77831bd |
+| generated domain headers carrying <chrono> in the tree | 365 | =grep -rl "#include <chrono>" projects/*/api/include/*/domain/*.hpp= | bea77831bd |
+| of those, carrying it without naming std::chrono:: | 6 | =for h in $(grep -rl "#include <chrono>" projects/*/api/include/*/domain/*.hpp); do grep -q "std::chrono::" "$h" || echo "$h"; done= | bea77831bd |
+
+* Notes
+
+The drift is one commit's miss, not a hand edit. =177a2d6196= added
+=#include <chrono>= to the domain class header template, gated on
+=has_audit_columns=, and regenerated the components under the gate. Six trading
+instrument headers were left as they were.
+
+The gate's registry lists =trading-cpp=, so =check_component_drift.py --all= has
+been red on main since that commit. Nothing else noticed: the include is
+harmless where it is missing, because these headers compile through
+=audit_record.hpp=, which brings =<chrono>= with it. The gate is what makes it
+visible, and only when it is run.
+
+The six headers are the only generated domain headers in the tree that carry
+=<chrono>= without naming =std::chrono::=. Every one of them carries
+=audit_record audit=, whose member is emitted by the =has_audit_group= branch
+that does not spell the timestamp; the include is emitted by the
+=has_audit_columns= branch above it, which does not know about the group. No
+other component has the shape, so the template's over-inclusion has exactly
+these six instances. Whether the template should exclude them is left open.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2893][#2893]] | [trading] Regenerate the six instrument headers the chrono gate never reached |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. `check_component_drift.py --component trading-cpp` reports no drifted
+trading file. The six instrument headers carry `#include <chrono>`.
+
+The change is the generator's own output: three lines of regeneration, no model
+edited. The template was not touched, so the include still lands on entities
+that carry `audit_record audit` and never spell `std::chrono::`; those six
+headers are the only instances in the tree, and whether the template should
+skip them is left open.

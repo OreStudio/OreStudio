@@ -122,6 +122,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] | DONE | | 2026-10-08 | inbox, synthetic and scheduler generate C++ but are not named in COMPONENTS_UNDER_TEST, so check_component_drift --all never regenerates them. Their committed output has drifted from the templates across 195 files while the gate reported a clean tree, and bringing them under it exposed two more defects: the gate regeneration is not reproducible between --component and --all, and 21 tangled shell scripts have drifted. |
 | [[id:C91714D3-17DD-4E7B-A94F-8C05C60791EE][Record the env format change for the workspace removal]] | DONE | | 2026-10-08 | The workspace service variables left the env format when the service was removed. Record the new format version in the env log. |
 | [[id:1716A3FE-59C1-4E34-875E-A259D5E6131F][Mop up after the workspace removal]] | DONE | | 2026-10-08 | The avatars populate script lost an insert header when the workspace avatar was removed, so the database could not recreate. The eventing worked example and several knowledge and manual pages still described the deleted table, feature flag and permission codes. Repair both. |
+| [[id:5CCE6FE6-18B6-4002-907A-B8BF321CC1A6][Quote the offset column in the marketdata identity view]] | DONE | | 2026-10-08 | The commodity identity view selects a column named offset, which PostgreSQL reserves, so the schema cannot load and no database can be recreated. |
 
 * Achievements
 

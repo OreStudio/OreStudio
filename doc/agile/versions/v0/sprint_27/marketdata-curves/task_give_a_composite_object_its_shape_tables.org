@@ -26,11 +26,11 @@ A term structure is drawn today from whatever pillars happen to be stored, so a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | The two tables and the writer are in place and the build declares its curve's shape. Nothing is built. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the pull request.                 |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -68,7 +68,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Instrument types the codec schema declares | 45 | counts read from =schema.hpp= | =12910cebd4= |
+| Types that declare at least one coordinate, and so get a shape | 37 | same | =12910cebd4= |
+| Axes per type | 20 types with 1, 15 with 2, 1 with 3, 1 with 4 (=swaption=), 8 with none | same | =12910cebd4= |
+| Marketdata artefacts drifting after regeneration | 0 | =check_component_drift.py --component marketdata= | =12910cebd4= |
+| Local checks passing, heavy excluded | 27 of 32 | =python3 build/scripts/local_checks.py --exclude-heavy= | =12910cebd4= |
 
 * Notes
 
@@ -96,3 +100,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A composite series now declares what it comprises. A curve built by the IR bootstrap
+lands its axes and values with the points it publishes, so its shape is a stored fact
+rather than an inference from whichever points are present.
+
+What landed:
+
+- =ores.marketdata.series_axis= and =ores.marketdata.series_axis_value=, both current
+  state, both joining the series by =series_id=, neither on the wire.
+- =series_shape_writer::declare=, which takes the axes from the instrument type's schema
+  row and the values from the points the build produced, in the order it produced them,
+  and writes them through the generated repositories.
+- Term validation: every value of a term-kind axis is checked against =refdata_tenors=
+  before anything is written, so a refused shape leaves no rows behind.
+- The call in =curve_republish_service::republish=, after the observations and before the
+  lineage.
+
+Limitations:
+
+- Nothing was compiled and no test was run. The build and the suites are swift curie's
+  hourly validation.
+- Two tables are added, so the schema fingerprint moves and =compass db recreate= must run
+  before the test binaries will start.
+- Nothing reads the shape yet. A repository read is available through the generated
+  repositories; no operation and no consumer use it, so the tables are written and not
+  yet drawn from.
+- The write-time point check and the import declaration are out of scope and are the next
+  task, =refuse_a_point_that_its_shape_does_not_declare=.
+- =component-drift --all= and =drift-sweep= stop on
+  =projects/ores.dq/modeling/ores.dq.risk_report_config.org=, which is missing the required
+  =subcomponent= flag and a primary key. =entity-writes= reports the new
+  =ores_reporting_seed_report_configurations_fn= as an unratified writer of an entity
+  table. Neither the dq nor the reporting component is touched by this change.
+- =er-diagram= fails on the missing =pystache= in this checkout, and =codegen-tests= fails
+  three tests about the shell registry, domain includes and the fleet process count, none
+  of which names either new entity.

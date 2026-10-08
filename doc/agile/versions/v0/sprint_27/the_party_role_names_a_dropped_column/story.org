@@ -37,8 +37,8 @@ Make ores.trading.api compile and let the party roles table be created.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:52ED4E36-F714-4877-B507-233234307962][Scaffold story: Hotfix: the party role names a dropped column]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:6168D710-FBB6-468C-9401-DA2E004D42D5][Implement Hotfix: the party role names a dropped column]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the party role names a dropped column |
+| [[id:52ED4E36-F714-4877-B507-233234307962][Scaffold story: Hotfix: the party role names a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6168D710-FBB6-468C-9401-DA2E004D42D5][Implement Hotfix: the party role names a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the party role names a dropped column |
 
 * Decisions
 

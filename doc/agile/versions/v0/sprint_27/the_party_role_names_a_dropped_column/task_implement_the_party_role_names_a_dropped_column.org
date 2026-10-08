@@ -26,11 +26,11 @@ Make ores.trading.api compile and let the party roles table be created.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] |
-| Now          | The model is corrected, the entity is regenerated, and the gate is green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -103,3 +103,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2880. The generated table writer streams the four remaining
+columns and the create script no longer indexes a column the table lacks.
+
+The compile and the schema load are verified by inspection and by the scan, not
+by a green build. No build ran in this worktree: the current workflow has the
+hourly validation build compile =main=, and that run is the confirmation.

@@ -8,7 +8,7 @@
 #+filetags: :catch-the-artefacts-up:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/catch-the-artefacts-up
-#+pr:
+#+pr: 2797
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2797][#2797]] | [shell,refdata,sql] Catch the stale artefacts and the id up |
 
 * Review
 

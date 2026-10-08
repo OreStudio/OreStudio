@@ -36,8 +36,8 @@ Make the trade import and the trading service compile again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A478F50D-C74E-447F-8DA5-F8492C719DBA][Scaffold story: Hotfix: the consumers still set the dropped party columns]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:111CE4A8-F4A3-49CD-86D1-798A7617990E][Implement Hotfix: the consumers still set the dropped party columns]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the consumers still set the dropped party columns |
+| [[id:A478F50D-C74E-447F-8DA5-F8492C719DBA][Scaffold story: Hotfix: the consumers still set the dropped party columns]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:111CE4A8-F4A3-49CD-86D1-798A7617990E][Implement Hotfix: the consumers still set the dropped party columns]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the consumers still set the dropped party columns |
 
 * Decisions
 

@@ -26,11 +26,11 @@ Make the trade import and the trading service compile again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:327FBA08-F9F3-427B-92C9-DD9633D74B34][Hotfix: the consumers still set the dropped party columns]] |
-| Now          | The assignments are gone; the scan finds no other consumer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -99,3 +99,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2882. Thirteen lines are gone from five files, and the rescan
+reports no remaining consumer of any of the eight children's dropped members.
+
+The compile is verified by inspection and by that rescan, not by a green build.
+No build ran in this worktree: the current workflow has the hourly validation
+build compile =main=, and that run is the confirmation.

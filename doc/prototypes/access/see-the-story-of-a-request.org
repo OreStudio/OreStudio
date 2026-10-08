@@ -22,10 +22,34 @@ It is one file of mock HTML, CSS and JavaScript. It calls no service, needs no
 build and no session, and carries three variants and two readers as query
 parameters.
 
-It is not accepted yet. No verdict has been asked for, and the row on the group
-page says =none= for its review because none exists.
+Variant A was accepted on 2026-10-08, and is being built: one merged stream,
+newest first, in the request screen. The row on the group page still says =none=
+for its review, because a review is a generated alternative kept beside the
+agreed design, and none was commissioned.
 
 * Detail
+
+** The verdict
+
+Accepted on 2026-10-08, on variant A: one merged stream, newest first. Variants
+B and C are kept in the page and stay unbuilt.
+
+The screen reads the story from two new operations rather than from the reads
+that already exist, and the reason is entitlement rather than taste. The entity
+read of approval requests and the generic history read both gate on the
+administrator's permission, so the person who raised a request cannot read their
+own request's versions; and the only place a granted role is tied to the request
+that asked for it is the junction row IAM marks applied, which the roles read
+did not carry. =inbox.v1.ops.get_approval_history= answers the request's own
+versions to the person who raised it, and =iam.v1.ops.get_request_roles= now
+answers each role with when it was asked for and when it was applied. The BFF
+merges the two with the answers given on the request and the notices the reader
+was given.
+
+The hole the prototype drew is drawn on the screen as well: the decisions
+another person took are not the asker's to read, so a member's story leaves them
+out and says that it has.
+
 
 ** The question
 
@@ -66,12 +90,17 @@ what stayed, what changed, and what stayed after it, and the middle is marked
 on the old line in red and on the new line in green. The same widget draws the
 history panel today, so the trail needs no new way of showing a change.
 
-There is almost nothing here to revert. A revert makes sense on a commit
-because a commit is a diff, but most of this journey is not: a decision is an
-act with a reason and an actor, and a state is what the acts left behind rather
-than a field somebody set. The only revert the journey can honestly serve is
-the asker's own words and the deadline they take, and the prototype offers the
-button there and nowhere else.
+There is almost nothing here to revert, and the screen that was built offers
+none. A revert makes sense on a commit because a commit is a diff, but most of
+this journey is not: a decision is an act with a reason and an actor, and a
+state is what the acts left behind rather than a field somebody set. What is
+left is the asker's own words and the deadline they take, and no operation
+writes either of those on a request: the entity verbs that could are the
+administrator's surface and this module does not use them. So the honest answer
+is no button rather than one that cannot work, and the finding stands until a
+write exists to serve it. Taking a request back is a different act with a
+different operation, =inbox.v1.ops.withdraw_approval=, and the person who
+raised it already has it.
 
 ** What is real and what is not
 

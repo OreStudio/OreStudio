@@ -30,6 +30,7 @@ import {
 import {
     subjects as approvalSubjects,
     type DecideApprovalRequestRequest,
+    type GetApprovalHistoryRequest,
     type GetApprovalRequest,
     type ListApprovalQueueRequest,
     type ListMyApprovalRequestsRequest,
@@ -54,6 +55,7 @@ import {
     subjects as roleRequestSubjects,
     type AskForRolesRequest,
     type GetRequestRolesRequest,
+    type RequestedRole,
 } from './generated/iam/protocol/role_request_operations_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
 
@@ -76,6 +78,7 @@ export const INBOX_SUBJECTS = {
     mine: approvalSubjects.list_my_approval_requests_request,
     queue: approvalSubjects.list_approval_queue_request,
     getRequest: approvalSubjects.get_approval_request,
+    getRequestHistory: approvalSubjects.get_approval_history_request,
     withdraw: approvalSubjects.withdraw_approval_request_request,
     decide: approvalSubjects.decide_approval_request_request,
     myNotifications: notificationSubjects.list_my_notifications_request,
@@ -103,6 +106,9 @@ export const INBOX_JOIN_SUBJECTS = {
 
 /** The service refuses a filter longer than this, so a join never asks for more. */
 const JOIN_PAGE = 1000;
+
+/** The notices one person holds, read in one page when a story is assembled. */
+const NOTICE_PAGE = 500;
 
 /** A list read pages from the start, because the stores here page in key order. */
 const UNORDERED = { field: '', descending: false } as const;
@@ -180,13 +186,47 @@ const decisionsReplySchema = z.object({
 
 const requestRolesReplySchema = z.object({
     result: resultEnvelopeSchema,
-    roles: z.array(
-        z.object({
-            id: z.string().default(''),
-            name: z.string().default(''),
-            description: z.string().default(''),
-        }),
-    ).default([]),
+    roles: z
+        .array(
+            z.object({
+                // The catalogue row, whole. It is never absent on the wire, so
+                // it carries no default: a reply missing it is a reply this
+                // module should refuse rather than draw empty.
+                role: z.object({
+                    id: z.string(),
+                    name: z.string(),
+                    description: z.string(),
+                }),
+                asked_at: z.string().default(''),
+                applied_at: z.string().nullable().default(null),
+                applied_by: z.string().default(''),
+            }),
+        )
+        .default([]),
+});
+
+const requestHistoryReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    versions: z
+        .array(
+            z.object({
+                version: z.int().nonnegative().default(0),
+                modified_by: z.string().default(''),
+                performed_by: z.string().default(''),
+                recorded_at: z.string().default(''),
+                change_reason_code: z.string().default(''),
+                change_commentary: z.string().default(''),
+                fields: z
+                    .array(
+                        z.object({
+                            name: z.string().default(''),
+                            value: z.string().default(''),
+                        }),
+                    )
+                    .default([]),
+            }),
+        )
+        .default([]),
 });
 
 const roleGrantRequestsReplySchema = z.object({
@@ -228,6 +268,22 @@ export const inboxRequestRoleViewSchema = z.object({
     name: z.string().default(''),
     description: z.string().default(''),
 });
+
+/**
+ * One role a request asks for, with the request's own record of it.
+ *
+ * The catalogue row is what a screen draws; the tail is when the ask wrote it
+ * and when IAM applied it afterwards, which is the only place a granted role is
+ * tied to the request that asked for it.
+ */
+export interface InboxRequestedRole {
+    readonly roleId: string;
+    readonly name: string;
+    readonly description: string;
+    readonly askedAt: string;
+    readonly appliedAt: string;
+    readonly appliedBy: string;
+}
 
 /**
  * What was decided about a request, as the person who asked reads it.
@@ -321,7 +377,43 @@ export const inboxRequestQueueSchema = z.object({
     answered: z.array(inboxRequestViewSchema).default([]),
 });
 
+/** One field of one event in a request's story, as a screen draws it. */
+export const inboxStoryFieldSchema = z.object({
+    name: z.string().default(''),
+    value: z.string().default(''),
+});
+
+/**
+ * One thing that happened to a request, drawn as a row of its story.
+ *
+ * `entityType` and `entityId` name the row the event came from, so the screen
+ * can pair consecutive events of the same entity and diff them. `kind` is what
+ * the event is, already decided: raising the request, moving it, answering it,
+ * telling somebody, asking for a role, or granting one. The screen names and
+ * tints from it rather than working it out again.
+ */
+export const inboxStoryEventSchema = z.object({
+    entityType: z.string().default(''),
+    entityId: z.string().default(''),
+    kind: z.string().default(''),
+    at: z.string().default(''),
+    actor: z.string().default(''),
+    version: z.int().nonnegative().default(0),
+    reasonCode: z.string().default(''),
+    commentary: z.string().default(''),
+    fields: z.array(inboxStoryFieldSchema).default([]),
+});
+
+/** One request's whole story, newest first. */
+export const inboxRequestStorySchema = z.object({
+    requestId: z.string().default(''),
+    events: z.array(inboxStoryEventSchema).default([]),
+});
+
 /** The types a screen reads, as the schemas above describe them. */
+export type InboxStoryField = z.infer<typeof inboxStoryFieldSchema>;
+export type InboxStoryEvent = z.infer<typeof inboxStoryEventSchema>;
+export type InboxRequestStory = z.infer<typeof inboxRequestStorySchema>;
 export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
 export type InboxRequestDecisionView = z.infer<typeof inboxRequestDecisionViewSchema>;
 export type InboxRequestView = z.infer<typeof inboxRequestViewSchema>;
@@ -418,40 +510,55 @@ const NO_JOIN: RequestJoin = {
  * request the caller may not read answers as absent rather than as refused, so
  * the two are one answer here.
  */
+async function readRequestedRoles(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<readonly InboxRequestedRole[] | undefined> {
+    const request: GetRequestRolesRequest = { request_id: requestId };
+    let reply: z.infer<typeof requestRolesReplySchema>;
+    try {
+        reply = await caller.callAuthenticated(
+            INBOX_SUBJECTS.getRequestRoles,
+            request,
+            requestRolesReplySchema,
+        );
+    } catch (error) {
+        if (isRefusal(error)) return undefined;
+        throw error;
+    }
+    if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') {
+        return undefined;
+    }
+    ok(INBOX_SUBJECTS.getRequestRoles, reply.result);
+    return reply.roles.map((held) => ({
+        roleId: held.role.id,
+        name: held.role.name,
+        description: held.role.description,
+        askedAt: held.asked_at,
+        appliedAt: held.applied_at ?? '',
+        appliedBy: held.applied_by,
+    }));
+}
+
 async function readRolesByRequest(
     caller: AuthenticatedCaller,
     requestIds: readonly string[],
 ): Promise<Map<string, InboxRequestRoleView[]>> {
     const rolesByRequest = new Map<string, InboxRequestRoleView[]>();
-    const readOne = async (requestId: string): Promise<InboxRequestRoleView[] | undefined> => {
-        const request: GetRequestRolesRequest = { request_id: requestId };
-        let reply: z.infer<typeof requestRolesReplySchema>;
-        try {
-            reply = await caller.callAuthenticated(
-                INBOX_SUBJECTS.getRequestRoles,
-                request,
-                requestRolesReplySchema,
-            );
-        } catch (error) {
-            if (isRefusal(error)) return undefined;
-            throw error;
-        }
-        if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') {
-            return undefined;
-        }
-        ok(INBOX_SUBJECTS.getRequestRoles, reply.result);
-        return reply.roles.map((role) => ({
-            roleId: role.id,
-            name: role.name,
-            description: role.description,
-        }));
-    };
-
     const answers = await Promise.all(
-        requestIds.map(async (id) => [id, await readOne(id)] as const),
+        requestIds.map(async (id) => [id, await readRequestedRoles(caller, id)] as const),
     );
     for (const [id, roles] of answers) {
-        if (roles !== undefined) rolesByRequest.set(id, roles);
+        if (roles !== undefined) {
+            rolesByRequest.set(
+                id,
+                roles.map((held) => ({
+                    roleId: held.roleId,
+                    name: held.name,
+                    description: held.description,
+                })),
+            );
+        }
     }
     return rolesByRequest;
 }
@@ -684,6 +791,226 @@ export async function readRequest(
     if (reply.request === null) return null;
     const join = await joinRequests(caller, [reply.request.id], true, viewer);
     return toRequestView(reply.request, join);
+}
+
+/**
+ * Every version of one request, or nothing when the caller may not read it.
+ *
+ * The versions are the request with a clock on it, so this is entitled to the
+ * person who raised the request as well as to whoever may read the tenant's
+ * requests. A request the caller may not read answers as absent, which is what
+ * the operation itself says, so there is no second refusal to interpret.
+ */
+async function readRequestHistory(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<readonly InboxStoryEvent[] | undefined> {
+    const request: GetApprovalHistoryRequest = { request_id: requestId };
+    let reply: z.infer<typeof requestHistoryReplySchema>;
+    try {
+        reply = await caller.callAuthenticated(
+            INBOX_SUBJECTS.getRequestHistory,
+            request,
+            requestHistoryReplySchema,
+        );
+    } catch (error) {
+        if (isRefusal(error)) return undefined;
+        throw error;
+    }
+    if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') {
+        return undefined;
+    }
+    ok(INBOX_SUBJECTS.getRequestHistory, reply.result);
+    return reply.versions.map((version) => ({
+        entityType: REQUEST_ENTITY,
+        entityId: requestId,
+        // A version written by a decision is that decision arriving; the
+        // operation says which by its change reason, and says it nowhere else.
+        kind: version.version === 1 ? 'raised' : 'changed',
+        at: version.recorded_at,
+        actor: version.modified_by,
+        version: version.version,
+        reasonCode: version.change_reason_code,
+        commentary: version.change_commentary,
+        fields: version.fields,
+    }));
+}
+
+/** The tables the story draws from, named as the models name them. */
+const REQUEST_ENTITY = 'ores.inbox.approval_request';
+const DECISION_ENTITY = 'ores.inbox.approval_decision';
+const NOTICE_ENTITY = 'ores.inbox.notification';
+const REQUEST_ROLE_ENTITY = 'ores.iam.role_grant_request_role';
+
+/**
+ * The notices this reader was given about one request.
+ *
+ * A notice is a person's own copy, so this reads the caller's own list and
+ * keeps the ones that name the request. An administrator reading the story sees
+ * the notices they received, not the ones the member received: the member's
+ * copy is the member's, and a story is a view of what happened to you and to
+ * what you did.
+ */
+async function readNoticesAbout(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<readonly InboxStoryEvent[]> {
+    const page = await readMyNotifications(caller, {
+        unreadOnly: false,
+        offset: 0,
+        limit: NOTICE_PAGE,
+    });
+    return page.items
+        .filter((notice) => notice.linkId === requestId)
+        .map((notice) => ({
+            entityType: NOTICE_ENTITY,
+            entityId: notice.id,
+            kind: 'told',
+            at: notice.raisedAt,
+            actor: notice.raisedBy,
+            version: 1,
+            reasonCode: '',
+            commentary: '',
+            fields: [
+                { name: 'Message Key', value: notice.messageKey },
+                ...notice.arguments.map((argument) => ({
+                    name: argument.name,
+                    value: argument.value,
+                })),
+                { name: 'Read At', value: notice.readAt },
+            ],
+        }));
+}
+
+/**
+ * What became of the roles one request asked for.
+ *
+ * Asking and applying are two events, because they are two acts by two people
+ * and the second is the one the person is waiting for. A role the account
+ * already held is marked applied without a grant, so the second event says the
+ * request was dealt with rather than that a role moved.
+ */
+function roleEvents(roles: readonly InboxRequestedRole[]): readonly InboxStoryEvent[] {
+    const events: InboxStoryEvent[] = [];
+    for (const held of roles) {
+        events.push({
+            entityType: REQUEST_ROLE_ENTITY,
+            entityId: held.roleId,
+            kind: 'asked',
+            at: held.askedAt,
+            actor: '',
+            version: 1,
+            reasonCode: '',
+            commentary: '',
+            fields: [
+                { name: 'Role', value: held.name },
+                { name: 'Description', value: held.description },
+            ],
+        });
+        if (held.appliedAt !== '') {
+            events.push({
+                entityType: REQUEST_ROLE_ENTITY,
+                entityId: held.roleId,
+                kind: 'granted',
+                at: held.appliedAt,
+                actor: held.appliedBy,
+                version: 2,
+                reasonCode: '',
+                commentary: '',
+                fields: [{ name: 'Role', value: held.name }],
+            });
+        }
+    }
+    return events;
+}
+
+/** The answers given on one request, when the reader may read them. */
+async function readDecisionsAbout(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<readonly InboxStoryEvent[]> {
+    const byRequest = await readDecisionsByRequest(caller, [requestId]);
+    const decision = byRequest.get(requestId);
+    if (decision === undefined) return [];
+    return [
+        {
+            entityType: DECISION_ENTITY,
+            entityId: requestId,
+            kind: 'decided',
+            at: decision.decidedAt,
+            actor: decision.decidedBy,
+            version: 1,
+            reasonCode: '',
+            commentary: '',
+            fields: [
+                { name: 'Decision', value: decision.decisionCode },
+                { name: 'Comment', value: decision.comment },
+            ],
+        },
+    ];
+}
+
+/**
+ * How late in a second an event of each kind lands.
+ *
+ * The timestamps on the wire carry whole seconds, and a request is raised,
+ * recorded, asked for and told about inside one of them. Ties are therefore
+ * the common case rather than the exception, and the order among them is
+ * chosen to read as the order the acts happened in: the request is raised, the
+ * roles are recorded, the notices go out, an answer is given, the role is
+ * applied.
+ */
+const KIND_RANK: Readonly<Record<string, number>> = {
+    raised: 10,
+    changed: 20,
+    asked: 30,
+    told: 40,
+    decided: 50,
+    granted: 60,
+};
+
+/** Newest first, and within one second, the later act first. */
+function orderStory(events: readonly InboxStoryEvent[]): InboxStoryEvent[] {
+    return [...events].sort((left, right) => {
+        if (left.at !== right.at) return left.at < right.at ? 1 : -1;
+        const rank = (KIND_RANK[right.kind] ?? 0) - (KIND_RANK[left.kind] ?? 0);
+        if (rank !== 0) return rank;
+        if (left.entityId !== right.entityId) return left.entityId < right.entityId ? -1 : 1;
+        return right.version - left.version;
+    });
+}
+
+/**
+ * One request's whole story, newest first.
+ *
+ * Every row any component wrote for the request, in one stream: the request's
+ * own versions, the answers given on it, the roles it asked for and what became
+ * of them, and the notices this reader was given. A request the caller may not
+ * read answers null, which is what opening it answers too.
+ *
+ * The parts are not equally visible, and that is the design rather than an
+ * accident of the join. The request and the roles it asks for are the asker's
+ * to read, so both always answer. The decisions another person took are not:
+ * they answer only to a reader who may read decisions, so a member's story has
+ * a hole exactly where the answer was given.
+ */
+export async function readRequestStory(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<InboxRequestStory | null> {
+    const history = await readRequestHistory(caller, requestId);
+    if (history === undefined) return null;
+
+    const [roles, decisions, notices] = await Promise.all([
+        readRequestedRoles(caller, requestId),
+        readDecisionsAbout(caller, requestId),
+        readNoticesAbout(caller, requestId),
+    ]);
+
+    return {
+        requestId,
+        events: orderStory([...history, ...roleEvents(roles ?? []), ...decisions, ...notices]),
+    };
 }
 
 /**

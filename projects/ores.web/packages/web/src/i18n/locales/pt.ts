@@ -275,6 +275,22 @@ const pt: SourceCatalogue = {
             answered: 'Respondidos',
             by: 'por {decider}',
         },
+        story: {
+            title: 'A história de {role}',
+            lead: '{state}, pedido em {date}. Cada linha escrita pelo pedido, a mais recente primeiro.',
+            request: 'O pedido',
+            noActor: 'um serviço',
+            answerNotShown:
+                'Este pedido tem resposta, e a resposta não é sua para ler. Os passos de quem respondeu não são mostrados.',
+            kind: {
+                raised: 'Criado',
+                changed: 'Movido',
+                asked: 'Pedido',
+                told: 'Notificado',
+                decided: 'Respondido',
+                granted: 'Concedido',
+            },
+        },
         request: {
             title: 'Pede {role}',
             id: 'Pedido {id}',

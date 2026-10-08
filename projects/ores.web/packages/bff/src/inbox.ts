@@ -30,6 +30,7 @@ import {
     readMyRequests,
     readRequest,
     readRequestQueue,
+    readRequestStory,
     readUnreadNotificationCount,
     withdrawRequest,
 } from '@ores/wire-protocol';
@@ -195,6 +196,19 @@ export function registerInboxRoutes(
     server.get('/api/requests/:id', async (request) => {
         const session = requireSession(request);
         return await readRequest(session.client, requestIdOf(request), viewerOf(session));
+    });
+
+    /**
+     * The whole story of one request, newest first.
+     *
+     * Every row any component wrote for it, merged by the wire layer: the
+     * request's versions, the answers given on it, the roles it asked for and
+     * what became of them, and the notices this reader was given. A request the
+     * person may not open answers empty, which is what opening it answers too.
+     */
+    server.get('/api/requests/:id/story', async (request) => {
+        const session = requireSession(request);
+        return await readRequestStory(session.client, requestIdOf(request));
     });
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

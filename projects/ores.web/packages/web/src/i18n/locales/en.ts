@@ -276,6 +276,22 @@ export const en: SourceCatalogue = {
             answered: 'Answered',
             by: 'by {decider}',
         },
+        story: {
+            title: 'The story of {role}',
+            lead: '{state}, asked {date}. Every row the request wrote, newest first.',
+            request: 'The request',
+            noActor: 'a service',
+            answerNotShown:
+                'This request has an answer, and the answer is not yours to read. The steps taken by whoever answered it are not shown.',
+            kind: {
+                raised: 'Raised',
+                changed: 'Moved',
+                asked: 'Asked for',
+                told: 'Told',
+                decided: 'Answered',
+                granted: 'Granted',
+            },
+        },
         request: {
             title: 'Asks for {role}',
             id: 'Request {id}',

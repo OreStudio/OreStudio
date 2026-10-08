@@ -47,6 +47,7 @@ import {
     inboxNotificationPageSchema,
     inboxRequestPageSchema,
     inboxRequestQueueSchema,
+    inboxRequestStorySchema,
     inboxRequestViewSchema,
     type BadgePresentation,
     type ClassificationList,
@@ -55,6 +56,7 @@ import {
     type InboxNotificationView,
     type InboxPage,
     type InboxRequestQueue,
+    type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
     type PermissionEntry,
@@ -559,6 +561,20 @@ export const api = {
             method: 'GET',
         });
         return body === null ? null : inboxRequestViewSchema.parse(body);
+    },
+
+    /**
+     * The whole story of one request, newest first.
+     *
+     * Every row any component wrote for it, merged by the server: the request's
+     * versions, the answers given on it, the roles it asked for and what became
+     * of them, and the notices this person was given. A request they may not
+     * open answers empty, which is what opening it answers too.
+     */
+    async requestStory(id: string): Promise<InboxRequestStory> {
+        return inboxRequestStorySchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/story`, { method: 'GET' }),
+        );
     },
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

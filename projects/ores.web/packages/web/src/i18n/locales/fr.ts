@@ -273,6 +273,22 @@ const fr: SourceCatalogue = {
             answered: 'Répondues',
             by: 'par {decider}',
         },
+        story: {
+            title: "L'histoire de {role}",
+            lead: '{state}, demandé le {date}. Chaque ligne écrite par la demande, la plus récente en premier.',
+            request: 'La demande',
+            noActor: 'un service',
+            answerNotShown:
+                "Cette demande a une réponse, et la réponse n'est pas à vous. Les étapes de celui qui a répondu ne sont pas montrées.",
+            kind: {
+                raised: 'Créée',
+                changed: 'Déplacée',
+                asked: 'Demandé',
+                told: 'Notifié',
+                decided: 'Répondu',
+                granted: 'Accordé',
+            },
+        },
         request: {
             title: 'Demande {role}',
             id: 'Demande {id}',

@@ -132,6 +132,14 @@ function Request({
                 <Link to="/requests" className="hover:text-ink">
                     {t('inbox.queue.title')}
                 </Link>
+                {/* The whole story of this request, which is the same request
+                    read across every table it wrote rather than one at a time. */}
+                <Link
+                    to={`/requests/${encodeURIComponent(request.id)}/story`}
+                    className="ml-auto hover:text-ink"
+                >
+                    {t('inbox.story.request')}
+                </Link>
             </nav>
 
             <PageHeader

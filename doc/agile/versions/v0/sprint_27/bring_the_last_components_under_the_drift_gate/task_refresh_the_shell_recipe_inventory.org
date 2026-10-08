@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/refresh-the-shell-recipe-inventory
-#+pr:
+#+pr: 2810
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2810][#2810]] | [codegen] Refresh the shell recipe inventory |
 
 * Review
 

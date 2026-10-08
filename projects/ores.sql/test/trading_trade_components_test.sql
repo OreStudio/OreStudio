@@ -66,16 +66,16 @@ insert into ores_refdata_parties_tbl (
 
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id, business_center_code, status,
+    parent_counterparty_id, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     ('00000000-0000-0000-0000-0000000cf102'::uuid, ores_utility_system_tenant_id_fn(), 0,
      'Trading Components Counterparty', 'TTC-CP1', 'Corporate',
-     null, 'WRLD', 'Active', current_user, current_user,
+     null, 'Active', current_user, current_user,
      'system.test', 'Trading pgTAP fixture'),
     ('00000000-0000-0000-0000-0000000cf103'::uuid, ores_utility_system_tenant_id_fn(), 0,
      'Trading Components Other Counterparty', 'TTC-CP2', 'Corporate',
-     null, 'WRLD', 'Active', current_user, current_user,
+     null, 'Active', current_user, current_user,
      'system.test', 'Trading pgTAP fixture');
 
 select set_config('app.visible_party_ids',

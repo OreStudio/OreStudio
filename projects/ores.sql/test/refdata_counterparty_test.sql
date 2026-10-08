@@ -46,12 +46,12 @@ select plan(9);
 -- Test 1: Insert counterparty succeeds with version 1
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id, business_center_code, status,
+    parent_counterparty_id, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-000000000001'::uuid,
     ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation', 'ACME', 'Corporate',
-    NULL, 'WRLD', 'Active',
+    NULL, 'Active',
     current_user, current_user, 'system.test', 'Test counterparty insert'
 );
 
@@ -117,12 +117,12 @@ select throws_ok(
 -- Test 5: Insert child counterparty with valid parent succeeds
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id, business_center_code,
+    parent_counterparty_id,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-000000000002'::uuid,
     ores_utility_system_tenant_id_fn(), 0, 'Acme UK Ltd', 'ACUK', 'Corporate',
-    'b0000000-0000-0000-0000-000000000001'::uuid, 'WRLD',
+    'b0000000-0000-0000-0000-000000000001'::uuid,
     current_user, current_user, 'system.test', 'Test child counterparty'
 );
 
@@ -159,12 +159,10 @@ select throws_ok(
 select throws_ok(
     $$insert into ores_refdata_counterparties_tbl (
         id, tenant_id, version, full_name, short_code, party_type,
-        business_center_code,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         'b0000000-0000-0000-0000-000000000096'::uuid,
         ores_utility_system_tenant_id_fn(), 0, 'Acme Corporation Two', 'ACME', 'Corporate',
-        'WRLD',
         current_user, current_user, 'system.test', 'Test'
     )$$,
     '23505',

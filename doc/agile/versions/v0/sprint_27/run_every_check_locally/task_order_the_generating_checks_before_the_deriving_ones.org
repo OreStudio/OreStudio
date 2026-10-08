@@ -8,7 +8,7 @@
 #+filetags: :run_every_check_locally:sprint_27:v0:
 #+owner: marco
 #+branch: feature/order-the-generating-checks-before-the-deriving-ones
-#+pr:
+#+pr: 2866
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2866][#2866]] | [codegen] Order the generating checks before the deriving ones |
 
 * Review
 

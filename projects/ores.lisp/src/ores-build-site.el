@@ -273,34 +273,31 @@ managed uniformly: copy, then patch index.html with the site chrome."
                             site-html-preamble fix-tag)
       (message "%s deployed to %s" app-name dst))))
 
-(defvar ores/prototype-fix-tag
-  "<style>body{display:block;padding:0;align-items:unset;}</style>"
-  "Undo the site body flex and padding for a prototype page.
-A prototype styles its own layout, so it wants a plain block body.")
-
 (defun ores-deploy-prototypes (site-dir)
-  "Deploy every prototype under doc/prototypes/GROUP/NAME/ into SITE-DIR.
+  "Copy every prototype under doc/prototypes/GROUP/NAME/ into SITE-DIR.
 A prototype is a directory one level under a group folder that holds an
-index.html. It deploys where it sits, so adding a prototype is adding a
-folder and no list here can go stale.
+index.html, and it is copied exactly as it stands, review and all.
 
-A review under the prototype's review/ directory is copied with it and is
-left exactly as it was written. The site stylesheet and the site header are
-for the documentation, and a review is a whole screen drawn to stand alone:
-the document rules on html, body, headings, links, images and tables move
-every measurement a Tailwind page sets in rem, so the chrome is not injected
-there. A review carries its own links table instead."
+Nothing is injected. The site stylesheet and the site header are for the
+documentation, and a prototype is a whole screen written to stand alone: the
+document rules move the root font size, so every one of the hundreds of rem
+measurements a prototype sets, and the body line height, move with it. A
+prototype is the design record, so the site publishes it as it was written
+and the page carries its own links table."
   (dolist (group (directory-files (expand-file-name "./doc/prototypes")
                                   t "^[^.]"))
     (when (file-directory-p group)
       (dolist (prototype (directory-files group t "^[^.]"))
         (when (and (file-directory-p prototype)
                    (file-exists-p (expand-file-name "index.html" prototype)))
-          (let ((target (format "doc/prototypes/%s/%s"
-                                (file-name-nondirectory group)
-                                (file-name-nondirectory prototype))))
-            (ores-deploy-web-app prototype site-dir target
-                                 ores/prototype-fix-tag)))))))
+          (let ((dst (expand-file-name
+                      (format "doc/prototypes/%s/%s"
+                              (file-name-nondirectory group)
+                              (file-name-nondirectory prototype))
+                      site-dir)))
+            (make-directory dst t)
+            (copy-directory prototype dst nil t t)
+            (message "%s deployed to %s" prototype dst)))))))
 
 (defun ores-deploy-web-apps (site-dir)
   "Deploy every static web app into SITE-DIR.

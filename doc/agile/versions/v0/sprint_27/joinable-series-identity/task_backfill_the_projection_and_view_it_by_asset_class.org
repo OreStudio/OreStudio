@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :joinable-series-identity:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/backfill-the-projection-and-view-it-by-asset-class
+#+pr: 2842
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The projection exists and every write fills it, but series that predate it carry
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -43,9 +43,28 @@ The projection exists and every write fills it, but series that predate it carry
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two halves, and the check holds both to the codec schema.
+
+The views are one file of plain SQL, one view per asset class, written from
+=schema.hpp= once and guarded afterwards. A view exposes the context columns every
+view needs, then exactly the identity fields that class's instrument types fill,
+and it filters on its own instrument type list rather than on the asset class,
+because the instrument index is what the planner can use. Every view is
+=security_invoker=, so the tenant policy on the table decides what the reading
+session sees rather than the view owner.
+
+The backfill is an operation on the series subject, because the rows it repairs
+are ones the write path never saw: a database restored from a dump, or a series
+written before the projection existed. It reads the projected series, inverts
+that set, and projects only the rest, so a second call finds nothing and says so.
+The projector returns how many series carried a URI neither codec reads, and the
+backfill reports it, so an identity the database cannot state is visible rather
+than quietly written as an empty row.
+
+=check_marketdata_identity_columns.py= grows the view half: every class with a
+series must have a view, a view must not carry a field its class does not give,
+and a view must name every instrument type of its class. It also keeps the two
+earlier assertions, the table's columns and the projector's field placement.
 
 * Measurements
 
@@ -59,7 +78,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Asset-class views | 10 | =python3 build/scripts/check_marketdata_identity_columns.py= | 50e9ce5ced |
+| Identity fields across those views | 45 | same | 50e9ce5ced |
+| Classes the schema gives a series | 10 (generic gives none) | same | 50e9ce5ced |
+| Local checks passing, heavy excluded | 30 of 34 | =python3 build/scripts/local_checks.py --exclude-heavy= | 50e9ce5ced |
+| Components drifting under =component-drift --all= | 1 (=ores.trading=, not this change) | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all= | 50e9ce5ced |
 
 * Notes
 
@@ -78,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2842][#2842]] | [marketdata] Backfill the identity projection and view it by asset class |
 
 * Review
 
@@ -87,3 +110,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The projection is now complete and readable. A series the write path never saw
+is repaired on demand, and a caller reads the identity columns its asset class
+fills rather than the whole wide table.
+
+What landed:
+
+- Ten asset-class views, one per class the codec schema gives a series, each
+  exposing its class's identity fields and naming its class's instrument types.
+  Every view is =security_invoker=, so the tenant policy on the table decides
+  what the reading session sees.
+- The =backfill_series_identity= operation on the market series subject. It
+  reads what is already projected, inverts that set, and projects only the rest,
+  so a second call finds nothing to do. It is registered by hand in
+  =registrar.cpp=, beside the export operation.
+- =market_series_identity_projector::project= returns how many series carried a
+  URI neither codec reads, and the backfill reports that count.
+- =check_marketdata_identity_columns.py= now holds the views to the schema as
+  well as the table and the projector.
+
+Limitations:
+
+- Nothing was compiled and no test was run. The build and the suites are swift
+  curie's hourly validation.
+- The change adds a NATS operation and a SQL file, so the schema fingerprint
+  moves and =compass db recreate= must run before the test binaries will start.
+- The index (fixing) grammar is still out of scope. Such a series gets a row
+  that records its kind and the asset class and no field value, and the backfill
+  counts it as unreadable rather than guessing.
+- A series removed through the repository still leaves its identity row behind,
+  because the generated remove path carries no hook. The backfill does not
+  repair that either, since it only adds rows the projection lacks.
+- =component-drift --all= reports drift in =ores.trading= alone, from another
+  environment's in-flight work. No marketdata artefact drifts.
+- The =web= local check fails on prettier formatting in ten files another
+  environment is editing, none of them the generated protocol this change
+  touches. The =er-diagram= check fails under the bare =python3= of this
+  checkout, which has no =pystache=; the diagram is unchanged, because the
+  parser does not read views.

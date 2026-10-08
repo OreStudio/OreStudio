@@ -26,6 +26,35 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = REPO_ROOT / "projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp"
 PROJECTOR = REPO_ROOT / "projects/ores.marketdata/core/src/repository/market_series_identity_projector.cpp"
 CREATE_SQL = REPO_ROOT / "projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql"
+VIEWS_SQL = REPO_ROOT / "projects/ores.sql/create/marketdata/marketdata_series_identity_views_create.sql"
+
+# The columns every asset-class view carries beside its class's own fields.
+VIEW_COLUMNS = (
+    "series_id",
+    "tenant_id",
+    "party_id",
+    "instrument_type",
+    "quote_type",
+    "asset_class",
+    "identity_kind",
+)
+
+# A per-type row names its field list, its asset class and its subject:
+# {detail::t::cds, detail::cds, asset_class::credit, field::underlying_name}
+SCHEMA_ROW = re.compile(
+    r"\{detail::t::(\w+),\s*detail::(\w+),\s*asset_class::(\w+),\s*field::(\w+)\}"
+)
+SCHEMA_ARRAY = re.compile(r"inline constexpr std::array (\w+)\{(.*?)\};", re.S)
+
+VIEW = re.compile(
+    r"create or replace view (\w+)\s+"
+    r"with \(security_invoker = true\) as\s+select\s+(.*?)\s+"
+    r"from ores_marketdata_market_series_identity_tbl\s+"
+    r"where identity_kind = 'series'\s+"
+    r"and instrument_type in \(\s*(.*?)\s*\);",
+    re.S,
+)
+VIEW_NAME = re.compile(r"^ores_marketdata_series_identity_(\w+)_vw$")
 
 # The entity's schema identifier, which the field's own name must not be:
 # a field called table would collide with the statement's own words otherwise.
@@ -80,6 +109,49 @@ def schema_fields() -> tuple[set[str], set[str], set[str]]:
             f"FAIL: parsed no fields from {SCHEMA.relative_to(REPO_ROOT)}; the check needs fixing."
         )
     return identity, coordinate, every
+
+
+def schema_classes() -> dict[str, tuple[set[str], set[str]]]:
+    """class -> (identity fields, instrument types), from the codec schema."""
+    text = SCHEMA.read_text()
+    rows = text[text.index("using f = field;") :]
+
+    arrays: dict[str, set[str]] = {}
+    for m in SCHEMA_ARRAY.finditer(rows):
+        arrays[m.group(1)] = set(IDENTITY_REF.findall(m.group(2)))
+
+    classes: dict[str, tuple[set[str], set[str]]] = {}
+    for _type, array, asset, _subject in SCHEMA_ROW.findall(rows):
+        fields, types = classes.setdefault(asset, (set(), set()))
+        fields.update(arrays.get(array, set()))
+        types.add(_type)
+    if not classes:
+        raise SystemExit(
+            f"FAIL: parsed no asset classes from {SCHEMA.relative_to(REPO_ROOT)}; "
+            "the check needs fixing."
+        )
+    return classes
+
+
+def views() -> dict[str, tuple[list[str], set[str]]]:
+    """class -> (column names, instrument types), for every view the file holds."""
+    text = VIEWS_SQL.read_text()
+    found: dict[str, tuple[list[str], set[str]]] = {}
+    for name, columns_text, types_text in VIEW.findall(text):
+        m = VIEW_NAME.match(name)
+        if not m:
+            raise SystemExit(
+                f"FAIL: {VIEWS_SQL.relative_to(REPO_ROOT)} defines '{name}', which does not "
+                "follow ores_marketdata_series_identity_<class>_vw."
+            )
+        columns = [c.strip() for c in columns_text.split(",") if c.strip()]
+        types = set(re.findall(r"'(\w+)'", types_text))
+        found[m.group(1)] = (columns, types)
+    if not found:
+        raise SystemExit(
+            f"FAIL: parsed no views from {VIEWS_SQL.relative_to(REPO_ROOT)}; the check needs fixing."
+        )
+    return found
 
 
 def table_columns() -> set[str]:
@@ -154,11 +226,46 @@ def main() -> int:
                 "a series holds no coordinate."
             )
 
+    # 3. Each asset class has a view whose columns and instrument types are
+    #    exactly the class's.
+    classes = schema_classes()
+    found = views()
+    for asset in sorted(set(classes) - set(found)):
+        problems.append(f"no view exposes the {asset} identity.")
+    for asset in sorted(set(found) - set(classes)):
+        problems.append(f"a view exposes the {asset} identity, which the schema gives no series.")
+    for asset in sorted(set(classes) & set(found)):
+        class_fields, class_types = classes[asset]
+        view_columns, view_types = found[asset]
+        if len(view_columns) != len(set(view_columns)):
+            problems.append(f"the {asset} view selects a column more than once.")
+        context = set(VIEW_COLUMNS)
+        for missing in sorted(context - set(view_columns)):
+            problems.append(f"the {asset} view does not expose '{missing}'.")
+        for extra in sorted(set(view_columns) - context - class_fields):
+            problems.append(
+                f"the {asset} view exposes column '{extra}', which is not one of its "
+                "identity fields."
+            )
+        for missing in sorted(class_fields - set(view_columns)):
+            problems.append(f"the {asset} view does not expose identity field '{missing}'.")
+        for extra in sorted(view_types - class_types):
+            problems.append(
+                f"the {asset} view names instrument type '{extra}', which does not "
+                f"belong to {asset}."
+            )
+        for missing in sorted(class_types - view_types):
+            problems.append(
+                f"the {asset} view does not name instrument type '{missing}', so its "
+                "series are missing from it."
+            )
+
     if problems:
         return fail(problems)
     print(
-        f"OK: {len(identity)} identity fields, {len(columns)} columns and "
-        f"{len(placed)} switch cases agree with {SCHEMA.relative_to(REPO_ROOT)}."
+        f"OK: {len(identity)} identity fields, {len(columns)} columns, "
+        f"{len(placed)} switch cases and {len(found)} asset-class views agree with "
+        f"{SCHEMA.relative_to(REPO_ROOT)}."
     )
     return 0
 

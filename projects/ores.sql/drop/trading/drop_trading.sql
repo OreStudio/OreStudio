@@ -268,3 +268,22 @@
 
 -- Trading instrument reference data types (floating_index_type,
 -- leg_type) moved to ores.refdata; dropped there instead.
+
+\ir ./trading_trade_link_types_notify_trigger_drop.sql
+\ir ./trading_trade_link_types_drop.sql
+
+\ir ./trading_trade_links_notify_trigger_drop.sql
+\ir ./trading_trade_links_drop.sql
+
+\ir ./trading_structure_kinds_drop.sql
+\ir ./trading_structure_kinds_notify_trigger_drop.sql
+\ir ./trading_structures_drop.sql
+\ir ./trading_structures_notify_trigger_drop.sql
+\ir ./trading_structure_template_roles_drop.sql
+\ir ./trading_structure_template_roles_notify_trigger_drop.sql
+\ir ./trading_structure_templates_drop.sql
+\ir ./trading_structure_templates_notify_trigger_drop.sql
+\ir ./trading_swap_leg_amounts_drop.sql
+\ir ./trading_swap_leg_amounts_notify_trigger_drop.sql
+\ir ./trading_swap_leg_rates_drop.sql
+\ir ./trading_swap_leg_rates_notify_trigger_drop.sql

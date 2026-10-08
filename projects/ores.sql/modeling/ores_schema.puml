@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T16:47:45.745874Z
+' Generated: 2026-10-08T18:03:34.358648Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11062,6 +11062,122 @@ package "trading" #E8F5E9 {
     external/ore/xsd/ore_types.xsd.
     The values are the ORE XSD spellings, so a stored value round-trips through the
     ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_structure_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * confirms_as_whole : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Kind Table
+    Reference data table defining the rungs of the composition ladder. A kind
+    says how strongly the structure binds its legs, and the one consequence
+    that follows for the customer: whether the deal is confirmed as one
+    document or trade by trade.
+    Examples: 'Strategy', 'Typed', 'Dynamic', 'Package'.
+    end note
+
+    entity ores_trading_structure_template_roles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * template_code : text <<PK>>
+        * role : text <<PK>>
+        --
+        * version : integer
+        * min_legs : integer
+        * max_legs : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_template_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Template Role Table
+    The roles a structure template allows, each with the number of legs it
+    holds. The table is what makes a template a mould: a straddle allows one
+    role holding exactly two legs, a butterfly allows a body of one and wings
+    of two.
+    The row is keyed by its template and its role, because a template states
+    each role once. The leg counts are inclusive at both ends, and a role that
+    holds any number of legs states a maximum of zero meaning no upper bound.
+    Examples: 'Straddle' / 'leg' / 2 to 2, 'Butterfly' / 'wing' / 2 to 2.
+    end note
+
+    entity ores_trading_structure_templates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * kind : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_templates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Template Table
+    Reference data table defining the shapes a structure of a given kind may
+    take. A template states which roles its legs may play and how many legs
+    each role holds, so that a strategy is a mould rather than a convention.
+    The roles themselves are the child table, because a template has several
+    and each carries its own leg counts.
+    Examples: 'Straddle', 'RiskReversal', 'Butterfly', 'CallableSwap'.
+    end note
+
+    entity ores_trading_structures_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * kind : text
+          template_code : text
+          parent_structure_id : uuid <<FK>>
+    }
+
+    note right of ores_trading_structures_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Table
+    The immutable identity of a deal assembled from several trades. It holds
+    what never changes for the deal's life: the party, the counterparty, the
+    kind of binding, the template it was shaped by, and its parent when it is
+    itself a leg of a larger deal.
+    It is the anchor of the composition ladder. The legs are not owned
+    children: a trade points at the structure that holds it, so the same trade
+    can be unlinked from one deal and linked to another without being
+    rewritten. The economics live on the legs, and the structure's internal
+    version is read from them rather than stored beside them.
+    A structure nests one level at most, because a deal inside a deal inside a
+    deal has no confirmation to hang on. The insert trigger enforces it.
     end note
 
     entity ores_trading_swap_leg_amounts_tbl <<temporal>> #C6F0D8 {

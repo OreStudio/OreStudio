@@ -36,8 +36,8 @@ Let ores.inbox.service compile again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3B6FE8FB-3702-433A-9C11-B2E4FC235FA6][Scaffold story: Hotfix: the sweep schedule cannot see its own name]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B00091EE-B105-4C11-B645-1E5076E8387E][Implement Hotfix: the sweep schedule cannot see its own name]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the sweep schedule cannot see its own name |
+| [[id:3B6FE8FB-3702-433A-9C11-B2E4FC235FA6][Scaffold story: Hotfix: the sweep schedule cannot see its own name]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B00091EE-B105-4C11-B645-1E5076E8387E][Implement Hotfix: the sweep schedule cannot see its own name]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the sweep schedule cannot see its own name |
 
 * Decisions
 

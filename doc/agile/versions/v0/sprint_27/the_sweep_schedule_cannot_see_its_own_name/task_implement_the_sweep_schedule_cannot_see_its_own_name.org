@@ -26,11 +26,11 @@ Let ores.inbox.service compile again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:405C065F-29FB-46C0-BDD5-C6D1890C3639][Hotfix: the sweep schedule cannot see its own name]] |
-| Now          | The lookup's predicate names a local holding the job name. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -104,3 +104,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2888. The predicate names a local holding the job name, so the
+lookup no longer reaches for a member it cannot see.
+
+The compile is verified by inspection only. No build ran in this worktree: the
+current workflow has the hourly validation build compile =main=, and that run is
+the confirmation.

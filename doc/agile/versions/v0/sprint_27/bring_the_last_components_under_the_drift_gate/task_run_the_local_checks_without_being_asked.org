@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/run-the-local-checks-without-being-asked
-#+pr:
+#+pr: 2814
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2814][#2814]] | [agile] Record the hourly check cadence and the merge policy |
 
 * Review
 

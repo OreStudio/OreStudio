@@ -64,27 +64,43 @@ The inventory first, because the numbers decide the shape.
   config scoped by portfolio. This task reuses both rather than adding a
   third.
 
-Work, in order. Fold each step into the provisioning path so a recreated
-database reproduces it.
+Work, in order. The configuration is a standard dataset, so it arrives the
+way every other ACME datum does.
 
-1. Done in PR #2845. =ores_reporting_seed_report_configurations_fn= creates
-   the risk report config and the root portfolio scope for every definition
-   that already carries all four configuration bindings, and
+1. Done in PR #2845, but in the wrong shape. =ores_reporting_seed_report_configurations_fn=
+   creates the risk report config and the root portfolio scope, and
    =ores_reporting_analytic_flags_fn= maps each seeded report name to the
-   analytics it turns on.
-2. Outstanding. The four ORE documents and their bindings come from
-   =ore import-run <definition-id> <source-dir>=, which is built and is per
-   definition. Nothing in provisioning runs it, so the seeder is inert. The
-   next unit is a provisioning step that imports the matching
-   =external/ore/examples= directory for each seeded definition and then
-   calls the seeder.
-3. Outstanding. Extend =ores_iam_reset_tenant_fn= to wipe the configuration
+   analytics it turns on. Both stay, but the seeder becomes the dataset's
+   publish function rather than something a caller invokes by hand.
+2. Outstanding. The artefact table. The scaffold
+   =projects/ores.dq/modeling/ores.dq.risk_report_config.org= exists and
+   needs its columns, its flags and its physical spaces, modelled on
+   =ores.dq.report_definition.org=. Regenerate to produce
+   =dq_risk_report_configs_artefact_tbl= and its C++ staging entity.
+3. Outstanding. Register the artefact type row in
+   =dq_artefact_types_populate.sql=, mirroring =report_definitions=:
+   artefact table =dq_risk_report_configs_artefact_tbl=, target table
+   =reporting_risk_report_configs_tbl=, target subject
+   =reporting.v1.ops.publish_risk_report_configs_from_dq=.
+4. Outstanding. Register the dataset and its dependencies. The dataset
+   carries the artefact type above; it depends on =ore.report_definitions=
+   for the definitions it configures, on the ORE run configuration for the
+   four documents it binds, and on the organisation datasets for the root
+   portfolio it scopes to. Declare each with a role, the way
+   =acme_dataset_dependency_populate.sql= does.
+5. Outstanding. Reshape the publish function to read the artefact table,
+   resolve each row's report definition by name for the target party, and
+   write the risk config and its scope.
+6. Outstanding. Seed the artefact rows for the 27 available reports and add
+   the dataset to the bundles.
+7. Outstanding. Extend =ores_iam_reset_tenant_fn= to wipe the configuration
    tables, so a reset leaves a tenant in the seeded state rather than with
    orphaned configurations.
 
 The split matters. =ores.ore= owns the run document and the four
-configuration documents. =ores.reporting= owns the risk report config, the
-analytics and the scope. An earlier draft of the seeder also wrote the
+configuration documents, through =ore import-run=. =ores.reporting= owns the
+risk report config, the analytics and the scope, and =ores.dq= stages the
+rows that become them. An earlier draft of the seeder also wrote the
 bindings, which would have duplicated what the import already writes.
 
 * Measurements

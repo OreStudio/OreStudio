@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: BA5BD427-A31F-40E6-9E2E-9BBD7B942BD4
+:END:
+#+title: Task: Repair the swap leg children's insert trigger and isolation
+#+description: The swap leg's amount and rate tables bound the trading-instrument profile, whose insert trigger stamps party_id from the session, but they were flattened without a party_id column, so every insert into either table fails at run time. Neither table carries tenant isolation either. Drop the binding to a profile that describes a single-row instrument, and give the two tables the tenant isolation their siblings carry.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/repair-the-swap-leg-children
+#+pr: 2855
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_trading_swap_leg_amounts_tbl= and =ores_trading_swap_leg_rates_tbl=
+accept a row again, and are isolated to their tenant. The two tables bind a
+profile that describes a single-row instrument, so their generated insert
+trigger stamps a =party_id= column their flattened shape does not have, and
+every insert fails. Their siblings carry the tenant isolation policy they are
+missing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Fixed and regenerated; the static checks are being run. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and merge.                |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- Neither generated create file stamps a column its table does not declare.
+- Both tables enable row level security and carry a tenant isolation policy,
+  as =ores_trading_bond_leg_amounts_tbl= does.
+- Both drop files drop that policy, and the drop aggregator reaches all four
+  drop files.
+- The tables' column shape is unchanged, so no data migration is implied.
+
+* Plan
+
+1. The root cause is the =:profile: trading-instrument= binding. The loader
+   resolves the profile into two features, =has_tenant_id= and
+   =party_id_from_session=, and the second emits the party stamp. The profile
+   describes a flat ORE instrument sub-type with an identity group that
+   carries =party_id=; a leg's notional row is not an instrument sub-type and
+   has no such column.
+2. Replace the binding with the one feature the tables actually need,
+   =:has_tenant_id: true=, which is exactly what the working sibling
+   =ores.trading.bond_leg_amount= declares. The stamp disappears and nothing
+   else about the trigger changes.
+3. Add =:rls_tenant_isolation: true= to both models' SQL Flags, which
+   generates the enable and the tenant policy into each create file and the
+   policy drop into each drop file.
+4. Wire the four drop files into =drop_trading.sql=, children before the leg
+   they belong to, because the drop aggregator never reached them.
+5. Regenerate the component and confirm the trigger change is the only
+   difference to the tables.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Tables whose trigger stamped a column the table lacks | 2 | grep NEW.party_id across create/trading | worktree |
+| Warnings for the swap leg children after the fix | 0 | plantuml_er_parse_sql.py --warn --strict | worktree |
+| Schema warnings before the fix, by code | 3 RLS_001, 2 RLS_002, 1 TENANT_002, 16 WIRE_001 | same | worktree |
+| Schema warnings after the fix, by code | 1 RLS_001, 2 RLS_002, 1 TENANT_002, 12 WIRE_001 | same | worktree |
+| Codegen drift, trading | no drift | check_component_drift.py --component trading-cpp --dry-run | worktree |
+| clang-format on the changed C++ | clean | clang-format --dry-run --Werror | worktree |
+
+The warnings that remain belong to other families: =ores_trading_structures_tbl=
+(one RLS_001 and one RLS_002), =ores_marketdata_market_series_identity_tbl= (one
+RLS_002 and one TENANT_002), and the unwired drop files of the structures and
+trade link families.
+
+* Notes
+
+- The defect was latent: no test writes a swap leg amount or rate row yet, so
+  the round trip passed while the table could not accept one.
+- =swap_legs=, the parent, has a =party_id= column and a hand-written policy in
+  =trading_rls_policies_create.sql=, which is why it was unaffected. Its
+  children have neither.
+- The regeneration also refreshed =structure_service.cpp=, whose committed copy
+  the outcome-catalogue template had outrun. It is generated output, so the
+  gate requires the regenerated form.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2855][#2855]] | [trading] Repair the swap leg children's insert trigger and isolation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both tables accept a row and are tenant-isolated. The profile binding that
+described a single-row instrument is gone from two child tables that are not
+instruments, the tenant isolation policy matches the bond family's children,
+and the drop aggregator reaches the four drop files. The table shape is
+unchanged.

@@ -20,18 +20,21 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.ore.core/store/run_store.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <rfl/json.hpp>
+#include <rfl/msgpack.hpp>
 
 namespace ores::ore::service::messaging {
 
@@ -147,12 +150,45 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             f.write(fixings.data(), static_cast<std::streamsize>(fixings.size()));
         }
 
+        // The gather step leaves the run's trades as the export response, which
+        // the engine cannot read. The engine reads a portfolio, so the trades
+        // and their instruments are rebuilt into one and written where the run
+        // document names it, as the market data and the fixings above are. ORE
+        // requires the name, so a run document without one has nowhere to put
+        // the trades and is refused rather than packaged into a run that cannot
+        // price.
+        if (places.portfolio.empty()) {
+            wf->fail("prepare_ore_package: the run document names no portfolio file, so the "
+                     "gathered trades have nowhere to go for run " +
+                     req.report_instance_id);
+            return;
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "Downloading trades: " << req.trades_storage_key;
         const auto trades =
             transfer.download_blob(std::string(platform_bucket), req.trades_storage_key);
+
+        const auto rows =
+            rfl::msgpack::read<ores::trading::messaging::export_portfolio_response>(trades);
+        if (!rows) {
+            wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
+                     "export: " +
+                     rows.error().what());
+            return;
+        }
+        if (!rows->success) {
+            wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
+                     rows->message);
+            return;
+        }
+
+        const auto portfolio =
+            ores::ore::xml::exporter::export_portfolio(rows->items, rows->instruments);
         {
-            std::ofstream f(stage_dir / "trades.msgpack", std::ios::binary | std::ios::trunc);
-            f.write(trades.data(), static_cast<std::streamsize>(trades.size()));
+            const auto target = stage_dir / places.portfolio;
+            std::filesystem::create_directories(target.parent_path());
+            std::ofstream f(target, std::ios::binary | std::ios::trunc);
+            f << portfolio;
         }
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
@@ -184,12 +220,14 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         prepare_ore_package_result result;
         result.success = true;
         result.tarball_uris = {tarball_uri};
-        result.message =
-            std::format("Packaged {} input files, {} bytes trades + {} bytes market data into {}",
-                        input.size(),
-                        trades.size(),
-                        market_data.size(),
-                        tarball_key);
+        result.message = std::format(
+            "Packaged {} input files, {} trades as {} portfolio bytes + {} market data bytes "
+            "into {}",
+            input.size(),
+            rows->items.size(),
+            portfolio.size(),
+            market_data.size(),
+            tarball_key);
 
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
                                   << req.report_instance_id << " tarball=" << tarball_key;

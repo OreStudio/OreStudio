@@ -146,3 +146,36 @@ class, so the next one fails locally before it reaches main.
 - [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] — the inventory this document replaced.
 - [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]] — the skill that runs =compass check= before raising.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.
+
+* What the heavy tier needs from the machine
+
+The heavy tier is the only part of the runner that is not self-contained, and
+its three checks do not want the same thing:
+
+| Check | Needs |
+|-------+-------|
+| =build= | nothing beyond the tree |
+| =db recreate= | no service connected to the database |
+| =ctest= | the NATS server up, and a database the =db= check has just rebuilt |
+
+The two constraints pull against each other, because =compass services stop=
+stops the NATS server as well as the services it fronts. Stopping the target
+for =db= therefore takes down the server =ctest= needs, and leaving it up means
+=db recreate --kill= loses its race: it terminates the service backends and
+they reconnect before the recount, so the recreate refuses on a handful of live
+connections.
+
+The environment that satisfies both is the NATS server running with every
+service stopped:
+
+#+begin_src sh :results verbatim
+./compass.sh services stop
+systemctl --user start nats-server-festive-dijkstra.service   # or busctl, see ORES_USE_BUSCTL
+./compass.sh check
+#+end_src
+
+The runner states none of this and enforces none of it. It is written here
+because a machine that has just been used for anything else will fail one of
+the two, and the failure reads as a defect in the change rather than in the
+environment.
+

@@ -100,9 +100,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Set party_id from session context
-    NEW.party_id := current_setting('app.current_party_id')::uuid;
-
     -- Validate trade_id (soft FK to ores_trading_trades_tbl)
     if not exists (
         select 1 from ores_trading_trades_tbl
@@ -184,4 +181,21 @@ on delete to "ores_trading_swap_leg_rates_tbl" do instead (
     where tenant_id = OLD.tenant_id
       and trade_id = OLD.trade_id and leg_number = OLD.leg_number and rate_role = OLD.rate_role and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Swap Leg Rate
+-- =============================================================================
+alter table ores_trading_swap_leg_rates_tbl enable row level security;
+
+drop policy if exists swap_leg_rates_tbl_tenant_isolation_policy
+    on ores_trading_swap_leg_rates_tbl;
+
+create policy swap_leg_rates_tbl_tenant_isolation_policy
+on ores_trading_swap_leg_rates_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
 );

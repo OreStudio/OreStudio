@@ -273,6 +273,43 @@ TEST_CASE("the archive refuses a path that leaves the package", "[ore][store]") 
               .contains("Input/Dim/curveconfig.xml"));
 }
 
+TEST_CASE("the run document names the data files the package places", "[ore][store]") {
+    const auto places = store::declared_data_files(example_input());
+    CHECK(places.market_data == "Input/market.txt");
+    CHECK(places.fixings == "Input/fixings.txt");
+    CHECK(places.portfolio == "Input/portfolio.xml");
+
+    // The names move with the run document's input path, because the engine
+    // reads them from there.
+    auto files = example_input();
+    auto& run = files.at("ore.xml");
+    const std::string from = "<Parameter name=\"inputPath\">Input</Parameter>";
+    REQUIRE(run.find(from) != std::string::npos);
+    run.replace(
+        run.find(from), from.size(), "<Parameter name=\"inputPath\">./Input/Dim</Parameter>");
+    CHECK(store::declared_data_files(files).portfolio == "Input/Dim/portfolio.xml");
+
+    // A run document naming no portfolio leaves the slot empty, so the caller
+    // sees the gap rather than a name of our own choosing.
+    auto without = example_input();
+    auto& doc = without.at("ore.xml");
+    const std::string line = "<Parameter name=\"portfolioFile\">portfolio.xml</Parameter>";
+    REQUIRE(doc.find(line) != std::string::npos);
+    doc.erase(doc.find(line), line.size());
+    CHECK(store::declared_data_files(without).portfolio.empty());
+}
+
+TEST_CASE("the run document refuses a data file that leaves the package", "[ore][store]") {
+    auto files = example_input();
+    auto& run = files.at("ore.xml");
+    const std::string line = "<Parameter name=\"portfolioFile\">portfolio.xml</Parameter>";
+    REQUIRE(run.find(line) != std::string::npos);
+    run.replace(run.find(line),
+                line.size(),
+                "<Parameter name=\"portfolioFile\">../portfolio.xml</Parameter>");
+    CHECK_THROWS_AS(store::declared_data_files(files), std::invalid_argument);
+}
+
 TEST_CASE("an import whose document does not parse is refused before it writes", tags) {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);

@@ -26,6 +26,7 @@
 #define ORES_MARKETDATA_API_MESSAGING_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include <chrono>
 #include <cstdint>
 #include <map>
@@ -35,6 +36,66 @@
 #include <vector>
 
 namespace ores::marketdata::messaging {
+
+/**
+ * @brief One typed identity field of a series, as the caller gives it.
+ *
+ * The name is an oresmd field code, such as ccy or curve_id, and the text is
+ * what the caller believes that field holds. The pair is the request's spelling
+ * of the identity, not a URI: the server composes the URI through the codec.
+ */
+struct series_identity_field {
+    std::string name;
+    std::string text;
+};
+
+/**
+ * @brief Requests the series a typed identity names.
+ *
+ * The caller states the identity as typed fields and the server resolves it to
+ * the series rows that carry it, so no caller builds an oresmd_uri and no
+ * caller matches on one. The asset class, the scope, the instrument type and
+ * the quote type are stated on their own because the URI grammar puts them in a
+ * fixed position; every other identity field travels in `fields`.
+ *
+ * `party_id` states whose series is wanted. An empty one asks across the
+ * parties the caller can see, which is why the answer is a list.
+ */
+struct resolve_series_identity_request {
+    using response_type = struct resolve_series_identity_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.resolve_series_identity";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string asset;
+    std::string scope;
+    std::string instrument_type;
+    std::string quote_type;
+    std::string party_id;
+    /**
+     * @brief The identity's remaining fields, such as ccy or curve_id.
+     *
+     * The other fields the type's schema row declares. A field the caller does not
+     * state is left unconstrained, so the read narrows by what it is given.
+     */
+    std::vector<series_identity_field> fields;
+};
+
+/**
+ * @brief The series the identity resolves to.
+ *
+ * One row per owning party that holds the identity. Empty when nothing carries
+ * it, which is not an error: a scope may hold no series of that kind yet.
+ */
+struct resolve_series_identity_response {
+    std::vector<ores::marketdata::domain::market_series> series;
+    bool success = false;
+    std::string message;
+};
 
 struct crm_rate_item {
     std::string crm_name;

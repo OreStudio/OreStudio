@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists swap_leg_amounts_tbl_tenant_isolation_policy on "ores_trading_swap_leg_amounts_tbl";
 drop rule if exists ores_trading_swap_leg_amounts_delete_rule on "ores_trading_swap_leg_amounts_tbl";
 drop trigger if exists ores_trading_swap_leg_amounts_insert_trg on "ores_trading_swap_leg_amounts_tbl";
 drop function if exists ores_trading_swap_leg_amounts_insert_fn;

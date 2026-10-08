@@ -8,12 +8,12 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/state-the-environment-the-heavy-checks-need
-#+pr:
+#+pr: 2858
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Teach the runner what the heavy checks need, so one command has one environment 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2858][#2858]] | [doc] State what the heavy tier needs from the machine |
 
 * Review
 
@@ -83,3 +83,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The environment is stated, not enforced, which is the half of the acceptance
+this could carry honestly.
+
+db needs no service connected to the database; ctest needs the NATS server up
+and the database db has just rebuilt. compass services stop stops the server
+along with the services, so the two cannot both be satisfied by it. Leaving the
+target up instead makes db recreate --kill lose its race: it terminates the
+service backends, they reconnect before the recount, and the check refuses on a
+handful of live connections. The environment that works is NATS up with every
+service stopped.
+
+That is recorded on the local-checks page. The runner still neither states nor
+enforces it, and that is deliberate here rather than overlooked: a change to
+the runner cannot be verified without running the heavy tier, which this work
+is not allowed to do. It is the first thing to fix when a build can be spent.
+

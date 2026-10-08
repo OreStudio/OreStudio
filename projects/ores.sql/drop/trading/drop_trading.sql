@@ -66,6 +66,12 @@
 \ir ./trading_swap_leg_rates_drop.sql
 
 -- Rates instruments (depend on reference data, drop before reference data)
+-- A swap leg's notionals and rates are child rows, so they go before the leg
+-- they belong to.
+\ir ./trading_swap_leg_rates_notify_trigger_drop.sql
+\ir ./trading_swap_leg_rates_drop.sql
+\ir ./trading_swap_leg_amounts_notify_trigger_drop.sql
+\ir ./trading_swap_leg_amounts_drop.sql
 \ir ./trading_swap_legs_notify_trigger_drop.sql
 \ir ./trading_swap_legs_drop.sql
 

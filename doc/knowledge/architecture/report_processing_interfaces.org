@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:reporting:interfaces:reference:
 #+created: 2026-09-27
-#+updated: 2026-09-28
+#+updated: 2026-10-08
 
 * Summary
 
@@ -93,11 +93,13 @@ by =ores.compute.api/net/compute_storage.hpp=, and the three reporting keys by
 =projects/ores.reporting/core/src/service/execution_storage_plan.cpp= and
 =projects/ores.ore/service/src/messaging/report_package_handler.cpp=.
 
-The packaging step re-downloads the two gathered blobs and re-tars them without
-parsing them, so the objects need not be MsgPack the engine understands. The
-tarball it produces is the =Input/= directory shape the engine expects, which is
-why the prepared substitute for a test run is a bundle a person could hand the
-engine.
+The packaging step downloads the gathered blobs and lays the run's own data at
+the paths the run document names. The market data and the fixings go there as
+they are; the trades are MsgPack rows the engine cannot read, so they are
+rebuilt into the ORE portfolio the engine prices
+(=ores.ore.core/xml/exporter.hpp=). The result is the =Input/= directory shape
+the engine expects, which is why the prepared substitute for a test run is a
+bundle a person could hand the engine.
 
 Both object access paths are as specified in
 [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]]: the command subjects

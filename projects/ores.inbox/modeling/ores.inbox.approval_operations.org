@@ -317,10 +317,10 @@ end.
 :default:  0
 :END:
 
-** get_approval_request_request
+** read_approval_request_request
 :PROPERTIES:
-:subject:  inbox.v1.ops.get_approval_request
-:response: get_approval_request_response
+:subject:  inbox.v1.ops.read_approval_request
+:response: read_approval_request_response
 :END:
 
 #+begin_src cpp :name comment
@@ -345,7 +345,7 @@ end.
 :cpp_type: std::string
 :END:
 
-** get_approval_request_response
+** read_approval_request_response
 :PROPERTIES:
 :END:
 

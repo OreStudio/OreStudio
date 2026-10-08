@@ -389,11 +389,11 @@ public:
         auto ctx = context_for(msg);
         if (!ctx)
             return;
-        auto req = decode<get_approval_request_request>(msg);
+        auto req = decode<read_approval_request_request>(msg);
         if (!req) {
             reply(nats_,
                   msg,
-                  get_approval_request_response{
+                  read_approval_request_response{
                       .result = approval_result(
                           outcome::invalid, "bad_request", "The request could not be read.")});
             return;
@@ -404,7 +404,7 @@ public:
             if (!found) {
                 reply(nats_,
                       msg,
-                      get_approval_request_response{
+                      read_approval_request_response{
                           .result = approval_result(outcome::missing, "not_found", "")});
                 return;
             }
@@ -416,20 +416,20 @@ public:
             if (!may_open) {
                 reply(nats_,
                       msg,
-                      get_approval_request_response{
+                      read_approval_request_response{
                           .result = approval_result(outcome::missing, "not_found", "")});
                 return;
             }
             reply(nats_,
                   msg,
-                  get_approval_request_response{.result = approval_result(outcome::ok, "", ""),
+                  read_approval_request_response{.result = approval_result(outcome::ok, "", ""),
                                                 .request = *found});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading approval request " << req->request_id << ": " << e.what();
             reply(nats_,
                   msg,
-                  get_approval_request_response{.result = approval_result(
+                  read_approval_request_response{.result = approval_result(
                                                     outcome::failed, "read_failed", e.what())});
         }
     }

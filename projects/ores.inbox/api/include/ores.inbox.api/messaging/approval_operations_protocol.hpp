@@ -199,9 +199,9 @@ struct list_my_approval_requests_response {
  * the request did not exist, so the read tells nobody that a request they may
  * not see is there.
  */
-struct get_approval_request_request {
-    using response_type = struct get_approval_request_response;
-    static constexpr std::string_view nats_subject = "inbox.v1.ops.get_approval_request";
+struct read_approval_request_request {
+    using response_type = struct read_approval_request_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.read_approval_request";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -212,7 +212,7 @@ struct get_approval_request_request {
     std::string request_id;
 };
 
-struct get_approval_request_response {
+struct read_approval_request_response {
     ores::utility::domain::result result;
     /**
      * @brief The request, present when the caller may open it.

@@ -79,7 +79,7 @@ export function SetupCell({ setup }: { readonly setup: TenantSetup | null }): Re
     const known = setup.status in SETUP_TONE;
     const label = known
         ? t(`tenants.setupState.${setup.status}`, {
-              step: setup.currentStepIndex + 1,
+              done: setup.stepsDone,
               count: setup.stepCount,
           })
         : setup.status;

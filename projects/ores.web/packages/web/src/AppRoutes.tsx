@@ -26,6 +26,7 @@ import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
+import { useSite } from './session/SiteProvider.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
@@ -66,6 +67,7 @@ import { TenantsPage } from './pages/TenantsPage.js';
 import { SignInPage, type SignInPageProps } from './pages/SignInPage.js';
 import { Button, Notice } from './ui/Primitives.js';
 import type { Account, SessionView } from '@ores/wire-protocol/browser';
+import type { EnvironmentView } from '@ores/contracts';
 
 /**
  * The route table, and the gate that keeps an installation on its setup screen.
@@ -125,6 +127,14 @@ export interface AppRoutesProps {
      * profile screen is the one place that changes both.
      */
     readonly self?: Account | null;
+    /**
+     * The environment the deployment serves, when the wiring has read it.
+     *
+     * Every shell states it in the footer beside the two builds, so a person
+     * can tell which checkout they are pointed at and whether it is
+     * production.
+     */
+    readonly environment?: EnvironmentView | undefined;
     readonly onSignIn: SignInPageProps['onSignIn'];
     readonly onChooseParty: SignInPageProps['onChooseParty'];
     readonly onSignOut: () => void;
@@ -140,12 +150,13 @@ export function AppRoutes({
     signUpJourney,
     journeyInProgress,
     self,
+    environment,
     onSignIn,
     onChooseParty,
     onSignOut,
     onRetryBootstrap,
 }: AppRoutesProps): ReactNode {
-    const shell: ShellActions = { onSignOut, self: self ?? null };
+    const shell: ShellActions = { onSignOut, self: self ?? null, environment };
     const { t } = useTranslation();
 
     if (gate.status === 'loading' || session.status === 'loading') {
@@ -177,7 +188,7 @@ export function AppRoutes({
                 <Route
                     path="*"
                     element={
-                        <PublicShell wide serverVersion={gate.version}>
+                        <PublicShell wide serverVersion={gate.version} environment={environment}>
                             {journey}
                         </PublicShell>
                     }
@@ -194,7 +205,7 @@ export function AppRoutes({
                     session.status === 'authenticated' ? (
                         <Navigate to="/" replace />
                     ) : (
-                        <PublicShell serverVersion={gate.version}>
+                        <PublicShell serverVersion={gate.version} environment={environment}>
                             <SignInPage onSignIn={onSignIn} onChooseParty={onChooseParty} />
                         </PublicShell>
                     )
@@ -206,7 +217,7 @@ export function AppRoutes({
                     session.status === 'authenticated' ? (
                         <Navigate to="/" replace />
                     ) : (
-                        <PublicShell wide serverVersion={gate.version}>
+                        <PublicShell wide serverVersion={gate.version} environment={environment}>
                             {signUpJourney}
                         </PublicShell>
                     )
@@ -626,6 +637,7 @@ export function AppRoutes({
 export function ConnectedApp(): ReactNode {
     const { state: gate, recheck } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
+    const { environment } = useSite();
     const server = useJourneyServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
@@ -648,6 +660,7 @@ export function ConnectedApp(): ReactNode {
             gate={gate}
             session={session}
             self={account.data ?? null}
+            environment={environment}
             journey={
                 <FirstRunJourney
                     server={server}
@@ -711,6 +724,8 @@ export function ConnectedApp(): ReactNode {
 interface ShellActions {
     readonly onSignOut: () => void;
     readonly self: Account | null;
+    /** The environment the deployment serves, which every shell states. */
+    readonly environment: EnvironmentView | undefined;
 }
 
 function signedIn(
@@ -739,6 +754,7 @@ function signedIn(
             mode={view.mode}
             width={width}
             serverVersion={version}
+            environment={shell.environment}
             onSignOut={shell.onSignOut}
             self={shell.self}
         >

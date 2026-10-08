@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 3B2FF8B4-1607-4EFD-9638-7DC37C91DC68
+:END:
+#+title: Model the workflow payloads instead of storing them as documents
+#+description: The workflow schema holds six jsonb columns that carry serialised messages: request_json and result_json on the instance, and request_json, response_json, command_json, compensation_json and step_log_json on the step. Some of them are already typed on the wire and flattened into a document only for storage: step_log_json is a std::vector<step_log_entry>, whose shape the model already declares. Others are genuinely opaque to the engine and are relayed into the next step's builder, which parses them. Work out which of the six are models that were flattened and should be relations, which are payloads the engine must not interpret and should stay opaque, and what the engine actually needs to be able to name. The end state is that nothing in the schema holds a relation disguised as a document.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:architecture:data-modelling:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide, for each of the workflow schema's serialised-message columns, whether
+it is a *model that was flattened into a document* or a *payload the engine
+must not interpret* — and give the first kind the relation it should have had.
+The end state is that nothing in this schema holds a relation disguised as a
+document, and nothing that is genuinely opaque claims to be understood.
+
+The six columns are:
+
+| Column              | Table    | Holds                                        |
+|---------------------+----------+----------------------------------------------|
+| =request_json=      | instance | the start message the run was created from   |
+| =result_json=       | instance | the last step's response, relayed            |
+| =request_json=      | step     | the command built for the step               |
+| =command_json=      | step     | the command built for the step               |
+| =response_json=     | step     | what the downstream service answered         |
+| =compensation_json= | step     | the compensation command                     |
+| =step_log_json=     | step     | the entries a step emitted while it ran      |
+
+* Why
+
+The same argument that settled a run's chain as relations rather than a
+document applies here, and it is worth being precise about which side each
+column falls on, because the answer is not the same for all of them.
+
+A *payload* is an opaque wire message: the service that carries and stores it
+must not interpret it, and serialising it verbatim is the correct design. A
+*model* is a relation: it has named fields, each with a type, and code that
+reads them by name. Storing a model as a document means the schema cannot
+constrain it, cannot index it, cannot join it, and cannot say what it holds —
+which is exactly the position the chain was in before it became two relations.
+
+Three things fall out of reading the columns, before any decision is taken.
+
+- *=step_log_json= holds a model that the model already declares.* It is a
+  =std::vector<ores::workflow::messaging::step_log_entry>=, and =step_log_entry=
+  is declared in =ores.workflow.workflow_messages= with a level, a message and
+  a context. The entries are typed on the wire, typed in the model, and
+  flattened into a document only at the point of storage. This one is a child
+  relation whatever else is decided.
+- *Two of the columns hold the same thing.* =workflow_step.request_json= and
+  =workflow_step.command_json= are assigned the same value at every site that
+  writes either of them, so one of them is redundant. They read as "what the
+  step was asked" and "what was published", which is a distinction nothing
+  makes.
+- *One of them is never written.* The engine builds a compensation command on
+  the fly through the definition's =build_compensation= and publishes it, and
+  where it records that command it records it on the *compensation step's own*
+  =command_json=. Nothing writes =workflow_step.compensation_json=, so it holds
+  the empty default on every row the engine produces.
+
+That leaves the interesting one. =request_json=, =response_json= and
+=result_json= carry messages whose *types the engine does not know*: the
+definition's builder parses the request by name, the step's own
+=require_step_result<T>= parses a response as the type it expects, and the
+engine relays the bytes between them without ever naming what they are. The
+engine is a generic saga runner, so that erasure is deliberate. The question is
+whether it is at the right layer: the schema stores a document whose type is
+known to a definition the schema has never heard of, so nothing can validate a
+payload, version one, or reject a step that answers with the wrong shape.
+
+* Questions to answer
+
+1. For =request_json=, =response_json= and =result_json=: is the type of each
+   statically known per workflow type and per step, and if so where does that
+   knowledge live? A definition states its start message and each step states
+   its command type; if the engine could name them, a payload could carry the
+   message type it is an instance of, and the column could stop being typeless.
+2. Is a typed payload a relation or a column? A message type and a body is
+   still a payload; what changes is that the schema can say which message it
+   is, validate it at the boundary, and refuse a body that does not parse as
+   the type it claims.
+3. =result_json= on the instance: is it the last step's response, a message of
+   its own, or a value the definition builds? The answer decides whether it is
+   a relayed payload or a modelled one.
+4. =step_log_json= as a child relation: what is the entry's identity, is order
+   significant, and does an entry survive a step retry?
+5. Does the engine ever *need* to interpret a payload beyond relaying it? It
+   already extracts the target from the start message into =target_kind= and
+   =target_id=, which is the precedent: what the engine acts on belongs in a
+   column, and what it merely carries does not.
+6. What is the migration path for messages already stored as documents, and
+   does anything outside this component read them?
+
+* Out of scope
+
+The payloads of *other* components. This capture is about the workflow schema's
+own serialised columns; a component that stores one of its own messages as a
+document is the same argument in a different place, and is worth a pass of its
+own once the shape is settled here.
+
+* References
+
+- [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] — where a run's chain stopped being a
+  document and became two relations, and the reasoning this capture applies.
+- =projects/ores.workflow/modeling/ores.workflow.workflow_step.org= and
+  =ores.workflow.workflow_instance.org= — the columns and what they claim.
+- =projects/ores.workflow/modeling/ores.workflow.workflow_messages.org= — the
+  =step_log_entry= the =step_log_json= column flattens.
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp= — every site
+  that writes any of the six.
+
+* See also
+
+- [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] — the story whose graph work
+  raised the question.
+* See also
+
+-

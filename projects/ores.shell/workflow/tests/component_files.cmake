@@ -23,6 +23,8 @@ set(files
     "main.cpp"
     "workflow_instance_commands_tests.cpp"
     "workflow_operations_commands_tests.cpp"
+    "workflow_plan_dependency_commands_tests.cpp"
+    "workflow_plan_step_commands_tests.cpp"
     "workflow_run_commands_tests.cpp"
     "workflow_step_commands_tests.cpp"
 )

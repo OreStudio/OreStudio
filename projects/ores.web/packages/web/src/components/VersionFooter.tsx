@@ -20,26 +20,36 @@
  */
 
 /**
- * What the browser is running, and what the deployment is running.
+ * What the browser is running, what the deployment is running, and which
+ * environment it serves.
  *
- * Both are stated, because either can be wrong on its own. The client version
+ * All three are stated, because any can be wrong on its own. The client version
  * is stamped into the bundle when it is built and never changes afterwards;
  * the server version arrives with the first read the browser makes. A person
  * looking at a screen that behaves like yesterday's build can settle it here:
  * two versions that disagree mean the bundle is stale, and the refresh that
  * fixes it is not a guess.
  *
- * The server's version is absent while the deployment has not answered yet,
- * and the line says so rather than inventing one.
+ * The environment settles the other question a person at a screen must be able
+ * to answer without asking anybody: which checkout they are pointed at, and
+ * whether it is production. A non-production environment says so in words,
+ * because mistaking one environment for another is the mistake that costs the
+ * most.
+ *
+ * The server's version and the environment are absent while the deployment has
+ * not answered yet, and the lines say so rather than inventing values.
  */
 
 import type { ReactNode } from 'react';
+import type { EnvironmentView } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 
 export function VersionFooter({
     serverVersion,
+    environment,
 }: {
     readonly serverVersion: string | undefined;
+    readonly environment: EnvironmentView | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -50,6 +60,14 @@ export function VersionFooter({
                     {serverVersion === undefined || serverVersion === ''
                         ? t('version.serverUnknown')
                         : t('version.server', { version: serverVersion })}
+                </span>
+                <span>
+                    {environment === undefined
+                        ? t('version.environmentUnknown')
+                        : t('version.environment', { name: environment.displayName })}
+                    {environment !== undefined &&
+                        environment.nonProduction &&
+                        ` (${t('version.nonProduction')})`}
                 </span>
             </div>
         </footer>

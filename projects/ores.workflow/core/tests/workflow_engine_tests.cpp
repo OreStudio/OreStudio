@@ -163,6 +163,14 @@ struct fixture {
         return service_context().tenant_id().to_string();
     }
 
+    /**
+     * @brief Register a chain of bare steps, each one after the one before it.
+     *
+     * The order is declared rather than implied by position: a chain whose
+     * steps read nothing may run them all at once, so a test that means one
+     * step after another has to say so. Use @ref register_chain when the point
+     * of the case is which steps read which.
+     */
     void register_steps(const std::string& type,
                         const std::vector<std::string>& names,
                         failure_policy on_failure = failure_policy::compensate,
@@ -182,6 +190,8 @@ struct fixture {
                     s.command_subject = step_subject;
                     s.timeout = timeout;
                     s.compensation_subject = compensation_subject;
+                    if (!steps.empty())
+                        s.consumes = {steps.back().name};
                     s.build_command = [request](const std::string&, const workflow_step_results&) {
                         return request;
                     };
@@ -572,7 +582,6 @@ TEST_CASE("workflow_engine advances once when a step completes twice", tags) {
     const auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("in_progress"));
-    CHECK(instance.front().current_step_index == 1);
 
     // Two step rows, not three: the duplicate must not have dispatched again.
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -652,7 +661,6 @@ TEST_CASE("a definition that declares stop keeps its completed steps on a failur
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("failed"));
     CHECK(instance.front().error == "two broke");
-    CHECK(instance.front().current_step_index == 1);
 
     // The failed step keeps its error, and the completed step keeps its result.
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -721,7 +729,6 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", tags) 
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("in_progress"));
     CHECK(instance.front().error.empty());
-    CHECK(instance.front().current_step_index == 1);
 
     // The completed step is untouched, result and all, and only one command
     // was published: a retry resumes, it does not repeat the run.
@@ -779,8 +786,7 @@ TEST_CASE("a retry refuses a step the run does not hold", tags) {
     f.engine->on_step_completed(as_message(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
 
-    // The run stopped at step one, so no step is named three: a run that
-    // stopped never materialised the steps after the one that failed.
+    // The run stopped at step one, and no step of its chain is named three.
     const auto refused = f.engine->retry_instance(
         boost::uuids::string_generator{}(instance_id), "three", f.h.context().tenant_id());
     CHECK_FALSE(refused.resumed);
@@ -801,10 +807,9 @@ TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // A run can rest in failed with no failed step: a stop that left every
-    // step complete, which the engine reaches when the definition it
-    // materialised disagrees with the one it re-reads. The state is written
-    // here rather than provoked, because the engine has no product path to it,
-    // and what the case pins is the answer a person sees.
+    // step complete. The state is written here rather than provoked, because
+    // the engine has no product path to it, and what the case pins is the
+    // answer a person sees.
     workflow_step_repository steps;
     workflow_instance_repository instances;
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -946,10 +951,11 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
 
     instance_rows = instances.read_latest(service_ctx, instance_id);
     REQUIRE(instance_rows.size() == 1);
-    CHECK(instance_rows.front().current_step_index == 1);
+    CHECK(instance_rows.front().state_id == f.instance_states.require("in_progress"));
 
     step_rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
     REQUIRE(step_rows.size() == 2);
+    CHECK(step_rows.back().state_id == f.step_states.require("in_progress"));
 
     // The second step is the last, so completing it ends the run.
     const auto second_step_id = boost::uuids::to_string(step_rows.back().id);
@@ -1503,4 +1509,68 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
+}
+
+TEST_CASE("a consumer of two producers waits for both while the producers run together", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // Two steps that read nothing are ready together, and the step that reads
+    // both runs only once both have answered. That is the fan-in the gathering
+    // redesign needs, and the reason one completion no longer dispatches one
+    // step.
+    f.register_chain("test_fan_in_workflow",
+                     {{"book_a", {}}, {"book_b", {}}, {"combine", {"book_a", "book_b"}}});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_fan_in_workflow", f.tenant(), instance_id)));
+
+    workflow_step_repository steps;
+    const auto at_start = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    const auto named = [](const auto& rows, const std::string& name) {
+        return std::ranges::any_of(rows, [&](const auto& r) { return r.name == name; });
+    };
+
+    // Both producers are dispatched by the one start, and the consumer is not.
+    REQUIRE(at_start.size() == 2);
+    CHECK(named(at_start, "book_a"));
+    CHECK(named(at_start, "book_b"));
+    CHECK_FALSE(named(at_start, "combine"));
+
+    const auto id_of = [&](const std::string& name) {
+        for (const auto& r : at_start)
+            if (r.name == name)
+                return boost::uuids::to_string(r.id);
+        return std::string{};
+    };
+
+    // The first producer answers and the consumer still may not run, because it
+    // reads the step that has not answered.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, id_of("book_a"), step_outcome::completed)));
+    const auto after_one = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(after_one.size() == 2);
+    CHECK_FALSE(named(after_one, "combine"));
+
+    // The second answers, and now the consumer runs.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, id_of("book_b"), step_outcome::completed)));
+    const auto after_both = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(after_both.size() == 3);
+    REQUIRE(named(after_both, "combine"));
+
+    // Completing the consumer ends the run, because every step has answered.
+    for (const auto& r : after_both)
+        if (r.name == "combine")
+            f.engine->on_step_completed(as_message(
+                completion_for(instance_id, boost::uuids::to_string(r.id), step_outcome::completed)));
+
+    workflow_instance_repository instances;
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+    BOOST_LOG_SEV(lg, debug) << "A consumer of two producers waited for both.";
 }

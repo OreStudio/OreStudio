@@ -1,3 +1,9 @@
+drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
+on ores_workflow_plan_dependencies_tbl;
+
+drop policy if exists workflow_plan_steps_tenant_isolation_policy
+on ores_workflow_plan_steps_tbl;
+
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>

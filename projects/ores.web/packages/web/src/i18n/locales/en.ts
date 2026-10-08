@@ -364,9 +364,9 @@ export const en: SourceCatalogue = {
         setup: 'Setup',
         setupUnavailable: 'The provisioning runs could not be read, so the setup column is empty.',
         setupState: {
-            in_progress: 'Step {step} of {count}',
+            in_progress: '{done} of {count} steps done',
             compensating: 'Rolling back',
-            failed: 'Failed at step {step}',
+            failed: 'Failed after {done} of {count} steps',
             compensated: 'Rolled back',
         },
         run: {
@@ -791,7 +791,7 @@ export const en: SourceCatalogue = {
             noActivity: 'No tenant has been set up yet.',
             activityUnavailable: 'The setup history could not be read.',
             attention: 'Needs attention',
-            setupFailed: 'Setup stopped at step {step} of {count}.',
+            setupFailed: 'Setup stopped after {done} of {count} steps.',
             suspended: 'Suspended: nobody in it can sign in.',
             seeFailure: 'See what failed',
             open: 'Open',
@@ -809,8 +809,8 @@ export const en: SourceCatalogue = {
             status: 'Status',
             activity: {
                 completed: '{tenant} finished setting up',
-                in_progress: '{tenant} is setting up, step {step} of {count}',
-                failed: '{tenant}: setup stopped at step {step} of {count}',
+                in_progress: '{tenant} is setting up, {done} of {count} steps done',
+                failed: '{tenant}: setup stopped after {done} of {count} steps',
                 compensating: '{tenant}: setup is being undone',
                 compensated: '{tenant}: setup was undone',
             },
@@ -1465,6 +1465,9 @@ export const en: SourceCatalogue = {
         client: 'client {version}',
         server: 'server {version}',
         serverUnknown: 'server version unknown',
+        environment: 'environment {name}',
+        environmentUnknown: 'environment unknown',
+        nonProduction: 'non-production',
     },
 
     server: {

@@ -1,0 +1,182 @@
+:PROPERTIES:
+:ID: 12ef9c6e-8bf2-4539-9036-0003fdcabb46
+:END:
+#+title: ores.workflow.workflow_plan_step
+#+description: Codegen entity model for the workflow =workflow_plan_step= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: workflow
+#+filetags: :model:entity:workflow:
+#+brief: One step of the chain a workflow instance was started with.
+#+entity_singular: workflow_plan_step
+#+entity_plural: workflow_plan_steps
+#+entity_title: Workflow Plan Step
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+One step of the chain a run was started with. =workflow_step= records a step
+that ran and what came back; this records a step that *will* run, from the
+moment the run starts, so the engine can answer what the chain is before it has
+dispatched anything.
+
+The chain is built per instance by the definition's =build_steps=, which is a
+function of the start request and not of the definition alone — tenant
+provisioning orders one step per kind its request names. A run therefore
+carries its own chain rather than pointing at one, because the definition that
+produced it may not produce the same chain twice and must never reshape a run
+that is already in flight.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     workflow
+:profile:       uuid-identified-lookup
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID primary key for the plan step.
+
+** workflow_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK reference to the run this chain belongs to.
+
+** step_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Zero-based position of this step in the chain the run was given.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The step's identity, which is the name a consumer reads its result by. Unique
+within the run, because a consumer cannot say which of two steps with one name
+it reads.
+
+** label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The step's name in a person's words, empty when it has no better name than its
+identity. Carried with the run because a screen shows the chain the run was
+started with, not the one the definition builds today.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the step does, in a person's words.
+
+** command_subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+NATS subject the step's command is published to.
+
+** compensation_subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+NATS subject for the step's compensation, empty when it has none.
+
+** timeout_seconds
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::int32_t
+:nullable: false
+:default:  0
+:END:
+
+How long the step may run before the engine declares it dead. Carried with the
+run rather than read from the definition, so a definition that shortened a
+deadline cannot expire a run that was started under a longer one.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_workflow_plan_steps_tbl
+:END:
+
+* Foreign keys
+
+** workflow_id
+:PROPERTIES:
+:table:             ores_workflow_workflow_instances_tbl
+:parent_entity:     workflow_instance
+:nullable:          false
+:error_message:     Invalid workflow_id: %. No active workflow instance found with this id.
+:list_by:           true
+:list_by_order_by:  step_index
+:END:
+
+* Indexes
+
+Every read of a run's chain is scoped by the run and ordered by position, and
+one step sits at one position within a run: the engine writes the chain once
+and reads it by position, so two steps at one position would be two chains.
+
+| name                              | columns                            | unique | current_only | where_extra |
+|-----------------------------------+------------------------------------+--------+--------------+-------------|
+| workflow_plan_steps_position_uniq | tenant_id, workflow_id, step_index | true   | false        |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope:     shared
+:entity_singular_short: plan_step
+:entity_plural_short:   plan_steps
+:entity_singular_words: workflow plan step
+:entity_plural_words:   workflow plan steps
+:END:
+
+Reads rely on the row-level security policy instead of an application-level
+=tenant_id= predicate, for the same reason the execution rows do: the engine
+holds the system tenant and must read back the chain it wrote for another
+tenant's run, and the policy is what keeps one tenant out of another's chain.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#+end_src

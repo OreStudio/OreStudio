@@ -39,12 +39,19 @@ function run(id: string, target: string, status: string): unknown {
         id,
         type: 'provision_tenant_workflow',
         status,
-        current_step_index: 1,
         step_count: 4,
         created_at: '',
         error: '',
         target_kind: 'tenant',
         target_id: target,
+    };
+}
+
+/** A finished-step count that names which runs were asked about. */
+function readingStepsDone(done: number, asked: string[] = []): (id: string) => Promise<number> {
+    return async (id: string) => {
+        asked.push(id);
+        return done;
     };
 }
 
@@ -62,6 +69,7 @@ function callerAnswering(instances: readonly unknown[]): AuthenticatedCaller {
 
 describe('the tenant setup read', () => {
     it('keeps the first run the engine answers for each tenant', async () => {
+        const asked: string[] = [];
         const read = await readTenantSetups(
             callerAnswering([
                 run('run-latest', ACME, 'failed'),
@@ -69,17 +77,26 @@ describe('the tenant setup read', () => {
                 run('run-other', NORTHWIND, 'in_progress'),
             ]),
             [ACME, NORTHWIND],
+            readingStepsDone(2, asked),
         );
 
         expect(read.setups.get(ACME)?.instanceId).toBe('run-latest');
         expect(read.setups.get(NORTHWIND)?.instanceId).toBe('run-other');
         expect(read.complete).toBe(true);
+        /*
+         * The count is read from the run each tenant reports, and the older
+         * run that lost the race is not read at all.
+         */
+        expect(asked).toEqual(['run-latest', 'run-other']);
+        expect(read.setups.get(ACME)?.stepsDone).toBe(2);
     });
 
     it('ignores a run that names no target', async () => {
-        const read = await readTenantSetups(callerAnswering([run('untargeted', '', 'failed')]), [
-            ACME,
-        ]);
+        const read = await readTenantSetups(
+            callerAnswering([run('untargeted', '', 'failed')]),
+            [ACME],
+            readingStepsDone(2),
+        );
 
         expect(read.setups.size).toBe(0);
     });
@@ -94,7 +111,7 @@ describe('the tenant setup read', () => {
             run(`run-${index}`, ACME, 'completed'),
         );
 
-        const read = await readTenantSetups(callerAnswering(runs), [ACME]);
+        const read = await readTenantSetups(callerAnswering(runs), [ACME], readingStepsDone(1));
 
         expect(read.complete).toBe(false);
     });
@@ -112,7 +129,10 @@ describe('the tenant setup read', () => {
             },
         } as unknown as AuthenticatedCaller;
 
-        const read = await readTenantSetups(caller, []);
+        const read = await readTenantSetups(caller, [], async () => {
+            called = true;
+            return 0;
+        });
 
         expect(called).toBe(false);
         expect(read.setups.size).toBe(0);

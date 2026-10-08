@@ -299,7 +299,6 @@ const wireWorkflowInstanceSummarySchema = z.object({
     id: z.string(),
     type: z.string().default(''),
     status: z.string().default(''),
-    current_step_index: z.int().nonnegative().default(0),
     step_count: z.int().nonnegative().default(0),
     correlation_id: z.string().default(''),
     created_by: z.string().default(''),
@@ -336,6 +335,15 @@ export interface TenantSetups {
 }
 
 /**
+ * Reads how many of one run's steps are finished.
+ *
+ * The run summary no longer carries a step cursor, because a graph run may
+ * have several steps in flight. The caller supplies the read, so the roster
+ * and the activity list derive the count the same way.
+ */
+export type StepsDoneReader = (instanceId: string) => Promise<number>;
+
+/**
  * The latest provisioning run for each named tenant, keyed by tenant id.
  *
  * The read names the tenants, so it answers the runs that act on them and
@@ -345,10 +353,12 @@ export interface TenantSetups {
  * A tenant may have more than one run, because nothing stops a second attempt.
  * The engine answers the run that changed last first, so the first run seen for
  * a tenant is the one that moved most recently, and that is the one reported.
+ * `readStepsDone` is called once for each reported run and no other.
  */
 export async function readTenantSetups(
     caller: AuthenticatedCaller,
     tenantIds: readonly string[],
+    readStepsDone: StepsDoneReader,
 ): Promise<TenantSetups> {
     if (tenantIds.length === 0) {
         return { setups: new Map(), complete: true };
@@ -383,7 +393,7 @@ export async function readTenantSetups(
         setups.set(run.target_id, {
             instanceId: run.id,
             status: run.status,
-            currentStepIndex: run.current_step_index,
+            stepsDone: await readStepsDone(run.id),
             stepCount: run.step_count,
             error: run.error,
         });
@@ -396,7 +406,6 @@ export interface ProvisioningRun {
     readonly instanceId: string;
     readonly tenantId: string;
     readonly status: string;
-    readonly currentStepIndex: number;
     readonly stepCount: number;
     readonly error: string;
     /** When the run finished, or started when it has not. */
@@ -437,7 +446,6 @@ export async function readProvisioningRuns(
             instanceId: run.id,
             tenantId: run.target_id,
             status: run.status,
-            currentStepIndex: run.current_step_index,
             stepCount: run.step_count,
             error: run.error,
             at: run.completed_at ?? run.created_at,

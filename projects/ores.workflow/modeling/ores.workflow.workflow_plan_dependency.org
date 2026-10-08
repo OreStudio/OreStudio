@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: bc3ca8e7-e0c1-4134-a2de-1ff7214e4b2d
+:END:
+#+title: ores.workflow.workflow_plan_dependency
+#+description: Codegen entity model for the workflow =workflow_plan_dependency= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: workflow
+#+filetags: :model:entity:workflow:
+#+brief: One edge of a run's chain: a step and a step that reads its result.
+#+entity_singular: workflow_plan_dependency
+#+entity_plural: workflow_plan_dependencies
+#+entity_title: Workflow Plan Dependency
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+One edge of a run's chain. The producer names the step that writes a result and
+the consumer the step that reads it, both by their position in the same run's
+chain.
+
+This is a relation and not a list on the step, because a step may read any
+number of producers and a producer may feed any number of consumers. It is
+what makes the chain a graph the engine can read: the questions "what is
+waiting", "what may run now" and "what has to be rolled back, in what order"
+are all queries over these rows and the steps' states, where they used to be a
+parse of a document and a cursor.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     workflow
+:profile:       uuid-identified-lookup
+:END:
+
+* Natural keys
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+UUID primary key for the dependency.
+
+** workflow_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+FK reference to the run this edge belongs to.
+
+** consumer_step_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Position of the step that reads the result.
+
+** producer_step_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+Position of the step that writes it. Always before the consumer's position,
+because the engine advances along the chain in the order it was declared.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_workflow_plan_dependencies_tbl
+:END:
+
+* Foreign keys
+
+** workflow_id
+:PROPERTIES:
+:table:             ores_workflow_workflow_instances_tbl
+:parent_entity:     workflow_instance
+:nullable:          false
+:error_message:     Invalid workflow_id: %. No active workflow instance found with this id.
+:list_by:           true
+:list_by_order_by:  consumer_step_index
+:END:
+
+* Indexes
+
+The engine reads a run's edges whole, to draw the graph before it dispatches
+anything, so the run is the only filter and the edge's identity is what must
+not repeat.
+
+| name                                 | columns                                                     | unique | current_only | where_extra |
+|--------------------------------------+-------------------------------------------------------------+--------+--------------+-------------|
+| workflow_plan_dependencies_edge_uniq | tenant_id, workflow_id, consumer_step_index, producer_step_index | true | false |             |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope:     shared
+:entity_singular_short: plan_dependency
+:entity_plural_short:   plan_dependencies
+:entity_singular_words: workflow plan dependency
+:entity_plural_words:   workflow plan dependencies
+:END:
+
+Reads rely on the row-level security policy instead of an application-level
+=tenant_id= predicate, for the same reason the chain's steps do: the engine
+holds the system tenant and must read back the graph it wrote for another
+tenant's run, and the policy is what keeps one tenant out of another's chain.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#+end_src

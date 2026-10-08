@@ -168,7 +168,6 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         s.id = boost::uuids::to_string(inst.id);
         s.type = inst.type;
         s.status = state_name(inst.state_id);
-        s.current_step_index = inst.current_step_index;
         s.step_count = inst.step_count;
         s.correlation_id = inst.correlation_id;
         s.created_by = inst.created_by;
@@ -256,28 +255,21 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         req_ctx, boost::uuids::to_string(instance_id), 0, 1000);
 
     /*
-     * The run's own definition travels with it, materialised when it started,
-     * so the words a step is shown by are the ones its definition declared
-     * rather than whatever the definition says today. An instance started
-     * before a step had words carries none, and the step's identity stands in.
+     * The run's own chain travels with it, so the words a step is shown by are
+     * the ones the run was started with rather than whatever the definition
+     * says today. A step whose words were never declared carries none, and the
+     * step's identity stands in.
      */
     std::unordered_map<std::string, std::pair<std::string, std::string>> words;
-    if (!instance->materialised_steps_json.empty()) {
-        auto materialised =
-            rfl::json::read<std::vector<ores::workflow::service::materialised_step>>(
-                instance->materialised_steps_json);
-        if (materialised) {
-            for (const auto& step : *materialised)
-                words.emplace(step.name, std::make_pair(step.label, step.description));
-        }
-    }
+    for (const auto& plan : plan_step_repo_.read_latest_by_workflow_id(
+             req_ctx, boost::uuids::to_string(instance_id), 0, 1000))
+        words.emplace(plan.name, std::make_pair(plan.label, plan.description));
 
     get_workflow_steps_response resp;
     resp.success = true;
     resp.status = state_name(instance->state_id);
     resp.error = instance->error;
     resp.step_count = instance->step_count;
-    resp.current_step_index = instance->current_step_index;
     resp.steps.reserve(raw_steps.size());
 
     for (const auto& s : raw_steps) {

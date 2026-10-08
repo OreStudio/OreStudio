@@ -123,7 +123,6 @@ const progress: WorkflowProgress = {
     status: 'failed',
     error: 'The bundle did not publish.',
     step_count: 4,
-    current_step_index: 2,
     steps: [
         {
             id: 'aaaa1111-1111-1111-1111-111111111111',

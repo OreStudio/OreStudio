@@ -366,9 +366,9 @@ const pt: SourceCatalogue = {
         setupUnavailable:
             'Não foi possível ler as execuções de aprovisionamento, por isso a coluna de configuração está vazia.',
         setupState: {
-            in_progress: 'Passo {step} de {count}',
+            in_progress: '{done} de {count} passos concluídos',
             compensating: 'A reverter',
-            failed: 'Falhou no passo {step}',
+            failed: 'Falhou após {done} de {count} passos',
             compensated: 'Revertido',
         },
         run: {
@@ -797,7 +797,7 @@ const pt: SourceCatalogue = {
             noActivity: 'Ainda não foi criado nenhum inquilino.',
             activityUnavailable: 'Não foi possível ler o histórico de criações.',
             attention: 'Precisa de atenção',
-            setupFailed: 'A criação parou no passo {step} de {count}.',
+            setupFailed: 'A criação parou após {done} de {count} passos.',
             suspended: 'Suspenso: ninguém consegue entrar.',
             seeFailure: 'Ver a falha',
             open: 'Abrir',
@@ -815,8 +815,8 @@ const pt: SourceCatalogue = {
             status: 'Estado',
             activity: {
                 completed: '{tenant} está pronto',
-                in_progress: '{tenant} está a ser criado, passo {step} de {count}',
-                failed: '{tenant}: a criação parou no passo {step} de {count}',
+                in_progress: '{tenant} está a ser criado, {done} de {count} passos concluídos',
+                failed: '{tenant}: a criação parou após {done} de {count} passos',
                 compensating: '{tenant}: a criação está a ser desfeita',
                 compensated: '{tenant}: a criação foi desfeita',
             },
@@ -1478,6 +1478,9 @@ const pt: SourceCatalogue = {
         client: 'cliente {version}',
         server: 'servidor {version}',
         serverUnknown: 'versão do servidor desconhecida',
+        environment: 'ambiente {name}',
+        environmentUnknown: 'ambiente desconhecido',
+        nonProduction: 'não produção',
     },
 
     server: {

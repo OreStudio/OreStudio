@@ -54,9 +54,7 @@ struct workflow_instance_entity {
     std::optional<std::string> error;
     std::optional<std::string> correlation_id;
     std::string created_by;
-    int current_step_index = 0;
     int step_count = 0;
-    std::string materialised_steps_json;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_event_at;
     std::string modified_by;

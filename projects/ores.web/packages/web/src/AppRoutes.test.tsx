@@ -28,6 +28,7 @@ import { AppRoutes, type AppRoutesProps } from './AppRoutes.js';
 import type { BootstrapState } from './session/BootstrapProvider.js';
 import type { SessionState } from './session/SessionProvider.js';
 import type { SessionView } from '@ores/wire-protocol/browser';
+import type { EnvironmentView } from '@ores/contracts';
 
 const party = {
     id: '3f1e2d4c-0000-4000-8000-000000000010',
@@ -73,6 +74,13 @@ const tenantless: BootstrapState = { ...ready, hasTenant: false, onboardingCompl
 const systemOnlyComplete: BootstrapState = { ...tenantless, onboardingComplete: true };
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
+
+const environment: EnvironmentView = {
+    id: 'bright_faraday',
+    displayName: 'Bright Faraday',
+    description: '',
+    nonProduction: true,
+};
 
 /**
  * The journey stands in for itself here: this file is about the route table,
@@ -179,6 +187,18 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('Sign in');
         expect(html).toContain('Username');
         expect(html).toContain('type="password"');
+    });
+
+    it('states the environment the deployment serves in the public shell', () => {
+        const html = render('/login', ready, anonymous, { environment });
+
+        expect(html).toContain('environment Bright Faraday (non-production)');
+    });
+
+    it('states the environment the deployment serves in the signed-in shell', () => {
+        const html = render('/', ready, authenticated, { environment });
+
+        expect(html).toContain('environment Bright Faraday (non-production)');
     });
 
     it('carries the banner on the sign-in dialog, above the work', () => {

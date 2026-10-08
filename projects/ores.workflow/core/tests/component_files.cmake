@@ -23,6 +23,9 @@ set(files
     "main.cpp"
     "workflow_actor_attribution_tests.cpp"
     "workflow_engine_tests.cpp"
+    "workflow_graph_tests.cpp"
     "workflow_instance_eventing_integration_tests.cpp"
+    "workflow_plan_dependency_eventing_integration_tests.cpp"
+    "workflow_plan_step_eventing_integration_tests.cpp"
     "workflow_step_eventing_integration_tests.cpp"
 )

@@ -55,8 +55,11 @@ a category error, not a distinction.
 
 The same reasoning means no second entity is needed. =workflow_instance= already
 carries everything a journey's progress requires: =type= names the journey,
-beside =state_id=, =current_step_index=, =step_count=, =materialised_steps_json=,
-=request_json=, =result_json=, =error= and =completed_at=. A journey is the
+beside =state_id=, =step_count=, =request_json=, =result_json=, =error= and
+=completed_at=. The chain the run was started with is not a column on it: the
+run's plan steps and the dependencies between them are their own relations, so a
+run is judged by the chain it was given rather than by the definition as it
+stands now. A journey is the
 definition; a workflow instance is that definition running. The bootstrap map's
 decision to add "a journey entity in =ores.workflow=, next to workflow instance"
 is therefore redundant, and the cheapest time to notice that is before it is

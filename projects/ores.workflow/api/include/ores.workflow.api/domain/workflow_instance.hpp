@@ -116,20 +116,12 @@ struct workflow_instance final {
     std::string created_by;
 
     /**
-     * @brief Zero-based index of the step currently being executed.
-     */
-    int current_step_index = 0;
-
-    /**
-     * @brief Total number of steps in this workflow definition.
+     * @brief How many steps the run's chain holds, fixed when the run starts. Nothing advances it,
+     * and a run's chain never changes, so this is a fact about the run rather than a cursor over
+     * it. It is stored so that a list of runs can say how long each one is without reading every
+     * chain.
      */
     int step_count = 0;
-
-    /**
-     * @brief JSON snapshot of the step sequence built at instance start. Prevents a
-     * non-deterministic build_steps from reshaping an in-flight workflow after a service restart.
-     */
-    std::string materialised_steps_json;
 
     /**
      * @brief Timestamp when the workflow reached a terminal state.

@@ -1340,10 +1340,11 @@ export type WorkflowStepSummary = z.infer<typeof workflowStepSummarySchema>;
 /**
  * A run as the progress read answers it.
  *
- * `status` names the run's state, `current_step_index` says which step it is
- * executing, `step_count` says how many it declared, and `steps` holds one
- * summary per step the run has materialised. `success` defaults to false, so
- * an answer that arrives without it reads as a failure the caller can see.
+ * `status` names the run's state, `step_count` says how many it declared, and
+ * `steps` holds one summary per step the run has materialised. There is no
+ * current step, because a graph run may have several in flight at once.
+ * `success` defaults to false, so an answer that arrives without it reads as a
+ * failure the caller can see.
  */
 export const workflowProgressSchema = z.object({
     success: z.boolean().default(false),
@@ -1351,7 +1352,6 @@ export const workflowProgressSchema = z.object({
     status: z.string().default(''),
     error: z.string().default(''),
     step_count: z.number().int().default(0),
-    current_step_index: z.number().int().default(0),
     steps: z.array(workflowStepSummarySchema).default([]),
 }) satisfies z.ZodType<GetWorkflowStepsResponse>;
 

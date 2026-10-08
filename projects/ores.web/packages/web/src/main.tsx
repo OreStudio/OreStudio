@@ -24,6 +24,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { AppProviders, SessionProvider, createQueryClient } from './session/SessionProvider.js';
 import { BootstrapProvider } from './session/BootstrapProvider.js';
+import { SiteProvider } from './session/SiteProvider.js';
 import { TranslationProvider } from './i18n/Provider.js';
 import { ConnectedApp } from './AppRoutes.js';
 import './styles.css';
@@ -33,9 +34,9 @@ import './styles.css';
  *
  * The environment is fixed when the process starts, so there is nothing here
  * about choosing where to connect. The providers are the whole of the wiring:
- * one query client, the translations, the session, the bootstrap gate, and the
- * router. What renders is `ConnectedApp`, which is the route table and the gate
- * the story decided on.
+ * one query client, the translations, the session, the bootstrap gate, the
+ * environment the deployment serves, and the router. What renders is
+ * `ConnectedApp`, which is the route table and the gate the story decided on.
  */
 const queryClient = createQueryClient();
 
@@ -53,9 +54,11 @@ createRoot(container).render(
                         session may even be used for, and inside the query
                         client, because asking is a query. */}
                     <BootstrapProvider>
-                        <BrowserRouter>
-                            <ConnectedApp />
-                        </BrowserRouter>
+                        <SiteProvider>
+                            <BrowserRouter>
+                                <ConnectedApp />
+                            </BrowserRouter>
+                        </SiteProvider>
                     </BootstrapProvider>
                 </SessionProvider>
             </TranslationProvider>

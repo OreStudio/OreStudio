@@ -105,12 +105,11 @@ const acme = wireTenant(ACME, 'acme', 'Acme Corporation', 'active');
 const globex = wireTenant(GLOBEX, 'globex', 'Globex Markets', 'bootstrapping');
 const initech = wireTenant(INITECH, 'initech', 'Initech Capital', 'suspended', 'evaluation');
 
-function wireRun(id: string, target: string, status: string, step: number, error = '') {
+function wireRun(id: string, target: string, status: string, error = '') {
     return {
         id,
         type: 'provision_tenant_workflow',
         status,
-        current_step_index: step,
         step_count: 7,
         correlation_id: '',
         created_by: 'admin',
@@ -119,6 +118,24 @@ function wireRun(id: string, target: string, status: string, step: number, error
         error,
         target_kind: 'tenant',
         target_id: target,
+    };
+}
+
+/** One step as the progress read answers it. */
+function wireStep(status: string): unknown {
+    return { status };
+}
+
+/** A run's steps: `done` finished, and a trailing failure when the run failed. */
+function wireProgress(done: number, failed: boolean): unknown {
+    const finished = Array.from({ length: done }, () => wireStep('completed'));
+    return {
+        success: true,
+        message: '',
+        status: failed ? 'failed' : 'completed',
+        error: '',
+        step_count: 7,
+        steps: failed ? [...finished, wireStep('failed')] : finished,
     };
 }
 
@@ -173,18 +190,23 @@ function buildTestServer(
                 const instances =
                     request.status_filter === 'failed'
                         ? [
-                              wireRun('run-globex', GLOBEX, 'failed', 4, 'Publishing failed.'),
-                              wireRun('run-acme-first', ACME, 'failed', 2, 'Timed out.'),
+                              wireRun('run-globex', GLOBEX, 'failed', 'Publishing failed.'),
+                              wireRun('run-acme-first', ACME, 'failed', 'Timed out.'),
                           ]
                         : request.target_ids_filter.length > 0
-                          ? [wireRun('run-acme', ACME, 'completed', 6)]
+                          ? [wireRun('run-acme', ACME, 'completed')]
                           : [
-                                wireRun('run-globex', GLOBEX, 'failed', 4, 'Publishing failed.'),
-                                wireRun('run-acme', ACME, 'completed', 6),
+                                wireRun('run-globex', GLOBEX, 'failed', 'Publishing failed.'),
+                                wireRun('run-acme', ACME, 'completed'),
                             ];
                 return schema.parse({ success: true, message: '', instances });
             }
             throw new Error(`unexpected subject ${subject}`);
+        },
+        async workflowProgress(instanceId: string): Promise<unknown> {
+            if (instanceId === 'run-globex') return wireProgress(4, true);
+            if (instanceId === 'run-acme') return wireProgress(7, false);
+            return wireProgress(2, true);
         },
         async close(): Promise<void> {
             return undefined;
@@ -249,7 +271,7 @@ describe('GET /api/overview', () => {
         ]);
         expect(body.attention[0].tenant.setup).toMatchObject({
             status: 'failed',
-            currentStepIndex: 4,
+            stepsDone: 4,
             error: 'Publishing failed.',
         });
         expect(body.tenants.map((t: { code: string }) => t.code)).toEqual(['acme', 'globex']);
@@ -259,7 +281,7 @@ describe('GET /api/overview', () => {
                 instanceId: 'run-globex',
                 tenantName: 'Globex Markets',
                 status: 'failed',
-                currentStepIndex: 4,
+                stepsDone: 4,
                 stepCount: 7,
                 error: 'Publishing failed.',
                 at: '2026-10-04T09:05:00Z',
@@ -268,7 +290,7 @@ describe('GET /api/overview', () => {
                 instanceId: 'run-acme',
                 tenantName: 'Acme Corporation',
                 status: 'completed',
-                currentStepIndex: 6,
+                stepsDone: 7,
                 stepCount: 7,
                 error: '',
                 at: '2026-10-04T09:05:00Z',

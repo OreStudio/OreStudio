@@ -104,9 +104,7 @@ domain::workflow_instance to_domain(const messaging::workflow_instance_write& wr
     v.error = write.error;
     v.correlation_id = write.correlation_id;
     v.created_by = write.created_by;
-    v.current_step_index = write.current_step_index;
     v.step_count = write.step_count;
-    v.materialised_steps_json = write.materialised_steps_json;
     v.completed_at = write.completed_at;
     v.last_event_at = write.last_event_at;
     return v;

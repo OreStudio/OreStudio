@@ -124,6 +124,7 @@ import {
     type PartySummary,
     type AuthenticatedCaller,
     type ImageContent,
+    type ProvisioningRun,
     type SetupActivity,
     type TenantSetup,
     type TenantSummary,
@@ -225,6 +226,26 @@ const partyPageQuerySchema = z.object({
     offset: z.int().nonnegative(),
     limit: z.int().min(1).max(1000),
 });
+
+/** The step states that count as finished, as the run rail states them. */
+const FINISHED_STEP_STATUSES = new Set(['completed', 'completed_with_warnings']);
+
+/**
+ * How many of a run's steps are finished, read from the run's own steps.
+ *
+ * A graph run may have several steps in flight, so the run summary carries no
+ * current step and the count comes from the progress read. A read that fails
+ * counts as none done, so one run whose progress is unavailable does not fail
+ * the roster or the activity list that names it.
+ */
+async function readStepsDone(client: OresClient, instanceId: string): Promise<number> {
+    try {
+        const progress = await client.workflowProgress(instanceId);
+        return progress.steps.filter((step) => FINISHED_STEP_STATUSES.has(step.status)).length;
+    } catch {
+        return 0;
+    }
+}
 
 export interface ServerDependencies {
     readonly config: Config;
@@ -1451,6 +1472,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             const runs = await readTenantSetups(
                 session.client,
                 read.tenants.map((tenant) => tenant.id),
+                (instanceId) => readStepsDone(session.client, instanceId),
             );
             setups = runs.setups;
             if (!runs.complete) {
@@ -1536,51 +1558,67 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                           })
                       ).tenants;
             const byId = new Map<string, TenantSummary>(named.map((tenant) => [tenant.id, tenant]));
-            activity = recent.flatMap((run) => {
-                const tenant = byId.get(run.tenantId);
-                return tenant === undefined
-                    ? []
-                    : [
-                          {
-                              instanceId: run.instanceId,
-                              tenantName: tenant.name,
-                              status: run.status,
-                              currentStepIndex: run.currentStepIndex,
-                              stepCount: run.stepCount,
-                              error: run.error,
-                              at: run.at,
-                          },
-                      ];
-            });
+            const activityEntries = recent
+                .map((run) => ({ run, tenant: byId.get(run.tenantId) }))
+                .filter(
+                    (entry): entry is { run: ProvisioningRun; tenant: TenantSummary } =>
+                        entry.tenant !== undefined,
+                );
             /*
              * A failed run stays in the engine after a second attempt sets the
              * tenant up, so a failed run needs attention only while its tenant
              * is still bootstrapping.
              */
             const seen = new Set<string>();
-            failedSetups = failed.flatMap((run) => {
+            const failedEntries: { run: ProvisioningRun; tenant: TenantSummary }[] = [];
+            for (const run of failed) {
                 const tenant = byId.get(run.tenantId);
                 if (
                     tenant === undefined ||
                     tenant.status !== 'bootstrapping' ||
                     seen.has(tenant.id)
                 ) {
-                    return [];
+                    continue;
                 }
                 seen.add(tenant.id);
-                return [
-                    {
-                        ...tenant,
-                        setup: {
-                            instanceId: run.instanceId,
-                            status: run.status,
-                            currentStepIndex: run.currentStepIndex,
-                            stepCount: run.stepCount,
-                            error: run.error,
-                        },
-                    },
-                ];
-            });
+                failedEntries.push({ run, tenant });
+            }
+            /*
+             * The finished count comes from each run's own steps, read once for
+             * the runs that became an entry and no others.
+             */
+            const describedIds = [
+                ...new Set(
+                    [...activityEntries, ...failedEntries].map((entry) => entry.run.instanceId),
+                ),
+            ];
+            const doneById = new Map(
+                await Promise.all(
+                    describedIds.map(
+                        async (instanceId) =>
+                            [instanceId, await readStepsDone(session.client, instanceId)] as const,
+                    ),
+                ),
+            );
+            activity = activityEntries.map(({ run, tenant }) => ({
+                instanceId: run.instanceId,
+                tenantName: tenant.name,
+                status: run.status,
+                stepsDone: doneById.get(run.instanceId) ?? 0,
+                stepCount: run.stepCount,
+                error: run.error,
+                at: run.at,
+            }));
+            failedSetups = failedEntries.map(({ run, tenant }) => ({
+                ...tenant,
+                setup: {
+                    instanceId: run.instanceId,
+                    status: run.status,
+                    stepsDone: doneById.get(run.instanceId) ?? 0,
+                    stepCount: run.stepCount,
+                    error: run.error,
+                },
+            }));
         } catch (error) {
             request.log.warn({ err: error }, 'The provisioning runs were not read.');
             activityUnavailable = true;
@@ -1590,6 +1628,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 await readTenantSetups(
                     session.client,
                     first.tenants.map((tenant) => tenant.id),
+                    (instanceId) => readStepsDone(session.client, instanceId),
                 )
             ).setups;
         } catch (error) {
@@ -1695,7 +1734,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         let setupUnavailable = false;
         try {
             setup =
-                (await readTenantSetups(session.client, [tenant.id])).setups.get(tenant.id) ?? null;
+                (
+                    await readTenantSetups(session.client, [tenant.id], (instanceId) =>
+                        readStepsDone(session.client, instanceId),
+                    )
+                ).setups.get(tenant.id) ?? null;
         } catch (error) {
             request.log.warn({ err: error }, 'The provisioning runs were not read.');
             setupUnavailable = true;

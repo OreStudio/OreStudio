@@ -43,9 +43,7 @@ export interface WorkflowInstance {
     error: string;
     correlation_id: string;
     created_by: string;
-    current_step_index: number;
     step_count: number;
-    materialised_steps_json: string;
     completed_at: string | null;
     last_event_at: string | null;
     modified_by: string;

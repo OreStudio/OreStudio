@@ -20,6 +20,7 @@
  */
 
 import { z } from 'zod';
+import { siteStateSchema, type SiteState } from '@ores/contracts';
 import {
     accountAccessSchema,
     accountSignInsSchema,
@@ -191,6 +192,19 @@ export const api = {
      */
     async bootstrapStatus(): Promise<BootstrapStatus> {
         return bootstrapStatusSchema.parse(await request('/api/bootstrap', { method: 'GET' }));
+    },
+
+    /**
+     * The environment this deployment serves, and what it says about itself.
+     *
+     * Read once for the whole page, because it does not change while a person
+     * is looking at it: the environment is fixed when the process starts. The
+     * footer states it beside the two builds, so a person can settle which
+     * checkout they are pointed at, and whether it is production, without
+     * asking anybody.
+     */
+    async site(): Promise<SiteState> {
+        return siteStateSchema.parse(await request('/api/site', { method: 'GET' }));
     },
 
     /**

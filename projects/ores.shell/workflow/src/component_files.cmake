@@ -22,6 +22,8 @@
 set(files
     "app/commands/workflow/workflow_instance_commands.cpp"
     "app/commands/workflow/workflow_operations_commands.cpp"
+    "app/commands/workflow/workflow_plan_dependency_commands.cpp"
+    "app/commands/workflow/workflow_plan_step_commands.cpp"
     "app/commands/workflow/workflow_run_commands.cpp"
     "app/commands/workflow/workflow_step_commands.cpp"
 )
@@ -30,6 +32,8 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_plan_dependency_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_plan_step_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_run_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/workflow/workflow_step_commands.hpp"
 )

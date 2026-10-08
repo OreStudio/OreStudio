@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/refuse-a-point-that-its-shape-does-not-declare
-#+pr:
+#+pr: 2897
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2897][#2897]] | [marketdata] Refuse a point its shape does not declare |
 
 * Review
 

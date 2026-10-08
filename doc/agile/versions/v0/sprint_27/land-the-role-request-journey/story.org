@@ -44,11 +44,11 @@ request moved here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | All four tasks are done; two pull requests are in review. |
-| Waiting on    | PR #2784 and PR #2785 to merge.        |
-| Next          | Merge the two pull requests, then close the story. |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -96,3 +96,35 @@ request moved here.
 
 - The notification that tells an administrator a request is waiting, and that
   tells the member the answer. Built by the inbox story, not here.
+
+* Result
+
+The journey is done, and the document that describes it says what was built
+rather than what was intended.
+
+Four tasks. The request, the four-eyes guard, the grant and both screens landed
+under the inbox story. This story added the two things no screen could yet say:
+a role states whether it may be asked for (PR #2754), and a request carries a
+deadline it takes from its kind, closes as expired when it passes, and tells the
+person who asked (PR #2784). The fourth task rewrote
+[[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] around the
+design all of that landed (PR #2785).
+
+Six of the journey's seven gaps are closed and the seventh is half closed. Two
+of the six were closed by changing the design rather than by building what the
+gap asked for: the request became a record of its own, so the workflow engine
+was never the holder and needed no waiting state, and the queue became a read of
+a table rather than a projection over an instance's payload. That is recorded in
+the document itself, in a table with a state per gap, because it is the part a
+future reader would otherwise have to reconstruct.
+
+What is left of the seventh gap — a reminder before a request lapses, rather
+than the close after it does — is captured as "nobody reminds a decider that a
+request is about to lapse". It is a different behaviour from the deadline, with
+its own timing and its own audience, and it was deliberately not built here.
+
+Four decisions this story made are in the =* Decisions= above. The one worth
+repeating: *work that recurs is the component's to declare and the
+installation's to schedule*. The sweep is the first thing to take that shape,
+and the pattern is written up on
+[[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]].

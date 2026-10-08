@@ -132,7 +132,12 @@ describe('a person’s own requests', () => {
         // The member's own row carries no roles, so the kind names it.
         expect(html).toContain('Role request');
         expect(html).toContain('Waiting');
-        expect(html).toContain('asked 2026-10-04');
+        // The moment is drawn with its time, not only its date: a clock
+        // reading beside the day, and never the truncated day alone. The
+        // reading itself depends on the zone the suite runs in and the
+        // language it runs in, so the shape is what is asserted.
+        expect(html).toMatch(/asked [^<]*\d{1,2}:\d{2}/);
+        expect(html).not.toContain('asked 2026-10-04');
         expect(html).toContain('You wrote: I price the FX book and cannot read currencies.');
         expect(html).toMatch(/<button[^>]*>Withdraw<\/button>/);
     });

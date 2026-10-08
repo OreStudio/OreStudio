@@ -51,6 +51,27 @@ export function relativeTime(at: Date, now: Date, language: string): string {
     return at.toISOString();
 }
 
+/**
+ * A server timestamp as its local date and time, such as "8 Oct 2026, 01:15".
+ *
+ * A record a person reads has to say *when*, and a date alone cannot say it:
+ * two requests made on the same day are hours apart, and which of them came
+ * first is the thing the list is sorted by. A server states the moment in UTC,
+ * so it is drawn in the reader's own zone, and in the reader's own language.
+ * A value that is not a timestamp is returned as it arrived, because showing
+ * the raw value is better than showing a wrong one.
+ */
+export function formatDateTime(at: string, language: string): string {
+    const date = parseTimestamp(at);
+    if (Number.isNaN(date.getTime())) {
+        return at;
+    }
+    return new Intl.DateTimeFormat(language, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(date);
+}
+
 /** A timestamp drawn relative, with the exact value on hover, as the record screen standard sets it. */
 export function RelativeTime({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();

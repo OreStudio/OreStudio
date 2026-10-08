@@ -24,6 +24,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { InboxRequestView, PermissionEntry, RoleSummary } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { areasOf, covers } from '../access/catalogue.js';
 import { PermissionAreas } from '../access/PermissionAreas.js';
@@ -87,7 +88,7 @@ function Request({
     readonly roles: readonly RoleSummary[];
     readonly catalogue: readonly PermissionEntry[];
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const navigate = useNavigate();
     const queries = useQueryClient();
     const [comment, setComment] = useState('');
@@ -141,7 +142,7 @@ function Request({
                 })}
                 description={t('inbox.request.lead', {
                     state: stateLabel(t, request.stateCode),
-                    date: request.requestedAt.slice(0, 10),
+                    date: formatDateTime(request.requestedAt, language),
                 })}
             />
 
@@ -161,7 +162,9 @@ function Request({
                     <div className="text-xs text-ink-muted">
                         {request.expiresAt === ''
                             ? t('inbox.request.noDeadline')
-                            : t('inbox.request.expires', { at: request.expiresAt.slice(0, 10) })}
+                            : t('inbox.request.expires', {
+                                  at: formatDateTime(request.expiresAt, language),
+                              })}
                     </div>
                 </div>
             </section>
@@ -240,7 +243,7 @@ function Request({
                         />
                         <span className="font-medium">{request.decision.decidedBy}</span>
                         <span className="text-xs text-ink-faint">
-                            {request.decision.decidedAt.slice(0, 10)}
+                            {formatDateTime(request.decision.decidedAt, language)}
                         </span>
                     </div>
                     {request.decision.comment !== '' && (

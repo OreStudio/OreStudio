@@ -24,6 +24,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
 import type { Account, HeldRole } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Dialog, Field, Input, Notice, Select } from '../ui/Primitives.js';
@@ -72,7 +73,7 @@ function Person({
     readonly account: Account;
     readonly self: boolean;
 }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const queries = useQueryClient();
     const [giving, setGiving] = useState(false);
     const [taking, setTaking] = useState<HeldRole | null>(null);
@@ -185,7 +186,7 @@ function Person({
                                             </span>
                                         </td>
                                         <td className="px-4 py-2 text-ink-muted">
-                                            {role.givenAt.slice(0, 10)}
+                                            {formatDateTime(role.givenAt, language)}
                                         </td>
                                         <td className="px-4 py-2">
                                             <span className="block">{role.reasonCode}</span>

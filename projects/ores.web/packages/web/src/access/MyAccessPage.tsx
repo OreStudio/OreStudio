@@ -22,6 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
+import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Button, Input, Notice, PageHeader } from '../ui/Primitives.js';
@@ -44,7 +45,7 @@ const ANSWERS = 8;
  * every box.
  */
 export function MyAccessPage({ tenantName }: { readonly tenantName: string }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [question, setQuestion] = useState('');
     const [asking, setAsking] = useState(false);
     const access = useQuery({ queryKey: ['my-access'], queryFn: api.myAccess });
@@ -100,7 +101,7 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                                         size="sm"
                                     />
                                     {role.givenBy}
-                                    {role.givenAt !== '' && ` · ${role.givenAt.slice(0, 10)}`}
+                                    {role.givenAt !== '' && ` · ${formatDateTime(role.givenAt, language)}`}
                                     {role.commentary !== '' && ` · ${role.commentary}`}
                                 </div>
                             </li>

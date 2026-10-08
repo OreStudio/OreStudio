@@ -118,10 +118,11 @@ the Person detail page, and =gemini-code-1791450752832.html= stops inside an
 =img= tag of the Person contact details page. They are copy artefacts, not
 variants, so only the complete pages are kept.
 
-The full site build is the evidence that the new shape exports. It failed
-first on an unrelated, pre-existing dangling id link in
-=doc/agile/versions/v0/sprint_27/instruments-rates/design.org=, fixed in
-=4f161ac260= so the build could run to the end.
+The first full site build failed on an unrelated, pre-existing dangling id
+link in =doc/agile/versions/v0/sprint_27/instruments-rates/design.org=: the
+link used uppercase where the target declares lowercase, and org resolves an id
+by exact string. It is fixed in =4f161ac260=, in a commit of its own, and the
+page then exported cleanly.
 
 * Test Scenarios
 
@@ -170,8 +171,17 @@ truncated prefixes are dropped.
 
 Checks on =4f161ac260=: the guard passes; =compass lint= passes; the org link
 check resolves every link; a scan of all 93 prototype paths named anywhere in
-=doc/= finds each one on disk; and the fourteen group pages plus the top page
-are published by the site build. The one thing not verified end to end is a
-completely green =compass build --direct site=, because main already failed
-that build for the reason fixed here.
+=doc/= finds each one on disk; the top page and all fourteen group pages are
+published, and their links resolve to directories that exist; the built group
+pages carry exactly three review links, one for each prototype that has a
+review; and the four affected pages, including the repaired design document,
+export with =0 failure(s)=. =ores-deploy-prototypes= was also run into a
+scratch directory: it produced the grouped tree, put the site chrome on every
+prototype and every review page, and preserved the review pages' body
+attributes.
+
+The full =compass build --direct site= was not run to completion. It passed
+the page that used to abort it and was still exporting the older-sprint
+backlog after an hour, so it was stopped. The scoped export is the decisive
+check for this change; the full build is the job CI runs on =main=.
 

@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-reachability-check-misses-dangling-includes
-#+pr: 2836
+#+pr: 2843
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2843][#2843]] | [codegen] Extend the reachability check to populate and drop |
 | [[https://github.com/OreStudio/OreStudio/pull/2836][#2836]] | [codegen] Fail the reachability check on a dangling include |
 
 * Review

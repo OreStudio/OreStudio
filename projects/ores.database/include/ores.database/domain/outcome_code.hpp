@@ -187,19 +187,19 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
 [[nodiscard]] inline std::string describe(outcome_code v, const outcome_args& a) {
     switch (v) {
         case outcome_code::already_exists:
-            return detail::fill("The {entity} with {field} '{value}' already exists. State the "
-                                "version you read to replace it, or ask for a version replace.",
+            return detail::fill("The {entity} already exists for that {field}. State the version "
+                                "you read to replace it, or ask for a version replace.",
                                 a);
         case outcome_code::version_conflict:
-            return detail::fill("The {entity} with {field} '{value}' is at version {current}, and "
-                                "this write states version {expected}.",
+            return detail::fill("The {entity} for {field} is at version {current}, and this write "
+                                "states version {expected}.",
                                 a);
         case outcome_code::missing_field:
             return detail::fill("Invalid {entity}: value cannot be null or empty.", a);
         case outcome_code::not_found:
             return detail::fill("The {entity} does not exist.", a);
         case outcome_code::order_not_supported:
-            return detail::fill("This read of the {entity} cannot order by {field}.", a);
+            return detail::fill("A list of {entity} cannot be ordered by {field}.", a);
         case outcome_code::filter_not_supported:
             return detail::fill("Filtering is not served for this {entity} yet.", a);
         case outcome_code::filter_too_large:

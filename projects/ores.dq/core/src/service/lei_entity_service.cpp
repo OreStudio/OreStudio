@@ -24,6 +24,7 @@
  */
 #include "ores.dq.core/service/lei_entity_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.dq.api/domain/lei_entity.hpp"
 #include "ores.dq.api/messaging/lei_entity_protocol.hpp"
 #include "ores.dq.core/repository/lei_entity_repository.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::dq::service {
 
@@ -72,16 +78,13 @@ lei_entity_service::list_lei_entities(const messaging::list_lei_entities_request
     messaging::list_lei_entities_response response;
     if (!request.order.field.empty() &&
         !repository::lei_entity_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of LEI entities cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "LEI entities", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->lei_one_of && request.filter->lei_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in lei_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "lei_one_of", .limit = "1000"});
         return response;
     }
     response.entities =
@@ -95,8 +98,7 @@ lei_entity_service::get_lei_entity(const messaging::get_lei_entity_request& requ
     messaging::get_lei_entity_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "lei_entity"});
         return response;
     }
     response.lei_entity = std::move(found.front());

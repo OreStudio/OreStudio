@@ -100,7 +100,6 @@ begin
                 'version_conflict',
                 'currency_calendars',
                 'currency_iso_code',
-                new.currency_iso_code::text,
                 new.version::text,
                 current_version::text);
         end if;

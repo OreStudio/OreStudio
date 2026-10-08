@@ -100,7 +100,6 @@ begin
                 'version_conflict',
                 'market_series_asset_classes',
                 'market_series_id',
-                new.market_series_id::text,
                 new.version::text,
                 current_version::text);
         end if;

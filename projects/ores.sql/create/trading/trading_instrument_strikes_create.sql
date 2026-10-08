@@ -120,15 +120,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'instrument_strike',
-                    'trade_id',
-                    NEW.trade_id::text);
+                    'trade_id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'instrument_strike',
                 'trade_id',
-                NEW.trade_id::text,
                 NEW.version::text,
                 current_version::text);
         end if;

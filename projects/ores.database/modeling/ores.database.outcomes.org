@@ -68,15 +68,18 @@ database=. Commit the document and both rendered artefacts together.
 :outcome: conflict
 :producer: store
 :sqlstate: 23505
-:args: entity, field, value
+:args: entity, field
 :END:
 
 A create states that no row exists, and the store holds one already. The store
 also raises this when a write replaces a row with the version-replace signal
 switched off.
 
+The sentence names the entity and the field and not the value, because a
+service refuses this outcome too and holds no text for its key.
+
 #+begin_src text :name message
-The {entity} with {field} '{value}' already exists. State the version you read to replace it, or ask for a version replace.
+The {entity} already exists for that {field}. State the version you read to replace it, or ask for a version replace.
 #+end_src
 
 ** version_conflict
@@ -85,7 +88,7 @@ The {entity} with {field} '{value}' already exists. State the version you read t
 :outcome: conflict
 :producer: store
 :sqlstate: P0002
-:args: entity, field, value, expected, current
+:args: entity, field, expected, current
 :END:
 
 A write states the version it read, and the row has moved on since. This is the
@@ -93,7 +96,7 @@ optimistic-concurrency refusal. The write states the version it believes and the
 store states the version it holds.
 
 #+begin_src text :name message
-The {entity} with {field} '{value}' is at version {current}, and this write states version {expected}.
+The {entity} for {field} is at version {current}, and this write states version {expected}.
 #+end_src
 
 ** missing_field
@@ -140,7 +143,7 @@ A paged read states an order field the read cannot order by. The read refuses
 rather than returning a page in an order nobody asked for.
 
 #+begin_src text :name message
-This read of the {entity} cannot order by {field}.
+A list of {entity} cannot be ordered by {field}.
 #+end_src
 
 ** filter_not_supported

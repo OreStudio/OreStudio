@@ -24,6 +24,7 @@
  */
 #include "ores.dq.core/service/counterparty_alias_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.dq.api/domain/counterparty_alias.hpp"
 #include "ores.dq.api/messaging/counterparty_alias_protocol.hpp"
 #include "ores.dq.core/repository/counterparty_alias_repository.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::dq::service {
 
@@ -72,17 +78,14 @@ messaging::list_counterparty_aliases_response counterparty_alias_service::list_c
     messaging::list_counterparty_aliases_response response;
     if (!request.order.field.empty() &&
         !repository::counterparty_alias_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of counterparty aliases cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "counterparty aliases", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->id_value_one_of &&
         request.filter->id_value_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in id_value_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_value_one_of", .limit = "1000"});
         return response;
     }
     response.counterparty_aliases =
@@ -96,8 +99,7 @@ messaging::get_counterparty_alias_response counterparty_alias_service::get_count
     messaging::get_counterparty_alias_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "counterparty_alias"});
         return response;
     }
     response.counterparty_alias = std::move(found.front());

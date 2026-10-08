@@ -49,30 +49,28 @@ begin
 end;
 $$;
 
--- already_exists: A create states that no row exists, and the store holds one already. The store also raises this when a write replaces a row with the version-replace signal switched off.
+-- already_exists: A create states that no row exists, and the store holds one already. The store also raises this when a write replaces a row with the version-replace signal switched off. The sentence names the entity and the field and not the value, because a service refuses this outcome too and holds no text for its key.
 create or replace function ores_outcome_already_exists_fn(
     p_entity text,
-    p_field text,
-    p_value text
+    p_field text
 ) returns text language sql immutable as $$
     select ores_outcome_fill_fn(
-        'The {entity} with {field} ''{value}'' already exists. State the version you read to replace it, or ask for a version replace.',
-        array['entity','field','value']::text[],
-        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_value, '')]::text[]);
+        'The {entity} already exists for that {field}. State the version you read to replace it, or ask for a version replace.',
+        array['entity','field']::text[],
+        array[coalesce(p_entity, ''),coalesce(p_field, '')]::text[]);
 $$;
 
 -- version_conflict: A write states the version it read, and the row has moved on since. This is the optimistic-concurrency refusal. The write states the version it believes and the store states the version it holds.
 create or replace function ores_outcome_version_conflict_fn(
     p_entity text,
     p_field text,
-    p_value text,
     p_expected text,
     p_current text
 ) returns text language sql immutable as $$
     select ores_outcome_fill_fn(
-        'The {entity} with {field} ''{value}'' is at version {current}, and this write states version {expected}.',
-        array['entity','field','value','expected','current']::text[],
-        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_value, ''),coalesce(p_expected, ''),coalesce(p_current, '')]::text[]);
+        'The {entity} for {field} is at version {current}, and this write states version {expected}.',
+        array['entity','field','expected','current']::text[],
+        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_expected, ''),coalesce(p_current, '')]::text[]);
 $$;
 
 -- missing_field: A validation function receives a null or an empty value where its entity requires one. The store refuses rather than storing a row that names nothing.
@@ -91,17 +89,16 @@ create or replace function ores_outcome_raise_fn(
     p_code text,
     p_entity text default null,
     p_field text default null,
-    p_value text default null,
     p_expected text default null,
     p_current text default null
 ) returns void language plpgsql as $$
 begin
     case p_code
     when 'already_exists' then
-        raise exception '%', ores_outcome_already_exists_fn(p_entity,p_field,p_value)
+        raise exception '%', ores_outcome_already_exists_fn(p_entity,p_field)
             using errcode = '23505';
     when 'version_conflict' then
-        raise exception '%', ores_outcome_version_conflict_fn(p_entity,p_field,p_value,p_expected,p_current)
+        raise exception '%', ores_outcome_version_conflict_fn(p_entity,p_field,p_expected,p_current)
             using errcode = 'P0002';
     when 'missing_field' then
         raise exception '%', ores_outcome_missing_field_fn(p_entity)

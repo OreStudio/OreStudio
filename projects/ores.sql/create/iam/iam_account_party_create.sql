@@ -97,7 +97,6 @@ begin
                 'version_conflict',
                 'account_parties',
                 'account_id',
-                new.account_id::text,
                 new.version::text,
                 current_version::text);
         end if;

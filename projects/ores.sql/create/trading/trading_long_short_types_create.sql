@@ -103,15 +103,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'long_short_type',
-                    'code',
-                    NEW.code::text);
+                    'code');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'long_short_type',
                 'code',
-                NEW.code::text,
                 NEW.version::text,
                 current_version::text);
         end if;

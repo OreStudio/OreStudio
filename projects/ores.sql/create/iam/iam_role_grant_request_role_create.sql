@@ -99,7 +99,6 @@ begin
                 'version_conflict',
                 'role_grant_request_roles',
                 'request_id',
-                new.request_id::text,
                 new.version::text,
                 current_version::text);
         end if;

@@ -24,6 +24,7 @@
  */
 #include "ores.dq.core/service/netting_agreement_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.dq.api/domain/netting_agreement.hpp"
 #include "ores.dq.api/messaging/netting_agreement_protocol.hpp"
 #include "ores.dq.core/repository/netting_agreement_repository.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::dq::service {
 
@@ -72,18 +78,14 @@ messaging::list_netting_agreements_response netting_agreement_service::list_nett
     messaging::list_netting_agreements_response response;
     if (!request.order.field.empty() &&
         !repository::netting_agreement_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of netting agreements cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "netting agreements", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->agreement_number_one_of &&
         request.filter->agreement_number_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message =
-            "The filter lists more than 1000 values in agreement_number_one_of.";
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "agreement_number_one_of", .limit = "1000"});
         return response;
     }
     response.netting_agreements =
@@ -97,8 +99,7 @@ messaging::get_netting_agreement_response netting_agreement_service::get_netting
     messaging::get_netting_agreement_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "netting_agreement"});
         return response;
     }
     response.netting_agreement = std::move(found.front());

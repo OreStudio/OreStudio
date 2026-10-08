@@ -150,15 +150,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'result',
-                    'id',
-                    NEW.id::text);
+                    'id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'result',
                 'id',
-                NEW.id::text,
                 NEW.version::text,
                 current_version::text);
         end if;

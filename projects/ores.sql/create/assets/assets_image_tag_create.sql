@@ -100,7 +100,6 @@ begin
                 'version_conflict',
                 'image_tags',
                 'image_id',
-                new.image_id::text,
                 new.version::text,
                 current_version::text);
         end if;

@@ -40,6 +40,7 @@
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -47,6 +48,11 @@
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::iam::service {
 
@@ -80,22 +86,18 @@ account_service::list_accounts(const messaging::list_accounts_request& request) 
     messaging::list_accounts_response response;
     if (!request.order.field.empty() &&
         !repository::account_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of accounts cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "accounts", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->search && request.filter->search->size() > 256) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The search text is longer than 256 characters.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -105,9 +107,7 @@ account_service::list_accounts(const messaging::list_accounts_request& request) 
     if (request.as_of) {
         as_of = ores::database::repository::parse_as_of(*request.as_of);
         if (!as_of) {
-            response.result.outcome = ores::utility::domain::outcome::invalid;
-            response.result.code = "as_of_invalid";
-            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
             return response;
         }
     }
@@ -122,8 +122,7 @@ account_service::get_account(const messaging::get_account_request& request) {
     messaging::get_account_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
     }
     response.account = std::move(found.front());
@@ -152,24 +151,19 @@ messaging::list_account_versions_response
 account_service::list_account_versions(const messaging::list_account_versions_request& request) {
     messaging::list_account_versions_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "accounts", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "accounts"});
         return response;
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
     const auto named = read_one(repo_, ctx_, request.key);
     if (named.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
     }
     const auto& row = named.front();
@@ -192,15 +186,13 @@ account_service::get_account_version(const messaging::get_account_version_reques
     // The repository reads by the storage key, so it is resolved once here.
     const auto named = read_one(repo_, ctx_, request.key.account);
     if (named.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
     }
     const auto& row = named.front();
     auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
     if (!found) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account"});
         return response;
     }
     response.version = std::move(*found);

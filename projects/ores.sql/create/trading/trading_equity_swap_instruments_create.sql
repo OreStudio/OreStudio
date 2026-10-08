@@ -139,15 +139,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'equity_swap_instrument',
-                    'trade_id',
-                    NEW.trade_id::text);
+                    'trade_id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'equity_swap_instrument',
                 'trade_id',
-                NEW.trade_id::text,
                 NEW.version::text,
                 current_version::text);
         end if;

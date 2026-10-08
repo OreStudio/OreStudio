@@ -70,6 +70,7 @@ several journeys need the same thing.
 | [[id:06486D5B-4BBB-4C08-91C2-14CA195329A1][Build the book structure screen]] | BACKLOG | | | Build journey 7 in ores.web from its document and prototype: the portfolio tree, the book, its classification, the rights, the review, the refusal and the history.. Journeys 7. |
 | [[id:C8C40E6D-CB30-452D-ABBC-3CA7C97EA115][Build the instrument convention screen]] | BACKLOG | | | Build journey 8 in ores.web from its document and prototype: the instrument picker, the convention, the terms, the review, the refusal and the history.. Journeys 8. |
 | [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] | BACKLOG | | | Build journey 9 in ores.web from its document and prototype: the tenor list, the tenor, its convention, the schedule, the resolved dates, the review, the refusal and the history.. Journeys 9. |
+| [[id:8F14837F-67BD-4FC3-854B-114B1E4F4CF2][Refuse from the outcome catalogue in every service]] | DONE | | 2026-10-08 | Second task for: Implement the refdata party, book, convention and tenor journeys |
 
 * Decisions
 

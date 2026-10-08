@@ -8,7 +8,7 @@
 #+filetags: :the_generated_headers_miss_the_chrono_include:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-generated-headers-miss-the-chrono-include
-#+pr:
+#+pr: 2884
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2884][#2884]] | [codegen] Include <chrono> where the domain header names it |
 
 * Review
 

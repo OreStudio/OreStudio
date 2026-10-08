@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 111CE4A8-F4A3-49CD-86D1-798A7617990E
+:END:
+#+title: Task: Implement Hotfix: the consumers still set the dropped party columns
+#+description: Initial task for: Hotfix: the consumers still set the dropped party columns
+#+type: task
+#+level: s1
+#+filetags: :the_consumers_still_set_the_dropped_party_columns:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-consumers-still-set-the-dropped-party-columns
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:327FBA08-F9F3-427B-92C9-DD9633D74B34][Hotfix: the consumers still set the dropped party columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the trade import and the trading service compile again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:327FBA08-F9F3-427B-92C9-DD9633D74B34][Hotfix: the consumers still set the dropped party columns]] |
+| Now          | The assignments are gone; the scan finds no other consumer. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- No hand-written code assigns a column the trade's children dropped.
+
+* Plan
+
+Two commits removed the party from the trade's children, and each regenerated
+the generated code but not the hand-written callers:
+
+| commit | removed |
+|--------+---------|
+| =178610c4e8= | =party_id= and =counterparty_id= from reference roles, structure members, trade additional fields, identifiers, links, portfolios and states |
+| =3053327b95= | =party_id= and =counterparty_id= from trade bookings |
+
+A row reaches the deal's party through the key it already carries, by way of the
+security definer function the same work added, so the assignments are deleted
+rather than repointed.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Entities that lost =party_id= | 8 | the two commits in * Plan | 5bdc91908d |
+| Hand-written files corrected | 5, two of them tests | =git diff --stat= | 5bdc91908d |
+| Remaining consumers after the fix | 0 | the scan in * Notes | 5bdc91908d |
+
+* Notes
+
+The scan that found these walks the hand-written tree for =.party_id= and
+=.counterparty_id= on a receiver named for one of the eight children. A file
+that reaches a child indirectly, as =xml::trade_import_item.booking= does, has
+no mention of the child's own name, so the first pass over the tree missed
+=ore_import_planner.cpp= and =importer.cpp= entirely; the receiver-name pass is
+what caught them.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 327FBA08-F9F3-427B-92C9-DD9633D74B34
+:END:
+#+title: Story: Hotfix: the consumers still set the dropped party columns
+#+description: 178610c4e8 and 3053327b95 removed party_id and counterparty_id from the trade's eight children, but hand-written code in ores.ore and ores.trading still assigns them, so those targets do not compile.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:trading:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the trade import and the trading service compile again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The assignments are gone; the scan finds no other consumer. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- No hand-written code assigns a column the trade's children dropped.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A478F50D-C74E-447F-8DA5-F8492C719DBA][Scaffold story: Hotfix: the consumers still set the dropped party columns]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:111CE4A8-F4A3-49CD-86D1-798A7617990E][Implement Hotfix: the consumers still set the dropped party columns]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the consumers still set the dropped party columns |
+
+* Decisions
+
+- *Delete the assignments; do not repoint them.* The party and counterparty are
+  reachable from a child through the key it already carries, by way of the
+  security definer function =178610c4e8= added for row level security. Nothing
+  the child does reads the copy.
+- *Fix the tests too.* Two of the five files are test files. They still have to
+  compile, and the assertions they lose were asserting the copy that is gone.
+
+* Out of scope
+
+- A gate for this family. A hand-written consumer that names a member the entity
+  no longer has is a compile error, and stating the rule without compiling means
+  knowing each receiver's type; there is nothing cheap and sound to add.

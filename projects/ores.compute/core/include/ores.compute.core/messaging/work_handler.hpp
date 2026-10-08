@@ -53,10 +53,13 @@ inline auto& work_handler_lg() {
 }
 
 /**
- * @brief Generates a whimsical adjective-animal display name from a UUID.
+ * @brief Generates a whimsical adjective-animal display name with a
+ * hexadecimal discriminator, from a UUID.
  *
- * Uses the first four bytes of the UUID as a seed so the name is
- * deterministic for a given host ID (same name every restart).
+ * The first four bytes of the UUID seed the adjective and the animal; the
+ * next two bytes are appended as four hexadecimal digits to separate names
+ * that would otherwise collide. Every part comes from the host id alone, so
+ * the name is deterministic: the same host id always produces the same name.
  */
 inline std::string make_display_name(const boost::uuids::uuid& id) {
     static constexpr std::array adjectives = {
@@ -69,12 +72,20 @@ inline std::string make_display_name(const boost::uuids::uuid& id) {
         "ermine",    "falcon",  "gecko",  "hamster",  "iguana",  "jackal",  "koala",      "lemur",
         "marmot",    "narwhal", "orca",   "pangolin", "quokka",  "raccoon", "salamander", "tapir",
         "uakari",    "viper",   "walrus", "xerus",    "yak",     "zorilla"};
+    static constexpr char hex_digits[] = "0123456789abcdef";
     const std::uint32_t seed = (static_cast<std::uint32_t>(id.data[0]) << 24) |
                                (static_cast<std::uint32_t>(id.data[1]) << 16) |
                                (static_cast<std::uint32_t>(id.data[2]) << 8) |
                                static_cast<std::uint32_t>(id.data[3]);
-    return std::string(adjectives[seed % adjectives.size()]) + "-" +
-           std::string(animals[(seed >> 8) % animals.size()]);
+    const std::uint16_t discriminator =
+        (static_cast<std::uint16_t>(id.data[4]) << 8) | static_cast<std::uint16_t>(id.data[5]);
+    std::string name = std::string(adjectives[seed % adjectives.size()]) + "-" +
+                       std::string(animals[(seed >> 8) % animals.size()]) + "-";
+    name += hex_digits[(discriminator >> 12) & 0x0F];
+    name += hex_digits[(discriminator >> 8) & 0x0F];
+    name += hex_digits[(discriminator >> 4) & 0x0F];
+    name += hex_digits[discriminator & 0x0F];
+    return name;
 }
 
 } // namespace

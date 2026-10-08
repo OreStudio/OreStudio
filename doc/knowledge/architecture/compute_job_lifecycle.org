@@ -271,8 +271,14 @@ job survives a node that dies mid-run.
 Every =heartbeat_interval= (30 seconds by default) the node publishes
 =compute.v1.ops.heartbeat= with its host id. The first heartbeat
 auto-registers the host row and gives it a deterministic
-adjective-animal display name (e.g. =clever-echidna=); later ones bump
-=last_rpc_time=, which is what the grid uses to judge the host online.
+adjective-animal display name with a short discriminator from the same id
+(e.g. =clever-echidna-4f2a=), so two nodes cannot share a name by drawing
+the same words. Later heartbeats bump =last_rpc_time=, which is what the
+grid uses to judge the host online. Each bump is a write to a bitemporal
+table, so it adds a version: five nodes heartbeat once per 30 seconds, and
+the host table grows by five rows every 30 seconds for as long as they
+run. The samples that follow carry the same liveness, so the column is a
+second copy of it.
 When telemetry is enabled the node additionally publishes node samples
 on =compute.v1.ops.node_sample=.
 

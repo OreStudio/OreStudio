@@ -91,8 +91,9 @@ GPU model identifier, e.g. 'A100' or NULL if no GPU.
 :nullable: true
 :END:
 
-Whimsical adjective+animal display name assigned on first registration.
-Display-only; never used as a key.
+Whimsical adjective-animal display name with a four-hex-digit discriminator
+taken from the host id, assigned on first registration. Display-only; never
+used as a key.
 
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "-host-" + std::to_string(idx)

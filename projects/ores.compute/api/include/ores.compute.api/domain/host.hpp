@@ -81,8 +81,8 @@ struct host final {
     std::string gpu_type;
 
     /**
-     * @brief Whimsical adjective+animal display name assigned on first registration. Display-only;
-     * never used as a key.
+     * @brief Whimsical adjective-animal display name with a four-hex-digit discriminator taken from
+     * the host id, assigned on first registration. Display-only; never used as a key.
      */
     std::string display_name;
 

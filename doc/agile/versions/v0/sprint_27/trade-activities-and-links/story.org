@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,11 +21,11 @@ Add trade_activity with its type, and trade_link with its type, so every compone
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Four of five tasks done. The trade activity is a stamp, the component versions point at it, and booking writes through the repositories. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Join trades with typed links.          |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ Add trade_activity with its type, and trade_link with its type, so every compone
 | [[id:765E9672-E777-48F6-A4A1-1AE08284FB9A][Give the activity type its axes and priority]] | DONE | 2026-10-05 | 2026-10-05 | Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is. |
 | [[id:FCB5F73B-986F-4EAA-9251-0E3D72F9EE0E][Record each business event as a trade activity]] | DONE | 2026-10-05 | 2026-10-05 | Add trade_activity, an append-only record of each business event with its type, actor, time, comment and operational-error flag, and make booking a trade write one. |
 | [[id:831583EA-B294-48DB-88AD-53E7534E5658][Point every component version at its activity]] | DONE | | 2026-10-06 | Give the booking, state, identifier, party role, additional field, portfolio and instrument tables a foreign key to the trade_activity that wrote each version, replacing the bare activity type code. |
-| [[id:CF865781-BE15-42F7-BB13-7107BF06F97C][Join trades with typed links]] | STARTED | 2026-10-08 | | Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll. |
+| [[id:CF865781-BE15-42F7-BB13-7107BF06F97C][Join trades with typed links]] | DONE | 2026-10-08 | 2026-10-08 | Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll. |
 | [[id:DD3DC229-6358-41B6-A9B5-9C0937439111][Book a trade through the repositories]] | DONE | 2026-10-06 | 2026-10-07 | Booking a trade writes the trade, its activity, its booking and its state with SQL inserts in ores_trading_book_trade_fn, bypassing the generated repositories. Give ores.database a unit of work so several repository writes share one transaction, move booking onto the repositories, and add an architectural rule, enforced by a check, that application code writes entity tables only through repositories. |
 
 * Decisions
@@ -67,6 +67,30 @@ there, and the story waits on one process with a real client.
 - [[id:61590415-C7E0-4BB9-8845-8BB794896EE0][Implement the processes that act on sets of trades]] — the capture for building the processes themselves, one pilot at a time.
 - [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the primitive, the trade group a run creates, and the roles the process fixes.
 - [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] — the set a run reads and writes, and how its membership is resolved.
+
+** The create aggregators stay hand-written, and a check guards them
+
+Taken 2026-10-08 with the owner. A component's `*_create.sql` names its
+table files in the order psql must run them, and a new entity means a new
+line in it. Nothing generates that file: all 22 aggregators are
+hand-written, no template emits one, and neither `compass add` nor
+`codegen regenerate` writes an include.
+
+It is hand-written because the order is the content, and the order is not
+something a model states. An alphabetical include set cannot build the
+schema at all: in `create/trading/`, `trading_trade_identifiers_create.sql`
+and `trading_trade_links_create.sql` both sort before
+`trading_trades_create.sql` and both carry a foreign key to it. Nor is the
+order purely foreign keys: the product type discriminator enum must precede
+the tables whose columns use the type, and no key records that edge.
+
+The cost showed itself in this story. Two link tables had create files
+that matched their models and that no aggregator named, so no database
+ever created them, and every other check passed. A check now walks the
+include directives from the schema entry points and fails on any create
+file nothing reaches. Generating the order topologically was considered
+and rejected: it would mean touching all 22 files and modelling the
+ordering edges that today live in comments, to save one line per entity.
 
 * Out of scope
 

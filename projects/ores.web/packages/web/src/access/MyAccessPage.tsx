@@ -101,7 +101,8 @@ export function MyAccessPage({ tenantName }: { readonly tenantName: string }): R
                                         size="sm"
                                     />
                                     {role.givenBy}
-                                    {role.givenAt !== '' && ` · ${formatDateTime(role.givenAt, language)}`}
+                                    {role.givenAt !== '' &&
+                                        ` · ${formatDateTime(role.givenAt, language)}`}
                                     {role.commentary !== '' && ` · ${role.commentary}`}
                                 </div>
                             </li>

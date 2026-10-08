@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 49CA5183-4201-4281-9CFC-303434C7E4E2
+:END:
+#+title: Story: Repair the drifted artefacts on main
+#+description: The access page is not prettier-formatted, so the TypeScript workflow fails on main. Reformat it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:hotfix:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ores.web workspace is prettier-formatted, so the TypeScript workflow passes on main again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- prettier --check passes for the ores.web workspace.
+- The local check gate passes for the hotfix branch.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0551B40F-64D7-41C9-B3E0-FD4FCC212B55][Scaffold story: Repair the drifted artefacts on main]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A3225500-1EB2-438A-85C7-E3A08A4ACC57][Repair the drifted artefacts]] | DONE | | 2026-10-08 | Initial task for: Repair the drifted artefacts on main |
+
+* Decisions
+
+* Out of scope
+
+- The ER diagram, which was already up to date when work started.
+
+* Result
+
+One file, =packages/web/src/access/MyAccessPage.tsx=, is prettier-formatted,
+so the TypeScript workflow passes on main again. The local check gate
+passed for the hotfix branch.

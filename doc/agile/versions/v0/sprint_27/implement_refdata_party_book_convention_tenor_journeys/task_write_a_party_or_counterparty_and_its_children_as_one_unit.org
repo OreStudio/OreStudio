@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-a-party-or-counterparty-and-its-children-as-one-unit
-#+pr: 2873
+#+pr: 2874
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -129,6 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2874][#2874]] | [agile] Drop the duplicate result heading |
 | [[https://github.com/OreStudio/OreStudio/pull/2873][#2873]] | [refdata] Write a party or a counterparty with its children as one act |
 
 * Review

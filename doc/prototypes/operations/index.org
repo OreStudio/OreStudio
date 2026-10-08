@@ -36,15 +36,16 @@ generated alternative kept beside the agreed design, never instead of it.
 * Adding a prototype
 
 Create =doc/prototypes/operations/<name>/= with an =index.html=, and a
-=prototype.css= and =prototype.js= when it needs them. Add a row to the
-table above, with the design note beside the prototype when there is one.
-Stop there: the site build finds every prototype under this tree, so no
-build file names it.
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
 
 A review goes at =doc/prototypes/operations/<name>/review/=, with an
-=index.html= that lists its screens, and the row names it.
-[[file:../index.org][Prototypes]] states the whole method and the rules that hold
-for every group.
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
 
 * See also
 

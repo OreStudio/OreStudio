@@ -61,6 +61,14 @@ the prototypes it lists.
 A design note, where one exists, is the file =<name>.org= beside the prototype
 folder, and the group page links it.
 
+Every prototype page opens with a links table that names the prototype and its
+review. The review row holds a link where a review exists, and =none= where it
+does not, so one grep names every prototype nobody has reviewed:
+
+#+begin_src sh :results verbatim
+grep -rl 'prototype-review[^>]*>none' doc/prototypes --include=index.html
+#+end_src
+
 A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, beside the
 prototype it reviews. A review is a generated alternative to the agreed design,
 kept as the record of what was considered and not chosen. Its =index.html=
@@ -76,6 +84,8 @@ review exists.
    =prototype.css= and =prototype.js= when the prototype needs them. Plain
    HTML, CSS and JavaScript: no framework, no build step, no backend. Switch
    variants and states with query parameters, as every prototype here does.
+   Open the page with the links table described above, copied from any
+   prototype, and leave its review row at =none=.
 3. Copy the design tokens from
    =projects/ores.web/packages/web/src/styles.css= so the prototype reads in
    the application's own colours.
@@ -93,7 +103,8 @@ prototype must open without a build, a server or a session.
 
 =build/scripts/check_prototype_inventory.py= enforces this: it fails when a
 prototype is missing from its group page, when a group page is missing from the
-table above, when a review is listed nowhere, and when a React prototype tree
+table above, when a review is listed nowhere, when a prototype page's links
+table disagrees with whether that review exists, and when a React prototype tree
 reappears.
 
 * See also

@@ -8,7 +8,7 @@
 #+filetags: :joinable-series-identity:sprint_27:v0:
 #+owner: marco
 #+branch: feature/backfill-the-projection-and-view-it-by-asset-class
-#+pr:
+#+pr: 2842
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2842][#2842]] | [marketdata] Backfill the identity projection and view it by asset class |
 
 * Review
 

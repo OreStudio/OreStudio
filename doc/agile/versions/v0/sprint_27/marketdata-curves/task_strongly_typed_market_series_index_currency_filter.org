@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 86B41936-1186-4FEC-B001-C62F59DF0013
+:END:
+#+title: Task: Resolve a composite object from its typed identity
+#+description: A term structure or a surface is named by its oresmd URI, whose query carries the typed identity fields. A caller must be able to find one from those fields, so a view can ask for the FX vol surface for EURUSD without building the URI by hand and without matching on a string.
+#+type: task
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+owner: marco
+#+branch: feature/strongly-typed-market-series-index-currency-filter
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A term structure or a surface is identified by its =market_series= row, and that row is named by
+its =oresmd_uri=, whose query names each identity field under its own key: the asset class, the
+scope such as a currency pair, the object kind, and the party. Nothing today lets a caller ask for
+"the FX vol surface for EURUSD" from those fields. The caller builds the URI, or matches on a
+string. The free-text =qualifier= column the original capture described is gone, so the
+string-matching workaround it named no longer exists.
+
+The outcome this task delivers: a caller names the object by its typed identity and the server
+resolves it to a series, so a view can list and pick the composite objects of a scope without
+knowing the URI grammar, and without a second source of truth for what the identity means.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | The capture is promoted and the branch is up. Nothing reads the typed identity: a caller builds the oresmd URI or matches on text. |
+| Waiting on   | Nothing.                               |
+| Next         | Design the typed request and the read behind it. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A caller names a composite object by typed identity fields, the asset class, the scope such as a
+  currency pair, the object kind and the party, and the server resolves it to one series with no
+  hand-built =oresmd_uri= and no string match.
+- The resolution is a repository read, not a client-side scan of every series, and it does not
+  parse the URI once per row.
+- The typed fields mean what the URI means, from one source of truth, so the lookup cannot
+  disagree with the identity the ticks land under.
+- The request and the answer are on the wire, so a view can list the composite objects of a scope
+  and pick one, and the shell can do the same.
+- At least one production consumer uses it, or the result says why none does.
+
+* Plan
+
+Start from the identity that already exists. A series is named by its =oresmd_uri=, and the codec
+already parses every field out of it, so the typed fields do not have to be invented. The capture
+leaves one question open, how a caller filters on them. Choose between reading the URI per row,
+adding an index over a derived projection of the URI's parts, or carrying typed columns. Then
+settle the request shape, the read and the wire, and prove the consumer. Nothing here changes the
+points, the observation table or the ingest path.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-08-08 in the product backlog; promoted preserving the UUID.
+
+** What
+
+CurveBuilderWorkbench (the IR curve bootstrap builder UI) needs a way to constrain which
+=market_series= rows a user can pick as a curve's Source/Output series and as a discount curve's
+config, given a chosen currency and index (e.g. "USD" + "USD-SOFR"). Today the only way to do
+that is client-side substring matching against =market_series.qualifier= — a free-text column with
+no fixed shape. This already produced a real bug: =floating_index_type.code= uses a dash after the
+currency (=USD-SOFR=), but =market_series.qualifier= for rates uses a slash instead (=USD/SOFR=,
+per =ir_curve_feed.cpp='s own qualifier construction) — the two conventions silently diverged and
+the filter matched nothing until a hand-rolled dash→slash translation
+(=CurveBuilderWorkbench::selectedIndexQualifier()=) was added as a workaround.
+
+String matching (substring/regex) against a free-text identifier column is not a sustainable way
+to express "this series belongs to this currency and this index" — it is fragile to any future
+change in qualifier generation, cannot be validated at write time, and cannot be indexed/queried
+efficiently. What's needed instead is strongly-typed fields: a currency column and an index
+column (soft FKs into =iso.currencies= and =floating_index_type=, following the same soft-FK
+convention already used throughout the codebase — e.g. =change_reason_code=) directly on
+=market_series= (or reachable from it), so filtering is a normal equality/join predicate, not a
+string-matching workaround.
+
+** Why
+
+The dash-vs-slash bug above is a direct symptom of relying on unstructured text to encode
+structured identity (currency + index family + tenor). Every future consumer that needs to filter
+or group market series by currency/index (not just this workbench — the Rate Curves viewer,
+synthetic feed bindings, etc. all currently do their own ad-hoc parsing of the qualifier string)
+will hit the same class of bug unless the underlying data model gets typed fields.
+
+This is closely related to, but not identical with, the =oresmd= migration
+([[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]): that story's own
+=Task: Migrate market_series qualifier/point_id generation onto oresmd= explicitly keeps
+=qualifier='s *column shape* as a plain string (just generated deterministically from oresmd
+fields instead of free text) — and per the oresmd design doc's own worked examples, the resulting
+qualifier shape is still *type-dependent* (a discount-factor quote projects to =qualifier=USD3M=,
+a swap-rate quote to =qualifier=USD/2D/3M=, etc.), so oresmd alone does not give callers a stable,
+strongly-typed field to filter on either — it standardises *generation*, not *queryability*. This
+capture is about whether =market_series= (or a related lookup) should additionally carry
+structured, indexable currency/index fields, which is a genuinely open design question the oresmd
+work doesn't resolve by itself and needs its own thinking session before implementation.
+
+** Update, 2026-10-04
+
+[[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]
+removed the free-text =qualifier= column. A series is now named only by
+=market_series.oresmd_uri=, whose query holds each schema field under its own
+name, for example
+=oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&ccy=GBP&...=. The
+currency and the index name are therefore separate, typed fields of the
+series identity, and =oresmd_uri_codec::read= returns them. The open question
+narrows to how a caller filters on them: by reading the URI, or through an
+indexed column or a query that the repository offers.
+
+** References
+
+- =projects/ores.qt/refdata/src/CurveBuilderWorkbench.cpp= — =selectedIndexQualifier()=, the
+  current dash→slash workaround this capture proposes replacing.
+- =projects/ores.synthetic/service/src/ir_curve_feed.cpp= — the qualifier-construction code whose
+  slash convention the workaround had to reverse-engineer.
+
+** See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+- [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]
+- [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Task: Migrate market_series qualifier/point_id generation onto oresmd]]
+- [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Task: Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]]

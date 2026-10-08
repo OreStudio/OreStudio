@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 78E47817-A984-4325-AA73-B8B87C56BC3B
+:END:
+#+title: The data tiers
+#+description: An installation's data divides into five tiers by substitutability, and the tier decides what the system must ship, who decides the right values, and how a developer delivers it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:data:reference_data:dataset:dq:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+The data an installation holds divides into five tiers, and the tier
+decides nearly everything else about it. The axis is *substitutability*:
+how many valid instances of the data exist. A vocabulary the platform
+defines has exactly one. An external standard has one because the
+platform adopts a source. Installation data has as many instances as
+there are installations. Market data has one for every observation time.
+Transactional data has one for every act of use.
+
+The tier answers the two questions a developer actually has: must the
+system ship these rows, and who decides which values are right. It does
+not replace the classification the DQ model already carries. A dataset
+still has a domain, a subject area and a catalog, and a value still has a
+nature and an origin. Those say what the data is. This says how firmly
+the platform holds it.
+
+* Detail
+
+** The axis
+
+Substitutability is how many valid instances exist. It decides delivery
+because the question "may this vary by installation" has a different
+answer at each level, and a table that looks like its neighbour can sit a
+tier away from it.
+
+| Tier | Name | Valid instances | The system ships it |
+|------+------+-----------------+---------------------|
+| 1 | Platform vocabulary | One | Always, with the system |
+| 2 | Canonical reference data | One, adopted from a standard | Always, as the canonical dataset |
+| 3 | Installation data | One per installation | Only as an exemplar |
+| 4 | Market data | One per observation time | As samples, or not at all |
+| 5 | Transactional data | One per act of use | Never |
+
+** Tier 1: the platform's own vocabulary
+
+These are the codes the platform defines so that it can function at all.
+A trade link type, a trade activity type, a trade state, a code domain or
+a business process has no meaning outside this system, and an
+installation that chose its own values would break it. There is exactly
+one correct set, and the platform is its author.
+
+A new table at this tier is usually the last step of a domain decision
+rather than a data decision: the vocabulary was settled in a knowledge
+page or a story, and the table is where it lands.
+
+** Tier 2: canonical reference data
+
+The values come from outside, and more than one source could supply them.
+The platform adopts one source as canonical, records which, and expects
+every installation to hold the same values. ISO 4217 currencies, ISO 3166
+countries, the FpML coding schemes and business centres, and the GLEIF
+LEI records are all tier 2.
+
+The choice of source is the decision here, not the values. Once the
+source is named, an installation has nothing to choose.
+
+** Tier 3: installation data
+
+The business entities of one installation: its accounts, books,
+portfolios, netting sets and CSAs. Every installation has its own, and
+any valid instance exercises the system as well as any other. ACME is an
+example installation, not the installation.
+
+The system may ship an exemplar so that a fresh installation has
+something to show, and that exemplar is disposable. Nothing depends on
+its values.
+
+** Tier 4: market data
+
+Observations of the market, one per observation time. A live feed, a
+curated vendor set such as the Federal Reserve H.10 rates, a synthetic
+theme and the ORE samples are all tier 4. What separates them is the
+value's nature and origin, not the tier, and the platform already states
+those two dimensions.
+
+** Tier 5: transactional data
+
+What use produces: trades, amendments, activities and links. The system
+never ships it, no dataset supplies it, and it exists only because
+somebody did something.
+
+** What follows: the delivery mechanism
+
+The tier, not the component and not the table's shape, chooses the
+machinery.
+
+| Tier | How the rows arrive |
+|------+---------------------|
+| 1 | A populate script under =projects/ores.sql/populate/=, idempotent, written for the system tenant |
+| 2 | A DQ dataset, published into the owning service and installed as a bundle |
+| 3 | An =ores.seeder= dataset |
+| 4 | A DQ dataset for a curated set, a synthetic theme for generated data, or a feed |
+| 5 | Runtime alone |
+
+** The procedure
+
+Ask these in order and stop at the first yes.
+
+1. *Does the platform define these values so that it can function?* Tier
+   1. Write a populate script. The page that settled the vocabulary owns
+   the values.
+2. *Do the values come from an external standard?* Tier 2. Name the
+   canonical source on the dataset, then treat it as tier 1 for delivery.
+3. *Is this an entity belonging to one installation?* Tier 3. Add it to a
+   seeder dataset, and expect it to differ everywhere.
+4. *Is it an observation of the market at a time?* Tier 4. Choose a
+   curated dataset, a synthetic theme or a feed.
+5. *Otherwise it is produced by use.* Tier 5. Add nothing; the write path
+   is the delivery.
+
+The last question catches the tables that need no seeding at all, which
+is the most common mistake in the other direction: seeding transactional
+data to make a screen look populated.
+
+* Sources
+
+The tiers are this page's synthesis, drawn from the classification the DQ
+model already carries and from the delivery mechanisms the tree actually
+uses. The words are this page's choice; no external standard fixes them.
+
+* See also
+
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the model this page builds on: domains, subject areas, catalogs, natures and origins.
+- [[id:B6E4D3E4-1257-40F8-982D-F92C4CAC74D2][ores.dq.data_domain]] — the high-level classification, and where a tier-4 dataset is told apart from a tier-3 one.
+- [[id:39B8858F-7724-4AE2-B4A9-C8B3817748CE][ores.dq.nature_dimension]] and [[id:A13436CF-5292-485C-A69A-FCC5EB2153C7][ores.dq.origin_dimension]] — how a tier-4 observation came to be and where it entered.
+- [[id:F05B779F-769B-49D5-B369-D2AAC029B36D][Publication pipeline]] — how a tier-2 dataset reaches the service that owns the table.
+- [[id:6CAA15F5-634E-46B4-ABA5-185095E9911D][ores.seeder]] — the machinery for a tier-3 exemplar.
+- [[id:6D8510CF-B977-4126-9051-5BFA9DE929B3][ores.dq.artefact_type]] — the endpoint a tier-2 or tier-4 dataset publishes through.
+- [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the worked case that put this page on paper: a vocabulary the platform defines, and therefore tier 1.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — tier 3, and an example of a domain object whose rows belong to one installation.
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — where an installation's own data is held, and why it is the installation's.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

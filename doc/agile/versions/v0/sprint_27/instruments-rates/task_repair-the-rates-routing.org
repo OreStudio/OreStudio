@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/repair-the-rates-routing
-#+pr:
+#+pr: 2790
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2790][#2790]] | [trading] Classify RPA as credit and fix three rate codes |
 
 * Review
 

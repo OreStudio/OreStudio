@@ -21,11 +21,11 @@ Put every component that generates C++ under the drift gate, one component per c
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -55,3 +55,35 @@ Put every component that generates C++ under the drift gate, one component per c
 * Out of scope
 
 -
+
+* Result
+
+Every component that generates C++ is now named in COMPONENTS_UNDER_TEST.
+inbox, synthetic and scheduler had been outside it, and the gate had reported a
+clean tree while 195 of their committed files drifted from the templates.
+
+The three were not the same kind of problem. inbox and synthetic were stale:
+the templates had moved on and nothing re-rendered them. scheduler was clean
+already, and only needed the check. That distinction is the story's useful
+output, because it says what the gate is for: not to find hand-edits, which
+there were none of, but to notice that generated output has stopped moving.
+
+Bringing them under the gate found four more trunk defects, all fixed here: the
+21 shell scripts drifted to __none__ plus a structure_members recipe set with
+no tangled output at all; sixteen trading drop scripts the ER parser could not
+reach, which it treats as fatal; a stale ER diagram and a stale shell recipe
+inventory; and the recipe-inventories check never being selected for a recipe
+change, because a check matches on class before path.
+
+The premise of one task was wrong. Make the drift gate reproducible was opened
+because --component and --all appeared to disagree; they do not, and the extra
+files were another component that --all correctly regenerates.
+
+State the environment the heavy checks need is stated and not enforced. The
+runner cannot be changed safely without running the heavy tier, which this
+work does not do.
+
+The larger finding is outside the story. Ten trunk defects were found by
+running the local gate, and none by a person looking. The gate works; nothing
+runs it on a change.
+

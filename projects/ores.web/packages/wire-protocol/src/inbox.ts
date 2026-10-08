@@ -30,7 +30,7 @@ import {
 import {
     subjects as approvalSubjects,
     type DecideApprovalRequestRequest,
-    type ReadApprovalRequestRequest,
+    type GetApprovalRequest,
     type ListApprovalQueueRequest,
     type ListMyApprovalRequestsRequest,
     type WithdrawApprovalRequestRequest,
@@ -81,7 +81,7 @@ export const INBOX_SUBJECTS = {
     askForRoles: roleRequestSubjects.ask_for_roles_request,
     mine: approvalSubjects.list_my_approval_requests_request,
     queue: approvalSubjects.list_approval_queue_request,
-    getRequest: approvalSubjects.read_approval_request_request,
+    getRequest: approvalSubjects.get_approval_request,
     withdraw: approvalSubjects.withdraw_approval_request_request,
     decide: approvalSubjects.decide_approval_request_request,
     myNotifications: notificationSubjects.list_my_notifications_request,
@@ -686,7 +686,7 @@ export async function readRequest(
     caller: AuthenticatedCaller,
     requestId: string,
 ): Promise<InboxRequestView | null> {
-    const request: ReadApprovalRequestRequest = { request_id: requestId };
+    const request: GetApprovalRequest = { request_id: requestId };
     const reply = await caller.callAuthenticated(
         INBOX_SUBJECTS.getRequest,
         request,

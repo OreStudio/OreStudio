@@ -122,7 +122,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 h->queue(std::move(msg));
             }));
         subs.push_back(nats.queue_subscribe(
-            read_approval_request_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            get_approval_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->get_request(std::move(msg));
             }));
         subs.push_back(
@@ -134,8 +134,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             queue_group,
             [h](ores::nats::message msg) { h->expire_overdue(std::move(msg)); }));
         BOOST_LOG_SEV(lg(), info) << "inbox registrar: approval operations subscribed, "
-                                  << "including read_approval_request at "
-                                  << read_approval_request_request::nats_subject;
+                                  << "including get_approval at "
+                                  << get_approval_request::nats_subject;
     }
 
     // Notifications: a component raises one, and a person reads, marks and

@@ -147,11 +147,11 @@ export interface ListMyApprovalRequestsResponse {
  * the request did not exist, so the read tells nobody that a request they may
  * not see is there.
  */
-export interface ReadApprovalRequestRequest {
+export interface GetApprovalRequest {
     request_id: string;
 }
 
-export interface ReadApprovalRequestResponse {
+export interface GetApprovalResponse {
     result: Result;
     /**
      * @brief The request, present when the caller may open it.
@@ -193,7 +193,7 @@ export const subjects = {
     decide_approval_request_request: 'inbox.v1.ops.decide_approval',
     list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
-    read_approval_request_request: 'inbox.v1.ops.read_approval_request',
+    get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
 } as const;
 /**
@@ -207,6 +207,6 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
-    read_approval_request_request: true,
+    get_approval_request: true,
     expire_overdue_approvals_request: false,
 } as const;

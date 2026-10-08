@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 07FC58A2-A6AB-4444-8F96-ADCA9B2985C6
+:END:
+#+title: Investigation: What each ACME report needs to run
+#+description: For each of the 31 report definitions ACME is seeded with, the ORE config files its run reads, and whether every one of them can be stored today.
+#+type: investigation
+#+level: s1
+#+filetags: :reporting:ore:acme:sprint_27:v0:build-the-retire-or-reset-tenant-journey:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into For each of the 31 report definitions ACME is seeded with, the ORE config files its run reads, and whether every one of them can be stored today..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+ACME is seeded with 31 report definitions and nothing that can run them. The
+run resolves a risk report config by definition id before it reads anything
+else, and no seed writes one. Before we write the seed, we need to know what
+each report actually reads, so we do not create a configuration that binds a
+document the report never uses, or worse, claim a report is runnable when its
+run would stop at a file nothing can store yet.
+
+* Methodology
+
+Read the 31 rows of
+=projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql=,
+the only report type =risk=, the four configuration types that type requires,
+and the ORE run documents under =external/ore/examples=. The definitive
+availability answer is the saver list and the unbound list in
+=projects/ores.ore/core/tests/configuration_type_seed_tests.cpp=.
+
+* What every risk report reads
+
+A =risk= run reads four documents before it prices anything, and the type
+records that as a hard requirement:
+
+| Configuration type | ORE file | Bound? |
+|--------------------+----------+--------|
+| =pricing_engines= | =pricingengine.xml= | yes |
+| =todays_market= | =todaysmarket.xml= | yes |
+| =curve_configuration= | =curveconfig.xml= | yes |
+| =conventions= | =conventions.xml= | yes |
+
+Every row below needs those four. The table names only what each report needs
+on top of them.
+
+* What each report needs
+
+| # | Report | Analytics it enables | Extra ORE files | Available |
+|---+--------+----------------------+-----------------+-----------|
+| 1 | Data Quality Completeness | data checks, no analytics | none | yes |
+| 2 | System Health | none | none | yes |
+| 3 | Audit Trail Summary | none | none | yes |
+| 4 | SA-CCR Exposure | pfe | =simulation.xml=, =counterparty.xml=, =netting.xml= | yes |
+| 5 | Leverage Ratio | pfe | =simulation.xml=, =netting.xml= | yes |
+| 6 | FRTB SA Capital | sensitivity (SBM) | =sensitivity.xml= | yes |
+| 7 | Liquidity Coverage | cashflow | none | yes |
+| 8 | Large Exposures | pfe | =simulation.xml=, =counterparty.xml=, =netting.xml= | yes |
+| 9 | MIFID II Transaction Reporting | none, data only | none | yes |
+| 10 | CFTC Swap Data Reporting | none, data only | none | yes |
+| 11 | HKMA Trade Repository | none, data only | none | yes |
+| 12 | Group Consolidated Exposure | pfe | =simulation.xml=, =counterparty.xml=, =netting.xml= | yes |
+| 13 | Board Risk Dashboard | npv, pfe, var | =simulation.xml= | conditional |
+| 14 | Cross-Entity Counterparty Concentration | pfe | =simulation.xml=, =counterparty.xml=, =netting.xml= | yes |
+| 15 | Intercompany Exposure Matrix | pfe | =simulation.xml=, =counterparty.xml=, =netting.xml= | yes |
+| 16 | Model Calibration | simulation (calibration) | =simulation.xml= | yes |
+| 17 | Yield Curves | curves | =curveconfig.xml= | yes |
+| 18 | FX Spot Rates | market data | none | yes |
+| 19 | Volatility Surfaces | curves | =curveconfig.xml= | yes |
+| 20 | Credit Curves | curves | =curveconfig.xml=, =conventions.xml= | yes |
+| 21 | NPV | npv | none | yes |
+| 22 | Cashflows | cashflow | none | yes |
+| 23 | Delta and Gamma | sensitivity | =sensitivity.xml= | yes |
+| 24 | Vega | sensitivity | =sensitivity.xml= | yes |
+| 25 | Bucketed DV01 | sensitivity | =sensitivity.xml= | yes |
+| 26 | Exposure | simulation, pfe | =simulation.xml=, =netting.xml= | yes |
+| 27 | CVA/DVA/FVA | xva | =simulation.xml=, =netting.xml=, =counterparty.xml= | yes |
+| 28 | Stressed VaR | stress, simulation | =stresstest.xml=, =simulation.xml= | conditional |
+| 29 | P&L Attribution | sensitivity, npv | =sensitivity.xml= | conditional |
+| 30 | Intraday Risk Monitor | npv, sensitivity, var | =sensitivity.xml= | conditional |
+| 31 | Headline Position | npv, sensitivity | =sensitivity.xml= | yes |
+
+* Availability
+
+Twelve configuration types have an ORE saver and a table. Five do not:
+=simm_calibration=, =historical_return=, =basel_traffic_light=,
+=reference_data= and =ibor_fallback=.
+
+No report needs =simm_calibration=, =credit_simulation=, =reference_data= or
+=ibor_fallback=. Four reports are conditional, because their natural
+implementation reaches an unbound type and a cheaper implementation does not:
+
+- Board Risk Dashboard, Stressed VaR and Intraday Risk Monitor need a
+  =var= reading. A parametric VaR reads a covariance matrix, which is market
+  data and not a configuration, so all three are available. A historical VaR
+  reads =historical_return=, which cannot be stored yet.
+- P&L Attribution needs =basel_traffic_light= only if the desk classification
+  is in scope. The delta, gamma, vega and theta decomposition is a
+  sensitivity report and is available.
+
+So 27 of the 31 reports have every document available today under any
+reading, and the remaining four are available if their VaR is parametric and
+their attribution stops at the decomposition.
+
+* Conclusions
+
+A report configuration is three rows, not one. The definition binds a
+configuration type to a configuration id through
+=ores_reporting_report_configurations_tbl=, and the run's own settings live in
+=ores_reporting_risk_report_configs_tbl=. The four Setup documents are
+required by the type, so they are the same four for all 31 reports. Only the
+extra analytics documents vary, and only nine reports need any.
+
+The books the run prices come from the config's portfolio scope.
+=ores_reporting_resolve_book_ids_for_config_fn= already expands a portfolio
+through =ores_trading_get_book_ids_by_portfolio_fn=, so no new function is
+needed. The root portfolio is the one whose =parent_portfolio_id= is null.
+
+* Recommendations
+
+Create configurations for the 27 unconditional reports first: bind the four
+Setup documents, scope each to the party's root portfolio, and set only the
+analytics flags the report names. Leave the four conditional reports until
+someone decides whether their VaR is parametric, and open a separate task for
+the five unbound ORE types if a historical VaR or a traffic-light
+classification is wanted.
+
+* See also
+
+- [[id:C39230E7-5E78-4CFF-87F3-1CF13565E31F][Seed the risk report configurations the report definitions need]] is the narrow version of this work, in the other environment's story.
+- [[id:0FC2B828-ED9C-4C8F-A8DD-84C1BB913A09][Investigation: the ORE report configuration documents]] describes the XML documents themselves.

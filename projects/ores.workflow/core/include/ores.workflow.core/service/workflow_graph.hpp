@@ -58,15 +58,6 @@ struct workflow_node {
 nodes_of(const std::vector<workflow_step_def>& steps);
 
 /**
- * @brief The nodes a run's persisted snapshot describes.
- *
- * A run is judged by the chain it was started with, not by the definition as
- * it stands now, so the snapshot is what a recovered run is rebuilt from.
- */
-[[nodiscard]] ORES_WORKFLOW_CORE_EXPORT std::vector<workflow_node>
-nodes_of(const std::vector<materialised_step>& steps);
-
-/**
  * @brief A run's steps as a directed graph.
  *
  * Vertices are steps and an edge runs from a step to each step that reads its

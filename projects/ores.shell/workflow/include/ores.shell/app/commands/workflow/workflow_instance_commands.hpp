@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error>
-     * <correlation_id> <created_by> <current_step_index> <step_count> <materialised_steps_json>
-     * <completed_at> <last_event_at> <reason> <commentary>
+     * <correlation_id> <created_by> <current_step_index> <step_count> <completed_at>
+     * <last_event_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,9 +97,8 @@ public:
 
     /**
      * @brief set <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json>
-     * <error> <correlation_id> <created_by> <current_step_index> <step_count>
-     * <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary> [--version
-     * <n>]
+     * <error> <correlation_id> <created_by> <current_step_index> <step_count> <completed_at>
+     * <last_event_at> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -108,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <type> <target_kind> <target_id> <state_id> <request_json>
      * <result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count>
-     * <materialised_steps_json> <completed_at> <last_event_at> <reason> <commentary>
+     * <completed_at> <last_event_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

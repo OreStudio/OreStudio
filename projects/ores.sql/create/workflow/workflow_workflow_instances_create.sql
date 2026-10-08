@@ -45,7 +45,6 @@ create table if not exists "ores_workflow_workflow_instances_tbl" (
     "created_by" text not null,
     "current_step_index" integer not null default 0,
     "step_count" integer not null default 0,
-    "materialised_steps_json" text not null default '',
     "completed_at" timestamp with time zone null,
     "last_event_at" timestamp with time zone null,
     "modified_by" text not null,

@@ -126,12 +126,6 @@ struct workflow_instance final {
     int step_count = 0;
 
     /**
-     * @brief JSON snapshot of the step sequence built at instance start. Prevents a
-     * non-deterministic build_steps from reshaping an in-flight workflow after a service restart.
-     */
-    std::string materialised_steps_json;
-
-    /**
      * @brief Timestamp when the workflow reached a terminal state.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;

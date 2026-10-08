@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: E5EF8A66-B086-5761-9380-941A67D1E38B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the workflow_plan_dependencies commands from the shell?
+#+description: Every command the workflow_plan_dependencies submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:workflow_plan_dependencies:
+
+This file documents the workflow_plan_dependencies resource at the shell, one section per command. Every command is a subcommand of =workflow_plan_dependencies=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: F8E86D55-165B-5B0F-A1C8-AD449075E2AF
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.list=.
+
+#+name: workflow_plan_dependencies-list
+#+begin_src ores-shell :tangle workflow_plan_dependencies-list.ores :exports none
+workflow_plan_dependencies list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A7AD917A-C98C-50AB-AE75-43E0B679599B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies get <id>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.get=.
+
+#+name: workflow_plan_dependencies-get
+#+begin_src ores-shell :tangle workflow_plan_dependencies-get.ores :exports none
+workflow_plan_dependencies get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 14322DC4-7188-5D99-AD84-8365987F1765
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies get-many <id>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.get_many=.
+
+#+name: workflow_plan_dependencies-get-many
+#+begin_src ores-shell :tangle workflow_plan_dependencies-get-many.ores :exports none
+workflow_plan_dependencies get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9C69AF4A-8DAB-5CF7-BE45-33A1BFE9C598
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies add <workflow_id> <consumer_step_index> <producer_step_index> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.put=.
+
+#+name: workflow_plan_dependencies-add
+#+begin_src ores-shell :tangle workflow_plan_dependencies-add.ores :exports none
+workflow_plan_dependencies add 00000000-0000-0000-0000-000000000000 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E4B258C7-5713-5630-A339-8E89D1EC348B
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies set <id> <workflow_id> <consumer_step_index> <producer_step_index> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.put=.
+
+#+name: workflow_plan_dependencies-set
+#+begin_src ores-shell :tangle workflow_plan_dependencies-set.ores :exports none
+workflow_plan_dependencies set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 538DF748-CF40-51FD-8119-006ED60FD8A6
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies put-many --count <n> <id> <workflow_id> <consumer_step_index> <producer_step_index> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.put_many=.
+
+#+name: workflow_plan_dependencies-put-many
+#+begin_src ores-shell :tangle workflow_plan_dependencies-put-many.ores :exports none
+workflow_plan_dependencies put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 19311D36-881D-590D-AC5F-7364CD57282B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.delete=.
+
+#+name: workflow_plan_dependencies-delete
+#+begin_src ores-shell :tangle workflow_plan_dependencies-delete.ores :exports none
+workflow_plan_dependencies delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 13880AE8-5E5B-550D-9DEE-52A7388C1509
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.delete_many=.
+
+#+name: workflow_plan_dependencies-delete-many
+#+begin_src ores-shell :tangle workflow_plan_dependencies-delete-many.ores :exports none
+workflow_plan_dependencies delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-workflow-id=
+:PROPERTIES:
+:ID: F0141C41-222F-5F10-94DA-A66F047183B5
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies by-workflow-id <workflow_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies.list_by_workflow_id=.
+
+#+name: workflow_plan_dependencies-by-workflow-id
+#+begin_src ores-shell :tangle workflow_plan_dependencies-by-workflow-id.ores :exports none
+workflow_plan_dependencies by-workflow-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 76EF7ABA-5778-5E1C-8E9E-A1D39A4050E5
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies_versions.list=.
+
+#+name: workflow_plan_dependencies-versions
+#+begin_src ores-shell :tangle workflow_plan_dependencies-versions.ores :exports none
+workflow_plan_dependencies versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 45E473CC-13B1-5137-B860-1E2747BA0CB0
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+workflow_plan_dependencies version <id> --version <n>
+#+end_example
+
+It is addressed at =workflow.v1.workflow_plan_dependencies_versions.get=.
+
+#+name: workflow_plan_dependencies-version
+#+begin_src ores-shell :tangle workflow_plan_dependencies-version.ores :exports none
+workflow_plan_dependencies version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

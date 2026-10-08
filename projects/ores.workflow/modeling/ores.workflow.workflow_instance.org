@@ -153,16 +153,6 @@ Zero-based index of the step currently being executed.
 
 Total number of steps in this workflow definition.
 
-** materialised_steps_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:default:  ''
-:END:
-
-JSON snapshot of the step sequence built at instance start. Prevents a non-deterministic build_steps from reshaping an in-flight workflow after a service restart.
-
 ** completed_at
 :PROPERTIES:
 :type:     timestamp with time zone

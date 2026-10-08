@@ -256,21 +256,15 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         req_ctx, boost::uuids::to_string(instance_id), 0, 1000);
 
     /*
-     * The run's own definition travels with it, materialised when it started,
-     * so the words a step is shown by are the ones its definition declared
-     * rather than whatever the definition says today. An instance started
-     * before a step had words carries none, and the step's identity stands in.
+     * The run's own chain travels with it, so the words a step is shown by are
+     * the ones the run was started with rather than whatever the definition
+     * says today. A step whose words were never declared carries none, and the
+     * step's identity stands in.
      */
     std::unordered_map<std::string, std::pair<std::string, std::string>> words;
-    if (!instance->materialised_steps_json.empty()) {
-        auto materialised =
-            rfl::json::read<std::vector<ores::workflow::service::materialised_step>>(
-                instance->materialised_steps_json);
-        if (materialised) {
-            for (const auto& step : *materialised)
-                words.emplace(step.name, std::make_pair(step.label, step.description));
-        }
-    }
+    for (const auto& plan : plan_step_repo_.read_latest_by_workflow_id(
+             req_ctx, boost::uuids::to_string(instance_id), 0, 1000))
+        words.emplace(plan.name, std::make_pair(plan.label, plan.description));
 
     get_workflow_steps_response resp;
     resp.success = true;

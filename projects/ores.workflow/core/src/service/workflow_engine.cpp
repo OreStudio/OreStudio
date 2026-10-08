@@ -21,6 +21,8 @@
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
+#include "ores.workflow.api/domain/workflow_plan_step.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/workflow_actor.hpp"
 #include "ores.workflow.core/service/workflow_graph.hpp"
@@ -35,45 +37,28 @@
 #include <set>
 #include <rfl/json.hpp>
 #include <span>
+#include <string>
+#include <unordered_map>
 
 namespace ores::workflow::service {
 
 namespace {
-
-std::string materialise_steps_json(const std::vector<workflow_step_def>& steps) {
-    std::vector<materialised_step> ms;
-    ms.reserve(steps.size());
-    for (const auto& s : steps)
-        ms.push_back({s.name,
-                      s.label,
-                      s.description,
-                      s.command_subject,
-                      s.compensation_subject,
-                      s.consumes,
-                      s.produces,
-                      static_cast<std::uint32_t>(s.timeout.count())});
-    return rfl::json::write(ms);
-}
 
 /**
  * @brief The deadline each step of a run was started with, by step name.
  *
  * The run is the authority on this rather than the definition: a run started
  * under a longer deadline keeps it, however the definition changes afterwards.
- * A run whose snapshot cannot be read yields no deadlines, and the expiry pass
+ * A run whose chain cannot be read yields no deadlines, and the expiry pass
  * leaves such a run alone rather than guessing at one -- a run it cannot
  * reason about is a run it must not kill.
  */
 std::unordered_map<std::string, std::chrono::seconds>
-deadlines_from_snapshot(const std::string& materialised_steps_json) {
+deadlines_of(const std::vector<domain::workflow_plan_step>& chain) {
     std::unordered_map<std::string, std::chrono::seconds> deadlines;
-    if (materialised_steps_json.empty())
-        return deadlines;
-    const auto parsed = rfl::json::read<std::vector<materialised_step>>(materialised_steps_json);
-    if (!parsed)
-        return deadlines;
-    for (const auto& step : *parsed)
-        deadlines.emplace(step.name, std::chrono::seconds{step.timeout_seconds});
+    for (const auto& step : chain)
+        if (step.timeout_seconds > 0)
+            deadlines.emplace(step.name, std::chrono::seconds{step.timeout_seconds});
     return deadlines;
 }
 
@@ -94,21 +79,115 @@ std::optional<std::string> undeclared_deadline(const std::vector<workflow_step_d
 }
 
 /**
- * @brief The steps a run was started with, out of its own snapshot.
+ * @brief The chain a run was started with, as the graph.
  *
- * The graph is rebuilt from what the run persisted rather than from the
+ * The graph is drawn from the rows the run started with rather than from the
  * definition as it stands now, for the same reason the deadline is carried: a
  * definition edited after a run started must not change what that run was
  * waiting for, and a run recovered after a restart must be judged by the chain
  * it was actually given.
+ *
+ * An edge names its steps by position. A position no step has cannot be read
+ * as a name, so it is carried as one no step produces and the graph refuses
+ * the chain: a store that lost a step is a chain this engine must not guess
+ * at.
  */
-std::vector<workflow_node> nodes_from_snapshot(const std::string& materialised_steps_json) {
-    if (materialised_steps_json.empty())
-        return {};
-    const auto parsed = rfl::json::read<std::vector<materialised_step>>(materialised_steps_json);
-    if (!parsed)
-        return {};
-    return nodes_of(*parsed);
+std::vector<workflow_node>
+nodes_of_chain(const std::vector<domain::workflow_plan_step>& chain,
+               const std::vector<domain::workflow_plan_dependency>& edges) {
+    std::unordered_map<int, std::string> name_at;
+    for (const auto& step : chain)
+        name_at.emplace(step.step_index, step.name);
+
+    auto ordered = chain;
+    std::ranges::sort(ordered, {}, &domain::workflow_plan_step::step_index);
+
+    std::unordered_map<std::string, std::size_t> position;
+    std::vector<workflow_node> nodes;
+    nodes.reserve(ordered.size());
+    for (const auto& step : ordered) {
+        position.emplace(step.name, nodes.size());
+        nodes.push_back(workflow_node{.name = step.name, .consumes = {}});
+    }
+
+    const auto name_of = [&name_at](int index) {
+        const auto found = name_at.find(index);
+        return found == name_at.end() ? "#" + std::to_string(index) : found->second;
+    };
+
+    for (const auto& edge : edges) {
+        const auto consumer = position.find(name_of(edge.consumer_step_index));
+        if (consumer == position.end())
+            continue;
+        nodes[consumer->second].consumes.push_back(name_of(edge.producer_step_index));
+    }
+    return nodes;
+}
+
+/**
+ * @brief The chain a run is about to take, as rows of its own.
+ *
+ * Each row takes the run's tenant rather than the session's. The insert
+ * trigger validates the workflow_id within the row's own tenant, so a row left
+ * to the system tenant is refused for every run started on behalf of anyone
+ * else -- and the engine holds the system tenant while it starts all of them.
+ */
+std::vector<domain::workflow_plan_step>
+plan_steps_of(const domain::workflow_instance& instance,
+              const std::vector<workflow_step_def>& steps,
+              const std::string& actor) {
+    std::vector<domain::workflow_plan_step> rows;
+    rows.reserve(steps.size());
+    for (std::size_t i = 0; i < steps.size(); ++i) {
+        const auto& step = steps[i];
+        domain::workflow_plan_step row;
+        row.tenant_id = instance.tenant_id;
+        row.id = boost::uuids::random_generator()();
+        row.workflow_id = instance.id;
+        row.step_index = static_cast<int>(i);
+        row.name = step.name;
+        row.label = step.label;
+        row.description = step.description;
+        row.command_subject = step.command_subject;
+        row.compensation_subject = step.compensation_subject;
+        row.timeout_seconds = static_cast<std::int32_t>(step.timeout.count());
+        row.modified_by = actor;
+        row.performed_by = actor;
+        rows.push_back(std::move(row));
+    }
+    return rows;
+}
+
+/**
+ * @brief The edges of that chain, each naming its steps by position.
+ *
+ * A consumer names a step the same chain contains, because the graph refused
+ * the definition otherwise before any of this was written. The lookup states
+ * that: a name that is not there is a broken invariant and throws rather than
+ * writing an edge that points at nothing.
+ */
+std::vector<domain::workflow_plan_dependency>
+plan_dependencies_of(const domain::workflow_instance& instance,
+                     const std::vector<workflow_step_def>& steps,
+                     const std::string& actor) {
+    std::unordered_map<std::string, int> index_of;
+    for (std::size_t i = 0; i < steps.size(); ++i)
+        index_of.emplace(steps[i].name, static_cast<int>(i));
+
+    std::vector<domain::workflow_plan_dependency> rows;
+    for (std::size_t i = 0; i < steps.size(); ++i)
+        for (const auto& input : steps[i].consumes) {
+            domain::workflow_plan_dependency row;
+            row.tenant_id = instance.tenant_id;
+            row.id = boost::uuids::random_generator()();
+            row.workflow_id = instance.id;
+            row.consumer_step_index = static_cast<int>(i);
+            row.producer_step_index = index_of.at(input);
+            row.modified_by = actor;
+            row.performed_by = actor;
+            rows.push_back(std::move(row));
+        }
+    return rows;
 }
 
 /**
@@ -239,10 +318,9 @@ void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id)
 void workflow_engine::note_awaiting(const domain::workflow_step& step,
                                     const boost::uuids::uuid& instance_id,
                                     const boost::uuids::uuid& tenant_id) {
-    const auto instance = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
-    if (instance.empty())
-        return;
-    const auto deadlines = deadlines_from_snapshot(instance.front().materialised_steps_json);
+    const auto chain = plan_step_repo_.read_latest_by_workflow_id(
+        ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    const auto deadlines = deadlines_of(chain);
     const auto budget = deadlines.find(step.name);
     if (budget == deadlines.end() || budget->second.count() <= 0)
         return;
@@ -297,10 +375,9 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         return;
     }
 
-    // Rebuild the step list using the same inputs stored on the instance.
-    // For deterministic workflows this is equivalent to the original call;
-    // for non-deterministic ones the materialised_steps_json on the instance
-    // guards against a different list being produced.
+    // The next step is still walked by ordinal and its command built from the
+    // definition, which is a function of the same request the instance stored.
+    // What the run is judged against below is its own rows, not this list.
     const auto steps = def->build_steps(instance.request_json,
                                         boost::uuids::to_string(instance.tenant_id.to_uuid()),
                                         instance.correlation_id);
@@ -338,15 +415,19 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
                 workflow_step_result{.name = s.name, .response_json = s.response_json});
     }
 
-    // The graph is the authority on what may run. It is rebuilt from the run's
-    // own snapshot, so the run is judged by the chain it was started with, and
+    // The graph is the authority on what may run. It is drawn from the run's
+    // own rows, so the run is judged by the chain it was started with, and
     // its answer decides whether the step the run is about to take may be
     // taken. A builder would refuse a missing result on its own, but from
     // inside itself, where a step still in flight and a step that never ran
     // look identical: only the graph can say which declared inputs a run is
     // waiting for.
     {
-        const auto graph = workflow_graph(nodes_from_snapshot(instance.materialised_steps_json));
+        const auto chain = plan_step_repo_.read_latest_by_workflow_id(
+            ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+        const auto edges = plan_dependency_repo_.read_latest_by_workflow_id(
+            ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+        const auto graph = workflow_graph(nodes_of_chain(chain, edges));
 
         std::set<std::string> satisfied;
         std::set<std::string> dispatched;
@@ -827,7 +908,6 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.modified_by = actor;
     instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
-    instance.materialised_steps_json = materialise_steps_json(steps);
     instance.recorded_at = std::chrono::system_clock::now();
 
     bool instance_created = false;
@@ -836,6 +916,12 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     try {
         instance_repo_.write(ctx_, instance);
         instance_created = true;
+
+        // The run's chain is written with the run, so the run carries the chain
+        // it was started with. Every later read of what the run is waiting for
+        // is a read of these rows.
+        plan_step_repo_.write(ctx_, plan_steps_of(instance, steps, actor));
+        plan_dependency_repo_.write(ctx_, plan_dependencies_of(instance, steps, actor));
 
         // Build and dispatch step 0.
         const auto& step_def = steps[0];
@@ -931,10 +1017,12 @@ void workflow_engine::recover_in_progress() {
 
     for (const auto& instance : instances) {
         try {
-            if (instance.materialised_steps_json.empty()) {
-                throw std::logic_error(
-                    "Instance " + boost::uuids::to_string(instance.id) +
-                    " has empty materialised_steps_json; recreate the database.");
+            const auto chain = plan_step_repo_.read_latest_by_workflow_id(
+                ctx_, boost::uuids::to_string(instance.id), 0, 1000);
+            if (chain.empty()) {
+                throw std::logic_error("Instance " + boost::uuids::to_string(instance.id) +
+                                       " has no plan steps, so the chain it was started with "
+                                       "cannot be read.");
             }
 
             // Find all in-progress steps for this instance and re-dispatch.

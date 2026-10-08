@@ -60,7 +60,6 @@ domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_
     r.created_by = v.created_by;
     r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
-    r.materialised_steps_json = v.materialised_steps_json;
     r.completed_at = v.completed_at.has_value() ?
                          std::optional(timestamp_to_timepoint(*v.completed_at)) :
                          std::nullopt;
@@ -97,7 +96,6 @@ workflow_instance_entity workflow_instance_mapper::map(const domain::workflow_in
     r.created_by = v.created_by;
     r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
-    r.materialised_steps_json = v.materialised_steps_json;
     r.completed_at =
         v.completed_at.has_value() ?
             std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :

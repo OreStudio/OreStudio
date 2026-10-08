@@ -23,30 +23,20 @@
  * To modify, update the template and regenerate.
  */
 /**
- * The workflow instance wire shape.
+ * The workflow plan dependency wire shape.
  *
  * Field names are the C++ member names, because they are the keys rfl::json
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.
  */
-export interface WorkflowInstance {
+export interface WorkflowPlanDependency {
     version: number;
     tenant_id: string;
     id: string;
-    type: string;
-    target_kind: string;
-    target_id: string;
-    state_id: string;
-    request_json: string;
-    result_json: string;
-    error: string;
-    correlation_id: string;
-    created_by: string;
-    current_step_index: number;
-    step_count: number;
-    completed_at: string | null;
-    last_event_at: string | null;
+    workflow_id: string;
+    consumer_step_index: number;
+    producer_step_index: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

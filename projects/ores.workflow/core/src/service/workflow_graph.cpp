@@ -30,14 +30,6 @@ std::vector<workflow_node> nodes_of(const std::vector<workflow_step_def>& steps)
     return nodes;
 }
 
-std::vector<workflow_node> nodes_of(const std::vector<materialised_step>& steps) {
-    std::vector<workflow_node> nodes;
-    nodes.reserve(steps.size());
-    for (const auto& s : steps)
-        nodes.push_back({s.name, s.consumes});
-    return nodes;
-}
-
 workflow_graph::workflow_graph(std::vector<workflow_node> nodes) {
     for (const auto& node : nodes) {
         if (by_name_.contains(node.name)) {

@@ -779,8 +779,7 @@ TEST_CASE("a retry refuses a step the run does not hold", tags) {
     f.engine->on_step_completed(as_message(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
 
-    // The run stopped at step one, so no step is named three: a run that
-    // stopped never materialised the steps after the one that failed.
+    // The run stopped at step one, and no step of its chain is named three.
     const auto refused = f.engine->retry_instance(
         boost::uuids::string_generator{}(instance_id), "three", f.h.context().tenant_id());
     CHECK_FALSE(refused.resumed);
@@ -801,10 +800,9 @@ TEST_CASE("a retry refuses a stopped run that has no failed step", tags) {
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // A run can rest in failed with no failed step: a stop that left every
-    // step complete, which the engine reaches when the definition it
-    // materialised disagrees with the one it re-reads. The state is written
-    // here rather than provoked, because the engine has no product path to it,
-    // and what the case pins is the answer a person sees.
+    // step complete. The state is written here rather than provoked, because
+    // the engine has no product path to it, and what the case pins is the
+    // answer a person sees.
     workflow_step_repository steps;
     workflow_instance_repository instances;
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);

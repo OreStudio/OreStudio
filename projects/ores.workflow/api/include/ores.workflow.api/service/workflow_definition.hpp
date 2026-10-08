@@ -191,43 +191,6 @@ struct workflow_step_def {
 };
 
 /**
- * @brief Serialisable snapshot of one step's metadata for a specific instance.
- *
- * Persisted as JSON in workflow_instance.materialised_steps_json so that
- * the step sequence is preserved across service restarts, even when
- * build_steps is non-deterministic.
- */
-struct materialised_step {
-    std::string name;
-    std::string label;
-    std::string description;
-    std::string command_subject;
-    std::string compensation_subject;
-    /**
-     * @brief The steps whose results this step reads, as the definition gave
-     * them.
-     *
-     * Carried with the run for the same reason the deadline is: a definition
-     * edited after a run started would otherwise change what that run was
-     * waiting for, and the engine would judge it by a chain it never built.
-     */
-    std::vector<std::string> consumes;
-    /**
-     * @brief The artifacts this step writes beyond its own result.
-     */
-    std::vector<std::string> produces;
-    /**
-     * @brief The deadline the run was started with, in seconds.
-     *
-     * Carried with the run rather than read from the definition, because the
-     * engine must be able to say when a step should have answered for a run
-     * that a later build started: a definition that shortened a deadline would
-     * otherwise expire runs that were started under a longer one.
-     */
-    std::uint32_t timeout_seconds = 0;
-};
-
-/**
  * @brief The budget for a step whose work is publishing or importing data.
  *
  * Such a step hands its work to another run and waits for it, so its budget is
@@ -322,10 +285,10 @@ struct workflow_definition {
     /**
      * @brief Builds the full step list for a specific workflow instance.
      *
-     * Called once at instance start. The returned vector's size is persisted
-     * as workflow_instance.step_count and the step metadata as
-     * workflow_instance.materialised_steps_json. Never called again for
-     * that instance (restart reads from DB instead).
+     * Called at instance start. The chain it returns is persisted as the run's
+     * own plan step and plan dependency rows, and its size as
+     * workflow_instance.step_count, so a run is judged by the chain it was
+     * started with however the definition changes afterwards.
      *
      * @param request_json   The workflow instance's originating request JSON.
      * @param tenant_id      UUID string of the tenant this instance runs for.

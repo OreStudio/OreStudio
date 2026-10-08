@@ -50,7 +50,6 @@ generate_synthetic_workflow_instance(utility::generation::generation_context& ct
     r.request_json = std::string("{}");
     r.result_json = std::string("{}");
     r.created_by = std::string(faker::word::noun());
-    r.materialised_steps_json = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

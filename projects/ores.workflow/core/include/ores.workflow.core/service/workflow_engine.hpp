@@ -32,6 +32,8 @@
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
+#include "ores.workflow.core/repository/workflow_plan_dependency_repository.hpp"
+#include "ores.workflow.core/repository/workflow_plan_step_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <chrono>
@@ -367,6 +369,8 @@ private:
     fsm_state_map step_states_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     repository::workflow_instance_repository instance_repo_;
+    repository::workflow_plan_step_repository plan_step_repo_;
+    repository::workflow_plan_dependency_repository plan_dependency_repo_;
     repository::workflow_step_repository step_repo_;
 
     /**

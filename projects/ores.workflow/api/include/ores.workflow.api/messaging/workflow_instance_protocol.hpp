@@ -52,7 +52,6 @@ struct workflow_instance_write {
     std::string created_by;
     int current_step_index;
     int step_count;
-    std::string materialised_steps_json;
     std::optional<std::chrono::system_clock::time_point> completed_at;
     std::optional<std::chrono::system_clock::time_point> last_event_at;
 };

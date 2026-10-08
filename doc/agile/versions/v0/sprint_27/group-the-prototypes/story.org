@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 855D0907-26E3-48B9-A59F-5FEBE54C328C
+:END:
+#+title: Story: Group the prototypes and add the Gemini reviews
+#+description: The prototypes are one flat list of 46 directories, so nothing can be found. Group them under doc/prototypes/<group>/, give the top page the groups and what each gathers, give each group a page that lists its prototypes, and put the Gemini reviews beside the prototypes they review.
+#+type: story
+#+level: s2
+#+filetags: :prototype:ui:journeys:docs:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person looking for a prototype finds it by the journey topic it answers to,
+not by scanning one flat list of 46 directories. Every prototype carries its
+Gemini review beside it, and every index page says which prototypes have one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The task is implemented and its PR is open. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge, then close.                     |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- =doc/prototypes/index.org= names every journey group with what it gathers,
+  and links the group's page where one exists.
+- Every prototype sits at =doc/prototypes/<group>/<name>/=, and the group page
+  lists it with what it argues and how to open it.
+- A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, and the
+  group page states which prototypes carry one.
+- The guard, the site build and every document that names a prototype path
+  agree with the new shape.
+- =compass lint=, the guard and the org link check pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the Gemini reviews]] | STARTED | 2026-10-08 | | Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path. |
+
+* Decisions
+
+- *Group by journey topic, not by component.* The group folder carries the
+  journey group's own name, so a reader who knows which journey a prototype
+  answers to knows where the file is without a lookup.
+- *The pages are org.* The site build already publishes org to HTML, so the
+  index pages are searchable, tagged and linked like the rest of the corpus,
+  and the prototypes they describe stay HTML.
+- *The site build discovers the prototypes.* Naming all 46 in
+  =ores-build-site.el= is what let the list and the tree drift, so the build
+  walks the group folders instead. Adding a prototype now touches no build
+  file.
+- *Reviews live inside the prototype.* A review is not a prototype of its own
+  and must never be read as the agreed design, so =name/review/= keeps the
+  association and the page says so in a banner.
+- *The shell answers to Tenancy, not Profile.* The shell's landing page was
+  replaced by the home screen, and both read the tenant the sign-in chose, so
+  the group that owns the tenant owns the shell.
+- *Fix the unrelated site-build break in its own commit.* The rates-family
+  design document links an id in the wrong case, which aborts the whole site
+  export. It is pre-existing and belongs to another story, so it is one commit
+  on this branch rather than folded into the prototype work.
+
+* Out of scope
+
+- Filling the prototype gap in the four groups that have none: Membership,
+  Directory, Currencies and FX, and Calendars.

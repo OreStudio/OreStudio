@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 4BC92424-C73B-4E74-ABEA-5F0A979AD91C
+:END:
+#+title: Task: Group the prototypes and add the Gemini reviews
+#+description: Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path.
+#+type: task
+#+level: s1
+#+filetags: :prototype:ui:journeys:docs:group-the-prototypes:sprint_27:v0:
+#+owner: marco
+#+branch: feature/group-the-prototypes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the prototypes a shape a person can walk: one top page that names the
+journey groups and what each gathers, one page per group that lists its
+prototypes and what each argues, and one folder per group that holds them.
+Put the Gemini review screens beside the prototypes they review, and mark on
+every index page which prototypes carry a review.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] |
+| Now          | All five commits are on the branch and its PR is open. |
+| Waiting on   | Nothing.                               |
+| Next         | Merge, then close the story. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- =doc/prototypes/index.org= names every journey group that holds a prototype,
+  gives what the group gathers, and links its group page.
+- Every group has =doc/prototypes/<group>/index.org=, which lists each
+  prototype in it, what it argues, a link to open it, and the review link
+  where a review exists.
+- Every prototype sits at =doc/prototypes/<group>/<name>/index.html=, and its
+  design note, where one exists, at =doc/prototypes/<group>/<name>.org=.
+- The Gemini review screens sit at
+  =doc/prototypes/<group>/<name>/review/=, beside the prototype they review.
+- The index pages state which prototypes have a review, and which do not.
+- =build/scripts/check_prototype_inventory.py= enforces the new shape and
+  fails on a prototype that is unlisted, a row that names no prototype, a
+  review that is listed nowhere, and a group that the top page does not link.
+- Every document that names a prototype path names the new one.
+- =compass lint=, the guard and the org link check pass.
+
+* Plan
+
+The work is one move, one copy and a documentation pass.
+
+1. *Move.* Every prototype directory goes under its journey group folder, as
+   =doc/prototypes/<group>/<name>/=. The seven design notes that sit directly
+   under =doc/prototypes/= go to =doc/prototypes/<group>/<name>.org=, beside
+   the prototype they describe.
+2. *Repair links.* A prototype page reaches the journey documents with
+   =../../knowledge/=, which becomes =../../../knowledge/= at the new depth.
+3. *Copy the reviews.* Six of the eight Gemini files are complete pages. Two
+   are byte-for-byte truncated prefixes of two others, so they are dropped.
+   Each complete page is renamed for the screen it draws and placed in the
+   =review/= folder of the prototype it reviews.
+4. *Write the pages.* A group page per group, and a new top page.
+5. *Encode the shape.* The guard learns groups, group pages and reviews. The
+   site build discovers the prototypes instead of naming all 46, so a new
+   prototype needs no change there.
+6. *Tell every environment.* The memory, the journey document type, the
+   journeys hub, the synthetic-data knowledge page and the journey documents
+   that name a prototype path all move to the new one.
+
+Group assignment is by journey topic, taken from the mapping each journey
+document already states. Two calls are judgement, and the group pages record
+them: =navigation= joins =tenancy= rather than =profile=, because the home
+screen that replaced it, and the sign-in that decides what the shell shows,
+both belong to the tenant; and =trade-entry= joins =books=, because no
+trading group exists and the prototype books a structure into a book.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Prototype directories | 46 | =find doc/prototypes -mindepth 3 -maxdepth 3 -name index.html \| wc -l= | =4f161ac260= |
+| Journey groups holding a prototype | 14 | =ls -d doc/prototypes/*/ \| wc -l= | =4f161ac260= |
+| Gemini files received | 8, of which 6 are complete pages | =ls /home/marco/Downloads/gemini-code-*.html /home/marco/Downloads/ore_studio_*redesign.html= | =4f161ac260= |
+| Gemini review screens kept | 6 | =find doc/prototypes -path '*/review/*.html' ! -name index.html \| wc -l= | =4f161ac260= |
+| Prototypes carrying a review | 3 | =ls -d doc/prototypes/*/*/review \| wc -l= | =4f161ac260= |
+| Documents repointed at a new prototype path | 36 files | =git show --stat 2b2fdb2b45= | =2b2fdb2b45= |
+| Guard verdict | 46 prototypes in 14 groups, all listed and published; 3 reviews; no React prototype tree | =python3 build/scripts/check_prototype_inventory.py= | =4f161ac260= |
+
+* Notes
+
+The eight Gemini files are two design families. Five draw the person record:
+two tabs of it that answer to the Profile prototype, and one that answers to
+the Access prototype's person screen. Three draw the tenant administration
+console, the people roster and a trading terminal, which answer to the
+Application shell prototype, so their reviews sit under =tenancy/navigation=.
+
+Two of the eight are byte-for-byte truncated prefixes of two others, with no
+closing tags: =gemini-code-1791449283112.html= stops inside an attribute of
+the Person detail page, and =gemini-code-1791450752832.html= stops inside an
+=img= tag of the Person contact details page. They are copy artefacts, not
+variants, so only the complete pages are kept.
+
+The full site build is the evidence that the new shape exports. It failed
+first on an unrelated, pre-existing dangling id link in
+=doc/agile/versions/v0/sprint_27/instruments-rates/design.org=, fixed in
+=4f161ac260= so the build could run to the end.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The prototypes are grouped and readable. The top page names the eighteen
+journey groups and what each gathers, fourteen of them hold prototypes, and
+each of those has a page listing its prototypes, what each argues, how to open
+one, and which carry a Gemini review. Every prototype sits under the journey
+topic it answers to.
+
+The whole protection moved with the shape rather than being rewritten around
+it. The guard now enforces the group pages, the review listings and the top
+page, and the site build discovers the prototypes under the group folders
+instead of naming all 46, so a new prototype needs an edit to no build file at
+all. That retires 200 lines of near-identical deployment calls.
+
+Every document that named a prototype path names the new one, which includes
+eleven journey documents that had pointed at the React tree deleted in
+October: their prototype sections now name a page that exists, and the backlog
+capture that recorded the stale pointers is resolved.
+
+Seven of the eight Gemini files are kept as six review screens, and the two
+truncated prefixes are dropped.
+
+Checks on =4f161ac260=: the guard passes; =compass lint= passes; the org link
+check resolves every link; a scan of all 93 prototype paths named anywhere in
+=doc/= finds each one on disk; and the fourteen group pages plus the top page
+are published by the site build. The one thing not verified end to end is a
+completely green =compass build --direct site=, because main already failed
+that build for the reason fixed here.
+

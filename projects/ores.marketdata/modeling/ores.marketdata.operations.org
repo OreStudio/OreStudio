@@ -36,9 +36,148 @@ export group moves whole ORE files in and out of the tenant.
 #include <string_view>
 #include <vector>
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
 #+end_src
 
 * Messages
+
+** series_identity_field
+
+One typed identity field of a series, as the request gives it: the oresmd field
+name and the text the caller believes it holds.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One typed identity field of a series, as the caller gives it.
+ *
+ * The name is an oresmd field code, such as ccy or curve_id, and the text is
+ * what the caller believes that field holds. The pair is the request's spelling
+ * of the identity, not a URI: the server composes the URI through the codec.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The field's oresmd name, the same name the identity URI writes it under.
+
+*** text
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The text the field holds, in the spelling the URI writes.
+
+** resolve_series_identity_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.resolve_series_identity
+:response: resolve_series_identity_response
+:END:
+
+Requests the series a typed identity names, so a caller never builds an
+=oresmd_uri= by hand and never matches on one. The fields the URI grammar puts
+in a fixed position are stated on their own -- the asset class, the scope, the
+instrument type and the quote type -- and every remaining identity field
+travels in =fields=.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Requests the series a typed identity names.
+ *
+ * The caller states the identity as typed fields and the server resolves it to
+ * the series rows that carry it, so no caller builds an oresmd_uri and no
+ * caller matches on one. The asset class, the scope, the instrument type and
+ * the quote type are stated on their own because the URI grammar puts them in a
+ * fixed position; every other identity field travels in `fields`.
+ *
+ * `party_id` states whose series is wanted. An empty one asks across the
+ * parties the caller can see, which is why the answer is a list.
+ */
+#+end_src
+
+*** asset
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The asset class as the URI's authority writes it, such as =fx= or =ir=.
+
+*** scope
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The URI's subject field: what the series is about, such as the currency of a
+rate or the reference entity of a CDS.
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The ORE instrument type, as the URI's =instrument= writes it, such as
+=fx_option=.
+
+*** quote_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The ORE quote type, as the URI's =quote= writes it, such as =rate_lnvol=. It is
+required, because every series URI carries a quote.
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The owning party, or empty for every party the caller can see.
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<series_identity_field>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The identity's remaining fields, such as ccy or curve_id.
+ *
+ * The other fields the type's schema row declares. A field the caller does not
+ * state is left unconstrained, so the read narrows by what it is given.
+ */
+#+end_src
+
+** resolve_series_identity_response
+
+The series the identity resolves to. Empty when nothing carries it, which is
+not an error: a scope may hold no series of that kind yet.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series the identity resolves to.
+ *
+ * One row per owning party that holds the identity. Empty when nothing carries
+ * it, which is not an error: a scope may hold no series of that kind yet.
+ */
+#+end_src
+
+*** series
+:PROPERTIES:
+:cpp_type: std::vector<ores::marketdata::domain::market_series>
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
 
 ** crm_rate_item
 

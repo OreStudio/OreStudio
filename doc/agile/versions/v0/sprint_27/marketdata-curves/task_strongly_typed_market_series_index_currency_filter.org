@@ -1,0 +1,490 @@
+:PROPERTIES:
+:ID: 86B41936-1186-4FEC-B001-C62F59DF0013
+:END:
+#+title: Task: Resolve a composite object from its typed identity
+#+description: A term structure or a surface is named by its oresmd URI, whose query carries the typed identity fields. A caller must be able to find one from those fields, so a view can ask for the FX vol surface for EURUSD without building the URI by hand and without matching on a string.
+#+type: task
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+owner: marco
+#+branch: feature/strongly-typed-market-series-index-currency-filter
+#+pr: 2853
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A term structure or a surface is identified by its =market_series= row, and that row is named by
+its =oresmd_uri=, whose query names each identity field under its own key: the asset class, the
+scope such as a currency pair, the object kind, and the party. Nothing today lets a caller ask for
+"the FX vol surface for EURUSD" from those fields. The caller builds the URI, or matches on a
+string. The free-text =qualifier= column the original capture described is gone, so the
+string-matching workaround it named no longer exists.
+
+The outcome this task delivers: a caller names the object by its typed identity and the server
+resolves it to a series, so a view can list and pick the composite objects of a scope without
+knowing the URI grammar, and without a second source of truth for what the identity means.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A caller names a composite object by typed identity fields, the asset class, the scope such as a
+  currency pair, the object kind and the party, and the server resolves it to one series with no
+  hand-built =oresmd_uri= and no string match.
+- The resolution is a repository read, not a client-side scan of every series. It does not parse
+  every series: the read filters on the projected identity columns of
+  [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]],
+  which the codec wrote, so the narrowing states no grammar of its own.
+- The typed fields mean what the URI means, from one source of truth, so the lookup cannot
+  disagree with the identity the ticks land under.
+- The request and the answer are on the wire, so a view can list the composite objects of a scope
+  and pick one, and the shell can do the same.
+- At least one production consumer uses it, or the result says why none does.
+
+* Plan
+
+Start from the identity that already exists. A series is named by its =oresmd_uri=, and the codec
+already parses every field out of it, so the typed fields do not have to be invented. The capture
+leaves one question open, how a caller filters on them. Choose between reading the URI per row,
+adding an index over a derived projection of the URI's parts, or carrying typed columns. Then
+settle the request shape, the read and the wire, and prove the consumer. Nothing here changes the
+points, the observation table or the ingest path.
+
+** The five fields of a series identity, and what they cost
+
+The URI carries the identity in three places, and each one has a different cost to
+resolve. A worked example, the FX vol surface for =EURUSD=, as it is stored today:
+
+#+begin_example
+oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD
+#+end_example
+
+| Identity part | Where the URI holds it | Resolved by |
+|---------------+------------------------+-------------|
+| asset class   | the authority, =fx=    | a text prefix |
+| scope         | the path, =EUR=        | a text prefix |
+| object kind   | =instrument=fx_option= | a text match inside the query |
+| the party     | a column, =party_id=   | the column, already indexed |
+| quote and the type's remaining identity fields | the query | a text match inside the query |
+
+The asset class and the scope both sit in the URI's *path*, so one prefix predicate,
+=oresmd_uri LIKE 'oresmd://fx/EUR?type=series&instrument=fx_option%'=, resolves the
+first three parts at once, and it can only be satisfied by a row of that asset class and
+that scope, which keeps the answer no wider than the request. The column =party_id=
+resolves the party. What no prefix reaches is the =ccy= field, which is what the capture's
+"USD + USD-SOFR" filter wants, and it is the only part of the identity the prefix leaves
+inside the query text.
+
+** Option 1, parse every visible series in C++: rejected
+
+It parses the URI once per row, which the second acceptance bullet forbids. Nothing in
+the tree shows that bullet is wrong: =idx_read_latest_by_uri= already resolves a series
+identity from the identity text through one equality predicate, so a scan per row buys
+nothing over it.
+
+** Option 3, typed columns on market_series: rejected
+
+It stores the oresmd identity a second time, and the model says the URI is the only name
+the row carries ([[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][market_series]]: "the registry's
+=series_type=, =metric= and =qualifier= columns have gone"). This is the decision the
+original capture asked for and the oresmd migration reversed.
+
+** The chosen shape: narrow by the fixed prefix in SQL, then let the codec match
+
+Option 2 is the shape the story names, and this is the form of it the task implements. It
+is neither the projection nor a per-row parse, and the two facts below are what make it
+work.
+
+The typed identity read resolves through =oresmd_uri_codec::write=, which is not a
+quote-only writer: =spelling_of= branches on =datum.is_series()= and writes =type=series=,
+and =market_datum::make_series= is the checked factory for exactly the key =read= produces
+for a stored series. So a typed request holding the row's identity fields, its instrument
+type and its quote type composes the identity through the codec the reader uses, and the
+repository resolves it through the existing unique index
+=market_series_party_id_oresmd_uri_uniq_idx=, whose third key column is =oresmd_uri=. No
+second grammar, no codec change, no codegen change, and =quote_type= is required because
+the URI grammar makes =quote= a required key of every series URI.
+
+The currency and index filter is the part a projection would normally serve, and the
+decision is that it does not need one yet. The =ccy= field's *position* is not fixed
+across instrument types, so a pattern match on it would be wrong — but that rules out
+matching, not narrowing:
+
+- The URI's *base* is fixed by the grammar and by the schema row: the authority is the
+  asset class, the path is the =subject= field's value, and the query always opens
+  =type=series&instrument=<kind>&quote=<quote>=. The writer emits it that way for every
+  instrument type, so the base is a deterministic prefix, and the party is a column.
+- Every field after that base is emitted in the row's schema order, which is why the
+  codec, and not SQL, is the authority on what those fields mean.
+
+So the read narrows in SQL with that prefix, over the existing identity index, and then
+parses only the surviving rows with =oresmd_uri_codec::read=, filtering the remaining
+typed fields such as =ccy= against the parsed datum. A wrong currency is refused by the
+codec's own field comparison and never by a pattern, and the type's field names and order
+stay in one place. The prefix itself composes through =market_datum::make_series= and the
+codec's writer, so no part of the grammar is restated in SQL.
+
+*The projection stays deferred, with its trigger.* A projection of the URI's query parts,
+generated from the field specs, with an index over it, is the right answer when a plan or a
+row count demands it: when the narrowing's candidate set grows too wide to parse, or when
+the planner stops serving the read from an index. At 1707 rows the plan recorded in
+* Evidence * shows the index already doing the work, so the projection buys nothing yet.
+It remains the only shape that lets SQL itself filter on a query field whose position
+varies, which this read answers by parsing after the narrowing instead.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column. This task has no =evidence/=
+directory, so the raw output is in the =* Evidence= section below instead.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Current market series rows (all classes) | 1707 | =select count(*) from ores_marketdata_market_series_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | =def733bc55= |
+| Rows one typed identity resolves to | 2, both =oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD=, one per owning party | =select oresmd_uri ... where valid_to = ores_utility_infinity_timestamp_fn() and oresmd_uri = <that URI>= | =def733bc55= |
+| Rows the same identity resolves to under another currency | 2, =ccy=JPY=, a disjoint set from the =ccy=USD= rows | =select count(*) ... and oresmd_uri = <the JPY URI>= | =def733bc55= |
+| Currencies the seeded =fx/EUR?instrument=fx_option= series carry | 7: CHF, CZK, GBP, JPY, NOK, SEK, USD — the values a filter has to discriminate | =select oresmd_uri, count(*) ... where oresmd_uri like 'oresmd://fx/EUR%' group by 1= | =def733bc55= |
+| Series in the =volatility= subclass | 148 | =select series_subclass, count(*) ... group by 1= | =def733bc55= |
+| Indexes on =market_series= that a prefix predicate can use | 1: =market_series_party_id_oresmd_uri_uniq_idx= on =(tenant_id, party_id, oresmd_uri) where current= | =select indexname, indexdef from pg_indexes where tablename = 'ores_marketdata_market_series_tbl'= | =def733bc55= |
+| Plan for the three-part prefix predicate on the live database | Bitmap Heap Scan, one heap block, =oresmd_uri ~~ 'oresmd://fx/EUR?type=series&instrument=fx_option%'= as the filter; 1.289 ms planning, 0.038 ms execution (a second run: 1.394 ms and 0.332 ms) | =explain (analyze, buffers) select ... where valid_to = ores_utility_infinity_timestamp_fn() and oresmd_uri like ...= — raw output in * Evidence * | =def733bc55= |
+| Plan for the equality identity predicate | Index Scan, the identity equality lands as a filter over the tenant index at this table size, not as the btree URI range; 1.217 ms planning, 6.212 ms execution | =explain (analyze, buffers) select id ... where party_id = ... and oresmd_uri = ...= — raw output in * Evidence * | =def733bc55= |
+| Codec entry points that write a URI | 4 in all — =read=, =write=, =read_index=, =write_index=; =write= covers a series, which =spelling_of= branches on =datum.is_series()= | =grep -n "std::expected" .../oresmd_uri_codec.hpp; grep -n "is_series" .../oresmd_uri_codec.cpp= | =def733bc55= |
+| Schema rows that expose the identity's parts as data | 1 array, =schema=, of =instrument_type_count= rows with =asset=, =subject= and per-field =role=/=may_be_none= | =grep -n "struct schema_row" -A 12 projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp= | =def733bc55= |
+| Production consumers of the URI-keyed identity lookup | 3 call sites of =read_latest_by_uri=, all inside =ores.marketdata=: =curve_pillar_reader.cpp=, =feed_ingest_loop.cpp=, a service test. None is a view or the shell | =grep -rn "read_latest_by_uri" projects --include=*.cpp --include=*.hpp= | =def733bc55= |
+| Columns the identity projection exposes | 52: 45 identity fields and 7 context columns | =python3 build/scripts/check_marketdata_identity_columns.py= | =04b03c1d34= |
+| Asset-class views the identity can be read through | 10 | same | =04b03c1d34= |
+| Statements one typed-identity read issues | 2: the projection filter, then the series rows by the keys it matched | inspection of =market_series_identity_reader.cpp= | =04b03c1d34= |
+| Production consumers of the operation | 0 outside its own protocol, handler, reader and registration | =grep -rn "resolve_series_identity" projects --include=*.cpp --include=*.hpp= | =04b03c1d34= |
+
+* Evidence
+
+Raw output behind the measurements above. All commands ran read-only against the
+=prime_origin= environment at commit =def733bc55=.
+
+** The identity the typed fields compose, and what it resolves to
+
+The URI in the predicate is exactly what =oresmd_uri_codec::write= produces for the series
+datum those fields name, which is why one equality predicate resolves it.
+
+#+begin_src sql
+select oresmd_uri from ores_marketdata_market_series_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and oresmd_uri = 'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD';
+#+end_src
+
+#+begin_example
+                                oresmd_uri
+---------------------------------------------------------------------------
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD
+(2 rows)
+#+end_example
+
+Two rows, one per owning party, which is what the natural key =(party_id, oresmd_uri)=
+allows: the same identity under two parties is two series. The same predicate with another
+currency resolves to that currency's series and to no other:
+
+#+begin_src sql
+select count(*) from ores_marketdata_market_series_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and oresmd_uri = 'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY';
+#+end_src
+
+#+begin_example
+ count 
+-------
+     2
+(1 row)
+#+end_example
+
+The two identities resolve to disjoint row sets, which is the property a typed lookup has
+to have. The currencies the seeded =fx/EUR?instrument=fx_option= series carry, which is
+what a filter has to discriminate:
+
+#+begin_example
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=CHF | 2
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=CZK | 2
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=GBP | 6
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY | 2
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=NOK | 2
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=SEK | 2
+ oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD | 2
+#+end_example
+
+** The two plans
+
+The three-part prefix predicate, which resolves the asset class, the scope and the object
+kind at once:
+
+#+begin_src sql
+explain (analyze, buffers)
+select id, oresmd_uri from ores_marketdata_market_series_tbl
+where tenant_id = (select tenant_id from ores_marketdata_market_series_tbl limit 1)
+  and valid_to = ores_utility_infinity_timestamp_fn()
+  and oresmd_uri like 'oresmd://fx/EUR?type=series&instrument=fx_option%';
+#+end_src
+
+#+begin_example
+ Bitmap Heap Scan on ores_marketdata_market_series_tbl  (cost=5.04..85.67 rows=1 width=97) (actual time=0.021..0.021 rows=0.00 loops=1)
+   Recheck Cond: ((tenant_id = (InitPlan 1).col1) AND (valid_to = '9999-12-31 23:59:59+00'::timestamp with time zone))
+   Filter: (oresmd_uri ~~ 'oresmd://fx/EUR?type=series&instrument=fx_option%'::text)
+   Rows Removed by Filter: 1
+   Heap Blocks: exact=1
+   Buffers: shared hit=5
+   InitPlan 1
+     ->  Limit  (cost=0.00..0.05 rows=1 width=16) (actual time=0.009..0.009 rows=1.00 loops=1)
+           Buffers: shared hit=2
+           ->  Seq Scan on ores_marketdata_market_series_tbl ores_marketdata_market_series_tbl_1  (cost=0.00..92.09 rows=1709 width=16) (actual time=0.008..0.008 rows=1.00 loops=1)
+                 Buffers: shared hit=2
+   ->  Bitmap Index Scan on market_series_tenant_idx  (cost=0.00..4.98 rows=94 width=0) (actual time=0.016..0.016 rows=1.00 loops=1)
+         Index Cond: (tenant_id = (InitPlan 1).col1)
+         Index Searches: 1
+         Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=540
+ Planning Time: 1.289 ms
+ Execution Time: 0.038 ms
+(19 rows)
+#+end_example
+
+The plan reads one heap block and applies the prefix as a filter. At this table size the
+planner prefers the tenant index, which is already selective over 1707 rows; the
+=oresmd_uri= key column is what the same predicate would range over once the table is large
+enough for the planner to price the prefix. This is why the measurement records the plan
+and not a claim about it.
+
+The equality identity predicate, with the party stated, since that is one of the identity's
+parts:
+
+#+begin_src sql
+explain (analyze, buffers) select id from ores_marketdata_market_series_tbl
+where tenant_id = '00000000-0000-0000-0000-000000000000'
+  and party_id = '00000000-0000-0000-0000-000000000000'
+  and oresmd_uri = 'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY'
+  and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+#+begin_example
+ Index Scan using ores_marketdata_market_series_tbl_tenant_id_id_tstzrange_excl on ores_marketdata_market_series_tbl  (cost=0.14..8.17 rows=1 width=16) (actual time=6.198..6.199 rows=0.00 loops=1)
+   Index Cond: (tenant_id = '00000000-0000-0000-0000-000000000000'::uuid)
+   Filter: ((party_id = '00000000-0000-0000-0000-000000000000'::uuid) AND (oresmd_uri = '...'::text) AND (valid_to = '9999-12-31 23:59:59+00'::timestamp with time zone))
+   Index Searches: 1
+   Buffers: shared hit=24 read=1
+ Planning:
+   Buffers: shared hit=550
+ Planning Time: 1.217 ms
+ Execution Time: 6.212 ms
+(9 rows)
+#+end_example
+
+The party here carries the nil uuid, so the plan reports no row and the equality lands as a
+filter over the tenant index rather than as the =market_series_party_id_oresmd_uri_uniq_idx=
+range. The measurement is left as it ran: the plan at 1707 rows prices the tenant predicate
+first, and the check constraint the typed request carries is what makes the btree range the
+one that pays for itself when the table grows.
+
+** The indexes a lookup can reach
+
+#+begin_src sql
+select indexname, indexdef from pg_indexes
+where tablename = 'ores_marketdata_market_series_tbl';
+#+end_src
+
+#+begin_example
+                           indexname                           |                                                                                                     indexdef
+---------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------
+ ores_marketdata_market_series_tbl_pkey                        | CREATE UNIQUE INDEX ... USING btree (tenant_id, id, valid_from, valid_to)
+ ores_marketdata_market_series_tbl_tenant_id_id_tstzrange_excl | CREATE INDEX ... USING gist (tenant_id, id, tstzrange(valid_from, valid_to))
+ market_series_party_id_oresmd_uri_uniq_idx                    | CREATE UNIQUE INDEX market_series_party_id_oresmd_uri_uniq_idx ON public.ores_marketdata_market_series_tbl USING btree (tenant_id, party_id, oresmd_uri) WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+ market_series_version_uniq_idx                                | CREATE UNIQUE INDEX market_series_version_uniq_idx ON ... USING btree (tenant_id, id, version) WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+ market_series_id_uniq_idx                                     | CREATE UNIQUE INDEX market_series_id_uniq_idx ON ... USING btree (tenant_id, id) WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+ market_series_tenant_idx                                      | CREATE INDEX market_series_tenant_idx ON ... USING btree (tenant_id) WHERE (valid_to = ores_utility_infinity_timestamp_fn())
+(6 rows)
+#+end_example
+
+=market_series_party_id_oresmd_uri_uniq_idx= is the one an identity resolves through:
+=oresmd_uri= is its third key column, and the column's default collation gives the
+=LIKE 'prefix%'= operator the btree range it needs.
+
+* Notes
+
+The capture's =qualifier= column and the =CurveBuilderWorkbench::selectedIndexQualifier()=
+dash-to-slash workaround it describes are both gone from this tree, so this task cannot
+reproduce the original bug. What it can do is keep the class of bug from coming back, which
+is why the one source of truth for the identity is the deciding constraint and not a
+preference.
+
+The =party_id= column is part of the identity's fourth field and is already resolved
+through =market_series_party_id_oresmd_uri_uniq_idx=, so the party needs no work of its
+own.
+
+The =ccy= field a filter would match is an identity field of some instrument types and a
+coordinate of none, but its *position* in the query is not fixed across the schema: it
+follows the row's field order, which is why a prefix cannot reach it and why the projection
+has to be generated from the specs rather than pattern-matched.
+
+The branch name and the task title both say "strongly typed index and currency filter",
+which is the filter half that needs codegen. The task's own acceptance names only the asset
+class, the scope, the object kind and the party, which is the identity half that does not.
+The two halves are the two reads in the Plan, and the parent should say which one this task
+is.
+
+An identity with more than one party resolves to one series per party rather than to one
+series. The read reports a list for that reason, and a caller that wants one series states
+the party.
+
+* Result
+
+Delivered: a caller names a composite object by typed identity fields and the server
+resolves it to a series, with no hand-built URI and no string match.
+
+The design gate below stopped this task once, because the currency filter needed a
+projection codegen did not have. The projection story, [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]],
+then built it: the identity is real columns now, written from the codec's own parse. This
+task's read therefore filters those columns rather than the prefix it was first built on.
+
+What landed:
+
+- =resolve_series_identity_request= and =resolve_series_identity_response= on
+  =marketdata.v1.ops.resolve_series_identity=. The caller states the asset class, the
+  scope, the instrument type, the quote type, the party and any remaining identity fields;
+  the answer is the series rows that carry them.
+- =series_identity_handler=, which checks the read permission, decodes the request, calls
+  the read and answers.
+- =market_series_identity_reader=, which validates the identity against the codec schema
+  and then filters the projection on the columns the identity names. It refuses a
+  malformed identity with =std::invalid_argument= rather than letting an invented column
+  name reach the store, so the request is what is wrong when one is.
+- The read is registered in =registrar.cpp=.
+
+The prefix narrowing this task first chose was abandoned once the projection landed, and
+the codec no longer carries =series_prefix=.
+
+Limitations:
+
+- Nothing was compiled and no test was run, by the hourly-build workflow. The build and
+  the suites are swift curie's validation.
+- The read is two statements: the projection is filtered, then the series rows are read by
+  the keys it returned. A caller that wants one query needs a join, which is not written
+  here.
+- A series with no projection row is not found. The backfill operation repairs that.
+- No production consumer calls it yet. The shell and the web client do not, so the read is
+  on the wire with no caller. That is the acceptance's "or the result says why none does".
+- The =* Plan= and =* Evidence= sections above are the design gate as it stood before the
+  projection landed. They are kept as the record of that decision, not as a description of
+  the code.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2853][#2853]] | [marketdata] Resolve a composite object from its typed identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Promoted from capture
+
+Captured 2026-08-08 in the product backlog; promoted preserving the UUID.
+
+** What
+
+CurveBuilderWorkbench (the IR curve bootstrap builder UI) needs a way to constrain which
+=market_series= rows a user can pick as a curve's Source/Output series and as a discount curve's
+config, given a chosen currency and index (e.g. "USD" + "USD-SOFR"). Today the only way to do
+that is client-side substring matching against =market_series.qualifier= — a free-text column with
+no fixed shape. This already produced a real bug: =floating_index_type.code= uses a dash after the
+currency (=USD-SOFR=), but =market_series.qualifier= for rates uses a slash instead (=USD/SOFR=,
+per =ir_curve_feed.cpp='s own qualifier construction) — the two conventions silently diverged and
+the filter matched nothing until a hand-rolled dash→slash translation
+(=CurveBuilderWorkbench::selectedIndexQualifier()=) was added as a workaround.
+
+String matching (substring/regex) against a free-text identifier column is not a sustainable way
+to express "this series belongs to this currency and this index" — it is fragile to any future
+change in qualifier generation, cannot be validated at write time, and cannot be indexed/queried
+efficiently. What's needed instead is strongly-typed fields: a currency column and an index
+column (soft FKs into =iso.currencies= and =floating_index_type=, following the same soft-FK
+convention already used throughout the codebase — e.g. =change_reason_code=) directly on
+=market_series= (or reachable from it), so filtering is a normal equality/join predicate, not a
+string-matching workaround.
+
+** Why
+
+The dash-vs-slash bug above is a direct symptom of relying on unstructured text to encode
+structured identity (currency + index family + tenor). Every future consumer that needs to filter
+or group market series by currency/index (not just this workbench — the Rate Curves viewer,
+synthetic feed bindings, etc. all currently do their own ad-hoc parsing of the qualifier string)
+will hit the same class of bug unless the underlying data model gets typed fields.
+
+This is closely related to, but not identical with, the =oresmd= migration
+([[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]): that story's own
+=Task: Migrate market_series qualifier/point_id generation onto oresmd= explicitly keeps
+=qualifier='s *column shape* as a plain string (just generated deterministically from oresmd
+fields instead of free text) — and per the oresmd design doc's own worked examples, the resulting
+qualifier shape is still *type-dependent* (a discount-factor quote projects to =qualifier=USD3M=,
+a swap-rate quote to =qualifier=USD/2D/3M=, etc.), so oresmd alone does not give callers a stable,
+strongly-typed field to filter on either — it standardises *generation*, not *queryability*. This
+capture is about whether =market_series= (or a related lookup) should additionally carry
+structured, indexable currency/index fields, which is a genuinely open design question the oresmd
+work doesn't resolve by itself and needs its own thinking session before implementation.
+
+** Update, 2026-10-04
+
+[[id:92415927-9D6F-4C3D-8C4C-6E282B73FA28][Rewrite the oresmd grammar as a hand-written codec checked against ORE]]
+removed the free-text =qualifier= column. A series is now named only by
+=market_series.oresmd_uri=, whose query holds each schema field under its own
+name, for example
+=oresmd://ir/GBP?type=series&instrument=ir_swap&quote=rate&ccy=GBP&...=. The
+currency and the index name are therefore separate, typed fields of the
+series identity, and =oresmd_uri_codec::read= returns them. The open question
+narrows to how a caller filters on them: by reading the URI, or through an
+indexed column or a query that the repository offers.
+
+** References
+
+- =projects/ores.qt/refdata/src/CurveBuilderWorkbench.cpp= — =selectedIndexQualifier()=, the
+  current dash→slash workaround this capture proposes replacing.
+- =projects/ores.synthetic/service/src/ir_curve_feed.cpp= — the qualifier-construction code whose
+  slash convention the workaround had to reverse-engineer.
+
+** See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+- [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]
+- [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Task: Migrate market_series qualifier/point_id generation onto oresmd]]
+- [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Task: Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]]

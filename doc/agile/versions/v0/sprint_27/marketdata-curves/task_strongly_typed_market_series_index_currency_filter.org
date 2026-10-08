@@ -37,9 +37,9 @@ knowing the URI grammar, and without a second source of truth for what the ident
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Superseded in part. The identity read and its wire are drafted, but the prefix narrowing it was built on is replaced by the projection table of [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]]. The reader is rewritten onto that table once it lands. |
-| Waiting on   | The projection table and its writer, from the joinable-series-identity story. |
-| Next         | Rewrite the reader to read the projection, then keep the wire and the handler as drafted. |
+| Now          | The reader is rewritten onto the identity projection. The wire, the handler and the read are in place; nothing is built. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the pull request.                 |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -352,23 +352,44 @@ the party.
 
 * Result
 
-STOPPED at the design, on the task's own stop condition, because the currency and index
-filter cannot be met without a codegen path this task withholds.
+Delivered: a caller names a composite object by typed identity fields and the server
+resolves it to a series, with no hand-built URI and no string match.
 
-The shape is settled: Option 2, the typed identity resolved through an index over the URI's
-parts, which the story already names. Its first read, the identity lookup, turns out to
-need no lever at all — =oresmd_uri_codec::write= already writes a series URI from a series
-datum, and the existing unique index =market_series_party_id_oresmd_uri_uniq_idx= resolves
-it. Its second read, the one that reaches =ccy=, needs codegen to derive a projection from
-=schema.hpp='s field specs.
+The design gate below stopped this task once, because the currency filter needed a
+projection codegen did not have. The projection story, [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]],
+then built it: the identity is real columns now, written from the codec's own parse. This
+task's read therefore filters those columns rather than the prefix it was first built on.
 
-Nothing was built. No file under =projects/= changed, no model was edited, no file was
-regenerated, and the wire is unchanged. The deliverable is the decision and its cost, in
-The Plan above and the =* Evidence= section above it carry the decision and its raw output.
+What landed:
 
-What the parent must decide: charter the codegen projection and close the capture, accept
-the identity lookup alone with the currency filter deferred, or leave the task as this
-design.
+- =resolve_series_identity_request= and =resolve_series_identity_response= on
+  =marketdata.v1.ops.resolve_series_identity=. The caller states the asset class, the
+  scope, the instrument type, the quote type, the party and any remaining identity fields;
+  the answer is the series rows that carry them.
+- =series_identity_handler=, which checks the read permission, decodes the request, calls
+  the read and answers.
+- =market_series_identity_reader=, which validates the identity against the codec schema
+  and then filters the projection on the columns the identity names. It refuses a
+  malformed identity with =std::invalid_argument= rather than letting an invented column
+  name reach the store, so the request is what is wrong when one is.
+- The read is registered in =registrar.cpp=.
+
+The prefix narrowing this task first chose was abandoned once the projection landed, and
+the codec no longer carries =series_prefix=.
+
+Limitations:
+
+- Nothing was compiled and no test was run, by the hourly-build workflow. The build and
+  the suites are swift curie's validation.
+- The read is two statements: the projection is filtered, then the series rows are read by
+  the keys it returned. A caller that wants one query needs a join, which is not written
+  here.
+- A series with no projection row is not found. The backfill operation repairs that.
+- No production consumer calls it yet. The shell and the web client do not, so the read is
+  on the wire with no caller. That is the acceptance's "or the result says why none does".
+- The =* Plan= and =* Evidence= sections above are the design gate as it stood before the
+  projection landed. They are kept as the record of that decision, not as a description of
+  the code.
 
 * Test Scenarios
 

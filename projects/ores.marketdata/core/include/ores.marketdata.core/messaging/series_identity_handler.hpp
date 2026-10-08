@@ -57,8 +57,9 @@ using namespace ores::logging;
  * class, the scope, the instrument type, the quote type and the type's
  * remaining identity fields -- so no caller builds an oresmd URI and no caller
  * matches on one. The read itself is
- * repository::market_series_identity_reader, which narrows in the store by the
- * codec's own prefix and then matches the remaining fields through the codec.
+ * repository::market_series_identity_reader, which filters the identity
+ * projection on the columns the identity names and reads the series those
+ * columns point at.
  */
 class series_identity_handler {
 public:

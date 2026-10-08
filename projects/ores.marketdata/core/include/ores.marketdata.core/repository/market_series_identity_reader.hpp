@@ -29,41 +29,36 @@
 namespace ores::marketdata::repository {
 
 /**
- * @brief Resolves a series from its typed identity, by narrowing in the store
- * and then reading the candidates through the codec.
+ * @brief Resolves a series from its typed identity by reading the identity
+ * projection.
  *
- * The read stays out of the generated market_series repository because of how
- * it answers the one question that repository cannot: what a field inside a
- * series URI means. Those fields sit in the row's schema order, which differs
- * between instrument types, so SQL cannot compare them and a pattern match
- * would be wrong. The read therefore does two things instead:
+ * A series holds its identity only inside its oresmd URI, which SQL cannot
+ * compare field by field, so the projection writes those fields into columns of
+ * their own. This read filters on those columns and joins the result to the
+ * series, so the narrowing happens in the store and no URI is parsed here.
  *
- * - It narrows on =oresmd_uri= with the prefix
- *   =oresmd_uri_codec::series_prefix= writes for the asset class, the scope,
- *   the instrument type and the quote type, which the URI grammar puts in a
- *   fixed position. That prefix is the codec's own spelling of the identity, so
- *   the narrowing states no grammar of its own, and the identity index can
- *   serve it.
- * - It then reads each surviving row's URI back through
- *   =oresmd_uri_codec::read= and drops the ones whose remaining fields do not
- *   hold what the request stated. Those fields, such as =ccy=, are matched by
- *   the codec, never by a pattern.
+ * The projection is written from the codec's own parse, so a field means here
+ * what it means in the URI. What this read still decides is which fields the
+ * request may name: the instrument and quote type must be ones the codec knows
+ * and state the spelling the URI writes, the asset class must be the type's,
+ * and each field must be one the type's schema row marks as identity and is not
+ * the scope, which the request states on its own.
  *
- * A request the codec cannot spell is refused with =std::invalid_argument=: an
- * unknown instrument or quote type, an unknown field name, and a field the
- * type's row does not declare or may not leave empty. Nothing is guessed, so a
- * malformed request cannot silently resolve to the wrong series.
+ * A request that fails any of those is refused with =std::invalid_argument=.
+ * Nothing is guessed, so a malformed request cannot silently resolve to the
+ * wrong series, and no field name a caller invents reaches the store as a
+ * column.
  */
 class ORES_MARKETDATA_CORE_EXPORT market_series_identity_reader final {
 public:
     /**
      * @brief The series that carry @p identity, at most one per owning party.
      *
-     * @throws std::invalid_argument when the codec refuses the identity.
+     * @throws std::invalid_argument when the identity is not one the codec can
+     * spell.
      */
     [[nodiscard]] static std::vector<domain::market_series>
-    read(ores::database::context ctx,
-         const messaging::resolve_series_identity_request& identity);
+    read(ores::database::context ctx, const messaging::resolve_series_identity_request& identity);
 };
 
 }

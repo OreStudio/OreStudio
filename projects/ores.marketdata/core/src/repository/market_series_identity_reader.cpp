@@ -19,16 +19,18 @@
  */
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/ore_types.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/repository/market_series_entity.hpp"
-#include "ores.marketdata.core/repository/market_series_mapper.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_entity.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_mapper.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -50,86 +52,103 @@ std::string upper_text(const std::string& text) {
     return out;
 }
 
-/// A row matches when its column begins with the identity's text. The prefix is
-/// the codec's own spelling of a series identity, so this narrows by the
-/// grammar rather than by a pattern this read invents.
-sqlgen::dynamic::Condition begins_with(const std::string& column, const std::string& prefix) {
-    return {.val = sqlgen::dynamic::Condition::Like{
-                .op = {.val = sqlgen::dynamic::Column{.name = column}},
-                .pattern = {.val = sqlgen::dynamic::String{.val = prefix}}}};
+/**
+ * @brief Refuses @p name unless @p row declares it as identity, and it is not
+ * the subject.
+ *
+ * A name the type does not declare would reach the store as a column the table
+ * has no such field in, so it is refused here rather than left to the database
+ * to reject. The subject is refused because the request states it as the scope,
+ * and a second spelling of the same field could contradict it.
+ */
+void check_field(const std::string& name, const datum::schema_row& row) {
+    const auto field = datum::field_named(name);
+    if (!field)
+        throw std::invalid_argument("'" + name + "' is not an oresmd field name");
+    const auto declared = std::ranges::any_of(row.fields, [&](const datum::field_spec& spec) {
+        return spec.name == *field && spec.role == datum::field_role::identity;
+    });
+    if (!declared)
+        throw std::invalid_argument("the instrument type does not declare '" + name +
+                                    "' as one of its identity fields");
+    if (*field == row.subject)
+        throw std::invalid_argument("'" + name +
+                                    "' is the scope; state it in scope rather than in fields");
 }
 
 }
 
 std::vector<domain::market_series>
-market_series_identity_reader::read(
-    ores::database::context ctx,
-    const messaging::resolve_series_identity_request& identity) {
+market_series_identity_reader::read(ores::database::context ctx,
+                                    const messaging::resolve_series_identity_request& identity) {
     using namespace ores::marketdata::datum;
     using namespace ores::database::repository;
     using namespace sqlgen;
-    using namespace sqlgen::literals;
 
     const auto type = instrument_type_named(upper_text(identity.instrument_type));
     if (!type)
         throw std::invalid_argument("'" + identity.instrument_type +
                                     "' is not an ORE instrument type");
+    if (oresmd_uri_codec::instrument_spelling(*type) != identity.instrument_type)
+        throw std::invalid_argument("'" + identity.instrument_type +
+                                    "' is not how a URI writes that instrument type");
+
     const auto quote = quote_type_named(upper_text(identity.quote_type));
     if (!quote)
         throw std::invalid_argument("'" + identity.quote_type + "' is not an ORE quote type");
+    if (oresmd_uri_codec::quote_spelling(*quote) != identity.quote_type)
+        throw std::invalid_argument("'" + identity.quote_type +
+                                    "' is not how a URI writes that quote type");
 
-    std::vector<field_value> stated;
-    stated.reserve(identity.fields.size());
-    for (const auto& f : identity.fields) {
-        const auto name = field_named(f.name);
-        if (!name)
-            throw std::invalid_argument("'" + f.name + "' is not an oresmd field name");
-        stated.push_back({*name, value{std::string(f.text)}});
-    }
+    const auto& row = schema_of(*type);
+    if (std::string(name_of(row.asset)) != identity.asset)
+        throw std::invalid_argument("a " + identity.instrument_type +
+                                    " belongs to the asset class " +
+                                    std::string(name_of(row.asset)) + ", not " + identity.asset);
 
-    const auto prefix = oresmd_uri_codec::series_prefix(*type, *quote, stated);
-    if (!prefix)
-        throw std::invalid_argument(prefix.error());
-
-    static const auto max(make_timestamp(MAX_TIMESTAMP, reader_lg()));
-    const auto tid = ctx.tenant_id().to_string();
-
+    /*
+     * The projection holds one row per series with a column per identity field,
+     * so the identity is a filter rather than a parse. The scope is the value
+     * the URI writes in its path, which is the subject field's column.
+     */
     std::vector<sqlgen::dynamic::Condition> conditions{
-        equals("tenant_id", filter_value(tid)),
-        equals("valid_to", filter_value(max.value())),
-        begins_with("oresmd_uri", *prefix + "%")};
+        equals("tenant_id", filter_value(ctx.tenant_id().to_string())),
+        equals("identity_kind", filter_value(std::string("series"))),
+        equals("asset_class", filter_value(identity.asset)),
+        equals("instrument_type", filter_value(identity.instrument_type)),
+        equals("quote_type", filter_value(identity.quote_type)),
+        equals(std::string(name_of(row.subject)), filter_value(identity.scope))};
+
+    for (const auto& f : identity.fields) {
+        check_field(f.name, row);
+        conditions.push_back(equals(f.name, filter_value(f.text)));
+    }
     if (!identity.party_id.empty())
         conditions.push_back(equals("party_id", filter_value(identity.party_id)));
 
-    const auto query = sqlgen::read<std::vector<market_series_entity>> |
-                       where(all_of(std::move(conditions)).value()) | order_by("id"_c);
-    auto candidates = execute_read_query<market_series_entity, domain::market_series>(
-        ctx,
-        query,
-        [](const auto& entities) { return market_series_mapper::map(entities); },
-        reader_lg(),
-        "Reading market series by typed identity");
+    const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
+                       where(all_of(std::move(conditions)).value());
+    const auto identities =
+        execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+            ctx,
+            query,
+            [](const auto& entities) { return market_series_identity_mapper::map(entities); },
+            reader_lg(),
+            "Reading the series identity projection by typed identity");
+
+    if (identities.empty())
+        return {};
 
     /*
-     * The prefix reached the fields the URI grammar fixes in place. Every other
-     * field sits in the row's order, which differs between instrument types, so
-     * the codec reads the candidate and the codec decides whether it carries
-     * what the request stated. A row whose URI does not read, or reads as
-     * another type, is not a series this identity names.
+     * The projection names the series; the series table holds its row. The
+     * second read is by key, so it is one indexed lookup however many identities
+     * the first read matched.
      */
-    const auto holds = [&](const domain::market_series& s) {
-        const auto datum = oresmd_uri_codec::read(s.oresmd_uri);
-        if (!datum || datum->type() != *type || datum->quote() != *quote)
-            return false;
-        return std::ranges::all_of(stated, [&](const field_value& want) {
-            const auto* held = datum->get(want.name);
-            return held != nullptr && held->held == want.held;
-        });
-    };
-
-    const auto kept = std::ranges::remove_if(candidates, std::not_fn(holds));
-    candidates.erase(kept.begin(), kept.end());
-    return candidates;
+    std::vector<std::string> ids;
+    ids.reserve(identities.size());
+    for (const auto& i : identities)
+        ids.push_back(boost::uuids::to_string(i.series_id));
+    return market_series_repository{}.read_latest(ctx, ids);
 }
 
 }

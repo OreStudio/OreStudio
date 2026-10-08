@@ -79,7 +79,7 @@ create table if not exists "ores_marketdata_market_series_identity_tbl" (
     "index_name" text null,
     "index_tenor" text null,
     "index_term" text null,
-    "offset" text null,
+    "offset_value" text null,
     "option_type" text null,
     "payer_receiver" text null,
     "qualifier" text null,

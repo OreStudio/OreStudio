@@ -53,6 +53,19 @@ std::string upper_text(const std::string& text) {
 }
 
 /**
+ * @brief The projection column that holds @p field.
+ *
+ * A column is named after its field, with one exception: a field whose name is
+ * a word the store refuses has a column name of its own, and =offset= is that
+ * field. See =ores.marketdata.market_series_identity= for why, and
+ * =build/scripts/check_marketdata_identity_columns.py= for the same mapping.
+ */
+std::string column_of(datum::field field) {
+    auto name = std::string(datum::name_of(field));
+    return name == "offset" ? "offset_value" : name;
+}
+
+/**
  * @brief Refuses @p name unless @p row declares it as identity, and it is not
  * the subject.
  *
@@ -117,11 +130,11 @@ market_series_identity_reader::read(ores::database::context ctx,
         equals("asset_class", filter_value(identity.asset)),
         equals("instrument_type", filter_value(identity.instrument_type)),
         equals("quote_type", filter_value(identity.quote_type)),
-        equals(std::string(name_of(row.subject)), filter_value(identity.scope))};
+        equals(column_of(row.subject), filter_value(identity.scope))};
 
     for (const auto& f : identity.fields) {
         check_field(f.name, row);
-        conditions.push_back(equals(f.name, filter_value(f.text)));
+        conditions.push_back(equals(column_of(*field_named(f.name)), filter_value(f.text)));
     }
     if (!identity.party_id.empty())
         conditions.push_back(equals("party_id", filter_value(identity.party_id)));

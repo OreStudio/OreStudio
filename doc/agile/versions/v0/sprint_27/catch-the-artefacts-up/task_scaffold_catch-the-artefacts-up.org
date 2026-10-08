@@ -83,3 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The hotfix story, its two tasks and the branch exist, and the sprint
+lists the story in its hotfix table.

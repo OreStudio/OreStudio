@@ -179,7 +179,7 @@ function Activity({ overview }: { readonly overview: DeploymentOverview }): Reac
         ACTIVITY_STATES.includes(run.status)
             ? t(`home.system.activity.${run.status}`, {
                   tenant: run.tenantName,
-                  step: run.currentStepIndex + 1,
+                  done: run.stepsDone,
                   count: run.stepCount,
               })
             : `${run.tenantName}: ${run.status}`;
@@ -234,7 +234,7 @@ function Attention({ overview }: { readonly overview: DeploymentOverview }): Rea
                                 <div className="text-xs text-ink-faint">
                                     {failed && tenant.setup !== null
                                         ? t('home.system.setupFailed', {
-                                              step: tenant.setup.currentStepIndex + 1,
+                                              done: tenant.setup.stepsDone,
                                               count: tenant.setup.stepCount,
                                           })
                                         : t('home.system.suspended')}

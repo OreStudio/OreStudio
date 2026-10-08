@@ -136,7 +136,6 @@ function fakeServer(): JourneyServer {
             status: 'pending',
             error: '',
             step_count: 0,
-            current_step_index: 0,
             steps: [],
         })),
         retry: vi.fn(async () => ({

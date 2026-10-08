@@ -97,18 +97,11 @@ function wireTenant(id: string, code: string, name: string, status: string): unk
 const NO_RUNS = { success: true, message: '', instances: [] };
 
 /** One provisioning run as the instances list answers it. */
-function wireRun(
-    id: string,
-    target: string,
-    status: string,
-    currentStep: number,
-    error = '',
-): unknown {
+function wireRun(id: string, target: string, status: string, error = ''): unknown {
     return {
         id,
         type: 'provision_tenant_workflow',
         status,
-        current_step_index: currentStep,
         step_count: 7,
         correlation_id: '',
         created_by: 'super_admin',
@@ -116,6 +109,24 @@ function wireRun(
         error,
         target_kind: 'tenant',
         target_id: target,
+    };
+}
+
+/** One step as the progress read answers it. */
+function wireStep(status: string): unknown {
+    return { status };
+}
+
+/** A run's steps: `done` finished, and a trailing failure when asked for. */
+function wireProgress(done: number, failed = false): unknown {
+    const finished = Array.from({ length: done }, () => wireStep('completed'));
+    return {
+        success: true,
+        message: '',
+        status: failed ? 'failed' : 'completed',
+        error: failed ? 'Seeding failed.' : '',
+        step_count: 7,
+        steps: failed ? [...finished, wireStep('failed')] : finished,
     };
 }
 
@@ -175,6 +186,9 @@ function buildTestServer(
                 return schema.parse(runs);
             }
             return schema.parse(reply);
+        },
+        async workflowProgress(instanceId: string): Promise<unknown> {
+            return instanceId === RUN_FAILED ? wireProgress(3, true) : wireProgress(7);
         },
         async close(): Promise<void> {
             return undefined;
@@ -433,8 +447,8 @@ describe('GET /api/tenants', () => {
                 success: true,
                 message: '',
                 instances: [
-                    wireRun(RUN_FAILED, ACME_TENANT, 'failed', 3, 'Seeding failed.'),
-                    wireRun(RUN_OLDER, ACME_TENANT, 'compensated', 1),
+                    wireRun(RUN_FAILED, ACME_TENANT, 'failed', 'Seeding failed.'),
+                    wireRun(RUN_OLDER, ACME_TENANT, 'compensated'),
                 ],
             },
         );
@@ -449,7 +463,7 @@ describe('GET /api/tenants', () => {
         expect(response.json().tenants[0].setup).toEqual({
             instanceId: RUN_FAILED,
             status: 'failed',
-            currentStepIndex: 3,
+            stepsDone: 3,
             stepCount: 7,
             error: 'Seeding failed.',
         });

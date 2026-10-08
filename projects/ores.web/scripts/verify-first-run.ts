@@ -194,9 +194,10 @@ async function signOut(): Promise<void> {
 }
 
 function describeRun(progress: WorkflowProgress): string {
-    const current = progress.steps[progress.current_step_index];
-    const name = current === undefined ? '' : ` ${current.name}`;
-    return `status=${progress.status} current=${progress.current_step_index}${name}`;
+    const done = progress.steps.filter((step) => SETTLED_STEP.has(step.status)).length;
+    const next = progress.steps.find((step) => !SETTLED_STEP.has(step.status));
+    const name = next === undefined ? '' : ` ${next.name}`;
+    return `status=${progress.status} done=${done}/${progress.step_count}${name}`;
 }
 
 function printRail(progress: WorkflowProgress): void {

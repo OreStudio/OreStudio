@@ -231,8 +231,8 @@ describe('the tenant roster', () => {
 
     /*
      * The way back into a journey somebody left is the tenant it acts on. A
-     * run still working says how far it has got, counting steps from one as a
-     * person does, and links to its rail.
+     * run still working says how many of its steps have finished and links to
+     * its rail.
      */
     it('links a tenant whose run is still working to that run', () => {
         const html = render(
@@ -243,7 +243,7 @@ describe('the tenant roster', () => {
                     setup: {
                         instanceId: RUN,
                         status: 'in_progress',
-                        currentStepIndex: 2,
+                        stepsDone: 2,
                         stepCount: 7,
                         error: '',
                     },
@@ -253,7 +253,7 @@ describe('the tenant roster', () => {
         );
 
         expect(html).toContain(`href="/tenants/runs/${RUN}"`);
-        expect(html).toContain('Step 3 of 7');
+        expect(html).toContain('2 of 7 steps done');
     });
 
     /*
@@ -268,7 +268,7 @@ describe('the tenant roster', () => {
                     setup: {
                         instanceId: RUN,
                         status: 'failed',
-                        currentStepIndex: 3,
+                        stepsDone: 3,
                         stepCount: 7,
                         error: 'Seeding failed.',
                     },
@@ -277,7 +277,7 @@ describe('the tenant roster', () => {
             1,
         );
 
-        expect(html).toContain('Failed at step 4');
+        expect(html).toContain('Failed after 3 of 7 steps');
         expect(html).toContain('title="Seeding failed."');
         expect(html).toContain(`href="/tenants/runs/${RUN}"`);
     });
@@ -290,7 +290,7 @@ describe('the tenant roster', () => {
                     setup: {
                         instanceId: RUN,
                         status: 'completed',
-                        currentStepIndex: 6,
+                        stepsDone: 7,
                         stepCount: 7,
                         error: '',
                     },

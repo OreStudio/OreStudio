@@ -266,14 +266,14 @@ describe('TenantPage', () => {
                 setup: {
                     instanceId: RUN,
                     status: 'failed',
-                    currentStepIndex: 3,
+                    stepsDone: 3,
                     stepCount: 7,
                     error: 'Seeding failed.',
                 },
             },
         });
 
-        expect(html).toContain('Failed at step 4');
+        expect(html).toContain('Failed after 3 of 7 steps');
         expect(html).toContain('Seeding failed.');
         expect(html).toContain(`href="/tenants/runs/${RUN}"`);
         expect(html).toContain('Resume setup');
@@ -287,7 +287,7 @@ describe('TenantPage', () => {
                 setup: {
                     instanceId: RUN,
                     status: 'completed',
-                    currentStepIndex: 6,
+                    stepsDone: 7,
                     stepCount: 7,
                     error: '',
                 },

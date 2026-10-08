@@ -18,7 +18,7 @@ How do I run a workflow with more steps than I can watch one at a time?
 
 * Answer
 
-The request declares five steps and the engine dispatches them in order, advancing =current_step_index= after each completion. The materialised step list on the instance is what makes a restart re-dispatch the same sequence.
+Each of the request's five steps reads the one before it, so the engine dispatches them in the order the request declares. The run's own chain -- its plan steps and the dependencies between them -- is what a restart re-dispatches, so a run is always judged by the chain it was started with.
 
 #+name: identity-fan-out
 #+begin_src ores-shell :exports none

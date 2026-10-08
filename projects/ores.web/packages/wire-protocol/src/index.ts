@@ -128,6 +128,7 @@ export {
 } from './tenants.js';
 export type {
     ProvisioningRun,
+    StepsDoneReader,
     TenantListQuery,
     TenantRemovalOutcome,
     WireTenantPage,

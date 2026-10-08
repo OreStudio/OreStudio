@@ -365,9 +365,9 @@ const fr: SourceCatalogue = {
         setupUnavailable:
             'Les exécutions de provisionnement n’ont pas pu être lues, la colonne de mise en place est donc vide.',
         setupState: {
-            in_progress: 'Étape {step} sur {count}',
+            in_progress: '{done} étapes sur {count} terminées',
             compensating: 'Annulation en cours',
-            failed: 'Échec à l’étape {step}',
+            failed: 'Échec après {done} étapes sur {count}',
             compensated: 'Annulé',
         },
         run: {
@@ -802,7 +802,7 @@ const fr: SourceCatalogue = {
             noActivity: "Aucun locataire n'a encore été créé.",
             activityUnavailable: "L'historique des créations n'a pas pu être lu.",
             attention: 'À traiter',
-            setupFailed: "La création s'est arrêtée à l'étape {step} sur {count}.",
+            setupFailed: "La création s'est arrêtée après {done} étapes sur {count}.",
             suspended: 'Suspendu : personne ne peut s’y connecter.',
             seeFailure: "Voir l'échec",
             open: 'Ouvrir',
@@ -820,8 +820,9 @@ const fr: SourceCatalogue = {
             status: 'Statut',
             activity: {
                 completed: '{tenant} est prêt',
-                in_progress: '{tenant} est en cours de création, étape {step} sur {count}',
-                failed: "{tenant} : la création s'est arrêtée à l'étape {step} sur {count}",
+                in_progress:
+                    '{tenant} est en cours de création, {done} étapes sur {count} terminées',
+                failed: "{tenant} : la création s'est arrêtée après {done} étapes sur {count}",
                 compensating: '{tenant} : la création est en cours d’annulation',
                 compensated: '{tenant} : la création a été annulée',
             },

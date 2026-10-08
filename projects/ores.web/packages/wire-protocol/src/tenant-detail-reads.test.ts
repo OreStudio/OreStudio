@@ -125,7 +125,11 @@ describe('the tenant read', () => {
 describe('the run read for one tenant', () => {
     it('filters the runs on the tenant as target', async () => {
         const sent: Recorded[] = [];
-        await readTenantSetups(callerAnswering({ success: true, instances: [] }, sent), [ACME]);
+        await readTenantSetups(
+            callerAnswering({ success: true, instances: [] }, sent),
+            [ACME],
+            async () => 0,
+        );
 
         expect(sent[0]?.body).toMatchObject({ target_id_filter: '', target_ids_filter: [ACME] });
     });

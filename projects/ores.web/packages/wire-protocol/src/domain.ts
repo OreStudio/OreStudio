@@ -151,13 +151,14 @@ export type PartySummary = z.infer<typeof partySummarySchema>;
  * The provisioning run that set a tenant up, as far as a roster needs it.
  *
  * `status` is the engine's state name: `in_progress`, `completed`, `failed`,
- * `compensating` or `compensated`. The step index counts from zero, as the
- * engine counts it, and `error` is empty unless the run stopped on one.
+ * `compensating` or `compensated`. `stepsDone` counts the run's finished
+ * steps, because a graph run may have several in flight at once, and `error`
+ * is empty unless the run stopped on one.
  */
 export const tenantSetupSchema = z.object({
     instanceId: z.string(),
     status: z.string(),
-    currentStepIndex: z.int().nonnegative(),
+    stepsDone: z.int().nonnegative(),
     stepCount: z.int().nonnegative(),
     error: z.string(),
 });
@@ -213,7 +214,7 @@ export const setupActivitySchema = z.object({
     instanceId: z.string(),
     tenantName: z.string(),
     status: z.string(),
-    currentStepIndex: z.int().nonnegative(),
+    stepsDone: z.int().nonnegative(),
     stepCount: z.int().nonnegative(),
     error: z.string(),
     at: z.string(),

@@ -94,7 +94,6 @@ const RUNS = {
             id: RUN,
             type: 'provision_tenant_workflow',
             status: 'failed',
-            current_step_index: 3,
             step_count: 7,
             created_at: '2026-10-01T09:00:00Z',
             error: 'Seeding failed.',
@@ -102,6 +101,33 @@ const RUNS = {
             target_id: ACME_TENANT,
         },
     ],
+};
+
+/** One step as the progress read answers it. */
+function step(status: string): unknown {
+    return {
+        id: '',
+        name: '',
+        label: '',
+        description: '',
+        status,
+        step_index: 0,
+        created_at: '',
+        started_at: null,
+        completed_at: null,
+        error: '',
+        log: [],
+    };
+}
+
+/** The run's own steps: three finished, then the failure. */
+const RUN_PROGRESS = {
+    success: true,
+    message: '',
+    status: 'failed',
+    error: 'Seeding failed.',
+    step_count: 7,
+    steps: [step('completed'), step('completed'), step('completed'), step('failed')],
 };
 
 type Answers = Record<string, unknown>;
@@ -128,6 +154,9 @@ function buildTestServer(
                 throw answer;
             }
             return schema.parse(answer);
+        },
+        async workflowProgress(): Promise<unknown> {
+            return RUN_PROGRESS;
         },
         async close(): Promise<void> {
             return undefined;
@@ -194,7 +223,13 @@ describe('GET /api/tenants/:code', () => {
             code: 'acme',
             version: 2,
             changeReasonCode: 'system.initial_load',
-            setup: { instanceId: RUN, status: 'failed', error: 'Seeding failed.' },
+            setup: {
+                instanceId: RUN,
+                status: 'failed',
+                stepsDone: 3,
+                stepCount: 7,
+                error: 'Seeding failed.',
+            },
         });
         expect(body.setupUnavailable).toBe(false);
         expect(body).not.toHaveProperty('parties');

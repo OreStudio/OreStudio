@@ -88,7 +88,6 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
             status: 'completed',
             error: '',
             step_count: 1,
-            current_step_index: 0,
             steps: [],
         })),
         retry: vi.fn(async () => ({

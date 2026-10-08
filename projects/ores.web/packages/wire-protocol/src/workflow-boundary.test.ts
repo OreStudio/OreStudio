@@ -76,7 +76,7 @@ describe('the workflow wire boundary', () => {
             },
         } as unknown as AuthenticatedCaller;
 
-        await readTenantSetups(caller, ['11111111-1111-1111-1111-111111111111']);
+        await readTenantSetups(caller, ['11111111-1111-1111-1111-111111111111'], async () => 0);
         const encoded = `${toHex(new WireCodec('msgpack').encode(sent))}\n`;
 
         if (process.env['ORES_UPDATE_FIXTURES'] === '1') {

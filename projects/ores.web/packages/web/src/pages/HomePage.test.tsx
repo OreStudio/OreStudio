@@ -60,7 +60,7 @@ const globex = {
     setup: {
         instanceId: 'run-globex',
         status: 'failed',
-        currentStepIndex: 4,
+        stepsDone: 4,
         stepCount: 7,
         error: 'Publishing failed.',
     },
@@ -82,7 +82,7 @@ const busy: DeploymentOverview = {
             instanceId: 'run-acme',
             tenantName: 'Acme Corporation',
             status: 'completed',
-            currentStepIndex: 6,
+            stepsDone: 7,
             stepCount: 7,
             error: '',
             at: '2026-10-04T09:05:00Z',
@@ -186,7 +186,7 @@ describe("the system administrator's home", () => {
     it('leads a failed setup to its run and a suspended tenant to its screen', () => {
         const html = home('system-administration', busy);
 
-        expect(html).toContain('Setup stopped at step 5 of 7.');
+        expect(html).toContain('Setup stopped after 4 of 7 steps.');
         expect(html).toContain('href="/tenants/runs/run-globex"');
         expect(html).toContain('Suspended: nobody in it can sign in.');
         expect(html).toContain('href="/tenants/initech"');

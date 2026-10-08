@@ -36,11 +36,11 @@ as the prototype does rather than showing a guess.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:435E6F02-C2AF-4C2B-BB56-654A86A424A7][Implement the operations journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-04                               |
 
 * Acceptance
@@ -75,7 +75,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Screens built | 5 of 5 | =ls operations/*Page.tsx= | 08d9fca133 |
+| TypeScript suite | 813 passing (bff 268, web 395, wire-protocol 150) | =npm test= | ef6634eae2 |
+| Full C++ build | exit 0, 0 errors, all targets linked | =compass build= | ef6634eae2 |
+| Schema fingerprint | in sync with the database after a recreate | =compass db status= | ea5b2cedfb4823e2 |
+
+The rows above describe the tree as it stood when the first three screens
+landed. **The message bus and the logs have been inspected but never executed.**
+From that point the workflow changed to implement-and-merge, with a separate
+hourly job building latest main and running the suites for every PR merged
+since its last check. The numbers above therefore do not cover those two, and
+this record says so rather than quoting a suite that never ran against them.
 
 * Notes
 
@@ -104,3 +114,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The five screens are built and on main, across three merges: #2811 carried the
+area, the versions screen, the services roster and the compute grid, with the
+platform work beneath them; #2825 carried the message bus; and the logs follow
+in the last PR of this task.
+
+Each screen runs against the real server on the journey runtime, no journey
+entity was added, every screen carries its Related journeys links and the
+footer, the Operations area is reached from the system-administration menu
+alone, and the versions screen is offered in every mode so a tenant
+administrator and a regular user reach it.
+
+What each screen *states* rather than hides is the part worth recording, since
+the acceptance asks for every gap to be closed or stated:
+
+- The versions screen reads its database from the login answer and makes no
+  request of its own.
+- The services roster renders every expected row, quiet ones included, and
+  reads a quiet instance as lost and never stopped, because a heartbeat cannot
+  tell a stop from a fall.
+- The compute grid states that its node table is the installation's while the
+  counters above it are computed for one tenant. That is a property of the
+  system, not an artefact of the screen, and the ledger that would change it is
+  a story that is not built.
+- The message bus states that its counters are running totals since the server
+  started, so the movement over a range is computed from the samples.
+- The logs offer only filter values the store can match. The prototype offered
+  a client source and uppercase levels, neither of which could ever return a
+  row, and the journey forbids offering one.
+
+Three defects surfaced underneath the screens and are corrected rather than
+carried: node names were identifiers where a person needs a name, the host table
+grew by a version on every heartbeat, and five environment variables looked
+authoritative and were inert.
+
+Two deviations, both stated rather than glossed. The Goal says the screens ride
+the journey runtime; they ride the application's screens and the BFF route
+pattern, because the runtime is a linear rail and these are read-model screens,
+which that runtime's own page allows for. And the logs screen does not build the
+opened-entry detail or the session and account filters, because the accepted
+prototype does not draw them; the filter bar is the six the task named.

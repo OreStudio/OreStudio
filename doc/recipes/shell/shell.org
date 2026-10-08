@@ -1453,3 +1453,11 @@ tangled into the runnable script library
 * Account Credentials
 
 - [[id:E371920E-98B2-5CAE-9DD8-785EA0308E95][How do I run the account_credentials commands from the shell?]]
+
+* Trade Link Types
+
+- [[id:57A97A7A-7DCF-5806-A2B8-35AAA035D5C2][How do I run the trade_link_types commands from the shell?]]
+
+* Trade Links
+
+- [[id:7AFAB50B-A084-5141-A5DA-211E8B459CE8][How do I run the trade_links commands from the shell?]]

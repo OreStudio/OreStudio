@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/workflow_actor.hpp"
+#include "ores.workflow.core/service/workflow_graph.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -31,6 +32,7 @@
 #include <cstddef>
 #include <format>
 #include <ranges>
+#include <set>
 #include <rfl/json.hpp>
 #include <span>
 
@@ -92,28 +94,21 @@ std::optional<std::string> undeclared_deadline(const std::vector<workflow_step_d
 }
 
 /**
- * @brief The reason a step's declared inputs cannot be satisfied, or nothing.
+ * @brief The steps a run was started with, out of its own snapshot.
  *
- * A step names the steps whose results it reads. Until this check existed the
- * only statement of that dependency was inside the step's own command builder,
- * so a missing input surfaced as whatever that builder said when it could not
- * find one, and the engine could not tell a run that is waiting on work from a
- * run that is waiting on nothing.
- *
- * The same check catches two mistakes that are different spellings of one: a
- * step that names a step no chain contains, and a step that names one which
- * comes after it. Nothing has produced that result at the point the step runs.
+ * The graph is rebuilt from what the run persisted rather than from the
+ * definition as it stands now, for the same reason the deadline is carried: a
+ * definition edited after a run started must not change what that run was
+ * waiting for, and a run recovered after a restart must be judged by the chain
+ * it was actually given.
  */
-std::optional<std::string> undeclared_inputs(const std::vector<workflow_step_def>& steps) {
-    std::vector<std::string> produced;
-    for (const auto& step : steps) {
-        for (const auto& input : step.consumes)
-            if (std::ranges::find(produced, input) == produced.end())
-                return "The definition built step '" + step.name + "' to read '" + input +
-                       "', which no earlier step produces.";
-        produced.push_back(step.name);
-    }
-    return std::nullopt;
+std::vector<workflow_node> nodes_from_snapshot(const std::string& materialised_steps_json) {
+    if (materialised_steps_json.empty())
+        return {};
+    const auto parsed = rfl::json::read<std::vector<materialised_step>>(materialised_steps_json);
+    if (!parsed)
+        return {};
+    return nodes_of(*parsed);
 }
 
 /**
@@ -318,14 +313,6 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         return;
     }
 
-    if (const auto undeclared = undeclared_inputs(steps)) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Cannot advance workflow " << instance.type << ": " << *undeclared;
-        set_instance_state(instance.id, instance_states_.require("failed"), "", *undeclared);
-        publish_status_event(instance.id, instance.tenant_id.to_uuid());
-        return;
-    }
-
     if (next_index >= static_cast<int>(steps.size())) {
         BOOST_LOG_SEV(lg(), error)
             << "Step index " << next_index << " out of range for type: " << instance.type;
@@ -351,31 +338,41 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
                 workflow_step_result{.name = s.name, .response_json = s.response_json});
     }
 
-    // The steps this one declares it reads must have answered. A builder would
-    // refuse a missing result on its own, but it refuses in its own words and
-    // from inside itself, where a step still in flight and a step that never
-    // ran look identical: the engine is the only place that can say which of
-    // its declared inputs the run is waiting for.
+    // The graph is the authority on what may run. It is rebuilt from the run's
+    // own snapshot, so the run is judged by the chain it was started with, and
+    // its answer decides whether the step the run is about to take may be
+    // taken. A builder would refuse a missing result on its own, but from
+    // inside itself, where a step still in flight and a step that never ran
+    // look identical: only the graph can say which declared inputs a run is
+    // waiting for.
     {
-        const auto answered = [&](const std::string& input) {
-            return std::ranges::any_of(all_steps, [&](const auto& s) {
-                if (s.step_index < 0 || s.name != input)
-                    return false;
-                return s.state_id == step_states_.require("completed") ||
-                       s.state_id == step_states_.require("completed_with_warnings");
-            });
-        };
-        std::string missing;
-        for (const auto& input : step_def.consumes) {
-            if (answered(input))
+        const auto graph = workflow_graph(nodes_from_snapshot(instance.materialised_steps_json));
+
+        std::set<std::string> satisfied;
+        std::set<std::string> dispatched;
+        for (const auto& s : all_steps) {
+            if (s.step_index < 0)
                 continue;
-            if (!missing.empty())
-                missing += ", ";
-            missing += "'" + input + "'";
+            dispatched.insert(s.name);
+            if (s.state_id == step_states_.require("completed") ||
+                s.state_id == step_states_.require("completed_with_warnings"))
+                satisfied.insert(s.name);
         }
-        if (!missing.empty()) {
-            const auto reason = "Step '" + step_def.name + "' reads " + missing +
-                                ", which have not answered, so the step cannot run.";
+
+        const auto ready = graph.ready(satisfied, dispatched);
+        if (std::ranges::find(ready, step_def.name) == ready.end()) {
+            std::string waiting;
+            for (const auto& input : step_def.consumes) {
+                if (satisfied.contains(input))
+                    continue;
+                if (!waiting.empty())
+                    waiting += ", ";
+                waiting += "'" + input + "'";
+            }
+            const auto reason =
+                "Step '" + step_def.name + "' reads " +
+                (waiting.empty() ? std::string("inputs that cannot be resolved") : waiting) +
+                ", which have not answered, so the step cannot run.";
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot dispatch step " << step_def.name << " of workflow "
                 << boost::uuids::to_string(instance.id) << ": " << reason;
@@ -763,9 +760,10 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
                 << "Cannot run workflow type " << req.type << ": " << *undeclared;
             return;
         }
-        if (const auto undeclared = undeclared_inputs(steps)) {
+        const auto graph = workflow_graph(nodes_of(steps));
+        if (const auto& incoherent = graph.incoherent()) {
             BOOST_LOG_SEV(lg(), error)
-                << "Cannot run workflow type " << req.type << ": " << *undeclared;
+                << "Cannot run workflow type " << req.type << ": " << *incoherent;
             return;
         }
     } catch (const std::exception& e) {

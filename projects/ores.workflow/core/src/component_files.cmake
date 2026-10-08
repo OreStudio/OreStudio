@@ -39,6 +39,7 @@ set(files
     "service/fsm_state_map.cpp"
     "service/workflow_actor.cpp"
     "service/workflow_engine.cpp"
+    "service/workflow_graph.cpp"
     "service/workflow_instance_service.cpp"
     "service/workflow_step_service.cpp"
 )
@@ -68,6 +69,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/fsm_state_map.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_actor.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_engine.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_graph.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_instance_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.core/service/workflow_step_service.hpp"
 )

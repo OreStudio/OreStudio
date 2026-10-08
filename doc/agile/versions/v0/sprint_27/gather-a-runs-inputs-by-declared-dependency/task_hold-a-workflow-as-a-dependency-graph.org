@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-a-workflow-as-a-dependency-graph
 #+pr:
 #+blocked_on: Declare what a step consumes and produces: a graph needs inputs to put edges on.
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,7 +34,7 @@ dispatchable.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] |
@@ -90,6 +90,46 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+*Landed so far.* The graph itself, and the engine deferring to it.
+
+=workflow_graph= holds a run's steps as vertices and an edge from a step to
+every step that reads its result, built with =boost::adjacency_list= and
+queried through =in_edges=. It answers two questions: whether the chain can be
+run at all, and which steps may run given what has answered.
+
+It is rebuilt from the run's own =materialised_steps_json=, not from the
+definition as it stands now, so a definition edited after a run started cannot
+change what that run was waiting for. That is the persistence the task asked
+for: the graph travels with the run and a restart reconstructs it from the
+database.
+
+Three chains are refused before a run exists, and each is a definition that
+cannot be executed rather than a state a run can reach: a consumer of a name no
+step produces; two steps with one name, because a consumer cannot say which it
+reads; and a consumer of a step the engine reaches only later.
+
+That last refusal is deliberate and worth naming. The graph derives an order
+and would run a chain declared the other way round; the *engine* advances along
+the declaration, so it would dispatch the consumer first and find its input had
+not run. A chain the engine cannot walk is refused up front rather than left to
+fail at the step that discovers it. Dispatching from the graph's own order is
+what lifts the restriction.
+
+At dispatch the engine asks the graph whether the step it is about to take is
+ready, and fails the run naming the inputs it is waiting on when it is not.
+
+*What the task still owes.* Two things, and both are the same change.
+
+The advance loop still walks the chain by index and dispatches one step per
+completion. Until it dispatches *every* ready step instead, a consumer of many
+producers — the fan-in the gathering redesign needs — is refused rather than
+made to wait, because nothing reconsults the graph when a producer answers.
+The readiness rule is already the fan-in rule: it waits on every producer that
+writes an input, proven by a test with two batch-keyed producers. What is
+missing is a loop that acts on it.
+
+* Test Scenarios
 
 * Test Scenarios
 

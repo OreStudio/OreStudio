@@ -8,7 +8,7 @@
 #+filetags: :run_every_check_locally:sprint_27:v0:
 #+owner: marco
 #+branch: fix/a-dependency-may-not-run-this-time
-#+pr:
+#+pr: 2885
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2885][#2885]] | [codegen] Let a dependency name a check that is not running |
 
 * Review
 

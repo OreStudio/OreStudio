@@ -44,6 +44,8 @@ TEST_CASE("each gathered set lands under the instance that gathered it", tags) {
           "reporting/runs/11111111-2222-3333-4444-555555555555/market_data.txt");
     CHECK(fixings_storage_key(instance) ==
           "reporting/runs/11111111-2222-3333-4444-555555555555/fixings.txt");
+    CHECK(output_storage_key(instance) ==
+          "reporting/runs/11111111-2222-3333-4444-555555555555/output.tar.gz");
 }
 
 TEST_CASE("every key the plan builds is one the protocol parses", tags) {

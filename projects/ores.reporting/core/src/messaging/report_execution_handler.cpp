@@ -18,6 +18,8 @@
  *
  */
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
+#include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
@@ -31,6 +33,8 @@
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
+#include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_generators.hpp>
@@ -80,6 +84,9 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
  * steps. The destructor runs on every return, including the failure paths.
  */
 using run_token_step_scope = ores::service::service::cache::run_token_step_scope;
+
+/// The compute result outcome that says the job ran: 1=Success.
+constexpr int compute_outcome_success = 1;
 
 } // namespace
 
@@ -155,6 +162,31 @@ std::optional<ores::nats::service::nats_client> report_execution_handler::run_to
     } catch (const std::exception& e) {
         error = std::string("Could not obtain a run token: ") + e.what();
         return std::nullopt;
+    }
+}
+
+std::string report_execution_handler::run_token(const std::string& tenant_id,
+                                                const std::string& run_id,
+                                                std::string& error) {
+    try {
+        const auto tenant_ctx =
+            ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
+        service::report_instance_service instances(tenant_ctx);
+        boost::uuids::string_generator sg;
+        const auto instance = instances.get_instance(sg(run_id));
+        if (!instance || !instance->run_grant_id) {
+            error = "The report instance records no run grant, so its run cannot act.";
+            return {};
+        }
+        const ores::service::service::cache::run_token_key key{
+            .grant_id = boost::uuids::to_string(*instance->run_grant_id), .run_id = run_id};
+        const auto token = run_tokens_.token_for(key, tenant_id);
+        if (token.empty())
+            error = "No run token is available for this run.";
+        return token;
+    } catch (const std::exception& e) {
+        error = std::string("Could not obtain a run token: ") + e.what();
+        return {};
     }
 }
 
@@ -410,17 +442,128 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
         wf->fail("Failed to decode collect_compute_results_request");
         return;
     }
+    const auto& req = *parsed;
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
 
-    BOOST_LOG_SEV(lg(), info) << "collect_compute_results: stub pass-through | instance="
-                              << parsed->report_instance_id << " batch=" << parsed->batch_id;
+    BOOST_LOG_SEV(lg(), info) << "collect_compute_results starting | instance="
+                              << req.report_instance_id << " batch=" << req.batch_id;
 
-    // Phase 3.11 stub: pass through immediately.
-    // A future phase will download output tarballs, parse ORE result data,
-    // and persist structured results to the reporting database.
-    collect_compute_results_result result;
-    result.success = true;
-    result.message = "Pass-through (Phase 3.11 stub)";
-    wf->complete(rfl::json::write(result));
+    // One way out of this step, so a run that cannot collect its results is
+    // recorded as failed rather than left looking like one still working.
+    const auto refuse = [&](const std::string& failure) {
+        mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+        wf->fail(failure);
+    };
+
+    try {
+        boost::uuids::string_generator sg;
+        std::string err;
+
+        // The reads below go to compute as the run rather than as this
+        // service: compute's rows belong to the run's tenant, and the run's
+        // token is what names it.
+        const auto ask = [&](const auto& request, std::string& error) {
+            using request_type = std::decay_t<decltype(request)>;
+            auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, error);
+            std::optional<typename request_type::response_type> response;
+            if (owner)
+                response = nats_call(*owner, request, error);
+            // An expired token costs one exchange and one repeat of the request.
+            if (!response && error.find("token_expired") != std::string::npos) {
+                error.clear();
+                owner = run_token_client(req.tenant_id, req.report_instance_id, true, error);
+                if (owner)
+                    response = nats_call(*owner, request, error);
+            }
+            return response;
+        };
+
+        ores::compute::messaging::list_by_batch_id_workunits_request units_req;
+        units_req.batch_id = sg(req.batch_id);
+        const auto units = ask(units_req, err);
+        if (!units) {
+            refuse("Reading the run's compute workunits failed: " + err);
+            return;
+        }
+
+        // Every result of every workunit. A failed one is a failure of the run
+        // and carries the wrapper's own reason, which is the only account of
+        // what went wrong that anyone has.
+        std::string output_uri;
+        for (const auto& workunit : units->workunits) {
+            ores::compute::messaging::list_by_workunit_id_results_request results_req;
+            results_req.workunit_id = workunit.id;
+            const auto results = ask(results_req, err);
+            if (!results) {
+                refuse("Reading a compute result failed: " + err);
+                return;
+            }
+            for (const auto& one : results->results) {
+                if (one.outcome != compute_outcome_success) {
+                    refuse(std::format("The run's compute job failed with outcome {}: {}",
+                                       one.outcome,
+                                       one.error_message.empty() ? "(no message)" :
+                                                                   one.error_message));
+                    return;
+                }
+                if (output_uri.empty())
+                    output_uri = one.output_uri;
+            }
+        }
+
+        if (output_uri.empty()) {
+            refuse("The run's compute result names no output, so there is nothing to retrieve.");
+            return;
+        }
+
+        // The object belongs to compute, so it is read from there and kept
+        // under this component's own key: the instance then names an object
+        // reporting owns, and a later reader needs no second name for it.
+        std::string source_bucket;
+        std::string source_key;
+        if (!ores::storage::net::storage_paths::split_object_path(
+                output_uri, source_bucket, source_key)) {
+            refuse(std::format("The compute result names an output {} that is not an object path.",
+                               output_uri));
+            return;
+        }
+
+        const auto run_token_value = run_token(req.tenant_id, req.report_instance_id, err);
+        if (run_token_value.empty()) {
+            refuse("Retrieving the run's output needs a run token: " + err);
+            return;
+        }
+
+        ores::storage::net::storage_transfer transfer(http_base_url_, run_token_value);
+        const auto body = transfer.download_blob(source_bucket, source_key);
+
+        const auto key = service::output_storage_key(req.report_instance_id);
+        transfer.upload_blob(std::string(ores::storage::api::object_keys::ores_bucket), key, body);
+
+        service::report_instance_service inst_svc(
+            ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id));
+        auto instance = inst_svc.get_instance(sg(req.report_instance_id));
+        if (!instance) {
+            refuse("Report instance not found: " + req.report_instance_id);
+            return;
+        }
+        instance->output_storage_key = key;
+        inst_svc.save_instance(*instance);
+
+        collect_compute_results_result result;
+        result.success = true;
+        result.message = std::format("Retrieved {} bytes of run output to {}", body.size(), key);
+
+        BOOST_LOG_SEV(lg(), info) << "collect_compute_results complete | instance="
+                                  << req.report_instance_id << " output=" << key
+                                  << " bytes=" << body.size();
+
+        wf->complete(rfl::json::write(result));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
+        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        wf->fail(e.what());
+    }
 }
 
 void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {

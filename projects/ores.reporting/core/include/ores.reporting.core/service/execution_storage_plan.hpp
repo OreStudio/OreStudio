@@ -50,6 +50,16 @@ market_data_storage_key(const std::string& report_instance_id);
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
 fixings_storage_key(const std::string& report_instance_id);
 
+/**
+ * @brief Where one execution's retrieved compute output lands.
+ *
+ * The engine's output is read from compute's own object and kept here, so the
+ * instance points at an object this component owns rather than at another
+ * component's, and a later reader needs no second name for it.
+ */
+[[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
+output_storage_key(const std::string& report_instance_id);
+
 }
 
 #endif

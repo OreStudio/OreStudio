@@ -47,4 +47,9 @@ std::string fixings_storage_key(const std::string& report_instance_id) {
         service_segment, runs_segment, report_instance_id, "fixings.txt");
 }
 
+std::string output_storage_key(const std::string& report_instance_id) {
+    return ores::storage::api::object_keys::make(
+        service_segment, runs_segment, report_instance_id, "output.tar.gz");
+}
+
 }

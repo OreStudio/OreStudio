@@ -8,7 +8,7 @@
 #+filetags: :bring_the_generated_column_references_under_a_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-the-generated-column-references-under-a-gate
-#+pr:
+#+pr: 2881
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2881][#2881]] | [codegen] Gate the generated column references |
 
 * Review
 

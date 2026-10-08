@@ -30,12 +30,25 @@ and the two are different parties here. The tenant is still derived from the
 validated token, so the operation can only ever affect a party inside the
 caller's own tenant.
 
+=get_setting= reads one setting by the name it is known by. The entity's own
+read is addressed by identifier, which no caller outside this component holds,
+and a setting is always spoken of by name. It is the read a component makes of
+the installation's configuration -- how often a sweep runs, how long a token
+lives -- so it is deliberately narrow: one name in, one value out, and no way
+to list or write anything.
+
+A component that needs a setting reads it over the wire rather than reaching
+into this component's tables. The alternative would put one component's schema
+in another's query, and the point of a service boundary is that it does not
+matter which.
+
 * Physical space
 
-The shell commands are switched off. These messages change platform state rather
-than read or write a row: one clears bootstrap mode once the first administrator
-exists, and the other completes a party's onboarding. The shell renders the
-=system_setting= entity's unit, and nothing in the shell sends these two.
+The shell commands are switched off. Two of these messages change platform
+state rather than read or write a row: one clears bootstrap mode once the first
+administrator exists, and the other completes a party's onboarding. The shell
+renders the =system_setting= entity's unit, and nothing in the shell sends
+these three.
 
 * Includes
 
@@ -89,6 +102,62 @@ derived from the token.
 :PROPERTIES:
 :cpp_type: ores::utility::domain::result
 :END:
+
+** get_setting_request
+:PROPERTIES:
+:subject: variability.v1.ops.get_setting
+:response: get_setting_response
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The setting's name, which is its natural key.
+ *
+ * A setting is addressed by its name everywhere it is spoken about --
+ * =iam.token.access_lifetime_seconds= is the setting, and nobody knows its
+ * identifier -- so a caller that holds a name asks for it by name rather than
+ * by looking it up in a list first.
+ */
+#+end_src
+
+** get_setting_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The setting's value as text, meaningful when the outcome is ok.
+ *
+ * The value is text whatever the type: =data_type= says how to read it, and a
+ * caller that asked for a cron expression reads it as one.
+ */
+#+end_src
+
+*** data_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The setting's declared type, an empty string when it does not exist.
+ */
+#+end_src
 
 * See also
 

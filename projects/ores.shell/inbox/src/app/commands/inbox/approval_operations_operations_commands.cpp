@@ -85,6 +85,13 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
         },
         "list-my-approval-requests [--offset <v>] [--limit <v>]");
 
+    menu->Insert(
+        "expire-overdue-approvals",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_expire_overdue_approvals(std::ref(out), std::ref(session), std::move(args));
+        },
+        "expire-overdue-approvals");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -368,6 +375,56 @@ void approval_operations_operations_commands::process_list_my_approval_requests(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::inbox::messaging::list_my_approval_requests_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void approval_operations_operations_commands::process_expire_overdue_approvals(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating expire-overdue-approvals request.";
+
+    using request_type = ores::inbox::messaging::expire_overdue_approvals_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run expire-overdue-approvals." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::inbox::messaging::expire_overdue_approvals_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::inbox::messaging::expire_overdue_approvals_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::inbox::messaging::expire_overdue_approvals_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

@@ -297,6 +297,8 @@ const pt: SourceCatalogue = {
     'notification.inbox.approval_waiting': '{requester} pede {kind}. Escreveu: {reason}',
     'notification.inbox.approval_decided':
         'O seu pedido de {kind} está {state}. {decider} escreveu: {comment}',
+    'notification.inbox.approval_expired':
+        'O seu pedido de {kind} expirou antes de alguém responder. Peça de novo se ainda precisar dele.',
 
     signIns: {
         title: 'Inícios de sessão',

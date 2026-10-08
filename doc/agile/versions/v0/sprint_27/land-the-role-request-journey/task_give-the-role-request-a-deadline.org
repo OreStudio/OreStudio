@@ -8,11 +8,11 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-role-request-a-deadline
-#+pr:
+#+pr: 2784
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,25 +26,78 @@ A role request that nobody answers closes on its own, so a queue cannot rot. The
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
 - The iam.role_grant kind carries a deadline, seeded, and a request raised under it records expires_at.
-- A request past its deadline closes as expired, and both the asker and the deciders are told.
+- A request past its deadline closes as expired, and the person who asked is
+  told. The deciders are not told: the queue is where they look, and the
+  request leaves it. The journey's separate candidate, a reminder *before* the
+  deadline, is not built here and is captured instead.
 - An untouched queue does not hold an expired request: the sweep decision is recorded and implemented.
 - The journey records gap 7 as closed.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The deadline is a column the kind already has. =approval_kind.expires_after_days=
+and =approval_request.expires_at= both exist, and the raise path already turns
+one into the other, so seeding fourteen days on =iam.role_grant= is the whole
+of the first acceptance criterion. The seed states it as the review window a
+member waits, which is a fortnight and not a number the code should hold.
+
+The sweep is the part that does not exist. The decide function closes an
+overdue request when a decider reaches for it, which is no help to a queue
+nobody opens, and an untouched queue is exactly the case the journey names. So
+=ores_inbox_expire_approval_requests_fn= closes every overdue open request in
+one statement and answers one row per request it closed, and the inbox runs the
+sweep as an operation of its own.
+
+The sweep is a job the scheduler fires, and the job publishes
+=inbox.v1.ops.expire_overdue_approvals=. It does not run the SQL directly: the
+close and the notice that tells the person who asked are one act, the notice is
+raised in the service, and an =execute_sql= job would close requests silently.
+A =steady_timer= inside the service was the first shape this took and is the
+wrong one -- the
+[[id:4DA2D408-7141-4D8A-8476-D06EE64F44D5][capture that raised it]] says why.
+The design is written up on [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval
+request expiry]], with its [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][interaction
+diagram]].
+
+The component declares *that* the sweep recurs and the installation says *how
+often*. The inbox registers the job itself, so nothing in a populate script has
+to know the component's name; the frequency is the variability system setting
+=inbox.approval_expiry.schedule=, read over the wire through
+=variability.v1.ops.get_setting= for the reason that operation exists: a
+component reads a setting by name rather than reaching into another component's
+tables. A registration that cannot be made stops the service, because an inbox
+that is up with no expiry job is worse than one that is down and says so. The
+job is recognised by =job_name=, so a restart replaces the row rather than
+colliding with it.
+
+The function reads every tenant, so it is a security-definer function and the
+inbox service is the only role granted execute, exactly as
+=ores_iam_unapplied_role_grants_fn= is. The read-write role the suites sign in
+under keeps it too, so the sweep can be tested.
+
+An expiry is not a decision. The message a decision raises reads "{decider}
+wrote: {comment}", which for an expiry would name somebody who did nothing, so
+the expiry gets a notification kind of its own rather than borrowing the
+other's wording.
+
+Two things only running it found, both now fixed. The sweep starts from the
+scheduler, so the context that runs it has no actor, and the store refuses a
+write that names nobody: the sweep names the service account, which is the
+honest answer to who closed the request. And the service account lives in the
+system tenant while the person to tell lives in theirs, so the raiser is
+resolved where it lives and the notice is raised where the person is -- which
+in turn is why =raised_by= now admits a system-tenant account, stated in the
+notification model rather than in the generated SQL.
 
 * Measurements
 
@@ -58,9 +111,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Lifecycle suite | 146 assertions in 26 cases, all passing | =compass build test_ores.inbox.core.tests= | =647e7c6a56= |
+| Component drift | 0 files this branch touched would change; 253 elsewhere in the catalogue | =check_component_drift.py --sweep= | =647e7c6a56= |
+| Scheduler firings of the expiry job | 2, both =succeeded=, both on a =*/5= boundary | =compass sql -- -f evidence/expiry_job_instances.sql= | =647e7c6a56= |
 
 * Notes
+
+The walk lived in =evidence/= beside this page: =expiry_reset.ores= and
+=expiry_ask.ores= raise the request as the member, =expiry_backdate.sql= moves
+its deadline behind us, and =expiry_walk_check.sql= reads the outcome by the id
+the ask printed. Build it by resetting the member's password, asking as them,
+backdating, waiting for the next five-minute boundary, and reading. The ids in
+the two =.ores= scripts change on every =db recreate=, so they are re-read from
+the tables before each walk.
+
+| File | What it shows |
+|------+---------------|
+| =expiry_registration.txt= | The service reading the setting and writing the job at start, and writing nothing on a restart because the job already holds that schedule. |
+| =expiry_sweep.txt= | The scheduler's own record of firing the job on the schedule the setting states. |
+| =expiry_outcome.txt= | The closed request, the notice the asker was given, and the one thing the walk does not cover. |
+
+This task forced no capture of its own. The two things running it found were
+regressions in code written here, not facts about the codebase, so they were
+fixed rather than filed.
 
 * Test Scenarios
 
@@ -77,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2784][#2784]] | [inbox] Close a lapsed approval request from a scheduled job |
 
 * Review
 
@@ -86,3 +159,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Built and walked. A role request raised under =iam.role_grant= now records a
+deadline fourteen days out, and a request nobody answers closes as expired and
+tells the person who asked.
+
+The deadline is the kind's: =iam.role_grant= is seeded with
+=expires_after_days = 14=, and the raise path turns it into the request's
+=expires_at= once. The walk confirms it -- a request raised at 2026-10-07
+23:15:35Z records =expires_at = 2026-10-21 23:15:35Z=.
+
+The close is the scheduler's. The inbox registers
+=ores.inbox.approval_expiry= at start, an =nats_publish= job whose schedule is
+the =inbox.approval_expiry.schedule= system setting that the inbox reads over
+the wire; the job publishes =inbox.v1.ops.expire_overdue_approvals=; and the
+inbox closes every overdue request across every tenant and tells each asker.
+The walk moved one request's deadline behind us, and the firing on the next
+five-minute boundary closed it -- =expired=, =system.update=, "Closed because
+nobody answered before its deadline" -- and raised
+=inbox.approval_expired=, naming the kind as a person reads it, one fifth of a
+second later.
+
+Both close paths write the same tail, so a request's history reads the same
+however it closed. The sweep is idempotent: a request it already closed is not
+open, so a repeat closes nothing, and a service that was down for a week sweeps
+what lapsed in that week on its next run.
+
+That the sweep recurs is the component's, and how often it recurs is the
+installation's. This is the split the whole task turns on, and it is the reason
+the schedule is a system setting rather than a constant: a component that
+hardcodes its own schedule is asserting something about somebody else's
+deployment.
+
+Beyond the acceptance criteria, three things changed because the walk demanded
+them: the sweep names the service account, because a store that refuses a write
+naming nobody is right and the sweep must still say who closed the request; the
+notice's raiser is resolved in the system tenant, because that is where service
+accounts live; and =raised_by= admits a system-tenant account, stated in the
+notification model so the generated SQL and the intent cannot drift apart.
+
+The journey's gap 7 is closed. Gap 4, the reminder *before* the deadline, is
+not built here and is captured instead --
+[[id:BF4009D1-1254-43F9-A8A3-BE9374DB5F30][nobody reminds a decider that a
+request is about to lapse]].
+

@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 4DA2D408-7141-4D8A-8476-D06EE64F44D5
+:END:
+#+title: Is a steady_timer spawned from on_started the right design for periodic work?
+#+description: Compute keeps two recurring behaviours and both hardcode their timing, one as a boost::asio steady_timer loop spawned from the runner's on_started callback and one as a seeded scheduler job. Neither can be tuned for a given system, and the timer's fate is tied to a lifecycle hook.
+#+type: capture
+#+level: cross
+#+filetags: :capture:architecture:scheduler:variability:
+#+created: 2026-10-07
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every recurring behaviour a component owns should state *that* it recurs, and
+take *when* it recurs from a system configuration option, so that a given
+installation can tune it without a build. Concretely: the timing of each of
+these schedules becomes a setting seeded through variability with
+=ores_variability_system_settings_upsert_fn=, and the code reads it rather than
+holding a constant or a seeded cron.
+
+* Why
+
+Compute owns two recurring behaviours today, and both fix their timing in a
+place an operator cannot reach:
+
+- =compute_grid_poller= samples grid telemetry on =interval_seconds=, a
+  constant in the service, in a =boost::asio steady_timer= loop spawned from
+  the domain service runner's =on_started= callback.
+- =compute.v1.reap.stale_results= is a seeded scheduler job, so its cron
+  expression is reachable only by editing a populate script and recreating the
+  database.
+
+The same is true of =ores.mq.metrics_scrape=, which is the subject of
+[[id:9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77][its own capture]].
+
+Fixed behaviour is the wrong default for a schedule. How often a grid sample
+is worth taking, or how long a stale result is left before it is reaped,
+depends on the deployment: a small installation and a busy one want different
+answers, and neither wants to rebuild to get one. The variability model already
+carries system settings for exactly this kind of installation-level knob —
+=iam.token.access_lifetime_seconds= and =system.signup_requires_authorization=
+are both such keys — so the mechanism exists and is not being used here.
+
+The second reason is the one the incident raised. A timer spawned from
+=on_started= lives and dies with one lifecycle hook, and on 2026-10-07 that
+hook did not run for the inbox service at all: the service started, registered
+its handlers and served requests, but logged no startup sequence — no
+=Registered N subscription(s)=, no =Service ready.= — and neither the heartbeat
+publisher nor a new expiry sweeper, both spawned from that one callback, ever
+ran. The process was demonstrably alive, because it published entity-change
+events minutes later. Root cause not found. Whatever it turns out to be, work
+that only exists inside a timer shares a fate with a hook that can silently not
+fire.
+
+It happened again on 2026-10-08, and the second time it stalled earlier and
+therefore says more. The service was restarted, logged its version banner, its
+mTLS connect, its service login and the creation of its database context, then
+stopped part-way through registering the entity-change event mappings: the last
+line it wrote was =Subscribed to PostgreSQL channel:
+ores_inbox_notification_deliveries=, and it never reached =Service ready.=, its
+heartbeat, or the job it registers at start. It wrote nothing for the next
+minute and served nothing. A restart a minute later came up healthy and
+complete.
+
+So the failure is not peculiar to =on_started=, and it is not deterministic. A
+service can stall anywhere between taking its database context and finishing
+its startup, silently, and one restart in some number of them will do it. The
+argument above stands and is stronger than it was: what a component starts is
+worth a mechanism that can be observed, reported and retried, rather than a
+few runs of statements whose completion nothing checks.
+
+A job in the catalogue, by contrast, survives the service restarting, is
+visible in the job list, and can be rescheduled by an operator. What none of
+these shapes should be is compiled-in.
+
+* References
+
+- =projects/ores.compute/service/src/app/compute_grid_poller.cpp= — the timer
+  and its =interval_seconds=.
+- =projects/ores.compute/service/src/app/application.cpp= — where the poller is
+  spawned from =on_started=.
+- =projects/ores.sql/populate/compute/compute_populate.sql= — the seeded
+  =compute.v1.reap.stale_results= job and its cron expression.
+- =projects/ores.sql/populate/variability/variability_system_settings_populate.sql=
+  — the settings mechanism these schedules should use.
+- =projects/ores.scheduler/modeling/ores.scheduler.job_definition.org= — a job
+  fires either SQL or a subject, which is how a schedule reaches a service.
+
+* See also
+
+- [[id:9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77][The metrics scrape fixes its schedule in a seed]] — the same
+  argument for the MQ scrape.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the
+  flow that raised this, and the shape the sweep took instead: it registers a
+  job at start and takes its timing from the system setting
+  =inbox.approval_expiry.schedule=.

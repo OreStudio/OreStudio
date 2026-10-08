@@ -100,7 +100,8 @@ begin
     -- Validate raised_by (soft FK to ores_iam_accounts_tbl)
     if not exists (
         select 1 from ores_iam_accounts_tbl
-        where tenant_id = NEW.tenant_id
+        where (tenant_id = NEW.tenant_id
+           or tenant_id = ores_utility_system_tenant_id_fn())
           and id = NEW.raised_by
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -123,6 +124,11 @@ begin
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
 
     -- Version management
     select version into current_version
@@ -166,7 +172,6 @@ begin
 
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;

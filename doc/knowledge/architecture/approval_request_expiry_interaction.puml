@@ -1,0 +1,111 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Approval request expiry: the sweep
+
+participant "Member" as member
+participant "IAM" as iam
+participant "Scheduler" as sched
+participant "Inbox" as inbox
+participant "Variability" as var
+participant "Administrator" as admin
+database "Postgres" as db
+
+== The ask carries its deadline ==
+
+member -> iam : iam.v1.ops.ask_for_roles
+iam -> inbox : inbox.v1.ops.raise_approval\n(kind iam.role_grant)
+inbox -> db : read the kind
+db --> inbox : expires_after_days = 14
+note right of inbox
+  The kind holds the policy, so the
+  request states when it stops waiting:
+  expires_at = now + the kind's days.
+end note
+inbox -> db : write the request (waiting, expires_at)
+inbox -> admin : inbox.approval_waiting
+note over member, admin
+  Nobody answers. The request stays open
+  and the queue keeps offering it.
+end note
+
+== The inbox declares the job and reads when to fire it ==
+
+inbox -> var : variability.v1.ops.get_setting\n(inbox.approval_expiry.schedule)
+var -> db : read the setting
+db --> var : the cron expression
+var --> inbox : the value and its declared type
+note right of inbox
+  That the sweep recurs is the inbox's
+  own behaviour, so the inbox registers
+  the job. How often is the installation's
+  answer, so the schedule is a system
+  setting. The inbox asks variability for
+  it by name, over the wire and with the
+  permission to read it, rather than
+  reaching into variability's tables.
+end note
+inbox -> sched : scheduler.v1.job_definitions.list
+sched --> inbox : the jobs, so the inbox\nfinds the one it registered last time
+inbox -> sched : scheduler.v1.job_definitions.put\n(name ores.inbox.approval_expiry,\naction_type nats_publish, this subject)
+note right of inbox
+  The job is recognised by name and the
+  registration reuses the identifier of
+  the job already carrying it, so a
+  restart replaces the row instead of
+  colliding with it. A registration that
+  cannot be made stops the service: an
+  inbox that is up with no expiry job is
+  worse than one that is down and says so.
+end note
+
+== The scheduled sweep ==
+
+sched -> inbox : inbox.v1.ops.expire_overdue_approvals
+note right of sched
+  A job in the catalogue belongs to no
+  tenant and reaches the service, not
+  the store: telling the asker is part
+  of the act, and the function alone
+  tells nobody.
+end note
+inbox -> db : ores_inbox_expire_approval_requests_fn(actor)
+note right of db
+  Security definer, so it reads every
+  tenant. An open request whose
+  expires_at has passed becomes
+  expired, and each closed request is
+  answered as one row.
+end note
+db --> inbox : one row per request closed
+inbox -> member : inbox.approval_expired
+
+== The decider who arrives too late ==
+
+admin -> inbox : inbox.v1.ops.decide_approval
+inbox -> db : ores_inbox_decide_approval_request_fn(...)
+db --> inbox : conflict: the request expired
+note right of db
+  The same rule, applied when a decider
+  reaches for the request rather than on
+  the sweep. Both paths leave it expired
+  and neither decides it.
+end note
+
+@enduml

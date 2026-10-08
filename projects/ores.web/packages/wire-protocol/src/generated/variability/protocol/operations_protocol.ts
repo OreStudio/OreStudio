@@ -41,9 +41,37 @@ export interface CompletePartyOnboardingResponse {
     result: Result;
 }
 
+export interface GetSettingRequest {
+    /**
+     * @brief The setting's name, which is its natural key.
+     *
+     * A setting is addressed by its name everywhere it is spoken about --
+     * =iam.token.access_lifetime_seconds= is the setting, and nobody knows its
+     * identifier -- so a caller that holds a name asks for it by name rather than
+     * by looking it up in a list first.
+     */
+    name: string;
+}
+
+export interface GetSettingResponse {
+    result: Result;
+    /**
+     * @brief The setting's value as text, meaningful when the outcome is ok.
+     *
+     * The value is text whatever the type: =data_type= says how to read it, and a
+     * caller that asked for a cron expression reads it as one.
+     */
+    value: string;
+    /**
+     * @brief The setting's declared type, an empty string when it does not exist.
+     */
+    data_type: string;
+}
+
 export const subjects = {
     clear_bootstrap_mode_request: 'variability.v1.ops.clear_bootstrap_mode',
     complete_party_onboarding_request: 'variability.v1.ops.complete_party_onboarding',
+    get_setting_request: 'variability.v1.ops.get_setting',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -53,4 +81,5 @@ export const subjects = {
 export const requiresSession = {
     clear_bootstrap_mode_request: true,
     complete_party_onboarding_request: true,
+    get_setting_request: true,
 } as const;

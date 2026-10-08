@@ -96,6 +96,13 @@ public:
     static void process_list_my_approval_requests(std::ostream& out,
                                                   ores::nats::service::nats_client& session,
                                                   const std::vector<std::string>& args);
+
+    /**
+     * @brief expire-overdue-approvals
+     */
+    static void process_expire_overdue_approvals(std::ostream& out,
+                                                 ores::nats::service::nats_client& session,
+                                                 const std::vector<std::string>& args);
 };
 
 }

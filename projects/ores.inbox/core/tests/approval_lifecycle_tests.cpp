@@ -19,12 +19,14 @@
  */
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 
 namespace {
 
@@ -45,6 +47,14 @@ ores::database::context acting(ores::testing::scoped_database_helper& h) {
     return h.context().with_tenant(h.tenant_id(), h.db_user());
 }
 
+// The context the sweep runs under. It comes from the scheduler, so nobody is
+// signed in and there is no actor; the service account is the only name the
+// write has. A sweep that reached for the actor instead of the service account
+// would name nobody and be refused by the store.
+ores::database::context sweeping(ores::testing::scoped_database_helper& h) {
+    return h.context().with_tenant(h.tenant_id(), "");
+}
+
 }
 
 using ores::inbox::service::approval_lifecycle;
@@ -60,7 +70,13 @@ TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", tags) {
     const auto raised = lifecycle.raise(*kind, "I cover the desk next week", asker.id);
     CHECK(raised.state_code == "waiting");
     CHECK(raised.requested_by == asker.id);
-    CHECK_FALSE(raised.expires_at);
+    // The role request kind carries a review window, so a request states the
+    // moment it stops waiting. The window is two weeks; the tolerance is the
+    // second the column keeps.
+    REQUIRE(raised.expires_at);
+    const auto window = *raised.expires_at - raised.requested_at;
+    CHECK(window > std::chrono::days(13));
+    CHECK(window < std::chrono::days(15));
 
     const auto id = boost::uuids::to_string(raised.id);
     const auto r = lifecycle.decide(id, raised.version, "approve", decider.id, "");
@@ -172,4 +188,50 @@ TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
     CHECK_FALSE(in(lifecycle.queue({}, decider.id, 0, 500)));
     CHECK(in(lifecycle.raised_by(asker.id, 0, 100)));
     CHECK_FALSE(in(lifecycle.raised_by(decider.id, 0, 100)));
+}
+
+TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto overdue = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Nobody will ask", asker.id);
+    const auto in_time = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Still fresh", asker.id);
+    const auto overdue_id = boost::uuids::to_string(overdue.id);
+    const auto in_time_id = boost::uuids::to_string(in_time.id);
+
+    const auto closed = [&](const auto& swept, const std::string& id) {
+        return std::ranges::any_of(swept, [&](const auto& e) { return e.request_id == id; });
+    };
+
+    // Neither is due: the fortnight has not passed, so the sweep closes
+    // nothing and both requests stay in front of a decider.
+    approval_lifecycle sweep(sweeping(h));
+    const auto first = sweep.expire_overdue();
+    CHECK_FALSE(closed(first, overdue_id));
+    CHECK(lifecycle.request(overdue_id)->state_code == "waiting");
+
+    // Move one deadline behind us, which is what waiting the fortnight comes
+    // to. The write is the ordinary one, so the row gains a version.
+    auto lapsed = *lifecycle.request(overdue_id);
+    lapsed.expires_at = std::chrono::system_clock::now() - std::chrono::hours(1);
+    lapsed.change_reason_code = "system.test";
+    ores::inbox::repository::approval_request_repository repo;
+    repo.write(acting(h), lapsed);
+
+    const auto second = sweep.expire_overdue();
+    CHECK(closed(second, overdue_id));
+    CHECK_FALSE(closed(second, in_time_id));
+
+    const auto after = lifecycle.request(overdue_id);
+    REQUIRE(after);
+    CHECK(after->state_code == "expired");
+    CHECK(lifecycle.request(in_time_id)->state_code == "waiting");
+    // The closed row names the service, which is who ran the sweep.
+    CHECK(after->modified_by == sweeping(h).service_account());
+
+    // A request it already closed is no longer open, so the next sweep is a
+    // no-op rather than a second closure.
+    CHECK_FALSE(closed(sweep.expire_overdue(), overdue_id));
+    CHECK(lifecycle.request(overdue_id)->version == after->version);
 }

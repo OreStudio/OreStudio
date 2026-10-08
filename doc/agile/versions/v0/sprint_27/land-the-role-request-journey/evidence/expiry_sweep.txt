@@ -1,0 +1,17 @@
+The scheduler's own record of firing the expiry job, read after the walk.
+Run as: compass sql -- -f expiry_job_instances.sql
+
+          job_name          | schedule_expression |  status   |      triggered_at      | error_message
+----------------------------+---------------------+-----------+------------------------+---------------
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:15:00+01 |
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:10:00+01 |
+(2 rows)
+
+The schedule is the value of the system setting
+inbox.approval_expiry.schedule, which the inbox read over the wire at start
+before it wrote the job row. The job's action is nats_publish, so firing it
+publishes inbox.v1.ops.expire_overdue_approvals rather than running SQL: the
+close and the notice are one act, and a function in the store tells nobody.
+
+Both firings landed on a five-minute boundary, which is the setting's doing
+and not the component's: nothing in the inbox states how often the sweep runs.

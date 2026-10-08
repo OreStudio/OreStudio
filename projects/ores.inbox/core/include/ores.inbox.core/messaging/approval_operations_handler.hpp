@@ -415,6 +415,41 @@ public:
         }
     }
 
+    /**
+     * @brief Closes every open request past its kind's deadline, and tells
+     * each person who asked.
+     *
+     * The scheduler fires this operation, so the caller is the service rather
+     * than a person and the sweep reaches every tenant. A firing is a plain
+     * publish that carries no token, so the service's own context is what
+     * holds the work: there is no session to read one from.
+     */
+    void expire_overdue(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        try {
+            service::approval_lifecycle lifecycle(ctx_);
+            const auto expired = lifecycle.expire_overdue();
+            std::vector<std::string> ids;
+            ids.reserve(expired.size());
+            for (const auto& e : expired)
+                ids.push_back(e.request_id);
+            reply(nats_,
+                  msg,
+                  expire_overdue_approvals_response{
+                      .result = approval_result(outcome::ok, "", ""),
+                      .expired = std::move(ids)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error closing the requests nobody answered: " << e.what();
+            reply(nats_,
+                  msg,
+                  expire_overdue_approvals_response{.result = approval_result(
+                                                        outcome::failed,
+                                                        "expire_failed",
+                                                        e.what())});
+        }
+    }
+
 private:
     /**
      * @brief Tells the people who may decide a request that it waits.

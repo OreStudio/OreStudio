@@ -140,11 +140,20 @@ The lookup is system reference data, so the check reads the system tenant.
 
 ** raised_by
 :PROPERTIES:
-:table:         ores_iam_accounts_tbl
-:target_column: id
-:nullable:      false
+:table:                  ores_iam_accounts_tbl
+:target_column:          id
+:nullable:               false
+:system_tenant_visible:  true
 :error_message: Invalid raised_by: %. No account found with this id.
 :END:
+
+Accounts are a global registry: every tenant owns its own, and the services
+that act on any tenant's behalf live in the system tenant. So the raiser is an
+account of the notice's own tenant or one of the system tenant's, and a notice
+a tenant's people must be told about is raisable even when no person in that
+tenant raised it. The sweep that closes a lapsed approval request is exactly
+that case: it runs as the inbox service, which holds no account outside the
+system tenant, and it still tells the person who asked.
 
 ** audience_permission_code
 :PROPERTIES:

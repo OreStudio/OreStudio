@@ -296,6 +296,8 @@ const fr: SourceCatalogue = {
     'notification.inbox.approval_waiting': '{requester} demande {kind}. Il a écrit : {reason}',
     'notification.inbox.approval_decided':
         'Votre demande de {kind} est {state}. {decider} a écrit : {comment}',
+    'notification.inbox.approval_expired':
+        'Votre demande de {kind} a expiré avant que quiconque y réponde. Demandez-la de nouveau si vous en avez encore besoin.',
 
     signIns: {
         title: 'Connexions',

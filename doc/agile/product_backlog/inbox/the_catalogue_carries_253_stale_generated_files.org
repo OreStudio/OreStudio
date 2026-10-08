@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 125E8691-7538-4450-869B-FA3C73492390
+:END:
+#+title: The catalogue carries 253 generated files that no longer match their models
+#+description: check_component_drift.py --sweep reports that no file this branch touched would change, but 253 files elsewhere in the catalogue would. The registry of components under test is a list of components that are already clean, so a component waiting its turn has no gate at all and its generated output drifts from its models unremarked. The inbox is the clearest example: 117 of its generated registrars no longer match, and the trigger was commit cf89a3edda, Bring every declared subject onto the entity protocol, which changed inbox models after 99e17bd5a8 last regenerated those registrars. Nothing regenerates on build, so the drift sits there. The sweep docstring already states the position -- a component's pre-existing drift belongs to that component's own clean-up -- so this is a capture about the size of the debt rather than a defect in the gate. Decide whether the catalogue gets a standing regeneration task, or whether each clean-up story carries its component's drift as an explicit first step.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

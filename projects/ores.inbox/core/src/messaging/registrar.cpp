@@ -119,6 +119,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(list_my_approval_requests_request::nats_subject,
                                  queue_group,
                                  [h](ores::nats::message msg) { h->mine(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            expire_overdue_approvals_request::nats_subject,
+            queue_group,
+            [h](ores::nats::message msg) { h->expire_overdue(std::move(msg)); }));
     }
 
     // Notifications: a component raises one, and a person reads, marks and

@@ -295,6 +295,14 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'inbox::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'iam::tenants:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'iam::accounts:read');
+    -- The inbox reads how often to sweep from a system setting, and asks
+    -- variability for it over the wire rather than reading its table.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'variability::system_settings:read');
+    -- The inbox owns the expiry job, so it reads the scheduler's jobs to
+    -- recognise the one it registered last time and writes it to say how often
+    -- it fires. Reading first is what stops a restart adding a second job.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'scheduler::job_definitions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'scheduler::job_definitions:write');
 
     -- Trading service: full own-component + all refdata reads + change reasons
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'Trading domain service', false);

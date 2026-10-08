@@ -53,10 +53,17 @@ target_link_libraries(${lib_target_name}
 
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
+#
+# The service registers its expiry job with the scheduler and reads the
+# schedule from variability, both as itself, so it holds a service token and
+# speaks the two protocols those components own.
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib)
+        ores.eventing.core.lib
+        ores.iam.client.lib
+        ores.scheduler.api.lib
+        ores.variability.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

@@ -117,3 +117,24 @@ It is addressed at =inbox.v1.ops.list_my_approval_requests=.
 approval_operations list-my-approval-requests
 #+end_src
 
+** =expire-overdue-approvals=
+:PROPERTIES:
+:ID: B23A004E-B229-50F3-BC8A-FE67A13A3643
+:END:
+
+Sends =expire_overdue_approvals_request= and prints =expire_overdue_approvals_response=, so the shape is the protocol's and the meaning is the service's. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations expire-overdue-approvals
+#+end_example
+
+It is addressed at =inbox.v1.ops.expire_overdue_approvals=.
+
+#+name: approval_operations-expire-overdue-approvals
+#+begin_src ores-shell :tangle approval_operations-expire-overdue-approvals.ores :exports none
+approval_operations expire-overdue-approvals
+#+end_src
+

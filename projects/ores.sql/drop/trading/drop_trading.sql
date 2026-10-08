@@ -41,6 +41,9 @@
 \ir ./trading_structure_template_roles_notify_trigger_drop.sql
 \ir ./trading_structure_template_roles_drop.sql
 
+\ir ./trading_structure_members_notify_trigger_drop.sql
+\ir ./trading_structure_members_drop.sql
+
 \ir ./trading_structures_notify_trigger_drop.sql
 \ir ./trading_structures_drop.sql
 

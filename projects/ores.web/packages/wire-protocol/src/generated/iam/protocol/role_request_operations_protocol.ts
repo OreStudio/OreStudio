@@ -65,13 +65,36 @@ export interface GetRequestRolesRequest {
     request_id: string;
 }
 
+/**
+ * @brief One role a request asks for, with the request's own record of it.
+ *
+ * The role is the catalogue row, whole, so a screen draws it without a second
+ * read. The tail is the junction row the ask wrote: when it was written, and
+ * when IAM applied it afterwards and on whose authority. It is what the
+ * request's story needs to say that a role was given, and the only place that
+ * fact is kept.
+ */
+export interface RequestedRole {
+    role: Role;
+    /**
+     * @brief When the request recorded the role, which is when the person asked.
+     */
+    asked_at: string;
+    /**
+     * @brief When IAM applied the role after the request was approved, or empty
+     * until it has. A role the person already held is marked applied without a
+     * grant, so this says the request was dealt with rather than that a role moved.
+     */
+    applied_at: string | null;
+    /**
+     * @brief Who applied it, or empty until somebody has.
+     */
+    applied_by: string;
+}
+
 export interface GetRequestRolesResponse {
     result: Result;
-    /**
-     * @brief The roles the request asks for, whole, so a screen draws them
-     * without a second read.
-     */
-    roles: Role[];
+    roles: RequestedRole[];
 }
 
 export const subjects = {

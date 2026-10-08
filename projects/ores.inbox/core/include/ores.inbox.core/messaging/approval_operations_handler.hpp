@@ -22,7 +22,9 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.inbox.core/presentation/approval_request_history_field_mapper.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
+#include "ores.inbox.core/service/approval_request_service.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -33,6 +35,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -405,19 +408,7 @@ public:
         try {
             service::approval_lifecycle lifecycle(*ctx);
             const auto found = lifecycle.request(req->request_id);
-            if (!found) {
-                reply(nats_,
-                      msg,
-                      get_approval_response{
-                          .result = approval_result(outcome::missing, "not_found", "")});
-                return;
-            }
-            const auto me = lifecycle.actor_account_id();
-            const auto kind = lifecycle.kind(found->kind_code);
-            const auto may_open = (me && found->requested_by == *me) ||
-                                  (kind && has_permission(*ctx, kind->decide_permission_code)) ||
-                                  has_permission(*ctx, "inbox::approval_requests:read");
-            if (!may_open) {
+            if (!found || !may_open(*ctx, lifecycle, *found)) {
                 reply(nats_,
                       msg,
                       get_approval_response{
@@ -436,6 +427,91 @@ public:
                   get_approval_response{.result = approval_result(
                                                     outcome::failed, "read_failed", e.what())});
         }
+    }
+
+    /**
+     * @brief Reads every version of one request, newest first.
+     *
+     * The same entitlement as opening the request, because the versions are the
+     * request with a clock on it. The generic history read gates on the
+     * administrator's permission and so cannot answer the person who raised the
+     * request with their own request's versions, which is the whole reason this
+     * read exists.
+     */
+    void get_history(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<get_approval_history_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  get_approval_history_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto found = lifecycle.request(req->request_id);
+            if (!found || !may_open(*ctx, lifecycle, *found)) {
+                reply(nats_,
+                      msg,
+                      get_approval_history_response{
+                          .result = approval_result(outcome::missing, "not_found", "")});
+                return;
+            }
+
+            service::approval_request_service requests(*ctx);
+            const auto versions = requests.get_request_history(req->request_id);
+            std::vector<approval_request_version> answer;
+            answer.reserve(versions.size());
+            for (const auto& v : versions) {
+                approval_request_version rendered;
+                rendered.version = v.version;
+                rendered.modified_by = v.modified_by;
+                rendered.performed_by = v.performed_by;
+                rendered.recorded_at = v.recorded_at;
+                rendered.change_reason_code = v.change_reason_code;
+                rendered.change_commentary = v.change_commentary;
+                for (const auto& field : presentation::render_approval_request_fields(v))
+                    rendered.fields.push_back(
+                        approval_request_field{.name = field.name, .value = field.value});
+                answer.push_back(std::move(rendered));
+            }
+            std::ranges::sort(answer, std::greater{}, &approval_request_version::version);
+            reply(nats_,
+                  msg,
+                  get_approval_history_response{
+                      .result = approval_result(outcome::ok, "", ""),
+                      .versions = std::move(answer)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading the history of approval request " << req->request_id << ": "
+                << e.what();
+            reply(nats_,
+                  msg,
+                  get_approval_history_response{.result = approval_result(
+                                                    outcome::failed, "read_failed", e.what())});
+        }
+    }
+
+    /**
+     * @brief Whether the caller may open a request and read its trail.
+     *
+     * The person who raised it, whoever may decide its kind, and whoever may
+     * read the tenant's requests. Answered as absent rather than refused, so the
+     * reply says nothing about a request the caller has no business knowing.
+     */
+    bool may_open(const ores::database::context& ctx,
+                  service::approval_lifecycle& lifecycle,
+                  const domain::approval_request& request) {
+        const auto me = lifecycle.actor_account_id();
+        const auto kind = lifecycle.kind(request.kind_code);
+        return (me && request.requested_by == *me) ||
+               (kind && has_permission(ctx, kind->decide_permission_code)) ||
+               has_permission(ctx, "inbox::approval_requests:read");
     }
 
     void mine(ores::nats::message msg) {

@@ -27,6 +27,8 @@
 
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -90,13 +92,36 @@ struct get_request_roles_request {
     std::string request_id;
 };
 
+/**
+ * @brief One role a request asks for, with the request's own record of it.
+ *
+ * The role is the catalogue row, whole, so a screen draws it without a second
+ * read. The tail is the junction row the ask wrote: when it was written, and
+ * when IAM applied it afterwards and on whose authority. It is what the
+ * request's story needs to say that a role was given, and the only place that
+ * fact is kept.
+ */
+struct requested_role {
+    ores::iam::domain::role role;
+    /**
+     * @brief When the request recorded the role, which is when the person asked.
+     */
+    std::chrono::system_clock::time_point asked_at;
+    /**
+     * @brief When IAM applied the role after the request was approved, or empty
+     * until it has. A role the person already held is marked applied without a
+     * grant, so this says the request was dealt with rather than that a role moved.
+     */
+    std::optional<std::chrono::system_clock::time_point> applied_at;
+    /**
+     * @brief Who applied it, or empty until somebody has.
+     */
+    std::string applied_by;
+};
+
 struct get_request_roles_response {
     ores::utility::domain::result result;
-    /**
-     * @brief The roles the request asks for, whole, so a screen draws them
-     * without a second read.
-     */
-    std::vector<ores::iam::domain::role> roles;
+    std::vector<requested_role> roles;
 };
 
 }

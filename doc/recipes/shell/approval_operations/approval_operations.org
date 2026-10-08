@@ -159,3 +159,24 @@ It is addressed at =inbox.v1.ops.expire_overdue_approvals=.
 approval_operations expire-overdue-approvals
 #+end_src
 
+** =get-approval-history=
+:PROPERTIES:
+:ID: D87D27AF-9905-5D4B-A634-FD285F3C12A6
+:END:
+
+Sends =get_approval_history_request= and prints =get_approval_history_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations get-approval-history <request_id>
+#+end_example
+
+It is addressed at =inbox.v1.ops.get_approval_history=.
+
+#+name: approval_operations-get-approval-history
+#+begin_src ores-shell :tangle approval_operations-get-approval-history.ores :exports none
+approval_operations get-approval-history __none__
+#+end_src
+

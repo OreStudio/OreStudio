@@ -36,6 +36,7 @@ end.
 #+begin_src cpp :name includes
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <string>
 #include <vector>
 #+end_src
@@ -435,6 +436,131 @@ end.
  * @brief The requests that closed, as UUID strings, oldest deadline first.
  */
 #+end_src
+
+** approval_request_field
+
+#+begin_src cpp :name comment
+/**
+ * @brief One field of a request at one version, as a screen names and draws it.
+ *
+ * The value is text whatever its type: the renderer that fills this in is the
+ * same one the record screens' history panel reads, so a story and a panel
+ * draw the same request the same way.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** approval_request_version
+
+#+begin_src cpp :name comment
+/**
+ * @brief One version of a request, with who wrote it, when, and every field it
+ * held.
+ *
+ * The oldest version is the request as it was raised. Each later one is a
+ * decision that moved it, so this is the request's own half of its story. The
+ * screen pairs each version with the one before it to draw what changed.
+ */
+#+end_src
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+*** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The person or service that wrote this version.
+ */
+#+end_src
+
+*** performed_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When this version was written, which for an answered request is the
+ * moment of the answer.
+ */
+#+end_src
+
+*** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** fields
+:PROPERTIES:
+:cpp_type: std::vector<approval_request_field>
+:END:
+
+** get_approval_history_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.get_approval_history
+:response: get_approval_history_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads every version of one request, newest first.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * approval requests. Answered as not found otherwise, so a caller learns
+ * nothing about a request they may not read.
+ *
+ * The entity read of approval requests and the generic history read both gate
+ * on the administrator's permission, so neither can answer the person who
+ * raised the request with their own request's versions. This is the read that
+ * can, and it is why the story of a request is an operation rather than a
+ * composition of the reads that already exist.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_approval_history_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** versions
+:PROPERTIES:
+:cpp_type: std::vector<approval_request_version>
+:END:
 
 * See also
 

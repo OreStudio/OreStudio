@@ -235,16 +235,32 @@ private:
 
         get_request_roles_response answer;
         repository::role_grant_request_role_repository rows(ctx);
+        const auto asked = rows.read_latest_by_request(id);
+
         std::vector<std::string> role_ids;
-        for (const auto& row : rows.read_latest_by_request(id))
+        role_ids.reserve(asked.size());
+        for (const auto& row : asked)
             role_ids.push_back(boost::uuids::to_string(row.role_id));
 
         if (!role_ids.empty()) {
             repository::role_repository roles;
-            answer.roles = roles.read_latest(ctx, role_ids);
-            std::sort(answer.roles.begin(),
-                      answer.roles.end(),
-                      [](const domain::role& a, const domain::role& b) { return a.name < b.name; });
+            const auto catalogue = roles.read_latest(ctx, role_ids);
+            for (const auto& row : asked) {
+                const auto id_as_text = boost::uuids::to_string(row.role_id);
+                const auto found =
+                    std::ranges::find(catalogue, id_as_text, [](const domain::role& r) {
+                        return boost::uuids::to_string(r.id);
+                    });
+                if (found == catalogue.end())
+                    continue;
+                answer.roles.push_back(requested_role{.role = *found,
+                                                      .asked_at = row.recorded_at,
+                                                      .applied_at = row.applied_at,
+                                                      .applied_by = row.modified_by});
+            }
+            std::ranges::sort(answer.roles, {}, [](const requested_role& r) {
+                return r.role.name;
+            });
         }
         return answer;
     }

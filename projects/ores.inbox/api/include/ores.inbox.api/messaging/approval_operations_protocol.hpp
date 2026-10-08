@@ -27,6 +27,7 @@
 
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -272,6 +273,74 @@ struct expire_overdue_approvals_response {
      * @brief The requests that closed, as UUID strings, oldest deadline first.
      */
     std::vector<std::string> expired;
+};
+
+/**
+ * @brief One field of a request at one version, as a screen names and draws it.
+ *
+ * The value is text whatever its type: the renderer that fills this in is the
+ * same one the record screens' history panel reads, so a story and a panel
+ * draw the same request the same way.
+ */
+struct approval_request_field {
+    std::string name;
+    std::string value;
+};
+
+/**
+ * @brief One version of a request, with who wrote it, when, and every field it
+ * held.
+ *
+ * The oldest version is the request as it was raised. Each later one is a
+ * decision that moved it, so this is the request's own half of its story. The
+ * screen pairs each version with the one before it to draw what changed.
+ */
+struct approval_request_version {
+    int version = 0;
+    /**
+     * @brief The person or service that wrote this version.
+     */
+    std::string modified_by;
+    std::string performed_by;
+    /**
+     * @brief When this version was written, which for an answered request is the
+     * moment of the answer.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::vector<approval_request_field> fields;
+};
+
+/**
+ * @brief Reads every version of one request, newest first.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * approval requests. Answered as not found otherwise, so a caller learns
+ * nothing about a request they may not read.
+ *
+ * The entity read of approval requests and the generic history read both gate
+ * on the administrator's permission, so neither can answer the person who
+ * raised the request with their own request's versions. This is the read that
+ * can, and it is why the story of a request is an operation rather than a
+ * composition of the reads that already exist.
+ */
+struct get_approval_history_request {
+    using response_type = struct get_approval_history_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.get_approval_history";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+};
+
+struct get_approval_history_response {
+    ores::utility::domain::result result;
+    std::vector<approval_request_version> versions;
 };
 
 }

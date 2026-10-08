@@ -203,6 +203,65 @@ export interface ExpireOverdueApprovalsResponse {
     expired: string[];
 }
 
+/**
+ * @brief One field of a request at one version, as a screen names and draws it.
+ *
+ * The value is text whatever its type: the renderer that fills this in is the
+ * same one the record screens' history panel reads, so a story and a panel
+ * draw the same request the same way.
+ */
+export interface ApprovalRequestField {
+    name: string;
+    value: string;
+}
+
+/**
+ * @brief One version of a request, with who wrote it, when, and every field it
+ * held.
+ *
+ * The oldest version is the request as it was raised. Each later one is a
+ * decision that moved it, so this is the request's own half of its story. The
+ * screen pairs each version with the one before it to draw what changed.
+ */
+export interface ApprovalRequestVersion {
+    version: number;
+    /**
+     * @brief The person or service that wrote this version.
+     */
+    modified_by: string;
+    performed_by: string;
+    /**
+     * @brief When this version was written, which for an answered request is the
+     * moment of the answer.
+     */
+    recorded_at: string;
+    change_reason_code: string;
+    change_commentary: string;
+    fields: ApprovalRequestField[];
+}
+
+/**
+ * @brief Reads every version of one request, newest first.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * approval requests. Answered as not found otherwise, so a caller learns
+ * nothing about a request they may not read.
+ *
+ * The entity read of approval requests and the generic history read both gate
+ * on the administrator's permission, so neither can answer the person who
+ * raised the request with their own request's versions. This is the read that
+ * can, and it is why the story of a request is an operation rather than a
+ * composition of the reads that already exist.
+ */
+export interface GetApprovalHistoryRequest {
+    request_id: string;
+}
+
+export interface GetApprovalHistoryResponse {
+    result: Result;
+    versions: ApprovalRequestVersion[];
+}
+
 export const subjects = {
     raise_approval_request_request: 'inbox.v1.ops.raise_approval',
     withdraw_approval_request_request: 'inbox.v1.ops.withdraw_approval',
@@ -211,6 +270,7 @@ export const subjects = {
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
     get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
+    get_approval_history_request: 'inbox.v1.ops.get_approval_history',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -225,4 +285,5 @@ export const requiresSession = {
     list_my_approval_requests_request: true,
     get_approval_request: true,
     expire_overdue_approvals_request: false,
+    get_approval_history_request: true,
 } as const;

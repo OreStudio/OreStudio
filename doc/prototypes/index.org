@@ -33,7 +33,7 @@ This page is the top of the tree and the only inventory.
 | [[file:setup/][Setup]] | Standing up an installation: first run, a new tenant, a new party | 3 |
 | [[file:profile/][Profile]] | How a person is represented: name, photo, job title, contact details | 1 |
 | [[file:credentials/][Credentials]] | Passwords, sign-in state, and the audit of who signed in | 3 |
-| [[file:access/][Access]] | Roles, and the permissions each role bundles | 2 |
+| [[file:access/][Access]] | Roles, and the permissions each role bundles | 3 |
 | [[file:../knowledge/journeys/membership/membership.org][Membership]] | Which parties a person works in, and who they report to | none yet |
 | [[file:../knowledge/journeys/directory/directory.org][Directory]] | The account roster, and bringing accounts in | none yet |
 | [[file:tenancy/][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things | 2 |

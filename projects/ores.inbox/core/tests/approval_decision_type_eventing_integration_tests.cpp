@@ -23,9 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
@@ -36,16 +34,22 @@
 #include "ores.inbox.api/messaging/approval_decision_type_protocol.hpp"
 #include "ores.inbox.core/repository/approval_decision_type_repository.hpp"
 #include "ores.inbox.core/service/approval_decision_type_service.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for approval_decision_type -- the
@@ -99,8 +103,7 @@ TEST_CASE("write_approval_decision_type_publishes_an_event", tags) {
     // takes every action: the first write creates the row and a re-drive
     // updates it, and the chain is what is under test rather than which of
     // the three subjects carried it.
-    auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
+    auto observer = nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before

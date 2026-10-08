@@ -27,13 +27,13 @@
 // :use_system_tenant:), so its row is forced to the system tenant and
 // written under a system-scoped context, and the tenant_id helpers are
 // needed.
-#include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
@@ -45,12 +45,14 @@
 #include "ores.synthetic.core/service/ir_curve_generation_config_process_parameter_value_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 // Soft-FK parent seeding (ores_synthetic_ir_curve_generation_configs_tbl): the parent may live in
-// another component, so its own component names the headers.
+// another component, so its own component names the headers. A system-tenant parent is read rather
+// than generated, so it needs no generator.
 #include "ores.synthetic.api/generators/ir_curve_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 // Grand-parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent's own
 // mandatory soft FKs reference rows the test seeds before the parent, so their generator and
-// repository headers are needed too.
+// repository headers are needed too. A system-tenant parent is read rather than seeded, so its
+// grand-parents need nothing, and a system-tenant grand-parent is read rather than generated.
 #include "ores.synthetic.api/generators/market_data_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 // Parent-seed snippet includes (ores_synthetic_process_parameter_definitions_tbl): the parent table
@@ -61,10 +63,15 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
+#include <string_view>
 #include <thread>
+#include <vector>
 
 // Proves the "write an entity, observe its NATS entity-changed
 // notification" pattern end to end for ir_curve_generation_config_process_parameter_value -- the
@@ -120,8 +127,7 @@ TEST_CASE("write_ir_curve_generation_config_process_parameter_value_publishes_an
     // takes every action: the first write creates the row and a re-drive
     // updates it, and the chain is what is under test rather than which of
     // the three subjects carried it.
-    auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
+    auto observer = nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before

@@ -24,17 +24,22 @@
  * Seeds the closed set of booking natures: whether anything happened to
  * cause a booking. The codes match the C++ enum domain::booking_nature.
  *
- * The table is immutable, so a row is written once and a re-run inserts
- * nothing. This script is idempotent.
+ * The table is temporal, so a re-run supersedes each live row with a new
+ * version and leaves the live set unchanged. This script is idempotent.
  */
 
 \echo '--- Booking Nature Types ---'
 
-insert into ores_trading_booking_nature_types_tbl (code, description) values
-    ('actual',       'The firm did a deal'),
-    ('test',         'The booking exercises the system'),
-    ('hypothetical', 'The booking answers a question')
-on conflict (code) do nothing;
+insert into ores_trading_booking_nature_types_tbl (
+    code, version, description, modified_by, change_reason_code, change_commentary
+) values
+    ('actual',       0, 'The firm did a deal',              current_user, 'system.initial_load', 'Seed booking_nature_type'),
+    ('test',         0, 'The booking exercises the system', current_user, 'system.initial_load', 'Seed booking_nature_type'),
+    ('hypothetical', 0, 'The booking answers a question',   current_user, 'system.initial_load', 'Seed booking_nature_type')
+on conflict (code, version)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
 
 select 'Booking Nature Types' as entity, count(*) as count
-from ores_trading_booking_nature_types_tbl;
+from ores_trading_booking_nature_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();

@@ -125,7 +125,9 @@ export function registerOperationsRoutes(
         const hosts = await session.client.listHosts();
         const slots = await session.client.serviceRoster();
         const now = Date.now();
-        const hostNames = new Map(hosts.map((host) => [host.id, host.external_id]));
+        const hostNames = new Map(
+            hosts.map((host) => [host.id, host.display_name || host.external_id]),
+        );
         const nameOf = (hostId: string | null): string | null =>
             hostId === null ? null : (hostNames.get(hostId) ?? null);
         return gridViewSchema.parse({

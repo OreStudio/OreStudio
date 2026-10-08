@@ -342,16 +342,17 @@ describe('GET /api/operations/grid', () => {
         // The counters travel as stored, with the sample time beside them.
         expect(body.sampled_at).toBe('2026-10-04 14:31:02Z');
         expect(body.total_hosts).toBe(2);
-        // The node the host registry knows is named; the one it does not keeps
-        // its row with no name, so its id is never printed as if it were one.
-        expect(body.nodes.map((node) => node.host)).toEqual(['grid-01.example.com', null]);
+        // The node the host registry knows is named by its display name; the one
+        // it does not keeps its row with no name, so its id is never printed as
+        // if it were one.
+        expect(body.nodes.map((node) => node.host)).toEqual(['Grid 01', null]);
         expect(body.nodes[1]?.host_id).toBe(UNKNOWN_HOST);
         expect(body.nodes[0]?.tasks_failed).toBe(2);
         expect(body.nodes[0]?.max_task_duration_ms).toBe(51_000);
         // Only the wrappers are answered, and the heartbeat's host id places
         // each on its node.
         expect(body.wrappers.map((wrapper) => wrapper.service_name)).toEqual([WRAPPER, WRAPPER]);
-        expect(body.wrappers.map((wrapper) => wrapper.host)).toEqual(['grid-01.example.com', null]);
+        expect(body.wrappers.map((wrapper) => wrapper.host)).toEqual(['Grid 01', null]);
         // The wrapper's report is dated on the deployment's clock, as the
         // services roster's rows are; a wrapper that never reported carries no
         // age rather than a made-up one.
@@ -362,6 +363,47 @@ describe('GET /api/operations/grid', () => {
             { subject: 'compute.v1.hosts.list', body: {} },
             { subject: 'telemetry.v1.ops.get_service_roster', body: {} },
         ]);
+    });
+
+    it('names a node by its registered display name, not by its external id', async () => {
+        const { server, cookies } = buildTestServer(
+            'system-administration',
+            [wrapperSlot()],
+            wireGridStats(),
+            [wireHost({ external_id: HOST, display_name: 'quiet-yak-4f2a' })],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as GridBody;
+        expect(body.nodes[0]?.host).toBe('quiet-yak-4f2a');
+        expect(body.nodes[0]?.host).not.toBe(HOST);
+        expect(body.wrappers[0]?.host).toBe('quiet-yak-4f2a');
+    });
+
+    it('falls back to the external id when a host has no display name', async () => {
+        const { server, cookies } = buildTestServer(
+            'system-administration',
+            [wrapperSlot()],
+            wireGridStats(),
+            [wireHost({ display_name: null })],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/grid',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect((response.json() as GridBody).nodes[0]?.host).toBe('grid-01.example.com');
     });
 
     it('answers no sample time, rather than a zeroed one, when none is stored', async () => {

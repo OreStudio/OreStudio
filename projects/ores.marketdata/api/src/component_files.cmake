@@ -55,6 +55,7 @@ set(files
     "generators/market_observation_generator.cpp"
     "generators/market_series_asset_class_generator.cpp"
     "generators/market_series_generator.cpp"
+    "generators/market_series_identity_generator.cpp"
     "generators/observation_lineage_generator.cpp"
     "generators/series_classification_rule_generator.cpp"
 )
@@ -113,6 +114,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/market_observation_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/market_series_asset_class_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/market_series_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/market_series_identity_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/observation_lineage_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/series_classification_rule_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/feed_binding_protocol.hpp"

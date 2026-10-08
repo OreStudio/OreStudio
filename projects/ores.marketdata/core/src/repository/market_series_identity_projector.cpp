@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -249,8 +250,8 @@ domain::market_series_identity project_one(ores::database::context& ctx,
 
 }
 
-void market_series_identity_projector::project(
-    ores::database::context ctx, const std::vector<domain::market_series>& series) {
+void market_series_identity_projector::project(ores::database::context ctx,
+                                               const std::vector<domain::market_series>& series) {
     if (series.empty())
         return;
     std::vector<domain::market_series_identity> rows;

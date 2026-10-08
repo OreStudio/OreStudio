@@ -226,7 +226,7 @@
 
 ** Extra args
 
-- --nats-monitor-url http://localhost:8221
+- --nats-monitor-url ${ORES_TELEMETRY_SERVICE_NATS_MONITOR_URL}
 
 * ores.trading.service
 :PROPERTIES:

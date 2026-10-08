@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: EE44A697-1AD3-4E9A-9BB7-DFA35A9ACDDC
+:END:
+#+title: Story: Hotfix: the operations screens cannot see the bus or the storage service
+#+description: Two defects found by exercising the operations screens against a running fleet. The telemetry service polls the NATS monitor at a literal localhost:8221 carried in the shared service registry, while NATS ports are per environment and this one is 20406, so no bus sample is ever collected and the message bus screen is permanently empty. And ores.storage is the only compiled service whose application.cpp never constructs a heartbeat publisher, so it shows as missing on the services screen while running.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:telemetry:storage:operations:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the message bus screen show samples, by polling the NATS monitor port the environment actually uses.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The telemetry unit takes its monitor URL from the environment, not from a literal in the shared registry.
+- NATS server and stream samples reach the telemetry tables.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:12DB1022-AE59-4BDB-9EA5-28EB61C3B926][Scaffold story: Hotfix: the operations screens cannot see the bus or the storage service]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B4A9DC15-B3D9-4503-9C0D-3058C6D630E8][Read the NATS monitor from the environment, not a literal]] | DONE | | 2026-10-08 | Initial task for: Hotfix: the operations screens cannot see the bus or the storage service |
+| [[id:D917AAC8-07A1-45E4-91EE-C53241357F3C][Publish a heartbeat for ores.storage.service]] | DONE | | 2026-10-08 | ores.storage is the only compiled service whose application.cpp does not construct a heartbeat publisher, so the telemetry roster never sees it and the services screen reports a running service as missing. |
+
+* Decisions
+
+- *A shared registry carries no ports.* =service_registry.org= is deployed by
+  every environment, so a literal port in it is wrong however right the port is
+  for one checkout. The telemetry monitor URL references the environment's own
+  variable.
+- *Fix the omission, do not model around it.* Storage is a compiled service like
+  its siblings, and every sibling publishes a heartbeat. It gets one rather than
+  the roster learning to treat it specially.
+- *The web service is left as it is.* It cannot publish a heartbeat, and whether
+  the roster should list a service that cannot report belongs to the roster.
+
+* Out of scope
+
+- Whether the roster should list a service that has no heartbeat, such as
+  =ores.web.service=. It still reads as =missing=.
+- The =AUTO-GENERATED FILE= header on the service =application.cpp= files, whose
+  template is a stub that cannot produce them.
+
+* Result
+
+Both defects are fixed and the screens read correctly against a running fleet.
+
+The message bus screen was permanently empty: the telemetry poller was pointed
+at a literal =localhost:8221= from the shared registry while this environment's
+NATS monitor is =20406=. It now reads its own environment's variable, and the
+screen shows server samples and all five JetStream streams.
+
+The services screen reported a running service as =missing=: =ores.storage= was
+the only compiled service with no heartbeat publisher. It has one now, pending a
+build.

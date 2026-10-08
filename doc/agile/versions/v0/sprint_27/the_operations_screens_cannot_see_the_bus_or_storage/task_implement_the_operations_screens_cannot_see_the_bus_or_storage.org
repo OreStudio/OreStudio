@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: B4A9DC15-B3D9-4503-9C0D-3058C6D630E8
+:END:
+#+title: Task: Read the NATS monitor from the environment, not a literal
+#+description: Initial task for: Hotfix: the operations screens cannot see the bus or the storage service
+#+type: task
+#+level: s1
+#+filetags: :the_operations_screens_cannot_see_the_bus_or_storage:sprint_27:v0:
+#+owner: marco
+#+branch: feature/test-the-operations-screens
+#+pr: 2895
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE44A697-1AD3-4E9A-9BB7-DFA35A9ACDDC][Hotfix: the operations screens cannot see the bus or the storage service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the message bus screen show samples, by polling the NATS monitor port the environment actually uses.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EE44A697-1AD3-4E9A-9BB7-DFA35A9ACDDC][Hotfix: the operations screens cannot see the bus or the storage service]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The telemetry unit takes its monitor URL from the environment, not from a literal in the shared registry.
+- NATS server and stream samples reach the telemetry tables.
+
+* Plan
+
+Point the unit at the environment's own monitor URL. The registry already
+carries the argument; only its value is wrong.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| server samples before the fix | 0 | =select count(*) from ores_telemetry_nats_server_samples_tbl= | 3e5353df09 |
+| stream samples before the fix | 0 | =select count(*) from ores_telemetry_nats_stream_samples_tbl= | 3e5353df09 |
+| monitor URL the unit was started with | =http://localhost:8221= | =grep nats-monitor-url systemd/units/ores.telemetry.service-brave_hopper.service= | 3e5353df09 |
+| monitor URL the environment uses | =http://localhost:20406= | =grep ORES_NATS_MONITOR_PORT .env= | 3e5353df09 |
+| server samples after the fix | 1 | =select count(*) from ores_telemetry_nats_server_samples_tbl= | 3eb7ca78aa |
+| stream samples after the fix | 5 | =select count(*) from ores_telemetry_nats_stream_samples_tbl= | 3eb7ca78aa |
+
+* Notes
+
+=projects/modeling/service_registry.org= is the shared model every
+environment deploys from, so it must not carry a port at all. The telemetry
+entry carried =http://localhost:8221=, a leftover of the retired
+=42221xxx/8221xxx= scheme =env_init.py= names in its own comment. The C++
+default is =8222= and this environment's port is =20406=; none of the three
+agreed.
+
+=env_init.py= already emits =ORES_TELEMETRY_SERVICE_NATS_MONITOR_URL= per
+environment, in the same block as the service's database credentials, for
+exactly this argument. Nothing read it: the native unit passed the literal
+instead, and the C++ parser takes =--nats-monitor-url= from the command line
+only. The fix makes the argument reference that variable, so the registry
+stays free of ports and both the native and container paths read one value.
+
+The poller logged a refused connection every 30 seconds and the screen showed
+an empty bus with no error, because the read succeeds and returns no rows. A
+read that is silently empty is what made this survive.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2895][#2895]] | [telemetry,storage] Let the operations screens see the bus and every running service |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. The unit takes =--nats-monitor-url ${ORES_TELEMETRY_SERVICE_NATS_MONITOR_URL}=,
+the poller reports =Monitoring localhost:20406 every 30s=, and samples reach
+both tables. The message bus screen reads them: two server samples and the five
+JetStream streams, including =ores_dev_brave_hopper_marketdata_ticks= at 1.2M
+messages.
+
+Verified against the running fleet, not by a test: the poller's log line and
+the two row counts.

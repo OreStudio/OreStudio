@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: D917AAC8-07A1-45E4-91EE-C53241357F3C
+:END:
+#+title: Task: Publish a heartbeat for ores.storage.service
+#+description: ores.storage is the only compiled service whose application.cpp does not construct a heartbeat publisher, so the telemetry roster never sees it and the services screen reports a running service as missing.
+#+type: task
+#+level: s1
+#+filetags: :the_operations_screens_cannot_see_the_bus_or_storage:sprint_27:v0:
+#+owner: marco
+#+branch: feature/test-the-operations-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EE44A697-1AD3-4E9A-9BB7-DFA35A9ACDDC][Hotfix: the operations screens cannot see the bus or the storage service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the services screen report ores.storage.service as running, by giving it the heartbeat every sibling service already publishes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EE44A697-1AD3-4E9A-9BB7-DFA35A9ACDDC][Hotfix: the operations screens cannot see the bus or the storage service]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- ores.storage.service constructs a heartbeat publisher with the same shape as its siblings.
+- The services roster reports ores.storage.service as running.
+
+* Plan
+
+Give =ores.storage.service= the heartbeat publisher its siblings already have,
+with no other change. The other fifteen compiled services construct one in the
+same shape.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| compiled services with a heartbeat publisher | 16 of 17 | =grep -l heartbeat_publisher projects/*/service/src/app/application.cpp= | 3e5353df09 |
+| the one without | =ores.storage= | =for d in projects/*/service/src/app/application.cpp; do grep -q heartbeat_publisher "$d" || echo "$d"; done= | 3e5353df09 |
+| services the roster reports as missing | 2 of 24 | =curl /api/operations/services= | 3e5353df09 |
+
+* Notes
+
+The roster derives each service's state from its heartbeat, so a service that
+never publishes one reads as =missing= however healthy it is. The screen
+reported =ores.storage.service= and =ores.web.service= that way while
+=compass services status= showed 24 of 24 running.
+
+Storage is a plain omission: every other compiled service builds a
+=heartbeat_publisher= in its =on_started= callback. There is no storage-specific
+reason to skip it.
+
+=ores.web.service= is a different case and is left alone. It is the Node BFF; it
+has no heartbeat mechanism at all, and whether the roster should list a service
+that cannot report is a question about the roster rather than about the web
+service.
+
+=ores.storage/service/src/app/application.cpp= carries an
+=AUTO-GENERATED FILE= header naming =cpp_service_app_application.cpp.mustache=,
+but that template — and the org source it tangles from,
+=ores.cpp.service-app.application_impl.org= — is still the =service is not yet
+implemented= stub. It cannot produce the file that is checked in, and
+=storage-cpp= is not in the drift registry. The file is hand-maintained in fact,
+so it is edited directly here, as its siblings must have been.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. =ores.storage.service= constructs a heartbeat publisher in its
+=on_started= callback, matching the fifteen siblings: the same
+=service_name=/=service_version= constants, the same =co_spawn=, and the
+=<memory>= include the siblings rely on transitively.
+
+Not verified at run time. The change is C++ and needs a build before the unit
+picks it up, and this work was done under the no-build rule. The measurement
+that proves it is the roster's missing count, which should fall from 2 to 1
+(the remaining one being =ores.web.service=) after the next build and restart.

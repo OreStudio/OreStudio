@@ -35,12 +35,17 @@ import { askedFor } from './words.js';
 const PAGE = 100;
 
 /**
- * The requests waiting for an answer, oldest first.
+ * The requests waiting for an answer, oldest first, and what was answered
+ * recently, newest answer first.
  *
- * The queue is the server's: it picks the kinds this person may decide, so a
- * member who decides nothing gets an empty page rather than a refusal. What is
- * waiting is a table, because the administrator scans it; what has been
- * answered is a list below, because nobody acts on it.
+ * The queue is the server's: it picks the kinds this person may decide and the
+ * window the answered tail reaches back, so a member who decides nothing gets
+ * an empty page rather than a refusal. What is waiting is a table, because the
+ * administrator scans it; what has been answered is a list below, because
+ * nobody acts on it.
+ *
+ * What is waiting is the whole of `items`: the server answers no request that
+ * has an answer, so there is nothing here to filter out.
  */
 export function RequestsPage(): ReactNode {
     const { t } = useTranslation();
@@ -56,8 +61,8 @@ export function RequestsPage(): ReactNode {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
 
-    const waiting = requests.data.items.filter((request) => request.stateCode === 'waiting');
-    const answered = requests.data.items.filter((request) => request.stateCode !== 'waiting');
+    const waiting = requests.data.items;
+    const answered = requests.data.answered;
 
     return (
         <div className="space-y-6">
@@ -160,8 +165,15 @@ function QueueRow({ request }: { readonly request: InboxRequestView }): ReactNod
             <td className="max-w-md px-4 py-2 text-ink-muted">
                 {request.reason === '' ? t('inbox.queue.noReason') : request.reason}
             </td>
+            {/* A held request is still the reader's to answer, so it belongs in
+                this table; the chip is what says it was parked and not left. */}
             <td className="px-4 py-2 text-ink-muted">
-                <RelativeTime at={request.requestedAt} />
+                <span className="flex items-center gap-2">
+                    <RelativeTime at={request.requestedAt} />
+                    {request.stateCode !== 'waiting' && (
+                        <RequestStateChip stateCode={request.stateCode} />
+                    )}
+                </span>
             </td>
         </tr>
     );

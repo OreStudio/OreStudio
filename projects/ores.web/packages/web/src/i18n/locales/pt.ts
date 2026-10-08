@@ -226,7 +226,7 @@ const pt: SourceCatalogue = {
         state: {
             waiting: 'À espera',
             held: 'Suspenso',
-            approved: 'Concedido',
+            approved: 'Aprovado',
             refused: 'Recusado',
             withdrawn: 'Retirado',
             expired: 'Expirado',
@@ -275,8 +275,26 @@ const pt: SourceCatalogue = {
             answered: 'Respondidos',
             by: 'por {decider}',
         },
+        story: {
+            title: 'A história de {role}',
+            lead: '{state}, pedido em {date}. Cada linha escrita pelo pedido, a mais recente primeiro.',
+            request: 'O pedido',
+            noActor: 'um serviço',
+            answerNotShown:
+                'Este pedido tem resposta, e a resposta não é sua para ler. Os passos de quem respondeu não são mostrados.',
+            kind: {
+                raised: 'Criado',
+                changed: 'Movido',
+                asked: 'Pedido',
+                told: 'Notificado',
+                decided: 'Respondido',
+                granted: 'Concedido',
+            },
+        },
         request: {
-            title: '{who} pede {role}',
+            title: 'Pede {role}',
+            id: 'Pedido {id}',
+            you: 'Você',
             lead: '{state}, pedido a {date}.',
             noDeadline: 'Sem prazo.',
             expires: 'Expira a {at}.',
@@ -289,7 +307,7 @@ const pt: SourceCatalogue = {
             give: 'Conceder {role}',
             refuse: 'Recusar',
             decided: 'Decidido',
-            notFound: 'Este pedido não está na fila. Pode já ter sido respondido.',
+            notFound: 'Este pedido não está aqui. Pode ter sido retirado, ou pode não ser seu.',
         },
     },
 

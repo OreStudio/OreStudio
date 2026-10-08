@@ -28,10 +28,13 @@ import {
     markNotificationsRead,
     readMyNotifications,
     readMyRequests,
+    readRequest,
     readRequestQueue,
+    readRequestStory,
     readUnreadNotificationCount,
     withdrawRequest,
 } from '@ores/wire-protocol';
+import type { RequestViewer } from '@ores/wire-protocol';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
@@ -115,6 +118,17 @@ function requestIdOf(request: FastifyRequest): string {
     return id.data;
 }
 
+/**
+ * Who the reads are for.
+ *
+ * The join cannot turn an account id into a username for a member, who may not
+ * read the account list, so it is told who is asking. Their own name is the one
+ * name it never has to be told twice.
+ */
+function viewerOf(session: LiveSession): RequestViewer {
+    return { accountId: session.accountId, username: session.username };
+}
+
 export function registerInboxRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -123,7 +137,7 @@ export function registerInboxRoutes(
     server.get('/api/me/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);
-        return await readMyRequests(session.client, page);
+        return await readMyRequests(session.client, page, viewerOf(session));
     });
 
     /** Asks for roles for the signed-in person, and answers the request raised. */
@@ -167,7 +181,34 @@ export function registerInboxRoutes(
     server.get('/api/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);
-        return await readRequestQueue(session.client, page);
+        return await readRequestQueue(session.client, page, viewerOf(session));
+    });
+
+    /**
+     * The one request an identifier names, when the signed-in person may open
+     * it.
+     *
+     * A notice carries the request it is about, and a notice is read after the
+     * request stopped waiting, so a queue read cannot answer this. The server
+     * decides who may open it; a request this person may not see is answered
+     * as not found, which is also what a request that does not exist answers.
+     */
+    server.get('/api/requests/:id', async (request) => {
+        const session = requireSession(request);
+        return await readRequest(session.client, requestIdOf(request), viewerOf(session));
+    });
+
+    /**
+     * The whole story of one request, newest first.
+     *
+     * Every row any component wrote for it, merged by the wire layer: the
+     * request's versions, the answers given on it, the roles it asked for and
+     * what became of them, and the notices this reader was given. A request the
+     * person may not open answers empty, which is what opening it answers too.
+     */
+    server.get('/api/requests/:id/story', async (request) => {
+        const session = requireSession(request);
+        return await readRequestStory(session.client, requestIdOf(request));
     });
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

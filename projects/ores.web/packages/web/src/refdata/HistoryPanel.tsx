@@ -24,6 +24,7 @@ import { useState, type ReactNode } from 'react';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { DiffLines } from '../ui/Diff.js';
 import { Button, Notice, Tag } from '../ui/Primitives.js';
 
 /**
@@ -42,64 +43,6 @@ const PROVENANCE = new Set([
 /** The value of one field in a version, by the name the server's history mapper gives it. */
 export function fieldValue(version: HistoryVersion, name: string): string {
     return version.fields.find((field) => field.name === name)?.value ?? '';
-}
-
-/**
- * A changed value split into its common prefix, its changed middle and its
- * common suffix, so the middle can be marked on the old line and on the new.
- */
-function split(
-    before: string,
-    after: string,
-): {
-    readonly old: readonly [string, string, string];
-    readonly new: readonly [string, string, string];
-} {
-    let prefix = 0;
-    while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) {
-        prefix += 1;
-    }
-    let suffix = 0;
-    while (
-        suffix < before.length - prefix &&
-        suffix < after.length - prefix &&
-        before[before.length - 1 - suffix] === after[after.length - 1 - suffix]
-    ) {
-        suffix += 1;
-    }
-    const parts = (text: string): readonly [string, string, string] => [
-        text.slice(0, prefix),
-        text.slice(prefix, text.length - suffix),
-        text.slice(text.length - suffix),
-    ];
-    return { old: parts(before), new: parts(after) };
-}
-
-function DiffLine({
-    sign,
-    parts,
-    tone,
-}: {
-    readonly sign: string;
-    readonly parts: readonly [string, string, string];
-    readonly tone: 'old' | 'new';
-}): ReactNode {
-    const line = tone === 'old' ? 'bg-down/15' : 'bg-up/15';
-    const mark = tone === 'old' ? 'bg-down/45' : 'bg-up/45';
-    return (
-        <div className={`grid grid-cols-[1.25rem_1fr] rounded px-2 py-0.5 ${line}`}>
-            <span aria-hidden className="text-ink-faint select-none">
-                {sign}
-            </span>
-            <span>
-                {parts[0]}
-                {parts[1] !== '' && (
-                    <mark className={`rounded-sm text-inherit ${mark}`}>{parts[1]}</mark>
-                )}
-                {parts[2]}
-            </span>
-        </div>
-    );
 }
 
 /**
@@ -284,7 +227,6 @@ export function HistoryPanel({
                             if (!changed && onlyChanges && from !== undefined) {
                                 return null;
                             }
-                            const parts = split(before, field.value);
                             return (
                                 <tr
                                     key={field.name}
@@ -299,10 +241,7 @@ export function HistoryPanel({
                                     </td>
                                     <td className="py-1.5">
                                         {changed ? (
-                                            <div className="grid gap-px">
-                                                <DiffLine sign="−" parts={parts.old} tone="old" />
-                                                <DiffLine sign="+" parts={parts.new} tone="new" />
-                                            </div>
+                                            <DiffLines before={before} after={field.value} />
                                         ) : (
                                             field.value
                                         )}

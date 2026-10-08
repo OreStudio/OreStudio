@@ -49,6 +49,7 @@ import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
 import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestStoryPage } from './inbox/RequestStoryPage.js';
 import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
@@ -621,6 +622,16 @@ export function AppRoutes({
                     (view) => (
                         <RequestDetailPage me={view.username} />
                     ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/requests/:id/story"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => <RequestStoryPage />,
                     'workspace',
                 )}
             />

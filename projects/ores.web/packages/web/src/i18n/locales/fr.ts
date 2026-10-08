@@ -223,7 +223,7 @@ const fr: SourceCatalogue = {
         state: {
             waiting: 'En attente',
             held: 'En suspens',
-            approved: 'Accordé',
+            approved: 'Approuvé',
             refused: 'Refusé',
             withdrawn: 'Retiré',
             expired: 'Expiré',
@@ -273,8 +273,26 @@ const fr: SourceCatalogue = {
             answered: 'Répondues',
             by: 'par {decider}',
         },
+        story: {
+            title: "L'histoire de {role}",
+            lead: '{state}, demandé le {date}. Chaque ligne écrite par la demande, la plus récente en premier.',
+            request: 'La demande',
+            noActor: 'un service',
+            answerNotShown:
+                "Cette demande a une réponse, et la réponse n'est pas à vous. Les étapes de celui qui a répondu ne sont pas montrées.",
+            kind: {
+                raised: 'Créée',
+                changed: 'Déplacée',
+                asked: 'Demandé',
+                told: 'Notifié',
+                decided: 'Répondu',
+                granted: 'Accordé',
+            },
+        },
         request: {
-            title: '{who} demande {role}',
+            title: 'Demande {role}',
+            id: 'Demande {id}',
+            you: 'Vous',
             lead: '{state}, demandé le {date}.',
             noDeadline: 'Aucune échéance.',
             expires: 'Expire le {at}.',
@@ -288,7 +306,7 @@ const fr: SourceCatalogue = {
             give: 'Accorder {role}',
             refuse: 'Refuser',
             decided: 'Décidée',
-            notFound: "Cette demande n'est pas dans la file. Elle a peut-être déjà été tranchée.",
+            notFound: "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
         },
     },
 

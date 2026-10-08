@@ -227,7 +227,7 @@ export const en: SourceCatalogue = {
         state: {
             waiting: 'Waiting',
             held: 'Held',
-            approved: 'Given',
+            approved: 'Approved',
             refused: 'Refused',
             withdrawn: 'Withdrawn',
             expired: 'Expired',
@@ -276,8 +276,26 @@ export const en: SourceCatalogue = {
             answered: 'Answered',
             by: 'by {decider}',
         },
+        story: {
+            title: 'The story of {role}',
+            lead: '{state}, asked {date}. Every row the request wrote, newest first.',
+            request: 'The request',
+            noActor: 'a service',
+            answerNotShown:
+                'This request has an answer, and the answer is not yours to read. The steps taken by whoever answered it are not shown.',
+            kind: {
+                raised: 'Raised',
+                changed: 'Moved',
+                asked: 'Asked for',
+                told: 'Told',
+                decided: 'Answered',
+                granted: 'Granted',
+            },
+        },
         request: {
-            title: '{who} asks for {role}',
+            title: 'Asks for {role}',
+            id: 'Request {id}',
+            you: 'You',
             lead: '{state}, asked {date}.',
             noDeadline: 'No deadline.',
             expires: 'Expires {at}.',
@@ -290,7 +308,7 @@ export const en: SourceCatalogue = {
             give: 'Give {role}',
             refuse: 'Refuse',
             decided: 'Decided',
-            notFound: 'This request is not in the queue. It may have been answered already.',
+            notFound: 'This request is not here. It may have been taken away, or it may not be yours to see.',
         },
     },
 

@@ -59,6 +59,11 @@ constexpr auto roles_delete = "iam::roles:delete";
 constexpr auto roles_assign = "iam::roles:assign";
 constexpr auto roles_revoke = "iam::roles:revoke";
 
+// Role requests. The roles a request asks for are isolated by tenant alone, so
+// this code is what an administrator holds and a member does not: a member
+// reads the roles on their own request through an operation entitled to them.
+constexpr auto role_grant_request_roles_read = "iam::role_grant_request_roles:read";
+
 // Permission catalogue. The generated permission write and delete check these
 // two; the catalogue itself is seeded, so no screen creates a code.
 constexpr auto permissions_write = "iam::permissions:write";

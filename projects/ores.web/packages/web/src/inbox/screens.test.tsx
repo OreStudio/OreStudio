@@ -50,7 +50,7 @@ const CATALOGUE = [
     { code: 'refdata::currencies:read', description: 'View currencies' },
 ];
 
-/** A member's own request: no roles, because the join behind them is unreadable. */
+/** A request, as the person who raised it reads it: the roles they asked for. */
 function mine(overrides: Partial<InboxRequestView> = {}): InboxRequestView {
     return {
         id: REQUEST,
@@ -129,7 +129,8 @@ describe('a person’s own requests', () => {
         );
 
         expect(html).toContain('Your requests');
-        // The member's own row carries no roles, so the kind names it.
+        // A row that names no role falls back to the kind, which is what a
+        // request whose roles the reader may not read is drawn as.
         expect(html).toContain('Role request');
         expect(html).toContain('Waiting');
         // The moment is drawn with its time, not only its date: a clock
@@ -262,7 +263,7 @@ describe('the request queue', () => {
     it('names who asked, what for and why, and opens the request from the row', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1 });
+                client.setQueryData(['request-queue'], { items: [queued()], total: 1, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -279,7 +280,7 @@ describe('the request queue', () => {
     it('says nothing is waiting rather than drawing an empty table', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [], total: 0 });
+                client.setQueryData(['request-queue'], { items: [], total: 0, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -292,7 +293,9 @@ describe('the request queue', () => {
         const html = render(
             (client) => {
                 client.setQueryData(['request-queue'], {
-                    items: [
+                    items: [],
+                    total: 0,
+                    answered: [
                         queued({
                             stateCode: 'approved',
                             decision: {
@@ -303,17 +306,35 @@ describe('the request queue', () => {
                             },
                         }),
                     ],
-                    total: 1,
                 });
             },
             <RequestsPage />,
             '/requests',
         );
 
+        expect(html).toContain('Nothing is waiting.');
         expect(html).toContain('Answered');
-        expect(html).toContain('Given');
+        expect(html).toContain('Approved');
         expect(html).toContain('by priya');
         expect(html).toContain('Induction done.');
+    });
+
+    it('keeps a held request in the table, because nobody has answered it', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['request-queue'], {
+                    items: [queued({ stateCode: 'held' })],
+                    total: 1,
+                    answered: [],
+                });
+            },
+            <RequestsPage />,
+            '/requests',
+        );
+
+        expect(html).toContain('daniel');
+        expect(html).toContain('Held');
+        expect(html).not.toContain('Nothing is waiting.');
     });
 });
 
@@ -321,7 +342,7 @@ describe('answering one request', () => {
     function detail(me: string): string {
         return render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1 });
+                client.setQueryData(['request', REQUEST], queued());
                 client.setQueryData(
                     ['roles'],
                     [
@@ -347,7 +368,8 @@ describe('answering one request', () => {
     it('shows the requester, the role and what the role would let them do', () => {
         const html = detail('priya');
 
-        expect(html).toContain('daniel asks for Trading');
+        expect(html).toContain('Asks for Trading');
+        expect(html).toContain('daniel');
         expect(html).toContain('Trading desk access');
         expect(html).toContain('What Trading would let them do');
         expect(html).toContain('I price the FX book and cannot read currencies.');

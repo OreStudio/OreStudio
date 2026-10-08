@@ -46,12 +46,17 @@ import {
     historyVersionSchema,
     inboxNotificationPageSchema,
     inboxRequestPageSchema,
+    inboxRequestQueueSchema,
+    inboxRequestStorySchema,
+    inboxRequestViewSchema,
     type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
     type InboxNotificationView,
     type InboxPage,
+    type InboxRequestQueue,
+    type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
     type PermissionEntry,
@@ -529,13 +534,46 @@ export const api = {
         });
     },
 
-    /** The requests waiting to be decided, oldest first. */
+    /**
+     * The requests waiting to be decided, oldest first, and the ones answered
+     * within the installation's window, newest answer first.
+     */
     async requestQueue(page: {
         readonly offset: number;
         readonly limit: number;
-    }): Promise<InboxPage<InboxRequestView>> {
-        return inboxRequestPageSchema.parse(
+    }): Promise<InboxRequestQueue> {
+        return inboxRequestQueueSchema.parse(
             await request(`/api/requests?${pageQuery(page)}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The one request an identifier names, when the signed-in person may open
+     * it.
+     *
+     * A notice carries the request it is about, and is read after the request
+     * stopped waiting, so this is a read of its own rather than a lookup in
+     * the queue. Null means the request is not there, or that the server will
+     * not say that it is.
+     */
+    async request(id: string): Promise<InboxRequestView | null> {
+        const body = await request(`/api/requests/${encodeURIComponent(id)}`, {
+            method: 'GET',
+        });
+        return body === null ? null : inboxRequestViewSchema.parse(body);
+    },
+
+    /**
+     * The whole story of one request, newest first.
+     *
+     * Every row any component wrote for it, merged by the server: the request's
+     * versions, the answers given on it, the roles it asked for and what became
+     * of them, and the notices this person was given. A request they may not
+     * open answers empty, which is what opening it answers too.
+     */
+    async requestStory(id: string): Promise<InboxRequestStory> {
+        return inboxRequestStorySchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/story`, { method: 'GET' }),
         );
     },
 

@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-the-swap-legs
-#+pr:
+#+pr: 2795
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2795][#2795]] | [trading,ore] Write a swap's legs and record their direction |
 
 * Review
 

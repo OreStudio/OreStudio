@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -83,3 +83,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as [[https://github.com/OreStudio/OreStudio/pull/2828][2828]].
+
+The seeded expression was =0 6 * * 1,15=. The fifth field is the day of the week,
+where 15 is out of range, so =cron_expression::from_string= refused it and
+=report_operations schedule-report-definitions= failed. A definition that cannot
+be scheduled never gets a run grant, so no run of it could be admitted -- which is
+why every seeded definition was unrunnable, not only this one.
+
+It becomes =0 6 1 * *=: 06:00 on the first of the month, which is what the
+definition's own description states ("Monthly cadence").
+
+The same PR carried the capture for the full pass over every seeded report
+(=CAE6E2DF=), because the minimal unblock and the full pass are different jobs.

@@ -79,21 +79,17 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     booking.trade_id = anchor.id;
     booking.trade_activity_id = activity.id;
-    booking.party_id = anchor.party_id;
-    booking.counterparty_id = anchor.counterparty_id;
     booking.version = 0;
 
     domain::trade_state state;
     state.trade_id = anchor.id;
     state.trade_activity_id = activity.id;
-    state.party_id = anchor.party_id;
     state.version = 0;
     state.modified_by = booking.modified_by;
     state.performed_by = booking.modified_by;
     state.change_reason_code = booking.change_reason_code;
     state.change_commentary = booking.change_commentary;
     stamp(state, ctx_);
-    state.party_id = anchor.party_id;
     state.status_id = boost::uuids::uuid{};
 
     const precondition must_not_exist{precondition_kind::must_not_exist, std::nullopt};

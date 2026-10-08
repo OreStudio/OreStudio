@@ -116,7 +116,6 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
         ores::trading::repository::trade_booking_repository().read_latest(f.ctx, id);
     REQUIRE(bookings.size() == 1);
     CHECK(bookings.front().book_id == f.book_id);
-    CHECK(bookings.front().party_id == *f.ctx.party_id());
     REQUIRE(bookings.front().execution_timestamp.has_value());
     CHECK(*bookings.front().execution_timestamp == executed_at);
     const auto states = ores::trading::repository::trade_state_repository().read_latest(f.ctx, id);

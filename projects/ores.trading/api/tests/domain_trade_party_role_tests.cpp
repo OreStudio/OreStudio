@@ -38,7 +38,6 @@ trade_party_role make_trade_party_role(const std::string& role) {
     trade_party_role tpr;
     tpr.version = 1;
     tpr.trade_id = boost::uuids::random_generator()();
-    tpr.counterparty_id = boost::uuids::random_generator()();
     tpr.role = role;
     tpr.modified_by = "system";
     tpr.performed_by = "system";
@@ -59,7 +58,6 @@ TEST_CASE("create_trade_party_role_with_valid_fields", tags) {
     trade_party_role sut;
     sut.version = 1;
     sut.trade_id = boost::uuids::random_generator()();
-    sut.counterparty_id = boost::uuids::random_generator()();
     sut.role = "CalculationAgent";
     sut.modified_by = "admin";
     sut.performed_by = "admin";
@@ -70,7 +68,6 @@ TEST_CASE("create_trade_party_role_with_valid_fields", tags) {
 
     CHECK(sut.version == 1);
     CHECK(!sut.trade_id.is_nil());
-    CHECK(!sut.counterparty_id.is_nil());
     CHECK(sut.role == "CalculationAgent");
     CHECK(sut.change_reason_code == "system.new");
 }
@@ -81,7 +78,6 @@ TEST_CASE("trade_party_role_insertion_operator", tags) {
     trade_party_role sut;
     sut.version = 1;
     sut.trade_id = boost::uuids::random_generator()();
-    sut.counterparty_id = boost::uuids::random_generator()();
     sut.role = "CalculationAgent";
     sut.modified_by = "system";
     sut.performed_by = "system";
@@ -104,7 +100,6 @@ TEST_CASE("create_trade_party_role_with_faker", tags) {
     trade_party_role sut;
     sut.version = faker::number::integer(1, 10);
     sut.trade_id = boost::uuids::random_generator()();
-    sut.counterparty_id = boost::uuids::random_generator()();
     sut.role = std::string(faker::word::noun()) + "_role";
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());
@@ -178,7 +173,6 @@ TEST_CASE("trade_party_role_table_with_faker_data", tags) {
         trade_party_role tpr;
         tpr.version = 1;
         tpr.trade_id = boost::uuids::random_generator()();
-        tpr.counterparty_id = boost::uuids::random_generator()();
         tpr.role = std::string(faker::word::noun()) + "_role_" + std::to_string(i);
         tpr.modified_by = "system";
         tpr.performed_by = "system";

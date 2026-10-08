@@ -89,9 +89,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Report definitions ACME is seeded with | 31, not the 30 the file's docstring says | =grep -c "^     'risk'," projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql= | 04c8a52944 |
+| Report types, so the set of required config types | 1, =risk=, which requires =pricing_engines=, =todays_market=, =curve_configuration= and =conventions= | =projects/ores.sql/populate/reporting/reporting_report_type_configuration_types_populate.sql= | 04c8a52944 |
+| Reports with every config available today | 27 unconditional, 4 conditional on a parametric VaR | investigation | 04c8a52944 |
+| ORE configuration types with no saver | 5: =simm_calibration=, =historical_return=, =basel_traffic_light=, =reference_data=, =ibor_fallback= | =projects/ores.ore/core/tests/configuration_type_seed_tests.cpp:117-121= | 04c8a52944 |
 
 * Notes
+
+The per-report analysis is
+[[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]].
+It names the ORE files each of the 31 reports reads and which of them can be
+stored today.
 
 * Test Scenarios
 

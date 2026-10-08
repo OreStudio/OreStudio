@@ -32,6 +32,9 @@ How it checks
 - Every group that holds a prototype has a group page.
 - Every group page is linked from doc/prototypes/index.org.
 - Every review directory holds an index.html and is named on its group page.
+- Every prototype page heads itself with a links table naming the prototype
+  and its review, and says =none= in the review row when there is no review,
+  so an unreviewed prototype can be found with one grep.
 - The site build discovers the prototypes rather than naming them, so a new
   prototype needs no change there.
 - The React prototype tree and its route table are gone.
@@ -53,6 +56,12 @@ import sys
 # [[file:<name>/review/][...]].
 PROTOTYPE_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/")
 REVIEW_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/review/")
+
+# Every prototype page heads itself with a links table whose review row opens
+# the review, or says "none" so the unreviewed prototypes can be found at once.
+REVIEW_CELL_RE = re.compile(r'class="prototype-review"[^>]*>(.*?)</td>', re.S)
+NO_REVIEW = "none"
+REVIEW_HREF = 'href="review/index.html"'
 
 # The top page opens a group page with [[file:<group>/][...]].
 GROUP_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9_]*)/")
@@ -185,6 +194,27 @@ def main() -> int:
             f"doc/prototypes/{group}/index.org names a review for {name}, but "
             f"doc/prototypes/{group}/{name}/review/ does not exist"
         )
+    for group, name in sorted(present):
+        page = root / "doc" / "prototypes" / group / name / "index.html"
+        match = REVIEW_CELL_RE.search(_read(page))
+        if match is None:
+            problems.append(
+                f"doc/prototypes/{group}/{name}/index.html has no links table: "
+                "the page must name the prototype and its review"
+            )
+            continue
+        cell = match.group(1).strip()
+        if (group, name) in reviewed and REVIEW_HREF not in cell:
+            problems.append(
+                f"doc/prototypes/{group}/{name}/index.html has a review, but its "
+                "links table does not open it"
+            )
+        if (group, name) not in reviewed and cell != NO_REVIEW:
+            problems.append(
+                f"doc/prototypes/{group}/{name}/index.html has no review, so its "
+                f"links table must say {NO_REVIEW}: an unreviewed prototype is "
+                "found by that row"
+            )
     if not site_build_discovers(root):
         problems.append(
             f"the site build does not call {DISCOVERY_CALL}: the prototypes "

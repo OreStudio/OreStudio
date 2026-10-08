@@ -227,7 +227,7 @@ export const en: SourceCatalogue = {
         state: {
             waiting: 'Waiting',
             held: 'Held',
-            approved: 'Given',
+            approved: 'Approved',
             refused: 'Refused',
             withdrawn: 'Withdrawn',
             expired: 'Expired',
@@ -277,7 +277,9 @@ export const en: SourceCatalogue = {
             by: 'by {decider}',
         },
         request: {
-            title: '{who} asks for {role}',
+            title: 'Asks for {role}',
+            id: 'Request {id}',
+            you: 'You',
             lead: '{state}, asked {date}.',
             noDeadline: 'No deadline.',
             expires: 'Expires {at}.',

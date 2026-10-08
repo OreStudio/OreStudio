@@ -223,7 +223,7 @@ const fr: SourceCatalogue = {
         state: {
             waiting: 'En attente',
             held: 'En suspens',
-            approved: 'Accordé',
+            approved: 'Approuvé',
             refused: 'Refusé',
             withdrawn: 'Retiré',
             expired: 'Expiré',
@@ -274,7 +274,9 @@ const fr: SourceCatalogue = {
             by: 'par {decider}',
         },
         request: {
-            title: '{who} demande {role}',
+            title: 'Demande {role}',
+            id: 'Demande {id}',
+            you: 'Vous',
             lead: '{state}, demandé le {date}.',
             noDeadline: 'Aucune échéance.',
             expires: 'Expire le {at}.',

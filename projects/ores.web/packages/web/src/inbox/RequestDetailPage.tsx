@@ -132,43 +132,48 @@ function Request({
                 <Link to="/requests" className="hover:text-ink">
                     {t('inbox.queue.title')}
                 </Link>
-                <span aria-hidden>/</span>
-                <span className="text-ink">
-                    {named === undefined ? request.requestedBy : named.name}
-                </span>
             </nav>
 
             <PageHeader
-                title={t('inbox.request.title', {
-                    who: request.requestedBy,
-                    role: askedFor(t, request),
-                })}
+                title={t('inbox.request.title', { role: askedFor(t, request) })}
                 description={t('inbox.request.lead', {
                     state: stateLabel(t, request.stateCode),
                     date: formatDateTime(request.requestedAt, language),
                 })}
             />
+            {/* The identifier is here for the person who has to quote it, and
+                nowhere else on the page: what the request is about is the
+                title, and the identifier is not what anybody reads it for. */}
+            <p className="-mt-4 text-xs text-ink-faint">{t('inbox.request.id', { id: request.id })}</p>
 
             {decide.isError && <Notice tone="error">{decide.error.message}</Notice>}
 
             <section className="flex items-center gap-3 rounded-md border border-line bg-surface-raised px-4 py-3">
                 <AccountPicture
                     username={request.requestedBy}
-                    name={request.requestedBy}
+                    name={named === undefined ? request.requestedBy : named.name}
                     size="lg"
                 />
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                        {request.requestedBy}
+                        {request.requestedBy === me
+                            ? t('inbox.request.you')
+                            : (named?.name ?? request.requestedBy)}
                         <RequestStateChip stateCode={request.stateCode} />
                     </div>
-                    <div className="text-xs text-ink-muted">
-                        {request.expiresAt === ''
-                            ? t('inbox.request.noDeadline')
-                            : t('inbox.request.expires', {
-                                  at: formatDateTime(request.expiresAt, language),
-                              })}
-                    </div>
+                    {/* A deadline only means something while the request is
+                        still waiting. Once it has an answer the deadline has
+                        passed out of the story, and showing it says the
+                        opposite: that the request is still running. */}
+                    {open && (
+                        <div className="text-xs text-ink-muted">
+                            {request.expiresAt === ''
+                                ? t('inbox.request.noDeadline')
+                                : t('inbox.request.expires', {
+                                      at: formatDateTime(request.expiresAt, language),
+                                  })}
+                        </div>
+                    )}
                 </div>
             </section>
 

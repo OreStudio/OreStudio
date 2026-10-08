@@ -30,14 +30,18 @@ import type { InboxRequestView } from '@ores/wire-protocol/browser';
  * request nobody can name is still a request somebody has to answer.
  */
 
-export type Tone = 'neutral' | 'accent' | 'warn' | 'muted';
+export type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
 
 /** The six states a request may be in, each with the chip the prototype draws. */
+// A state is painted by what it means to the person reading it. Waiting is
+// the thing to look at, a grant is the outcome that went their way, a refusal
+// is the one that did not, and the rest are neither: a withdrawn or lapsed
+// request is simply over.
 const STATE_TONES: Readonly<Record<string, Tone>> = {
     waiting: 'warn',
     held: 'accent',
-    approved: 'neutral',
-    refused: 'muted',
+    approved: 'up',
+    refused: 'down',
     withdrawn: 'muted',
     expired: 'muted',
 };

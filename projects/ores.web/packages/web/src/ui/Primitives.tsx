@@ -203,13 +203,15 @@ export function Tag({
     tone = 'neutral',
 }: {
     readonly children: ReactNode;
-    readonly tone?: 'neutral' | 'accent' | 'warn' | 'muted';
+    readonly tone?: 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
 }): ReactNode {
     const tones = {
         neutral: 'border-line text-ink-muted',
         accent: 'border-accent/50 text-accent-bright bg-accent/10',
         warn: 'border-warn/50 text-warn bg-warn/10',
         muted: 'border-line-subtle text-ink-faint',
+        up: 'border-up/50 text-up bg-up/10',
+        down: 'border-down/50 text-down bg-down/10',
     } as const;
     return (
         <span

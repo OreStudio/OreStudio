@@ -39,7 +39,6 @@ export interface Counterparty {
     transliterated_name: string | null;
     party_type: string;
     parent_counterparty_id: string | null;
-    business_center_code: string;
     status: string;
     image_id: string | null;
     modified_by: string;

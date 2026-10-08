@@ -166,6 +166,32 @@ party_counterparty_service::list_by_party_id_party_counterparties(
     return response;
 }
 
+messaging::list_by_counterparty_id_party_counterparties_response
+party_counterparty_service::list_by_counterparty_id_party_counterparties(
+    const messaging::list_by_counterparty_id_party_counterparties_request& request) {
+    messaging::list_by_counterparty_id_party_counterparties_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "party_counterparties", .field = request.order.field});
+        return response;
+    }
+    if (request.filter) {
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "party_counterparties"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "party_counterparties"});
+        return response;
+    }
+    response.party_counterparties =
+        repo_.read_latest_by_counterparty(request.counterparty_id, request.offset, request.limit);
+    response.total =
+        repo_.get_total_party_counterparty_count_by_counterparty(request.counterparty_id);
+    return response;
+}
+
 messaging::get_party_counterparty_response party_counterparty_service::get_party_counterparty(
     const messaging::get_party_counterparty_request& request) {
     messaging::get_party_counterparty_response response;

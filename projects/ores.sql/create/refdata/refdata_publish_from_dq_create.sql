@@ -2818,6 +2818,27 @@ begin
         ) numbered
     ) sub
     where sub.lei = m.lei;
+    -- The business centre a registered country implies. The publisher states
+    -- one centre per counterparty; a tenant that deals through more adds them
+    -- through the junction.
+    create temp table lei_counterparty_centre_map (
+        country_code text not null,
+        business_centre_code text not null
+    ) on commit drop;
+
+    insert into lei_counterparty_centre_map (country_code, business_centre_code) values
+        ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
+        ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
+        ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
+        ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),
+        ('GB', 'GBLO'), ('GR', 'GRAT'), ('HK', 'HKHK'), ('HU', 'HUBU'),
+        ('ID', 'IDJA'), ('IE', 'IEDU'), ('IL', 'ILTA'), ('IN', 'INMU'),
+        ('IT', 'ITMI'), ('JP', 'JPTO'), ('KR', 'KRSE'), ('KY', 'KYGE'),
+        ('LU', 'LULU'), ('MX', 'MXMC'), ('MY', 'MYKL'), ('NL', 'NLAM'),
+        ('NO', 'NOOS'), ('NZ', 'NZAU'), ('PH', 'PHMA'), ('PL', 'PLWA'),
+        ('PT', 'PTLI'), ('RO', 'ROBU'), ('RU', 'RUMO'), ('SA', 'SARI'),
+        ('SE', 'SEST'), ('SG', 'SGSI'), ('TH', 'THBA'), ('TR', 'TRIS'),
+        ('TW', 'TWTA'), ('US', 'USNY'), ('ZA', 'ZAJO');
 
     declare
         v_current_depth int := 0;
@@ -2830,7 +2851,7 @@ begin
             insert into ores_refdata_counterparties_tbl (
                 tenant_id,
                 id, version, full_name, short_code, transliterated_name, party_type,
-                parent_counterparty_id, business_center_code, status,
+                parent_counterparty_id, status,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -2839,7 +2860,6 @@ begin
                 m.entity_legal_name,
                 m.short_code, m.entity_transliterated_name_1, 'Corporate',
                 coalesce(parent_map.counterparty_uuid, held_parent.counterparty_id),
-                coalesce(bc_map.business_center_code, 'WRLD'),
                 'Active',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
@@ -2851,21 +2871,24 @@ begin
                and held_parent.id_scheme = 'LEI'
                and held_parent.id_value = m.parent_lei
                and held_parent.valid_to = ores_utility_infinity_timestamp_fn()
-            left join (values
-                ('AE', 'AEDU'), ('AT', 'ATVI'), ('AU', 'AUSY'), ('BE', 'BEBR'),
-                ('BR', 'BRSP'), ('CA', 'CATO'), ('CH', 'CHZU'), ('CL', 'CLSA'),
-                ('CN', 'CNBE'), ('CO', 'COBO'), ('CZ', 'CZPR'), ('DE', 'DEFR'),
-                ('DK', 'DKCO'), ('ES', 'ESMA'), ('FI', 'FIHE'), ('FR', 'FRPA'),
-                ('GB', 'GBLO'), ('GR', 'GRAT'), ('HK', 'HKHK'), ('HU', 'HUBU'),
-                ('ID', 'IDJA'), ('IE', 'IEDU'), ('IL', 'ILTA'), ('IN', 'INMU'),
-                ('IT', 'ITMI'), ('JP', 'JPTO'), ('KR', 'KRSE'), ('KY', 'KYGE'),
-                ('LU', 'LULU'), ('MX', 'MXMC'), ('MY', 'MYKL'), ('NL', 'NLAM'),
-                ('NO', 'NOOS'), ('NZ', 'NZAU'), ('PH', 'PHMA'), ('PL', 'PLWA'),
-                ('PT', 'PTLI'), ('RO', 'ROBU'), ('RU', 'RUMO'), ('SA', 'SARI'),
-                ('SE', 'SEST'), ('SG', 'SGSI'), ('TH', 'THBA'), ('TR', 'TRIS'),
-                ('TW', 'TWTA'), ('US', 'USNY'), ('ZA', 'ZAJO')
-            ) as bc_map(country_code, business_center_code)
-                on bc_map.country_code = m.entity_legal_address_country
+            where m.depth = v_current_depth;
+
+            -- The centre each counterparty deals through, from the country its
+            -- registered address sits in. A counterparty may deal through
+            -- several; this import states the one its address implies.
+            insert into ores_refdata_counterparty_business_centres_tbl (
+                tenant_id, counterparty_id, business_centre_code, version,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id, m.counterparty_uuid,
+                coalesce(centre_map.business_centre_code, 'WRLD'), 0,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import',
+                'Imported from GLEIF LEI dataset: ' || v_dataset_name
+            from lei_counterparty_uuid_map m
+            left join lei_counterparty_centre_map centre_map
+                on centre_map.country_code = m.entity_legal_address_country
             where m.depth = v_current_depth;
 
             get diagnostics v_level_count = row_count;

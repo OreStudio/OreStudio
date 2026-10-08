@@ -201,3 +201,24 @@ It is addressed at =refdata.v1.party_counterparties.list_by_party_id=.
 party_counterparties by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
 #+end_src
 
+** =by-counterparty-id=
+:PROPERTIES:
+:ID: DC42EF9B-0E88-5BF1-9555-7ADB78ADB2AD
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_counterparties by-counterparty-id <counterparty_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_counterparties.list_by_counterparty_id=.
+
+#+name: party_counterparties-by-counterparty-id
+#+begin_src ores-shell :tangle party_counterparties-by-counterparty-id.ores :exports none
+party_counterparties by-counterparty-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

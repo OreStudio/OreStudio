@@ -48,7 +48,6 @@ render_counterparty_fields(const domain::counterparty& v) {
                       .value = v.parent_counterparty_id ?
                                    boost::uuids::to_string(*v.parent_counterparty_id) :
                                    std::string{}});
-    fields.push_back({.name = "Business Center Code", .value = v.business_center_code});
     fields.push_back({.name = "Status", .value = v.status});
     fields.push_back({.name = "Image ID",
                       .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});

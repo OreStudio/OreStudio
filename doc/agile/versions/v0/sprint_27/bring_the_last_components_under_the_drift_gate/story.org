@@ -48,6 +48,7 @@ Put every component that generates C++ under the drift gate, one component per c
 | [[id:99FAC9DA-6801-4545-886D-9E1B9808F56D][Run the local checks without being asked]] | DONE | | 2026-10-08 | Six trunk defects were found by two runs of the local gate, and none by a person looking. The gates are sound and nothing runs them: with the GitHub PR triggers gone, a red tree reaches main and waits for an unrelated branch to notice. |
 | [[id:C79EA676-15D4-4146-80F4-A7FCBD7A7F7A][Refresh the shell recipe inventory]] | DONE | 2026-10-08 | 2026-10-08 | A trading change added the trade_link_type and trade_link shell recipes but never regenerated doc/recipes/shell/shell.org, so recipe-inventories fails on trunk with two categories missing. |
 | [[id:0BA03E10-9295-4243-B475-A0E0C721D243][Fail the reachability check on a dangling include]] | DONE | 2026-10-08 | 2026-10-08 | Task for: Bring the last components under the drift gate |
+| [[id:0BA03E10-9295-4243-B475-A0E0C721D243][Task: Fail the reachability check on a dangling include]] | DONE | 2026-10-08 | 2026-10-08 | The reachability check reports a file no aggregator includes, and an include that names no file, across create, populate and drop. |
 
 * Decisions
 

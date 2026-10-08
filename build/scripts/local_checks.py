@@ -496,14 +496,15 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql", "modeling"),
     ),
     Check(
-        id="create-reachability",
-        title="Every create file is reached by a schema entry point",
+        id="sql-reachability",
+        title="Every SQL file is reached by a schema entry point",
         argv=(
             CODEGEN_PY,
-            "projects/ores.codegen/scripts/check_sql_create_reachability.py",
+            "projects/ores.codegen/scripts/check_sql_reachability.py",
         ),
         classes=("sql", "modeling"),
-        fix="Add an include to the component's aggregator, in dependency order.",
+        fix="Add an include to the tree's aggregator in dependency order, or"
+            " declare the file an entry point if it is run on its own.",
     ),
     Check(
         id="rls-widenings",

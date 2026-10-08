@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/re-tangle-the-drifted-shell-scripts
-#+pr:
+#+pr: 2852
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2852][#2852]] | [shell] Commit the tangled structure_members scripts |
 
 * Review
 

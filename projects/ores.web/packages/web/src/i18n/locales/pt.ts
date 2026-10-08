@@ -1028,6 +1028,73 @@ const pt: SourceCatalogue = {
                 },
             },
         },
+        bus: {
+            title: 'Operações: barramento de mensagens',
+            description: 'Os sinais vitais do servidor NATS e uma linha por fluxo.',
+            range: {
+                label: 'Intervalo',
+                apply: 'Aplicar',
+                '15m': 'Últimos 15 minutos',
+                '1h': 'Última hora',
+                '6h': 'Últimas 6 horas',
+            },
+            units: {
+                mib: '{value} MB',
+            },
+            vitals: {
+                title: 'Servidor NATS',
+                newestSample: 'amostra mais recente {at}',
+                connections: 'Ligações',
+                memory: 'Memória',
+                slowConsumers: 'Consumidores lentos',
+                totals: 'Totais desde o arranque',
+                totalsValue: '{inMsgs} entrada · {outMsgs} saída',
+                movement:
+                    'Entre {from}–{to}: +{inMsgs} mensagens de entrada, +{outMsgs} de saída, {inBytes} de entrada e {outBytes} de saída. Os próprios totais são totais acumulados desde o arranque do servidor NATS.',
+                noSamples:
+                    'O intervalo não contém amostras. O serviço de telemetria recolhe uma amostra a cada 30 segundos; um intervalo vazio aponta primeiro para o seu coletor.',
+            },
+            streams: {
+                title: 'Fluxos',
+                count: '{count} fluxos',
+                noSamples: 'sem amostras no intervalo',
+                empty: 'Nenhuma amostra de fluxo no intervalo. O ecrã desenha uma linha por cada fluxo que lê; nenhuma leitura lista os fluxos que têm amostras, por isso um fluxo fora dessa lista não é mostrado.',
+                columns: {
+                    stream: 'Fluxo',
+                    messages: 'Mensagens guardadas',
+                    bytes: 'Bytes guardados',
+                    consumers: 'Consumidores',
+                },
+            },
+            trend: {
+                title: 'Tendência',
+                lead: 'mensagens de entrada, ao longo do intervalo',
+                caption: 'Mensagens de entrada ao longo do intervalo, a partir da série de amostras.',
+                note: 'Desenhada a partir das amostras que o intervalo devolve. O ecrã calcula o movimento sozinho: os contadores são totais acumulados, e nenhuma operação envia uma taxa.',
+            },
+            gap: {
+                names: {
+                    title: 'Nada lista os fluxos',
+                    body: 'A leitura de fluxos nomeia um fluxo, e nenhuma leitura diz que fluxos existem ou têm amostras, por isso a tabela depende de nomes vindos de outro sítio. O candidato é uma leitura dos nomes de fluxos presentes no intervalo, para o ecrã desenhar a sua própria tabela.',
+                },
+                rates: {
+                    title: 'As taxas ficam para o leitor',
+                    body: 'Cada campo de mensagem e de bytes é um total acumulado desde o arranque do servidor, por isso cada leitor subtrai duas amostras para obter uma taxa, e cada leitor tem de subtrair da mesma forma. O candidato é a leitura responder deltas ou taxas sobre o intervalo ao lado dos totais.',
+                },
+                limit: {
+                    title: 'O limite trunca em silêncio',
+                    body: 'A consulta tem um limite — 1000 por predefinição — e nem deslocamento nem total. Ao intervalo de recolha de 30 segundos, o limite cobre cerca de oito horas, por isso um intervalo de uma semana responde as 1000 amostras mais recentes e nada diz sobre o resto. Os candidatos são a paginação, um total na resposta, ou uma declaração explícita de que a resposta está limitada.',
+                },
+                slowConsumer: {
+                    title: 'Um contador de consumidores lentos não nomeia o consumidor',
+                    body: 'A amostra guarda uma contagem acumulada, e a API de monitorização sabe qual ligação está lenta. O ecrã pode mostrar que existem consumidores lentos, não quais. O candidato é detalhe por ligação na amostra, ou uma contagem atual ao lado do total.',
+                },
+                permission: {
+                    title: 'As leituras não verificam qualquer permissão',
+                    body: 'Os gestores autenticam o token e depois servem qualquer conta com sessão. O candidato é uma permissão dedicada que o modelo guarda, como as leituras de locatário guardam iam::tenants:read. A lacuna não é só destas leituras (Nada guarda um gestor de operação escrito à mão).',
+                },
+            },
+        },
         versions: {
             title: 'Operações: versões e base de dados',
             description:

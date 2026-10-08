@@ -1035,6 +1035,73 @@ const fr: SourceCatalogue = {
                 },
             },
         },
+        bus: {
+            title: 'Opérations : bus de messages',
+            description: 'Les signes vitaux du serveur NATS et une ligne par flux.',
+            range: {
+                label: 'Plage',
+                apply: 'Appliquer',
+                '15m': '15 dernières minutes',
+                '1h': 'Dernière heure',
+                '6h': '6 dernières heures',
+            },
+            units: {
+                mib: '{value} Mo',
+            },
+            vitals: {
+                title: 'Serveur NATS',
+                newestSample: 'échantillon le plus récent {at}',
+                connections: 'Connexions',
+                memory: 'Mémoire',
+                slowConsumers: 'Consommateurs lents',
+                totals: 'Totaux depuis le démarrage',
+                totalsValue: '{inMsgs} entrant · {outMsgs} sortant',
+                movement:
+                    'Sur {from}–{to} : +{inMsgs} messages entrants, +{outMsgs} sortants, {inBytes} entrants et {outBytes} sortants. Les totaux eux-mêmes sont des totaux cumulés depuis le démarrage du serveur NATS.',
+                noSamples:
+                    'La plage ne contient aucun échantillon. Le service de télémétrie prend un échantillon toutes les 30 secondes ; une plage vide renvoie d’abord à son collecteur.',
+            },
+            streams: {
+                title: 'Flux',
+                count: '{count} flux',
+                noSamples: 'aucun échantillon dans la plage',
+                empty: 'Aucun échantillon de flux dans la plage. L’écran dessine une ligne pour chaque flux qu’il lit ; aucune lecture ne liste les flux qui ont des échantillons, donc un flux hors de cette liste n’est pas montré.',
+                columns: {
+                    stream: 'Flux',
+                    messages: 'Messages stockés',
+                    bytes: 'Octets stockés',
+                    consumers: 'Consommateurs',
+                },
+            },
+            trend: {
+                title: 'Tendance',
+                lead: 'messages entrants, sur la plage',
+                caption: 'Messages entrants sur la plage, d’après la série d’échantillons.',
+                note: 'Tracée à partir des échantillons que la plage renvoie. L’écran calcule lui-même le mouvement : les compteurs sont des totaux cumulés, et aucune opération n’envoie de taux.',
+            },
+            gap: {
+                names: {
+                    title: 'Rien ne liste les flux',
+                    body: 'La lecture de flux nomme un seul flux, et aucune lecture ne dit quels flux existent ou ont des échantillons, donc le tableau dépend de noms venus d’ailleurs. Le candidat est une lecture des noms de flux présents dans la plage, pour que l’écran dessine son propre tableau.',
+                },
+                rates: {
+                    title: 'Les taux sont laissés au lecteur',
+                    body: 'Chaque champ de message et d’octet est un total cumulé depuis le démarrage du serveur, donc chaque lecteur soustrait deux échantillons pour obtenir un taux, et chaque lecteur doit soustraire de la même façon. Le candidat est que la lecture réponde des deltas ou des taux sur la plage à côté des totaux.',
+                },
+                limit: {
+                    title: 'La limite tronque en silence',
+                    body: 'La requête porte une limite — 1000 par défaut — et ni décalage ni total. À l’intervalle de collecte de 30 secondes, la limite couvre environ huit heures, donc une plage d’une semaine répond les 1000 échantillons les plus récents et ne dit rien du reste. Les candidats sont la pagination, un total sur la réponse, ou un énoncé explicite que la réponse est plafonnée.',
+                },
+                slowConsumer: {
+                    title: 'Un compteur de consommateurs lents ne peut pas nommer le consommateur',
+                    body: 'L’échantillon conserve un comptage cumulé, et l’API de supervision sait quelle connexion est lente. L’écran peut montrer que des consommateurs lents existent, pas lesquels. Le candidat est un détail par connexion sur l’échantillon, ou un comptage courant à côté du total.',
+                },
+                permission: {
+                    title: 'Les lectures ne vérifient aucune permission',
+                    body: 'Les gestionnaires authentifient le jeton puis servent tout compte connecté. Le candidat est une permission dédiée que le modèle garde, comme les lectures de locataire gardent iam::tenants:read. Le manque n’est pas propre à ces lectures (Rien ne garde un gestionnaire d’opération écrit à la main).',
+                },
+            },
+        },
         versions: {
             title: 'Opérations : versions et base de données',
             description:

@@ -51,6 +51,7 @@ export function OperationsArea(): ReactNode {
         {
             title: t('operations.screens.bus'),
             body: t('operations.screens.busBody'),
+            to: '/operations/bus',
         },
         {
             title: t('operations.screens.logs'),

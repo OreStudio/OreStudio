@@ -2212,7 +2212,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerClassificationRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
-    registerOperationsRoutes(server, requireSession);
+    registerOperationsRoutes(
+        server,
+        requireSession,
+        resolveBroker(site.configuration, site.environment).subjectPrefix,
+    );
 
     /**
      * The reasons a write may carry.

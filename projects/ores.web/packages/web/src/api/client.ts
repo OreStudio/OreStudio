@@ -82,6 +82,7 @@ import {
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
     gridViewSchema,
+    busViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -103,6 +104,7 @@ import {
     type SeedProfileChoice,
     type ServiceRosterRow,
     type GridView,
+    type BusView,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -130,6 +132,12 @@ export interface Credentials {
     readonly username: string;
     readonly password: string;
 }
+
+/**
+ * The range presets the operations screens offer, which the BFF turns into a
+ * window on the deployment's clock.
+ */
+export type BusRange = '15m' | '1h' | '6h';
 
 /** A page's offset and limit as a query string. */
 function pageQuery(page: { readonly offset: number; readonly limit: number }): string {
@@ -1151,6 +1159,22 @@ export const api = {
      */
     async grid(): Promise<GridView> {
         return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
+    },
+
+    /**
+     * The message bus: the NATS server samples over the chosen range, and one
+     * row per stream.
+     *
+     * The range travels as a preset rather than as two instants, because the
+     * window is the deployment's to compute: a browser that sent its own times
+     * would state a window the deployment never measured, and the read's range
+     * is start-inclusive and end-exclusive.
+     */
+    async bus(range: BusRange): Promise<BusView> {
+        const query = new URLSearchParams({ range });
+        return busViewSchema.parse(
+            await request(`/api/operations/bus?${query.toString()}`, { method: 'GET' }),
+        );
     },
 
     /**

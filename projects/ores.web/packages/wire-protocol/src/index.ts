@@ -345,6 +345,21 @@ export {
 } from './operations.js';
 export type { GridStatsReply, GridView } from './operations.js';
 
+// The message bus the operations screen reads: the two sample queries, their
+// replies, and the view the BFF serves the browser.
+export {
+    busViewSchema,
+    natsServerSampleSchema,
+    natsServerSamplesQuerySchema,
+    natsServerSamplesReplySchema,
+    natsServerSamplesRequestSchema,
+    natsStreamSampleSchema,
+    natsStreamSamplesQuerySchema,
+    natsStreamSamplesReplySchema,
+    natsStreamSamplesRequestSchema,
+} from './operations.js';
+export type { BusView } from './operations.js';
+
 // The door: what the deployment offers somebody who is not in it yet, and the
 // registration that acts on that answer.
 export {

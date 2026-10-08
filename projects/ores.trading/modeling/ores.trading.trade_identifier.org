@@ -181,7 +181,6 @@ The scheme catalogue is system reference data.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

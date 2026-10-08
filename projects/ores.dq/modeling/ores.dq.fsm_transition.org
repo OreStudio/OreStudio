@@ -122,7 +122,6 @@ Optional guard the transition is taken behind.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

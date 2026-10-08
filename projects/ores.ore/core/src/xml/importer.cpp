@@ -124,7 +124,6 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
         item.anchor.party_id = nil;
         item.anchor.trade_type = to_string(t.TradeType);
         item.booking.trade_id = nil;
-        item.booking.party_id = nil;
         item.booking.book_id = nil;
         item.envelope = domain::trade_mapper::map_envelope(t);
         item.source_file = path;

@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_DOMAIN_APP_VERSION_PLATFORM_HPP
 
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 

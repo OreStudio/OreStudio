@@ -213,7 +213,6 @@ needed because the row is narrow.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/decimal/decimal.hpp"

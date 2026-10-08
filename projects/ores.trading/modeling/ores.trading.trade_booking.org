@@ -371,7 +371,6 @@ The netting set identifier. Temporal, so a trigger check.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #+end_src

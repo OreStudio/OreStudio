@@ -186,7 +186,6 @@ crm_enabled_derived_pair_repository::read_latest_all_tenants(context ctx) {
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

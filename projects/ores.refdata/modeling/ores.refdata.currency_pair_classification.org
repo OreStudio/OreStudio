@@ -128,7 +128,6 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

@@ -133,7 +133,6 @@ drop function if exists ores_refdata_validate_asset_class_code_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

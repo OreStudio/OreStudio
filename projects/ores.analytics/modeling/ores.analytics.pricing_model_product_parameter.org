@@ -172,7 +172,6 @@ and the order cannot be recovered by sorting. It is carried here instead.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

@@ -137,7 +137,6 @@ Accumulated work units successfully processed by this host.
 #+begin_src cpp :name includes
 #include <string>
 #include <cstdint>
-#include <chrono>
 #+end_src
 
 ** Conventions

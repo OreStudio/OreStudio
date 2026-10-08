@@ -297,7 +297,6 @@ std::string(faker::word::noun()) + "_type"
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

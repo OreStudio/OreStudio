@@ -116,7 +116,6 @@ std::string("Synthetic test permission")
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #+end_src

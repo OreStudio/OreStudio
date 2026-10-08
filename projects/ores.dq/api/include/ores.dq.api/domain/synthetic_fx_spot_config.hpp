@@ -26,7 +26,6 @@
 #define ORES_DQ_API_DOMAIN_SYNTHETIC_FX_SPOT_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <chrono>
 #include <string>
 #include <string_view>
 

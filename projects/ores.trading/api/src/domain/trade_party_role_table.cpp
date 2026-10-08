@@ -33,12 +33,10 @@ std::string convert_to_table(const std::vector<trade_party_role>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Trade ID" << "Counterparty ID" << "Role" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Trade ID" << "Role" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pr : v) {
-        table << pr.trade_id << pr.counterparty_id << pr.role << pr.modified_by << pr.version
-              << fort::endr;
+        table << pr.trade_id << pr.role << pr.modified_by << pr.version << fort::endr;
     }
     return table.to_string();
 }

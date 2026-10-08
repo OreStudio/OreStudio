@@ -215,7 +215,6 @@ keeps the default resolution: the config row is a genuine tenant row.
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

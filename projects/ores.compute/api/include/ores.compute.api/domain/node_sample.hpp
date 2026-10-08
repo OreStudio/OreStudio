@@ -26,6 +26,7 @@
 #define ORES_COMPUTE_API_DOMAIN_NODE_SAMPLE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string_view>
 
 namespace ores::compute::domain {

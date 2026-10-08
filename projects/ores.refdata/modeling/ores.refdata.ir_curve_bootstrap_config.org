@@ -343,7 +343,6 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 #+begin_src cpp :name includes
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

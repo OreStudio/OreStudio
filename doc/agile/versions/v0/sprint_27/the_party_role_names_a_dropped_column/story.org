@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 48C8F8B1-780F-422C-814F-C9E4A9D65E11
+:END:
+#+title: Story: Hotfix: the party role names a dropped column
+#+description: The trade_party_role model still lists counterparty_id in its C++ Table display and in its SQL Indexes, but commit 178610c4e8 removed the column, so ores.trading.api does not compile and the party roles table cannot be created.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:trading:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make ores.trading.api compile and let the party roles table be created.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The model and its generated output are corrected. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The build compiles past trade_party_role_table.cpp.
+- The party roles create script names no column the table does not have.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:52ED4E36-F714-4877-B507-233234307962][Scaffold story: Hotfix: the party role names a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6168D710-FBB6-468C-9401-DA2E004D42D5][Implement Hotfix: the party role names a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the party role names a dropped column |
+
+* Decisions
+
+- *Fix the model, not the generated files.* Both generated files say
+  =DO NOT EDIT MANUALLY= and are reproduced from the model on every
+  regeneration, so editing them would only hide the defect until the next run.
+- *Remove the index rather than repoint it.* It existed to find a party role by
+  the counterparty, and the counterparty now lives on the trade anchor. The
+  generated create script already indexes =(tenant_id, trade_id, role)= and
+  =(tenant_id)=.
+
+* Out of scope
+
+- A permanent gate for this defect class. The scratch scan is named in the
+  task's Notes; promoting it into =local_checks.py= is its own change.

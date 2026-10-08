@@ -215,7 +215,6 @@ relates; the subclass is the correlation itself.'
 
 #+begin_src cpp :name includes
 #include "ores.marketdata.api/domain/asset_class_authorities.hpp"
-#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

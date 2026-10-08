@@ -136,7 +136,6 @@ drop function if exists ores_synthetic_validate_yield_curve_process_type_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

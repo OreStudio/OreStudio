@@ -73,10 +73,6 @@ create index if not exists party_roles_tenant_idx
 on "ores_trading_party_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists party_roles_counterparty_idx
-on "ores_trading_party_roles_tbl" (tenant_id, counterparty_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_trading_party_roles_insert_fn()
 returns trigger as $$
 declare

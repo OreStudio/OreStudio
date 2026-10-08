@@ -12,7 +12,7 @@
 #+entity_plural: trade_party_roles
 #+entity_title: Trade Party Role
 #+created: 2026-06-01
-#+updated: 2026-10-03
+#+updated: 2026-10-08
 
 The role another party plays on a trade: calculation agent, executing
 broker and the like, one row per role. The firm's party and the
@@ -89,7 +89,6 @@ The counterparty the firm faces is on the anchor, not a role.
 
 | name         | columns                    | unique | current_only | where_extra |
 |--------------+----------------------------+--------+--------------+-------------|
-| counterparty | tenant_id, counterparty_id | false  | true         |             |
 
 * Foreign keys
 
@@ -155,7 +154,6 @@ The role catalogue is system reference data.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -170,7 +168,6 @@ The role catalogue is system reference data.
 | column          | header          |
 |-----------------+-----------------|
 | trade_id        | Trade ID        |
-| counterparty_id | Counterparty ID |
 | role            | Role            |
 | modified_by     | Modified By     |
 | version         | Version         |

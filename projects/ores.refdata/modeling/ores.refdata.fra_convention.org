@@ -98,7 +98,6 @@ std::string("EUR-EURIBOR-6M")
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

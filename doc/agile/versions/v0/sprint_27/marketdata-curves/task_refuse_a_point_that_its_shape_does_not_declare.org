@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/refuse-a-point-that-its-shape-does-not-declare
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The shape tables say what a composite object comprises, but nothing enforces it:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

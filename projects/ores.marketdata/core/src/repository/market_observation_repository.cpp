@@ -37,6 +37,7 @@
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
+#include "ores.marketdata.core/repository/series_shape_check.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -159,6 +160,7 @@ void market_observation_repository::write(context ctx, const domain::market_obse
 
 void market_observation_repository::insert(context ctx, const domain::market_observation& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observation. " << "id: " << v.id;
+    series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
     execute_write_query(ctx,
                         market_observation_mapper::map(v),
                         lg(),
@@ -168,6 +170,7 @@ void market_observation_repository::insert(context ctx, const domain::market_obs
 void market_observation_repository::insert(context ctx,
                                            const std::vector<domain::market_observation>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market observations. Count: " << v.size();
+    series_shape_check::check(ctx, v);
     execute_write_query(ctx,
                         market_observation_mapper::map(v),
                         lg(),

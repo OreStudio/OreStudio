@@ -220,6 +220,30 @@ The same point at the end of the generated
 =batch=. A block here usually extracts the rows it needs and calls the same
 thing the single-write block calls.
 
+** Before a single insert
+:PROPERTIES:
+:ID: A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04
+:END:
+
+Code inserted before the row is written by the generated
+=insert(context, value)=, after the log line and before the write. The
+value about to be written is in scope as =v=, and the context is the
+caller's, so the block joins the caller's transaction.
+
+This is the point for a check that must refuse the row rather than record
+it, so the row is never written when the check throws. Nothing else is in
+scope, so a block here needs an include of its own.
+
+** Before a batch insert
+:PROPERTIES:
+:ID: B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15
+:END:
+
+The same point before the rows are written by the generated
+=insert(context, values)=, with the values about to be written in scope as
+=v=. A block here checks the whole batch in one call, so a batch that
+breaches the check is refused before any of its rows are written.
+
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.

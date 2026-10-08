@@ -26,12 +26,12 @@ No request, session or database context carries a workspace. The X-Workspace-Id 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
@@ -43,9 +43,14 @@ No request, session or database context carries a workspace. The X-Workspace-Id 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=has_workspace_id= renders to nothing on every model, so no generated
+repository calls =ctx.workspace_id()= and the context API has no caller.
+The removal is therefore a subtraction, not a migration: delete the
+workspace from the context, the two NATS headers and their builders, the
+request-context narrowing, and the wire-protocol client, and delete the
+two tests that only exercised the removed API. =ores.utility= keeps
+=live_workspace_id()= for the codegen feature and the component, which
+later tasks remove.
 
 * Measurements
 
@@ -59,7 +64,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Data-workspace request symbols left in the four touched components | 0 | =git grep -n "x_workspace_id\|x_workspace_resolution\|X-Workspace\|with_workspace\|WorkspaceContext\|LIVE_WORKSPACE_ID" -- projects/ores.database projects/ores.nats projects/ores.service projects/ores.web= | d2e6a1c817 |
+| Diff size | 20 files, 15 insertions, 229 deletions | =git diff --stat 514e27f5d1..d2e6a1c817= | d2e6a1c817 |
+| Local check gate | 34 of 34 passed | =./compass.sh check= (report: =build/output/local_checks/report.md=) | d2e6a1c817 |
 
 * Notes
 
@@ -84,6 +91,23 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =nats_client.hpp= keeps =#include <vector>= although nothing in it uses =std::vector= after the removal | projects/ores.nats/include/ores.nats/service/nats_client.hpp:38 | Decline | It is a public header, and a dependent translation unit may reach =std::vector= through it; dropping a transitive include is a build risk the nightly =check_includes.sh= sweep owns, not this change. |
+
+Verdict: ready to merge. The change only deletes an API with no caller, and the full gate is green.
 
 * Result
+
+The workspace is out of the request path. =ores.database::context= has no
+=workspace_id=, =with_workspace=, =workspace_resolution= or
+=with_workspace_resolution=; =ores.nats= has no =X-Workspace-Id= or
+=X-Workspace-Resolution= header, no builder for either, and no member to
+hold them; =make_request_context= builds a context from the JWT alone;
+and the =ores.web= wire-protocol client sends no workspace header and
+exports neither =WorkspaceContext= nor =LIVE_WORKSPACE_ID=. The two test
+cases that only exercised the removed API are gone, and the three
+component diagrams that named it are updated.
+
+Acceptance met. The tree carries no data-workspace symbol in those four
+components, the build is green, ctest passes, and the =ores.web= tests
+pass. The full local check gate reports 34 of 34 checks passed at
+=d2e6a1c817=.

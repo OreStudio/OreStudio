@@ -241,6 +241,9 @@
 -- Party-counterparty junction (drop before parties and counterparties)
 \ir ./refdata_party_counterparties_drop.sql
 
+-- Counterparty business centre junction (drop before counterparties and business centres)
+\ir ./refdata_counterparty_business_centre_drop.sql
+
 -- Party and counterparty tables
 \ir ./refdata_counterparties_notify_trigger_drop.sql
 \ir ./refdata_counterparties_drop.sql

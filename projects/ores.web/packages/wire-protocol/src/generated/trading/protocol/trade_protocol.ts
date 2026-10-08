@@ -23,11 +23,32 @@
  * To modify, update the template and regenerate.
  */
 import type { Trade } from '../domain/trade.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface TradeKey {
     id: string;
+}
+
+export interface TradeWrite {
+    id: string;
+    counterparty_id: string | null;
+    trade_type: string;
+    counterparty_scope: string;
+    booking_nature: string;
+    entry_channel: string;
+}
+
+export interface TradeChange {
+    write: TradeWrite;
+    precondition: Precondition;
+}
+
+export interface TradeRemoval {
+    key: TradeKey;
+    precondition: Precondition;
 }
 
 export interface TradeLookup {
@@ -48,11 +69,23 @@ export interface TradeEvent {
     correlation_id: string | null;
 }
 
+export interface TradeVersionKey {
+    trade: TradeKey;
+    version: number;
+}
+
+export interface TradeVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
 export interface ListTradesRequest {
     offset: number;
     limit: number;
     order: Order;
     filter: TradesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradesResponse {
@@ -79,10 +112,77 @@ export interface GetManyTradesResponse {
     entries: TradeLookup[];
 }
 
+export interface PutTradeRequest {
+    change: TradeChange;
+    intent: ChangeIntent;
+}
+
+export interface PutTradeResponse {
+    result: Result;
+    trade: Trade | null;
+}
+
+export interface PutManyTradesRequest {
+    changes: TradeChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyTradesResponse {
+    result: Result;
+    trades: Trade[];
+}
+
+export interface DeleteTradeRequest {
+    removal: TradeRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteTradeResponse {
+    result: Result;
+}
+
+export interface DeleteManyTradesRequest {
+    removals: TradeRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyTradesResponse {
+    result: Result;
+}
+
+export interface ListTradeVersionsRequest {
+    key: TradeKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradeVersionsFilter | null;
+}
+
+export interface ListTradeVersionsResponse {
+    result: Result;
+    versions: Trade[];
+    total: number;
+}
+
+export interface GetTradeVersionRequest {
+    key: TradeVersionKey;
+}
+
+export interface GetTradeVersionResponse {
+    result: Result;
+    version: Trade | null;
+}
+
 export const subjects = {
     list_trades_request: 'trading.v1.trades.list',
     get_trade_request: 'trading.v1.trades.get',
     get_many_trades_request: 'trading.v1.trades.get_many',
+    put_trade_request: 'trading.v1.trades.put',
+    put_many_trades_request: 'trading.v1.trades.put_many',
+    delete_trade_request: 'trading.v1.trades.delete',
+    delete_many_trades_request: 'trading.v1.trades.delete_many',
+    list_trade_versions_request: 'trading.v1.trades_versions.list',
+    get_trade_version_request: 'trading.v1.trades_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -93,6 +193,12 @@ export const requiresSession = {
     list_trades_request: true,
     get_trade_request: true,
     get_many_trades_request: true,
+    put_trade_request: true,
+    put_many_trades_request: true,
+    delete_trade_request: true,
+    delete_many_trades_request: true,
+    list_trade_versions_request: true,
+    get_trade_version_request: true,
 } as const;
 
 /**

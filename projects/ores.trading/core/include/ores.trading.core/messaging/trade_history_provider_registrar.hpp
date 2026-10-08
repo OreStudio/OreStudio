@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,30 +19,18 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_history_provider_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-/**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
- */
-export interface Trade {
-    version: number;
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_HISTORY_PROVIDER_REGISTRAR_HPP
+
+#include "ores.history.core/service/dispatch_registry.hpp"
+
+namespace ores::trading::messaging {
+
+void register_trade_history_provider(ores::history::service::dispatch_registry& registry);
+
 }
+
+#endif

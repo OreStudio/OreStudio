@@ -1,4 +1,4 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -19,30 +19,27 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: domain_types.ts.mustache
+ * Template: cpp_history_field_mapper.hpp.mustache
  * To modify, update the template and regenerate.
  */
+#ifndef ORES_TRADING_CORE_PRESENTATION_TRADE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_TRADE_HISTORY_FIELD_MAPPER_HPP
+
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
+
+namespace ores::trading::presentation {
+
 /**
- * The trade wire shape.
- *
- * Field names are the C++ member names, because they are the keys rfl::json
- * writes. Renaming them breaks the wire silently, so they are not renamed.
- *
- * See the sibling protocol module for the messages that carry this type.
+ * @brief Renders a trade to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-export interface Trade {
-    version: number;
-    tenant_id: string;
-    id: string;
-    party_id: string;
-    counterparty_id: string | null;
-    trade_type: string;
-    counterparty_scope: string;
-    booking_nature: string;
-    entry_channel: string;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_trade_fields(const domain::trade& v);
+
 }
+
+#endif

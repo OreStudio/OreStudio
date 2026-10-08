@@ -43,13 +43,26 @@
 create table if not exists "ores_trading_trades_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
+    "version" integer not null,
     "party_id" uuid not null,
     "counterparty_id" uuid null,
     "trade_type" text not null,
     "counterparty_scope" text not null,
     "booking_nature" text not null,
     "entry_channel" text not null,
-    primary key (tenant_id, id),
+    "modified_by" text not null,
+    "performed_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (tenant_id, id, valid_from, valid_to),
+    exclude using gist (
+        tenant_id WITH =,
+        id WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("counterparty_scope" = 'intra_entity' or "counterparty_id" is not null),
     constraint ores_trading_trades_counterparty_scope_fk foreign key ("counterparty_scope") references "ores_trading_counterparty_scope_types_tbl" ("code"),
@@ -57,7 +70,18 @@ create table if not exists "ores_trading_trades_tbl" (
     constraint ores_trading_trades_entry_channel_fk foreign key ("entry_channel") references "ores_trading_entry_channel_types_tbl" ("code")
 );
 
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists trades_version_uniq_idx
+on "ores_trading_trades_tbl" (tenant_id, id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists trades_id_uniq_idx
+on "ores_trading_trades_tbl" (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists trades_tenant_idx
+on "ores_trading_trades_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists trades_party_idx
 on "ores_trading_trades_tbl" (tenant_id, party_id);
@@ -74,6 +98,7 @@ on "ores_trading_trades_tbl" (tenant_id, id, counterparty_id);
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$
 declare
+    current_version integer;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -113,7 +138,61 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
+    -- Version management
+    select version into current_version
+    from "ores_trading_trades_tbl"
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        -- The write states what it believes about the row, and the store is
+        -- what decides. Version zero means one thing: no current row exists.
+        -- So a create that collides with a live row is refused here, for every
+        -- client, rather than by a check each client has to remember.
+        if NEW.version = 0 then
+            if not ores_utility_version_replace_allowed_fn() then
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'trade',
+                    'id');
+            end if;
+        elsif NEW.version != current_version then
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'trade',
+                'id',
+                NEW.version::text,
+                current_version::text);
+        end if;
+        NEW.version = current_version + 1;
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        update "ores_trading_trades_tbl"
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
@@ -123,24 +202,28 @@ create or replace trigger ores_trading_trades_insert_trg
 before insert on "ores_trading_trades_tbl"
 for each row execute function ores_trading_trades_insert_fn();
 
-create or replace function ores_trading_trades_immutable_fn()
-returns trigger as $$
-begin
-    -- A tenant purge is the one sanctioned delete. It turns the switch on
-    -- for its own transaction and off again after its delete.
-    if TG_OP = 'DELETE' and ores_utility_immutable_purge_allowed_fn() then
-        return OLD;
-    end if;
-    raise exception 'ores_trading_trades_tbl rows are immutable: % is refused.', TG_OP
-        using errcode = '55000';
-end;
-$$ language plpgsql set search_path = public, pg_temp;
+create or replace rule ores_trading_trades_delete_rule as
+on delete to "ores_trading_trades_tbl" do instead (
+    update "ores_trading_trades_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
-create or replace trigger ores_trading_trades_immutable_trg
-before update or delete on "ores_trading_trades_tbl"
-for each row execute function ores_trading_trades_immutable_fn();
+-- =============================================================================
+-- Row-level security: tenant isolation for Trade
+-- =============================================================================
+alter table ores_trading_trades_tbl enable row level security;
 
-create or replace trigger ores_trading_trades_immutable_truncate_trg
-before truncate on "ores_trading_trades_tbl"
-for each statement execute function ores_trading_trades_immutable_fn();
+drop policy if exists trades_tbl_tenant_isolation_policy
+    on ores_trading_trades_tbl;
 
+create policy trades_tbl_tenant_isolation_policy
+on ores_trading_trades_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -88,6 +88,18 @@ definition, not to a trade set, so that task is independent of the batcher.
 
 * Decisions
 
+- *A run's chain is a relation, not a document.* The chain a run was started
+  with was a JSON snapshot on the instance, because =build_steps= is a function
+  of the start request and the engine must not rebuild it after a restart. The
+  other =*_json= columns in this schema are payloads — opaque wire messages a
+  service must not interpret — and storing those verbatim is right. A chain is
+  not a payload: the engine parses it, orders it and asks it which step reads
+  which, which is a relation stored as a document and the reason the schema
+  could not answer the graph's questions in SQL. The chain is settled as two
+  relations instead — a step per position and an edge per dependency — and the
+  document, the step count and the dispatch cursor go with it. Owned by
+  [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]].
+
 *Open, to settle inside the tasks.* Each is recorded with the task that owns
 it, and none is closed:
 

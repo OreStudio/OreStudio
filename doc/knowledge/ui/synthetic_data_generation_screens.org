@@ -53,7 +53,7 @@ it reports the local binding collision check. The summary ends with the count
 of items that pass or do not need validation.
 
 The prototype is at
-[[file:../../prototypes/synthetic-market-simulator/][synthetic market simulator]].
+[[file:../../prototypes/market_data/synthetic-market-simulator/][synthetic market simulator]].
 
 * The cascade rule
 
@@ -96,7 +96,7 @@ The *Provenance* tab chooses "Fixed", where the initial price is entered, or
 the "From vintage data" option, where the available vintages are browsed.
 
 The prototype is at
-[[file:../../prototypes/author-an-fx-price-feed/][author an FX price feed]].
+[[file:../../prototypes/market_data/author-an-fx-price-feed/][author an FX price feed]].
 
 ** Author an IR curve feed
 :PROPERTIES:
@@ -115,7 +115,7 @@ ordered tenor ladder the curve is bootstrapped from (DEPO, FRA, IRS, OIS),
 and at least one entry is required.
 
 The prototype is at
-[[file:../../prototypes/author-an-ir-curve-feed/][author an IR curve feed]].
+[[file:../../prototypes/market_data/author-an-ir-curve-feed/][author an IR curve feed]].
 
 ** Manage synthetic collections
 :PROPERTIES:
@@ -127,7 +127,7 @@ description, its enabled flag, the feeds it owns, and its version history.
 In the tree these same rows are the Collection nodes, seeded as Basic,
 Realistic 2026, Uniform Demo and ORE Samples 2016. Deleting a collection
 deletes its feeds. The prototype is at
-[[file:../../prototypes/manage-synthetic-collections/][manage synthetic collections]].
+[[file:../../prototypes/market_data/manage-synthetic-collections/][manage synthetic collections]].
 
 ** Manage GMM components
 :PROPERTIES:
@@ -140,7 +140,7 @@ to one feed and carries a description, a mean, a stdev and a weight. The
 weights are normalised across a feed's components when it is saved, so the
 screen shows both the raw sum the user typed and the normalised weights. The
 prototype is at
-[[file:../../prototypes/manage-gmm-components/][manage GMM components]].
+[[file:../../prototypes/market_data/manage-gmm-components/][manage GMM components]].
 
 ** Manage yield curve process types
 :PROPERTIES:
@@ -152,7 +152,7 @@ Process tab, the process types and their parameter definitions, each with a
 parameter name, a display name, a symbol, a short label, a data type, a
 default, a minimum, a maximum and an order. Because the catalogue is data, a
 new model needs no code change to appear in the editor. The prototype is at
-[[file:../../prototypes/manage-yield-curve-process-types/][manage yield curve process types]].
+[[file:../../prototypes/market_data/manage-yield-curve-process-types/][manage yield curve process types]].
 
 * The curve build, which is not a synthetic screen
 
@@ -171,7 +171,7 @@ so nothing downstream mistakes it for market data.
 The bootstrap screen carries a real or a synthetic input source and belongs
 to the market data journeys, at
 [[file:../journeys/market_data/journey_bootstrap-or-refresh-a-curve.org][Bootstrap or refresh a curve]]
-([[file:../../prototypes/bootstrap-or-refresh-a-curve/][prototype]]).
+([[file:../../prototypes/market_data/bootstrap-or-refresh-a-curve/][prototype]]).
 
 * What is missing
 

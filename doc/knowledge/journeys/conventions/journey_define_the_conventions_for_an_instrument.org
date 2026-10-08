@@ -121,7 +121,7 @@ inventing a form.
 A clickable prototype exists and is the design record for the screens, the
 fields, the refusal kinds and the gaps.
 
-- Directory :: =doc/prototypes/define-the-conventions-for-an-instrument/=
+- Directory :: =doc/prototypes/conventions/define-the-conventions-for-an-instrument/=
 - States :: =instrument=, =convention=, =terms=, =review=, =outcome=,
   =refused=, =history=
 - Contract :: =index.html= carries the parameter legend, =prototype.js= the
@@ -305,5 +305,5 @@ this journey waits on nothing.
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group hub
 - [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] — the worked example's model
 - [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] — the simpler contrast's model
-- =doc/prototypes/define-the-conventions-for-an-instrument/= — the design record
+- =doc/prototypes/conventions/define-the-conventions-for-an-instrument/= — the design record
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

@@ -93,13 +93,13 @@ panel says why, so the trader is never left wondering whether the click failed.
 
 * Prototype
 
-A static page at =doc/prototypes/publish-the-approved-set/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/publish-the-approved-set/index.html=: mock data only, no backend,
 no build step and no session. It argues that publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it.
 
 - Variants :: a the set summary, b a per-curve list, c the publish with its notifications
 - States :: zero (no approval configured), one, failed
-- Source :: =doc/prototypes/publish-the-approved-set/index.html=
-- Open :: =/OreStudio/doc/prototypes/publish-the-approved-set/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/publish-the-approved-set/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/publish-the-approved-set/= once the site is built, or the
   file directly
 
 * Entities composed

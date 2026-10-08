@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: CB72DF9A-ED51-4E92-8A1E-FA03230FC077
+:END:
+#+title: Reference data prototype
+#+description: Reference data's classification lists as an area: the area on the menu and on Home, an index of lists by topic, one list with reorder as a mode, and a row with Details and History tabs, painted with the shared label catalogue, on the Acme seed.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:refdata:
+#+created: 2026-10-05
+#+updated: 2026-10-05
+
+* Summary
+
+The first build of [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] put the 28 lists, the rows,
+the edit form and the history on one long page, reachable only by its address.
+This prototype redraws it in the shape the rest of the web app already has: an
+area on the menu, a list with its actions on it, and a record that opens on its
+own page with tabs. The rows are painted with the shared label catalogue the
+tenant screens already use.
+
+It is throwaway. It is not production code and it reads no service; the lists,
+rows and labels are the Acme seed as the server returned them on 2026-10-05.
+
+Open the [[file:refdata/][reference data screens]]. A link can open one screen
+directly, for example =refdata/#screen=list&list=rounding-type= or
+=refdata/#screen=row&list=monetary-nature&code=fiat&tab=history=.
+
+* Detail
+
+** The verdict
+
+Accepted on 2026-10-05, with both assumptions below: a row opens on its own
+page, and a tenant administrator sees *Reference data* too. The live screens are
+built from it.
+
+** What it draws
+
+- *Home* carries a live *Reference data* tile, and *Reference data* is an area
+  of the application menu, where the [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell prototype]] put it.
+- *Reference data* is the area: *Classifications* is live; currencies, currency
+  pairs, desk groups and holiday calendars are designed and shown as coming.
+- *Classifications* is the index: one card per topic, each list with its row
+  count and a *Read-only* mark on the ORE spellings, and a box to find a list by
+  name.
+- *One list* has its actions on it: *Add row* and *Reorder*. Reorder is a mode
+  with *Save order* and *Cancel*. A list whose code domain has labels shows a
+  *Label* column. Clicking a row opens it.
+- *One row* opens with *Details* and *History* tabs. *Edit* and *Remove* are
+  dialogs that ask for the reason and the commentary; *Edit* also chooses the
+  row's label. The picker offers the labels this list already uses; the rest of
+  the catalogue, grouped by the list that uses each label, only on request.
+- *History* follows the desktop history dialog the user manual shows: a
+  timeline of versions, each with who modified and performed it, its reason
+  code and its commentary; *Compare* picks any two versions; and each changed
+  field shows the old value on a red line and the new one on a green line, the
+  changed characters marked, as a code review shows a diff. *All fields* or
+  *Only changes*, and *Revert* on an older version.
+- The bar at the bottom switches between a person who may change reference data
+  and one who may only read it; the reader sees no actions and is told why.
+
+** Labels come from the shared catalogue
+
+The dq component holds one label system for the whole product: the badge
+definitions, with their colours, and the mappings from a code domain and a code
+to a badge. The tenant status and type on the tenant screens are painted from
+it. Seventeen of the 28 classification lists have seeded mappings, keyed by the
+list's entity name as its code domain; a row with no mapping shows *Unmapped*.
+The prototype draws no label of its own.
+
+A label is kept by the catalogue, not by the row, so changing only a row's label
+writes a badge mapping and leaves the row's version alone.
+
+** Assumptions to confirm
+
+- A row opens on its own page rather than in a drawer over the list, so a link
+  can name it, as a tenant opens on its own page.
+- A tenant administrator sees *Reference data* too. Today every tenant session
+  runs in application mode, so they would see it regardless.
+
+** What is real and what is not
+
+The lists, the rows, the label definitions and the mappings are the seed. The
+history beyond the first version is invented for two rows, *fiat* and the first
+rounding type, so the History tab has something to compare on first open; any
+edit made in the prototype adds a version.
+
+** Where the code lives
+
+=doc/prototypes/classifications/refdata/index.html=: one file, plain HTML, CSS and JavaScript,
+no framework and no build step. Its styles are the home screen prototype's,
+which are the web app's tokens.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype.
+- [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen prototype]] — the list, record and tab shapes this follows.
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the journey the screens build.

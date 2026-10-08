@@ -98,7 +98,7 @@ portfolios without leaving the screen.
 
 * Prototype
 
-A static page at =doc/prototypes/shape-the-book-structure/index.html=: mock data
+A static page at =doc/prototypes/books/shape-the-book-structure/index.html=: mock data
 only, no backend, no build step and no session. It is the design record for this
 journey. It settles three questions. First, what a book reads from its portfolio
 rather than copies: the aggregation currency, the owner unit ancestry, the
@@ -110,8 +110,8 @@ shows open activity.
 
 - States :: =?state=tree=, =?state=portfolio=, =?state=book=, =?state=classify=, =?state=rights=, =?state=review=, =?state=outcome=, =?state=refused=, =?state=history=
 - Params :: =?new=1= a new book, =?book=<name>= the book already open, =?portfolio=<node>= the chosen node, =?status=, =?purpose=, =?regulatory=, =?ledger=, =?sweepable=, =?account=, =?right=, =?fail=open_activity|transition=, =?version=<n>=
-- Source :: =doc/prototypes/shape-the-book-structure/index.html=
-- Open :: the file directly, or =/OreStudio/doc/prototypes/shape-the-book-structure/= once the site is built
+- Source :: =doc/prototypes/books/shape-the-book-structure/index.html=
+- Open :: the file directly, or =/OreStudio/doc/prototypes/books/shape-the-book-structure/= once the site is built
 
 * Entities composed
 

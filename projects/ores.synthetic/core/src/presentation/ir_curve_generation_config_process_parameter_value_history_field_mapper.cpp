@@ -23,9 +23,13 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/presentation/ir_curve_generation_config_process_parameter_value_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::synthetic::presentation {
 

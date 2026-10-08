@@ -100,7 +100,6 @@ begin
                 'version_conflict',
                 'notification_arguments',
                 'notification_id',
-                new.notification_id::text,
                 new.version::text,
                 current_version::text);
         end if;

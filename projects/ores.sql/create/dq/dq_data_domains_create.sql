@@ -97,15 +97,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'data_domain',
-                    'name',
-                    NEW.name::text);
+                    'name');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'data_domain',
                 'name',
-                NEW.name::text,
                 NEW.version::text,
                 current_version::text);
         end if;

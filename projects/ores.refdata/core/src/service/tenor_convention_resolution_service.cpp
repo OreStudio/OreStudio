@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/tenor_convention_resolution_service.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -36,6 +37,11 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 
 tenor_convention_resolution_service::tenor_convention_resolution_service(context ctx)
@@ -64,16 +70,14 @@ tenor_convention_resolution_service::list_tenor_convention_resolutions(
     const messaging::list_tenor_convention_resolutions_request& request) {
     messaging::list_tenor_convention_resolutions_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "tenor_convention_resolutions", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "tenor_convention_resolutions"});
         return response;
     }
     response.tenor_convention_resolutions = repo_.read_latest(request.offset, request.limit);
@@ -86,22 +90,19 @@ tenor_convention_resolution_service::list_by_convention_code_tenor_convention_re
     const messaging::list_by_convention_code_tenor_convention_resolutions_request& request) {
     messaging::list_by_convention_code_tenor_convention_resolutions_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "tenor_convention_resolutions", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "tenor_convention_resolutions"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "scope_not_supported";
-        response.result.message = "This resource reads its direct members; it has no subtree.";
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "tenor_convention_resolutions"});
         return response;
     }
     response.tenor_convention_resolutions =
@@ -116,8 +117,8 @@ tenor_convention_resolution_service::get_tenor_convention_resolution(
     messaging::get_tenor_convention_resolution_response response;
     auto found = read_one(repo_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result =
+            refuse(outcome_code::not_found, {.entity = "tenor_convention_resolution"});
         return response;
     }
     response.tenor_convention_resolution = std::move(found.front());

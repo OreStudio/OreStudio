@@ -132,15 +132,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'trade_link',
-                    'from_trade_id',
-                    NEW.from_trade_id::text);
+                    'from_trade_id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'trade_link',
                 'from_trade_id',
-                NEW.from_trade_id::text,
                 NEW.version::text,
                 current_version::text);
         end if;

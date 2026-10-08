@@ -51,14 +51,14 @@ TEST_CASE("outcome_of maps each code to its coarse outcome", "[outcome]") {
     CHECK(outcome_of(outcome_code::internal_error) == outcome::failed);
 }
 
-// The expected strings below are the same literals the pgtap test asserts for
+// The expected strings below are the same literals the pgTAP test asserts for
 // ores_outcome_<code>_fn, so a change to one renderer alone fails a gate.
 TEST_CASE("describe names the record and the field", "[outcome]") {
     auto a = currency_args();
 
     CHECK(describe(outcome_code::not_found, a) == "The currency does not exist.");
     CHECK(describe(outcome_code::already_exists, a) ==
-          "The currency with iso_code 'GBP' already exists. State the version you read to "
+          "The currency already exists for that iso_code. State the version you read to "
           "replace it, or ask for a version replace.");
     CHECK(describe(outcome_code::missing_field, a) ==
           "Invalid currency: value cannot be null or empty.");
@@ -70,16 +70,17 @@ TEST_CASE("describe carries both versions of a version conflict", "[outcome]") {
     a.current = "4";
 
     CHECK(describe(outcome_code::version_conflict, a) ==
-          "The currency with iso_code 'GBP' is at version 4, and this write states version 3.");
+          "The currency for iso_code is at version 4, and this write states version 3.");
 }
 
 TEST_CASE("describe fills only the names the message carries", "[outcome]") {
     auto a = currency_args();
+    a.entity = "currencies";
     a.field = "day_counter";
     a.limit = "1000";
 
     CHECK(describe(outcome_code::order_not_supported, a) ==
-          "This read of the currency cannot order by day_counter.");
+          "A list of currencies cannot be ordered by day_counter.");
     CHECK(describe(outcome_code::filter_too_large, a) ==
           "The filter on day_counter lists more than 1000 values.");
 }

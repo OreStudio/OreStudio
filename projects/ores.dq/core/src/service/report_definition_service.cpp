@@ -37,12 +37,18 @@
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::dq::service {
 
@@ -76,16 +82,13 @@ messaging::list_report_definitions_response report_definition_service::list_repo
     messaging::list_report_definitions_response response;
     if (!request.order.field.empty() &&
         !repository::report_definition_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of report definitions cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "report definitions", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     response.definitions =
@@ -99,8 +102,7 @@ messaging::get_report_definition_response report_definition_service::get_report_
     messaging::get_report_definition_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "report_definition"});
         return response;
     }
     response.report_definition = std::move(found.front());

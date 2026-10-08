@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
+#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -35,6 +36,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::repository {
@@ -146,20 +148,40 @@ public:
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
+     * @brief Whether a list of yield curve process parameter definitions can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest yield curve process parameter definitions with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::yield_curve_process_parameter_definition>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::yield_curve_process_parameter_definition> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::yield_curve_process_parameter_definitions_filter>& filter =
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active yield curve process parameter definitions.
      * @param ctx Repository context with database connection
      * @return Total number of active yield curve process parameter definitions
      */
-    std::uint32_t get_total_parameter_definition_count(context ctx);
+    std::uint32_t get_total_parameter_definition_count(
+        context ctx,
+        const std::optional<messaging::yield_curve_process_parameter_definitions_filter>& filter =
+            std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a yield curve process parameter definition by closing its temporal validity.

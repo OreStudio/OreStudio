@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/service/badge_mapping_service.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.dq.api/domain/badge_mapping.hpp"
 #include "ores.dq.api/messaging/badge_mapping_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -37,6 +38,11 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 
 badge_mapping_service::badge_mapping_service(context ctx)
@@ -92,16 +98,12 @@ messaging::list_badge_mappings_response
 badge_mapping_service::list_badge_mappings(const messaging::list_badge_mappings_request& request) {
     messaging::list_badge_mappings_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "badge_mappings", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "badge_mappings"});
         return response;
     }
     response.badge_mappings = repo_.read_latest(request.offset, request.limit);
@@ -114,22 +116,16 @@ badge_mapping_service::list_by_code_domain_code_badge_mappings(
     const messaging::list_by_code_domain_code_badge_mappings_request& request) {
     messaging::list_by_code_domain_code_badge_mappings_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "badge_mappings", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "badge_mappings"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "scope_not_supported";
-        response.result.message = "This resource reads its direct members; it has no subtree.";
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "badge_mappings"});
         return response;
     }
     response.badge_mappings =
@@ -143,8 +139,7 @@ badge_mapping_service::get_badge_mapping(const messaging::get_badge_mapping_requ
     messaging::get_badge_mapping_response response;
     auto found = read_one(repo_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "badge_mapping"});
         return response;
     }
     response.badge_mapping = std::move(found.front());
@@ -221,17 +216,13 @@ messaging::delete_badge_mapping_response badge_mapping_service::delete_badge_map
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
-        response.result.outcome = outcome::invalid;
-        response.result.code = "precondition_not_supported";
-        response.result.message = "A removal cannot require that a row is absent.";
+        response.result = refuse(outcome_code::precondition_not_supported);
         return response;
     }
     std::optional<std::uint32_t> expected;
     if (request.removal.precondition.kind == precondition_kind::must_match_version) {
         if (!request.removal.precondition.version) {
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_incomplete";
-            response.result.message = "A versioned removal must state the version it expects.";
+            response.result = refuse(outcome_code::precondition_incomplete);
             return response;
         }
         expected = request.removal.precondition.version;
@@ -241,17 +232,23 @@ messaging::delete_badge_mapping_response badge_mapping_service::delete_badge_map
         case repository::badge_mapping_repository::remove_status::removed:
             break;
         case repository::badge_mapping_repository::remove_status::missing:
-            response.result.outcome = outcome::missing;
-            response.result.code = "not_found";
+            response.result = refuse(outcome_code::not_found, {.entity = "badge_mapping"});
             break;
-        case repository::badge_mapping_repository::remove_status::conflicting:
-            response.result.outcome = outcome::conflict;
-            response.result.code = "version_conflict";
+        case repository::badge_mapping_repository::remove_status::conflicting: {
+            // The junction's removal states neither version, so the row is read for
+            // the one it now holds. The sentence carries what the caller stated and
+            // what the store holds.
+            const auto live = read_one(repo_, request.removal.key);
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "badge_mapping",
+                 .field = "code_domain_code",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
             break;
+        }
         case repository::badge_mapping_repository::remove_status::unsupported:
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_not_supported";
-            response.result.message = "This resource keeps no version to match.";
+            response.result = refuse(outcome_code::precondition_not_supported);
             break;
     }
     return response;
@@ -268,11 +265,7 @@ messaging::delete_many_badge_mappings_response badge_mapping_service::delete_man
             // per-row version. Refusing is the only answer that keeps the
             // batch atomic: serving it as a sequence of single removals would
             // leave a partial batch behind as soon as one row had moved on.
-            response.result.outcome = outcome::invalid;
-            response.result.code = "batch_removal_is_unconditional";
-            response.result.message =
-                "A batch removal is unconditional; remove the rows one at a time "
-                "to state a version.";
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
             return response;
         }
     }
@@ -301,26 +294,25 @@ badge_mapping_service::prepare_change(const messaging::badge_mapping_change& cha
     const auto current = read_one(repo_, key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
-            if (!current.empty()) {
-                result.outcome = outcome::conflict;
-                result.code = "already_exists";
-                return result;
-            }
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "badge_mapping", .field = "code_domain_code"});
             break;
         case precondition_kind::must_match_version:
-            if (current.empty()) {
-                result.outcome = outcome::missing;
-                result.code = "not_found";
-                return result;
-            }
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "badge_mapping"});
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
                 static_cast<std::uint32_t>(current.front().version) !=
                     *change.precondition.version) {
-                result.outcome = outcome::conflict;
-                result.code = "version_conflict";
-                return result;
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "badge_mapping",
+                               .field = "code_domain_code",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
             }
             break;
         case precondition_kind::any:

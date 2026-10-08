@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_handler.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::synthetic::messaging {
 

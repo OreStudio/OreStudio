@@ -38,6 +38,7 @@
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -45,6 +46,11 @@
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::iam::service {
 
@@ -114,17 +120,14 @@ session_service::list_sessions(const messaging::list_sessions_request& request) 
     messaging::list_sessions_response response;
     if (!request.order.field.empty() &&
         !repository::session_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of sessions cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "sessions", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->account_id_one_of &&
         request.filter->account_id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "account_id_one_of", .limit = "1000"});
         return response;
     }
     response.sessions =
@@ -138,8 +141,7 @@ session_service::get_session(const messaging::get_session_request& request) {
     messaging::get_session_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "session"});
         return response;
     }
     response.session = std::move(found.front());
@@ -216,25 +218,20 @@ session_service::delete_session(const messaging::delete_session_request& request
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
-        response.result.outcome = outcome::invalid;
-        response.result.code = "precondition_not_supported";
-        response.result.message = "A removal cannot require that a row is absent.";
+        response.result = refuse(outcome_code::precondition_not_supported);
         return response;
     }
     std::optional<std::uint32_t> expected;
     if (request.removal.precondition.kind == precondition_kind::must_match_version) {
         if (!request.removal.precondition.version) {
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_incomplete";
-            response.result.message = "A versioned removal must state the version it expects.";
+            response.result = refuse(outcome_code::precondition_incomplete);
             return response;
         }
         expected = request.removal.precondition.version;
     }
     const auto named = read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
-        response.result.outcome = outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "session"});
         return response;
     }
     const auto& row = named.front();
@@ -245,17 +242,20 @@ session_service::delete_session(const messaging::delete_session_request& request
         case repository::session_repository::remove_status::removed:
             break;
         case repository::session_repository::remove_status::missing:
-            response.result.outcome = outcome::missing;
-            response.result.code = "not_found";
+            response.result = refuse(outcome_code::not_found, {.entity = "session"});
             break;
-        case repository::session_repository::remove_status::conflicting:
-            response.result.outcome = outcome::conflict;
-            response.result.code = "version_conflict";
+        case repository::session_repository::remove_status::conflicting: {
+            // A resource that keeps no version cannot reach this status, so there
+            // is no current version for its sentence to state.
+            response.result =
+                refuse(outcome_code::version_conflict,
+                       {.entity = "session",
+                        .field = "id",
+                        .expected = expected ? std::to_string(*expected) : std::string{}});
             break;
+        }
         case repository::session_repository::remove_status::unsupported:
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_not_supported";
-            response.result.message = "This resource keeps no version to match.";
+            response.result = refuse(outcome_code::precondition_not_supported);
             break;
     }
     return response;
@@ -272,11 +272,7 @@ session_service::delete_many_sessions(const messaging::delete_many_sessions_requ
             // per-row version. Refusing is the only answer that keeps the
             // batch atomic: serving it as a sequence of single removals would
             // leave a partial batch behind as soon as one row had moved on.
-            response.result.outcome = outcome::invalid;
-            response.result.code = "batch_removal_is_unconditional";
-            response.result.message =
-                "A batch removal is unconditional; remove the rows one at a time "
-                "to state a version.";
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
             return response;
         }
     }
@@ -317,17 +313,11 @@ session_service::prepare_change(const messaging::session_change& change,
     const auto current = read_one(repo_, ctx_, key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
-            if (!current.empty()) {
-                result.outcome = outcome::conflict;
-                result.code = "already_exists";
-                return result;
-            }
+            if (!current.empty())
+                return refuse(outcome_code::already_exists, {.entity = "session", .field = "id"});
             break;
         case precondition_kind::must_match_version:
-            result.outcome = outcome::invalid;
-            result.code = "precondition_not_supported";
-            result.message = "This resource keeps no version to match.";
-            return result;
+            return refuse(outcome_code::precondition_not_supported);
             break;
         case precondition_kind::any:
             break;

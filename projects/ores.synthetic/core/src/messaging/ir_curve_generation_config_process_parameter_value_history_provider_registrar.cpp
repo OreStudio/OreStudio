@@ -23,7 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_process_parameter_value_history_provider_registrar.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.synthetic.core/presentation/ir_curve_generation_config_process_parameter_value_history_field_mapper.hpp"
 #include "ores.synthetic.core/service/ir_curve_generation_config_process_parameter_value_service.hpp"
 

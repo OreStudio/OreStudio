@@ -124,15 +124,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'country',
-                    'alpha2_code',
-                    NEW.alpha2_code::text);
+                    'alpha2_code');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'country',
                 'alpha2_code',
-                NEW.alpha2_code::text,
                 NEW.version::text,
                 current_version::text);
         end if;

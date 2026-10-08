@@ -24,6 +24,7 @@
  */
 #include "ores.inbox.core/service/delivery_outcome_type_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/messaging/delivery_outcome_type_protocol.hpp"
 #include "ores.inbox.core/repository/delivery_outcome_type_repository.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::inbox::service {
 
@@ -74,17 +80,15 @@ delivery_outcome_type_service::list_delivery_outcome_types(
     messaging::list_delivery_outcome_types_response response;
     if (!request.order.field.empty() &&
         !repository::delivery_outcome_type_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of delivery outcome types cannot be ordered by " + request.order.field + ".";
+        response.result =
+            refuse(outcome_code::order_not_supported,
+                   {.entity = "delivery outcome types", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
         request.filter->code_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in code_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
         return response;
     }
     response.delivery_outcome_types =
@@ -99,8 +103,7 @@ delivery_outcome_type_service::get_delivery_outcome_type(
     messaging::get_delivery_outcome_type_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "delivery_outcome_type"});
         return response;
     }
     response.delivery_outcome_type = std::move(found.front());

@@ -65,6 +65,10 @@ struct market_data_generation_config_lookup {
         market_data_generation_config;
 };
 
+struct market_data_generation_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct market_data_generation_config_event {
     boost::uuids::uuid event_id;
     market_data_generation_config_key key;
@@ -99,6 +103,8 @@ struct list_market_data_generation_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<market_data_generation_configs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_market_data_generation_configs_response {

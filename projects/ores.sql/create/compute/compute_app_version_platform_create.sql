@@ -107,7 +107,6 @@ begin
                 'version_conflict',
                 'app_version_platforms',
                 'app_version_id',
-                new.app_version_id::text,
                 new.version::text,
                 current_version::text);
         end if;

@@ -103,7 +103,6 @@ begin
                 'version_conflict',
                 'dataset_bundle_members',
                 'bundle_code',
-                new.bundle_code::text,
                 new.version::text,
                 current_version::text);
         end if;

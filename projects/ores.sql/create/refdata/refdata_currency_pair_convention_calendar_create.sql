@@ -106,7 +106,6 @@ begin
                 'version_conflict',
                 'currency_pair_convention_calendars',
                 'pair_code',
-                new.pair_code::text,
                 new.version::text,
                 current_version::text);
         end if;

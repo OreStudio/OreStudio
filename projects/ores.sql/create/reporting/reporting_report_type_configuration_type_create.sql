@@ -100,7 +100,6 @@ begin
                 'version_conflict',
                 'report_type_configuration_types',
                 'report_type_code',
-                new.report_type_code::text,
                 new.version::text,
                 current_version::text);
         end if;

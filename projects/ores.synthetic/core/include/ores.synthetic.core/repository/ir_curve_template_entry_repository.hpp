@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -35,6 +36,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::repository {
@@ -126,20 +128,38 @@ public:
 
 
     /**
+     * @brief Whether a list of IR curve template entries can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest IR curve template entries with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::ir_curve_template_entry>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::ir_curve_template_entry> read_latest(
+        context ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::ir_curve_template_entries_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active IR curve template entries.
      * @param ctx Repository context with database connection
      * @return Total number of active IR curve template entries
      */
-    std::uint32_t get_total_ir_curve_template_entry_count(context ctx);
+    std::uint32_t get_total_ir_curve_template_entry_count(
+        context ctx,
+        const std::optional<messaging::ir_curve_template_entries_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a IR curve template entry by closing its temporal validity.

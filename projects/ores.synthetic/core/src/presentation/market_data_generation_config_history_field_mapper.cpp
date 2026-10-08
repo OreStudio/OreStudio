@@ -23,10 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/presentation/market_data_generation_config_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/enums.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::synthetic::presentation {
 

@@ -107,15 +107,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'todays_market_collection_kind',
-                    'code',
-                    NEW.code::text);
+                    'code');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'todays_market_collection_kind',
                 'code',
-                NEW.code::text,
                 NEW.version::text,
                 current_version::text);
         end if;

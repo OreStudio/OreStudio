@@ -65,6 +65,10 @@ struct gmm_component_lookup {
     std::optional<ores::synthetic::domain::gmm_component> gmm_component;
 };
 
+struct gmm_components_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct gmm_component_event {
     boost::uuids::uuid event_id;
     gmm_component_key key;
@@ -98,6 +102,8 @@ struct list_gmm_components_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<gmm_components_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_gmm_components_response {

@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/service/calendar_date_service.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/messaging/calendar_date_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -36,6 +37,11 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 
 calendar_date_service::calendar_date_service(context ctx)
@@ -62,16 +68,12 @@ messaging::list_calendar_dates_response
 calendar_date_service::list_calendar_dates(const messaging::list_calendar_dates_request& request) {
     messaging::list_calendar_dates_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "calendar_dates", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "calendar_dates"});
         return response;
     }
     response.calendar_dates = repo_.read_latest(request.offset, request.limit);
@@ -84,22 +86,16 @@ calendar_date_service::list_by_calendar_code_calendar_dates(
     const messaging::list_by_calendar_code_calendar_dates_request& request) {
     messaging::list_by_calendar_code_calendar_dates_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "calendar_dates", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "calendar_dates"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "scope_not_supported";
-        response.result.message = "This resource reads its direct members; it has no subtree.";
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "calendar_dates"});
         return response;
     }
     response.calendar_dates =
@@ -113,8 +109,7 @@ calendar_date_service::get_calendar_date(const messaging::get_calendar_date_requ
     messaging::get_calendar_date_response response;
     auto found = read_one(repo_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "calendar_date"});
         return response;
     }
     response.calendar_date = std::move(found.front());

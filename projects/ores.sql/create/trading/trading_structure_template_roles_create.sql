@@ -123,15 +123,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'structure_template_role',
-                    'template_code',
-                    NEW.template_code::text);
+                    'template_code');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'structure_template_role',
                 'template_code',
-                NEW.template_code::text,
                 NEW.version::text,
                 current_version::text);
         end if;

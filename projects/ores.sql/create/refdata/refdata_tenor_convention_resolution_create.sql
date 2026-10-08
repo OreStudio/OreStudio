@@ -128,7 +128,6 @@ begin
                 'version_conflict',
                 'tenor_convention_resolutions',
                 'convention_code',
-                new.convention_code::text,
                 new.version::text,
                 current_version::text);
         end if;

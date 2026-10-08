@@ -65,6 +65,10 @@ struct job_definition_lookup {
     std::optional<ores::scheduler::domain::job_definition> job_definition;
 };
 
+struct job_definitions_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct job_definition_event {
     boost::uuids::uuid event_id;
     job_definition_key key;
@@ -98,6 +102,8 @@ struct list_job_definitions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<job_definitions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_job_definitions_response {

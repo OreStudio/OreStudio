@@ -24,6 +24,7 @@
  */
 #include "ores.trading.core/service/booking_nature_type_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/booking_nature_type.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::trading::service {
 
@@ -73,17 +79,14 @@ booking_nature_type_service::list_booking_nature_types(
     messaging::list_booking_nature_types_response response;
     if (!request.order.field.empty() &&
         !repository::booking_nature_type_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of booking nature types cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "booking nature types", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
         request.filter->code_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in code_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
         return response;
     }
     response.booking_nature_types =
@@ -97,8 +100,7 @@ messaging::get_booking_nature_type_response booking_nature_type_service::get_boo
     messaging::get_booking_nature_type_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "booking_nature_type"});
         return response;
     }
     response.booking_nature_type = std::move(found.front());

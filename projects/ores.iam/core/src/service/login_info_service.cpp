@@ -37,12 +37,18 @@
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::iam::service {
 
@@ -76,17 +82,14 @@ login_info_service::list_login_info(const messaging::list_login_info_request& re
     messaging::list_login_info_response response;
     if (!request.order.field.empty() &&
         !repository::login_info_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of login info cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "login info", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->account_id_one_of &&
         request.filter->account_id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "account_id_one_of", .limit = "1000"});
         return response;
     }
     response.login_info =
@@ -100,8 +103,7 @@ login_info_service::get_login_info(const messaging::get_login_info_request& requ
     messaging::get_login_info_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "login_info"});
         return response;
     }
     response.login_info = std::move(found.front());

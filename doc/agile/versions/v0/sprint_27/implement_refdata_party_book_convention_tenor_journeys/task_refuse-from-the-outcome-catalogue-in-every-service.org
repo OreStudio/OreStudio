@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 8F14837F-67BD-4FC3-854B-114B1E4F4CF2
+:END:
+#+title: Task: Refuse from the outcome catalogue in every service
+#+description: Second task for: Implement the refdata party, book, convention and tenor journeys
+#+type: task
+#+level: s1
+#+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/refuse-from-the-outcome-catalogue
+#+pr: 2805
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generated service stops restating what a refusal is.
+
+Its template carried 44 refusal sites, each setting a coarse outcome, a code
+and often a sentence. The previous task gave the codes and the sentences one
+home in the outcome catalogue, but left the services stating them. This task
+makes a service name the outcome and nothing else.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A generated service names an =outcome_code= and lets =refuse= supply the
+  coarse outcome, the code and the sentence.
+- No literal refusal code is left in a generated service.
+- The store and the service produce the same sentence for a code both refuse.
+- The tree builds, every ctest suite passes and every pgTAP suite passes.
+- =compass check= is green apart from the failures that are already on main.
+
+* Plan
+
+** One constructor for a refusal
+
+=ores::database::domain::refuse= takes an =outcome_code= and, optionally, an
+=outcome_args=. The one-argument overload fills the coarse outcome and the
+code; the two-argument overload adds the catalogue's sentence. The template
+brings them into scope with a =using= and includes the generated header.
+
+** The two store sentences lose the concrete key value
+
+A service refuses =already_exists= and =version_conflict= too, and it holds no
+text for its key. The concrete value was what it could not supply, so the
+sentences now name the entity and the field and not the value. Everything else
+about them is unchanged, including both version numbers.
+
+** A removal conflict reads the row it refused
+
+=remove= reports =remove_status::conflicting=, an enum with no version behind
+it, and the sentence wants the version the row now holds. The row is read on
+the refusal path only, which is the one place the extra read is worth its cost.
+
+Three shapes the template has to get right:
+
+- A resource that keeps no version cannot reach that status, so it emits no
+  read at all and refuses without a current version.
+- A grouped entity carries its version on the member named by
+  =scaffold_prefix=, so the row is indexed through that prefix.
+- A junction has no =domain_entity= in scope, so its key field comes from
+  =left.column= and its name from =name_singular=.
+
+** The list-ordering sentence keeps the wording it had
+
+=order_not_supported= already read "A list of X cannot be ordered by Y" at the
+main list sites, and a test asserted it. The catalogue now holds that sentence
+for every site, so the junction sites gain the field name they used to omit and
+no test changes.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| generated service files changed | 357 | =git diff --name-only -- '*_service.cpp'= | dba8b3b58b |
+| refusal sites migrated in the template | 44 | =grep -c 'refuse(outcome_code' ores.cpp.service.service_impl.org= | dba8b3b58b |
+| literal refusal codes left in generated services | 0 | =grep -rn 'result.code = "' projects/*/core/src/service/= | dba8b3b58b |
+| hand-written services still stating a code | 6 | same command | dba8b3b58b |
+| net lines removed | 2823 | =git show --stat dba8b3b58b= | dba8b3b58b |
+| drift repair files | 192 | =git show --stat 9143b9a0f7= | 9143b9a0f7 |
+
+* Notes
+
+- The six remaining sites are hand-written services in ores.assets, ores.iam
+  and ores.trading. They carry bespoke codes the catalogue does not hold, and
+  they belong to their own components.
+- The NATS handler's =catch= block still sets =internal_error=. It is one
+  template, so it is not duplicated per entity, and it must not run an
+  arbitrary exception message through =fill=: a message containing ={entity}=
+  would be substituted. Left as it is.
+- =git status= also lists =build/hotfix_red/=, an untracked build artefact
+  directory that predates this branch. It is not committed, and its =unknown=
+  class is why =compass check= runs every check rather than the subset the
+  change needs.
+- This branch also carries the codegen drift repair the previous task reported.
+  Without it the tree does not build: the drifted scheduler service calls
+  protocol members its committed protocol does not declare.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2805][#2805]] | [codegen,cpp] Refuse from the outcome catalogue in every service |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every acceptance criterion holds on PR #2805.
+
+A generated service names an =outcome_code= and calls
+=ores::database::domain::refuse=. 359 service files call it. The template's 44
+sites are gone, and the six literal refusal codes left in generated services
+are in hand-written services that carry bespoke codes the catalogue does not
+hold.
+
+The store and the service produce the same sentence, because both read the
+same catalogue entry. The two store sentences lost the concrete key value,
+which a service cannot stringify, and kept both version numbers.
+
+What was verified, and how:
+
+| Check | Result |
+|-------+--------|
+| =compass check --all= on the pre-rebase tree | build green in 2373s, all 94 ctest suites green in 2149s, every pgTAP suite green |
+| =compass check --only db= | green in 82s with the services stopped |
+| =compass check --only codegen-tests= | green, 1276 tests |
+| =compass check --only tangle-shell --only cmake-sources --only er-diagram --only component-drift= | green after the drift repairs |
+| full tree build after the rebase onto main | exit 0 |
+
+Static validation of the rebase, by inspection:
+
+- =ores_outcome_raise_fn= now declares =p_code=, =p_entity=, =p_field=,
+  =p_expected= and =p_current=. Every rendered call matches it.
+- A grouped entity reads its version through =scaffold_prefix=, so
+  =bond_instrument= reads =live.front().identity.version=.
+- A resource that keeps no version emits no read, so =publication= refuses
+  without a current version.
+- A junction has no =domain_entity= in scope and reads its key field from
+  =left.column=.
+- The second committed store sentinel, =already_exists=, passes three
+  arguments and no stray value.
+
+From this point the hourly validator builds and tests main and the open PRs.
+The two checks that were red when the PR opened, =web= and =site-page=, were
+both repaired on main before the rebase, so neither is this branch's.
+
+**What this task does not land.** The NATS handler's =catch= block still sets
+=internal_error=, and the six hand-written services keep their bespoke codes.

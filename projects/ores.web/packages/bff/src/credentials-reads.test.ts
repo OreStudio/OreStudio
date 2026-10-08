@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { SUBJECTS, type OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { buildServer } from './server.js';
+import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -48,6 +48,10 @@ const config: Config = {
     loginAttemptsPerMinute: 100,
 };
 
+/** The environment this file's site configuration serves. */
+const ENVIRONMENT_ID = 'eager_maxwell';
+const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
+
 function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     const path = resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -55,7 +59,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     );
     return loadSiteConfiguration({
         environment: { [SITE_CONFIG_VARIABLE]: path },
-        environmentId: 'eager_maxwell',
+        environmentId: ENVIRONMENT_ID,
     });
 }
 
@@ -184,7 +188,7 @@ describe('GET /api/accounts', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/accounts',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -235,7 +239,7 @@ describe('GET /api/accounts', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/accounts?offset=20&limit=5',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -278,7 +282,7 @@ describe('GET /api/accounts', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/accounts?limit=0',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(400);
@@ -298,7 +302,7 @@ describe('GET /api/accounts/:username', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/accounts/jdoe',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -320,7 +324,7 @@ describe('GET /api/accounts/:username', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/accounts/jdoe',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -339,7 +343,7 @@ describe('GET /api/login-info', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/login-info',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -384,7 +388,7 @@ describe('GET /api/login-info/:accountId', () => {
         const response = await server.inject({
             method: 'GET',
             url: `/api/login-info/${ACCOUNT_ID}`,
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -404,7 +408,7 @@ describe('GET /api/login-info/:accountId', () => {
         const response = await server.inject({
             method: 'GET',
             url: `/api/login-info/${ACCOUNT_ID}`,
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(200);
@@ -421,7 +425,7 @@ describe('GET /api/login-info/:accountId', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/api/login-info/not-a-uuid',
-            cookies: { ores_web_session: sessionId },
+            cookies: { [SESSION_COOKIE]: sessionId },
         });
 
         expect(response.statusCode).toBe(400);

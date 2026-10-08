@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { buildServer } from './server.js';
+import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -47,6 +47,10 @@ const config: Config = {
     loginAttemptsPerMinute: 100,
 };
 
+/** The environment this file's site configuration serves. */
+const ENVIRONMENT_ID = 'eager_maxwell';
+const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
+
 function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     const path = resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -54,7 +58,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     );
     return loadSiteConfiguration({
         environment: { [SITE_CONFIG_VARIABLE]: path },
-        environmentId: 'eager_maxwell',
+        environmentId: ENVIRONMENT_ID,
     });
 }
 
@@ -129,7 +133,7 @@ describe('the mode a session is given', () => {
         const session = await server.inject({
             method: 'GET',
             url: '/api/session',
-            cookies: { [cookie?.name ?? 'ores_web_session']: cookie?.value ?? '' },
+            cookies: { [cookie?.name ?? SESSION_COOKIE]: cookie?.value ?? '' },
         });
 
         expect(session.statusCode).toBe(200);

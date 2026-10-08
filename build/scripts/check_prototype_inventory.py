@@ -64,9 +64,18 @@ REVIEW_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/review/")
 # the review, or says "none" so the unreviewed prototypes can be found at once.
 REVIEW_CELL_RE = re.compile(r'class="prototype-review"[^>]*>(.*?)</td>', re.S)
 NO_REVIEW = "none"
-REVIEW_HREF = 'href="review/index.html"'
+REVIEW_HREF = "review/index.html"
 # A review page opens the prototype it reviews, one directory up.
-REVIEW_PROTOTYPE_HREF = 'href="../index.html"'
+REVIEW_PROTOTYPE_HREF = "../index.html"
+# ... and the review index in its own directory.
+REVIEW_SELF_HREF = "index.html"
+
+# Each kind of page reaches its group page by a different path.
+PROTOTYPE_CELL_RE = re.compile(r'class="prototype-open"[^>]*>\s*<a href="([^"]+)"')
+GROUP_CELL_RE = re.compile(r'class="prototype-group"[^>]*>\s*<a href="([^"]+)"')
+PROTOTYPE_GROUP_HREF = "../"
+NOTE_GROUP_HREF = "./"
+REVIEW_GROUP_HREF = "../../"
 
 # The top page opens a group page with [[file:<group>/][...]].
 GROUP_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9_]*)/")
@@ -141,6 +150,53 @@ def site_build_discovers(root: pathlib.Path) -> bool:
     return DISCOVERY_CALL in _read(site)
 
 
+def check_review_row(problems, label, text, has_review, href):
+    """The review row must open the review, or say none when there is none."""
+    match = REVIEW_CELL_RE.search(text)
+    if match is None:
+        problems.append(
+            f"{label} has no links table: the page must name the prototype and "
+            "its review"
+        )
+        return
+    cell = match.group(1).strip()
+    if has_review and f'href="{href}"' not in cell:
+        problems.append(f"{label} has a review, but its links table does not open it")
+    if not has_review and cell != NO_REVIEW:
+        problems.append(
+            f"{label} has no review, so its links table must say {NO_REVIEW}: an "
+            "unreviewed prototype is found by that row"
+        )
+
+
+def check_prototype_row(problems, label, text, expected):
+    """The prototype row must open the prototype the page presents."""
+    match = PROTOTYPE_CELL_RE.search(text)
+    if match is None:
+        problems.append(
+            f"{label} has no prototype row in its links table: the page must open "
+            "the prototype it presents"
+        )
+    elif match.group(1) != expected:
+        problems.append(
+            f"{label} opens the prototype as {match.group(1)!r}, not {expected!r}"
+        )
+
+
+def check_group_row(problems, label, text, expected):
+    """The group row must open the prototype's group page."""
+    match = GROUP_CELL_RE.search(text)
+    if match is None:
+        problems.append(
+            f"{label} has no group row in its links table: a reader needs the way "
+            "back to the group"
+        )
+    elif match.group(1) != expected:
+        problems.append(
+            f"{label} opens the group as {match.group(1)!r}, not {expected!r}"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=".", help="repository root")
@@ -200,52 +256,34 @@ def main() -> int:
             f"doc/prototypes/{group}/{name}/review/ does not exist"
         )
     # Every page that presents a prototype heads itself with the links table:
-    # the prototype page, and the design note beside it, which is the page the
-    # group page's title opens.
+    # the prototype page, the design note beside it that the group page's title
+    # opens, and every page of its review. Each row is checked against the tree,
+    # so the table cannot promise a review that is not there, or leave the
+    # reader with no way back to the group.
     for group, name in sorted(present):
         has_review = (group, name) in reviewed
-        for label, text, href in (
+        for label, text, hrefs in (
             (f"doc/prototypes/{group}/{name}/index.html",
              _read(root / "doc" / "prototypes" / group / name / "index.html"),
-             REVIEW_HREF),
+             ('index.html', REVIEW_HREF, PROTOTYPE_GROUP_HREF)),
             (f"doc/prototypes/{group}/{name}.org",
              _read(root / "doc" / "prototypes" / group / f"{name}.org"),
-             f'href="{name}/review/index.html"'),
+             (f'{name}/index.html', f'{name}/review/index.html',
+              NOTE_GROUP_HREF)),
         ):
             if label.endswith('.org') and not (root / label).is_file():
                 continue
-            match = REVIEW_CELL_RE.search(text)
-            if match is None:
-                problems.append(
-                    f"{label} has no links table: the page must name the "
-                    "prototype and its review"
-                )
-                continue
-            cell = match.group(1).strip()
-            if has_review and href not in cell:
-                problems.append(
-                    f"{label} has a review, but its links table does not open it"
-                )
-            if not has_review and cell != NO_REVIEW:
-                problems.append(
-                    f"{label} has no review, so its links table must say "
-                    f"{NO_REVIEW}: an unreviewed prototype is found by that row"
-                )
+            check_prototype_row(problems, label, text, hrefs[0])
+            check_review_row(problems, label, text, has_review, hrefs[1])
+            check_group_row(problems, label, text, hrefs[2])
     for group, name in sorted(reviewed):
         for page in sorted((root / "doc" / "prototypes" / group / name
                             / "review").glob("*.html")):
             label = f"doc/prototypes/{group}/{name}/review/{page.name}"
             text = _read(page)
-            if REVIEW_CELL_RE.search(text) is None:
-                problems.append(
-                    f"{label} has no links table: a review page must open its "
-                    "prototype and its review"
-                )
-            elif REVIEW_PROTOTYPE_HREF not in text:
-                problems.append(
-                    f"{label} has a links table that does not open the prototype "
-                    "it reviews"
-                )
+            check_prototype_row(problems, label, text, REVIEW_PROTOTYPE_HREF)
+            check_review_row(problems, label, text, True, REVIEW_SELF_HREF)
+            check_group_row(problems, label, text, REVIEW_GROUP_HREF)
     if not site_build_discovers(root):
         problems.append(
             f"the site build does not call {DISCOVERY_CALL}: the prototypes "

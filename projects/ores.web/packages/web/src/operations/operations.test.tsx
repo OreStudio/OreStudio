@@ -25,6 +25,7 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView, GridWrapperRow } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
@@ -39,6 +40,15 @@ import {
     newestVersionOf,
 } from './OperationsParts.js';
 import { ServicesPage, SERVICES_QUERY_KEY, formatAge, readTime } from './ServicesPage.js';
+import {
+    GridPage,
+    GRID_QUERY_KEY,
+    asGiB,
+    asMiB,
+    asSeconds,
+    formatAge as formatGridAge,
+    sampleTime,
+} from './GridPage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -97,10 +107,12 @@ function withProviders(
     element: ReactNode,
     path = '/',
     roster: readonly ServiceRosterRow[] = [],
+    grid: GridView = gridView(),
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], { roles: [] });
     client.setQueryData(SERVICES_QUERY_KEY, roster);
+    client.setQueryData(GRID_QUERY_KEY, grid);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -114,6 +126,7 @@ function renderRoute(
     path: string,
     session: SessionView,
     roster: readonly ServiceRosterRow[] = [],
+    grid: GridView = gridView(),
 ): string {
     return withProviders(
         <AppRoutes
@@ -131,6 +144,7 @@ function renderRoute(
         />,
         path,
         roster,
+        grid,
     );
 }
 
@@ -166,20 +180,76 @@ function rosterRow(overrides: Partial<ServiceRosterRow> = {}): ServiceRosterRow 
     };
 }
 
+/** One node row as the BFF answers it: the measurements and the hostname. */
+function gridNode(overrides: Partial<GridNodeRow> = {}): GridNodeRow {
+    return {
+        host_id: '9e0f33aa-0000-4000-8000-000000000001',
+        host: 'grid-01.example.com',
+        tasks_completed: 1284,
+        tasks_failed: 0,
+        tasks_since_last: 12,
+        avg_task_duration_ms: 42_000,
+        max_task_duration_ms: 51_000,
+        input_bytes_fetched: 1_288_490_188,
+        output_bytes_uploaded: 230_686_720,
+        seconds_since_hb: 8,
+        ...overrides,
+    };
+}
+
+/** One wrapper row as the BFF answers it: its dated roster slot and its node. */
+function gridWrapper(overrides: Partial<GridWrapperRow> = {}): GridWrapperRow {
+    return {
+        service_name: 'ores.compute.wrapper',
+        display_name: 'Compute wrapper',
+        description: '',
+        service_account: null,
+        slot: 1,
+        state: 'running',
+        instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
+        host_id: '9e0f33aa-0000-4000-8000-000000000001',
+        host: 'grid-01.example.com',
+        version: 'v0.0.25',
+        sampled_at: '2026-10-04 14:31:00Z',
+        age_seconds: 5,
+        ...overrides,
+    };
+}
+
+/** The grid view as the BFF answers it. */
+function gridView(overrides: Partial<GridView> = {}): GridView {
+    return {
+        sampled_at: '2026-10-04 14:31:02Z',
+        total_hosts: 6,
+        online_hosts: 5,
+        idle_hosts: 2,
+        total_workunits: 128,
+        total_batches: 9,
+        active_batches: 3,
+        outcomes_success: 412,
+        outcomes_client_error: 3,
+        outcomes_no_reply: 1,
+        nodes: [gridNode()],
+        wrappers: [gridWrapper()],
+        ...overrides,
+    };
+}
+
 describe('the operations area', () => {
-    it('lists its screens, and links only the two that are built', () => {
+    it('lists its screens, and links only the three that are built', () => {
         const html = withProviders(<OperationsArea />);
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/services"');
+        expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('Running services');
         expect(html).toContain('Compute grid');
         expect(html).toContain('Message bus');
         expect(html).toContain('Telemetry logs');
-        // The three screens the later units add carry no link at all, so a
+        // The two screens the later units add carry no link at all, so a
         // reader is never sent to a route that does not exist.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(3);
-        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
+        for (const route of ['/operations/bus', '/operations/logs']) {
             expect(html).not.toContain(`href="${route}"`);
         }
     });
@@ -264,11 +334,13 @@ describe('the versions screen', () => {
         expect(html).toContain('Read the telemetry logs');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Audit sign-ins');
-        // Two journeys keep their screen for a later unit: they are stated,
-        // marked as unbuilt, and carry no link. The services screen exists now,
-        // so the versions page links to it rather than naming it as unbuilt.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
+        // One journey keeps its screen for a later unit: the telemetry logs are
+        // stated, marked as unbuilt, and carry no link. The services and grid
+        // screens exist now, so the versions page links to them rather than
+        // naming them as unbuilt.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
         expect(html).toContain('href="/operations/services"');
+        expect(html).toContain('href="/operations/grid"');
     });
 });
 
@@ -437,13 +509,15 @@ describe('the services screen', () => {
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Watch the message bus');
         expect(html).toContain('Read the telemetry logs');
-        // Three journeys keep their screen for a later unit: they are stated,
-        // marked as unbuilt, and carry no link.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(3);
-        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
+        // Two journeys keep their screen for a later unit: they are stated,
+        // marked as unbuilt, and carry no link. The grid screen exists now, so
+        // the services page links to it rather than naming it as unbuilt.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
+        for (const route of ['/operations/bus', '/operations/logs']) {
             expect(html).not.toContain(`href="${route}"`);
         }
     });
@@ -511,8 +585,218 @@ describe('the route to the services screen', () => {
     it('offers no link to the screens that are not built', () => {
         const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
 
-        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
+        for (const route of ['/operations/bus', '/operations/logs']) {
             expect(html).not.toContain(`href="${route}"`);
         }
+    });
+});
+
+describe('the compute grid screen', () => {
+    const QUIET_NODE = gridNode({
+        host_id: 'ad55e110-0000-4000-8000-000000000002',
+        host: 'grid-05.example.com',
+        tasks_completed: 101,
+        tasks_since_last: 0,
+        avg_task_duration_ms: 0,
+        max_task_duration_ms: 0,
+        input_bytes_fetched: 41_943_040,
+        output_bytes_uploaded: 2_097_152,
+        seconds_since_hb: 11_520,
+    });
+    const NAMELESS_NODE = gridNode({
+        host_id: 'c30b9d47-0000-4000-8000-000000000003',
+        host: null,
+        tasks_completed: 57,
+        tasks_since_last: 2,
+    });
+
+    it('states the counters with the sample time beside them', () => {
+        const html = withProviders(<GridPage />);
+
+        expect(html).toContain('Operations: compute grid');
+        // The counters mirror one stored sample, so the sample time sits beside
+        // them, labelled UTC.
+        expect(html).toContain('sampled 14:31:02 UTC');
+        expect(html).toContain('>6<');
+        expect(html).toContain('Online 5');
+        expect(html).toContain('Idle 2');
+        expect(html).toContain('128 workunits · 9 batches');
+        expect(html).toContain('Active 3');
+        expect(html).toContain('412 success');
+        expect(html).toContain('3 client error');
+        expect(html).toContain('1 no reply');
+    });
+
+    it('says the counters are one tenant’s rather than every tenant’s work', () => {
+        const html = withProviders(<GridPage />);
+
+        // The summary counters are narrower than the whole-grid node read.
+        expect(html).toContain('These counters are computed for one tenant');
+        expect(html).toContain('The node table below is the whole installation');
+    });
+
+    it('keeps a quiet node’s row, and shows its failures and its slowest task', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView({
+                nodes: [gridNode({ tasks_failed: 4, max_task_duration_ms: 51_000 }), QUIET_NODE],
+            }),
+        );
+
+        expect(html).toContain('2 rows');
+        // The node samples the failures and the slowest task now, so a node
+        // failing every task no longer reads as a node doing nothing.
+        expect(html).toContain('Failed');
+        expect(html).toContain('Slowest');
+        expect(html).toContain('>4<');
+        expect(html).toContain('51 s');
+        expect(html).toContain('42 s');
+        expect(html).toContain('1.20 GiB');
+        expect(html).toContain('220 MiB');
+        // A node that went quiet keeps its row, and its age is the state.
+        expect(html).toContain('grid-05.example.com');
+        expect(html).toContain('3 h 12 m');
+    });
+
+    it('says no host names a node rather than printing the id as a name', () => {
+        const html = withProviders(<GridPage />, '/', [], gridView({ nodes: [NAMELESS_NODE] }));
+
+        expect(html).toContain('c30b9d47-0000-4000-8000-000000000003');
+        expect(html).toContain('no host names it');
+    });
+
+    it('places each wrapper on the node it runs on', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView({
+                wrappers: [
+                    gridWrapper(),
+                    gridWrapper({
+                        slot: 2,
+                        instance_id: '84b36cd1-7c2e-4a09-93b1-2c3d4e5f6a7b',
+                        host_id: null,
+                        host: null,
+                        age_seconds: 900,
+                    }),
+                    gridWrapper({
+                        slot: 3,
+                        instance_id: null,
+                        host_id: null,
+                        host: null,
+                        state: 'missing',
+                        version: null,
+                        sampled_at: null,
+                        age_seconds: null,
+                    }),
+                ],
+            }),
+        );
+
+        expect(html).toContain('2 of 3 reported in the last 5 minutes');
+        expect(html).toContain('1 missing');
+        // The heartbeat carries the host id, so the panel names the node each
+        // wrapper runs on instead of listing them beside the nodes.
+        expect(html).toContain('grid-01.example.com');
+        expect(html).toContain('15 m 0 s ago');
+        // A wrapper whose host id names no host row shows nothing, not a name.
+        expect(html).not.toContain('listed beside the nodes');
+    });
+
+    it('states no sample rather than presenting zero hosts as the fleet', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView({ sampled_at: null, total_hosts: 0 }),
+        );
+
+        expect(html).toContain('No sample yet');
+        // The node table stands alone.
+        expect(html).toContain('grid-01.example.com');
+        expect(html).not.toContain('Online 5');
+    });
+
+    it('states only the gaps the journey still records', () => {
+        const html = withProviders(<GridPage />);
+
+        expect(html).toContain('No history');
+        expect(html).toContain('A node with no host row');
+        expect(html).toContain('counters are one tenant');
+        // Each gap names the journey that records it, as its lead promises.
+        expect(html).toContain('Recorded by Watch the compute grid');
+        // The whole-grid read, the host on the heartbeat, the failure fields
+        // and the permission are all served now, so none of them may be stated
+        // as open.
+        for (const closed of [
+            "The grid is the installation's and the read serves the whole grid",
+            'A wrapper sits on its node',
+            'The failures reach the screen',
+            'The read checks a permission',
+            'The read narrows a shared grid to one tenant',
+            'The failures are stored and then dropped',
+            'A wrapper cannot be placed on its node',
+            'No permission gates the read',
+            'listed beside the nodes rather than on them',
+        ]) {
+            expect(html).not.toContain(closed);
+        }
+    });
+
+    it('reaches the related journeys, and names the ones with no screen yet', () => {
+        const html = withProviders(<GridPage />);
+
+        expect(html).toContain('href="/operations/services"');
+        expect(html).toContain('href="/operations/versions"');
+        expect(html).toContain('Watch the message bus');
+        expect(html).toContain('Read the telemetry logs');
+        // Two journeys keep their screen for a later unit: they are stated,
+        // marked as unbuilt, and carry no link.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
+        for (const route of ['/operations/bus', '/operations/logs']) {
+            expect(html).not.toContain(`href="${route}"`);
+        }
+    });
+
+    it('states a sample time labelled UTC, and units a person reads', () => {
+        expect(sampleTime('2026-10-04 14:31:02Z')).toBe('14:31:02 UTC');
+        expect(sampleTime(null)).toBeUndefined();
+        expect(sampleTime('')).toBeUndefined();
+        expect(sampleTime('not a time')).toBeUndefined();
+        expect(asGiB(1_288_490_188, t)).toBe('1.20 GiB');
+        expect(asMiB(230_686_720, t)).toBe('220 MiB');
+        expect(asSeconds(42_000, t)).toBe('42 s');
+        expect(formatGridAge(8, t)).toBe('8 s');
+        expect(formatGridAge(900, t)).toBe('15 m 0 s');
+        expect(formatGridAge(11_520, t)).toBe('3 h 12 m');
+    });
+
+    it('takes the units from the catalogue rather than from English', () => {
+        const french = createTranslator('fr', enFlat, frFlat).t;
+
+        expect(asGiB(1_288_490_188, french)).toBe('1.20 Gio');
+        expect(asMiB(230_686_720, french)).toBe('220 Mio');
+        expect(formatGridAge(900, french)).toBe('15 min 0 s');
+    });
+});
+
+describe('the route to the compute grid', () => {
+    it('opens it, and renders through the shell', () => {
+        const html = renderRoute('/operations/grid', sessionWith());
+
+        expect(html).toContain('Operations: compute grid');
+        expect(html).toContain('ORE Studio');
+        expect(html).toContain('Your account');
+        expect(html).toContain(`client ${__BUILD_VERSION__}`);
+        expect(html).toContain(`server ${SESSION_VERSION}`);
+    });
+
+    it('is offered to system administration through the operations hub', () => {
+        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+
+        expect(html).toContain('href="/operations/grid"');
     });
 });

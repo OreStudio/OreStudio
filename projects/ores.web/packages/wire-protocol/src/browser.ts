@@ -213,6 +213,12 @@ export type { PasswordPolicy } from './operations.js';
 export { serviceRosterViewSchema } from './operations.js';
 export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
 
+// The compute grid the operations screen reads, as the BFF serves it: the
+// stored counters with their sample time, one row per node with its hostname,
+// and the wrappers placed on the nodes they run on.
+export { gridViewSchema, gridNodeRowSchema, gridWrapperRowSchema } from './operations.js';
+export type { GridNodeRow, GridView, GridWrapperRow } from './operations.js';
+
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.
 export { loginInfoPageSchema, loginInfoSchema } from './domain.js';

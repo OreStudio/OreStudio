@@ -941,6 +941,91 @@ const fr: SourceCatalogue = {
                 },
             },
         },
+        grid: {
+            title: 'Opérations : grille de calcul',
+            description:
+                'Le résumé des hôtes et du travail de l’installation, une ligne par nœud, et les enveloppes de calcul qui se signalent pour ces nœuds.',
+            updated: 'Mis à jour à {at}',
+            refresh: 'Actualiser',
+            units: {
+                gib: '{value} Gio',
+                mib: '{value} Mio',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            summary: {
+                title: 'Résumé de la grille',
+                sampled: 'échantillonné à {at}',
+                hosts: 'Hôtes',
+                online: 'En ligne {count}',
+                idle: 'Inactifs {count}',
+                work: 'Travail',
+                workunits: '{workunits} unités de travail · {batches} lots',
+                active: 'Actifs {count}',
+                outcomes: 'Résultats',
+                success: '{count} succès',
+                clientError: '{count} erreur client',
+                noReply: '{count} sans réponse',
+                oneTenant:
+                    'Ces compteurs sont calculés pour un seul locataire, pas pour l’installation : chaque comptage — hôtes, résultats, unités de travail et lots — est filtré par le locataire sous lequel le collecteur a tourné. Le tableau des nœuds ci-dessous est celui de toute l’installation.',
+                noSample:
+                    'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
+            },
+            nodes: {
+                title: 'Nœuds',
+                rows: '{count} lignes',
+                columns: {
+                    node: 'Nœud',
+                    tasksCompleted: 'Tâches terminées',
+                    tasksFailed: 'Échecs',
+                    tasksSinceLast: 'Depuis le dernier',
+                    meanTime: 'Temps moyen',
+                    slowest: 'Le plus lent',
+                    fetched: 'Téléchargé',
+                    uploaded: 'Téléversé',
+                    sinceHeartbeat: 'Depuis le battement',
+                },
+                noHost: 'aucun hôte ne le nomme',
+                hint: 'Lecture seule. Le tableau des nœuds est celui de toute l’installation, et un nœud garde sa ligne tant qu’il est silencieux. La dernière colonne est l’âge du plus récent échantillon du nœud ; un nœud dont la dernière colonne grandit est celui qu’il faut regarder.',
+                open: 'Ouvrir le nœud',
+                openHint:
+                    'En attente des parcours de calcul, qui possèdent les écrans des hôtes et des unités de travail.',
+            },
+            wrappers: {
+                title: 'Enveloppes de calcul',
+                reported:
+                    '{running} sur {total} se sont signalées au cours des {minutes} dernières minutes',
+                lost: '{count} perdues',
+                missing: '{count} manquantes',
+                columns: {
+                    instance: 'Instance',
+                    node: 'Nœud',
+                    status: 'État',
+                    version: 'Version',
+                    lastHeartbeat: 'Dernier battement',
+                },
+                ago: 'il y a {age}',
+                hint: 'Une enveloppe tourne sur chaque nœud et prend le travail que ce nœud exécute. Le battement porte l’identifiant d’hôte, donc chaque ligne nomme le nœud sur lequel elle tourne. Les lignes sont la lecture du registre filtrée sur le service d’enveloppe de calcul.',
+            },
+            gap: {
+                history: {
+                    title: 'Aucun historique',
+                    body: 'La lecture ne répond qu’avec l’échantillon stocké le plus récent, donc l’écran ne peut pas montrer de tendance, et la progression d’un lot dans le temps n’est pas visible. Le collecteur continue d’écrire des échantillons qu’aucune lecture ne renvoie. Le candidat est une lecture des échantillons de grille sur une plage de temps.',
+                },
+                noHost: {
+                    title: 'Un nœud sans ligne d’hôte',
+                    body: 'La jointure règle le cas courant, et un nœud que le registre des hôtes ne connaît pas montre un identifiant nu. L’écran doit dire qu’aucun hôte ne nomme le nœud, plutôt que d’afficher l’identifiant comme s’il était un nom.',
+                },
+                oneTenant: {
+                    title: 'Les compteurs du résumé sont ceux d’un seul locataire',
+                    body: 'Le tableau des nœuds est celui de l’installation, mais les compteurs au-dessus ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque comptage — hôtes, résultats, unités de travail et lots — par le locataire qui lui est transmis, et le collecteur lui transmet son propre locataire de session. La lecture qui en ferait l’usage propre de l’installation est le grand livre que construit « Rendre compte de l’usage de la grille », et il n’est pas construit. Tant qu’il ne l’est pas, l’écran énonce que les compteurs sont calculés pour un seul locataire plutôt que de les présenter comme le travail de tous les locataires.',
+                },
+            },
+        },
         versions: {
             title: 'Opérations : versions et base de données',
             description:

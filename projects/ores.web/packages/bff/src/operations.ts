@@ -22,12 +22,23 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import {
     fromWireTimestamp,
+    gridStatsRequestSchema,
+    gridViewSchema,
     isWireTimestamp,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
 } from '@ores/wire-protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
+
+/**
+ * The one service whose instances run on the grid's nodes.
+ *
+ * Named here rather than shared with the services screen: that screen leaves
+ * the wrappers out and this one keeps only them, so each states its own reach
+ * into the roster rather than one screen's constant deciding both.
+ */
+const COMPUTE_WRAPPER = 'ores.compute.wrapper';
 
 /**
  * The operations routes: what the installation is doing, as the screens read
@@ -89,6 +100,56 @@ export function registerOperationsRoutes(
                 ...slot,
                 age_seconds: secondsSinceReport(slot.sampled_at, now),
             })),
+        });
+    });
+
+    /**
+     * The compute grid: the stored summary, the nodes, and their wrappers.
+     *
+     * The grid belongs to the installation, and the node read serves all of it;
+     * the stored counters are narrower, computed by the poller for one tenant,
+     * so the view carries them as they are and the screen says whose they are.
+     * The names a person reads arrive from the host registry, joined on the
+     * host id the node sample and the wrapper heartbeat both carry, so a
+     * wrapper is placed on the node it runs on.
+     */
+    server.get('/api/operations/grid', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('The grid of a deployment is read in system administration.');
+        }
+        if (!gridStatsRequestSchema.safeParse(request.query ?? {}).success) {
+            throw invalidRequest('The grid read takes no query fields.');
+        }
+        const stats = await session.client.gridStats();
+        const hosts = await session.client.listHosts();
+        const slots = await session.client.serviceRoster();
+        const now = Date.now();
+        const hostNames = new Map(hosts.map((host) => [host.id, host.external_id]));
+        const nameOf = (hostId: string | null): string | null =>
+            hostId === null ? null : (hostNames.get(hostId) ?? null);
+        return gridViewSchema.parse({
+            sampled_at: stats.sampled_at === '' ? null : stats.sampled_at,
+            total_hosts: stats.total_hosts,
+            online_hosts: stats.online_hosts,
+            idle_hosts: stats.idle_hosts,
+            total_workunits: stats.total_workunits,
+            total_batches: stats.total_batches,
+            active_batches: stats.active_batches,
+            outcomes_success: stats.outcomes_success,
+            outcomes_client_error: stats.outcomes_client_error,
+            outcomes_no_reply: stats.outcomes_no_reply,
+            nodes: stats.node_summaries.map((node) => ({
+                ...node,
+                host: nameOf(node.host_id),
+            })),
+            wrappers: slots
+                .filter((slot) => slot.service_name === COMPUTE_WRAPPER)
+                .map((slot) => ({
+                    ...slot,
+                    age_seconds: secondsSinceReport(slot.sampled_at, now),
+                    host: nameOf(slot.host_id),
+                })),
         });
     });
 }

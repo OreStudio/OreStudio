@@ -46,6 +46,7 @@ export function OperationsArea(): ReactNode {
         {
             title: t('operations.screens.grid'),
             body: t('operations.screens.gridBody'),
+            to: '/operations/grid',
         },
         {
             title: t('operations.screens.bus'),

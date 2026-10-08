@@ -319,6 +319,139 @@ describe('OresClient authenticated calls', () => {
         await expect(client.serviceRoster()).rejects.toBeInstanceOf(OperationFailedError);
     });
 
+    it('reads the grid summary and the node rows, and sends the empty request it declares', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_stats': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        total_hosts: 2,
+                        online_hosts: 1,
+                        idle_hosts: 0,
+                        total_workunits: 3,
+                        total_batches: 1,
+                        active_batches: 1,
+                        outcomes_success: 4,
+                        outcomes_client_error: 1,
+                        outcomes_no_reply: 0,
+                        sampled_at: '2026-10-04 14:31:02Z',
+                        node_summaries: [
+                            {
+                                host_id: '9e0f33aa-0000-4000-8000-000000000001',
+                                tasks_completed: 1284,
+                                tasks_failed: 2,
+                                tasks_since_last: 12,
+                                avg_task_duration_ms: 42_000,
+                                max_task_duration_ms: 51_000,
+                                input_bytes_fetched: 1_288_490_188,
+                                output_bytes_uploaded: 230_686_720,
+                                seconds_since_hb: 8,
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const stats = await client.gridStats();
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.ops.get_grid_stats');
+        expect(transport.decodeCall(1)).toEqual({});
+        // A counter the reply left out states zero rather than a made-up count.
+        expect(stats.results_done).toBe(0);
+        expect(stats.sampled_at).toBe('2026-10-04 14:31:02Z');
+        // The failures and the slowest task travel on the node summary now.
+        expect(stats.node_summaries[0]?.tasks_failed).toBe(2);
+        expect(stats.node_summaries[0]?.max_task_duration_ms).toBe(51_000);
+    });
+
+    it('refuses a grid read the server did not produce, rather than reading it as idle', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_stats': [{ body: { success: false, message: 'denied' } }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.gridStats()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    it('reads the host registry page, and names the nodes by their external id', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.hosts.list': [
+                {
+                    body: {
+                        result: { outcome: 'ok', code: '', message: '', fields: [] },
+                        hosts: [
+                            {
+                                version: 1,
+                                tenant_id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+                                id: '9e0f33aa-0000-4000-8000-000000000001',
+                                external_id: 'grid-01.example.com',
+                                display_name: 'Grid 01',
+                                location: 'ldn',
+                                cpu_count: 8,
+                                ram_mb: 32768,
+                                gpu_type: '',
+                                last_rpc_time: '2026-10-04 14:31:02Z',
+                                credit_total: 100,
+                                modified_by: 'probe',
+                                performed_by: 'probe',
+                                change_reason_code: 'new',
+                                change_commentary: '',
+                                recorded_at: '2026-10-04 14:31:02Z',
+                            },
+                        ],
+                        total: 1,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const hosts = await client.listHosts();
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.hosts.list');
+        expect(transport.decodeCall(1)).toEqual({
+            offset: 0,
+            limit: 1000,
+            order: { field: '', descending: false },
+            filter: null,
+            as_of: null,
+        });
+        expect(hosts.map((host) => host.external_id)).toEqual(['grid-01.example.com']);
+    });
+
+    it('refuses a host page that did not end ok, rather than reading it as no hosts', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.hosts.list': [
+                {
+                    body: {
+                        result: {
+                            outcome: 'denied',
+                            code: 'forbidden',
+                            message: 'denied',
+                            fields: [],
+                        },
+                        hosts: [],
+                        total: 0,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.listHosts()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
     it('refreshes once and retries when the server reports an expired token', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],

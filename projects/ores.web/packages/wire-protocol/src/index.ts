@@ -331,6 +331,19 @@ export {
 } from './operations.js';
 export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
 
+// The compute grid the operations screen reads: the empty request, the wire
+// reply with the stored counters, the host page the node names are joined from,
+// and the view the BFF serves the browser.
+export {
+    gridStatsReplySchema,
+    gridStatsRequestSchema,
+    gridViewSchema,
+    listHostsReplySchema,
+    listHostsRequestSchema,
+    nodeSummarySchema,
+} from './operations.js';
+export type { GridStatsReply, GridView } from './operations.js';
+
 // The door: what the deployment offers somebody who is not in it yet, and the
 // registration that acts on that answer.
 export {

@@ -932,6 +932,90 @@ export const en: SourceCatalogue = {
                 },
             },
         },
+        grid: {
+            title: 'Operations: compute grid',
+            description:
+                "The installation's host and work summary, one row per node, and the compute wrappers that report for those nodes.",
+            updated: 'Updated {at}',
+            refresh: 'Refresh',
+            units: {
+                gib: '{value} GiB',
+                mib: '{value} MiB',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} m {seconds} s',
+                hoursMinutes: '{hours} h {minutes} m',
+            },
+            summary: {
+                title: 'Grid summary',
+                sampled: 'sampled {at}',
+                hosts: 'Hosts',
+                online: 'Online {count}',
+                idle: 'Idle {count}',
+                work: 'Work',
+                workunits: '{workunits} workunits · {batches} batches',
+                active: 'Active {count}',
+                outcomes: 'Outcomes',
+                success: '{count} success',
+                clientError: '{count} client error',
+                noReply: '{count} no reply',
+                oneTenant:
+                    'These counters are computed for one tenant, not for the installation: every count — hosts, results, workunits and batches — is filtered by the tenant the poller ran as. The node table below is the whole installation’s.',
+                noSample:
+                    'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
+            },
+            nodes: {
+                title: 'Nodes',
+                rows: '{count} rows',
+                columns: {
+                    node: 'Node',
+                    tasksCompleted: 'Tasks done',
+                    tasksFailed: 'Failed',
+                    tasksSinceLast: 'Since last',
+                    meanTime: 'Mean time',
+                    slowest: 'Slowest',
+                    fetched: 'Fetched',
+                    uploaded: 'Uploaded',
+                    sinceHeartbeat: 'Since heartbeat',
+                },
+                noHost: 'no host names it',
+                hint: "Read-only. The node table is the whole installation's, and a node keeps its row while it is quiet. The last column is the age of the node's newest sample; a node whose last column grows is the one to look at.",
+                open: 'Open the node',
+                openHint:
+                    'Waits for the compute journeys, which own the host and workunit screens.',
+            },
+            wrappers: {
+                title: 'Compute wrappers',
+                reported: '{running} of {total} reported in the last {minutes} minutes',
+                lost: '{count} lost',
+                missing: '{count} missing',
+                columns: {
+                    instance: 'Instance',
+                    node: 'Node',
+                    status: 'Status',
+                    version: 'Version',
+                    lastHeartbeat: 'Last heartbeat',
+                },
+                ago: '{age} ago',
+                hint: 'One wrapper runs on each node and takes the work that node runs. The heartbeat carries the host id, so each row names the node it runs on. The rows are the roster read filtered to the compute wrapper service.',
+            },
+            gap: {
+                history: {
+                    title: 'No history',
+                    body: "The read answers with the newest stored sample only, so the screen cannot show a trend, and a batch's progress over time is not visible. The poller keeps writing samples that no read returns. The candidate is a read over grid samples in a time range.",
+                },
+                noHost: {
+                    title: 'A node with no host row',
+                    body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',
+                },
+                oneTenant: {
+                    title: "The summary's counters are one tenant's",
+                    body: "The node table is the installation's, but the counters above it are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count — hosts, results, workunits and batches — by the tenant it is handed, and the poller hands it its own session tenant. The read that would make them the installation's own usage is the ledger Account for the grid's usage builds, and it is not built. Until it is, the screen states that the counters are computed for one tenant rather than presenting them as every tenant's work.",
+                },
+            },
+        },
         versions: {
             title: 'Operations: versions and the database',
             description:

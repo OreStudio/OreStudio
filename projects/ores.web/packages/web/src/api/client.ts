@@ -75,6 +75,7 @@ import {
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
+    gridViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -95,6 +96,7 @@ import {
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
     type ServiceRosterRow,
+    type GridView,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -1069,6 +1071,17 @@ export const api = {
             await request('/api/operations/services', { method: 'GET' }),
         );
         return payload.rows;
+    },
+
+    /**
+     * The compute grid: the stored counters, the nodes and their wrappers.
+     *
+     * The BFF joins the host registry onto the node rows and the wrappers, so
+     * a name is the deployment's answer rather than a join this browser makes
+     * from a page it would have had to read itself.
+     */
+    async grid(): Promise<GridView> {
+        return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
     },
 
     /**

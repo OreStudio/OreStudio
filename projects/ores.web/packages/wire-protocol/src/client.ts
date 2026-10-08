@@ -21,6 +21,7 @@
 
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
 import type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
+import type { Host } from './generated/compute/domain/host.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -82,6 +83,10 @@ import {
     toPasswordPolicy,
     serviceRosterReplySchema,
     serviceRosterRequestSchema,
+    gridStatsReplySchema,
+    gridStatsRequestSchema,
+    listHostsReplySchema,
+    listHostsRequestSchema,
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
@@ -104,6 +109,7 @@ import {
     type SeedProfileChoice,
     type WireAccountPage,
     type WorkflowProgress,
+    type GridStatsReply,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
 import type { Transport } from './transport.js';
@@ -919,6 +925,48 @@ export class OresClient {
             throw new OperationFailedError(SUBJECTS.serviceRoster, reply.message);
         }
         return reply.slots;
+    }
+
+    /**
+     * The newest stored grid sample, and the most recent sample of every node.
+     *
+     * The read takes no fields, because the caller's session decides what the
+     * summary covers, and it carries the counters as they were stored rather
+     * than computing a live count. A refusal the read states in its body is an
+     * error rather than a zeroed summary: zeros would read as an idle grid.
+     */
+    async gridStats(): Promise<GridStatsReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.gridStats,
+            gridStatsRequestSchema.parse({}),
+            gridStatsReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.gridStats, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * The host registry, one page of every host.
+     *
+     * The grid joins this page onto its node rows to name them: a node sample
+     * carries a host id and no hostname, so the name a person reads arrives
+     * from here. A page result that did not end ok is an error rather than an
+     * empty page, because an empty page would name no node at all.
+     */
+    async listHosts(): Promise<readonly Host[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.listHosts,
+            listHostsRequestSchema.parse({}),
+            listHostsReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(SUBJECTS.listHosts, reply.result.message);
+        }
+        return reply.hosts;
     }
 
     /**

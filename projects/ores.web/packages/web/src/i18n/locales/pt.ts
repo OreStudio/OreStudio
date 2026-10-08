@@ -935,6 +935,90 @@ const pt: SourceCatalogue = {
                 },
             },
         },
+        grid: {
+            title: 'Operações: grelha de cálculo',
+            description:
+                'O resumo dos anfitriões e do trabalho da instalação, uma linha por nó, e os invólucros de cálculo que se anunciam para esses nós.',
+            updated: 'Atualizado às {at}',
+            refresh: 'Atualizar',
+            units: {
+                gib: '{value} GiB',
+                mib: '{value} MiB',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            summary: {
+                title: 'Resumo da grelha',
+                sampled: 'amostrado às {at}',
+                hosts: 'Anfitriões',
+                online: 'Em linha {count}',
+                idle: 'Inativos {count}',
+                work: 'Trabalho',
+                workunits: '{workunits} unidades de trabalho · {batches} lotes',
+                active: 'Ativos {count}',
+                outcomes: 'Resultados',
+                success: '{count} sucesso',
+                clientError: '{count} erro do cliente',
+                noReply: '{count} sem resposta',
+                oneTenant:
+                    'Estes contadores são calculados para um único locatário, não para a instalação: cada contagem — anfitriões, resultados, unidades de trabalho e lotes — é filtrada pelo locatário sob o qual o coletor correu. A tabela de nós abaixo é a de toda a instalação.',
+                noSample:
+                    'Ainda sem amostra. A instalação não guarda qualquer resumo da grelha, por isso os contadores não podem ser desenhados; a tabela de nós abaixo fica sozinha.',
+            },
+            nodes: {
+                title: 'Nós',
+                rows: '{count} linhas',
+                columns: {
+                    node: 'Nó',
+                    tasksCompleted: 'Tarefas concluídas',
+                    tasksFailed: 'Falhas',
+                    tasksSinceLast: 'Desde a última',
+                    meanTime: 'Tempo médio',
+                    slowest: 'A mais lenta',
+                    fetched: 'Transferido',
+                    uploaded: 'Carregado',
+                    sinceHeartbeat: 'Desde o batimento',
+                },
+                noHost: 'nenhum anfitrião o nomeia',
+                hint: 'Apenas de leitura. A tabela de nós é a de toda a instalação, e um nó mantém a sua linha enquanto está silencioso. A última coluna é a idade da amostra mais recente do nó; um nó cuja última coluna cresce é o que deve ser observado.',
+                open: 'Abrir o nó',
+                openHint:
+                    'Aguarda os percursos de cálculo, que possuem os ecrãs dos anfitriões e das unidades de trabalho.',
+            },
+            wrappers: {
+                title: 'Invólucros de cálculo',
+                reported: '{running} de {total} anunciaram-se nos últimos {minutes} minutos',
+                lost: '{count} perdidos',
+                missing: '{count} em falta',
+                columns: {
+                    instance: 'Instância',
+                    node: 'Nó',
+                    status: 'Estado',
+                    version: 'Versão',
+                    lastHeartbeat: 'Último batimento',
+                },
+                ago: 'há {age}',
+                hint: 'Um invólucro corre em cada nó e recebe o trabalho que esse nó executa. O batimento transporta o identificador do anfitrião, por isso cada linha nomeia o nó em que corre. As linhas são a leitura do registo filtrada pelo serviço de invólucro de cálculo.',
+            },
+            gap: {
+                history: {
+                    title: 'Sem histórico',
+                    body: 'A leitura responde apenas com a amostra guardada mais recente, por isso o ecrã não pode mostrar uma tendência, e o progresso de um lote ao longo do tempo não é visível. O coletor continua a escrever amostras que nenhuma leitura devolve. O candidato é uma leitura das amostras da grelha num intervalo de tempo.',
+                },
+                noHost: {
+                    title: 'Um nó sem linha de anfitrião',
+                    body: 'A junção resolve o caso comum, e um nó que o registo de anfitriões não conhece mostra um identificador despido. O ecrã deve dizer que nenhum anfitrião nomeia o nó, em vez de imprimir o identificador como se fosse um nome.',
+                },
+                oneTenant: {
+                    title: 'Os contadores do resumo são de um único locatário',
+                    body: 'A tabela de nós é a da instalação, mas os contadores acima não o são. São calculados por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem — anfitriões, resultados, unidades de trabalho e lotes — pelo locatário que lhe é entregue, e o coletor entrega-lhe o seu próprio locatário de sessão. A leitura que os tornaria o uso próprio da instalação é o registo que «Contabilizar o uso da grelha» constrói, e não está construído. Até estar, o ecrã indica que os contadores são calculados para um único locatário em vez de os apresentar como o trabalho de todos os locatários.',
+                },
+            },
+        },
         versions: {
             title: 'Operações: versões e base de dados',
             description:

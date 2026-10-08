@@ -79,7 +79,7 @@ market_series_identity_mapper::map(const market_series_identity_entity& v) {
     r.index_name = v.index_name.value_or("");
     r.index_tenor = v.index_tenor.value_or("");
     r.index_term = v.index_term.value_or("");
-    r.offset = v.offset.value_or("");
+    r.offset_value = v.offset_value.value_or("");
     r.option_type = v.option_type.value_or("");
     r.payer_receiver = v.payer_receiver.value_or("");
     r.qualifier = v.qualifier.value_or("");
@@ -141,7 +141,7 @@ market_series_identity_mapper::map(const domain::market_series_identity& v) {
     r.index_name = v.index_name.empty() ? std::nullopt : std::optional(v.index_name);
     r.index_tenor = v.index_tenor.empty() ? std::nullopt : std::optional(v.index_tenor);
     r.index_term = v.index_term.empty() ? std::nullopt : std::optional(v.index_term);
-    r.offset = v.offset.empty() ? std::nullopt : std::optional(v.offset);
+    r.offset_value = v.offset_value.empty() ? std::nullopt : std::optional(v.offset_value);
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.payer_receiver = v.payer_receiver.empty() ? std::nullopt : std::optional(v.payer_receiver);
     r.qualifier = v.qualifier.empty() ? std::nullopt : std::optional(v.qualifier);

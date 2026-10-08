@@ -262,8 +262,14 @@ struct market_series_identity final {
     /**
      * @brief The offset field of the identity, as the URI spells it, or empty when the type's
      * schema row does not declare it.
+     *
+     * The column is named offset_value rather than offset because offset is a reserved word in
+     * PostgreSQL and the data layer names its columns without quoting them, so a column of that
+     * name is refused by the store on every write. The asset-class views select it as offset, so
+     * the name a reader sees is the field's own. build/scripts/check_marketdata_identity_columns.py
+     * carries the one renaming and fails if it is removed.
      */
-    std::string offset;
+    std::string offset_value;
 
     /**
      * @brief The option_type field of the identity, as the URI spells it, or empty when the type's

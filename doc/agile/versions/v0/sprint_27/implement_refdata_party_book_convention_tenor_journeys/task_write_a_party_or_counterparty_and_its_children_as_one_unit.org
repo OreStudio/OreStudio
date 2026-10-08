@@ -139,8 +139,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 Both composite writes exist and the two subjects are reachable.
 
 =counterparty= declares =put_counterparty_composite_request= carrying the

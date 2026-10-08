@@ -8,7 +8,7 @@
 #+filetags: :implement-operations-journeys:sprint_26:v0:
 #+owner: marco
 #+branch: feature/build-the-operations-screens-in-ores-web
-#+pr: 2825
+#+pr: 2829
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-04
@@ -104,6 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2829][#2829]] | [web] Build the telemetry logs screen |
 | [[https://github.com/OreStudio/OreStudio/pull/2825][#2825]] | [web] Build the message bus screen |
 | [[https://github.com/OreStudio/OreStudio/pull/2811][#2811]] | [web,compute,variability] Build the operations screens |
 

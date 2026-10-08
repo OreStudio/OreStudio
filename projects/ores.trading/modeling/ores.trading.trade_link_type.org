@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 8C8D3355-1797-4D8E-A47D-07D4402B2794
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.trade_link_type
+#+description: Codegen entity model for the trading =trade_link_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The reason two trades are linked (e.g. Novation, Roll, Exercise).
+#+entity_singular: trade_link_type
+#+entity_plural: trade_link_types
+#+entity_title: Trade Link Type
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Reference data table defining the reasons two trades are joined. Each
+type names the role of each end and says whether the link carries an
+economic effect, which is what tells a trade event from an annotation.
+
+Examples: 'Novation', 'Roll', 'Exercise', 'Hedge'.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The link type code.
+
+Examples: 'Novation', 'Roll', 'Exercise'.
+
+#+begin_src cpp :name generator
+std::string("Hedge")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the link type means and when it is recorded.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** from_role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The role the from end of the link plays, in the type's own words: the
+original trade a close-out ends, the transferred position a novation
+moves, the rolled trade a roll replaces.
+
+#+begin_src cpp :name generator
+std::string("original")
+#+end_src
+
+** to_role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The role the to end of the link plays: the closing trade, the new
+counterparty's trade, the replacement a roll books.
+
+#+begin_src cpp :name generator
+std::string("closing")
+#+end_src
+
+** has_economic_effect
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the link carries an economic effect, which makes it a trade
+event that is confirmed and settled. False when it is an annotation
+that changes no term.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_link_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_trade_link_type_fn;
+#+end_src
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: link_type
+:entity_plural_short:   link_types
+:entity_singular_words: trade link type
+:entity_plural_words:   trade link types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tlt
+:END:
+
+** Table display
+
+| column              | header              |
+|---------------------+---------------------|
+| code                | Code                |
+| description         | Description         |
+| from_role           | From role           |
+| to_role             | To role             |
+| has_economic_effect | Economic effect     |
+| modified_by         | Modified By         |
+| version             | Version             |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.trading.api/domain/trade_link_type.hpp
+:domain_class:           trading::domain::trade_link_type
+:protocol_include:       ores.trading.api/messaging/trade_link_type_protocol.hpp
+:collection_name:        trade_link_types
+:key_field:              code
+:END:
+
+*** Detail fields
+
+| field               | label           | widget          | type      | is_key | is_required | placeholder                   |
+|---------------------+-----------------+-----------------+-----------+--------+-------------+-------------------------------|
+| code                | Code            | codeEdit        | line_edit | true   | true        | Enter trade link type code    |
+| description         | Description     | descriptionEdit | text_edit |        |             | Enter a description           |
+| from_role           | From role       | fromRoleEdit    | line_edit |        |             | Enter the from end's role     |
+| to_role             | To role         | toRoleEdit      | line_edit |        |             | Enter the to end's role       |
+| has_economic_effect | Economic effect | hasEconomicEffectEdit | checkbox |   |             |                               |
+
+*** Columns
+
+| enum_name          | field               | header          | type    | width |
+|--------------------+---------------------+-----------------+---------+-------|
+| Code               | code                | Code            | string  | 120   |
+| Description        | description         | Description     | string  | 300   |
+| FromRole           | from_role           | From role       | string  | 140   |
+| ToRole             | to_role             | To role         | string  | 140   |
+| HasEconomicEffect  | has_economic_effect | Economic effect | boolean | 110   |
+| Version            | version             | Version         | int     | 80    |
+| ModifiedBy         | modified_by         | Modified By     | string  | 120   |
+| RecordedAt         | recorded_at         | Recorded At     | timestamp | 150 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

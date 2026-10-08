@@ -53,6 +53,10 @@
 \ir ./trading_trade_id_types_create.sql
 \ir ./trading_trade_id_types_notify_trigger_create.sql
 
+-- The link type catalogue: the relation vocabularies a trade link names.
+\ir ./trading_trade_link_types_create.sql
+\ir ./trading_trade_link_types_notify_trigger_create.sql
+
 -- Closed-set reference data. Each set is the ORE simple type of the same
 -- name, so the spellings round-trip through the ORE XML unchanged. The
 -- instrument tables reference them, so they load before the instruments.
@@ -317,6 +321,11 @@
 \ir ./trading_trade_additional_fields_notify_trigger_create.sql
 \ir ./trading_trade_portfolios_create.sql
 \ir ./trading_trade_portfolios_notify_trigger_create.sql
+
+-- Trade links (depend on the trade at both ends and on the link type
+-- catalogue above)
+\ir ./trading_trade_links_create.sql
+\ir ./trading_trade_links_notify_trigger_create.sql
 
 -- Trade query functions (depend on trades table + refdata tables)
 \ir ./trading_trades_functions_create.sql

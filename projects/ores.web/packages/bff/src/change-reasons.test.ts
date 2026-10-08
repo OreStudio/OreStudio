@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { uuid, type OresClient, type SessionMode } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { buildServer } from './server.js';
+import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
 
@@ -45,6 +45,10 @@ const config: Config = {
     loginAttemptsPerMinute: 100,
 };
 
+/** The environment this file's site configuration serves. */
+const ENVIRONMENT_ID = 'eager_maxwell';
+const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
+
 function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     const path = resolve(
         dirname(fileURLToPath(import.meta.url)),
@@ -52,7 +56,7 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
     );
     return loadSiteConfiguration({
         environment: { [SITE_CONFIG_VARIABLE]: path },
-        environmentId: 'eager_maxwell',
+        environmentId: ENVIRONMENT_ID,
     });
 }
 
@@ -118,7 +122,7 @@ function buildTestServer() {
         sessions,
         createClient: () => ({ client, connect: async () => undefined }),
     });
-    return { server, cookies: { ores_web_session: session.id }, calls };
+    return { server, cookies: { [SESSION_COOKIE]: session.id }, calls };
 }
 
 describe('GET /api/change-reasons', () => {

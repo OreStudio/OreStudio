@@ -181,7 +181,22 @@ const imagePageQuerySchema = z.object({
     search: z.string().trim().max(256).default(''),
 });
 
-const SESSION_COOKIE = 'ores_web_session';
+/**
+ * The session cookie name for one environment.
+ *
+ * A cookie's identity is its name, domain and path, and the port is not part of
+ * it. Environments are served from the same host on different ports, so a fixed
+ * name lets one environment overwrite another's session. Naming the cookie after
+ * the environment keeps the sessions apart, because each environment then reads
+ * only the cookie it wrote.
+ *
+ * The environment id is reduced to the RFC 6265 token characters, so the name is
+ * always a valid cookie name whatever the id contains.
+ */
+export function sessionCookieName(environmentId: string): string {
+    const token = environmentId.replace(/[^A-Za-z0-9_-]/g, '_');
+    return `ores_web_session_${token}`;
+}
 
 /**
  * Policy reads allowed per client per minute.
@@ -222,6 +237,7 @@ export interface ServerDependencies {
 
 export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     const { config, site } = dependencies;
+    const sessionCookie = sessionCookieName(site.environment.id);
     const sessions =
         dependencies.sessions ?? createSessionStore({ ttlSeconds: config.session.ttlSeconds });
     const loginLimiter =
@@ -270,11 +286,11 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     });
 
     function readSessionId(request: FastifyRequest): string | undefined {
-        return request.cookies[SESSION_COOKIE];
+        return request.cookies[sessionCookie];
     }
 
     function setSessionCookie(reply: FastifyReply, id: string): void {
-        reply.setCookie(SESSION_COOKIE, id, {
+        reply.setCookie(sessionCookie, id, {
             path: '/',
             httpOnly: true,
             sameSite: 'lax',
@@ -284,7 +300,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     }
 
     function clearSessionCookie(reply: FastifyReply): void {
-        reply.clearCookie(SESSION_COOKIE, { path: '/' });
+        reply.clearCookie(sessionCookie, { path: '/' });
     }
 
     function requireSession(request: FastifyRequest): LiveSession {
@@ -2406,5 +2422,3 @@ function isApiPath(url: string): boolean {
     const path = url.split('?')[0] ?? '';
     return path === '/api' || path.startsWith('/api/');
 }
-
-export { SESSION_COOKIE };

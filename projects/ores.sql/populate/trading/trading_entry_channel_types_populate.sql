@@ -24,18 +24,23 @@
  * Seeds the closed set of entry channels: how a trade reached the firm's
  * books. The codes match the C++ enum domain::entry_channel.
  *
- * The table is immutable, so a row is written once and a re-run inserts
- * nothing. This script is idempotent.
+ * The table is temporal, so a re-run supersedes each live row with a new
+ * version and leaves the live set unchanged. This script is idempotent.
  */
 
 \echo '--- Entry Channel Types ---'
 
-insert into ores_trading_entry_channel_types_tbl (code, description) values
-    ('manual',     'A user captured the trade'),
-    ('stp',        'Straight-through processing from an upstream system'),
-    ('ecn',        'An electronic communication network'),
-    ('allocation', 'An allocation split from a block trade')
-on conflict (code) do nothing;
+insert into ores_trading_entry_channel_types_tbl (
+    code, version, description, modified_by, change_reason_code, change_commentary
+) values
+    ('manual',     0, 'A user captured the trade',                           current_user, 'system.initial_load', 'Seed entry_channel_type'),
+    ('stp',        0, 'Straight-through processing from an upstream system', current_user, 'system.initial_load', 'Seed entry_channel_type'),
+    ('ecn',        0, 'An electronic communication network',                  current_user, 'system.initial_load', 'Seed entry_channel_type'),
+    ('allocation', 0, 'An allocation split from a block trade',              current_user, 'system.initial_load', 'Seed entry_channel_type')
+on conflict (code, version)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
 
 select 'Entry Channel Types' as entity, count(*) as count
-from ores_trading_entry_channel_types_tbl;
+from ores_trading_entry_channel_types_tbl
+where valid_to = ores_utility_infinity_timestamp_fn();

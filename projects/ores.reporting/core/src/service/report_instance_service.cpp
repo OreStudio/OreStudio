@@ -108,6 +108,7 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     v.fsm_state_id = write.fsm_state_id;
     v.trigger_run_id = write.trigger_run_id;
     v.output_message = write.output_message;
+    v.output_storage_key = write.output_storage_key;
     v.started_at = write.started_at;
     v.completed_at = write.completed_at;
     return v;

@@ -95,6 +95,20 @@ private:
                                                                      bool renew,
                                                                      std::string& error);
 
+    /**
+     * @brief The run's token, for a call to storage rather than to an owner.
+     *
+     * An owner is reached over the bus, where the token rides as a delegation
+     * and @ref run_token_client builds the client. Storage is reached over
+     * HTTP, which takes the token as a bearer, so the bearer is what this
+     * answers.
+     *
+     * @return The token, or empty when the instance holds no grant or the
+     * exchange refuses; @p error then says why.
+     */
+    std::string
+    run_token(const std::string& tenant_id, const std::string& run_id, std::string& error);
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::nats::service::nats_client svc_nats_;

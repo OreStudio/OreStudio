@@ -46,6 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.scheduler.api.lib
         ores.service.lib
     PRIVATE
+        ores.compute.api.lib
         ores.diff.lib
         ores.dq.api.lib
         ores.history.core.lib

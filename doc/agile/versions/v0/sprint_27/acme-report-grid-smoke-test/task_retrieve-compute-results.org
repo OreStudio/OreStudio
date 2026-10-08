@@ -5,15 +5,15 @@
 #+description: Task for: Run an example bundle through the compute grid from a report definition
 #+type: task
 #+level: s1
-#+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
+#+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
 #+branch: feature/retrieve-compute-results
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-09-27
-#+environment:
+#+updated: 2026-10-09
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ collect_compute_results completes without downloading anything, and ores.reporti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Now          | Implemented. =collect_results= reads the batch from compute as the run, fails the run on a failed result, and keeps the output under the component's own key. |
+| Waiting on   | The hourly validation, then a run with a finished compute job, to exercise the retrieval live. |
+| Next         | A live run, and the retrieval's own test target if the handler is to be covered rather than only the plan. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
@@ -40,9 +40,61 @@ collect_compute_results completes without downloading anything, and ores.reporti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Where it is.* =report_execution_handler::collect_results= in
+=ores.reporting/core/src/messaging/report_execution_handler.cpp= is a
+pass-through: it logs, sets =success= and completes. Nothing downloads, and the
+request it decodes carries no location to download from —
+=report_instance_id=, =tenant_id=, =correlation_id= and =batch_id=, and nothing
+else.
+
+*Where the location lives.* It is =output_uri= on compute's own result row.
+=ores.reporting= does not link =ores.compute=, which the Goal gives as the
+reason a finished job's results never come back.
+
+The arc has one established way for a component to reach another's data: ask the
+owner through its operation, carrying the run token, rather than read its
+tables. Every gather step does it, and the isolation story made it the rule for
+storage. So reporting asks compute for a batch's results and never sees
+compute's tables.
+
+*The decision to take first.* Two ways to get the location here, differing in
+who owns the knowledge.
+
+- *Reporting asks compute.* Compute already answers this, so nothing new is
+  needed: =compute.v1.workunits.list_by_batch_id= gives the batch's workunits
+  and =compute.v1.results.list_by_workunit_id= gives each one's results, and a
+  result carries =outcome=, =error_message= and =output_uri=. Reporting then
+  downloads the object and records where it landed. This is the arc's pattern,
+  and compute's schema stays in compute.
+- *The workflow carries the location.* The step's request gains the output URI,
+  because the engine already dispatches with the batch. Smaller, but the engine
+  is the caller, so it has to have read the location from somewhere — the same
+  read, moved earlier and hidden.
+
+The plan is the first. The second is recorded because it is the cheaper move,
+and it is what a reader will think of.
+
+*Correction to the first reading of this Plan.* It said the arc's pattern
+"needs a new subject with its own tests". It does not: the two operations above
+already exist, so this task adds a caller rather than a protocol.
+
+*The failed-job half.* The acceptance asks that a run whose compute job failed
+be distinguishable from one that produced output, and a result already carries
+the =outcome= and the wrapper's =error_message=, so the distinction is a read
+rather than a new concept. A batch with a failed result is a failure of the run,
+not a run with no output.
+
+*The schema decision, which comes first.* The acceptance says "the instance
+records the output location", and =ores.reporting.report_instance= has no field
+for one: it carries =output_message=, =started_at= and =completed_at=, and
+nothing naming an object. Either the instance gains a column, or the location is
+recorded somewhere that already exists and the acceptance is read that way. A
+column would have to be modelled, generated, migrated and given its row-level
+security before any of the above can be written, which is why this task is
+larger than its Goal suggests.
+
+*Out of scope.* Parsing what the output holds. This task brings the bytes back
+and records where they are.
 
 * Notes
 
@@ -70,3 +122,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The step is implemented, and both acceptance bullets are met in code.
+
+- *The reads.* =collect_results= asks compute for the batch's workunits and then
+  for each workunit's results, over the bus with the run token, which is how
+  every other step in this arc reaches an owner's data. No new protocol was
+  needed: =compute.v1.workunits.list_by_batch_id= and
+  =compute.v1.results.list_by_workunit_id= already existed, and the Plan's
+  first reading, that this needed a new subject with its own tests, was wrong.
+- *The failed job is distinguishable.* A result whose =outcome= is not Success
+  fails the run and carries the wrapper's own =error_message=. A batch whose
+  results name no output is a failure too, rather than a run that quietly
+  retrieves nothing.
+- *The output is fetched and its landing recorded.* The object the result names
+  is read from there and kept under this component's own key,
+  =reporting/runs/{instance}/output.tar.gz=, so the instance names an object
+  reporting owns rather than another component's, and the instance records that
+  key in =output_storage_key=.
+
+=storage_paths::split_object_path= turns the result's path back into the bucket
+and key it names, so reporting reads the object the owner named instead of
+reconstructing compute's key layout in a second place.
+
+=ores.reporting.core= gains =ores.compute.api= and a =run_token= helper: an owner
+is reached over the bus, where the token rides as a delegation, while storage is
+reached over HTTP, which takes it as a bearer.
+
+*Verified by building and running.* =ores.reporting.core.lib=,
+=ores.reporting.service.exe= and =ores.reporting.core.tests= all build. The
+storage-plan cases pass, 14 assertions in 5 cases, including the new
+=output_storage_key= case.
+
+*The gap.* The handler itself has no test: =collect_results= talks to compute
+and storage, so covering it needs those stood up, and nothing in
+=ores.reporting.core.tests= does that today. The plan's key and the object-path
+split are the seams that are covered.

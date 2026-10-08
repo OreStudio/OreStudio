@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: EAA9B817-3188-4426-B578-75E67C0C852D
+:END:
+#+title: Parallelise bundle publishing
+#+description: A bundle's datasets are published one after another, and that is most of a bootstrap's wall clock. The chain can now say which datasets are independent.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A bundle is published one workflow step per dataset, and the steps are chained so
+that each waits for the one before it. Most of those datasets are independent of
+one another, so most of that waiting buys nothing. The chain should say which
+datasets actually read another dataset, and the rest should publish together.
+
+* Why
+
+Measured on a tenant bootstrap from the =acme_demo= profile, 2026-10-08, bright
+faraday:
+
+| step                  | ran for                |
+|-----------------------+------------------------|
+| system_provision      | ~1s                    |
+| publish_bundle        | *2m 14s*               |
+| import_lei_hierarchy  | ~0s                    |
+| provision_party       | ~4s                    |
+| load_staff            | ~7s                    |
+| attach_photos         | ~11s                   |
+| start_market_feeds    | beside the party chain |
+| complete_provisioning | ~4s                    |
+
+The run took 2m 41s end to end, so =publish_bundle= is about *83%* of a
+bootstrap's wall clock, and it is now the only thing between a bootstrap and
+being quick. The engine already runs independent steps together -- the same
+change that lets =start_market_feeds= run beside =import_lei_hierarchy= -- so the
+work here is not in the engine. It is in saying what a dataset depends on.
+
+The chaining is deliberate and conservative rather than an oversight. When the
+engine became a graph, a chain whose steps declare nothing runs flat, so
+=bundle_publish_workflow= now declares that each dataset reads the one before it.
+That was the only statement of dependency available and it preserved the order
+that the ordinal used to carry. It is a placeholder for a real answer, not the
+answer.
+
+* Open questions
+
+- *Where does the dependency live?* It is a fact about the datasets, and the
+  datasets are DQ rows, so it could be a relation between them, a field on the
+  dataset, or derived from what each publisher writes. Choosing this is the
+  actual work.
+- *Is publishing two datasets at once safe for the target tables?* Reference data
+  has foreign keys between its tables, so a dataset that writes a child table may
+  need its parent's rows to exist first even where it does not read the parent's
+  dataset. Reading and depending are not the same relation.
+- *What happens when one of a parallel batch fails?* Compensation order is
+  derived from the graph's topological order, so a batch that fails part-way must
+  still roll back in an order that respects the real dependencies.
+
+* References
+
+- =projects/ores.dq/api/include/ores.dq.api/workflow/bundle_publish_workflow.hpp= -- one step per dataset, and where the order is declared today.
+- =projects/ores.workflow/core/include/ores.workflow.core/service/workflow_graph.hpp= -- the graph the engine dispatches from.
+- =projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp= -- the kind-to-kind dependency statement, and the walk-back that answers a need the run did not order. The pattern to copy if a bundle's dependency is declared per dataset.
+- =doc/agile/versions/v0/sprint_27/gather-a-runs-inputs-by-declared-dependency/task_hold-a-workflow-as-a-dependency-graph.org= -- the task that made a run's chain a graph, and its measurements.
+
+* See also
+
+- [[id:3B2FF8B4-1607-4EFD-9638-7DC37C91DC68][Model the workflow payloads instead of storing them as documents]] -- the other open question about this schema.

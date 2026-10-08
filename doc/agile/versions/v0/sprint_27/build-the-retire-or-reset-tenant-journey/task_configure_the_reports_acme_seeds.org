@@ -8,7 +8,7 @@
 #+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/configure-the-reports-acme-seeds
-#+pr: 2846
+#+pr: 2847
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -142,6 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2847][#2847]] | [agile,codegen] Plan the report configuration dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/2846][#2846]] | [agile] Record how the report configuration work splits |
 | [[https://github.com/OreStudio/OreStudio/pull/2845][#2845]] | [reporting] Seed the report configurations a party's definitions need |
 

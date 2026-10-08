@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOOKING_NATURE_TYPE_HPP
 #define ORES_TRADING_API_DOMAIN_BOOKING_NATURE_TYPE_HPP
 
+#include <chrono>
 #include <string>
 #include <string_view>
 

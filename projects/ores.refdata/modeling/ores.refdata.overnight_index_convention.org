@@ -107,7 +107,6 @@ Number of business days from fixing to value date (usually 0 or 1).
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

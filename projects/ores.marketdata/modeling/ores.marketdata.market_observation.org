@@ -661,8 +661,8 @@ void market_observation_repository::clear_manual_point(
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #+end_src
 

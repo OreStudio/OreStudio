@@ -26,6 +26,7 @@
 #define ORES_REPORTING_API_DOMAIN_PARAMETER_VALUE_DOMAIN_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 

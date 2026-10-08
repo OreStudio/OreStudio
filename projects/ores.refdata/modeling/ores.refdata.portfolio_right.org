@@ -224,7 +224,6 @@ $$ language plpgsql stable set search_path = public, pg_temp;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

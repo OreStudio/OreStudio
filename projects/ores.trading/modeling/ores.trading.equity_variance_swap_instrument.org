@@ -297,7 +297,6 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"
 #+end_src

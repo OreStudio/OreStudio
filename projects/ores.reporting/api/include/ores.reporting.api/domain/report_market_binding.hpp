@@ -26,6 +26,7 @@
 #define ORES_REPORTING_API_DOMAIN_REPORT_MARKET_BINDING_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 

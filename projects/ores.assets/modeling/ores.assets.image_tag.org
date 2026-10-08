@@ -158,7 +158,6 @@ ID of the tag applied to the image; must exist in ores_assets_tags_tbl.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

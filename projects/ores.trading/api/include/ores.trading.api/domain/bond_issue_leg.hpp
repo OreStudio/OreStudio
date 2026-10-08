@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>

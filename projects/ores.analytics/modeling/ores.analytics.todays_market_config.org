@@ -168,7 +168,6 @@ boost::uuids::nil_uuid()
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>

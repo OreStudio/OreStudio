@@ -26,6 +26,7 @@
 #define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_PLAN_DEPENDENCY_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string_view>
 
 namespace ores::workflow::domain {

@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: 14F4BBA4-9215-4BC3-BE75-F9D3A12D0DC4
+:END:
+#+title: Task: Implement Hotfix: the generated headers miss the chrono include
+#+description: Initial task for: Hotfix: the generated headers miss the chrono include
+#+type: task
+#+level: s1
+#+filetags: :the_generated_headers_miss_the_chrono_include:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-generated-headers-miss-the-chrono-include
+#+pr: 2884
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9][Hotfix: the generated headers miss the chrono include]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let every generated domain header that names std::chrono compile on its own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9][Hotfix: the generated headers miss the chrono include]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- No generated domain header uses std::chrono without including <chrono>.
+- The codegen suite fails when one does.
+
+* Plan
+
+The domain class template emits =std::chrono::system_clock::time_point
+recorded_at= for every entity with audit columns, and supplies no header with
+it. Commit =06936a44da= settled what that means: "The fix is in the templates.
+An include every file of a template needs is unconditional. One that some files
+need sits behind a context flag core.py computes from the template branches that
+spell its symbol." =core.py= computes =has_audit_columns= already, at the branch
+that emits the member, so the gate goes next to the other template includes.
+
+Two variants emit the member. The =domain_entity= one emits it under
+={{#has_audit_columns}}=, so the include is gated on the same flag. The
+=junction= one emits it unconditionally, so its include is unconditional.
+
+=** Domain includes= was standing in for that gate: 244 models declared
+=<chrono>= by hand, and the 126 that did not are the ones whose headers named
+=std::chrono= without it. Those declarations are now redundant, and 237 of them
+are deleted -- the template owns the include.
+
+Not every model can lean on the gate. An entity with no audit columns that
+declares a =std::chrono= column of its own is outside it, so four models keep or
+gain the declaration: =grid_sample=, =node_sample=, =workflow_batch_link=, which
+have no =** Domain includes= block at all, and =session=, which is a
+current-state entity.
+
+=tests/test_domain_includes.py= gains the rule in the other direction: a header
+that names a standard type must declare the header for it. The rule it already
+had, declared but unused, was red on =main= -- =structure.org= declared
+=<optional>= and uses none -- so that line goes too.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated domain headers | 1538 | the include rule's own walk | 6ce8b69c33 |
+| Headers naming =std::chrono= without =<chrono>= | 126 before, 0 after | the include rule | 6ce8b69c33 |
+| Models that stopped declaring =<chrono>= | 237 | =git diff= | 6ce8b69c33 |
+| Models that kept or gained it | 4 | =git diff= | 6ce8b69c33 |
+| Duplicated =<chrono>= in a generated header | 0 | =grep -c= over the headers | 6ce8b69c33 |
+| Protocol headers lacking a direct =<chrono>= | 354 of 360, unchanged | =git grep= on =origin/main= | 6ce8b69c33 |
+
+* Notes
+
+The model's =** Domain includes= block feeds more than the domain header: the
+operation template reads its own model's block to build a protocol header. A
+first pass stripped =<chrono>= from every model with an =includes= block and
+took it out of ten operation models and one knowledge doc that use theirs for
+their own reasons. Both sets are restored, and the strip is restricted to
+=ores.codegen.entity= and =ores.codegen.junction=.
+
+The protocol headers' lack of a direct =<chrono>= is not part of this: 354 of
+the 360 that name =std::chrono= on =main= already had no include for it, and
+they reach it through the domain header they include.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2884][#2884]] | [codegen] Include <chrono> where the domain header names it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Merged in PR #2884. The template emits the include, 237 models stopped
+declaring it, four kept or gained it, and no generated domain header names
+=std::chrono= without =<chrono>= or declares it twice.
+
+Both acceptance criteria are met without a build: the rule walks all 1538
+generated domain headers and reports nothing, and it reports the 126 on the
+pre-fix tree. Whether the translation units compile is the hourly validation
+build's to say, and no build ran in this worktree.

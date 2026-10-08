@@ -125,7 +125,6 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

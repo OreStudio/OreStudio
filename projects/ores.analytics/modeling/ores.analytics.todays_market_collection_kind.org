@@ -128,7 +128,6 @@ What the kind holds, in one line, for a reader who does not know ORE.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

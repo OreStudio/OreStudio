@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9
+:END:
+#+title: Story: Hotfix: the generated headers miss the chrono include
+#+description: The domain class template emits a std::chrono member for every entity with audit columns, but 126 models never declared <chrono> in their Domain includes, so their generated headers use std::chrono without it and the translation units that do not pull it in first fail to compile.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let every generated domain header that names std::chrono compile on its own.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The template gates the include, the models stopped declaring it, and both include rules are green. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- No generated domain header uses std::chrono without including <chrono>.
+- The codegen suite fails when one does.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CF8E5DE2-E0DC-4E0B-B588-56EE6F64ECAD][Scaffold story: Hotfix: the generated headers miss the chrono include]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:14F4BBA4-9215-4BC3-BE75-F9D3A12D0DC4][Implement Hotfix: the generated headers miss the chrono include]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the generated headers miss the chrono include |
+
+* Decisions
+
+- *The template owns the include, not the model.* Commit =06936a44da= states the
+  rule: an include a template's files need sits behind a context flag computed
+  from the branch that spells its symbol. The domain class template emits a
+  =std::chrono= member, so it emits =<chrono>=; the 244 models that declared it
+  by hand were standing in for a missing gate.
+- *Delete the declarations the template now covers.* Leaving them emits the
+  include twice. One that still needs it keeps it: an entity with no audit
+  columns that declares a chrono column of its own is outside the gate.
+- *Put the gate where the branch is.* =domain_entity= emits the member under
+  =has_audit_columns=, so its include is gated on the same flag; =junction=
+  emits it unconditionally, so its include is unconditional.
+
+* Out of scope
+
+- The protocol headers' own includes. 354 of the 360 that name =std::chrono= on
+  =main= declare no =<chrono>= and reach it through the domain header they
+  include. That is a separate question about the operation template and is
+  unchanged here.

@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_API_DOMAIN_CREDIT_SIMULATION_ENTITY_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 

@@ -128,6 +128,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] | STARTED | 2026-10-08 | | The trade_party_role model still lists counterparty_id in its C++ Table display and in its SQL Indexes, but commit 178610c4e8 removed the column, so ores.trading.api does not compile and the party roles table cannot be created. |
 | [[id:931737B4-1E7C-4030-B144-A188328D4F82][Bring the generated column references under a gate]] | DONE | 2026-10-08 | 2026-10-08 | A column removed from a codegen model's Columns can survive in its Table display or its Indexes, and the generator reproduces both verbatim, so generated code names a column the entity does not have and only the compiler or a database recreate finds it, after merge. |
 | [[id:327FBA08-F9F3-427B-92C9-DD9633D74B34][Hotfix: the consumers still set the dropped party columns]] | STARTED | 2026-10-08 | | 178610c4e8 and 3053327b95 removed party_id and counterparty_id from the trade's eight children, but hand-written code in ores.ore and ores.trading still assigns them, so those targets do not compile. |
+| [[id:EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9][Hotfix: the generated headers miss the chrono include]] | STARTED | 2026-10-08 | | The domain class template emits a std::chrono member for every entity with audit columns and supplies no include with it, so 126 generated headers named std::chrono without <chrono> and compiled only where the consumer pulled it in first. |
 
 * Achievements
 

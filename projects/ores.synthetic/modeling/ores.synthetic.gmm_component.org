@@ -180,7 +180,6 @@ faker::number::decimal(0.0, 1.0)
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

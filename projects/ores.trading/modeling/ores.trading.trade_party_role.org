@@ -154,7 +154,6 @@ The role catalogue is system reference data.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

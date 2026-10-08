@@ -228,7 +228,6 @@ drop function if exists ores_refdata_validate_country_fn;
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

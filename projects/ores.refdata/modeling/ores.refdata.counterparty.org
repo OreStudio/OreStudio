@@ -349,7 +349,6 @@ TypeScript twin render it.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <optional>
 #include <boost/uuid/uuid.hpp>

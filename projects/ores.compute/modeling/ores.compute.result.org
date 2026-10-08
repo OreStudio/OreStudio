@@ -213,7 +213,6 @@ generator owns them from this model.
 #+begin_src cpp :name includes
 #include <string>
 #include <cstdint>
-#include <chrono>
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

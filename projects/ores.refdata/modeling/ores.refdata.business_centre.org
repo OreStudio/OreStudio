@@ -169,7 +169,6 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 #+begin_src cpp :name includes
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

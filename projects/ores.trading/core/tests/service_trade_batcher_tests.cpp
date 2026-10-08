@@ -75,7 +75,7 @@ public:
         std::map<std::string, std::vector<std::string>> by_desk;
         for (const auto& set : sets)
             for (const auto& trade_id : set.trade_ids)
-                by_desk[book_of.at(trade_id).substr(0, 3)].push_back(trade_id);
+                by_desk[book_of.at(trade_id).substr(0, 4)].push_back(trade_id);
 
         std::vector<trade_set> out;
         for (auto& [desk, trade_ids] : by_desk) {
@@ -107,14 +107,16 @@ public:
     }
 };
 
-/** A strategy that loses a trade: the first set only. */
+/** A strategy that loses trades: it keeps the first and forgets the rest. */
 class drops_a_trade final : public trade_batching_strategy {
 public:
     std::vector<trade_set> split(const trade_population&,
                                  const std::vector<trade_set>& sets) const override {
-        if (sets.empty())
+        if (sets.empty() || sets.front().trade_ids.empty())
             return sets;
-        return {sets.front()};
+        auto kept = sets.front();
+        kept.trade_ids.resize(1);
+        return {std::move(kept)};
     }
 
     std::string_view name() const override {
@@ -218,15 +220,17 @@ TEST_CASE("a book whose trades exceed the limit splits into bounded sets", tags)
 
     REQUIRE(sets.size() == 3);
 
-    // The book under the limit keeps its own key and arrives untouched.
-    CHECK(sets[0].name == "Headline Position:BOOK-B:2026-10-08");
-    CHECK(sets[0].trade_ids == std::vector<std::string>{"trade-4"});
+    // The strategies run in order, so BOOK-A is split where it stands and
+    // BOOK-B follows it untouched, rather than the bounded sets gathering at
+    // one end.
+    CHECK(sets[0].name == "Headline Position:BOOK-A:2026-10-08#1");
+    CHECK(sets[0].trade_ids == std::vector<std::string>{"trade-1", "trade-2"});
+    CHECK(sets[1].name == "Headline Position:BOOK-A:2026-10-08#2");
+    CHECK(sets[1].trade_ids == std::vector<std::string>{"trade-3"});
 
-    // The book over it carries a suffix per part, and the key stays opaque.
-    CHECK(sets[1].name == "Headline Position:BOOK-A:2026-10-08#1");
-    CHECK(sets[1].trade_ids == std::vector<std::string>{"trade-1", "trade-2"});
-    CHECK(sets[2].name == "Headline Position:BOOK-A:2026-10-08#2");
-    CHECK(sets[2].trade_ids == std::vector<std::string>{"trade-3"});
+    // The book under the limit keeps its own key.
+    CHECK(sets[2].name == "Headline Position:BOOK-B:2026-10-08");
+    CHECK(sets[2].trade_ids == std::vector<std::string>{"trade-4"});
 
     CHECK(trades_covered(sets) ==
           std::vector<std::string>{"trade-1", "trade-2", "trade-3", "trade-4"});

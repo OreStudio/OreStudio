@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: A3225500-1EB2-438A-85C7-E3A08A4ACC57
+:END:
+#+title: Task: Repair the drifted artefacts
+#+description: Initial task for: Repair the drifted artefacts on main
+#+type: task
+#+level: s1
+#+filetags: :repair_the_drifted_artefacts:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/repair-the-drifted-artefacts
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:49CA5183-4201-4281-9CFC-303434C7E4E2][Repair the drifted artefacts on main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The access page is prettier-formatted, so the TypeScript workflow passes on main again. The ER diagram was already up to date when work started, so it needs no change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:49CA5183-4201-4281-9CFC-303434C7E4E2][Repair the drifted artefacts on main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- prettier --check passes for the ores.web workspace.
+- The local check gate passes for the hotfix branch.
+
+* Plan
+
+=packages/web/src/access/MyAccessPage.tsx= fails =prettier --check=, which
+the TypeScript workflow runs for the whole =ores.web= workspace. Run
+=prettier --write= on that one file and commit the result. Check the ER
+diagram first, because main moves under a hotfix; it is already up to
+date against the current SQL tree, so it gets no change.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files prettier reformats | 1 | =npx prettier --write packages/web/src/access/MyAccessPage.tsx= | 2026-10-08 hotfix branch |
+| ER diagram check | up to date, no change needed | =plantuml_er_generate.py --check= | 2026-10-08 hotfix branch |
+| Local check gate | 34 of 34 passed | =./compass.sh check= | hotfix head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=packages/web/src/access/MyAccessPage.tsx= is prettier-formatted. The
+ER diagram needed no change, because it was already up to date against
+the SQL tree when work started. Acceptance met: =prettier --check= passes
+for the =ores.web= workspace and the local check gate passes for the
+hotfix branch.

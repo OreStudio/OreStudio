@@ -8,7 +8,7 @@
 #+filetags: :the_series_shape_writer_cannot_name_its_context:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-series-shape-writer-cannot-name-its-context
-#+pr:
+#+pr: 2887
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2887][#2887]] | [marketdata] Name the context the way the declaration does |
 
 * Review
 

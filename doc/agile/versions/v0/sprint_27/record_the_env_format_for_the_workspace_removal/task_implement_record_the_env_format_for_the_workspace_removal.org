@@ -8,7 +8,7 @@
 #+filetags: :record_the_env_format_for_the_workspace_removal:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-record-the-env-format-for-the-workspace-removal
-#+pr:
+#+pr: 2818
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2818][#2818]] | [docs] Record env format version 29 |
 
 * Review
 

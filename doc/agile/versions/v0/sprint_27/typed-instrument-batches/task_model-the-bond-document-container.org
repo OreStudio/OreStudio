@@ -8,7 +8,7 @@
 #+filetags: :typed-instrument-batches:sprint_27:v0:
 #+owner: marco
 #+branch: feature/model-the-bond-document-container
-#+pr:
+#+pr: 2812
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2812][#2812]] | [codegen,trading] Model the bond document container |
 
 * Review
 

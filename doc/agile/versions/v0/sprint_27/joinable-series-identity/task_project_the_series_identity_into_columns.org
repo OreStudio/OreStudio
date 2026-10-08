@@ -8,7 +8,7 @@
 #+filetags: :joinable-series-identity:sprint_27:v0:
 #+owner: marco
 #+branch: feature/project-the-series-identity-into-columns
-#+pr:
+#+pr: 2834
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2834][#2834]] | [marketdata] Project the series identity into joinable columns |
 
 * Review
 

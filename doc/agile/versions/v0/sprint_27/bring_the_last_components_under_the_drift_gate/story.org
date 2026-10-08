@@ -46,6 +46,7 @@ Put every component that generates C++ under the drift gate, one component per c
 | [[id:3648EAAC-5CD2-4D96-82A0-AEAF6221B1AD][Make the drift gate regeneration reproducible]] | BACKLOG | | | check_component_drift --component synthetic and --all produce different trees for the same component: the --all pass writes more includes into the synthetic event registrars than the single-component pass does. |
 | [[id:086572FA-E205-4BF9-BEB8-9DF1DE1DBCA6][State the environment the heavy checks need]] | BACKLOG | | | ctest needs the NATS server up while db recreate needs the services down, and compass services stop stops both. With the target fully stopped seventeen suites fail on NATS connect failed; with it up, db recreate --kill loses its race with five reconnecting services. The runner knows neither constraint. |
 | [[id:99FAC9DA-6801-4545-886D-9E1B9808F56D][Run the local checks without being asked]] | BACKLOG | | | Six trunk defects were found by two runs of the local gate, and none by a person looking. The gates are sound and nothing runs them: with the GitHub PR triggers gone, a red tree reaches main and waits for an unrelated branch to notice. |
+| [[id:C79EA676-15D4-4146-80F4-A7FCBD7A7F7A][Refresh the shell recipe inventory]] | DONE | 2026-10-08 | 2026-10-08 | A trading change added the trade_link_type and trade_link shell recipes but never regenerated doc/recipes/shell/shell.org, so recipe-inventories fails on trunk with two categories missing. |
 
 * Decisions
 

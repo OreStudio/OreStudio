@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/export-the-trades-as-the-ore-portfolio-the-engine-reads
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,13 +48,55 @@ carried.
 
 * Acceptance
 
--
+- The run's portfolio input is ORE-readable, placed at the path the run document
+  names, exactly as the market data and the fixings now are.
+- The engine proceeds past =Pricing: Build Portfolio= rather than failing with
+  =Failed to run analytics PRICING,XVA=.
+- Every trade the run gathered appears in the portfolio, carrying the instruments
+  and envelopes the engine needs to price it.
+- The reverse walk lives beside the forward one, so adding an instrument to the
+  import mapper without its export counterpart fails a test rather than losing a
+  trade silently. That is the property worth having: the two directions are one
+  fact about one schema, and nothing today makes them move together.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The chain today, and where it breaks. =gather_trades= asks
+=trading.v1.ops.export_trades_to_storage= for the run's trades, which writes a
+gzipped msgpack of =trade_export_item= rows. =prepare_ore_package= then downloads
+that blob and writes it at a hardcoded =trades.msgpack=, so nothing ever puts a
+portfolio where the run document says one is.
+
+Two halves, and only the second is small.
+
+*1. Placement.* =run_store.hpp= already declares =run_data_files::portfolio=, the
+path the run document names, and =report_package_handler.cpp= already writes the
+market data and the fixings at their declared paths. The trade branch is the odd
+one out: it writes =trades.msgpack=. It changes to write the portfolio body at
+=places.portfolio=, and to fail loudly when the run document names no portfolio,
+as it already does for the fixings.
+
+*2. The export mapper.* The gathered rows are =domain::trade_export_item=, which
+carries instruments as an opaque payload with no shape a mapper can walk. So the
+export walk is:
+
+1. read the gathered rows and rebuild the types the import side's =trade_mapper=
+   and instrument mappers take as input;
+2. map them, producing an =ores::ore::domain::portfolio=;
+3. render it with =save_data(const portfolio&)= from =domain.hpp= -- the same
+   renderer the importer's inverse uses, so the XML matches what ORE expects by
+   construction rather than by our transcription of the schema;
+4. upload the rendered body as the run's portfolio input.
+
+Where it lives: =ores.ore= owns the ORE schema and its mappers, so the export
+walk belongs beside =trade_mapper= in =ores.ore.core/domain/=, not in the
+reporting handler that calls it. The reporting chain asks for the portfolio; it
+does not know how one is built.
+
+*Risk.* The redesign (=18FFC5F4=) needs the same reverse walk against a trade
+set's archive instead of the run's one blob. Building it once, as a function of
+the rows rather than of where they came from, is what lets both callers share it
+-- and is the reason this task does not special-case the current blob's shape.
 
 * Measurements
 

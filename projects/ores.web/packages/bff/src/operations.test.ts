@@ -29,7 +29,7 @@ import {
     type SessionMode,
 } from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { busStreamNames, busWindow, secondsSinceReport } from './operations.js';
+import { busStreamNames, busWindow, logWindow, secondsSinceReport } from './operations.js';
 import { resolveBroker } from './broker.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -164,6 +164,7 @@ function buildTestServer(
     hosts: readonly Record<string, unknown>[] = [wireHost()],
     serverSamples: readonly Record<string, unknown>[] = [],
     streamSamples: readonly Record<string, unknown>[] = [],
+    logEntries: readonly Record<string, unknown>[] = [],
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
@@ -191,6 +192,21 @@ function buildTestServer(
         }): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'telemetry.v1.nats_stream_samples.list', body: input });
             return streamSamples.filter((row) => row['stream_name'] === input.streamName);
+        },
+        async listLogs(input: {
+            readonly offset?: number;
+            readonly limit?: number;
+        }): Promise<{
+            readonly entries: readonly Record<string, unknown>[];
+            readonly totalCount: number;
+        }> {
+            calls.push({ subject: 'telemetry.v1.logs.list', body: input });
+            const offset = input.offset ?? 0;
+            const limit = input.limit ?? 100;
+            return {
+                entries: logEntries.slice(offset, offset + limit),
+                totalCount: logEntries.length,
+            };
         },
         async close(): Promise<void> {
             return undefined;
@@ -715,5 +731,256 @@ describe('the stream names a bus window reads', () => {
             'ores_dev_local2_workflow',
             'ores_dev_local2_compute_assignments',
         ]);
+    });
+});
+
+/** One log entry as the read answers it. Every stored entry is source server. */
+function wireLogEntry(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        id: '11111111-1111-4111-8111-111111111111',
+        timestamp: '2026-10-04 14:31:02Z',
+        source: 'server',
+        source_name: 'ores.compute.service',
+        session_id: null,
+        account_id: null,
+        level: 'error',
+        component: 'ores.compute.poller',
+        message: 'fetch failed, retrying',
+        tag: 'compute.fetch',
+        recorded_at: '2026-10-04 14:31:03Z',
+        ...overrides,
+    };
+}
+
+/** The log read's answer as the browser reads it. */
+interface LogsBody {
+    readonly read_at: string | null;
+    readonly entries: readonly { readonly id: string; readonly level: string }[];
+    readonly total: number;
+    readonly limit: number;
+    readonly offset: number;
+}
+
+describe('GET /api/operations/logs', () => {
+    it('carries every filter to one read, and answers the page with its total', async () => {
+        const { server, cookies, calls } = buildTestServer(
+            'system-administration',
+            [wireSlot()],
+            wireGridStats(),
+            [wireHost()],
+            [],
+            [],
+            [
+                wireLogEntry(),
+                wireLogEntry({
+                    id: '22222222-2222-4222-8222-222222222222',
+                    level: 'warn',
+                }),
+            ],
+        );
+
+        const query = new URLSearchParams({
+            range: '1h',
+            level: 'error',
+            source: 'server',
+            component: 'ores.compute.poller',
+            tag: 'compute.fetch',
+            message: 'fetch',
+        });
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/operations/logs?${query.toString()}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as LogsBody;
+        // The count is the whole set the filter matches, not the page.
+        expect(body.total).toBe(2);
+        expect(body.entries).toHaveLength(2);
+        expect(body.limit).toBe(100);
+        expect(body.offset).toBe(0);
+        // The read time is the deployment's, in the wire spelling the screens
+        // label UTC.
+        expect(body.read_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z$/);
+
+        // One call, carrying every filter at once: the read combines them with
+        // AND, so the BFF narrows nothing itself.
+        expect(calls).toHaveLength(1);
+        expect(calls[0]?.subject).toBe('telemetry.v1.logs.list');
+        expect(calls[0]?.body).toMatchObject({
+            level: 'error',
+            source: 'server',
+            component: 'ores.compute.poller',
+            tag: 'compute.fetch',
+            messageContains: 'fetch',
+            offset: 0,
+            limit: 100,
+        });
+        const call = calls[0]?.body as { readonly startTime: string; readonly endTime: string };
+        const windowSeconds =
+            (fromWireTimestamp(call.endTime).getTime() -
+                fromWireTimestamp(call.startTime).getTime()) /
+            1000;
+        expect(windowSeconds).toBe(3600);
+    });
+
+    it('sends nothing for the filters the person left off', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=15m',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as LogsBody;
+        expect(body.offset).toBe(0);
+        expect(body.limit).toBe(100);
+        expect(calls[0]?.body).toMatchObject({
+            level: null,
+            source: null,
+            component: null,
+            tag: null,
+            messageContains: null,
+            offset: 0,
+            limit: 100,
+        });
+        const call = calls[0]?.body as { readonly startTime: string; readonly endTime: string };
+        const windowSeconds =
+            (fromWireTimestamp(call.endTime).getTime() -
+                fromWireTimestamp(call.startTime).getTime()) /
+            1000;
+        expect(windowSeconds).toBe(900);
+    });
+
+    it('pages by the limit and offset the screen asked for', async () => {
+        const { server, cookies, calls } = buildTestServer(
+            'system-administration',
+            [wireSlot()],
+            wireGridStats(),
+            [wireHost()],
+            [],
+            [],
+            [wireLogEntry()],
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1h&offset=100&limit=50',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as LogsBody;
+        expect(body.offset).toBe(100);
+        expect(body.limit).toBe(50);
+        expect(body.total).toBe(1);
+        // The page past the end is empty, and the total still says what the
+        // filter matches.
+        expect(body.entries).toEqual([]);
+        expect(calls[0]?.body).toMatchObject({ offset: 100, limit: 50 });
+    });
+
+    it('refuses the client source, which the store can never hold', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1h&source=client',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a range the read does not know', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1y',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a query field the read does not take', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1h&tenant=acme',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a session that does not act on the deployment', async () => {
+        const { server, cookies, calls } = buildTestServer('tenant-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(403);
+        expect(response.json()).toMatchObject({ code: 'forbidden' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a caller with no session at all', async () => {
+        const { server } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/logs?range=1h',
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(401);
+    });
+});
+
+describe('the window a logs range names', () => {
+    const NOW = Date.UTC(2026, 9, 4, 14, 32, 0);
+
+    it('is open at its end, so adjacent windows tile without overlapping', () => {
+        const day = logWindow('24h', NOW);
+        expect(day.start).toBe(toWireTimestamp(new Date(NOW - 24 * 60 * 60 * 1000)));
+        expect(day.end).toBe(toWireTimestamp(new Date(NOW)));
+    });
+
+    it('is as long as the preset it names', () => {
+        for (const [range, minutes] of [
+            ['15m', 15],
+            ['1h', 60],
+            ['6h', 360],
+            ['24h', 1440],
+        ] as const) {
+            const window = logWindow(range, NOW);
+            const seconds =
+                (fromWireTimestamp(window.end).getTime() -
+                    fromWireTimestamp(window.start).getTime()) /
+                1000;
+            expect(seconds).toBe(minutes * 60);
+        }
     });
 });

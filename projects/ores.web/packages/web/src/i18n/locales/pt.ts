@@ -1095,6 +1095,87 @@ const pt: SourceCatalogue = {
                 },
             },
         },
+        logs: {
+            title: 'Operações: registos de telemetria',
+            description:
+                'As linhas por trás de um sintoma, encontradas por hora, nível, origem, componente, etiqueta ou mensagem.',
+            readAt: 'Lido às {at}',
+            range: {
+                label: 'Intervalo',
+                '15m': 'Últimos 15 minutos',
+                '1h': 'Última hora',
+                '6h': 'Últimas 6 horas',
+                '24h': 'Últimas 24 horas',
+            },
+            level: {
+                label: 'Nível',
+                any: 'Qualquer nível',
+            },
+            source: {
+                label: 'Origem',
+                any: 'Qualquer origem',
+            },
+            component: {
+                label: 'Componente',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Etiqueta',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Mensagem',
+                placeholder: 'Pesquisar na mensagem',
+            },
+            search: 'Pesquisar',
+            columns: {
+                time: 'Hora',
+                level: 'Nível',
+                source: 'Origem',
+                name: 'Nome',
+                component: 'Componente',
+                message: 'Mensagem',
+            },
+            entries: {
+                title: 'Entradas',
+                count: '{shown} de {total}',
+                showing: 'A mostrar {from}–{to} de {total} entradas',
+                previous: 'Anterior',
+                next: 'Seguinte',
+                paging:
+                    'A leitura responde uma página de cada vez; o total é tudo o que o filtro corresponde.',
+                nothingMatches: 'Nada corresponde',
+                empty: 'Nenhuma entrada corresponde ao filtro neste intervalo. Alargue o intervalo ou remova um filtro.',
+                emptyHint:
+                    'Os filtros combinam com AND, por isso cada um reduz a resposta, e o armazém contém hoje apenas linhas de servidor.',
+            },
+            gap: {
+                client: {
+                    title: 'O armazém não contém linhas de cliente',
+                    body: 'A consulta filtra por origem, e o único publicador é o wrapper de cálculo, cujos lotes o serviço marca como entradas de servidor. Nada publica entradas de cliente hoje, embora a enumeração e o filtro suportem ambas. Enquanto não existir um publicador de cliente, o ecrã não deve oferecer um valor de filtro que nunca pode corresponder.',
+                },
+                and: {
+                    title: 'Os filtros são apenas AND',
+                    body: 'Não há forma de pedir um nível ou outro, nem de excluir um componente. O candidato é uma forma de exprimir uma disjunção dentro da consulta, de resto conjuntiva.',
+                },
+                suggest: {
+                    title: 'Nada sugere os valores de filtro',
+                    body: 'O componente, a etiqueta, o nome da origem e o nível escrevem-se de memória, e um erro de escrita responde uma página vazia que parece um sistema calmo. O candidato é uma leitura dos valores presentes no intervalo, para o ecrã oferecer os componentes e etiquetas reais.',
+                },
+                sql: {
+                    title: 'Os filtros de mensagem e componente são construídos como texto SQL',
+                    body: 'A consulta interpola esses dois filtros em padrões LIKE com um escape escrito à mão, quando todos os outros repositórios vinculam os seus valores (The telemetry log query escapes SQL by hand). Isto é um defeito sob a leitura, não uma funcionalidade em falta: vincule os valores antes que um ecrã se apoie neles.',
+                },
+                stats: {
+                    title: 'Os agregados armazenados não têm sujeito',
+                    body: 'A base de dados já calcula estatísticas horárias, diárias e por sessão, e nenhuma leitura as serve (Expose the telemetry stats surface). Um gráfico da contagem de linhas ao longo do tempo — «quando começaram os erros» — é a primeira coisa que um operador pede depois da tabela.',
+                },
+                permission: {
+                    title: 'A leitura não verifica qualquer permissão',
+                    body: 'O gestor autentica o token e depois serve qualquer conta com sessão. O candidato é uma permissão dedicada que o modelo guarda, como as leituras de locatário guardam iam::tenants:read. A lacuna não é só desta leitura (Nothing gates a hand-written operation handler).',
+                },
+            },
+        },
         versions: {
             title: 'Operações: versões e base de dados',
             description:

@@ -224,6 +224,12 @@ export type { GridNodeRow, GridView } from './operations.js';
 export { busViewSchema } from './operations.js';
 export type { BusView } from './operations.js';
 
+// The telemetry logs the operations screen reads, as the BFF serves them: one
+// page of entries, the total the filter matches, and the limit and offset that
+// produced the page.
+export { logsViewSchema } from './operations.js';
+export type { LogsView } from './operations.js';
+
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.
 export { loginInfoPageSchema, loginInfoSchema } from './domain.js';

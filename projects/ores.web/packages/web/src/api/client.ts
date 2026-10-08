@@ -83,6 +83,7 @@ import {
     serviceRosterViewSchema,
     gridViewSchema,
     busViewSchema,
+    logsViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -105,6 +106,7 @@ import {
     type ServiceRosterRow,
     type GridView,
     type BusView,
+    type LogsView,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -138,6 +140,30 @@ export interface Credentials {
  * window on the deployment's clock.
  */
 export type BusRange = '15m' | '1h' | '6h';
+
+/**
+ * The range presets the logs screen offers, which the BFF turns into a window
+ * on the deployment's clock.
+ */
+export type LogsRange = '15m' | '1h' | '6h' | '24h';
+
+/**
+ * The filters the logs screen sends, already applied.
+ *
+ * An empty level or source means the filter is not applied rather than a value
+ * to match, because the read's fields are optional and combine with AND. The
+ * component, tag and message are the text the person searched for.
+ */
+export interface LogsQuery {
+    readonly range: LogsRange;
+    readonly level: string;
+    readonly source: string;
+    readonly component: string;
+    readonly tag: string;
+    readonly message: string;
+    readonly offset: number;
+    readonly limit: number;
+}
 
 /** A page's offset and limit as a query string. */
 function pageQuery(page: { readonly offset: number; readonly limit: number }): string {
@@ -1174,6 +1200,42 @@ export const api = {
         const query = new URLSearchParams({ range });
         return busViewSchema.parse(
             await request(`/api/operations/bus?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * One page of the telemetry logs a filter selects, and the total it matches.
+     *
+     * The range travels as a preset rather than as two instants, for the same
+     * reason the bus range does: the window is the deployment's to compute.
+     * Every other filter travels only when the person set it, because an empty
+     * one means the filter is off and a value the store cannot match is worse
+     * than no filter at all. The source is offered as `server` alone, the one
+     * word the store stamps today.
+     */
+    async logs(query: LogsQuery): Promise<LogsView> {
+        const params = new URLSearchParams({
+            range: query.range,
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        if (query.level !== '') {
+            params.set('level', query.level);
+        }
+        if (query.source !== '') {
+            params.set('source', query.source);
+        }
+        if (query.component !== '') {
+            params.set('component', query.component);
+        }
+        if (query.tag !== '') {
+            params.set('tag', query.tag);
+        }
+        if (query.message !== '') {
+            params.set('message', query.message);
+        }
+        return logsViewSchema.parse(
+            await request(`/api/operations/logs?${params.toString()}`, { method: 'GET' }),
         );
     },
 

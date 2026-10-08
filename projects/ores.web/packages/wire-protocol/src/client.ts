@@ -26,6 +26,7 @@ import type {
     NatsServerSample,
     NatsStreamSample,
 } from './generated/telemetry/protocol/nats_samples_protocol.js';
+import type { TelemetryLogEntry } from './generated/telemetry/protocol/logs_protocol.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -95,6 +96,8 @@ import {
     natsServerSamplesRequestSchema,
     natsStreamSamplesReplySchema,
     natsStreamSamplesRequestSchema,
+    logsListReplySchema,
+    logsListRequestSchema,
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
@@ -1109,6 +1112,64 @@ export class OresClient {
             throw new OperationFailedError(SUBJECTS.natsStreamSamples, reply.message);
         }
         return reply.samples;
+    }
+
+    /**
+     * The log entries a filter selects, newest first, and the count it matches.
+     *
+     * The range is start-inclusive and end-exclusive, which is the read's own
+     * rule. Every filter is optional and they combine with AND: each one
+     * narrows the set and none widens it. The count is the whole set rather
+     * than the page, so a caller can page through what the limit and offset
+     * cut short.
+     *
+     * A refusal the read states in its body is an error rather than an empty
+     * list: an empty list is the answer a filter that matches nothing gives.
+     */
+    async listLogs(input: {
+        readonly startTime: WireTimestamp;
+        readonly endTime: WireTimestamp;
+        readonly source?: string | null;
+        readonly sourceName?: string | null;
+        readonly sessionId?: string | null;
+        readonly accountId?: string | null;
+        readonly level?: string | null;
+        readonly minLevel?: string | null;
+        readonly component?: string | null;
+        readonly tag?: string | null;
+        readonly messageContains?: string | null;
+        readonly limit?: number;
+        readonly offset?: number;
+    }): Promise<{
+        readonly entries: readonly TelemetryLogEntry[];
+        readonly totalCount: number;
+    }> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.logsList,
+            logsListRequestSchema.parse({
+                query: {
+                    start_time: input.startTime,
+                    end_time: input.endTime,
+                    source: input.source ?? null,
+                    source_name: input.sourceName ?? null,
+                    session_id: input.sessionId ?? null,
+                    account_id: input.accountId ?? null,
+                    level: input.level ?? null,
+                    min_level: input.minLevel ?? null,
+                    component: input.component ?? null,
+                    tag: input.tag ?? null,
+                    message_contains: input.messageContains ?? null,
+                    limit: input.limit ?? 100,
+                    offset: input.offset ?? 0,
+                },
+            }),
+            logsListReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.logsList, reply.message);
+        }
+        return { entries: reply.entries, totalCount: reply.total_count };
     }
 
     /**

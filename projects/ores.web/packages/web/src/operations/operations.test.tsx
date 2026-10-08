@@ -27,6 +27,7 @@ import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
 import type { BusView } from '@ores/wire-protocol/browser';
+import type { LogsView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
@@ -57,6 +58,16 @@ import {
     formatAge as formatGridAge,
     sampleTime,
 } from './GridPage.js';
+import {
+    LogsPage,
+    LOGS_QUERY_KEY,
+    DEFAULT_LOGS_FILTER,
+    logTime,
+    levelTone,
+    shownRange,
+    hasPrevious,
+    hasNext,
+} from './LogsPage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -118,12 +129,14 @@ function withProviders(
     roster: readonly ServiceRosterRow[] = [],
     grid: GridView = gridView(),
     bus: BusView = busView(),
+    logs: LogsView = logsView(),
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], { roles: [] });
     client.setQueryData(SERVICES_QUERY_KEY, roster);
     client.setQueryData(GRID_QUERY_KEY, grid);
     client.setQueryData([BUS_QUERY_KEY, '1h'], bus);
+    client.setQueryData([LOGS_QUERY_KEY, DEFAULT_LOGS_FILTER, 0], logs);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -139,6 +152,7 @@ function renderRoute(
     roster: readonly ServiceRosterRow[] = [],
     grid: GridView = gridView(),
     bus: BusView = busView(),
+    logs: LogsView = logsView(),
 ): string {
     return withProviders(
         <AppRoutes
@@ -158,6 +172,7 @@ function renderRoute(
         roster,
         grid,
         bus,
+        logs,
     );
 }
 
@@ -292,22 +307,71 @@ function busView(overrides: Partial<BusView> = {}): BusView {
     };
 }
 
+/** One log entry as the BFF answers it. Every stored entry is source server. */
+function logEntry(
+    overrides: Partial<LogsView['entries'][number]> = {},
+): LogsView['entries'][number] {
+    return {
+        id: '11111111-1111-4111-8111-111111111111',
+        timestamp: '2026-10-04 14:31:02Z',
+        source: 'server',
+        source_name: 'ores.compute.service',
+        session_id: null,
+        account_id: null,
+        level: 'error',
+        component: 'ores.compute.poller',
+        message: 'fetch failed, retrying',
+        tag: 'compute.fetch',
+        recorded_at: '2026-10-04 14:31:03Z',
+        ...overrides,
+    };
+}
+
+/** The logs view as the BFF answers it: a page, and the total it matches. */
+function logsView(overrides: Partial<LogsView> = {}): LogsView {
+    return {
+        read_at: '2026-10-04 14:32:12Z',
+        entries: [
+            logEntry(),
+            logEntry({
+                id: '22222222-2222-4222-8222-222222222222',
+                timestamp: '2026-10-04 14:30:58Z',
+                level: 'warn',
+                message: 'retrying fetch after timeout',
+            }),
+            logEntry({
+                id: '33333333-3333-4333-8333-333333333333',
+                timestamp: '2026-10-04 14:30:44Z',
+                level: 'info',
+                source_name: 'ores.iam.service',
+                component: 'ores.iam.auth',
+                message: 'session opened',
+                tag: 'iam.session',
+            }),
+        ],
+        total: 2431,
+        limit: 100,
+        offset: 0,
+        ...overrides,
+    };
+}
+
 describe('the operations area', () => {
-    it('lists its screens, and links only the four that are built', () => {
+    it('lists its screens, and links every one of them', () => {
         const html = withProviders(<OperationsArea />);
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('href="/operations/bus"');
+        expect(html).toContain('href="/operations/logs"');
         expect(html).toContain('Running services');
         expect(html).toContain('Compute grid');
         expect(html).toContain('Message bus');
         expect(html).toContain('Telemetry logs');
-        // The one screen the last unit adds carries no link at all, so a
-        // reader is never sent to a route that does not exist.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
-        expect(html).not.toContain('href="/operations/logs"');
+        // The last unit built the logs screen, so no tile is unbuilt and none
+        // is listed without a route to open.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
 
     it('is offered to system administration alone', () => {
@@ -380,7 +444,7 @@ describe('the versions screen', () => {
         expect(html).not.toContain('The login answer does not carry the database row yet');
     });
 
-    it('reaches the related journeys, and names the ones with no screen yet', () => {
+    it('reaches the related journeys, all of which have screens now', () => {
         const html = withProviders(
             <VersionsPage session={sessionWith()} serverVersion={SESSION_VERSION} />,
         );
@@ -390,13 +454,12 @@ describe('the versions screen', () => {
         expect(html).toContain('Read the telemetry logs');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Audit sign-ins');
-        // One journey keeps its screen for a later unit: the telemetry logs are
-        // stated, marked as unbuilt, and carry no link. The services and grid
-        // screens exist now, so the versions page links to them rather than
-        // naming them as unbuilt.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
+        // Every journey this page names has a screen now, the telemetry logs
+        // included, so each is a link rather than a marked-up absence.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/logs"');
     });
 });
 
@@ -560,21 +623,18 @@ describe('the services screen', () => {
         }
     });
 
-    it('reaches the related journeys, and names the ones with no screen yet', () => {
+    it('reaches the related journeys, all of which have screens now', () => {
         const html = withProviders(<ServicesPage />, '/', [rosterRow()]);
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/audit"');
         expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('href="/operations/bus"');
+        expect(html).toContain('href="/operations/logs"');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Watch the message bus');
         expect(html).toContain('Read the telemetry logs');
-        // The logs journey keeps its screen for the last unit: it is stated,
-        // marked as unbuilt, and carries no link. The grid and bus screens
-        // exist now, so the services page links to them.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
-        expect(html).not.toContain('href="/operations/logs"');
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
 
     it('states a read time labelled UTC, and an age in units a person reads', () => {
@@ -637,10 +697,10 @@ describe('the route to the services screen', () => {
         expect(html).toContain('href="/operations/services"');
     });
 
-    it('offers no link to the screen that is not built', () => {
+    it('offers the last screen, which the fifth unit built', () => {
         const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
 
-        expect(html).not.toContain('href="/operations/logs"');
+        expect(html).toContain('href="/operations/logs"');
     });
 });
 
@@ -832,17 +892,15 @@ describe('the compute grid screen', () => {
         }
     });
 
-    it('reaches the related journeys, and names the ones with no screen yet', () => {
+    it('reaches the related journeys, all of which have screens now', () => {
         const html = withProviders(<GridPage />);
 
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/bus"');
+        expect(html).toContain('href="/operations/logs"');
         expect(html).toContain('Read the telemetry logs');
-        // The logs journey keeps its screen for the last unit: it is stated,
-        // marked as unbuilt, and carries no link.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
-        expect(html).not.toContain('href="/operations/logs"');
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
 
     it('states a sample time labelled UTC, and units a person reads', () => {
@@ -979,15 +1037,15 @@ describe('the message bus screen', () => {
         }
     });
 
-    it('reaches the related journeys, and names the one with no screen yet', () => {
+    it('reaches the related journeys, none of which is unbuilt now', () => {
         const html = withProviders(<BusPage />);
 
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/grid"');
         expect(html).toContain('href="/operations/versions"');
+        expect(html).toContain('href="/operations/logs"');
         expect(html).toContain('Read the telemetry logs');
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
-        expect(html).not.toContain('href="/operations/logs"');
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
     });
 
     it('states a sample time labelled UTC, and measures memory and bytes in MB', () => {
@@ -1022,5 +1080,158 @@ describe('the route to the message bus', () => {
         const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
 
         expect(html).toContain('href="/operations/bus"');
+    });
+});
+
+describe('the telemetry logs screen', () => {
+    it('states the filter bar in the prototype’s order', () => {
+        const html = withProviders(<LogsPage />);
+
+        expect(html).toContain('Operations: telemetry logs');
+        expect(html.indexOf('Range')).toBeLessThan(html.indexOf('Level'));
+        expect(html.indexOf('Level')).toBeLessThan(html.indexOf('Source'));
+        expect(html.indexOf('Source')).toBeLessThan(html.indexOf('Component'));
+        expect(html.indexOf('Component')).toBeLessThan(html.indexOf('Tag'));
+        expect(html.indexOf('Tag')).toBeLessThan(html.indexOf('Message'));
+        expect(html.indexOf('Message')).toBeLessThan(html.indexOf('Search'));
+    });
+
+    it('offers only the source the store can hold, and no client value', () => {
+        const html = withProviders(<LogsPage />);
+
+        // The ingest stamps every stored entry source=server, so a client
+        // option could never match; the journey says the screen must not offer
+        // one. The store's own lower-case words are what the read matches.
+        expect(html).toContain('>server<');
+        expect(html).toContain('value="server"');
+        expect(html).toContain('Any source');
+        expect(html).not.toContain('value="client"');
+        expect(html).not.toContain('>client<');
+        expect(html).toContain('>error<');
+        expect(html).not.toContain('>ERROR<');
+    });
+
+    it('draws the prototype’s columns, newest entry first', () => {
+        const html = withProviders(<LogsPage />);
+        const panel = section(html, 'Entries');
+
+        expect(panel.indexOf('>Time<')).toBeLessThan(panel.indexOf('>Level<'));
+        expect(panel.indexOf('>Level<')).toBeLessThan(panel.indexOf('>Source<'));
+        expect(panel.indexOf('>Source<')).toBeLessThan(panel.indexOf('>Name<'));
+        expect(panel.indexOf('>Name<')).toBeLessThan(panel.indexOf('>Component<'));
+        expect(panel.indexOf('>Component<')).toBeLessThan(panel.indexOf('>Message<'));
+        expect(panel).toContain('14:31:02 UTC');
+        expect(panel).toContain('ores.compute.poller');
+        expect(panel).toContain('fetch failed, retrying');
+    });
+
+    it('states the page of entries out of the total, and the read time in UTC', () => {
+        const html = withProviders(<LogsPage />);
+
+        expect(html).toContain('3 of 2431');
+        expect(html).toContain('Showing 1–3 of 2431 entries');
+        expect(html).toContain('Read at 14:32:12 UTC');
+        // The read answers one page at a time; the reply carries the limit,
+        // the offset and the total.
+        expect(html).toContain('the total is everything the filter matches');
+    });
+
+    it('answers a filter that matched nothing as a state, not as an error', () => {
+        const html = withProviders(
+            <LogsPage />,
+            '/',
+            [],
+            gridView(),
+            busView(),
+            logsView({ entries: [], total: 0 }),
+        );
+
+        expect(html).toContain('No entry matches the filter in this range');
+        expect(html).toContain('Widen the range or drop a filter');
+        expect(html).toContain('Nothing matches');
+        // No error panel, and no table pretending there is a page.
+        expect(html).not.toContain('<table');
+    });
+
+    it('states every gap the journey records, and none the journey closed', () => {
+        const html = withProviders(<LogsPage />);
+
+        // Six gaps: the reconciliation found the sixth, which the prototype
+        // drew without.
+        for (const title of [
+            'The store holds no client lines',
+            'The filters are AND-only',
+            'Nothing suggests filter values',
+            'The message and component filters are built as SQL text',
+            'The stored aggregates have no subject',
+            'The read checks no permission',
+        ]) {
+            expect(html).toContain(title);
+        }
+        expect(html).toContain('Recorded by Read the telemetry logs');
+        // The prototype's older wording is not what the journey records, so it
+        // must not be rendered as if it were.
+        for (const stale of [
+            'The filters combine with AND only',
+            'The message filter reaches the database as text',
+            'The statistics have no subject',
+            'No permission gates the read',
+        ]) {
+            expect(html).not.toContain(stale);
+        }
+    });
+
+    it('reaches the related journeys, none of which is unbuilt now', () => {
+        const html = withProviders(<LogsPage />);
+
+        expect(html).toContain('href="/operations/services"');
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/bus"');
+        expect(html).toContain('href="/audit"');
+        expect(html).toContain('href="/operations/versions"');
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(0);
+    });
+
+    it('states entry times in UTC, and paints the levels the store holds', () => {
+        expect(logTime('2026-10-04 14:31:02Z')).toBe('14:31:02 UTC');
+        expect(logTime(null)).toBeUndefined();
+        expect(logTime('')).toBeUndefined();
+        expect(logTime('not a time')).toBeUndefined();
+        expect(levelTone('error')).toBe('warn');
+        expect(levelTone('warn')).toBe('warn');
+        expect(levelTone('info')).toBe('neutral');
+        expect(levelTone('debug')).toBe('muted');
+        // A word the store does not hold is repeated without a tone the screen
+        // cannot justify.
+        expect(levelTone('verbose')).toBe('neutral');
+    });
+
+    it('reads the page out of the total, and pages while the total reaches on', () => {
+        expect(shownRange(logsView())).toEqual({ from: 1, to: 3 });
+        expect(shownRange(logsView({ entries: [], total: 0 }))).toEqual({ from: 0, to: 0 });
+        expect(shownRange(logsView({ offset: 100 }))).toEqual({ from: 101, to: 103 });
+        expect(hasPrevious(logsView())).toBe(false);
+        expect(hasPrevious(logsView({ offset: 100 }))).toBe(true);
+        expect(hasNext(logsView())).toBe(true);
+        expect(hasNext(logsView({ offset: 2400, limit: 100, total: 2431 }))).toBe(false);
+        expect(hasNext(logsView({ offset: 0, limit: 100, total: 100 }))).toBe(false);
+    });
+});
+
+describe('the route to the telemetry logs', () => {
+    it('opens it, and renders through the shell', () => {
+        const html = renderRoute('/operations/logs', sessionWith());
+
+        expect(html).toContain('Operations: telemetry logs');
+        expect(html).toContain('ORE Studio');
+        expect(html).toContain('Your account');
+        expect(html).toContain(`client ${__BUILD_VERSION__}`);
+        expect(html).toContain(`server ${SESSION_VERSION}`);
+    });
+
+    it('is offered to system administration through the operations hub', () => {
+        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+
+        expect(html).toContain('href="/operations/logs"');
     });
 });

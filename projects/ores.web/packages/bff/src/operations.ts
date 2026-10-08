@@ -27,6 +27,7 @@ import {
     gridStatsRequestSchema,
     gridViewSchema,
     isWireTimestamp,
+    logsViewSchema,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
     toWireTimestamp,
@@ -108,6 +109,68 @@ export function busWindow(
 
 /** The one field the bus read takes: the range the person chose. */
 const busRequestSchema = z.object({ range: z.enum(BUS_RANGES) }).strict();
+
+/**
+ * The range presets the logs screen offers, and the window each names.
+ *
+ * The window is computed here for the same reason the bus window is: the
+ * deployment's clock is the one the entries were stamped against, and the
+ * read's start is inclusive and its end exclusive, so adjacent windows tile
+ * without a line landing in two of them.
+ */
+export const LOG_RANGES = ['15m', '1h', '6h', '24h'] as const;
+export type LogRange = (typeof LOG_RANGES)[number];
+
+const LOG_RANGE_SECONDS: Readonly<Record<LogRange, number>> = {
+    '15m': 15 * 60,
+    '1h': 60 * 60,
+    '6h': 6 * 60 * 60,
+    '24h': 24 * 60 * 60,
+};
+
+/**
+ * The severity words the read matches, and the screen offers.
+ *
+ * They are the store's own words, lower case, as the telemetry sink writes
+ * them and the ORE engine parser maps them. The prototype offered them in
+ * upper case, which the read's equality filter could never match.
+ */
+export const LOG_LEVELS = ['error', 'warn', 'info', 'debug'] as const;
+export type LogLevel = (typeof LOG_LEVELS)[number];
+
+/** The window one logs range names, as the wire timestamps the read takes. */
+export function logWindow(
+    range: LogRange,
+    now: number,
+): { readonly start: WireTimestamp; readonly end: WireTimestamp } {
+    return {
+        start: toWireTimestamp(new Date(now - LOG_RANGE_SECONDS[range] * 1000)),
+        end: toWireTimestamp(new Date(now)),
+    };
+}
+
+/**
+ * The filters the logs read takes, combining with AND as the query does.
+ *
+ * The source accepts `server` alone. The store stamps every ingested entry
+ * `source=server`, nothing publishes a client entry, and the journey says the
+ * screen must not offer a filter value that can never match; the wire's
+ * `client` value is therefore refused at this boundary rather than answered
+ * with an empty page forever. A client publisher would widen this schema with
+ * the screen's source list.
+ */
+const logsRequestSchema = z
+    .object({
+        range: z.enum(LOG_RANGES),
+        level: z.enum(LOG_LEVELS).optional(),
+        source: z.literal('server').optional(),
+        component: z.string().min(1).optional(),
+        tag: z.string().min(1).optional(),
+        message: z.string().min(1).optional(),
+        offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+        limit: z.coerce.number().pipe(z.int().min(1).max(500)).default(100),
+    })
+    .strict();
 
 /**
  * The operations routes: what the installation is doing, as the screens read
@@ -277,6 +340,58 @@ export function registerOperationsRoutes(
             sampled_at: samples[0]?.sampled_at ?? null,
             samples,
             streams,
+        });
+    });
+
+    /**
+     * The telemetry logs: one page of the entries a filter selects, and the
+     * count of everything it matches.
+     *
+     * The filters combine with AND, which is the query's own rule: one call
+     * carries all of them, and the read does the narrowing. The window is
+     * derived from the deployment's clock and is start-inclusive and
+     * end-exclusive, so adjacent windows tile. The limit and the offset are
+     * the page the person asked for, and the total is what says whether the
+     * filter is narrow enough to read.
+     *
+     * `source=client` is refused rather than forwarded, because the store
+     * cannot hold a client entry today and a filter that can never match must
+     * not be offered. The read's own enum still supports it, so a client
+     * publisher widens this route with the screen.
+     */
+    server.get('/api/operations/logs', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted(
+                'The telemetry logs of a deployment are read in system administration.',
+            );
+        }
+        const parsed = logsRequestSchema.safeParse(request.query ?? {});
+        if (!parsed.success) {
+            throw invalidRequest(
+                'The logs read takes a range, the filters the journey names, and a page.',
+            );
+        }
+        const { range, level, source, component, tag, message, offset, limit } = parsed.data;
+        const now = Date.now();
+        const window = logWindow(range, now);
+        const page = await session.client.listLogs({
+            startTime: window.start,
+            endTime: window.end,
+            level: level ?? null,
+            source: source ?? null,
+            component: component ?? null,
+            tag: tag ?? null,
+            messageContains: message ?? null,
+            offset,
+            limit,
+        });
+        return logsViewSchema.parse({
+            read_at: toWireTimestamp(new Date(now)),
+            entries: page.entries,
+            total: page.totalCount,
+            limit,
+            offset,
         });
     });
 }

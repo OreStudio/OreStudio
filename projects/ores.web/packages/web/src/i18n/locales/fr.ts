@@ -1102,6 +1102,87 @@ const fr: SourceCatalogue = {
                 },
             },
         },
+        logs: {
+            title: 'Opérations : journaux de télémétrie',
+            description:
+                'Les lignes derrière un symptôme, trouvées par heure, niveau, source, composant, étiquette ou message.',
+            readAt: 'Lu à {at}',
+            range: {
+                label: 'Plage',
+                '15m': '15 dernières minutes',
+                '1h': 'Dernière heure',
+                '6h': '6 dernières heures',
+                '24h': '24 dernières heures',
+            },
+            level: {
+                label: 'Niveau',
+                any: 'Tous les niveaux',
+            },
+            source: {
+                label: 'Source',
+                any: 'Toutes les sources',
+            },
+            component: {
+                label: 'Composant',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Étiquette',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Message',
+                placeholder: 'Rechercher dans le message',
+            },
+            search: 'Rechercher',
+            columns: {
+                time: 'Heure',
+                level: 'Niveau',
+                source: 'Source',
+                name: 'Nom',
+                component: 'Composant',
+                message: 'Message',
+            },
+            entries: {
+                title: 'Entrées',
+                count: '{shown} sur {total}',
+                showing: 'Affichage de {from}–{to} sur {total} entrées',
+                previous: 'Précédent',
+                next: 'Suivant',
+                paging:
+                    'La lecture répond une page à la fois ; le total est tout ce que le filtre correspond.',
+                nothingMatches: 'Aucune correspondance',
+                empty: 'Aucune entrée ne correspond au filtre dans cette plage. Élargissez la plage ou retirez un filtre.',
+                emptyHint:
+                    'Les filtres se combinent avec AND, chacun réduit donc la réponse, et le magasin ne contient aujourd’hui que des lignes serveur.',
+            },
+            gap: {
+                client: {
+                    title: 'Le magasin ne contient aucune ligne client',
+                    body: 'La requête filtre par source, et le seul éditeur est le wrapper de calcul, dont le service marque les lots comme entrées serveur. Rien ne publie d’entrées client aujourd’hui, bien que l’énumération et le filtre les prennent tous deux en charge. Tant qu’un éditeur client n’existe pas, l’écran ne doit pas offrir une valeur de filtre qui ne peut jamais correspondre.',
+                },
+                and: {
+                    title: 'Les filtres ne sont que AND',
+                    body: 'Il n’existe aucun moyen de demander un niveau ou un autre, ni d’exclure un composant. Le candidat est un moyen d’exprimer une disjonction dans la requête par ailleurs conjonctive.',
+                },
+                suggest: {
+                    title: 'Rien ne suggère les valeurs de filtre',
+                    body: 'Le composant, l’étiquette, le nom de source et le niveau se saisissent de mémoire, et une faute de frappe répond une page vide qui ressemble à un système calme. Le candidat est une lecture des valeurs présentes dans la plage, pour que l’écran offre les vrais composants et étiquettes.',
+                },
+                sql: {
+                    title: 'Les filtres message et composant sont construits comme du texte SQL',
+                    body: 'La requête interpole ces deux filtres dans des motifs LIKE avec un échappeur écrit à la main, alors que tous les autres dépôts lient leurs valeurs (The telemetry log query escapes SQL by hand). C’est un défaut sous la lecture, pas une fonctionnalité manquante : liez les valeurs avant qu’un écran ne s’appuie sur elles.',
+                },
+                stats: {
+                    title: 'Les agrégats stockés n’ont pas de sujet',
+                    body: 'La base de données calcule déjà des statistiques horaires, quotidiennes et par session, et aucune lecture ne les sert (Expose the telemetry stats surface). Un graphique du nombre de lignes dans le temps — « quand les erreurs ont-elles commencé » — est la première chose qu’un opérateur demande après le tableau.',
+                },
+                permission: {
+                    title: 'La lecture ne vérifie aucune permission',
+                    body: 'Le gestionnaire authentifie le jeton puis sert n’importe quel compte connecté. Le candidat est une permission dédiée que le modèle garde, comme les lectures de locataires gardent iam::tenants:read. Le manque n’est pas propre à cette lecture (Nothing gates a hand-written operation handler).',
+                },
+            },
+        },
         versions: {
             title: 'Opérations : versions et base de données',
             description:

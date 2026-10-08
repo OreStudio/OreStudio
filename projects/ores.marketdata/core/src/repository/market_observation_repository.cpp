@@ -422,14 +422,14 @@ namespace {
 
 /*
  * The manual points that own their coordinate for reading: the observation
- * each current manual annex row of this series keyed. The annex is cold and
- * holds only hand-keyed points, so this read is small; keeping it separate
- * from the observation scan leaves the tick path unchanged.
+ * each current manual annex row of this series keyed, with that row's own
+ * record time. The annex is cold and holds only hand-keyed points, so this
+ * read is small; keeping it separate from the observation scan leaves the
+ * tick path unchanged.
  */
-std::vector<domain::market_observation>
-read_manual_points(market_observation_repository::context ctx,
-                   const boost::uuids::uuid& series_id,
-                   ores::logging::logger_t& log) {
+std::vector<observation_record> read_manual_points(market_observation_repository::context ctx,
+                                                   const boost::uuids::uuid& series_id,
+                                                   ores::logging::logger_t& log) {
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     static const std::string sql = R"(
@@ -447,16 +447,18 @@ read_manual_points(market_observation_repository::context ctx,
     const auto rows = execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
 
-    std::vector<domain::market_observation> result;
+    std::vector<observation_record> result;
     result.reserve(rows.size());
     for (const auto& row : rows)
-        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+        result.push_back(
+            {market_observation_mapper::map(as_of_observation(row, 0, "read_manual_points")),
+             as_of_recorded_at(row, 0, "read_manual_points")});
     return result;
 }
 
 }
 
-std::vector<domain::market_observation> market_observation_repository::read_as_of(
+std::vector<observation_record> market_observation_repository::read_as_of_records(
     context ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
@@ -484,24 +486,40 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     const auto rows = execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of curve snapshot");
 
-    std::vector<domain::market_observation> result;
+    std::vector<observation_record> result;
     result.reserve(rows.size());
     for (const auto& row : rows)
-        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+        result.push_back(
+            {market_observation_mapper::map(as_of_observation(row, 0, "read_as_of_records")),
+             as_of_recorded_at(row, 0, "read_as_of_records")});
 
     // A current manual point owns its coordinate until cleared, overlaying the
     // fed value and any later automatic write. One whose instant is after the
     // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
-        if (manual.observation_datetime > as_of_datetime)
+        if (manual.observation.observation_datetime > as_of_datetime)
             continue;
-        const auto it =
-            std::ranges::find(result, manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+        const auto it = std::ranges::find(
+            result, manual.observation.oresmd_uri, [](const observation_record& record) {
+                return record.observation.oresmd_uri;
+            });
         if (it != result.end())
             *it = manual;
         else
             result.push_back(manual);
     }
+    return result;
+}
+
+std::vector<domain::market_observation> market_observation_repository::read_as_of(
+    context ctx,
+    const boost::uuids::uuid& series_id,
+    const std::chrono::system_clock::time_point& as_of_datetime) {
+    const auto records = read_as_of_records(ctx, series_id, as_of_datetime);
+    std::vector<domain::market_observation> result;
+    result.reserve(records.size());
+    for (const auto& record : records)
+        result.push_back(record.observation);
     return result;
 }
 
@@ -577,14 +595,14 @@ market_observation_repository::read_as_of_buckets(
         for (unsigned int i = 0; i < bucket_count; ++i) {
             const auto offset = std::chrono::seconds(static_cast<long long>(bucket_count - 1 - i) *
                                                      bucket_size.count());
-            if (manual.observation_datetime > latest_boundary - offset)
+            if (manual.observation.observation_datetime > latest_boundary - offset)
                 continue;
             const auto it = std::ranges::find(
-                result[i], manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+                result[i], manual.observation.oresmd_uri, &domain::market_observation::oresmd_uri);
             if (it != result[i].end())
-                *it = manual;
+                *it = manual.observation;
             else
-                result[i].push_back(manual);
+                result[i].push_back(manual.observation);
         }
     }
     return result;

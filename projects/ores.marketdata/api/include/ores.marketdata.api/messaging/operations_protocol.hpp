@@ -225,6 +225,47 @@ struct get_curve_snapshot_request {
 
 struct get_curve_snapshot_response {
     std::vector<ores::marketdata::domain::market_observation> observations;
+    /**
+     * @brief The instant the snapshot is as of, which is what an age is measured
+     * from.
+     *
+     * Without it a reader measures an age from its own clock, so clock skew shows
+     * up as staleness that is not in the curve.
+     */
+    std::chrono::system_clock::time_point as_of;
+    /** When each point was recorded, index-for-index with observations: the
+     * bitemporal valid_from of the row it was read from. Two ages are readable
+     * from a point and they answer different questions: the snapshot instant
+     * minus the point's instant is market staleness, the age of the market state
+     * it belongs to; now minus its record time is record staleness, how long ago
+     * the value arrived.
+     */
+    std::vector<std::chrono::system_clock::time_point> recorded_at;
+    /**
+     * @brief The age of the snapshot's oldest point, in seconds.
+     *
+     * Market staleness, not record staleness: the age of the market state the
+     * point belongs to, which is what decides whether a drawn curve is one market
+     * read or a stitching of several. Zero for an empty snapshot.
+     */
+    std::int64_t oldest_age_seconds = 0;
+    /**
+     * @brief The spread between the oldest and the newest point, in seconds.
+     *
+     * The number that measures the mixing: points that share one instant have a
+     * spread of zero however old that instant is, and a curve stitched across
+     * market horizons does not. A point whose instant is after the snapshot
+     * instant carries no age at all, and one exactly at it is age zero and counts.
+     */
+    std::int64_t spread_seconds = 0;
+    /**
+     * @brief Whether the snapshot is mixed enough that a view must not draw it
+     * silently.
+     *
+     * The threshold is stated by the evolution journey, not by this message: the
+     * read reports the crossing, and the view decides what to show.
+     */
+    bool warning = false;
     bool success = false;
     std::string message;
 };

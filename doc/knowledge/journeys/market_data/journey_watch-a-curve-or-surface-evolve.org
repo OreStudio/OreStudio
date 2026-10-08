@@ -21,8 +21,9 @@ each step needs.
 
 "I want to see how this curve or surface moved, so I can tell whether today's
 shape is where it should be." The journey is done when the consumer has read
-one instant, has read a range at the zoom they need, and can name the nodes
-that appeared or dropped between two instants.
+one instant, has read a range at the zoom they need, can name the nodes that
+appeared or dropped between two instants, and can tell a curve built from one
+market state from a curve stitched across several.
 
 * Actor and trigger
 
@@ -53,23 +54,56 @@ snapshot reads carry an =oresmd_uri=, not a curve id. See /What is missing/.
    step. The system resolves one snapshot per bucket, one every step, so the
    screen holds the curve at each boundary. Today the read ends at now and
    takes a step and a count, not a start and an end; see /What is missing/.
-4. *Read the aligned view.* The system lines the instants up by node, so each
+4. *Read how stale the snapshot is.* Every point carries the instant it
+   represents and the instant it was recorded, and the read states the instant
+   it is relative to. The screen draws an age band per point, the oldest
+   point's age, and the spread between the oldest and the newest. A term
+   structure is drawn from points that rarely share one observation instant, so
+   without this a plot of a composite reads as a single market state.
+5. *Read the aligned view.* The system lines the instants up by node, so each
    row is one =oresmd_uri= across every instant and each column is one instant.
    The alignment is the screen's own: the read hands back each bucket's
    observations unaligned and with text values; see /What is missing/.
-5. *Name the added and dropped nodes.* The person asks what changed between two
+6. *Name the added and dropped nodes.* The person asks what changed between two
    instants. The system compares their node sets and labels every node that
    appeared or dropped, beside the value change per node. A node the series
    identity names but an instant does not carry cannot be told from a node that
    was never part of the shape; see /What is missing/.
-6. *Compare two instants.* The person selects two instants. The system shows
-   them side by side, the signed difference per node, and the added and dropped
-   set from step 5.
-7. *Leave.* The person goes back to the series list or to the report they came
+7. *Compare two instants.* The person selects two instants. The system shows
+   them side by side, the signed difference per node, the added and dropped set
+   from step 6, and each point's age beside its value, because a difference
+   between two points recorded far apart is not a move in the market.
+8. *Leave.* The person goes back to the series list or to the report they came
    from.
 
-The reads in steps 2 and 3 are answered inside the reply. The journey carries
-no state of its own; leaving it and returning re-reads the series.
+The reads in steps 2, 3 and 4 are answered inside the reply. Step 4's age is
+measured from the read's own instant and from the reader's clock in no case: the
+reply states the instant it is relative to, so clock skew cannot show up as
+staleness that is not in the curve. The journey carries no state of its own;
+leaving it and returning re-reads the series.
+
+* The staleness threshold
+
+Two ages are readable from a point and they answer different questions. *Market
+staleness* is the read's instant minus the point's instant: the age of the
+market state the point belongs to. *Record staleness* is now minus the point's
+record time: how long ago the value arrived. The spread is the oldest market age
+minus the newest, and it is the spread that measures the mixing, because points
+that share one instant have a spread of zero however old that instant is.
+
+*The threshold is half an hour of spread.* A spread of 30 minutes or more is a
+warning: the screen says the curve is stitched across market horizons rather
+than one market state, and it draws the per-point ages beside it instead of the
+plot alone. Below 30 minutes the screen says the curve reads as one market
+state. The number is where it is because the feeds behind a stitched curve
+publish within minutes of each other at worst, so half an hour cannot be
+produced by one publication round: a curve at or over it is built from at least
+two.
+
+The read reports the crossing and nothing more: =warning= is set when the spread
+is at or over the threshold, and the screen decides what to draw. A client that
+wanted its own threshold could not enforce it, because only the read knows the
+instant the ages are relative to.
 
 * Screens and wireframes
 
@@ -89,6 +123,7 @@ no build step and no session. It argues that one instant and a range are the sam
 
 - Variants :: a the matrix of instants by nodes, b a per-node sparkline list, c a two-instant compare
 - States :: stable, churn, surface; =?show== picks one instant or a range
+- Staleness :: every panel carries an age band per point, the oldest point's age and the spread; the =stable= market is a curve read from one instant and the =churn= and =surface= markets are stitched across market horizons, so switching between them shows the warning appearing at the threshold above
 - Source :: =doc/prototypes/market_data/watch-a-curve-or-surface-evolve/index.html=
 - Open :: =/OreStudio/doc/prototypes/market_data/watch-a-curve-or-surface-evolve/= once the site is built, or the
   file directly
@@ -120,6 +155,7 @@ derived.
 | Choose the object | List a series' asset classes | =marketdata.v1.market_series_asset_classes.list= | exists |
 | Choose the object | List the classification rules | =marketdata.v1.series_classification_rules.list= | exists |
 | Pick an instant | Read the latest value per node, as of now | =marketdata.v1.curve_snapshot.get= | partial |
+| Read how stale the snapshot is | Read each point's instant, its record time and the spread | =marketdata.v1.curve_snapshot.get= | exists |
 | Pick a range | Read one snapshot per bucket, ending now | =marketdata.v1.ops.get_curve_snapshot_buckets= | partial |
 | Read the aligned view | List the raw observations of a series | =marketdata.v1.market_observations.list_by_series_id= | exists |
 | Read the aligned view | Read one observation | =marketdata.v1.market_observations.get= | exists |

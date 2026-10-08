@@ -420,6 +420,106 @@ The series identity every market_series row is keyed by.
 :cpp_type: std::vector<ores::marketdata::domain::market_observation>
 :END:
 
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The instant the read is relative to, and therefore the instant an age is
+measured from. It is sent because the reader has its own clock: a client that
+subtracted its own =now()= would report a curve as stale by the skew between
+the two, and a skewed client would report a fresh curve as stitched.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the snapshot is as of, which is what an age is measured
+ * from.
+ *
+ * Without it a reader measures an age from its own clock, so clock skew shows
+ * up as staleness that is not in the curve.
+ */
+#+end_src
+
+*** recorded_at
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::system_clock::time_point>
+:END:
+
+When each point's row was recorded, index-for-index with =observations=: the
+=valid_from= of the row the point was read from. A point read from a manual
+row carries that row's own record time, not the time of the value it replaced.
+
+#+begin_src cpp :name comment
+/** When each point was recorded, index-for-index with observations: the
+ * bitemporal valid_from of the row it was read from. Two ages are readable
+ * from a point and they answer different questions: the snapshot instant
+ * minus the point's instant is market staleness, the age of the market state
+ * it belongs to; now minus its record time is record staleness, how long ago
+ * the value arrived.
+ */
+#+end_src
+
+*** oldest_age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The age of the oldest point of the snapshot, in seconds: the snapshot instant
+minus that point's instant. Zero for an empty snapshot, which holds no point
+and so mixes nothing.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The age of the snapshot's oldest point, in seconds.
+ *
+ * Market staleness, not record staleness: the age of the market state the
+ * point belongs to, which is what decides whether a drawn curve is one market
+ * read or a stitching of several. Zero for an empty snapshot.
+ */
+#+end_src
+
+*** spread_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+The oldest point's age minus the newest point's age, in seconds. This is the
+number that measures the mixing: a curve whose points share one instant has a
+spread of zero however old that instant is, and one stitched across market
+horizons does not.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The spread between the oldest and the newest point, in seconds.
+ *
+ * The number that measures the mixing: points that share one instant have a
+ * spread of zero however old that instant is, and a curve stitched across
+ * market horizons does not. A point whose instant is after the snapshot
+ * instant carries no age at all, and one exactly at it is age zero and counts.
+ */
+#+end_src
+
+*** warning
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the spread is wide enough that a view must not draw the snapshot
+silently, because it is a composite of several market states rather than one.
+The threshold is stated by the evolution journey; the read only reports it.
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the snapshot is mixed enough that a view must not draw it
+ * silently.
+ *
+ * The threshold is stated by the evolution journey, not by this message: the
+ * read reports the crossing, and the view decides what to show.
+ */
+#+end_src
+
 *** success
 :PROPERTIES:
 :cpp_type: bool

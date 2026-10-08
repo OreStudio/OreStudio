@@ -247,31 +247,50 @@ market_observation_repository::read_latest_for_series(context ctx,
 }
 #+end_src
 
-*** read_as_of
+*** read_as_of_records
 :PROPERTIES:
-:ID: DC30AF4E-4EFB-40E6-B883-285F7E072FC5
+:ID: A7C41D2B-5E88-4F30-B6D1-93E7C2A45F08
 :END:
 
-Reconstructs a curve or grid snapshot for a series as of a given time: the
-latest observation per =oresmd_uri= at or before =as_of_datetime=. It is correct
-whether every point shares one observation time or the points tick
+Reconstructs a curve or grid snapshot as of a given time, with each point's
+record time: the latest observation per =oresmd_uri= at or before
+=as_of_datetime=, each beside the =valid_from= of the row it came from. It is
+correct whether every point shares one observation time or the points tick
 independently.
 
-A current manual point owns its coordinate for reading, so the snapshot
-overlays any manual point keyed at or before =as_of_datetime=: the fed value
-it replaced, and any later automatic write to the same coordinate, do not
-displace it until the manual point is cleared.
+This is the read; =read_as_of= is its projection. A consumer that draws the
+snapshot needs the observations; one that reports how stale the snapshot is
+needs both facts. Keeping one read means the paging rule, the manual overlay
+and the point's record time have one home, and a value and a record time can
+never be read from two queries that disagree.
+
+#+begin_src cpp :name type_declarations :implements E4B7A1C3-9D25-4F68-B0A7-3C6E8D1F5A92
+
+// Declared here and defined in as_of_rows.hpp. The header that declares this
+// repository needs the name only, and the definition sits beside the read that
+// builds it, so a caller that wants the record times includes that one.
+struct observation_record;
+
+#+end_src
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<observation_record>
+read_as_of_records(context ctx,
+                   const boost::uuids::uuid& series_id,
+                   const std::chrono::system_clock::time_point& as_of_datetime);
+#+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 namespace {
 
 /*
  * The manual points that own their coordinate for reading: the observation
- * each current manual annex row of this series keyed. The annex is cold and
- * holds only hand-keyed points, so this read is small; keeping it separate
- * from the observation scan leaves the tick path unchanged.
+ * each current manual annex row of this series keyed, with that row's own
+ * record time. The annex is cold and holds only hand-keyed points, so this
+ * read is small; keeping it separate from the observation scan leaves the
+ * tick path unchanged.
  */
-std::vector<domain::market_observation>
+std::vector<observation_record>
 read_manual_points(market_observation_repository::context ctx,
                    const boost::uuids::uuid& series_id,
                    ores::logging::logger_t& log) {
@@ -292,25 +311,18 @@ read_manual_points(market_observation_repository::context ctx,
     const auto rows = execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, MAX_TIMESTAMP}, log, "reading manual curve points");
 
-    std::vector<domain::market_observation> result;
+    std::vector<observation_record> result;
     result.reserve(rows.size());
     for (const auto& row : rows)
-        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+        result.push_back({market_observation_mapper::map(
+                              as_of_observation(row, 0, "read_manual_points")),
+                          as_of_recorded_at(row, 0, "read_manual_points")});
     return result;
 }
 
 }
-#+end_src
 
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_observation>
-read_as_of(context ctx,
-           const boost::uuids::uuid& series_id,
-           const std::chrono::system_clock::time_point& as_of_datetime);
-#+end_src
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::market_observation> market_observation_repository::read_as_of(
+std::vector<observation_record> market_observation_repository::read_as_of_records(
     context ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
@@ -338,24 +350,68 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     const auto rows = execute_parameterized_multi_column_query(
         ctx, sql, {tid, sid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of curve snapshot");
 
-    std::vector<domain::market_observation> result;
+    std::vector<observation_record> result;
     result.reserve(rows.size());
     for (const auto& row : rows)
-        result.push_back(market_observation_mapper::map(as_of_observation(row, 0, "read_as_of")));
+        result.push_back({market_observation_mapper::map(
+                              as_of_observation(row, 0, "read_as_of_records")),
+                          as_of_recorded_at(row, 0, "read_as_of_records")});
 
     // A current manual point owns its coordinate until cleared, overlaying the
     // fed value and any later automatic write. One whose instant is after the
     // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
-        if (manual.observation_datetime > as_of_datetime)
+        if (manual.observation.observation_datetime > as_of_datetime)
             continue;
         const auto it = std::ranges::find(
-            result, manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+            result, manual.observation.oresmd_uri, [](const observation_record& record) {
+                return record.observation.oresmd_uri;
+            });
         if (it != result.end())
             *it = manual;
         else
             result.push_back(manual);
     }
+    return result;
+}
+#+end_src
+
+*** read_as_of
+:PROPERTIES:
+:ID: DC30AF4E-4EFB-40E6-B883-285F7E072FC5
+:END:
+
+Reconstructs a curve or grid snapshot for a series as of a given time: the
+latest observation per =oresmd_uri= at or before =as_of_datetime=. It is correct
+whether every point shares one observation time or the points tick
+independently.
+
+A current manual point owns its coordinate for reading, so the snapshot
+overlays any manual point keyed at or before =as_of_datetime=: the fed value
+it replaced, and any later automatic write to the same coordinate, do not
+displace it until the manual point is cleared.
+
+It is the observations of =read_as_of_records= and nothing else: the points
+without their record times, for a consumer that draws the snapshot and does not
+report on it.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::market_observation>
+read_as_of(context ctx,
+           const boost::uuids::uuid& series_id,
+           const std::chrono::system_clock::time_point& as_of_datetime);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::market_observation> market_observation_repository::read_as_of(
+    context ctx,
+    const boost::uuids::uuid& series_id,
+    const std::chrono::system_clock::time_point& as_of_datetime) {
+    const auto records = read_as_of_records(ctx, series_id, as_of_datetime);
+    std::vector<domain::market_observation> result;
+    result.reserve(records.size());
+    for (const auto& record : records)
+        result.push_back(record.observation);
     return result;
 }
 #+end_src
@@ -452,14 +508,16 @@ market_observation_repository::read_as_of_buckets(
         for (unsigned int i = 0; i < bucket_count; ++i) {
             const auto offset = std::chrono::seconds(
                 static_cast<long long>(bucket_count - 1 - i) * bucket_size.count());
-            if (manual.observation_datetime > latest_boundary - offset)
+            if (manual.observation.observation_datetime > latest_boundary - offset)
                 continue;
             const auto it = std::ranges::find(
-                result[i], manual.oresmd_uri, &domain::market_observation::oresmd_uri);
+                result[i],
+                manual.observation.oresmd_uri,
+                &domain::market_observation::oresmd_uri);
             if (it != result[i].end())
-                *it = manual;
+                *it = manual.observation;
             else
-                result[i].push_back(manual);
+                result[i].push_back(manual.observation);
         }
     }
     return result;

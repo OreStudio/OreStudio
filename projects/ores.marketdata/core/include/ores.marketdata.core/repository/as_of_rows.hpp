@@ -20,8 +20,10 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_AS_OF_ROWS_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_AS_OF_ROWS_HPP
 
+#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_observation_entity.hpp"
+#include <chrono>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -36,6 +38,23 @@ namespace ores::marketdata::repository {
 using as_of_row = std::vector<std::optional<std::string>>;
 
 /**
+ * @brief One point of an as-of snapshot, with the row's record time.
+ *
+ * The domain type carries no bitemporal tail, so an observed value cannot say
+ * when it was recorded. A view that shows how stale a term structure is needs
+ * both facts together, and a reading that carried them apart could pair a value
+ * with a record time that never belonged to it.
+ */
+struct observation_record final {
+    domain::market_observation observation;
+
+    /**
+     * @brief The row's bitemporal valid_from: when this value was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+/**
  * @brief The observation an as-of read row carries, from column @p first on.
  *
  * The ten observation columns run from @p first in table order. A row with
@@ -47,6 +66,18 @@ using as_of_row = std::vector<std::optional<std::string>>;
 ORES_MARKETDATA_CORE_EXPORT market_observation_entity as_of_observation(const as_of_row& row,
                                                                         std::size_t first,
                                                                         std::string_view read);
+
+/**
+ * @brief The record time an as-of read row carries, from column @p first on.
+ *
+ * The row's valid_from is the last of the ten observation columns. It is a
+ * non-nullable bitemporal column, so a read that does not select it is a
+ * mistake rather than a null, and this throws, naming @p read.
+ *
+ * @throws std::runtime_error if the row is too short or carries no record time.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::chrono::system_clock::time_point
+as_of_recorded_at(const as_of_row& row, std::size_t first, std::string_view read);
 
 /**
  * @brief The bucket a bucketed as-of row belongs to, from its first column.

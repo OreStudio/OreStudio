@@ -41,6 +41,11 @@
 
 namespace ores::marketdata::repository {
 
+// Declared here and defined in as_of_rows.hpp. The header that declares this
+// repository needs the name only, and the definition sits beside the read that
+// builds it, so a caller that wants the record times includes that one.
+struct observation_record;
+
 /**
  * @brief Reads and writes market observations to data storage.
  */
@@ -225,6 +230,11 @@ public:
 
     std::vector<domain::market_observation>
     read_latest_for_series(context ctx, const boost::uuids::uuid& series_id);
+
+    std::vector<observation_record>
+    read_as_of_records(context ctx,
+                       const boost::uuids::uuid& series_id,
+                       const std::chrono::system_clock::time_point& as_of_datetime);
 
     std::vector<domain::market_observation>
     read_as_of(context ctx,

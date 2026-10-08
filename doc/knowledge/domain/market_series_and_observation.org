@@ -49,6 +49,30 @@ The observation type has no =version=, =modified_by=, =performed_by=,
 those columns impractical. =observation_datetime= is the financial valid
 time, and =valid_from= and =valid_to= carry the transaction time.
 
+** Why =valid_from= is projected onto the wire
+
+Because codegen drops the audit tail for a =:no_audit_columns: true= entity,
+the domain type carries neither =valid_from= nor =recorded_at=: the generated
+=market_observation.hpp= has only =id=, =party_id=, =series_id=,
+=observation_datetime=, =oresmd_uri=, =value= and =source=. The database column
+exists and every as-of read already selects it, so the gap is one projection
+rather than a schema change.
+
+=read_as_of_records= returns each point with the =valid_from= of the row it came
+from, in one query and one manual overlay, and =read_as_of= is its observations
+alone. The =curve_snapshot.get= reply then carries the record times as a
+parallel array and states the instant the read is relative to, so a consumer can
+report how stale a term structure is. Two ages are readable and they answer
+different questions: the read's instant minus a point's =observation_datetime=
+is the age of the market state the point belongs to, and now minus its
+=valid_from= is how long ago the value arrived.
+
+Projecting =valid_from= rather than adding a column is deliberate. The value is
+already stored, and a second column holding the same instant could disagree with
+it. The column is transaction time, so a correction moves it: a point read from
+a corrected row carries the correction's record time, which is the one that
+answers when this value arrived.
+
 ** The producer kind stamp
 
 =market_series.producer_kind= defaults to VENDOR. The ingest loop stamps it

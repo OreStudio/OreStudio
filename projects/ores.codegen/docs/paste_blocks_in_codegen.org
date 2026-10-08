@@ -40,8 +40,14 @@ canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta
 | UUID                                    | Where injected                                      | Template                                                         |
 |-----------------------------------------+-----------------------------------------------------+------------------------------------------------------------------|
 | =DCA78C69-E508-48D9-9972-A9B8094D91FB= | Inside the repository class, before the closing =}= | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]]  |
+| =E4B7A1C3-9D25-4F68-B0A7-3C6E8D1F5A92= | In namespace scope, before the repository class | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]]  |
 | =F2EB1914-5E94-42CA-9C77-46BDB364BF9E= | Near the end of =_repository.cpp=, before =}= of namespace | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
 | =6141050C-0ED4-4680-B387-7DDDA3A69806= | Top of =_repository.cpp=, after the generated includes | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]]    |
+
+Use the namespace-scope point for a type a custom member's signature names but
+does not define -- a struct the repository returns, whose definition lives with
+the read that builds it. A forward declaration there keeps a caller that wants
+only the generated methods from pulling in that definition.
 
 ** Recipe: adding a custom repository method
 

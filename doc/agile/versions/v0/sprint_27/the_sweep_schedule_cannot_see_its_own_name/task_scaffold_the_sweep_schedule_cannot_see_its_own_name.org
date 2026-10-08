@@ -8,7 +8,7 @@
 #+filetags: :the_sweep_schedule_cannot_see_its_own_name:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-sweep-schedule-cannot-see-its-own-name
-#+pr:
+#+pr: 2888
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2888][#2888]] | [inbox] Let the job lookup see the name it matches on |
 
 * Review
 

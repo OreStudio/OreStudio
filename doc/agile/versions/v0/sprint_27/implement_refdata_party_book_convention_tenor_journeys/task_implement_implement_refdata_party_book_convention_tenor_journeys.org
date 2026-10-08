@@ -34,11 +34,11 @@ sets a code and no message.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | The catalogue and its two generated artefacts are done, and the store-side triggers are migrated. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Migrate the service template to the generated vocabulary. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -146,3 +146,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+PR #2786 lands the catalogue and the store side, and every acceptance
+criterion above holds on it.
+
+The catalogue is [[file:../../../../../projects/ores.database/modeling/ores.database.outcomes.org][ores.database.outcomes]], a new codegen model type. It
+holds 14 outcomes, three refused by the store and 11 by a request. Codegen
+renders both artefacts from it:
+
+- =projects/ores.database/include/ores.database/domain/outcome_code.hpp=, which
+  holds the enum, =to_string=, =outcome_of=, =describe= and the two =refuse=
+  overloads.
+- =projects/ores.sql/create/utility/outcome_functions_create.sql=, which holds
+  one message function per store outcome, the shared =ores_outcome_fill_fn=
+  renderer, and =ores_outcome_raise_fn=.
+
+339 regenerated create files lost their inline wording and their inline
+SQLSTATE. A trigger now states the code, the entity, the field and nothing
+else.
+
+Evidence, all on the merged tree:
+
+| Check | Result |
+|-------+--------|
+| =compass check --exclude-heavy= | 43 of 46 green; the three failures are pre-existing on =origin/main= |
+| =compass check --only build= | green |
+| =compass check --only db= | green, and the schema rebuilds from the regenerated SQL with exit code 0 |
+| =compass check --only ctest= | green across all 94 suites, services up |
+| =compass check --only pgtap= | green, including the new suite at 8 of 8 |
+| =outcome_code_tests.cpp= | green; it asserts the same literals as the pgTAP suite, so the two renderers cannot drift |
+
+**What this task does not land.** The service template keeps its 44 refusal
+sites. Two shapes cannot fill a catalogue sentence from what they hold today:
+a removal conflict returns =remove_status::conflicting=, an enum with no
+version behind it, and =prepare_change= holds no stringified key. The unit
+that follows either drops the concrete key value from the two store sentences
+or has the repository carry the current version on a conflict.
+
+**A drift repair this task did not do, and the next one must.** Regenerating
+=ores.cpp= at =HEAD= does not reproduce the committed scheduler, inbox,
+synthetic and trading sources. =check_component_drift.py --all= never saw it,
+because =COMPONENTS_UNDER_TEST= omits those components, and =--sweep= only
+fails on files the branch touched. The visible symptom is
+=job_definition_service.cpp= calling =request.filter= and =request.as_of=,
+which the committed protocol lacks; regenerating the protocol adds both.

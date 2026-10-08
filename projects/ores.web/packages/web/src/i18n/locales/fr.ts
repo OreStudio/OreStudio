@@ -896,6 +896,51 @@ const fr: SourceCatalogue = {
             logs: 'Journaux de télémétrie',
             logsBody: 'Les lignes écrites par les services, les plus récentes en premier.',
         },
+        services: {
+            title: 'Opérations : services',
+            description:
+                'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les enveloppes de calcul appartiennent à l’écran de la grille.',
+            updated: 'Mis à jour à {at}',
+            refresh: 'Actualiser',
+            skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
+            instances: {
+                title: 'Instances',
+                reported:
+                    '{running} instances sur {total} se sont signalées au cours des {minutes} dernières minutes',
+                lost: '{count} perdues',
+                missing: '{count} manquantes',
+            },
+            columns: {
+                service: 'Service',
+                instances: 'Instances',
+                instance: 'Instance',
+                status: 'État',
+                version: 'Version',
+                lastHeartbeat: 'Dernier battement',
+            },
+            count: '{reported} sur {expected}',
+            ago: 'il y a {age}',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            hint: 'Lecture seule. Une ligne par instance attendue, qu’elle se signale ou non. L’identifiant d’instance est un UUID que le publicateur de battements génère au démarrage ; la colonne montre ses huit premiers caractères.',
+            gap: {
+                quiet: {
+                    title: 'Pourquoi une instance s’est tue',
+                    body: 'Une instance qui s’est signalée puis s’est tue se lit « perdue », car un battement ne peut pas distinguer un service que quelqu’un a arrêté d’un service qui est tombé — l’énumération d’état utilise « perdu » pour exactement cette raison. Les distinguer est « Enregistrer les démarrages et arrêts de service », qui est encore BACKLOG et enregistrerait un démarrage et un arrêt propre via le cycle de vie partagé des services.',
+                },
+                release: {
+                    title: 'Le battement énonce la version, pas la construction',
+                    body: 'Chaque service envoie sa chaîne ORES_VERSION, donc deux constructions issues d’une même version sont identiques ici, et une reconstruction sans changement de version est invisible. Le candidat est que le battement porte la chaîne de version complète — celle que la réponse de connexion énonce déjà.',
+                },
+                uptime: {
+                    title: 'Aucune durée de fonctionnement',
+                    body: 'Rien n’indique quand une instance a démarré, donc l’écran ne peut pas distinguer une instance qui vient de redémarrer d’une instance qui tourne depuis des semaines ; l’âge d’un battement ne répond à aucune des deux questions. Les candidats sont une heure de démarrage et un compteur de redémarrages sur le battement.',
+                },
+            },
+        },
         versions: {
             title: 'Opérations : versions et base de données',
             description:
@@ -953,6 +998,7 @@ const fr: SourceCatalogue = {
             services: 'Voir les services en cours',
             logs: 'Lire les journaux de télémétrie',
             grid: 'Surveiller la grille de calcul',
+            bus: 'Surveiller le bus de messages',
             audit: 'Auditer les connexions',
             versions: 'Vérifier les versions et la base de données',
         },

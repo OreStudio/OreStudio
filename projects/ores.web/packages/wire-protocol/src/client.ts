@@ -20,6 +20,7 @@
  */
 
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
+import type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -79,6 +80,8 @@ import {
     toRetryWorkflowInstanceResult,
     passwordPolicyReplySchema,
     toPasswordPolicy,
+    serviceRosterReplySchema,
+    serviceRosterRequestSchema,
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
@@ -895,6 +898,27 @@ export class OresClient {
             accountPageSchema,
             { timeoutMs: this.#timeouts.fastMs },
         );
+    }
+
+    /**
+     * The services roster: every expected instance and its last report.
+     *
+     * The reply is one slot per expected instance, ordered by service name and
+     * then slot, so a caller renders it as it arrives. A refusal the read
+     * states in its body is an error rather than an empty list: an empty list
+     * would read as an installation with no services.
+     */
+    async serviceRoster(): Promise<readonly ServiceRosterSlot[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.serviceRoster,
+            serviceRosterRequestSchema.parse({}),
+            serviceRosterReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.serviceRoster, reply.message);
+        }
+        return reply.slots;
     }
 
     /**

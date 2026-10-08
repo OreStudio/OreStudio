@@ -51,6 +51,12 @@ import { subjects as businessCentreSubjects } from './generated/refdata/protocol
 import { subjects as countrySubjects } from './generated/refdata/protocol/country_protocol.js';
 import { subjects as imageSubjects } from './generated/assets/protocol/image_protocol.js';
 import {
+    subjects as serviceSampleSubjects,
+    type GetServiceRosterRequest,
+    type GetServiceRosterResponse,
+    type ServiceRosterSlot,
+} from './generated/telemetry/protocol/service_samples_protocol.js';
+import {
     subjects as workflowSubjects,
     type GetWorkflowStepsRequest,
     type GetWorkflowStepsResponse,
@@ -80,6 +86,7 @@ export const SUBJECTS = {
     listAccounts: 'iam.v1.accounts.list',
     listChangeReasons: 'dq.v1.change_reasons.list',
     listImages: imageSubjects.list_images_request,
+    serviceRoster: serviceSampleSubjects.get_service_roster_request,
     bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
     createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
@@ -1544,3 +1551,66 @@ export function toSignupOutcome(reply: z.infer<typeof signupReplySchema>): Signu
         roleId: reply.role_id,
     };
 }
+
+/**
+ * The services roster: every expected instance, and the last it reported.
+ *
+ * The roster read answers one slot per expected instance, ordered by service
+ * name and then slot, so a service that never reported keeps its rows and its
+ * state word rather than leaving the list. The request carries no fields, and
+ * the schema is strict, so a caller that sends one is refused rather than
+ * having it silently stripped.
+ */
+export const serviceRosterRequestSchema = z
+    .object({})
+    .strict() satisfies z.ZodType<GetServiceRosterRequest>;
+
+/** One expected instance as the roster read answers it. */
+export const serviceRosterSlotSchema = z.object({
+    service_name: z.string(),
+    display_name: text,
+    description: text,
+    service_account: z.string().nullable().default(null),
+    /* No default: two omitted slots would collide on a list key. */
+    slot: z.int().nonnegative(),
+    /*
+     * Running, lost or missing, in the read's own words. It stays a string
+     * here: which words are the installation's is the screen's question, and
+     * a word the read gains reaches the screen rather than failing the parse.
+     * It has no default either, because an omitted state renders as an empty
+     * tag that states nothing.
+     */
+    state: z.string(),
+    instance_id: z.string().nullable().default(null),
+    host_id: z.string().nullable().default(null),
+    version: z.string().nullable().default(null),
+    sampled_at: z.string().nullable().default(null),
+}) satisfies z.ZodType<ServiceRosterSlot>;
+
+/** `get_service_roster_response`, before the rows are dated. */
+export const serviceRosterReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    slots: z.array(serviceRosterSlotSchema).default([]),
+}) satisfies z.ZodType<GetServiceRosterResponse>;
+
+/**
+ * One roster row as the browser reads it: the expected instance, and how long
+ * ago it last reported.
+ *
+ * The age is marked by the BFF, which holds the same clock the samples were
+ * stored against; a browser that subtracted from its own clock would state an
+ * age the deployment never measured.
+ */
+export const serviceRosterRowSchema = serviceRosterSlotSchema.extend({
+    age_seconds: z.int().nonnegative().nullable().default(null),
+});
+
+export type ServiceRosterRow = z.infer<typeof serviceRosterRowSchema>;
+
+/** The body of the browser's services read. */
+export const serviceRosterViewSchema = z.object({
+    rows: z.array(serviceRosterRowSchema).default([]),
+});
+
+export type ServiceRosterView = z.infer<typeof serviceRosterViewSchema>;

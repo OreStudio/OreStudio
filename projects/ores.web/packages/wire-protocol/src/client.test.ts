@@ -259,6 +259,66 @@ describe('OresClient authenticated calls', () => {
         });
     });
 
+    it('reads the services roster, and sends the empty request it declares', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.ops.get_service_roster': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        slots: [
+                            {
+                                service_name: 'ores.iam.service',
+                                state: 'running',
+                                slot: 1,
+                                instance_id: '91b0f33d-4b32-4f65-8809-2d3e4f506172',
+                                version: 'v0.0.25',
+                                sampled_at: '2026-10-04 14:32:00Z',
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const slots = await client.serviceRoster();
+
+        expect(transport.calls[1]?.subject).toBe('telemetry.v1.ops.get_service_roster');
+        expect(transport.decodeCall(1)).toEqual({});
+        // A field the reply left out is stated as nothing rather than invented,
+        // so a slot no instance fills cannot read as a reporting one.
+        expect(slots).toEqual([
+            {
+                service_name: 'ores.iam.service',
+                display_name: '',
+                description: '',
+                service_account: null,
+                slot: 1,
+                state: 'running',
+                instance_id: '91b0f33d-4b32-4f65-8809-2d3e4f506172',
+                host_id: null,
+                version: 'v0.0.25',
+                sampled_at: '2026-10-04 14:32:00Z',
+            },
+        ]);
+    });
+
+    it('refuses a roster the server did not read, rather than reading it as empty', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.ops.get_service_roster': [
+                { body: { success: false, message: 'denied', slots: [] } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.serviceRoster()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
     it('refreshes once and retries when the server reports an expired token', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],

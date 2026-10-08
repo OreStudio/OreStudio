@@ -41,6 +41,7 @@ export function OperationsArea(): ReactNode {
         {
             title: t('operations.screens.services'),
             body: t('operations.screens.servicesBody'),
+            to: '/operations/services',
         },
         {
             title: t('operations.screens.grid'),

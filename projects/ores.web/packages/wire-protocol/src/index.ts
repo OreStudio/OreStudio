@@ -320,6 +320,17 @@ export type {
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
 
+// The services roster the operations screen reads: the request, the wire reply,
+// and the view the BFF serves the browser with each row's age marked.
+export {
+    serviceRosterReplySchema,
+    serviceRosterRequestSchema,
+    serviceRosterRowSchema,
+    serviceRosterSlotSchema,
+    serviceRosterViewSchema,
+} from './operations.js';
+export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
+
 // The door: what the deployment offers somebody who is not in it yet, and the
 // registration that acts on that answer.
 export {

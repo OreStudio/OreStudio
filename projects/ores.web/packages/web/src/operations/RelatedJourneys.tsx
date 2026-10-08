@@ -50,17 +50,29 @@ export const JOURNEY_IDS = [
     'ED949529-0A80-4661-BBAC-E5DB7A6E5828',
     '57C4B9A6-DA79-403E-984E-50D2561352B3',
     '7B820710-161C-4926-B5AA-5EF2772A3652',
+    'EE26E58C-F389-4E82-BF96-EC5324F9F795',
+    'C3D59907-9D6A-448C-9A61-9E750755BBFB',
     '22AC8DD8-A440-4330-9992-47A5E9985473',
 ] as const;
 export type JourneyId = (typeof JOURNEY_IDS)[number];
 
 export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
     // See the running services.
-    'ED949529-0A80-4661-BBAC-E5DB7A6E5828': { titleKey: 'operations.journeys.services' },
+    'ED949529-0A80-4661-BBAC-E5DB7A6E5828': {
+        titleKey: 'operations.journeys.services',
+        to: '/operations/services',
+    },
     // Read the telemetry logs.
     '57C4B9A6-DA79-403E-984E-50D2561352B3': { titleKey: 'operations.journeys.logs' },
     // Watch the compute grid.
     '7B820710-161C-4926-B5AA-5EF2772A3652': { titleKey: 'operations.journeys.grid' },
+    // Watch the message bus.
+    'EE26E58C-F389-4E82-BF96-EC5324F9F795': { titleKey: 'operations.journeys.bus' },
+    // Check the versions and the database.
+    'C3D59907-9D6A-448C-9A61-9E750755BBFB': {
+        titleKey: 'operations.journeys.versions',
+        to: '/operations/versions',
+    },
     // Audit sign-ins.
     '22AC8DD8-A440-4330-9992-47A5E9985473': {
         titleKey: 'operations.journeys.audit',

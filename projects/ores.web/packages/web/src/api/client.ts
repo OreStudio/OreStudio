@@ -74,6 +74,7 @@ import {
     deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
+    serviceRosterViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -93,6 +94,7 @@ import {
     type RegistrationPolicyView,
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
+    type ServiceRosterRow,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -1054,6 +1056,19 @@ export const api = {
             await request('/api/tenant-types', { method: 'GET' }),
         );
         return payload.types;
+    },
+
+    /**
+     * The services roster: every expected instance and when it last reported.
+     *
+     * The BFF marks each row's age from the deployment's clock, so a row's age
+     * is the deployment's measurement rather than this browser's subtraction.
+     */
+    async services(): Promise<readonly ServiceRosterRow[]> {
+        const payload = serviceRosterViewSchema.parse(
+            await request('/api/operations/services', { method: 'GET' }),
+        );
+        return payload.rows;
     },
 
     /**

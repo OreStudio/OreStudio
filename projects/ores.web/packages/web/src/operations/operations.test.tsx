@@ -24,12 +24,21 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
-import type { SessionView } from '@ores/wire-protocol/browser';
+import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { enFlat } from '../i18n/locales/en.js';
+import { frFlat } from '../i18n/locales/fr.js';
+import { createTranslator } from '../i18n/translate.js';
 import { AppRoutes } from '../AppRoutes.js';
 import { menuFor } from '../shell/areas.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import { OperationsArea } from './OperationsArea.js';
+import {
+    SERVICE_RUNNING_WINDOW_MINUTES,
+    compareVersions,
+    newestVersionOf,
+} from './OperationsParts.js';
+import { ServicesPage, SERVICES_QUERY_KEY, formatAge, readTime } from './ServicesPage.js';
 import { VersionsPage } from './VersionsPage.js';
 
 /**
@@ -81,9 +90,17 @@ const READY: BootstrapState = {
     version: 'v0.0.25 (test)',
 };
 
-function withProviders(element: ReactNode, path = '/'): string {
+/** The source-language translator, for the units a bare function states. */
+const t = createTranslator('en', enFlat, enFlat).t;
+
+function withProviders(
+    element: ReactNode,
+    path = '/',
+    roster: readonly ServiceRosterRow[] = [],
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], { roles: [] });
+    client.setQueryData(SERVICES_QUERY_KEY, roster);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -93,7 +110,11 @@ function withProviders(element: ReactNode, path = '/'): string {
     );
 }
 
-function renderRoute(path: string, session: SessionView): string {
+function renderRoute(
+    path: string,
+    session: SessionView,
+    roster: readonly ServiceRosterRow[] = [],
+): string {
     return withProviders(
         <AppRoutes
             gate={READY}
@@ -109,6 +130,7 @@ function renderRoute(path: string, session: SessionView): string {
             onRetryBootstrap={() => undefined}
         />,
         path,
+        roster,
     );
 }
 
@@ -126,24 +148,38 @@ function fieldValue(html: string, label: string): string | undefined {
     return new RegExp(`>${label}</dt><dd[^>]*>(.*?)</dd>`).exec(html)?.[1];
 }
 
+/** One roster row as the BFF answers it: an expected instance and its age. */
+function rosterRow(overrides: Partial<ServiceRosterRow> = {}): ServiceRosterRow {
+    return {
+        service_name: 'ores.iam.service',
+        display_name: 'IAM Service',
+        description: '',
+        service_account: null,
+        slot: 1,
+        state: 'running',
+        instance_id: '91b0f33d-4b32-4f65-8809-2d3e4f506172',
+        host_id: null,
+        version: 'v0.0.25',
+        sampled_at: '2026-10-04 14:32:00Z',
+        age_seconds: 6,
+        ...overrides,
+    };
+}
+
 describe('the operations area', () => {
-    it('lists its screens, and links only the one that is built', () => {
+    it('lists its screens, and links only the two that are built', () => {
         const html = withProviders(<OperationsArea />);
 
         expect(html).toContain('href="/operations/versions"');
+        expect(html).toContain('href="/operations/services"');
         expect(html).toContain('Running services');
         expect(html).toContain('Compute grid');
         expect(html).toContain('Message bus');
         expect(html).toContain('Telemetry logs');
-        // The four screens the later units add carry no link at all, so a
+        // The three screens the later units add carry no link at all, so a
         // reader is never sent to a route that does not exist.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(4);
-        for (const route of [
-            '/operations/services',
-            '/operations/grid',
-            '/operations/bus',
-            '/operations/logs',
-        ]) {
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(3);
+        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
             expect(html).not.toContain(`href="${route}"`);
         }
     });
@@ -228,10 +264,11 @@ describe('the versions screen', () => {
         expect(html).toContain('Read the telemetry logs');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Audit sign-ins');
-        // Three journeys keep their screen for a later unit: they are stated,
-        // marked as unbuilt, and carry no link.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(3);
-        expect(html).not.toContain('href="/operations/services"');
+        // Two journeys keep their screen for a later unit: they are stated,
+        // marked as unbuilt, and carry no link. The services screen exists now,
+        // so the versions page links to it rather than naming it as unbuilt.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
+        expect(html).toContain('href="/operations/services"');
     });
 });
 
@@ -274,5 +311,208 @@ describe('the route to the versions screen', () => {
         expect(html).toContain('Your account');
         expect(html).toContain(`client ${__BUILD_VERSION__}`);
         expect(html).toContain(`server ${SESSION_VERSION}`);
+    });
+});
+
+describe('the services screen', () => {
+    it('shows one row per expected instance, as running, lost or missing', () => {
+        const html = withProviders(<ServicesPage />, '/', [
+            rosterRow({ slot: 1 }),
+            rosterRow({ slot: 2, instance_id: 'a3f81c02-6d44-4b0e-9c21-7f5e0d8a1b34' }),
+            rosterRow({
+                service_name: 'ores.reporting.service',
+                slot: 1,
+                state: 'lost',
+                instance_id: 'c9a3f10b-8f76-4da9-8c4d-61728394a5b6',
+                version: 'v0.0.24',
+                age_seconds: 900,
+            }),
+            rosterRow({
+                service_name: 'ores.analytics.service',
+                slot: 1,
+                state: 'missing',
+                instance_id: null,
+                version: null,
+                sampled_at: null,
+                age_seconds: null,
+            }),
+        ]);
+
+        // Every expected instance has a row, whether it reports or not: an
+        // empty table would read as an installation with no services.
+        expect(html).toContain('ores.iam.service');
+        expect(html).toContain('ores.reporting.service');
+        expect(html).toContain('ores.analytics.service');
+        expect(html).toContain(
+            `2 of 4 instances reported in the last ${String(SERVICE_RUNNING_WINDOW_MINUTES)} minutes`,
+        );
+        // The state words are the read's own; an instance that went quiet is
+        // lost, never stopped, because a heartbeat cannot tell the two apart.
+        expect(html.match(/>running</g) ?? []).toHaveLength(2);
+        expect(html.match(/>lost</g) ?? []).toHaveLength(1);
+        expect(html.match(/>missing</g) ?? []).toHaveLength(1);
+        expect(html).not.toContain('>stopped<');
+        // Two of two reported for IAM; nothing reported for either quiet
+        // service, so their counts are warned.
+        expect(html).toContain('2 of 2');
+        expect(html.match(/0 of 1/g) ?? []).toHaveLength(2);
+        // The instance id is shown by its first eight characters.
+        expect(html).toContain('>91b0f33d<');
+        // The age is what the BFF marked, so the screen does no subtraction.
+        expect(html).toContain('6 s ago');
+        expect(html).toContain('15 m 0 s ago');
+    });
+
+    it('leaves the compute wrappers to the grid screen', () => {
+        const html = withProviders(<ServicesPage />, '/', [
+            rosterRow(),
+            rosterRow({
+                service_name: 'ores.compute.wrapper',
+                slot: 1,
+                instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
+            }),
+        ]);
+
+        expect(html).toContain('ores.iam.service');
+        expect(html).not.toContain('ores.compute.wrapper');
+    });
+
+    it('names a service whose running instance trails the newest release', () => {
+        const html = withProviders(<ServicesPage />, '/', [
+            rosterRow(),
+            rosterRow({
+                service_name: 'ores.analytics.service',
+                slot: 1,
+                version: 'v0.0.24',
+                instance_id: 'a3f81c02-6d44-4b0e-9c21-7f5e0d8a1b34',
+            }),
+        ]);
+
+        expect(html).toContain('older build');
+        expect(html).toContain(
+            'Version skew: ores.analytics.service run v0.0.24 while the rest run v0.0.25',
+        );
+    });
+
+    it('calls v0.0.10 the newest release, and warns about v0.0.9', () => {
+        const html = withProviders(<ServicesPage />, '/', [
+            rosterRow({ version: 'v0.0.10' }),
+            rosterRow({
+                service_name: 'ores.analytics.service',
+                slot: 1,
+                version: 'v0.0.9',
+                instance_id: 'a3f81c02-6d44-4b0e-9c21-7f5e0d8a1b34',
+            }),
+        ]);
+
+        // String order would call v0.0.9 the newest and warn about v0.0.10
+        // instead, which is the wrong row and the wrong release.
+        expect(html).toContain('Version skew: ores.analytics.service run v0.0.9');
+        expect(html).toContain('while the rest run v0.0.10');
+    });
+
+    it('states only the gaps that are still open', () => {
+        const html = withProviders(<ServicesPage />, '/', [rosterRow()]);
+
+        expect(html).toContain('Why an instance went quiet');
+        expect(html).toContain('The heartbeat states the release, not the build');
+        expect(html).toContain('No uptime');
+        // Each gap names the journey that records it, as its lead promises.
+        expect(html).toContain('Recorded by See the running services');
+        // The roster read, its order, its permission and the host on the
+        // heartbeat are served now, so those gaps must not be stated as open.
+        for (const closed of [
+            'The expected services are not a read',
+            'The reply is unordered',
+            'No permission gates the read',
+            'The state comes from absence, not from a read',
+            'The heartbeat carries a host',
+        ]) {
+            expect(html).not.toContain(closed);
+        }
+    });
+
+    it('reaches the related journeys, and names the ones with no screen yet', () => {
+        const html = withProviders(<ServicesPage />, '/', [rosterRow()]);
+
+        expect(html).toContain('href="/operations/versions"');
+        expect(html).toContain('href="/audit"');
+        expect(html).toContain('Watch the compute grid');
+        expect(html).toContain('Watch the message bus');
+        expect(html).toContain('Read the telemetry logs');
+        // Three journeys keep their screen for a later unit: they are stated,
+        // marked as unbuilt, and carry no link.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(3);
+        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
+            expect(html).not.toContain(`href="${route}"`);
+        }
+    });
+
+    it('states a read time labelled UTC, and an age in units a person reads', () => {
+        expect(readTime(Date.UTC(2026, 9, 4, 14, 32, 5))).toBe('14:32:05 UTC');
+        expect(formatAge(6, t)).toBe('6 s');
+        expect(formatAge(900, t)).toBe('15 m 0 s');
+        expect(formatAge(7_320, t)).toBe('2 h 2 m');
+    });
+
+    it('takes the age units from the catalogue rather than from English', () => {
+        const french = createTranslator('fr', enFlat, frFlat).t;
+
+        expect(formatAge(900, french)).toBe('15 min 0 s');
+    });
+});
+
+describe('the newest release among the running instances', () => {
+    it('orders releases by their numbers, not by their spelling', () => {
+        // String order would put v0.0.9 above v0.0.10 and v0.9.0 above
+        // v0.10.0, naming the older release as the newest.
+        expect(compareVersions('v0.0.9', 'v0.0.10')).toBeLessThan(0);
+        expect(compareVersions('v0.9.0', 'v0.10.0')).toBeLessThan(0);
+        expect(
+            newestVersionOf([rosterRow({ version: 'v0.0.9' }), rosterRow({ version: 'v0.0.10' })]),
+        ).toBe('v0.0.10');
+        expect(
+            newestVersionOf([rosterRow({ version: 'v0.9.0' }), rosterRow({ version: 'v0.10.0' })]),
+        ).toBe('v0.10.0');
+    });
+
+    it('treats a component one release omits as zero', () => {
+        expect(compareVersions('v1.2', 'v1.2.0')).toBe(0);
+        expect(compareVersions('v1.2.0', 'v1.2')).toBe(0);
+        expect(compareVersions('v1.2.1', 'v1.2')).toBeGreaterThan(0);
+    });
+
+    it('accepts a release with no leading v', () => {
+        expect(compareVersions('0.0.10', 'v0.0.9')).toBeGreaterThan(0);
+        expect(compareVersions('0.0.10', 'v0.0.10')).toBe(0);
+        expect(
+            newestVersionOf([rosterRow({ version: '0.0.9' }), rosterRow({ version: 'v0.0.10' })]),
+        ).toBe('v0.0.10');
+    });
+});
+
+describe('the route to the services screen', () => {
+    it('opens it, and renders through the shell', () => {
+        const html = renderRoute('/operations/services', sessionWith(), [rosterRow()]);
+
+        expect(html).toContain('Operations: services');
+        expect(html).toContain('ORE Studio');
+        expect(html).toContain('Your account');
+        expect(html).toContain(`client ${__BUILD_VERSION__}`);
+        expect(html).toContain(`server ${SESSION_VERSION}`);
+    });
+
+    it('is offered to system administration through the operations hub', () => {
+        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+
+        expect(html).toContain('href="/operations/services"');
+    });
+
+    it('offers no link to the screens that are not built', () => {
+        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+
+        for (const route of ['/operations/grid', '/operations/bus', '/operations/logs']) {
+            expect(html).not.toContain(`href="${route}"`);
+        }
     });
 });

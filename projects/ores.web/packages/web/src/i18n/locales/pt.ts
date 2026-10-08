@@ -890,6 +890,51 @@ const pt: SourceCatalogue = {
             logs: 'Registos de telemetria',
             logsBody: 'As linhas escritas pelos serviços, as mais recentes primeiro.',
         },
+        services: {
+            title: 'Operações: serviços',
+            description:
+                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os invólucros de cálculo pertencem ao ecrã da grelha.',
+            updated: 'Atualizado às {at}',
+            refresh: 'Atualizar',
+            skew: 'Desvio de versão: {services} executam {versions} enquanto o resto executa {newest}. A comparação é entre versões, porque um batimento indica a versão e não a compilação.',
+            instances: {
+                title: 'Instâncias',
+                reported:
+                    '{running} de {total} instâncias anunciaram-se nos últimos {minutes} minutos',
+                lost: '{count} perdidas',
+                missing: '{count} em falta',
+            },
+            columns: {
+                service: 'Serviço',
+                instances: 'Instâncias',
+                instance: 'Instância',
+                status: 'Estado',
+                version: 'Versão',
+                lastHeartbeat: 'Último batimento',
+            },
+            count: '{reported} de {expected}',
+            ago: 'há {age}',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            hint: 'Apenas de leitura. Uma linha por instância esperada, quer se anuncie quer não. O identificador da instância é um UUID que o publicador de batimentos gera no arranque; a coluna mostra os primeiros oito caracteres.',
+            gap: {
+                quiet: {
+                    title: 'Porque uma instância ficou em silêncio',
+                    body: 'Uma instância que se anunciou e depois ficou em silêncio lê-se «perdida», porque um batimento não distingue um serviço que alguém parou de um que caiu — a enumeração de estado usa «perdido» exatamente por essa razão. Distingui-los é «Registar inícios e paragens de serviço», que ainda está em BACKLOG e registaria um início e uma paragem graciosa através do ciclo de vida partilhado dos serviços.',
+                },
+                release: {
+                    title: 'O batimento indica a versão, não a compilação',
+                    body: 'Cada serviço envia a sua cadeia ORES_VERSION, por isso duas compilações da mesma versão ficam idênticas aqui, e uma recompilação sem subida de versão é invisível. O candidato é o batimento transportar a cadeia de versão completa — a que a resposta de início de sessão já indica.',
+                },
+                uptime: {
+                    title: 'Sem tempo de atividade',
+                    body: 'Nada diz quando uma instância arrancou, por isso o ecrã não distingue uma instância que acabou de reiniciar de uma que corre há semanas; a idade de um batimento não responde a nenhuma das perguntas. Os candidatos são uma hora de arranque e um contador de reinícios no batimento.',
+                },
+            },
+        },
         versions: {
             title: 'Operações: versões e base de dados',
             description:
@@ -947,6 +992,7 @@ const pt: SourceCatalogue = {
             services: 'Ver os serviços em execução',
             logs: 'Ler os registos de telemetria',
             grid: 'Vigiar a grelha de cálculo',
+            bus: 'Vigiar o barramento de mensagens',
             audit: 'Auditar as entradas',
             versions: 'Verificar as versões e a base de dados',
         },

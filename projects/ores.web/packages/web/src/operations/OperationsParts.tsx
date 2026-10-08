@@ -35,6 +35,16 @@ import type { ServiceRosterSlot } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { LinkButton, Tag } from '../ui/Primitives.js';
 
+/**
+ * The window within which a heartbeat keeps an instance running, in minutes.
+ *
+ * The server owns the number: `service_running_window`, in
+ * projects/ores.telemetry/database/include/ores.telemetry.database/repository/telemetry_repository.hpp.
+ * The roster reply does not carry the window, so the web cannot derive it and
+ * restates it here. The reply should carry it, and then this copy can go.
+ */
+export const SERVICE_RUNNING_WINDOW_MINUTES = 5;
+
 /** The way back to the operations area, for a screen's header actions. */
 export function OperationsBack(): ReactNode {
     const { t } = useTranslation();
@@ -115,11 +125,50 @@ export function InstanceVersion({
     return (
         <span className="flex items-center gap-2">
             <span className="font-mono">{instance.version}</span>
-            {instance.state === 'running' && instance.version !== newestVersion && (
-                <Tag tone="warn">{t('operations.instance.olderBuild')}</Tag>
-            )}
+            {instance.state === 'running' &&
+                newestVersion !== undefined &&
+                !sameVersion(instance.version, newestVersion) && (
+                    <Tag tone="warn">{t('operations.instance.olderBuild')}</Tag>
+                )}
         </span>
     );
+}
+
+/** The numeric components of a release string, with a leading `v` removed. */
+function versionComponents(version: string): readonly number[] {
+    return version
+        .replace(/^v/i, '')
+        .split('.')
+        .map((component) => {
+            const value = Number.parseInt(component, 10);
+            return Number.isNaN(value) ? 0 : value;
+        });
+}
+
+/**
+ * Orders two release strings by their dotted numbers, oldest first.
+ *
+ * A string comparison is not a release comparison: it puts `v0.0.9` above
+ * `v0.0.10` and `v0.9.0` above `v0.10.0`, which names the wrong newest release
+ * and warns about the wrong rows. A leading `v` is optional, and a component
+ * one string omits counts as zero, so `v1.2` and `v1.2.0` compare equal.
+ */
+export function compareVersions(left: string, right: string): number {
+    const a = versionComponents(left);
+    const b = versionComponents(right);
+    const length = Math.max(a.length, b.length);
+    for (let index = 0; index < length; index += 1) {
+        const difference = (a[index] ?? 0) - (b[index] ?? 0);
+        if (difference !== 0) {
+            return difference;
+        }
+    }
+    return 0;
+}
+
+/** Whether two release strings name the same release, however each is spelled. */
+export function sameVersion(left: string, right: string): boolean {
+    return compareVersions(left, right) === 0;
 }
 
 /** The newest release among the running instances. */
@@ -128,7 +177,8 @@ export function newestVersionOf(running: readonly ServiceRosterSlot[]): string |
         .map((instance) => instance.version)
         .filter((version): version is string => version !== null && version !== '')
         .reduce<string | undefined>(
-            (newest, version) => (newest === undefined || version > newest ? version : newest),
+            (newest, version) =>
+                newest === undefined || compareVersions(version, newest) > 0 ? version : newest,
             undefined,
         );
 }

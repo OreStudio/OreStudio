@@ -888,6 +888,50 @@ export const en: SourceCatalogue = {
             logs: 'Telemetry logs',
             logsBody: 'The lines the services wrote, newest first.',
         },
+        services: {
+            title: 'Operations: services',
+            description:
+                'Every service the registry expects, met by the instances that report. The compute wrappers belong to the grid screen.',
+            updated: 'Updated {at}',
+            refresh: 'Refresh',
+            skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
+            instances: {
+                title: 'Instances',
+                reported: '{running} of {total} instances reported in the last {minutes} minutes',
+                lost: '{count} lost',
+                missing: '{count} missing',
+            },
+            columns: {
+                service: 'Service',
+                instances: 'Instances',
+                instance: 'Instance',
+                status: 'Status',
+                version: 'Version',
+                lastHeartbeat: 'Last heartbeat',
+            },
+            count: '{reported} of {expected}',
+            ago: '{age} ago',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} m {seconds} s',
+                hoursMinutes: '{hours} h {minutes} m',
+            },
+            hint: 'Read-only. One row per expected instance, whether it reports or not. The instance id is a UUID the heartbeat publisher generates at startup; the column shows its first eight characters.',
+            gap: {
+                quiet: {
+                    title: 'Why an instance went quiet',
+                    body: 'An instance that reported and then fell quiet reads lost, because a heartbeat cannot tell a service somebody stopped from one that fell over — the state enum uses lost for exactly that reason. Telling the two apart is Record service starts and stops, which is still BACKLOG and would record a start and a graceful stop through the shared service lifecycle.',
+                },
+                release: {
+                    title: 'The heartbeat states the release, not the build',
+                    body: 'Each service sends its ORES_VERSION string, so two builds cut from one release look identical here, and a rebuild without a release bump is invisible. The candidate is for the heartbeat to carry the full version string — the one the login answer already states.',
+                },
+                uptime: {
+                    title: 'No uptime',
+                    body: 'Nothing says when an instance started, so the screen cannot tell an instance that just restarted from one that has run for weeks; the age of a heartbeat answers neither question. The candidates are a start time and a restart count on the heartbeat.',
+                },
+            },
+        },
         versions: {
             title: 'Operations: versions and the database',
             description:
@@ -945,6 +989,7 @@ export const en: SourceCatalogue = {
             services: 'See the running services',
             logs: 'Read the telemetry logs',
             grid: 'Watch the compute grid',
+            bus: 'Watch the message bus',
             audit: 'Audit sign-ins',
             versions: 'Check the versions and the database',
         },

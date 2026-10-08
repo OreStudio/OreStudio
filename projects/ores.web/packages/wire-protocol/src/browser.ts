@@ -207,6 +207,12 @@ export type {
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
 
+// The services roster the operations screen reads, as the BFF serves it: one
+// row per expected instance, each with the age the BFF marked. The browser
+// parses what the BFF served with the definition the BFF wrote it from.
+export { serviceRosterViewSchema } from './operations.js';
+export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
+
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.
 export { loginInfoPageSchema, loginInfoSchema } from './domain.js';

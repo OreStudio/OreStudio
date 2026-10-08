@@ -62,18 +62,6 @@ $$ language plpgsql stable security definer set search_path = public, pg_temp;
 -- the version by the row's id and never reads party_id. Every BEFORE trigger
 -- still runs before the row lands, so the composite unique index sees the
 -- resolved party.
---
--- SECURITY DEFINER, because it calls ores_variability_resolve_system_party_fn,
--- whose EXECUTE is revoked from PUBLIC. A trigger runs with the writing role's
--- privileges, so without this a service writing a tenant-wide setting -- the
--- nil party is what such a caller sends -- is refused by the function its own
--- trigger calls. Every write to this table is an insert: the store is
--- bitemporal, so replacing a setting expires the live row and inserts its next
--- version, and this BEFORE INSERT trigger fires on that insert whether or not
--- the caller thinks it is updating. Running as the owner keeps the resolve
--- function off the service roles, which is the point of the revoke. Read time
--- needs the same privilege through ores_variability_get_system_settings_fn,
--- which is definer for the same reason.
 create or replace function ores_variability_system_settings_default_party_fn()
 returns trigger as $$
 begin
@@ -84,7 +72,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql;
 
 create or replace trigger ores_variability_system_settings_party_default_trg
 before insert on "ores_variability_system_settings_tbl"

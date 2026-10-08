@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 37BD8780-1818-4E24-BBC8-EAF7CD73022B
+:END:
+#+title: An operation named get_<entity> silently shadows the entity verb's type
+#+description: A domain operation whose name is get_ plus an entity's own name generates the same C++ and TypeScript type as that entity's generated get verb, in the same namespace. Nothing rejects it and no gate catches it: the build picks one, the service subscribes to the wrong subject, and the failure surfaces as no responders, which reads as an unreachable bus.
+#+type: capture
+#+level: cross
+#+filetags: :capture:codegen:protocol:nats:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Reject an operation whose name would generate a type the entity protocol has
+already generated, and say which two collided. The check belongs beside the
+other subject and model gates, and it should run on the models rather than on
+the generated files, so it names the model that has to change.
+
+The collision is between the operation's own types and an entity verb's, both
+of which the generator names from a title. An operation called
+=get_approval_request= renders =get_approval_request_request= and
+=get_approval_request_response=. The =approval_request= entity's own =get= verb
+renders exactly those two names, in =ores::inbox::messaging=. A component whose
+operation happens to be spelled =get_<entity>= therefore declares every one of
+the entity verb's types a second time.
+
+* Why
+
+Nothing refuses it, nothing warns, and no gate sees it. The inbox's request read
+was written as =get_approval_request= and generated that clash. What surfaced
+was not a compile error but a wrong subscription: the registrar's translation
+unit resolved =get_approval_request_request::nats_subject= to the entity verb's
+declaration and subscribed =inbox.v1.approval_requests.get=, while the handler,
+the BFF and the wire protocol all used the operation's
+=inbox.v1.ops.get_approval_request=. The service was listening on one subject
+and every caller was shouting at another.
+
+The failure mode is what makes this worth a gate rather than a note. A NATS
+request with no subscriber does not fail; it times out, and the BFF reports the
+timeout as "cannot reach the message bus". That message sent the search through
+the broker, the service lifecycle, the build system and the restart path before
+the registrar's own log line showed the subject it had actually subscribed. The
+distance between the symptom and the cause is the whole cost, and a gate removes
+it.
+
+Two smaller things were learned alongside it and belong in the same note. A
+service that names the subjects it subscribed, once, makes this class of defect
+visible immediately; the inbox registrar now does. And an operation named for
+the concept it reads rather than for the entity -- =get_setting= against the
+=system_setting= entity, =get_approval= against the =approval_request= entity --
+cannot collide at all, so it is the shape to prefer even once the gate exists.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_protocol.hpp.mustache= — where an
+  operation's type names are rendered.
+- =projects/ores.inbox/modeling/ores.inbox.approval_operations.org= — the
+  operation that hit it, now named =get_approval=.
+- =projects/ores.inbox/modeling/ores.inbox.approval_request.org= — the entity
+  whose =get= verb it collided with.
+- =projects/ores.codegen/scripts/check_subject_conformance.py= — the gate that
+  reads subjects and did not see this.
+
+* See also
+
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol
+  Specification]] — the subject grammar and the rule that a domain operation
+  lives outside the common verb set.
+- [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] —
+  the model the clashing operation was added to.

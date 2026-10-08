@@ -26,11 +26,11 @@ The kinds of structure and the templates that constrain their legs are reference
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| static checks on this branch | 5 of 5 pass | =compass check --only handler-permissions --only create-reachability --only model-drift --only sql-hygiene --only populate-refs= | 62a88df679 |
+| create files the reachability check reports unreachable | 0 | =check_sql_create_reachability.py= | 62a88df679 |
+| permission codes the handler check reports unseeded | 0, from 15 | =check_handler_permissions.py= | 62a88df679 |
 
 * Notes
 
@@ -84,3 +86,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=structure_kind= states the four rungs of the composition ladder and which of
+them confirms as a whole. =structure_template= names its kind from that
+catalogue, and =structure_template_role= states each role's leg counts, with
+the counts checked and a maximum of zero meaning no upper bound.
+
+The seed carries the four rungs, the four common strategies the composition
+page names plus one typed product, and nine role rows. The nine handler
+permissions are seeded too, which the previous task's entities were missing.
+
+No build, no ctest and no database run happened on this branch. Validation was
+static only, by agreement this session: the hourly build and test on main is
+swift curie's. The eight pgTAP cases written for these tables have never been
+executed, and the seed data is verified only by inspection.

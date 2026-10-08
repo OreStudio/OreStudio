@@ -142,8 +142,9 @@ private:
     }
 
 public:
-    // nats is the raw transport the feeds build with; the controller itself
-    // needs only the authenticated client, for the vintage and binding calls.
+    // nats is the raw transport the feeds build with, kept so a caller
+    // constructs the controller and the build context from one client.
+    // auth_nats builds the default marketdata binding store.
     feed_controller(ores::nats::service::client& nats,
                     ores::nats::service::nats_client& auth_nats,
                     std::shared_ptr<feed_binding_store> bindings = {})

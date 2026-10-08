@@ -100,13 +100,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Control-plane handler lines, before | 1883 over 6 files | =wc -l= on =feed_config_handler.hpp=, =folder_feed_control_handler.hpp=, =vintage_validity_handler.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp=, =app/application.cpp= | =9d12f82b8c= |
-| Control-plane handler lines, after | 1165 over the same 6 files (−718) | same | =dfe7434da6= |
+| Control-plane handler lines, before | 1766 over 6 files | =wc -l= on =feed_config_handler.hpp=, =folder_feed_control_handler.hpp=, =vintage_validity_handler.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp=, =app/application.cpp= | =9d12f82b8c= |
+| Control-plane handler lines, after | 1165 over the same 6 files (−601) | same | =dfe7434da6= |
 | Per-kind literals, repository includes and per-kind loops, before | 55 | =grep -cE "generation_configs:read\|ores\.synthetic\.core/repository/\|fx_spot_feed_kind\|ir_curve_feed_kind"= on the 6 files | =9d12f82b8c= |
 | Same, after | 0 (grep exits 1) | same grep with =-n= | =dfe7434da6= |
 | New registry | 858 lines (=feed_kind_registry.hpp= 313, =.cpp= 545) | =wc -l= | =dfe7434da6= |
 | Synthetic suites | 3/3 pass; api 26 cases, core 41, service 54 | =ctest --test-dir build/output/linux-clang-debug-make -R 'ores.synthetic' --output-on-failure= | =ca9ff291b9= |
-| Stub-kind dispatch test | 6 cases, 54 assertions, needs no database | =./compass.sh build ores.synthetic.service.tests= | =ca9ff291b9= |
+| Stub-kind dispatch test | 6 cases, 54 assertions, reads no repository | =./compass.sh build ores.synthetic.service.tests= | =ca9ff291b9= |
 
 * Notes
 
@@ -130,6 +130,16 @@ Follow-ups found while grounding this task, deliberately left out of it:
   visible, so the folder cascade no longer counts it as skipped. The
   =config_id= foreign key makes this reachable only under row-level security,
   where the config is invisible anyway.
+- =ores.marketdata.api.puml= is stale by more than this change. Running its
+  generator would also rewrite =feed_binding= (the workspace removal and the
+  producer kind) and several other structs, none of them this task's, so the
+  full regeneration is its own cleanup. This change's own struct,
+  =vintage_validity_entry=, is updated in place to match the generated shape.
+- The unknown-kind guard in =simulate= and =preview_shape= replies before the
+  JWT check, because an unregistered kind has no typed response and no
+  permission to derive a gate from. It is unreachable in production, where
+  every subject comes from a registration, but a reader should not mistake it
+  for an auth gap.
 
 * Test Scenarios
 
@@ -181,16 +191,24 @@ Verification. The two integration suites pass with every assertion unchanged —
 the test fixtures changed only to pass the registry into the handler
 constructors. The new =feed_kind_registry_tests.cpp= registers a stub kind and
 drives the real handlers, proving that start, stop, list, the folder cascade,
-the boot selection, vintage validity and the simulate envelope all reach the
-stub with no handler edit; it needs no database. The grep for per-kind
-permission literals, =ores.synthetic.core= repository includes, kind constants
-and per-kind loops over the six control-plane files returns nothing. The six
-files fell from 1883 to 1165 lines while the registry adds 858.
+vintage validity and the simulate envelope all reach the stub with no handler
+edit. It reads no repository and opens no query, but it does construct a real
+database context, and the boot walk itself is not driven by a test: that path is
+covered by compilation and by the =make_feed= gate the test does exercise. The
+grep for per-kind permission literals, =ores.synthetic.core= repository
+includes, kind constants and per-kind loops over the six control-plane files
+returns nothing. The six files fell from 1766 to 1165 lines while the registry
+adds 858.
 
 Behaviour changes, all intended and stated: kind resolution follows the
 registry's sorted kind order rather than a hand-written repository probe (the
-same winner, now stated); an IR config gains a vintage entry; the vintage verb's
-gate widens to the same all-kinds gate as list and the cascade; one unified
-catch replaces the per-kind start-failure messages; and the folder response
-keys are registry-derived. Two out-of-scope defects found during grounding are
-recorded in Notes rather than fixed here.
+same winner, now stated); an IR config gains a vintage entry, and that check is
+now party-scoped where the old FX-only controller helper passed no party at all;
+the vintage verb's gate widens to the same all-kinds gate as =list= and the
+cascade, so an FX-only caller who could read the list now gets a forbidden
+reply; the on-demand start failure message is one unified string, so an enabled
+row under a disabled container no longer says which half failed; and the folder
+response keys are registry-derived. =targets()= drops a config whose container is
+not visible, so the cascade counts it in neither =started= nor =skipped=.
+Out-of-scope defects found during grounding are recorded in Notes rather than
+fixed here.

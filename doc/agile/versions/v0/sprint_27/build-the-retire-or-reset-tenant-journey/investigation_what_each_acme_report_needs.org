@@ -89,20 +89,20 @@ Twelve configuration types have an ORE saver and a table. Five do not:
 =reference_data= and =ibor_fallback=.
 
 No report needs =simm_calibration=, =credit_simulation=, =reference_data= or
-=ibor_fallback=. Four reports are conditional, because their natural
-implementation reaches an unbound type and a cheaper implementation does not:
+=ibor_fallback=. Four reports are blocked, because the reading they need
+reaches a type nothing can store yet:
 
-- Board Risk Dashboard, Stressed VaR and Intraday Risk Monitor need a
-  =var= reading. A parametric VaR reads a covariance matrix, which is market
-  data and not a configuration, so all three are available. A historical VaR
-  reads =historical_return=, which cannot be stored yet.
-- P&L Attribution needs =basel_traffic_light= only if the desk classification
-  is in scope. The delta, gamma, vega and theta decomposition is a
-  sensitivity report and is available.
+- Board Risk Dashboard, Stressed VaR and Intraday Risk Monitor carry a
+  =var= reading. A parametric VaR would avoid the gap by reading a
+  covariance matrix, which is market data, but the owner chose to leave them
+  blocked. A historical VaR reads =historical_return=, which cannot be
+  stored.
+- P&L Attribution carries the desk classification beside the
+  decomposition, and that reads =basel_traffic_light=, which cannot be
+  stored.
 
-So 27 of the 31 reports have every document available today under any
-reading, and the remaining four are available if their VaR is parametric and
-their attribution stops at the decomposition.
+So 27 of the 31 reports have every document available today, and four are
+blocked on the two unbound types their runs need.
 
 * Conclusions
 
@@ -118,14 +118,20 @@ The books the run prices come from the config's portfolio scope.
 through =ores_trading_get_book_ids_by_portfolio_fn=, so no new function is
 needed. The root portfolio is the one whose =parent_portfolio_id= is null.
 
+The configuration belongs to the dataset pipeline, not to a hand-run
+function. Everything else ACME receives is a DQ dataset with a registered
+artefact type, a publish subject and declared dependencies, and the report
+configurations must arrive the same way. The four ORE documents and their
+bindings come from =ore import-run=, so the configuration dataset depends on
+the import and on both the report definitions and the organisation.
+
 * Recommendations
 
-Create configurations for the 27 unconditional reports first: bind the four
-Setup documents, scope each to the party's root portfolio, and set only the
-analytics flags the report names. Leave the four conditional reports until
-someone decides whether their VaR is parametric, and open a separate task for
-the five unbound ORE types if a historical VaR or a traffic-light
-classification is wanted.
+Create configurations for the 27 available reports through a DQ dataset,
+with its artefact table, its artefact type row and its publish function, and
+declare its dependencies on =ore.report_definitions=, on the ORE run
+configuration and on the organisation datasets. Leave the four blocked
+reports out until the two unbound ORE types can be stored.
 
 * See also
 

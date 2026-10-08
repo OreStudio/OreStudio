@@ -258,6 +258,7 @@ trade_link_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 trade_link_repository::remove_status
 trade_link_repository::remove(context ctx,
                               const std::string& from_trade_id,

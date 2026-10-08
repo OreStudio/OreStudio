@@ -135,6 +135,7 @@ public:
                                                       const std::string& link_type,
                                                       std::uint32_t version);
 
+
     /**
      * @brief Whether a list of trade links can be ordered by a field.
      *

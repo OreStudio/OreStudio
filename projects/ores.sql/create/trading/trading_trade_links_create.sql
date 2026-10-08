@@ -66,7 +66,10 @@ create table if not exists "ores_trading_trade_links_tbl" (
     check ("valid_from" < "valid_to"),
     check ("from_trade_id" <> ores_utility_nil_uuid_fn()),
     check ("to_trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("link_type" <> '')
+    check ("link_type" <> ''),
+    constraint ores_trading_trade_links_from_trade_id_fk foreign key ("tenant_id", "from_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_links_to_trade_id_fk foreign key ("tenant_id", "to_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_links_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -89,6 +92,17 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate link_type (soft FK to ores_trading_trade_link_types_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_link_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.link_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid link_type: %. No active trade link type found with this code.', NEW.link_type
+            using errcode = '23503';
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

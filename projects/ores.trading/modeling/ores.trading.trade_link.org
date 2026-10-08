@@ -120,6 +120,60 @@ ctx.generate_uuid()
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_trading_validate_trade_link_fn;
 #+end_src
+* Foreign keys
+
+** from_trade_id
+:PROPERTIES:
+:table:    ores_trading_trades_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+** to_trade_id
+:PROPERTIES:
+:table:    ores_trading_trades_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+** link_type
+:PROPERTIES:
+:table:             ores_trading_trade_link_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid link_type: %. No active trade link type found with this code.
+:END:
+
+The type catalogue is system reference data.
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+The activity that made the link. A database foreign key: the activity is
+immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
 * C++
 
 ** Flags

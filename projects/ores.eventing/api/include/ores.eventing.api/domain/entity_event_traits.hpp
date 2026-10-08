@@ -67,6 +67,19 @@ template <typename Event>
     return subject;
 }
 
+/**
+ * @brief The subject a subscriber that wants every action of an event uses.
+ *
+ * The prefix's children: the three actions above, and whatever a later model
+ * adds. A filter on the bare prefix matches none of them, so a subscriber that
+ * wants the whole chain asks for this rather than appending the wildcard
+ * itself and hoping the two spellings stay in step.
+ */
+template <typename Event>
+[[nodiscard]] std::string event_subject_wildcard() {
+    return std::string(entity_event_traits<Event>::subject_prefix).append(".>");
+}
+
 }
 
 #endif

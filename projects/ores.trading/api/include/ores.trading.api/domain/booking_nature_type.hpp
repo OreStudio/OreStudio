@@ -46,6 +46,11 @@ namespace ores::trading::domain {
  */
 struct booking_nature_type final {
     /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
      * @brief Unique booking nature code.
      *
      * Examples: 'actual', 'hypothetical'.
@@ -56,6 +61,39 @@ struct booking_nature_type final {
      * @brief What the code means.
      */
     std::string description;
+
+    /**
+     * @brief Username of the person who last modified this booking nature type.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     *
+     * The transaction-time window's start, which the store sets from its own
+     * clock. It travels with the audit members because it is only ever read
+     * with them: the history builder takes a version type that carries an
+     * actor *and* this timestamp, so an entity without the actor has no use
+     * for the timestamp either.
+     */
+    std::chrono::system_clock::time_point recorded_at;
 
     /**
      * @brief Value equality.

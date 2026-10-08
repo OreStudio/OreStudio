@@ -51,6 +51,7 @@ set(files
     "commodity_price_segment_commands_tests.cpp"
     "commodity_volatility_config_commands_tests.cpp"
     "contact_type_commands_tests.cpp"
+    "counterparty_business_centre_commands_tests.cpp"
     "counterparty_commands_tests.cpp"
     "counterparty_contact_information_commands_tests.cpp"
     "counterparty_identifier_commands_tests.cpp"

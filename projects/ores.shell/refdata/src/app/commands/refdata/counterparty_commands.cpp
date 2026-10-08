@@ -142,7 +142,7 @@ void counterparty_commands::register_commands(cli::Menu& root_menu, nats_client&
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> "
-        "<business_center_code> <status> <image_id> <reason> <commentary>");
+        "<status> <image_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,8 +150,7 @@ void counterparty_commands::register_commands(cli::Menu& root_menu, nats_client&
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <short_code> <full_name> <transliterated_name> <party_type> "
-        "<parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary> "
-        "[--version <n>]");
+        "<parent_counterparty_id> <status> <image_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,8 +158,7 @@ void counterparty_commands::register_commands(cli::Menu& root_menu, nats_client&
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <short_code> <full_name> <transliterated_name> <party_type> "
-        "<parent_counterparty_id> <business_center_code> <status> <image_id> <reason> "
-        "<commentary>");
+        "<parent_counterparty_id> <status> <image_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +353,8 @@ void counterparty_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,9 +368,6 @@ void counterparty_commands::process_add(std::ostream& out,
         read_token(req.change.write.parent_counterparty_id,
                    parsed->positionals[next++],
                    "parent_counterparty_id");
-        read_token(req.change.write.business_center_code,
-                   parsed->positionals[next++],
-                   "business_center_code");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
         req.intent.reason_code = parsed->positionals[next++];
@@ -417,8 +412,8 @@ void counterparty_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,9 +427,6 @@ void counterparty_commands::process_set(std::ostream& out,
         read_token(req.change.write.parent_counterparty_id,
                    parsed->positionals[next++],
                    "parent_counterparty_id");
-        read_token(req.change.write.business_center_code,
-                   parsed->positionals[next++],
-                   "business_center_code");
         read_token(req.change.write.status, parsed->positionals[next++], "status");
         read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
         req.intent.reason_code = parsed->positionals[next++];
@@ -491,8 +483,8 @@ void counterparty_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -508,9 +500,6 @@ void counterparty_commands::process_put_many(std::ostream& out,
             read_token(change.write.parent_counterparty_id,
                        parsed->positionals[next++],
                        "parent_counterparty_id");
-            read_token(change.write.business_center_code,
-                       parsed->positionals[next++],
-                       "business_center_code");
             read_token(change.write.status, parsed->positionals[next++], "status");
             read_token(change.write.image_id, parsed->positionals[next++], "image_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

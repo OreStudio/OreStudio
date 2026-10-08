@@ -56,8 +56,7 @@ create table if not exists "ores_trading_vanilla_swap_instruments_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('Swap', 'CrossCurrencySwap', 'FlexiSwap')),
     check ("maturity_date" > "start_date"),
-    check ("settlement_lag" is null or "settlement_lag" >= 0),
-    constraint ores_trading_vanilla_swap_instruments_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
+    check ("settlement_lag" is null or "settlement_lag" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -93,8 +92,20 @@ begin
         select 1 from ores_trading_trades_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
     end if;
 

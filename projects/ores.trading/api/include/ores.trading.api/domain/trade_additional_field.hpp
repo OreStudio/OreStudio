@@ -75,11 +75,6 @@ struct trade_additional_field final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The trade's party, copied from the anchor.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
      * @brief Element name of the field, as the document spelled it.
      */
     std::string name;

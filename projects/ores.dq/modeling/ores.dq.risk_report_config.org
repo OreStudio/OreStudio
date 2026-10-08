@@ -1,0 +1,375 @@
+:PROPERTIES:
+:ID: DA5D7E18-303E-4FE4-B6FC-16A3FAC1720B
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.risk_report_config
+#+description: Codegen entity model for the dq risk_report_config staging table. The run settings a seeded report definition resolves.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Risk report configuration artefacts - the run settings a seeded report definition resolves
+#+entity_singular: risk_report_config
+#+entity_plural: risk_report_configs
+#+entity_title: Risk Report Config
+#+coding_scheme: none
+#+image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Risk report configuration artefacts - the run settings a seeded report
+definition resolves.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:profile:   uuid-surrogate-lookup, read-only-current-state, artefact-staging-only
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate key for the staged configuration.
+
+** report_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Report"
+#+end_src
+
+The name of the report definition this configuration belongs to. It is the
+join key the publication uses, so it must match the definition exactly.
+
+** base_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string("GBP")
+#+end_src
+
+The currency the run aggregates to.
+
+** observation_model
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string("disable")
+#+end_src
+
+ORE's observation model, one of disable, none, move or defer.
+
+** n_threads
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 8)
+#+end_src
+
+Threads the engine may use.
+
+** market_data_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string("eod")
+#+end_src
+
+Where the run reads its market data, one of live, eod or date.
+
+** npv_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run prices the portfolio.
+
+** cashflow_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run projects cashflows.
+
+** curves_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run reports the bootstrapped curves.
+
+** sensitivity_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes sensitivities.
+
+** simulation_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run simulates risk factors.
+
+** xva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes valuation adjustments.
+
+** stress_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run applies stress scenarios.
+
+** parametric_var_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes a parametric value at risk.
+
+** initial_margin_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes initial margin.
+
+** pfe_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes potential future exposure.
+
+** xva_cva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes credit valuation adjustment.
+
+** xva_dva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes debit valuation adjustment.
+
+** xva_fva_enabled
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 1)
+#+end_src
+
+Whether the run computes funding valuation adjustment.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+The order the seeded configurations are written in.
+
+* Artefact indexes
+
+** report_name
+:PROPERTIES:
+:columns: report_name
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_risk_report_configs_artefact_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: config
+:entity_plural_short:   configs
+:entity_singular_words: risk report config
+:entity_plural_words:   risk report configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rd
+:END:
+
+** Table display
+
+| column        | header   |
+|---------------+----------|
+| report_name   | Report   |
+| base_currency | Currency |
+| display_order | Order    |
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] (alongside its shape profile): this
+artefact type's own row in =ores_dq_artefact_types_tbl=
+(=risk_report_configs=) publishes to =target_table:
+reporting_risk_report_configs_tbl= -- the authoritative production table is
+owned by =ores.reporting=, not =ores.dq=. This model exists to describe the
+DQ import/staging shape only; an =ores.dq=-owned main table would be a
+wrongly-owned duplicate.
+
+The report's own scope is not a column here. A seeded configuration is always
+scoped to the target party's root portfolio, the one whose parent is null,
+and the publication resolves it. A report that has no root portfolio to
+scope to is skipped by the publication rather than given an invented one.
+
+No UI: this is a DQ-side staging view onto data that isn't authoritative
+here (see above) -- an editable window in =ores.dq= would be a second,
+confusing, edit-capable copy of import data whose real home is
+=ores.reporting=.
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

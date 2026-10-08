@@ -33,7 +33,6 @@ deal has no confirmation to hang on. The insert trigger enforces it.
 :schema:        public
 :product:       ores
 :component:     trading
-:profile:       read-only-current-state
 :has_tenant_id: true
 :END:
 
@@ -126,22 +125,16 @@ ctx.generate_uuid()
 ** Flags
 :PROPERTIES:
 :tablename:        ores_trading_structures_tbl
-:immutable:        true
-:no_audit_columns: true
 :rls_tenant_isolation: true
 :rls_party_isolation: true
 :END:
 
 ** Indexes
 
-The two unique keys are what a member pins its copied party and counterparty
-to: a database pin can only name a key, and the primary key =(tenant_id, id)=
-carries neither column.
+The two indexes answer a lookup by party or by counterparty.
 
 | name            | columns                        | unique | current_only | where_extra |
 |-----------------+--------------------------------+--------+--------------+-------------|
-| id_party        | tenant_id, id, party_id        | true   | false        |             |
-| id_counterparty | tenant_id, id, counterparty_id | true   | false        |             |
 
 ** Extra drops
 
@@ -202,7 +195,7 @@ template, so the column is nullable.
 ** parent_structure_id
 :PROPERTIES:
 :table:    ores_trading_structures_tbl
-:enforce:  true
+:error_message: Invalid parent_structure_id: %. No active structure found with this id.
 :nullable: true
 :END:
 
@@ -227,6 +220,7 @@ enforced rather than checked.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

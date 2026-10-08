@@ -23,11 +23,32 @@
  * To modify, update the template and regenerate.
  */
 import type { TradeActivity } from '../domain/trade_activity.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface TradeActivityKey {
     id: string;
+}
+
+export interface TradeActivityWrite {
+    id: string;
+    activity_type_code: string;
+    actor: string;
+    occurred_at: string;
+    comment: string;
+    is_operational_error: boolean;
+}
+
+export interface TradeActivityChange {
+    write: TradeActivityWrite;
+    precondition: Precondition;
+}
+
+export interface TradeActivityRemoval {
+    key: TradeActivityKey;
+    precondition: Precondition;
 }
 
 export interface TradeActivityLookup {
@@ -48,11 +69,23 @@ export interface TradeActivityEvent {
     correlation_id: string | null;
 }
 
+export interface TradeActivityVersionKey {
+    trade_activity: TradeActivityKey;
+    version: number;
+}
+
+export interface TradeActivityVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
 export interface ListTradeActivitiesRequest {
     offset: number;
     limit: number;
     order: Order;
     filter: TradeActivitiesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListTradeActivitiesResponse {
@@ -79,10 +112,77 @@ export interface GetManyTradeActivitiesResponse {
     entries: TradeActivityLookup[];
 }
 
+export interface PutTradeActivityRequest {
+    change: TradeActivityChange;
+    intent: ChangeIntent;
+}
+
+export interface PutTradeActivityResponse {
+    result: Result;
+    trade_activity: TradeActivity | null;
+}
+
+export interface PutManyTradeActivitiesRequest {
+    changes: TradeActivityChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyTradeActivitiesResponse {
+    result: Result;
+    activities: TradeActivity[];
+}
+
+export interface DeleteTradeActivityRequest {
+    removal: TradeActivityRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteTradeActivityResponse {
+    result: Result;
+}
+
+export interface DeleteManyTradeActivitiesRequest {
+    removals: TradeActivityRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyTradeActivitiesResponse {
+    result: Result;
+}
+
+export interface ListTradeActivityVersionsRequest {
+    key: TradeActivityKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: TradeActivityVersionsFilter | null;
+}
+
+export interface ListTradeActivityVersionsResponse {
+    result: Result;
+    versions: TradeActivity[];
+    total: number;
+}
+
+export interface GetTradeActivityVersionRequest {
+    key: TradeActivityVersionKey;
+}
+
+export interface GetTradeActivityVersionResponse {
+    result: Result;
+    version: TradeActivity | null;
+}
+
 export const subjects = {
     list_trade_activities_request: 'trading.v1.trade_activities.list',
     get_trade_activity_request: 'trading.v1.trade_activities.get',
     get_many_trade_activities_request: 'trading.v1.trade_activities.get_many',
+    put_trade_activity_request: 'trading.v1.trade_activities.put',
+    put_many_trade_activities_request: 'trading.v1.trade_activities.put_many',
+    delete_trade_activity_request: 'trading.v1.trade_activities.delete',
+    delete_many_trade_activities_request: 'trading.v1.trade_activities.delete_many',
+    list_trade_activity_versions_request: 'trading.v1.trade_activities_versions.list',
+    get_trade_activity_version_request: 'trading.v1.trade_activities_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -93,6 +193,12 @@ export const requiresSession = {
     list_trade_activities_request: true,
     get_trade_activity_request: true,
     get_many_trade_activities_request: true,
+    put_trade_activity_request: true,
+    put_many_trade_activities_request: true,
+    delete_trade_activity_request: true,
+    delete_many_trade_activities_request: true,
+    list_trade_activity_versions_request: true,
+    get_trade_activity_version_request: true,
 } as const;
 
 /**

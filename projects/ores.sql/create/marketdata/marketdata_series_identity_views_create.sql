@@ -40,7 +40,7 @@ select
     identity_kind,
     ccy,
     commodity_name,
-    offset,
+    "offset",
     option_type
 from ores_marketdata_market_series_identity_tbl
 where identity_kind = 'series'

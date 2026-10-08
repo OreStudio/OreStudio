@@ -79,6 +79,16 @@ public:
     messaging::get_trade_response get_trade(const messaging::get_trade_request& request);
     messaging::get_many_trades_response
     get_many_trades(const messaging::get_many_trades_request& request);
+    messaging::put_trade_response put_trade(const messaging::put_trade_request& request);
+    messaging::put_many_trades_response
+    put_many_trades(const messaging::put_many_trades_request& request);
+    messaging::delete_trade_response delete_trade(const messaging::delete_trade_request& request);
+    messaging::delete_many_trades_response
+    delete_many_trades(const messaging::delete_many_trades_request& request);
+    messaging::list_trade_versions_response
+    list_trade_versions(const messaging::list_trade_versions_request& request);
+    messaging::get_trade_version_response
+    get_trade_version(const messaging::get_trade_version_request& request);
     /**@}*/
 
     /**
@@ -97,6 +107,16 @@ public:
      */
     std::uint32_t count_trades();
 
+
+    /**
+     * @brief Retrieves a single trade as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The trade at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::trade> get_trade_at_version(const boost::uuids::uuid& id,
+                                                      std::uint32_t version);
 
     /**
      * @brief Retrieves a single trade by its primary key.
@@ -141,10 +161,33 @@ public:
      */
     void delete_trades(const std::vector<std::string>& ids);
 
+    /**
+     * @brief Retrieves all historical versions of a trade.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::trade> get_trade_history(const std::string& id);
 
 private:
     context ctx_;
     repository::trade_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::trade_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::trade& out);
 };
 
 }

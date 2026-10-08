@@ -56,7 +56,9 @@ export interface PartyCounterpartyLookup {
 
 export interface PartyCounterpartiesFilter {
     party_id: string | null;
+    counterparty_id: string | null;
     party_id_one_of: string[] | null;
+    counterparty_id_one_of: string[] | null;
 }
 
 export interface ListPartyCounterpartiesRequest {
@@ -143,6 +145,21 @@ export interface ListByPartyIdPartyCounterpartiesResponse {
     total: number;
 }
 
+export interface ListByCounterpartyIdPartyCounterpartiesRequest {
+    counterparty_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: PartyCounterpartiesFilter | null;
+}
+
+export interface ListByCounterpartyIdPartyCounterpartiesResponse {
+    result: Result;
+    party_counterparties: PartyCounterparty[];
+    total: number;
+}
+
 export const subjects = {
     list_party_counterparties_request: 'refdata.v1.party_counterparties.list',
     get_party_counterparty_request: 'refdata.v1.party_counterparties.get',
@@ -153,6 +170,8 @@ export const subjects = {
     delete_many_party_counterparties_request: 'refdata.v1.party_counterparties.delete_many',
     list_by_party_id_party_counterparties_request:
         'refdata.v1.party_counterparties.list_by_party_id',
+    list_by_counterparty_id_party_counterparties_request:
+        'refdata.v1.party_counterparties.list_by_counterparty_id',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -168,4 +187,5 @@ export const requiresSession = {
     delete_party_counterparty_request: true,
     delete_many_party_counterparties_request: true,
     list_by_party_id_party_counterparties_request: true,
+    list_by_counterparty_id_party_counterparties_request: true,
 } as const;

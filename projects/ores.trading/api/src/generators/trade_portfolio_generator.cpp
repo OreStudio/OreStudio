@@ -47,7 +47,6 @@ generate_synthetic_trade_portfolio(utility::generation::generation_context& ctx)
     r.trade_id = ctx.generate_uuid();
     r.sequence_number = 1;
     r.trade_activity_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.portfolio_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

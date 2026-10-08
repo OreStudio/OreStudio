@@ -25,6 +25,7 @@
 #include "ores.trading.core/service/entry_channel_type_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.api/domain/entry_channel_type.hpp"
@@ -32,7 +33,10 @@
 #include "ores.trading.core/repository/entry_channel_type_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -71,6 +75,32 @@ std::vector<domain::entry_channel_type> read_one(repository::entry_channel_type_
     return repo.read_latest(ctx, key.code);
 }
 
+/**
+ * @brief The key a domain object states, so a written row can be read back.
+ *
+ * A create states its own key in the write record, so the key of the row a
+ * write produced is the one the object carries.
+ */
+messaging::entry_channel_type_key key_from(const domain::entry_channel_type& v) {
+    messaging::entry_channel_type_key key;
+    key.code = v.code;
+    return key;
+}
+
+/**
+ * @brief Builds the domain object a write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy,
+ * provenance, the version and the validity window are the service's and the
+ * database's to state, and are set after this conversion.
+ */
+domain::entry_channel_type to_domain(const messaging::entry_channel_type_write& write) {
+    domain::entry_channel_type v;
+    v.code = write.code;
+    v.description = write.description;
+    return v;
+}
+
 }
 
 messaging::list_entry_channel_types_response entry_channel_type_service::list_entry_channel_types(
@@ -88,9 +118,20 @@ messaging::list_entry_channel_types_response entry_channel_type_service::list_en
             refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
         return response;
     }
-    response.entry_channel_types =
-        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
-    response.total = repo_.get_total_entry_channel_type_count(ctx_, request.filter);
+    // A stated instant is checked here, so a malformed one is the caller's
+    // mistake rather than a database error. The caller's text is what the
+    // store reads, so a fraction of a second is kept.
+    std::optional<std::string> as_of;
+    if (request.as_of) {
+        as_of = ores::database::repository::parse_as_of(*request.as_of);
+        if (!as_of) {
+            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
+            return response;
+        }
+    }
+    response.entry_channel_types = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_entry_channel_type_count(ctx_, request.filter, as_of);
     return response;
 }
 
@@ -125,6 +166,210 @@ entry_channel_type_service::get_many_entry_channel_types(
     return response;
 }
 
+messaging::put_entry_channel_type_response entry_channel_type_service::put_entry_channel_type(
+    const messaging::put_entry_channel_type_request& request) {
+    messaging::put_entry_channel_type_response response;
+    domain::entry_channel_type value;
+    response.result = prepare_change(request.change, request.intent, value);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    repo_.write(ctx_, value, request.change.precondition);
+    auto written = read_one(repo_, ctx_, key_from(value));
+    if (!written.empty())
+        response.entry_channel_type = std::move(written.front());
+    return response;
+}
+
+messaging::put_many_entry_channel_types_response
+entry_channel_type_service::put_many_entry_channel_types(
+    const messaging::put_many_entry_channel_types_request& request) {
+    messaging::put_many_entry_channel_types_response response;
+    std::vector<domain::entry_channel_type> batch;
+    batch.reserve(request.changes.size());
+    for (const auto& change : request.changes) {
+        domain::entry_channel_type value;
+        const auto result = prepare_change(change, request.intent, value);
+        if (result.outcome != ores::utility::domain::outcome::ok) {
+            // Nothing has been written: the whole set is checked before any
+            // of it lands, so a refused element refuses the batch.
+            response.result = result;
+            return response;
+        }
+        batch.push_back(std::move(value));
+    }
+    // One statement, so the set lands together. The store checks each row's
+    // claim inside that statement, which is what makes the check above and the
+    // write one decision rather than two.
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        claims.push_back(change.precondition);
+    repo_.write(ctx_, batch, claims);
+    response.entry_channel_types.reserve(batch.size());
+    for (const auto& value : batch) {
+        auto written = read_one(repo_, ctx_, key_from(value));
+        response.entry_channel_types.push_back(written.empty() ? value :
+                                                                 std::move(written.front()));
+    }
+    return response;
+}
+
+messaging::delete_entry_channel_type_response entry_channel_type_service::delete_entry_channel_type(
+    const messaging::delete_entry_channel_type_request& request) {
+    messaging::delete_entry_channel_type_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
+        response.result = refuse(outcome_code::precondition_not_supported);
+        return response;
+    }
+    std::optional<std::uint32_t> expected;
+    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
+        if (!request.removal.precondition.version) {
+            response.result = refuse(outcome_code::precondition_incomplete);
+            return response;
+        }
+        expected = request.removal.precondition.version;
+    }
+    switch (repo_.remove(ctx_, request.removal.key.code, expected)) {
+        case repository::entry_channel_type_repository::remove_status::removed:
+            break;
+        case repository::entry_channel_type_repository::remove_status::missing:
+            response.result = refuse(outcome_code::not_found, {.entity = "entry_channel_type"});
+            break;
+        case repository::entry_channel_type_repository::remove_status::conflicting: {
+            // A conflicting removal states the version it expected but not the one
+            // the row now holds, and the sentence wants both. The row is read only
+            // on the refusal path.
+            const auto live = read_one(repo_, ctx_, request.removal.key);
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "entry_channel_type",
+                 .field = "code",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            break;
+        }
+        case repository::entry_channel_type_repository::remove_status::unsupported:
+            response.result = refuse(outcome_code::precondition_not_supported);
+            break;
+    }
+    return response;
+}
+
+messaging::delete_many_entry_channel_types_response
+entry_channel_type_service::delete_many_entry_channel_types(
+    const messaging::delete_many_entry_channel_types_request& request) {
+    messaging::delete_many_entry_channel_types_response response;
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    for (const auto& removal : request.removals) {
+        if (removal.precondition.kind != precondition_kind::any) {
+            // The store removes a set in one statement, which carries no
+            // per-row version. Refusing is the only answer that keeps the
+            // batch atomic: serving it as a sequence of single removals would
+            // leave a partial batch behind as soon as one row had moved on.
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
+            return response;
+        }
+    }
+    if (request.removals.empty())
+        return response;
+    std::vector<std::string> code_keys;
+    code_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        code_keys.push_back(removal.key.code);
+    repo_.remove(ctx_, code_keys);
+    return response;
+}
+
+messaging::list_entry_channel_type_versions_response
+entry_channel_type_service::list_entry_channel_type_versions(
+    const messaging::list_entry_channel_type_versions_request& request) {
+    messaging::list_entry_channel_type_versions_response response;
+    if (!request.order.field.empty() || request.order.descending) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "entry channel types", .field = request.order.field});
+        return response;
+    }
+    if (request.filter) {
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "entry channel types"});
+        return response;
+    }
+    auto all = repo_.read_all(ctx_, request.key.code);
+    // The store reads versions newest first, and the order a caller gets when
+    // it states none is key order, which for a version key is oldest first.
+    std::reverse(all.begin(), all.end());
+    response.total = all.size();
+    const auto begin = std::min<std::size_t>(request.offset, all.size());
+    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
+    response.versions.assign(std::make_move_iterator(all.begin() + begin),
+                             std::make_move_iterator(all.begin() + end));
+    return response;
+}
+
+messaging::get_entry_channel_type_version_response
+entry_channel_type_service::get_entry_channel_type_version(
+    const messaging::get_entry_channel_type_version_request& request) {
+    messaging::get_entry_channel_type_version_response response;
+    auto found =
+        repo_.read_at_version(ctx_, request.key.entry_channel_type.code, request.key.version);
+    if (!found) {
+        response.result = refuse(outcome_code::not_found, {.entity = "entry_channel_type"});
+        return response;
+    }
+    response.version = std::move(*found);
+    return response;
+}
+
+ores::utility::domain::result
+entry_channel_type_service::prepare_change(const messaging::entry_channel_type_change& change,
+                                           const ores::utility::domain::change_intent& intent,
+                                           domain::entry_channel_type& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_one(repo_, ctx_, key_from(out));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "entry_channel_type", .field = "code"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "entry_channel_type"});
+            // The protocol states the version as a uint32 and the row carries it
+            // as an int, so the comparison states the conversion.
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "entry_channel_type",
+                               .field = "code",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
 
 std::vector<domain::entry_channel_type>
 entry_channel_type_service::list_entry_channel_types(std::uint32_t offset, std::uint32_t limit) {
@@ -137,6 +382,14 @@ std::uint32_t entry_channel_type_service::count_entry_channel_types() {
     return repo_.get_total_entry_channel_type_count(ctx_);
 }
 
+
+std::optional<domain::entry_channel_type>
+entry_channel_type_service::get_entry_channel_type_at_version(const std::string& code,
+                                                              std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting entry channel type at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
 
 std::optional<domain::entry_channel_type>
 entry_channel_type_service::get_entry_channel_type(const std::string& code) {
@@ -186,5 +439,10 @@ void entry_channel_type_service::delete_entry_channel_types(const std::vector<st
     repo_.remove(ctx_, codes);
 }
 
+std::vector<domain::entry_channel_type>
+entry_channel_type_service::get_entry_channel_type_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for entry channel type. " << "code: " << code;
+    return repo_.read_all(ctx_, code);
+}
 
 }

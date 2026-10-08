@@ -28,8 +28,5 @@ drop policy if exists structures_tbl_tenant_isolation_policy on "ores_trading_st
 drop rule if exists ores_trading_structures_delete_rule on "ores_trading_structures_tbl";
 drop trigger if exists ores_trading_structures_insert_trg on "ores_trading_structures_tbl";
 drop function if exists ores_trading_structures_insert_fn;
-drop trigger if exists ores_trading_structures_immutable_trg on "ores_trading_structures_tbl";
-drop trigger if exists ores_trading_structures_immutable_truncate_trg on "ores_trading_structures_tbl";
-drop function if exists ores_trading_structures_immutable_fn;
 drop function if exists ores_trading_validate_structure_fn;
 drop table if exists "ores_trading_structures_tbl";

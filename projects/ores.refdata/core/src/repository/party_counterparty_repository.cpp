@@ -312,6 +312,29 @@ std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_
     return count;
 }
 
+std::vector<domain::party_counterparty> party_counterparty_repository::read_latest_by_counterparty(
+    const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
+                               << counterparty_id << " offset: " << offset << " limit: " << limit;
+
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id_str &&
+                             "valid_to"_c == max.value()) |
+                       order_by("party_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    auto rows = execute_read_query<party_counterparty_entity, domain::party_counterparty>(
+        ctx_,
+        query,
+        [](const auto& entities) { return party_counterparty_mapper::map(entities); },
+        lg(),
+        "Reading latest party counterparties by counterparty (paginated).");
+
+    return rows;
+}
+
 std::uint32_t party_counterparty_repository::get_total_party_counterparty_count_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);

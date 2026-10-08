@@ -81,6 +81,18 @@ public:
     get_structure(const messaging::get_structure_request& request);
     messaging::get_many_structures_response
     get_many_structures(const messaging::get_many_structures_request& request);
+    messaging::put_structure_response
+    put_structure(const messaging::put_structure_request& request);
+    messaging::put_many_structures_response
+    put_many_structures(const messaging::put_many_structures_request& request);
+    messaging::delete_structure_response
+    delete_structure(const messaging::delete_structure_request& request);
+    messaging::delete_many_structures_response
+    delete_many_structures(const messaging::delete_many_structures_request& request);
+    messaging::list_structure_versions_response
+    list_structure_versions(const messaging::list_structure_versions_request& request);
+    messaging::get_structure_version_response
+    get_structure_version(const messaging::get_structure_version_request& request);
     /**@}*/
 
     /**
@@ -99,6 +111,16 @@ public:
      */
     std::uint32_t count_structures();
 
+
+    /**
+     * @brief Retrieves a single structure as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The structure at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::structure> get_structure_at_version(const boost::uuids::uuid& id,
+                                                              std::uint32_t version);
 
     /**
      * @brief Retrieves a single structure by its primary key.
@@ -143,10 +165,33 @@ public:
      */
     void delete_structures(const std::vector<std::string>& ids);
 
+    /**
+     * @brief Retrieves all historical versions of a structure.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::structure> get_structure_history(const std::string& id);
 
 private:
     context ctx_;
     repository::structure_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::structure_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::structure& out);
 };
 
 }

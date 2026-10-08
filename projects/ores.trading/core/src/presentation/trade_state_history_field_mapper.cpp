@@ -40,7 +40,6 @@ render_trade_state_fields(const domain::trade_state& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Status ID", .value = boost::uuids::to_string(v.status_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

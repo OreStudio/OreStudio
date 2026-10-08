@@ -30,7 +30,6 @@ same for every tenant.
 :schema:        public
 :product:       ores
 :component:     trading
-:profile:       read-only-current-state
 :has_tenant_id: false
 :END:
 
@@ -69,8 +68,7 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename:        ores_trading_counterparty_scope_types_tbl
-:immutable:        true
-:no_audit_columns: true
+:rls_tenant_isolation: true
 :END:
 
 * C++

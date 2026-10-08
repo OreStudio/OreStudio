@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: F6E5D0A5-3463-4E11-A5B6-C63F756BEACB
+:END:
+#+title: ores.refdata.counterparty_business_centre
+#+description: Codegen junction model for counterparty_business_centres.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:
+#+name: counterparty_business_centres
+#+name_singular: counterparty_business_centre
+#+name_title: Counterparty Business Centre
+#+name_singular_words: counterparty business centre assignment
+#+brief: Links a counterparty to a business centre it deals through.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Many-to-many junction between counterparty and business_centre. A counterparty
+deals through any number of centres: one is the usual case, and a bank that
+books in London and Singapore states both.
+
+This replaces the single =business_center_code= column the counterparty used to
+carry, which could only ever name one centre and left the second as a gap in
+journey 5.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
+* Left
+:PROPERTIES:
+:column:        counterparty_id
+:column_short:  counterparty
+:column_title:  Counterparty
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up centres a counterparty deals through
+:list_by:       true
+:END:
+
+ID of the counterparty.
+
+References ores_refdata_counterparties_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        business_centre_code
+:column_short:  business_centre
+:column_title:  Business Centre
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding counterparties that deal through a centre
+:END:
+
+Code of the business centre this counterparty deals through.
+
+References ores_refdata_business_centres_tbl.code (soft FK).
+
+#+begin_src cpp :name generator
+std::string("WRLD")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_counterparty_business_centres_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Repository
+:PROPERTIES:
+:name_singular_short: counterparty_business_centre
+:name_short:          counterparty_business_centres
+:name_singular_words: counterparty business centre
+:name_words:          counterparty business centres
+:order_column:        business_centre_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cbc
+:END:
+
+** Table display
+
+| column               | header        |
+|----------------------+---------------|
+| counterparty_id      | Counterparty  |
+| business_centre_code | Business Centre |
+| modified_by          | Modified By   |
+| version              | Version       |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

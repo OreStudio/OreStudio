@@ -8,7 +8,7 @@
 #+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/configure-the-reports-acme-seeds
-#+pr: 2847
+#+pr: 2868
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -26,11 +26,11 @@ Every report definition ACME carries resolves a report configuration, each scope
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -142,6 +142,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2868][#2868]] | [agile] Close the report configuration task |
+| [[https://github.com/OreStudio/OreStudio/pull/2863][#2863]] | [reporting,dq] Seed the risk report configurations as a dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/2847][#2847]] | [agile,codegen] Plan the report configuration dataset |
 | [[https://github.com/OreStudio/OreStudio/pull/2846][#2846]] | [agile] Record how the report configuration work splits |
 | [[https://github.com/OreStudio/OreStudio/pull/2845][#2845]] | [reporting] Seed the report configurations a party's definitions need |
@@ -153,3 +155,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The report configurations now arrive as a standard dataset. PR #2863 lands
+the artefact table's staging entity, the =risk_report_configs= artefact type,
+the =ore.risk_report_configs= dataset with its three dependencies, the
+=ores_reporting_publish_risk_report_configs_from_dq_fn= publish function, the
+27 artefact rows, the =risk_management= bundle membership, the reporting
+service's subscription to the new subject, and the reset's wipe of the
+reporting configuration chain.
+
+Seven of the plan's steps landed: the flags map stays and the hand-run seeder
+is gone; the artefact table and staging entity exist; the artefact type row,
+the dataset row, its dependencies and the bundle member exist; the publish
+function reads the artefact table and writes the config and its root
+portfolio scope; and =ores_iam_reset_tenant_fn= wipes the configuration
+chain.
+
+The book population needs no new function:
+=ores_reporting_resolve_book_ids_for_config_fn= already expands the config's
+portfolio scope through =ores_trading_get_book_ids_by_portfolio_fn=.
+
+Four of the 31 seeded definitions stay out: Board Risk Dashboard, Stressed
+VaR and Intraday Risk Monitor need =historical_return=, and P&L Attribution
+needs =basel_traffic_light=. Neither type has an ORE saver, so their artefact
+rows are absent rather than wrong. The per-report analysis is
+[[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]].
+
+=compass db recreate -y -k= exits 0, and the loaded database holds one dataset
+row, one artefact type row, 27 artefact rows, three dependencies and one
+bundle member.

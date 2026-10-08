@@ -125,6 +125,11 @@ public:
 
     std::vector<domain::party_counterparty>
     read_latest_by_counterparty(const boost::uuids::uuid& counterparty_id);
+    /**
+     * @brief Reads latest party counterparties filtered by counterparty_id, with pagination.
+     */
+    std::vector<domain::party_counterparty> read_latest_by_counterparty(
+        const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active party counterparties filtered by counterparty_id.

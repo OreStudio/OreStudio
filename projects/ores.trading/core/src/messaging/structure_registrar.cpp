@@ -60,6 +60,30 @@ register_structure_handlers(ores::nats::service::client& nats,
         get_many_structures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->get_many_structures(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        put_structure_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_structure(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_structures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_structures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_structure_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_structure(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_structures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_many_structures(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_structure_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->list_structure_versions(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_structure_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->get_structure_version(std::move(msg));
+        }));
     return subs;
 }
 

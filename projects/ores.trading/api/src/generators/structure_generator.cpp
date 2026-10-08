@@ -35,10 +35,12 @@ namespace ores::trading::generators {
 using ores::utility::generation::generation_keys;
 
 domain::structure generate_synthetic_structure(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::structure r;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
@@ -47,6 +49,11 @@ domain::structure generate_synthetic_structure(utility::generation::generation_c
     r.kind = std::string("Strategy");
     r.template_code = std::string("Straddle");
     r.parent_structure_id = ctx.generate_uuid();
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

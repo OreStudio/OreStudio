@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 5CCE6FE6-18B6-4002-907A-B8BF321CC1A6
+:END:
+#+title: Story: Quote the offset column in the marketdata identity view
+#+description: The commodity identity view selects a column named offset, which PostgreSQL reserves, so the schema cannot load and no database can be recreated.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The commodity identity view loads, so the database recreates from the schema.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The database recreates cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C7F35E63-8887-438F-8A58-1AA3FAA6DF30][Scaffold story: Quote the offset column in the marketdata identity view]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:80A250DA-DCB2-4E96-96FD-2E50C1F3E91F][Quote the offset column]] | DONE | | 2026-10-08 | Initial task for: Quote the offset column in the marketdata identity view |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The commodity identity view quotes its offset column, so the schema loads and the database recreates. Verified by compass db recreate -y -k, which exits 0.

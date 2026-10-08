@@ -118,21 +118,6 @@ References the parent counterparty record for group structures. Null for root co
 std::nullopt
 #+end_src
 
-** business_center_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Business center location code.
-
-FpML business center code indicating primary location.
-
-#+begin_src cpp :name generator
-std::string("WRLD")
-#+end_src
-
 ** status
 :PROPERTIES:
 :type:     text
@@ -213,7 +198,6 @@ drop function if exists ores_refdata_counterparties_hierarchy_fn(uuid, uuid, boo
 |-----------------------+----------------------------------------|
 | party_type            | ores_refdata_validate_party_type_fn   |
 | status                | ores_refdata_validate_party_status_fn |
-| business_center_code  | ores_refdata_validate_business_centre_fn |
 
 * Messages
 
@@ -322,7 +306,6 @@ TypeScript twin render it.
 | full_name            | Name            |
 | party_type           | Type            |
 | status               | Status          |
-| business_center_code | Business Center |
 | modified_by          | Modified By     |
 | version              | Version         |
 
@@ -345,7 +328,6 @@ TypeScript twin render it.
 | full_name                | Full Name            | nameEdit              | line_edit     | false  | true        | Enter full name  |                   |                     |                                |                                    |                      |                                |                        |                       |                    |                        |                    |                        |                            |               |                     |
 | party_type               | Party Type           | partyTypeCombo        | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_type       |                      |      | fetch_party_types      | partyTypeWatcher      | code               | description            | display_order      | party types            | PartyTypeCombo             | party_type    |                     |
 | status                   | Status               | statusCombo           | dynamic_combo | false  |             |                   |                   |                     |                                | refdata::domain::party_status     |                      |      | fetch_party_statuses   | partyStatusWatcher    | code               | description            | display_order      | party statuses         | PartyStatusCombo           | party_status  |                     |
-| business_center_code     | Business Center      | businessCenterCombo   | flagged_combo | false  |             |                   | business_centre   | false               | fetch_business_centre_codes   |                                    |                      |      |                        |                       |                    |                        |                    |                        |                            |               |                     |
 | parent_counterparty_id   | Parent Counterparty  | parentCounterpartyCombo | dynamic_combo | false | true        |                   |                   |                     |                                | refdata::domain::counterparty     | full_name            |      | fetch_counterparties   | parentCounterpartyWatcher | id             | short_code             | version            | counterparties         | ParentCounterpartyCombo    |               | No Parent           |
 
 *** Columns
@@ -356,19 +338,9 @@ TypeScript twin render it.
 | FullName           | full_name            | Name            | string    | 250   |          |              |           |                    |
 | PartyType          | party_type           | Type            | string    | 120   | true     | party_type   |           |                    |
 | Status             | status               | Status          | string    | 100   | true     | party_status |           |                    |
-| BusinessCenterCode | business_center_code | Business Center | string    | 130   |          |              |           |                    |
 | Version            | version              | Version         | int       | 80    |          |              |           |                    |
 | ModifiedBy         | modified_by          | Modified By     | string    | 120   |          |              |           |                    |
 | RecordedAt         | recorded_at          | Recorded At     | timestamp | 150   |          |              |           |                    |
-
-*** Icon columns
-
-Business center gets its own flag icon, same as any other
-single-business-centre cell (e.g. Book's rates centre code column).
-
-| column              | accessor                  | field1                | field2 |
-|---------------------+----------------------------+------------------------+--------|
-| BusinessCenterCode  | business_centre_flag_icon | business_center_code  |        |
 
 ** Custom repository methods
 

@@ -31,6 +31,7 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
+#include "ores.marketdata.service/app/series_shape_writer.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
@@ -361,6 +362,9 @@ void curve_republish_service::republish(context ctx,
 
     repository::market_observation_repository obs_repo;
     obs_repo.insert(ctx, observations);
+
+    series_shape_writer::declare(
+        ctx, *output_series_id, config.output_series_id, config.party_id, datums);
 
     ores::marketdata::service::observation_lineage_service lineage_service(ctx);
     lineage_service.save_observation_lineages(lineages);

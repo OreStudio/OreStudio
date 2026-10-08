@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-counterparties add <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
+counterparties add <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <status> <image_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.put=.
 
 #+name: counterparties-add
 #+begin_src ores-shell :tangle counterparties-add.ores :exports none
-counterparties add __none__ __none__ - __none__ - __none__ __none__ - system.new_record generated_script
+counterparties add __none__ __none__ - __none__ - __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-counterparties set <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary> [--version <n>]
+counterparties set <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <status> <image_id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.put=.
 
 #+name: counterparties-set
 #+begin_src ores-shell :tangle counterparties-set.ores :exports none
-counterparties set 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ - __none__ __none__ - system.new_record generated_script
+counterparties set 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ - __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-counterparties put-many --count <n> <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <business_center_code> <status> <image_id> <reason> <commentary>
+counterparties put-many --count <n> <id> <short_code> <full_name> <transliterated_name> <party_type> <parent_counterparty_id> <status> <image_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparties.put_many=.
 
 #+name: counterparties-put-many
 #+begin_src ores-shell :tangle counterparties-put-many.ores :exports none
-counterparties put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ - __none__ __none__ - system.new_record generated_script
+counterparties put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - __none__ - __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -23,9 +23,9 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The representation, the manual point path, staleness and the typed identity are done. The next slice is the shape tables. |
+| Now           | The representation, the manual point path, staleness, the typed identity and the shape tables are done. The next slice enforces the shape on the points. |
 | Waiting on    | Nothing.                               |
-| Next          | The shape tables, the axis codes as validated vocabulary, then the slice read and the aligned evolution read. |
+| Next          | The point check and the import declaration, then the axis codes as validated vocabulary, the slice read and the aligned evolution read. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -41,9 +41,37 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:8A1B795A-91B7-4157-86BF-87CD5DD5D234][Let an operator key and clear a curve point by hand]] | DONE | 2026-10-07 | 2026-10-07 | Add the write and clear path, so an operator over-keys a coordinate and withdraws it, with the actor and reason recorded. |
 | [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] | DONE | 2026-10-08 | 2026-10-08 | Every point carries its age, and the view shows it, so a composite of several market states is never mistaken for one. |
 | [[id:86B41936-1186-4FEC-B001-C62F59DF0013][Resolve a composite object from its typed identity]] | DONE | 2026-10-08 | 2026-10-08 | A caller names an object by its typed identity and the server resolves it to a series, so no view builds an oresmd URI by hand and none matches on a string. |
-| [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]] | BACKLOG | | | Record the axes a composite object varies over and their ordered values, written from the recipe's pillars by a build, and refuse a point whose coordinate is not a declared axis value. |
+| [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]] | DONE | 2026-10-08 | 2026-10-08 | Record the axes a composite object varies over and their ordered values, written from the recipe's pillars by a build, and refuse a point whose coordinate is not a declared axis value. |
+| [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] | BACKLOG | | | Check a point's coordinate against the shape its series declares, at write time, so the shape and the points cannot drift; and write a shape from the declaration an import carries. |
 
 * Decisions
+
+** The shape is a first-class cold declaration
+
+Chosen 2026-10-08, with the shape tables task. The object's axes and their ordered
+values are stored, in two current-state tables that join the series by =series_id=.
+Without them the shape is an inference from the points, so a tenor the feed dropped is
+indistinguishable from a tenor the structure does not have, a hole cannot be drawn, and
+the components of a surface cannot be enumerated without scanning history. The tables
+are cold: tens of rows per object, read when an axis is drawn or a build is validated,
+never on the point path.
+
+** The axes are the codec's coordinate fields, not a second vocabulary
+
+Chosen 2026-10-08, with the shape tables task. The writer takes the axes from the
+instrument type's schema row, so the axes a series declares are exactly the coordinate
+fields the codec already reads from its points. A second list of axis names would be a
+vocabulary that could disagree with the grammar that writes the URIs.
+
+** The build declares the shape, and the shape is validated before it is written
+
+Chosen 2026-10-08, with the shape tables task. A build writes the shape from the points
+it published, so the shape and the points cannot drift at the moment of publication, and
+an observed or imported structure will write it from what it declares. Every value of a
+term-kind axis is checked against =refdata_tenors= before any row is written, so a
+refused shape leaves nothing behind. The rule that refuses a point whose coordinate the
+shape does not declare is its own task, because it needs a hook on the generated
+observation write path.
 
 * Out of scope
 

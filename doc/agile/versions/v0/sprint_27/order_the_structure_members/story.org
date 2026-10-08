@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 14A7E71E-F5FD-461B-9A2C-A4CC2B7B3B08
+:END:
+#+title: Story: Order the structure members after the trades they reference
+#+description: The structure members table carries a foreign key to the trade table, but its include runs before the trade table is created, so the schema fails to load and no database can be recreated.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The trading schema loads, so the database recreates from the schema.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The database recreates cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A98A5D53-1D3E-4162-8884-06EF208D22CD][Scaffold story: Order the structure members after the trades they reference]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8CC99AE8-3214-41C9-AA3B-CC27BE16CEB9][Order the structure members after the trades]] | DONE | | 2026-10-08 | Initial task for: Order the structure members after the trades they reference |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The trading schema loads, so the database recreates from the schema. Verified
+by =compass db recreate -y -k=, which exits 0.

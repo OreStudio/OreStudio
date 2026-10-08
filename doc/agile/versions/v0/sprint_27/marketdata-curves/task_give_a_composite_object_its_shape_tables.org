@@ -7,45 +7,54 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-a-composite-object-its-shape-tables
+#+pr: 2864
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A term structure is drawn today from whatever pillars happen to be stored, so a caller cannot say what the object's shape is, what a missing point is missing from, or which points were added and dropped between two instants. Record the object's axes and their ordered values, so the shape is data rather than an inference from the points. Write it from the recipe's pillars when a build produces the series, and from the declaration when an import carries one. Validate every axis value against the reference tenor codes, and refuse at write time a point whose coordinate is not one the object's shape declares.
+A term structure is drawn today from whatever pillars happen to be stored, so a caller cannot say what the object's shape is, what a missing point is missing from, or which points were added and dropped between two instants. Record the object's axes and their ordered values, so the shape is data rather than an inference from the points. Write it from the pillars a build produces, and validate every axis value that is a term against the reference tenor codes. The point-write check and the import declaration are the next task, not this one.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
 
 - A composite object carries its axes and the ordered values of each, so its shape is readable without reading its points.
-- A build writes the shape from the pillars it produced, and an import writes it from the declaration it carried.
-- Every axis value that is a tenor is a code the reference tenor table holds, and a value that is not is refused.
-- A point whose coordinate is not a declared axis value of its object is refused at write time.
-- The existing series and points are unaffected: a series with no shape declared still reads, and the task says what it reports for them.
+- A build declares the shape of the series it publishes, from the points it produced.
+- Every axis value that is a term is a code the reference tenor table holds, and a value that is not is refused before any row is written.
+- A series whose instrument type declares no coordinate gets no shape rather than an empty one.
+- The existing series and points are unaffected: no point write changes, and a series with no shape declared still reads.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two current-state tables join the series by =series_id=, and a writer in =ores.marketdata.service= fills them.
+
+The tables are codegen entities with the same shape the identity projection uses: current state, no audit columns, tenant isolation, and no wire surface, because the service writes them and a query reads them. The axes table holds one row per coordinate field of the series' instrument type, and the values table one row per value, both ordered by a =sequence= column.
+
+The writer derives the axes from the instrument type's schema row, so the axes are the coordinate fields the codec already declares and no second vocabulary is invented. The values are the distinct texts the published points hold for each axis, in the order the build produced them. Every value of a term-kind axis is checked against =refdata_tenors= before anything is written, so a refused shape leaves no rows behind. The tenor read happens only when an axis is a term.
+
+The hook is in =curve_republish_service::republish=, after the observations are written and before the lineage, so a curve's shape lands with the points it describes.
+
+Out of this task, and recorded as the next one:
+
+- The write-time check that refuses a point whose coordinate is not a declared axis value. It needs a hook on the observation write path, which is generated, so it is its own change.
+- The import path writing a shape from the declaration it carries.
 
 * Measurements
 
@@ -59,7 +68,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Instrument types the codec schema declares | 45 | counts read from =schema.hpp= | =12910cebd4= |
+| Types that declare at least one coordinate, and so get a shape | 37 | same | =12910cebd4= |
+| Axes per type | 20 types with 1, 15 with 2, 1 with 3, 1 with 4 (=swaption=), 8 with none | same | =12910cebd4= |
+| Marketdata artefacts drifting after regeneration | 0 | =check_component_drift.py --component marketdata= | =12910cebd4= |
+| Local checks passing, heavy excluded | 27 of 32 | =python3 build/scripts/local_checks.py --exclude-heavy= | =12910cebd4= |
 
 * Notes
 
@@ -78,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2864][#2864]] | [marketdata] Give a composite series its shape tables |
 
 * Review
 
@@ -87,3 +100,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A composite series now declares what it comprises. A curve built by the IR bootstrap
+lands its axes and values with the points it publishes, so its shape is a stored fact
+rather than an inference from whichever points are present.
+
+What landed:
+
+- =ores.marketdata.series_axis= and =ores.marketdata.series_axis_value=, both current
+  state, both joining the series by =series_id=, neither on the wire.
+- =series_shape_writer::declare=, which takes the axes from the instrument type's schema
+  row and the values from the points the build produced, in the order it produced them,
+  and writes them through the generated repositories.
+- Term validation: every value of a term-kind axis is checked against =refdata_tenors=
+  before anything is written, so a refused shape leaves no rows behind.
+- The call in =curve_republish_service::republish=, after the observations and before the
+  lineage.
+
+Limitations:
+
+- Nothing was compiled and no test was run. The build and the suites are swift curie's
+  hourly validation.
+- Two tables are added, so the schema fingerprint moves and =compass db recreate= must run
+  before the test binaries will start.
+- Nothing reads the shape yet. A repository read is available through the generated
+  repositories; no operation and no consumer use it, so the tables are written and not
+  yet drawn from.
+- The write-time point check and the import declaration are out of scope and are the next
+  task, =refuse_a_point_that_its_shape_does_not_declare=.
+- =component-drift --all= and =drift-sweep= stop on
+  =projects/ores.dq/modeling/ores.dq.risk_report_config.org=, which is missing the required
+  =subcomponent= flag and a primary key. =entity-writes= reports the new
+  =ores_reporting_seed_report_configurations_fn= as an unratified writer of an entity
+  table. Neither the dq nor the reporting component is touched by this change.
+- =er-diagram= fails on the missing =pystache= in this checkout, and =codegen-tests= fails
+  three tests about the shell registry, domain includes and the fleet process count, none
+  of which names either new entity.

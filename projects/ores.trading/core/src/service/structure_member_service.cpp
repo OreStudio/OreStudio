@@ -104,7 +104,6 @@ domain::structure_member to_domain(const messaging::structure_member_write& writ
     v.structure_id = write.structure_id;
     v.role = write.role;
     v.sequence_number = write.sequence_number;
-    v.counterparty_id = write.counterparty_id;
     return v;
 }
 

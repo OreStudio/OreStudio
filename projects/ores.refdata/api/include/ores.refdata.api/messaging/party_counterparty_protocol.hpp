@@ -62,7 +62,9 @@ struct party_counterparty_lookup {
 
 struct party_counterparties_filter {
     std::optional<boost::uuids::uuid> party_id;
+    std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> counterparty_id_one_of;
 };
 
 struct list_party_counterparties_request {
@@ -217,6 +219,31 @@ struct list_by_party_id_party_counterparties_request {
 };
 
 struct list_by_party_id_party_counterparties_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::party_counterparty> party_counterparties;
+    std::uint64_t total;
+};
+
+struct list_by_counterparty_id_party_counterparties_request {
+    using response_type = struct list_by_counterparty_id_party_counterparties_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.party_counterparties.list_by_counterparty_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid counterparty_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<party_counterparties_filter> filter;
+};
+
+struct list_by_counterparty_id_party_counterparties_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_counterparty> party_counterparties;
     std::uint64_t total;

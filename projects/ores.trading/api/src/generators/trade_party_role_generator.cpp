@@ -47,8 +47,6 @@ generate_synthetic_trade_party_role(utility::generation::generation_context& ctx
     r.trade_id = ctx.generate_uuid();
     r.role = std::string("CalculationAgent");
     r.trade_activity_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
-    r.counterparty_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

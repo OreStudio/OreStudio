@@ -52,7 +52,6 @@ struct counterparty_entity {
     std::optional<std::string> transliterated_name;
     std::string party_type;
     std::optional<std::string> parent_counterparty_id;
-    std::string business_center_code;
     std::string status;
     std::optional<std::string> image_id;
     std::string modified_by;

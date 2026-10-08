@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: D8551E84-3E2F-4A12-92A6-03714EBEFCE9
+:END:
+#+title: ores.marketdata.series_axis
+#+description: Codegen entity model for the axes a composite market series varies over, one row per coordinate field the series' instrument type declares.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: series_axis
+#+entity_plural: series_axes
+#+entity_title: Series Axis
+#+brief: One coordinate field a composite market series varies over, in the order the object's key writes it.
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The axes a composite market series varies over. A term structure varies over one
+axis and a surface over two. Each row names one field the series' instrument type
+marks as a coordinate, so the object's shape is a declared thing rather than an
+inference from whatever points happen to be stored.
+
+The rows are ordered. The =sequence= column holds the position of each axis among
+the object's coordinates, so a reader walks the axes in the order the type's key
+writes them and a hole in a grid is a hole rather than an absent row.
+
+The table is a current state, not a history: the series row is already temporal
+and the shape of a series is written again whenever it is built. A series with no
+rows here declares no shape, and a caller that reads one gets nothing rather than
+a fabricated default.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:profile:       read-only-current-state
+:subcomponent:  api
+:END:
+
+* Columns
+
+** series_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The series this axis belongs to. A soft reference: the series table is temporal
+and its primary key carries the validity window, so no foreign key can name a
+single current row of it.
+
+** axis_field
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The oresmd field code the axis is, which is one of the coordinate fields the
+series' instrument type declares. A type that declares no coordinate has no
+axis row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The owning party, copied so a query filters without joining the series.
+
+** sequence
+:PROPERTIES:
+:type:    integer
+:cpp_type: int
+:default: 0
+:END:
+
+The axis's position among the object's coordinates. The order the schema row
+declares is the order the values are read.
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: series_axis
+:entity_plural_short:   series_axes
+:entity_singular_words: series axis
+:entity_plural_words:   series axes
+:END:
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sa
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:             ores_marketdata_series_axes_tbl
+:current_state:         true
+:no_audit_columns:      true
+:rls_tenant_isolation:  true
+:END:
+
+The table is current state and carries no validity window. A rebuilt series
+writes its axes again, and a history here would be a second copy of a shape the
+points already imply.
+
+** Indexes
+
+| name   | columns             | unique | current_only | where_extra |
+|--------+---------------------+--------+--------------+-------------|
+| series | tenant_id, series_id | false  | false        |             |
+
+A read starts from the series, because every query names the object whose shape
+it wants before it names an axis.
+
+* Physical space
+
+The table is a projection the service writes and a query joins. It reaches no
+client as an entity of its own, so nothing but the data layer and the SQL schema
+is generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |

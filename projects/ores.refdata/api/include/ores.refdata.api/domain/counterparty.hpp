@@ -96,13 +96,6 @@ struct counterparty final {
     std::optional<boost::uuids::uuid> parent_counterparty_id;
 
     /**
-     * @brief Business center location code.
-     *
-     * FpML business center code indicating primary location.
-     */
-    std::string business_center_code;
-
-    /**
      * @brief Current lifecycle status.
      *
      * References the party_status lookup table.

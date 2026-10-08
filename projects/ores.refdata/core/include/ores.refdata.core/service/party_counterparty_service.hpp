@@ -90,6 +90,9 @@ public:
         const messaging::delete_many_party_counterparties_request& request);
     messaging::list_by_party_id_party_counterparties_response list_by_party_id_party_counterparties(
         const messaging::list_by_party_id_party_counterparties_request& request);
+    messaging::list_by_counterparty_id_party_counterparties_response
+    list_by_counterparty_id_party_counterparties(
+        const messaging::list_by_counterparty_id_party_counterparties_request& request);
     /**@}*/
 
 private:

@@ -47,7 +47,6 @@ domain::trade_link generate_synthetic_trade_link(utility::generation::generation
     r.to_trade_id = ctx.generate_uuid();
     r.link_type = std::string("Roll");
     r.trade_activity_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

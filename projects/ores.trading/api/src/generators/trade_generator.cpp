@@ -35,10 +35,12 @@ namespace ores::trading::generators {
 using ores::utility::generation::generation_keys;
 
 domain::trade generate_synthetic_trade(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::trade r;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
@@ -48,6 +50,11 @@ domain::trade generate_synthetic_trade(utility::generation::generation_context& 
     r.counterparty_scope = ores::trading::domain::counterparty_scope::intra_entity;
     r.booking_nature = ores::trading::domain::booking_nature::test;
     r.entry_channel = ores::trading::domain::entry_channel::manual;
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

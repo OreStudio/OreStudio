@@ -24,6 +24,8 @@
 \ir ./marketdata_market_series_notify_trigger_create.sql
 \ir ./marketdata_market_series_asset_class_create.sql
 \ir ./marketdata_market_series_identity_create.sql
+\ir ./marketdata_series_axes_create.sql
+\ir ./marketdata_series_axis_values_create.sql
 \ir ./marketdata_series_identity_views_create.sql
 \ir ./marketdata_market_observations_create.sql
 \ir ./marketdata_market_observations_notify_trigger_create.sql

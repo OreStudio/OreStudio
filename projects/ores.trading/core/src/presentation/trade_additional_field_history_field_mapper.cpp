@@ -40,7 +40,6 @@ render_trade_additional_field_fields(const domain::trade_additional_field& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Value", .value = v.value});
     using ores::history::domain::provenance_fields;

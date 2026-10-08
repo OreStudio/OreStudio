@@ -42,7 +42,6 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
     "id_value" text not null,
     "issuing_party_id" uuid null,
     "modified_by" text not null,
@@ -61,10 +60,7 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("id_type" <> ''),
-    check ("id_value" <> ''),
-    constraint ores_trading_trade_identifiers_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_identifiers_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_identifiers_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
+    check ("id_value" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -91,6 +87,28 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. No active trade found with this id.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
+            using errcode = '23503';
+    end if;
 
     -- Validate id_type (soft FK to ores_trading_trade_id_types_tbl)
     if not exists (

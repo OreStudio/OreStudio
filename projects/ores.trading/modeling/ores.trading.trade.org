@@ -33,7 +33,6 @@ no audit tail: the audit record of the act that booked it carries that.
 :schema:        public
 :product:       ores
 :component:     trading
-:profile:       read-only-current-state
 :has_tenant_id: true
 :END:
 
@@ -176,7 +175,7 @@ the system tenant.
 :PROPERTIES:
 :table:         ores_trading_counterparty_scope_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid counterparty_scope: %. No active counterparty scope found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:
@@ -187,7 +186,7 @@ A database foreign key: the lookup is immutable and has no tenant.
 :PROPERTIES:
 :table:         ores_trading_booking_nature_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid booking_nature: %. No active booking nature found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:
@@ -198,7 +197,7 @@ A database foreign key: the lookup is immutable and has no tenant.
 :PROPERTIES:
 :table:         ores_trading_entry_channel_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid entry_channel: %. No active entry channel found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:
@@ -210,8 +209,7 @@ A database foreign key: the lookup is immutable and has no tenant.
 ** Flags
 :PROPERTIES:
 :tablename:        ores_trading_trades_tbl
-:immutable:        true
-:no_audit_columns: true
+:rls_tenant_isolation: true
 :END:
 
 ** Checks
@@ -233,8 +231,6 @@ counterparty to: a database pin can only name a key, and the primary key
 |--------------------+--------------------------------+--------+--------------+-------------|
 | party              | tenant_id, party_id            | false  | false        |             |
 | counterparty       | tenant_id, counterparty_id     | false  | false        |             |
-| id_party           | tenant_id, id, party_id        | true   | false        |             |
-| id_counterparty    | tenant_id, id, counterparty_id | true   | false        |             |
 
 * C++
 

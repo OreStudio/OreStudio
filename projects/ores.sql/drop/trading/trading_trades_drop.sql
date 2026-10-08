@@ -23,10 +23,8 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists trades_tbl_tenant_isolation_policy on "ores_trading_trades_tbl";
 drop rule if exists ores_trading_trades_delete_rule on "ores_trading_trades_tbl";
 drop trigger if exists ores_trading_trades_insert_trg on "ores_trading_trades_tbl";
 drop function if exists ores_trading_trades_insert_fn;
-drop trigger if exists ores_trading_trades_immutable_trg on "ores_trading_trades_tbl";
-drop trigger if exists ores_trading_trades_immutable_truncate_trg on "ores_trading_trades_tbl";
-drop function if exists ores_trading_trades_immutable_fn;
 drop table if exists "ores_trading_trades_tbl";

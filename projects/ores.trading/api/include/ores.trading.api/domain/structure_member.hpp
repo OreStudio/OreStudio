@@ -83,17 +83,6 @@ struct structure_member final {
     int sequence_number = 0;
 
     /**
-     * @brief The structure's party, copied so the row stands on its own and pinned so the copy
-     * cannot drift from the deal.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief The structure's counterparty, copied and pinned the same way.
-     */
-    boost::uuids::uuid counterparty_id;
-
-    /**
      * @brief Username of the person who last modified this structure member.
      */
     std::string modified_by;

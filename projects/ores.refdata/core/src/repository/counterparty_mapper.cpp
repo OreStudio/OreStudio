@@ -57,7 +57,6 @@ domain::counterparty counterparty_mapper::map(const counterparty_entity& v) {
         v.parent_counterparty_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_counterparty_id)) :
             std::nullopt;
-    r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.image_id = v.image_id.has_value() ?
                      std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.image_id)) :
@@ -89,7 +88,6 @@ counterparty_entity counterparty_mapper::map(const domain::counterparty& v) {
         v.parent_counterparty_id.has_value() ?
             std::optional(boost::uuids::to_string(*v.parent_counterparty_id)) :
             std::nullopt;
-    r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.image_id =
         v.image_id.has_value() ? std::optional(boost::uuids::to_string(*v.image_id)) : std::nullopt;

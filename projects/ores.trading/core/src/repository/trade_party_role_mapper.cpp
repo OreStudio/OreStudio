@@ -48,8 +48,6 @@ domain::trade_party_role trade_party_role_mapper::map(const trade_party_role_ent
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.role = v.role.value();
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,8 +67,6 @@ trade_party_role_entity trade_party_role_mapper::map(const domain::trade_party_r
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

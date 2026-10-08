@@ -49,8 +49,6 @@ domain::structure_member structure_member_mapper::map(const structure_member_ent
     r.structure_id = boost::lexical_cast<boost::uuids::uuid>(v.structure_id);
     r.role = v.role;
     r.sequence_number = v.sequence_number;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(v.counterparty_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -71,8 +69,6 @@ structure_member_entity structure_member_mapper::map(const domain::structure_mem
     r.structure_id = boost::uuids::to_string(v.structure_id);
     r.role = v.role;
     r.sequence_number = v.sequence_number;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.counterparty_id = boost::uuids::to_string(v.counterparty_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

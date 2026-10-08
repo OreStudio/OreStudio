@@ -81,6 +81,18 @@ public:
     get_booking_nature_type(const messaging::get_booking_nature_type_request& request);
     messaging::get_many_booking_nature_types_response
     get_many_booking_nature_types(const messaging::get_many_booking_nature_types_request& request);
+    messaging::put_booking_nature_type_response
+    put_booking_nature_type(const messaging::put_booking_nature_type_request& request);
+    messaging::put_many_booking_nature_types_response
+    put_many_booking_nature_types(const messaging::put_many_booking_nature_types_request& request);
+    messaging::delete_booking_nature_type_response
+    delete_booking_nature_type(const messaging::delete_booking_nature_type_request& request);
+    messaging::delete_many_booking_nature_types_response delete_many_booking_nature_types(
+        const messaging::delete_many_booking_nature_types_request& request);
+    messaging::list_booking_nature_type_versions_response list_booking_nature_type_versions(
+        const messaging::list_booking_nature_type_versions_request& request);
+    messaging::get_booking_nature_type_version_response get_booking_nature_type_version(
+        const messaging::get_booking_nature_type_version_request& request);
     /**@}*/
 
     /**
@@ -100,6 +112,16 @@ public:
      */
     std::uint32_t count_booking_nature_types();
 
+
+    /**
+     * @brief Retrieves a single booking nature type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The booking nature type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::booking_nature_type>
+    get_booking_nature_type_at_version(const std::string& code, std::uint32_t version);
 
     /**
      * @brief Retrieves a single booking nature type by its primary key.
@@ -143,10 +165,35 @@ public:
      */
     void delete_booking_nature_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a booking nature type.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::booking_nature_type>
+    get_booking_nature_type_history(const std::string& code);
 
 private:
     context ctx_;
     repository::booking_nature_type_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::booking_nature_type_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::booking_nature_type& out);
 };
 
 }

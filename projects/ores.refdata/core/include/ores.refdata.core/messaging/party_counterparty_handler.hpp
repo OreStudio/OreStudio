@@ -398,6 +398,47 @@ public:
         }
     }
 
+    /**
+     * @brief Serves refdata.v1.party_counterparties.list_by_counterparty_id.
+     */
+    void list_by_counterparty_id_party_counterparties(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::party_counterparties:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<list_by_counterparty_id_party_counterparties_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_counterparty_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::party_counterparty_service svc(req_ctx);
+        try {
+            auto response = svc.list_by_counterparty_id_party_counterparties(*req);
+            BOOST_LOG_SEV(party_counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(party_counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            list_by_counterparty_id_party_counterparties_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

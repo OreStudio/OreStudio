@@ -83,6 +83,12 @@ std::vector<ores::nats::service::subscription> register_party_counterparty_handl
                                             h->list_by_party_id_party_counterparties(
                                                 std::move(msg));
                                         }));
+    subs.push_back(
+        nats.queue_subscribe(list_by_counterparty_id_party_counterparties_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) {
+                                 h->list_by_counterparty_id_party_counterparties(std::move(msg));
+                             }));
     return subs;
 }
 

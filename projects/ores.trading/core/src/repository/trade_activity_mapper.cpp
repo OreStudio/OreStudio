@@ -46,6 +46,7 @@ domain::trade_activity trade_activity_mapper::map(const trade_activity_entity& v
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade_activity r;
+    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
@@ -54,6 +55,11 @@ domain::trade_activity trade_activity_mapper::map(const trade_activity_entity& v
     r.occurred_at = timestamp_to_timepoint(std::string_view{v.occurred_at});
     r.comment = v.comment;
     r.is_operational_error = v.is_operational_error;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -65,12 +71,17 @@ trade_activity_entity trade_activity_mapper::map(const domain::trade_activity& v
     trade_activity_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.activity_type_code = v.activity_type_code;
     r.actor = v.actor;
     r.occurred_at = ores::platform::time::datetime::to_iso8601_utc(v.occurred_at);
     r.comment = v.comment;
     r.is_operational_error = v.is_operational_error;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

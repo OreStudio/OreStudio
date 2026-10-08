@@ -86,11 +86,6 @@ struct trade_link final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The party of the from end, copied so row level security sees it.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
      * @brief Username of the person who last modified this trade link.
      */
     std::string modified_by;

@@ -33,14 +33,21 @@ namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::booking_nature_type generate_synthetic_booking_nature_type(
-    [[maybe_unused]] utility::generation::generation_context& ctx) {
+domain::booking_nature_type
+generate_synthetic_booking_nature_type(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::booking_nature_type r;
+    r.version = 0;
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string("actual") + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

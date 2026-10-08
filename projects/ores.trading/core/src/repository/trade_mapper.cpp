@@ -48,6 +48,7 @@ domain::trade trade_mapper::map(const trade_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade r;
+    r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
@@ -63,6 +64,11 @@ domain::trade trade_mapper::map(const trade_entity& v) {
         rfl::string_to_enum<ores::trading::domain::booking_nature>(v.booking_nature).value();
     r.entry_channel =
         rfl::string_to_enum<ores::trading::domain::entry_channel>(v.entry_channel).value();
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -74,6 +80,7 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     trade_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.counterparty_id = v.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.counterparty_id)) :
@@ -82,6 +89,10 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.counterparty_scope = rfl::enum_to_string(v.counterparty_scope);
     r.booking_nature = rfl::enum_to_string(v.booking_nature);
     r.entry_channel = rfl::enum_to_string(v.entry_channel);
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 94DE4430-5770-4A6E-943A-C2FF7B5DC35C
+:END:
+#+title: Task: Refuse a point its shape does not declare
+#+description: Check a point's coordinate against the shape its series declares, at write time, so the shape and the points cannot drift; and write a shape from the declaration an import carries.
+#+type: task
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shape tables say what a composite object comprises, but nothing enforces it: a point whose coordinate the shape does not list is still written, so the shape and the points can disagree and the disagreement is silent. Refuse such a point at write time, wherever a point is written, so the two cannot drift. Then let an import declare the shape of the series it carries, so an observed or imported structure has a shape without a build to write one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A point whose coordinate is not a declared axis value of its series is refused, and the refusal names the series, the coordinate and the value.
+- The refusal holds for every writer of a point, not only the one that was changed, or the task says which writer it does not cover and why.
+- A point for a series that declares no shape is written as it is today, so no existing series stops accepting points.
+- An import declares the shape of the series it carries, from the declaration rather than from the points, and a series it does not declare keeps whatever shape it had.
+- A series whose declared shape gains a value accepts points at that value without any further change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

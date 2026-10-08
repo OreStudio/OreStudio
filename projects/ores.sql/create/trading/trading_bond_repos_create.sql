@@ -57,8 +57,7 @@ create table if not exists "ores_trading_bond_repos_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("repo_type" in ('Fixed', 'Floating')),
-    constraint ores_trading_bond_repos_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
+    check ("repo_type" in ('Fixed', 'Floating'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -87,8 +86,20 @@ begin
         select 1 from ores_trading_trades_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
     end if;
 

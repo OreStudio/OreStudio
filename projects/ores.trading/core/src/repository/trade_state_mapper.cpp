@@ -47,7 +47,6 @@ domain::trade_state trade_state_mapper::map(const trade_state_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -67,7 +66,6 @@ trade_state_entity trade_state_mapper::map(const domain::trade_state& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
     r.status_id = boost::uuids::to_string(v.status_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

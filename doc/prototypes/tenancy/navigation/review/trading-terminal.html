@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading terminal &mdash; Gemini review</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#141c2e',
+                            900: '#0b1120',
+                            950: '#050811',
+                        },
+                        terminal: {
+                            green: '#10b981',
+                            amber: '#f59e0b',
+                            blue: '#3b82f6',
+                            dark: '#020617'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-mono-data {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar for financial terminal feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white"><div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+
+    <div class="bg-slate-900 border-b border-slate-800 text-[11px] font-mono-data px-4 py-1.5 flex flex-wrap items-center justify-between text-slate-400 select-none">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-1.5">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-slate-200 font-semibold tracking-wider">LONDON TRADING SESSION</span>
+            </div>
+            <span class="text-slate-700">|</span>
+            <div class="flex items-center space-x-1">
+                <span class="text-slate-500">FEED:</span>
+                <span class="text-emerald-400 font-medium">CONNECTED (99.98% SLA)</span>
+            </div>
+            <span class="text-slate-700 hidden md:inline">|</span>
+            <div class="hidden md:flex items-center space-x-1">
+                <span class="text-slate-500">PRICING ENGINE:</span>
+                <span class="text-blue-400 font-medium">ORE-X-v2.4 (ACTIVE)</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-1">
+                <span class="text-slate-500">LATENCY:</span>
+                <span class="text-slate-300">1.4ms</span>
+            </div>
+            <span class="text-slate-700">|</span>
+            <div id="utc-clock" class="text-slate-300 font-medium">09:27:36 UTC</div>
+        </div>
+    </div>
+
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-6">
+                <!-- Platform Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-bold text-white shadow-sm border border-blue-500/30 font-mono-data text-xs">
+                        OS
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm tracking-wide text-white">ORE STUDIO</div>
+                        <div class="text-[10px] text-slate-400 font-mono-data tracking-tighter">EXOTICS & DERIVATIVES</div>
+                    </div>
+                </div>
+
+                <div class="h-6 w-px bg-slate-800"></div>
+
+                <!-- Tenant Logo & Identification -->
+                <div class="flex items-center space-x-3 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-md">
+                    <img src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/external/acme/Acme-corp.png" 
+                         alt="ACME Corporation Logo" 
+                         class="h-5 w-auto object-contain filter brightness-110"
+                         onerror="this.onerror=null; this.src='https://placehold.co/80x24/1e293b/cbd5e1?text=ACME';">
+                    <div class="hidden sm:block">
+                        <div class="text-[10px] text-slate-500 font-mono-data uppercase">Active Tenant</div>
+                        <div class="text-xs font-semibold text-slate-200">ACME Corp UK plc</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs (Trading Terminal Style) -->
+            <nav class="hidden lg:flex items-center space-x-1 font-mono-data text-xs">
+                <a href="#" class="px-3 py-1.5 rounded bg-blue-600/10 text-blue-400 border border-blue-500/30 font-semibold">TERM-01 // HOME</a>
+                <a href="#" class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors">PEOPLE</a>
+                <a href="#" class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors">REQUESTS</a>
+                <a href="#" class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors">REF-DATA</a>
+                <a href="#" class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors">SECURITY</a>
+            </nav>
+
+            <!-- User profile & Quick stats -->
+            <div class="flex items-center space-x-3">
+                <button aria-label="Terminal Notifications" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors relative border border-transparent hover:border-slate-700">
+                    <i data-lucide="bell" class="w-4 h-4"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full"></span>
+                </button>
+                <div class="h-6 w-px bg-slate-800"></div>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-mono-data text-xs font-bold text-blue-400">
+                        TA
+                    </div>
+                    <div class="hidden sm:block text-left">
+                        <div class="text-xs font-semibold text-slate-200">Tenant Admin</div>
+                        <div class="text-[10px] text-slate-500 font-mono-data">ROLE: ROOT_ADMIN</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        
+        <!-- Welcome Console Bar -->
+        <section class="bg-slate-900 border border-slate-800 rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+            <div class="space-y-1">
+                <div class="flex items-center space-x-2 text-xs font-mono-data text-blue-400 uppercase">
+                    <span class="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                    <span>System Session ID: <span class="text-slate-300">#TRM-8849-UK</span></span>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+                    <span>Quantitative Risk & Administration Console</span>
+                </h1>
+                <p class="text-xs text-slate-400 font-mono-data">
+                    Connected to production environment cluster <span class="text-slate-300">uk-prod-db01.orestudio.internal</span>
+                </p>
+            </div>
+            <div class="flex items-center space-x-3 bg-slate-950 border border-slate-800/80 px-4 py-2.5 rounded font-mono-data text-xs">
+                <div>
+                    <div class="text-slate-500 text-[10px]">DB SCHEMA VER</div>
+                    <div class="text-slate-200 font-semibold">v2.4.1-patch2</div>
+                </div>
+                <div class="h-6 w-px bg-slate-800"></div>
+                <div>
+                    <div class="text-slate-500 text-[10px]">STATUS</div>
+                    <div class="text-emerald-400 font-semibold flex items-center space-x-1">
+                        <span>SYNCED</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h2 class="text-xs font-mono-data uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-blue-400"></i>
+                    <span>Desk Operations & Environment Management</span>
+                </h2>
+                <span class="text-xs font-mono-data text-slate-500">5 ACTIVE MODULES</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- People -->
+                <a href="#" class="group bg-slate-900/90 border border-slate-800 hover:border-blue-500/60 rounded-lg p-4 transition-all duration-150 flex flex-col justify-between hover:bg-slate-900">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-8 h-8 rounded bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-mono-data text-slate-500 group-hover:text-blue-400">&rarr; ACCESS</span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">People & Users</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Manage user provisioning, trader permissions, and security group assignments.</p>
+                    </div>
+                    <div class="mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Directory: Active</span>
+                        <span class="text-blue-400">Open &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Reference Data -->
+                <a href="#" class="group bg-slate-900/90 border border-slate-800 hover:border-blue-500/60 rounded-lg p-4 transition-all duration-150 flex flex-col justify-between hover:bg-slate-900">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-8 h-8 rounded bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="database" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-mono-data text-slate-500 group-hover:text-blue-400">&rarr; MASTER</span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">Reference Data</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Currencies, trading calendars, market conventions, and counterparty master files.</p>
+                    </div>
+                    <div class="mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Dataset: Verified</span>
+                        <span class="text-blue-400">Open &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Password & Sign-ins -->
+                <a href="#" class="group bg-slate-900/90 border border-slate-800 hover:border-blue-500/60 rounded-lg p-4 transition-all duration-150 flex flex-col justify-between hover:bg-slate-900">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-8 h-8 rounded bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="key" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-mono-data text-slate-500 group-hover:text-blue-400">&rarr; SEC</span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">Password & Sign-ins</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Update credential rules, enforce MFA policies, and review active session logs.</p>
+                    </div>
+                    <div class="mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Policy: Enforced</span>
+                        <span class="text-blue-400">Manage &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- My Access -->
+                <a href="#" class="group bg-slate-900/90 border border-slate-800 hover:border-blue-500/60 rounded-lg p-4 transition-all duration-150 flex flex-col justify-between hover:bg-slate-900">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-8 h-8 rounded bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-mono-data text-slate-500 group-hover:text-blue-400">&rarr; ROLES</span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">My Access Entitlements</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Inspect your granted permission matrices and administrative desk privileges.</p>
+                    </div>
+                    <div class="mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Role: Root Admin</span>
+                        <span class="text-blue-400">Review &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Versions & Database -->
+                <a href="#" class="group bg-slate-900/90 border border-slate-800 hover:border-blue-500/60 rounded-lg p-4 transition-all duration-150 flex flex-col justify-between hover:bg-slate-900">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-8 h-8 rounded bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <i data-lucide="server" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[10px] font-mono-data text-slate-500 group-hover:text-blue-400">&rarr; SYS</span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-white group-hover:text-blue-300 transition-colors">Versions & Database</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">View browser runtime build, deployment topology, and database health.</p>
+                    </div>
+                    <div class="mt-4 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Build: 2.4.1-prod</span>
+                        <span class="text-blue-400">Inspect &rarr;</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="space-y-3 pt-2">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h2 class="text-xs font-mono-data uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+                    <i data-lucide="terminal" class="w-4 h-4 text-amber-400"></i>
+                    <span>Core Trading Modules & Analytics (Roadmap Preview)</span>
+                </h2>
+                <span class="text-xs font-mono-data text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Q3/Q4 ROLLOUT</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Market Data Module -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-lg p-4 relative flex flex-col justify-between opacity-95">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-1.5 py-0.5 text-[9px] font-mono-data uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">Q3 ROADMAP</span>
+                    </div>
+                    <div>
+                        <div class="w-8 h-8 rounded bg-slate-800 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="line-chart" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="font-semibold text-sm text-slate-200">Market Data & Curves</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Yield curve authoring, volatility surface bootstrapping, and observation publishing governance workflows.</p>
+                    </div>
+                    <div class="mt-6 pt-2.5 border-t border-slate-800/50 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Environment: Staging</span>
+                        <span class="text-slate-400 italic">In Development</span>
+                    </div>
+                </div>
+
+                <!-- Trading Module -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-lg p-4 relative flex flex-col justify-between opacity-95">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-1.5 py-0.5 text-[9px] font-mono-data uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">Q4 ROADMAP</span>
+                    </div>
+                    <div>
+                        <div class="w-8 h-8 rounded bg-slate-800 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="font-semibold text-sm text-slate-200">Exotics & Trading Blotter</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Book, amend, and review structured trades, swaptions, and exotic derivatives portfolios.</p>
+                    </div>
+                    <div class="mt-6 pt-2.5 border-t border-slate-800/50 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Environment: Design</span>
+                        <span class="text-slate-400 italic">Planned</span>
+                    </div>
+                </div>
+
+                <!-- Reporting Module -->
+                <div class="bg-slate-900/50 border border-slate-800/80 rounded-lg p-4 relative flex flex-col justify-between opacity-95">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-1.5 py-0.5 text-[9px] font-mono-data uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded">Q4 ROADMAP</span>
+                    </div>
+                    <div>
+                        <div class="w-8 h-8 rounded bg-slate-800 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                        </div>
+                        <h3 class="font-semibold text-sm text-slate-200">Risk & P&L Reporting</h3>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">Generate comprehensive risk analytics, Greeks sensitivities, stress tests, and P&L attribution reports.</p>
+                    </div>
+                    <div class="mt-6 pt-2.5 border-t border-slate-800/50 flex items-center justify-between text-[11px] font-mono-data text-slate-500">
+                        <span>Environment: Design</span>
+                        <span class="text-slate-400 italic">Planned</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 mt-8 text-xs font-mono-data text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>&copy; 2026 ORE Studio Systems Ltd. All rights reserved. Terminal License #ACME-UK-8821.</div>
+            <div class="flex space-x-6 text-[11px]">
+                <a href="#" class="hover:text-slate-300 transition-colors">API DOCS</a>
+                <a href="#" class="hover:text-slate-300 transition-colors">SECURITY AUDIT</a>
+                <a href="#" class="hover:text-slate-300 transition-colors">SUPPORT DESK</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Live UTC clock updater for financial terminal realism
+        function updateClock() {
+            const now = new Date();
+            const utcString = now.toISOString().slice(11, 19) + ' UTC';
+            const clockEl = document.getElementById('utc-clock');
+            if (clockEl) {
+                clockEl.textContent = utcString;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+<section style="max-width:80rem;margin:0 auto;padding:2rem 1.5rem 3rem;color:#94a3b8;font:400 14px/1.7 Inter,system-ui,sans-serif"><h2 style="font-size:1.125rem;font-weight:600;color:#e2e8f0;margin:0 0 1rem">Summary of Changes Made:</h2><ol style="list-style:decimal;padding-left:1.5rem;display:flex;flex-direction:column;gap:.5rem"><li><strong>Live Market &amp; Terminal Ticker Bar:</strong> Added a Bloomberg/Calypso-style ticker at the top displaying session status (<code>LONDON TRADING SESSION</code>), live feed connection state, engine status, and a real-time UTC clock.</li><li><strong>Tenant Logo Integration:</strong> Integrated the ACME Corporation logo image directly from your GitHub repository URL into the header alongside the ORE Studio branding.</li><li><strong>High-Precision Financial Aesthetic:</strong> Adopted a denser grid layout, monospace typography (<code>JetBrains Mono</code>) for technical metadata and version tags, muted status pills, and precise borders.</li><li><strong>Traders' Desk Grouping:</strong> Cleanly separated the active administration modules (<em>People, Reference Data, Passwords, Access, Database Versions</em>) from upcoming front-office risk and trading modules into dedicated professional sections.</li></ol></section></body>
+</html>

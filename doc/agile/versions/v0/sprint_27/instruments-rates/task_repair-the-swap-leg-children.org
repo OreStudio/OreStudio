@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/repair-the-swap-leg-children
-#+pr:
+#+pr: 2855
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2855][#2855]] | [trading] Repair the swap leg children's insert trigger and isolation |
 
 * Review
 

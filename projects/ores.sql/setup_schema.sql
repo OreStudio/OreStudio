@@ -109,12 +109,13 @@ grant execute on function ores_assets_get_template_image_fn(text)
 grant execute on function ores_variability_get_system_settings_fn(uuid, uuid)
     to :test_dml_user, :test_ddl_user;
 
--- The settings trigger resolves a tenant-wide write to the tenant's system
--- party through this function, and a trigger runs with the writing role's
--- privileges, so the role that writes a tenant-wide setting needs EXECUTE on
--- it. A service writes settings its tenant already holds, so the function stays
--- off the production service roles; the test users, which create the row as
--- well as update it, are granted it here.
+-- No writer needs this to write a setting: the settings trigger is SECURITY
+-- DEFINER, so it resolves the party as its owner whatever role did the insert.
+-- The grant stays for the two invoker-rights seed functions that call it
+-- directly, ores_variability_system_settings_upsert_fn and
+-- ores_variability_system_settings_set_fn, which the test users drive. The
+-- production service roles still do not get it: it takes a tenant as a
+-- parameter and reads across the tenant boundary.
 grant execute on function ores_variability_resolve_system_party_fn(uuid)
     to :test_dml_user, :test_ddl_user;
 

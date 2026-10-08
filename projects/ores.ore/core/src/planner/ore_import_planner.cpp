@@ -51,7 +51,6 @@ void place_trade(xml::trade_import_item& item,
     item.anchor.id = trade_id;
     item.anchor.party_id = party_id;
     item.booking.trade_id = trade_id;
-    item.booking.party_id = party_id;
     item.booking.book_id = book_id;
     if (!std::holds_alternative<std::monostate>(item.instrument))
         trading::domain::stamp_ids(item.instrument, trade_id);

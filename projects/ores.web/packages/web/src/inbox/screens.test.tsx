@@ -526,13 +526,18 @@ describe('the story of one request', () => {
         ];
     }
 
-    function story(events: readonly Record<string, unknown>[], stateCode = 'approved'): string {
+    function story(
+        events: readonly Record<string, unknown>[],
+        stateCode = 'approved',
+        me = 'priya',
+        requestedBy = 'daniel',
+    ): string {
         return render(
             (client) => {
-                client.setQueryData(['request', REQUEST], queued({ stateCode }));
+                client.setQueryData(['request', REQUEST], queued({ stateCode, requestedBy }));
                 client.setQueryData(['request-story', REQUEST], { requestId: REQUEST, events });
             },
-            <RequestStoryPage />,
+            <RequestStoryPage me={me} />,
             `/requests/${REQUEST}/story`,
             '/requests/:id/story',
         );
@@ -582,5 +587,14 @@ describe('the story of one request', () => {
 
         expect(html).not.toContain('Answered');
         expect(html).toContain('the answer is not yours to read');
+    });
+
+    it('sends a member back to their own access, not to a queue they do not have', () => {
+        const member = story(versions(), 'approved', 'daniel', 'daniel');
+        expect(member).toContain('href="/access"');
+        expect(member).toContain('My access');
+
+        const administrator = story(versions());
+        expect(administrator).toContain('href="/requests"');
     });
 });

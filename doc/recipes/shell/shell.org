@@ -1481,3 +1481,7 @@ tangled into the runnable script library
 * Structures
 
 - [[id:4057A3D8-11A2-5981-9A3E-B63433EF9653][How do I run the structures commands from the shell?]]
+
+* Structure Members
+
+- [[id:CE98CDD4-CE4B-5A6F-85C7-4248B5E85F0C][How do I run the structure_members commands from the shell?]]

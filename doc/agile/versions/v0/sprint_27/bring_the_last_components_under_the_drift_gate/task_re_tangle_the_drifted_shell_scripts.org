@@ -8,12 +8,12 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/re-tangle-the-drifted-shell-scripts
-#+pr:
+#+pr: 2852
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Re-tangle the shell script library and commit the result, so tangle-shell passes
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2852][#2852]] | [shell] Commit the tangled structure_members scripts |
 
 * Review
 
@@ -83,3 +83,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+tangle-shell passes. Two pieces of work, not one.
+
+The 21 scripts that had drifted to __none__ while the tangle writes - went in
+with the synthetic change, because regenerating that component rewrote the
+recipes they come from and the tangle followed. The rest of the library was
+already correct: __none__ is the tangle's normal output for an absent value,
+and grepping for it finds two thousand files that are right.
+
+What remained was a whole recipe set with no tangled output at all:
+structure_members, ten scripts, untracked and failing the check on its own.
+They are committed here, and the shell recipe inventory is refreshed to 406
+recipes in 351 categories.
+
+Static validation: tangle-shell, recipe-inventories and physical-inventory all
+pass.
+

@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/show-term-structure-staleness
-#+pr:
+#+pr: 2792
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2792][#2792]] | [marketdata] Return a term structure's staleness with its points |
 
 * Review
 

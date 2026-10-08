@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 0BA03E10-9295-4243-B475-A0E0C721D243
+:END:
+#+title: Task: Fail the reachability check on a dangling include
+#+description: Task for: Bring the last components under the drift gate
+#+type: task
+#+level: s1
+#+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-reachability-check-misses-dangling-includes
+#+pr: 2836
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The create-reachability check reports a file no aggregator includes, and an include that names no file, so neither silent failure survives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- An include naming a missing file is reported and fails the check.
+- A create file nothing includes is still reported.
+- The check passes on the tree as checked in.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| dangling includes reported | 1, with the including file and the path looked for | check_sql_create_reachability.py against a tree with a temporary dangling include | aa1ccf49dc |
+| cases pinned for the check | 5, including one over the repository | =pytest projects/ores.codegen/tests/test_sql_create_reachability.py= | aa1ccf49dc |
+| static checks on this branch | 3 of 3 pass | =compass check --only create-reachability --only model-drift --only sql-hygiene= | aa1ccf49dc |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2836][#2836]] | [codegen] Fail the reachability check on a dangling include |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The check skipped any include whose target file did not exist, so a file deleted
+but still named by an aggregator passed while psql aborts the build on it. It
+now reports such an include, naming the including file, the entry and where it
+looked, and fails.
+
+Resolving \i and \ir was also wrong in principle: both were resolved against
+the including file, where psql resolves \i against its working directory. They
+agreed only because every entry point sits at the schema root.
+
+Proven by appending a dangling include to trading_create.sql and watching the
+check name it and exit 1, then restoring and watching it exit 0. Five tests pin
+both directions. The check covers create/ only: populate/ and drop/ carry the
+same hand-written include graph and nothing verifies it.

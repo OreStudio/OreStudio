@@ -122,13 +122,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // Typed series identity: resolves a series from the identity fields a
     // caller states, so no caller builds an oresmd URI or matches on one.
-    subs.push_back(
-        nats.queue_subscribe(std::string(resolve_series_identity_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 series_identity_handler h(nats, ctx, verifier);
-                                 h.resolve(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(std::string(resolve_series_identity_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            series_identity_handler h(nats, ctx, verifier);
+                                            h.resolve(std::move(msg));
+                                        }));
 
     // Import
     subs.push_back(

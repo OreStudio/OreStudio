@@ -181,12 +181,16 @@ BEGIN
     -- --- Risk Management Bundle Members ---
     -- Reports reference the book/portfolio tree, so both live together: a
     -- new party-scoped dataset in this bundle never requires a client code
-    -- change, only a new row here.
+    -- change, only a new row here. The risk report configs ride with them:
+    -- a config resolves a report definition and scopes to the root
+    -- portfolio, so it needs the definitions and the organisation data in
+    -- the same publish.
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.business_units', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.portfolios', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'testdata.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.report_definitions', 40);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'risk_management', 'ore.risk_report_configs', 50);
 
     -- --- Synthetic Data: 2016 ORE Samples Bundle Members ---
     -- One member: the theme dataset itself, covering every asset class it

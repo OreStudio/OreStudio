@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: BB1769B3-0DE8-47BD-AEAB-F7B71E96BDE2
+:END:
+#+title: Task: Make the drift check script executable
+#+description: check_component_drift.py is mode 644, so the literal command the documents give exits 126 with no output. Give it the execute bit and, if a gate can, keep it.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_27:v0:
+#+owner: marco
+#+branch: feature/make-the-drift-check-script-executable
+#+pr: 2779
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The command every document gives for the drift check runs as written, and the execute bit cannot silently go missing again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] |
+| Now          | The execute bit is set and the script re-execs under the codegen virtualenv. Both are verified. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The literal path command runs to the check's own verdict:
+  =projects/ores.codegen/scripts/check_component_drift.py --component compute-cpp=.
+- =git ls-files -s= records mode 100755 for the script.
+
+* Plan
+
+Two changes, because the script had two independent reasons to refuse a
+literal execution.
+
+*The mode.* =chmod +x= and stage. Git records the mode, so the bit cannot
+go missing without a commit that says so.
+
+*The interpreter.* The shebang names =#!/usr/bin/env python3=, the system
+interpreter, and the script imports codegen-module dependencies that only
+the sibling virtualenv carries. So the script now tests whether it can
+import =pystache=, and re-execs under =projects/ores.codegen/venv/bin/python=
+when it cannot and that virtualenv exists.
+
+The test is =sys.prefix=, not the executable path. The first attempt
+compared =Path(sys.executable).resolve()= against the virtualenv's
+=bin/python= and never fired: a virtualenv's interpreter is a symlink chain
+back to the system one, so both paths resolve to the same file and the
+guard concluded there was nothing to do. The prefix is the property that
+actually differs, and it distinguishes the two environments without
+resolving anything.
+
+A virtualenv whose own interpreter lacks =pystache= terminates instead of
+looping: the second pass finds =sys.prefix= equal to the virtualenv
+directory and falls through to the import error.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Recorded file mode | 100755 | =git ls-files -s projects/ores.codegen/scripts/check_component_drift.py= | e8310961e8 |
+| Literal-path run reaches the check | Ran =compute-cpp= to completion and reported the one drifted file, which was this script's own uncommitted edit | =projects/ores.codegen/scripts/check_component_drift.py --component compute-cpp= | e8310961e8 |
+| Callers that execute the path directly | 0 of 4; every caller hands the path to an interpreter | =grep -rn "check_component_drift" .github/ build/scripts/ projects/*/scripts/= | e8310961e8 |
+| Modules importing the script | 5; none of them may be re-exec'd | =grep -rn "import check_component_drift" projects/ores.codegen/= | e8310961e8 |
+| The whole gate by its literal path | =No drift: regenerated output matches the checked-in tree.=, exit 0, and the tree clean afterwards | =projects/ores.codegen/scripts/check_component_drift.py --all= | bc15ab1771 |
+
+The value column of the first three rows is a fact about the tree, and the
+commit column names the commit it was measured at. An earlier draft of this
+table cited =1972cf9e61=, which is the git blob hash of the script and not a
+commit; =git show 1972cf9e61:...= fails, so the reference was unusable.
+
+The third row is why this sat undiscovered for so long, and it is worth
+stating plainly: every automated caller passes the path to an interpreter
+rather than executing it. =local_checks.py= uses
+=projects/ores.codegen/venv/bin/python= and =check_clean_standard.sh= the
+compass virtualenv's python, and both carry the codegen dependencies.
+=codegen-drift.yml= and =codegen-sweep.yml= run =python3=, and they are not
+broken either: both install =projects/ores.codegen/requirements.txt= into the
+runner's interpreter before they invoke the script. The execute bit only ever
+mattered to a human who read the path out of a document and typed it.
+
+The fourth row is why the guard may not run at import. Five modules import
+this one, and a guard at module level replaces an importer's process with a
+checker carrying the importer's own arguments.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2779][#2779]] | [codegen] Make the drift check script run as written |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The documented command runs as written. =check_component_drift.py= is mode
+100755, and it re-execs under the codegen virtualenv when the interpreter it
+was started with cannot import =pystache=.
+
+Verified by running the literal path command, not by reasoning about it:
+
+#+begin_example
+projects/ores.codegen/scripts/check_component_drift.py --component compute-cpp
+#+end_example
+
+It regenerated =compute-cpp= across every address and reported exactly one
+drifted file, the script's own uncommitted edit. The earlier failure was a
+=ModuleNotFoundError= for =pystache= raised before the script read a single
+argument; that error is gone.
+
+The first version of the interpreter guard did not work and its own debug
+output said so. =Path(sys.executable).resolve()= and
+=Path(.../venv/bin/python).resolve()= both resolved to =/usr/bin/python3.14=,
+because the virtualenv's interpreter is a symlink chain to the system one, so
+the inequality the guard tested was false and the re-exec never ran. Keying
+the guard on =sys.prefix= fixed it.
+
+No gate was added to keep the execute bit. Git tracks the mode as part of the
+blob entry, so the bit can only change in a commit that shows the mode change,
+and there is no executable-bit lint in the tree to extend. The "if a gate can,
+keep it" clause in the acceptance was written before that was established;
+recording it as unnecessary is honest, but it is a gap the task text implied
+would be closed and was not.
+
+The guard's first version was wrong twice, and review found both defects.
+
+It ran at module level, so any process that imported this module on an
+interpreter without =pystache= had its process replaced by a fresh
+=check_component_drift.py= carrying the importer's arguments; running
+=render_component_draft.py --help= printed this script's usage instead. And
+its condition could not come true under a directory holding a =bin/python=
+that is not a virtualenv: that interpreter keeps the system prefix, the
+inequality stays true, and the exec loops with no output at all, which is the
+silent hang this task set out to remove. The guard now runs only under
+=__main__=, requires =pyvenv.cfg=, and sets a sentinel on the way in.
+
+=codegen-drift.yml= and =codegen-sweep.yml= call =python3 projects/ores.codegen/scripts/check_component_drift.py=,
+and both install the codegen requirements into the runner's interpreter before
+they do. The import therefore succeeds on a runner, the guard never fires, and
+neither workflow was ever broken by the absent checkout virtualenv. They are
+unaffected by this change rather than repaired by it. The re-exec exists for a
+bare local =python3=, which has no requirements installed and no virtualenv to
+find them in.
+
+The whole gate was run again by its literal path once the guard was corrected,
+because the evidence above it predates that correction: at =bc15ab1771= it
+printed =No drift: regenerated output matches the checked-in tree.=, exit 0,
+leaving the tree clean.

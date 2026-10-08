@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: F9CD55A2-780F-4C52-BF5C-3291BC1429FF
+:END:
+#+title: The drift check script is not executable
+#+description: projects/ores.codegen/scripts/check_component_drift.py is mode 644, so the literal command every document gives exits 126 with no output. It only runs when invoked through the codegen virtualenv's python, which silently works because that python is executable, so the failure appears only for someone who reads the script path from a doc and types it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:drift:developer_scripts:defect:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+state: ABANDONED
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*ABANDONED 2026-10-07* — Fixed by [[id:BB1769B3-0DE8-47BD-AEAB-F7B71E96BDE2][Make the drift check script executable]], which set mode 100755 and made the script re-exec under the codegen virtualenv when its interpreter cannot import =pystache=.
+
+* What
+
+=projects/ores.codegen/scripts/check_component_drift.py= is mode 644. Every
+document that names the drift check gives it as a literal path, and that path
+exits 126 with no output at all — no usage, no error, nothing that names the
+cause. The script runs correctly when it is handed to the codegen
+virtualenv's python as an argument, because that interpreter is executable and
+carries the dependencies.
+
+* Why
+
+The failure is invisible to automation, which is why it survived. Every
+automated caller passes the path to an interpreter rather than executing it:
+=build/scripts/local_checks.py= uses
+=projects/ores.codegen/venv/bin/python=,
+=projects/ores.database/scripts/check_clean_standard.sh= uses the compass
+virtualenv's python, and both =.github/workflows/codegen-drift.yml= and
+=codegen-sweep.yml= use =python3=. So no gate, no CI job and no local check
+ever exercised the execute bit, and the only person who could hit the failure
+is the one who read the path out of a document and typed it — a developer
+following the instructions exactly as written.
+
+A second defect hides behind the first. The script's shebang names the system
+interpreter, which does not carry the codegen dependencies, so even with the
+execute bit set the literal command would fail with =ModuleNotFoundError: No
+module named 'pystache'= instead. The execute bit alone does not make the
+documented command work.
+
+* References
+
+- Task [[id:BB1769B3-0DE8-47BD-AEAB-F7B71E96BDE2][Make the drift check script executable]] — the fix.
+- =doc/llm/memory/generate_one_entity_at_a_time.org= — documents the script's
+  in-place and =--dry-run= modes and gives it as a literal path.
+
+* See also
+
+- [[id:B053AA24-DC76-40E8-A399-8197BCB31849][The drift gate covers only the registry, and misses output written into another component's tree]] — the other known gap in the same gate.

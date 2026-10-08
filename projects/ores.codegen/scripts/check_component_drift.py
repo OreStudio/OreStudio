@@ -74,12 +74,68 @@ import argparse
 import difflib
 import io
 import logging
+import os
 import subprocess
 import sys
 import tempfile
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+
+# The codegen package this script imports needs this checkout's virtualenv, and
+# the shebang names the system interpreter. A caller who runs the script by
+# path, as every document does, would otherwise get a ModuleNotFoundError for
+# pystache and no clue that a virtualenv is what was wanted. So re-exec under
+# the sibling virtualenv when this interpreter cannot import it.
+#
+# The test is the prefix, not the executable: a virtualenv's `bin/python` is a
+# symlink chain back to the system interpreter, so resolving both paths says
+# they are the same file when they are very much not the same environment.
+#
+# Re-exec is a last resort, so each condition below is one reason not to take
+# it. The first two keep the guard from firing at all in cases it was never
+# meant for; the third and fourth keep it from firing twice.
+#
+#   __main__      Only the script run as a program re-execs. This module is
+#                 imported by render_component_draft and the drift tests, and a
+#                 guard at import time would replace such a caller's process
+#                 with a checker carrying the caller's own arguments.
+#   pyvenv.cfg    A directory holding a `bin/python` is not thereby a
+#                 virtualenv. An interpreter started from one that lacks the
+#                 marker keeps the system prefix, so the prefix test never
+#                 comes true and the exec loops, silently, forever.
+#   the sentinel  Set on the way in, so that a future edit to the conditions
+#                 above cannot reintroduce that loop.
+_VENV_DIR = Path(__file__).resolve().parents[1] / "venv"
+_VENV_PYTHON = _VENV_DIR / "bin" / "python"
+_REEXEC_SENTINEL = "ORES_CODEGEN_VENV_REEXEC"
+
+
+def _reexec_under_venv() -> None:
+    """Re-exec this script under the sibling virtualenv, at most once."""
+    if os.environ.get(_REEXEC_SENTINEL):
+        return
+    try:
+        import pystache  # noqa: F401
+    except ImportError:
+        pass
+    else:
+        return
+    if not _VENV_PYTHON.exists():
+        return
+    if not (_VENV_DIR / "pyvenv.cfg").is_file():
+        return
+    if Path(sys.prefix).resolve() == _VENV_DIR.resolve():
+        return
+    os.environ[_REEXEC_SENTINEL] = "1"
+    os.execv(
+        str(_VENV_PYTHON),
+        [str(_VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]],
+    )
+
+
+if __name__ == "__main__":
+    _reexec_under_venv()
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CODEGEN_DIR = REPO_ROOT / "projects" / "ores.codegen"

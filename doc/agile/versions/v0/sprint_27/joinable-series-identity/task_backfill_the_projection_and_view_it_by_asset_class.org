@@ -26,11 +26,11 @@ The projection exists and every write fills it, but series that predate it carry
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] |
-| Now          | The views, the backfill and the check are written. Nothing is built. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the pull request.                 |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -110,3 +110,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The projection is now complete and readable. A series the write path never saw
+is repaired on demand, and a caller reads the identity columns its asset class
+fills rather than the whole wide table.
+
+What landed:
+
+- Ten asset-class views, one per class the codec schema gives a series, each
+  exposing its class's identity fields and naming its class's instrument types.
+  Every view is =security_invoker=, so the tenant policy on the table decides
+  what the reading session sees.
+- The =backfill_series_identity= operation on the market series subject. It
+  reads what is already projected, inverts that set, and projects only the rest,
+  so a second call finds nothing to do. It is registered by hand in
+  =registrar.cpp=, beside the export operation.
+- =market_series_identity_projector::project= returns how many series carried a
+  URI neither codec reads, and the backfill reports that count.
+- =check_marketdata_identity_columns.py= now holds the views to the schema as
+  well as the table and the projector.
+
+Limitations:
+
+- Nothing was compiled and no test was run. The build and the suites are swift
+  curie's hourly validation.
+- The change adds a NATS operation and a SQL file, so the schema fingerprint
+  moves and =compass db recreate= must run before the test binaries will start.
+- The index (fixing) grammar is still out of scope. Such a series gets a row
+  that records its kind and the asset class and no field value, and the backfill
+  counts it as unreadable rather than guessing.
+- A series removed through the repository still leaves its identity row behind,
+  because the generated remove path carries no hook. The backfill does not
+  repair that either, since it only adds rows the projection lacks.
+- =component-drift --all= reports drift in =ores.trading= alone, from another
+  environment's in-flight work. No marketdata artefact drifts.
+- The =web= local check fails on prettier formatting in ten files another
+  environment is editing, none of them the generated protocol this change
+  touches. The =er-diagram= check fails under the bare =python3= of this
+  checkout, which has no =pystache=; the diagram is unchanged, because the
+  parser does not read views.

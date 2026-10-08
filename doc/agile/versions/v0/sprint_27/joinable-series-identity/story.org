@@ -21,11 +21,11 @@ Make the identity of a market series queryable in the database. Today the identi
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The projection table, the writer and the column check are done. Every write through the series repository fills the projection. |
+| Now           | Done. The projection table, the writer, the check, the backfill and the asset-class views have landed. |
 | Waiting on    | Nothing.                               |
-| Next          | The backfill and the asset-class views, then the identity read of the typed-identity slice that consumes them. |
+| Next          | The identity read of the typed-identity slice consumes the projection. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ Make the identity of a market series queryable in the database. Today the identi
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:326FB65A-5133-487A-BCDF-EB289384DC51][Project the series identity into typed columns]] | DONE | 2026-10-08 | 2026-10-08 | Add a projection table keyed by the series id with one column per identity field the codec schema declares, written from the same codec parse that writes the URI and in the same transaction as the series row, so a query filters and joins on identity fields. |
-| [[id:0A1AB9D4-AA89-490A-AC1D-44B0AF3BA90D][Backfill the projection and read it by asset class]] | STARTED | 2026-10-08 | | Seed the projection for the series rows that predate it, and give each asset class a view of the identity, so a caller reads the columns its class uses without knowing which ones its instrument type fills. |
+| [[id:0A1AB9D4-AA89-490A-AC1D-44B0AF3BA90D][Backfill the projection and read it by asset class]] | DONE | 2026-10-08 | 2026-10-08 | Seed the projection for the series rows that predate it, and give each asset class a view of the identity, so a caller reads the columns its class uses without knowing which ones its instrument type fills. |
 
 * Decisions
 
@@ -87,6 +87,22 @@ series row, in the one place that writes series. A writer that bypassed it would
 leave a series with no identity to join on, so the write path is the seam rather
 than an after-the-fact sweep. A one-off backfill seeds the rows that already
 exist; it is not the mechanism that keeps them true.
+
+** Every asset-class view is security_invoker
+
+Chosen 2026-10-08, with the second task. A view over a row-level-secured table
+runs as its owner by default, which would read every tenant's rows and hand them
+to a session the policy meant to exclude. Each view therefore states
+=security_invoker = true=, so the policy on the table decides what the reading
+session sees. The views also filter on their instrument types rather than on the
+asset class, because the instrument index is the one the planner can use.
+
+** The backfill repairs rather than re-projects
+
+Chosen 2026-10-08, with the second task. It reads the projection that exists,
+inverts that set and writes only what is missing, so it is safe to run at any
+time and reports nothing to do when there is nothing. Re-projecting every series
+on each run would be simpler and would rewrite rows that are already correct.
 
 * Out of scope
 

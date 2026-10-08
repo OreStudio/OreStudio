@@ -275,3 +275,17 @@ def test_checks_that_depend_on_each_other_are_an_error():
                            after=("a",))
     with pytest.raises(ValueError, match="cycle"):
         local_checks.in_dependency_order([a, b], {"a", "b"})
+
+
+def test_a_dependency_that_is_not_running_this_time_is_not_an_error():
+    # A docs-only change picks site-page but not component-drift. The
+    # dependency names a check; whether it runs this time is a separate
+    # question, and absence must not read as a typo.
+    chosen = select(["doc/knowledge/architecture/x.org"])
+    assert "site-page" in chosen
+    assert "component-drift" not in chosen
+    known = {check.id for check in local_checks.CATALOGUE}
+    group = [check for check in local_checks.CATALOGUE
+             if check.id in chosen and check.phase == local_checks.PREPARE]
+    assert [check.id for check in local_checks.in_dependency_order(group, known)] == [
+        check.id for check in group]

@@ -21,12 +21,12 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | No entity outside ores.workspace carries a workspace; the column task is done. |
-| Waiting on    | Nothing. Trading dropped its workspaces in PR #2620. |
-| Next          | Remove the workspace from the request context. |
-| Last touched  | 2026-10-06 |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08 |
 
 * Acceptance
 
@@ -45,7 +45,7 @@ No component carries a workspace: no table has a workspace_id, no request or ses
 | [[id:96B95473-3D50-4FF7-9584-FB65BB3C967A][Drop the workspace column from every entity]] | DONE | 2026-10-05 | 2026-10-06 | Drop has_workspace_id from the remaining models and profiles in refdata, analytics, reporting and marketdata, and regenerate, so no table carries a workspace_id. |
 | [[id:21D83315-FD24-423E-9882-A9067CB38582][Remove the workspace from the request context]] | DONE | 2026-10-07 | 2026-10-08 | Remove the workspace from the database context, the NATS headers and client, the service request context and the ores.web client. |
 | [[id:2E4E86B0-D873-492A-8048-56DC1A396163][Remove the has_workspace_id feature from codegen]] | DONE | 2026-10-08 | 2026-10-08 | Once no model sets has_workspace_id, delete the feature from the codegen meta-model, templates, loader, profiles, scaffolding and modeling docs. |
-| [[id:8826DA01-FF39-4DDE-B3BB-3768ABEF691E][Remove the ores.workspace component]] | STARTED | 2026-10-08 | | Delete ores.workspace, the ores.shell workspace part and scripts, the workspace SQL schema, grants and tenant seed, the live workspace utility functions, and the generated web protocol. |
+| [[id:8826DA01-FF39-4DDE-B3BB-3768ABEF691E][Remove the ores.workspace component]] | DONE | 2026-10-08 | 2026-10-08 | Delete ores.workspace, the ores.shell workspace part and scripts, the workspace SQL schema, grants and tenant seed, the live workspace utility functions, and the generated web protocol. |
 
 * Decisions
 
@@ -84,3 +84,22 @@ feature, remove the component.
 - The trading tables and code, which [[id:AA3E4655-8E80-4F69-845C-9D77B3985835][Split the trade into an anchor and its components]] removes.
 - Migrating rows of workspaces other than the live one: the databases are
   recreated, so no data is carried across.
+
+* Result
+
+All four steps landed, each as its own merged pull request: the column
+dropped in #2701, the request context removed in #2799, the codegen
+feature removed in #2813 and the component deleted in the task that closes
+this story. No component carries a workspace. The measure script reports
+zero tables with a workspace_id, zero models or profiles setting the
+feature, zero component files, zero shell part files and zero callers. The
+only remaining hits are the frozen DSH-kanban fixtures and the trading
+part, which the trade shape story owns.
+
+* Decisions
+
+- The owner chose to merge pull requests without the local check gate from
+  2026-10-08, running the checks on an hourly cadence instead. The gate was
+  green for the request-context and codegen-feature tasks; the component
+  removal merged on the counts alone, with no build, ctest or database
+  recreation at its head.

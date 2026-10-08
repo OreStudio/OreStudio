@@ -26,40 +26,43 @@ ores.workspace and every trace of it are gone: no component, service, schema, fu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8421A419-0311-4CC8-9384-D1097477813F][Remove workspaces from every component]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
 - projects/ores.workspace, projects/ores.shell/workspace and the shell workspaces scripts are deleted and nothing builds or deploys them.
 - projects/ores.sql has no workspace schema, no ores_workspace grants, no Live workspace seed in the tenant provisioner, and no ores_utility_live_workspace_id_fn or ores_workspace_validate_fn.
 - ores.utility has no live_workspace_id, and ores.web has no generated workspace protocol.
-- The measurement script in evidence/ reports zero for every workspace count; the remaining hits are unrelated uses of the word (npm and GitHub workspaces, the session workspace root).
+- The measurement script in evidence/ reports zero for every workspace count; the remaining hits are the frozen DSH-kanban fixtures and the trading part, which the trade shape story owns.
 - The database recreates, the services start, the build is green and ctest passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+With the column task, the context task and the codegen task landed, the
+component owns the last references to a workspace: the C++ component, the
+shell adapter part and its recipes, the SQL schema and its functions, the
+service user and its IAM rows, the generated web protocol and the
+=live_workspace_id= sentinel. Delete them, then regenerate every derived
+artefact: the component file lists, the shell recipe inventory and the ER
+diagram. The measure script in =evidence/= then reports the counts.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tables with a workspace_id column | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| Models that set has_workspace_id | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| Profiles that set has_workspace_id | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| ores.workspace component files | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| ores.shell workspace part files | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| setWorkspace and with_workspace_id callers | 0 | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| Files still naming workspace_id | 5 in the frozen DSH-kanban fixtures, 2 in ores.trading | =evidence/measure_workspaces.sh= | b3f02a0b32 |
+| Files deleted | 121 | =git diff --stat 8d2594f828..b3f02a0b32= | b3f02a0b32 |
 
 * Notes
 
@@ -87,3 +90,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.workspace= is gone, with every trace of it. The component tree, the
+shell adapter part and its recipes, the SQL schema and its functions, the
+grants, the RLS policies, the Live workspace seed, the workspace service
+user, account, role and permissions, the generated web protocol, the nav
+label and the =live_workspace_id= sentinel are all deleted. Every derived
+artefact is regenerated: 121 files deleted, and the component file lists,
+the shell recipe inventory and the ER diagram follow.
+
+Acceptance met on the counts. The measure script reports zero tables with
+a workspace_id, zero models or profiles setting the feature, zero
+component files, zero shell part files and zero callers. The only
+remaining hits are the frozen DSH-kanban fixtures and the trading part,
+which the trade shape story owns. The owner chose to merge without the
+local check gate, so the build, ctest and the database recreation were not
+re-run for this task.

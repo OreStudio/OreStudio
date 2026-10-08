@@ -22,9 +22,15 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { toWireTimestamp, type OresClient, type SessionMode } from '@ores/wire-protocol';
+import {
+    fromWireTimestamp,
+    toWireTimestamp,
+    type OresClient,
+    type SessionMode,
+} from '@ores/wire-protocol';
 import type { Config } from './config.js';
-import { secondsSinceReport } from './operations.js';
+import { busStreamNames, busWindow, secondsSinceReport } from './operations.js';
+import { resolveBroker } from './broker.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -156,6 +162,8 @@ function buildTestServer(
     slots: readonly Record<string, unknown>[],
     grid: Record<string, unknown> = wireGridStats(),
     hosts: readonly Record<string, unknown>[] = [wireHost()],
+    serverSamples: readonly Record<string, unknown>[] = [],
+    streamSamples: readonly Record<string, unknown>[] = [],
 ) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
@@ -171,6 +179,18 @@ function buildTestServer(
         async listHosts(): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'compute.v1.hosts.list', body: {} });
             return hosts;
+        },
+        async natsServerSamples(input: Record<string, unknown>): Promise<
+            readonly Record<string, unknown>[]
+        > {
+            calls.push({ subject: 'telemetry.v1.nats_server_samples.list', body: input });
+            return serverSamples;
+        },
+        async natsStreamSamples(input: {
+            readonly streamName: string;
+        }): Promise<readonly Record<string, unknown>[]> {
+            calls.push({ subject: 'telemetry.v1.nats_stream_samples.list', body: input });
+            return streamSamples.filter((row) => row['stream_name'] === input.streamName);
         },
         async close(): Promise<void> {
             return undefined;
@@ -481,5 +501,219 @@ describe('the age a roster row is marked with', () => {
 
     it('is never negative when the report time is ahead of the clock', () => {
         expect(secondsSinceReport('2026-10-04 14:32:10Z', NOW)).toBe(0);
+    });
+});
+
+/** One NATS server sample as the read answers it. */
+function wireServerSample(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        sampled_at: '2026-10-04 14:31:45Z',
+        in_msgs: 1_240_512,
+        out_msgs: 3_410_882,
+        in_bytes: 220_200_960,
+        out_bytes: 1_181_167_616,
+        connections: 23,
+        mem_bytes: 88_080_384,
+        slow_consumers: 0,
+        ...overrides,
+    };
+}
+
+/** One stream sample as the read answers it. */
+function wireStreamSample(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        sampled_at: '2026-10-04 14:31:45Z',
+        stream_name: 'ores_dev_test_workflow',
+        messages: 12_004,
+        bytes: 88_080_384,
+        consumer_count: 2,
+        ...overrides,
+    };
+}
+
+const BUS_SITE = siteConfiguration();
+const BUS_PREFIX = resolveBroker(BUS_SITE.configuration, BUS_SITE.environment).subjectPrefix;
+const BUS_STREAMS = busStreamNames(BUS_PREFIX);
+
+describe('GET /api/operations/bus', () => {
+    it('answers the newest sample as the vitals and one row per stream', async () => {
+        const samples = [
+            wireServerSample(),
+            wireServerSample({
+                sampled_at: '2026-10-04 14:01:00Z',
+                in_msgs: 1_228_110,
+                out_msgs: 3_392_011,
+                in_bytes: 208_666_624,
+                out_bytes: 1_135_515_648,
+                connections: 21,
+                mem_bytes: 84_934_656,
+            }),
+        ];
+        const streams = [
+            wireStreamSample({ stream_name: BUS_STREAMS[3], messages: 12_004, bytes: 88_080_384 }),
+            // A stream the deployment does not declare could never be read, so
+            // it must not reach the table.
+            wireStreamSample({ stream_name: 'a stream this deployment does not declare' }),
+        ];
+        const { server, cookies, calls } = buildTestServer(
+            'system-administration',
+            [wireSlot()],
+            wireGridStats(),
+            [wireHost()],
+            samples,
+            streams,
+        );
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as {
+            readonly sampled_at: string | null;
+            readonly samples: readonly { readonly sampled_at: string }[];
+            readonly streams: readonly { readonly stream_name: string }[];
+        };
+        // The newest sample dates the reading; the samples travel whole and
+        // newest first, exactly as the read orders them.
+        expect(body.sampled_at).toBe('2026-10-04 14:31:45Z');
+        expect(body.samples.map((sample) => sample.sampled_at)).toEqual([
+            '2026-10-04 14:31:45Z',
+            '2026-10-04 14:01:00Z',
+        ]);
+        // One row per declared stream, and only one for the stream that has a
+        // sample in the range.
+        expect(body.streams.map((row) => row.stream_name)).toEqual([BUS_STREAMS[3]]);
+
+        // One server read, then one stream read per declared stream, each with
+        // both bounds of the same window and no overlap at the boundary.
+        expect(calls[0]?.subject).toBe('telemetry.v1.nats_server_samples.list');
+        const serverCall = calls[0]?.body as {
+            readonly startTime: string;
+            readonly endTime: string;
+        };
+        const windowSeconds =
+            (fromWireTimestamp(serverCall.endTime).getTime() -
+                fromWireTimestamp(serverCall.startTime).getTime()) /
+            1000;
+        expect(windowSeconds).toBe(3600);
+        expect(calls).toHaveLength(1 + BUS_STREAMS.length);
+        for (const [index, name] of BUS_STREAMS.entries()) {
+            expect(calls[index + 1]).toMatchObject({
+                subject: 'telemetry.v1.nats_stream_samples.list',
+                body: { streamName: name },
+            });
+        }
+    });
+
+    it('answers an empty range as an empty list rather than a failure', async () => {
+        const { server, cookies } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=15m',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ sampled_at: null, samples: [], streams: [] });
+    });
+
+    it('refuses a range the read does not know', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=1y',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a query field the read does not take', async () => {
+        const { server, cookies, calls } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=1h&tenant=acme',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'invalid-request' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a session that does not act on the deployment', async () => {
+        const { server, cookies, calls } = buildTestServer('tenant-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=1h',
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(403);
+        expect(response.json()).toMatchObject({ code: 'forbidden' });
+        expect(calls).toEqual([]);
+    });
+
+    it('refuses a caller with no session at all', async () => {
+        const { server } = buildTestServer('system-administration', [wireSlot()]);
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/operations/bus?range=1h',
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(401);
+    });
+});
+
+describe('the window a bus range names', () => {
+    const NOW = Date.UTC(2026, 9, 4, 14, 32, 0);
+
+    it('is open at its end, so adjacent windows tile without overlapping', () => {
+        const hour = busWindow('1h', NOW);
+        expect(hour.start).toBe(toWireTimestamp(new Date(NOW - 60 * 60 * 1000)));
+        expect(hour.end).toBe(toWireTimestamp(new Date(NOW)));
+    });
+
+    it('is as long as the preset it names', () => {
+        for (const [range, minutes] of [
+            ['15m', 15],
+            ['1h', 60],
+            ['6h', 360],
+        ] as const) {
+            const window = busWindow(range, NOW);
+            const seconds =
+                (fromWireTimestamp(window.end).getTime() -
+                    fromWireTimestamp(window.start).getTime()) /
+                1000;
+            expect(seconds).toBe(minutes * 60);
+        }
+    });
+});
+
+describe('the stream names a bus window reads', () => {
+    it('are the deployment’s own, from the broker prefix', () => {
+        expect(busStreamNames('ores.dev.local2')).toEqual([
+            'ores_dev_local2_marketdata_ticks',
+            'ores_dev_local2_synthetic_ticks',
+            'ores_dev_local2_synthetic_sandbox_ticks',
+            'ores_dev_local2_workflow',
+            'ores_dev_local2_compute_assignments',
+        ]);
     });
 });

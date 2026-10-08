@@ -67,6 +67,15 @@ import {
     type ListHostsRequest,
     type ListHostsResponse,
 } from './generated/compute/protocol/host_protocol.js';
+import {
+    subjects as natsSubjects,
+    type GetNatsServerSamplesRequest,
+    type GetNatsServerSamplesResponse,
+    type GetNatsStreamSamplesRequest,
+    type GetNatsStreamSamplesResponse,
+    type NatsServerSample,
+    type NatsStreamSample,
+} from './generated/telemetry/protocol/nats_samples_protocol.js';
 import type { Host } from './generated/compute/domain/host.js';
 import {
     subjects as workflowSubjects,
@@ -101,6 +110,8 @@ export const SUBJECTS = {
     serviceRoster: serviceSampleSubjects.get_service_roster_request,
     gridStats: computeTelemetrySubjects.get_grid_stats_request,
     listHosts: hostSubjects.list_hosts_request,
+    natsServerSamples: natsSubjects.get_nats_server_samples_request,
+    natsStreamSamples: natsSubjects.get_nats_stream_samples_request,
     bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
     createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
@@ -1750,3 +1761,86 @@ export const gridViewSchema = z.object({
 });
 
 export type GridView = z.infer<typeof gridViewSchema>;
+
+/**
+ * The NATS server and stream samples: two reads over the stored samples.
+ *
+ * Both queries carry a time range and a limit rather than a row key, and the
+ * range is start-inclusive and end-exclusive, so adjacent ranges tile without
+ * overlapping and without a gap. The server query carries nothing else; the
+ * stream query names the one stream it reads, because no read lists the
+ * streams that have samples.
+ */
+export const natsServerSamplesQuerySchema = z.object({
+    start_time: z.string(),
+    end_time: z.string(),
+    limit: z.int().positive().max(1000).default(1000),
+}) satisfies z.ZodType<GetNatsServerSamplesRequest['query']>;
+
+/** `get_nats_server_samples_request`, sent on `telemetry.v1.nats_server_samples.list`. */
+export const natsServerSamplesRequestSchema = z.object({
+    query: natsServerSamplesQuerySchema,
+}) satisfies z.ZodType<GetNatsServerSamplesRequest>;
+
+/** One server sample. The counters run since the NATS server started. */
+export const natsServerSampleSchema = z.object({
+    sampled_at: z.string(),
+    in_msgs: z.int().nonnegative().default(0),
+    out_msgs: z.int().nonnegative().default(0),
+    in_bytes: z.int().nonnegative().default(0),
+    out_bytes: z.int().nonnegative().default(0),
+    connections: z.int().nonnegative().default(0),
+    mem_bytes: z.int().nonnegative().default(0),
+    slow_consumers: z.int().nonnegative().default(0),
+}) satisfies z.ZodType<NatsServerSample>;
+
+/** `get_nats_server_samples_response`, newest first as the read orders them. */
+export const natsServerSamplesReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    samples: z.array(natsServerSampleSchema).default([]),
+}) satisfies z.ZodType<GetNatsServerSamplesResponse>;
+
+export const natsStreamSamplesQuerySchema = z.object({
+    stream_name: z.string().min(1),
+    start_time: z.string(),
+    end_time: z.string(),
+    limit: z.int().positive().max(1000).default(1000),
+}) satisfies z.ZodType<GetNatsStreamSamplesRequest['query']>;
+
+/** `get_nats_stream_samples_request`, sent on `telemetry.v1.nats_stream_samples.list`. */
+export const natsStreamSamplesRequestSchema = z.object({
+    query: natsStreamSamplesQuerySchema,
+}) satisfies z.ZodType<GetNatsStreamSamplesRequest>;
+
+/** One stream sample: what a stream stored, and its active consumers. */
+export const natsStreamSampleSchema = z.object({
+    sampled_at: z.string(),
+    stream_name: z.string(),
+    messages: z.int().nonnegative().default(0),
+    bytes: z.int().nonnegative().default(0),
+    consumer_count: z.int().nonnegative().default(0),
+}) satisfies z.ZodType<NatsStreamSample>;
+
+/** `get_nats_stream_samples_response`, newest first as the read orders them. */
+export const natsStreamSamplesReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    samples: z.array(natsStreamSampleSchema).default([]),
+}) satisfies z.ZodType<GetNatsStreamSamplesResponse>;
+
+/**
+ * The message bus as the browser reads it.
+ *
+ * The server samples arrive newest first, exactly as the read orders them, so
+ * the vitals take the first and the movement across the range takes the last.
+ * The stream rows carry the newest sample of each stream the route read, one
+ * row per stream, because the read that lists the streams does not exist yet.
+ */
+export const busViewSchema = z.object({
+    sampled_at: text.nullable().default(null),
+    samples: z.array(natsServerSampleSchema).default([]),
+    streams: z.array(natsStreamSampleSchema).default([]),
+});
+
+export type BusView = z.infer<typeof busViewSchema>;

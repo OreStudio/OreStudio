@@ -26,6 +26,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
 import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
+import type { BusView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
@@ -40,6 +41,13 @@ import {
     newestVersionOf,
 } from './OperationsParts.js';
 import { ServicesPage, SERVICES_QUERY_KEY, formatAge, readTime } from './ServicesPage.js';
+import {
+    BusPage,
+    BUS_QUERY_KEY,
+    asMiB as asBusMiB,
+    sampleTime as busSampleTime,
+    sparkPoints,
+} from './BusPage.js';
 import {
     GridPage,
     GRID_QUERY_KEY,
@@ -109,11 +117,13 @@ function withProviders(
     path = '/',
     roster: readonly ServiceRosterRow[] = [],
     grid: GridView = gridView(),
+    bus: BusView = busView(),
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['my-access'], { roles: [] });
     client.setQueryData(SERVICES_QUERY_KEY, roster);
     client.setQueryData(GRID_QUERY_KEY, grid);
+    client.setQueryData([BUS_QUERY_KEY, '1h'], bus);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -128,6 +138,7 @@ function renderRoute(
     session: SessionView,
     roster: readonly ServiceRosterRow[] = [],
     grid: GridView = gridView(),
+    bus: BusView = busView(),
 ): string {
     return withProviders(
         <AppRoutes
@@ -146,6 +157,7 @@ function renderRoute(
         path,
         roster,
         grid,
+        bus,
     );
 }
 
@@ -219,23 +231,83 @@ function gridView(overrides: Partial<GridView> = {}): GridView {
     };
 }
 
+/** One server sample as the BFF answers it. The counters run since server start. */
+function busSample(
+    overrides: Partial<BusView['samples'][number]> = {},
+): BusView['samples'][number] {
+    return {
+        sampled_at: '2026-10-04 14:31:45Z',
+        in_msgs: 1_240_512,
+        out_msgs: 3_410_882,
+        in_bytes: 220_200_960,
+        out_bytes: 1_181_167_616,
+        connections: 23,
+        mem_bytes: 88_080_384,
+        slow_consumers: 0,
+        ...overrides,
+    };
+}
+
+/** One stream row as the BFF answers it. */
+function busStream(
+    overrides: Partial<BusView['streams'][number]> = {},
+): BusView['streams'][number] {
+    return {
+        sampled_at: '2026-10-04 14:31:45Z',
+        stream_name: 'ORES_TRADES',
+        messages: 12_004,
+        bytes: 88_080_384,
+        consumer_count: 2,
+        ...overrides,
+    };
+}
+
+/** The message bus view as the BFF answers it, newest sample first. */
+function busView(overrides: Partial<BusView> = {}): BusView {
+    return {
+        sampled_at: '2026-10-04 14:31:45Z',
+        samples: [
+            busSample(),
+            busSample({
+                sampled_at: '2026-10-04 14:11:00Z',
+                in_msgs: 1_234_002,
+                out_msgs: 3_398_144,
+                in_bytes: 209_715_200,
+                out_bytes: 1_140_228_096,
+                connections: 22,
+                mem_bytes: 85_983_232,
+            }),
+            busSample({
+                sampled_at: '2026-10-04 14:01:00Z',
+                in_msgs: 1_228_110,
+                out_msgs: 3_392_011,
+                in_bytes: 208_666_624,
+                out_bytes: 1_135_515_648,
+                connections: 21,
+                mem_bytes: 84_934_656,
+            }),
+        ],
+        streams: [busStream(), busStream({ stream_name: 'ORES_RESULTS', messages: 3_201 })],
+        ...overrides,
+    };
+}
+
 describe('the operations area', () => {
-    it('lists its screens, and links only the three that are built', () => {
+    it('lists its screens, and links only the four that are built', () => {
         const html = withProviders(<OperationsArea />);
 
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/bus"');
         expect(html).toContain('Running services');
         expect(html).toContain('Compute grid');
         expect(html).toContain('Message bus');
         expect(html).toContain('Telemetry logs');
-        // The two screens the later units add carry no link at all, so a
+        // The one screen the last unit adds carries no link at all, so a
         // reader is never sent to a route that does not exist.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
-        for (const route of ['/operations/bus', '/operations/logs']) {
-            expect(html).not.toContain(`href="${route}"`);
-        }
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
+        expect(html).not.toContain('href="/operations/logs"');
     });
 
     it('is offered to system administration alone', () => {
@@ -494,16 +566,15 @@ describe('the services screen', () => {
         expect(html).toContain('href="/operations/versions"');
         expect(html).toContain('href="/audit"');
         expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/bus"');
         expect(html).toContain('Watch the compute grid');
         expect(html).toContain('Watch the message bus');
         expect(html).toContain('Read the telemetry logs');
-        // Two journeys keep their screen for a later unit: they are stated,
-        // marked as unbuilt, and carry no link. The grid screen exists now, so
-        // the services page links to it rather than naming it as unbuilt.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
-        for (const route of ['/operations/bus', '/operations/logs']) {
-            expect(html).not.toContain(`href="${route}"`);
-        }
+        // The logs journey keeps its screen for the last unit: it is stated,
+        // marked as unbuilt, and carries no link. The grid and bus screens
+        // exist now, so the services page links to them.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
+        expect(html).not.toContain('href="/operations/logs"');
     });
 
     it('states a read time labelled UTC, and an age in units a person reads', () => {
@@ -566,12 +637,10 @@ describe('the route to the services screen', () => {
         expect(html).toContain('href="/operations/services"');
     });
 
-    it('offers no link to the screens that are not built', () => {
+    it('offers no link to the screen that is not built', () => {
         const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
 
-        for (const route of ['/operations/bus', '/operations/logs']) {
-            expect(html).not.toContain(`href="${route}"`);
-        }
+        expect(html).not.toContain('href="/operations/logs"');
     });
 });
 
@@ -768,14 +837,12 @@ describe('the compute grid screen', () => {
 
         expect(html).toContain('href="/operations/services"');
         expect(html).toContain('href="/operations/versions"');
-        expect(html).toContain('Watch the message bus');
+        expect(html).toContain('href="/operations/bus"');
         expect(html).toContain('Read the telemetry logs');
-        // Two journeys keep their screen for a later unit: they are stated,
-        // marked as unbuilt, and carry no link.
-        expect(html.match(/Not built yet/g) ?? []).toHaveLength(2);
-        for (const route of ['/operations/bus', '/operations/logs']) {
-            expect(html).not.toContain(`href="${route}"`);
-        }
+        // The logs journey keeps its screen for the last unit: it is stated,
+        // marked as unbuilt, and carries no link.
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
+        expect(html).not.toContain('href="/operations/logs"');
     });
 
     it('states a sample time labelled UTC, and units a person reads', () => {
@@ -815,5 +882,145 @@ describe('the route to the compute grid', () => {
         const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
 
         expect(html).toContain('href="/operations/grid"');
+    });
+});
+
+describe('the message bus screen', () => {
+    it('states the newest sample as the vitals, with its time beside them', () => {
+        const html = withProviders(<BusPage />);
+
+        expect(html).toContain('Operations: message bus');
+        // The reading is dated, in UTC, because a reading without its age
+        // cannot be trusted.
+        expect(html).toContain('newest sample 14:31:45 UTC');
+        expect(html).toContain('Connections');
+        expect(html).toContain('>23<');
+        expect(html).toContain('84 MB');
+        expect(html).toContain('Slow consumers');
+        expect(html).toContain('1240512 in · 3410882 out');
+    });
+
+    it('computes the movement across the range from the samples', () => {
+        const html = withProviders(<BusPage />);
+
+        // The counters are running totals, so the movement is the difference
+        // between the samples at the ends of the range, computed here.
+        expect(html).toContain('Over 14:01:00 UTC–14:31:45 UTC');
+        expect(html).toContain('+12402 messages in');
+        expect(html).toContain('+18871 out');
+        expect(html).toContain('11 MB in and 44 MB out');
+        expect(html).toContain('running totals since the NATS server started');
+    });
+
+    it('draws one row per stream, in the prototype’s column order', () => {
+        const html = withProviders(<BusPage />);
+        const panel = section(html, 'Streams');
+
+        expect(panel).toContain('2 streams');
+        expect(panel).toContain('ORES_TRADES');
+        expect(panel).toContain('ORES_RESULTS');
+        expect(panel).toContain('84 MB');
+        expect(panel.indexOf('>Stream<')).toBeLessThan(panel.indexOf('Messages stored'));
+        expect(panel.indexOf('Messages stored')).toBeLessThan(panel.indexOf('Bytes stored'));
+        expect(panel.indexOf('Bytes stored')).toBeLessThan(panel.indexOf('>Consumers<'));
+    });
+
+    it('draws the trend from the samples the range returns', () => {
+        const html = withProviders(<BusPage />);
+        const panel = section(html, 'Trend');
+        const values = busView()
+            .samples.map((sample) => sample.in_msgs)
+            .reverse();
+
+        expect(panel).toContain('messages in, over the range');
+        expect(panel).toContain(sparkPoints(values, 640, 80));
+        expect(panel).toContain('Drawn from the samples the range returns');
+    });
+
+    it('answers an empty range by pointing at the poller, not as an error', () => {
+        const html = withProviders(
+            <BusPage />,
+            '/',
+            [],
+            gridView(),
+            busView({ sampled_at: null, samples: [], streams: [] }),
+        );
+
+        expect(html).toContain('The range holds no samples');
+        expect(html).toContain('points at its poller first');
+        expect(html).not.toContain('Slow consumers');
+        expect(html).not.toContain('<polyline');
+        // The stream table states its own emptiness rather than a failure.
+        expect(html).toContain('No stream sample in the range');
+    });
+
+    it('states every gap the journey records, and none the journey closed', () => {
+        const html = withProviders(<BusPage />);
+
+        for (const title of [
+            'Nothing lists the streams',
+            'Rates are left to the reader',
+            'The limit truncates in silence',
+            'A slow-consumer count cannot name the consumer',
+            'The reads check no permission',
+        ]) {
+            expect(html).toContain(title);
+        }
+        expect(html).toContain('Recorded by Watch the message bus');
+        // The prototype's older wording is not what the journey records, so it
+        // must not be rendered as if it were.
+        for (const stale of [
+            'A range longer than the limit truncates in silence',
+            'The counters run since the server started',
+            'A slow consumer cannot be named',
+            'No permission gates the read',
+        ]) {
+            expect(html).not.toContain(stale);
+        }
+    });
+
+    it('reaches the related journeys, and names the one with no screen yet', () => {
+        const html = withProviders(<BusPage />);
+
+        expect(html).toContain('href="/operations/services"');
+        expect(html).toContain('href="/operations/grid"');
+        expect(html).toContain('href="/operations/versions"');
+        expect(html).toContain('Read the telemetry logs');
+        expect(html.match(/Not built yet/g) ?? []).toHaveLength(1);
+        expect(html).not.toContain('href="/operations/logs"');
+    });
+
+    it('states a sample time labelled UTC, and measures memory and bytes in MB', () => {
+        expect(busSampleTime('2026-10-04 14:31:45Z')).toBe('14:31:45 UTC');
+        expect(busSampleTime(null)).toBeUndefined();
+        expect(busSampleTime('')).toBeUndefined();
+        expect(busSampleTime('not a time')).toBeUndefined();
+        expect(asBusMiB(88_080_384, t)).toBe('84 MB');
+        expect(sparkPoints([1, 2, 3], 640, 80)).not.toBe('');
+        expect(sparkPoints([], 640, 80)).toBe('');
+    });
+
+    it('takes the unit abbreviation from the catalogue rather than from English', () => {
+        const french = createTranslator('fr', enFlat, frFlat).t;
+
+        expect(asBusMiB(88_080_384, french)).toBe('84 Mo');
+    });
+});
+
+describe('the route to the message bus', () => {
+    it('opens it, and renders through the shell', () => {
+        const html = renderRoute('/operations/bus', sessionWith());
+
+        expect(html).toContain('Operations: message bus');
+        expect(html).toContain('ORE Studio');
+        expect(html).toContain('Your account');
+        expect(html).toContain(`client ${__BUILD_VERSION__}`);
+        expect(html).toContain(`server ${SESSION_VERSION}`);
+    });
+
+    it('is offered to system administration through the operations hub', () => {
+        const html = renderRoute('/operations', sessionWith({ mode: 'system-administration' }));
+
+        expect(html).toContain('href="/operations/bus"');
     });
 });

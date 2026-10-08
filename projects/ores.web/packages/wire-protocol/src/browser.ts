@@ -219,6 +219,11 @@ export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
 export { gridViewSchema, gridNodeRowSchema } from './operations.js';
 export type { GridNodeRow, GridView } from './operations.js';
 
+// The message bus the operations screen reads, as the BFF serves it: the NATS
+// server samples and one row per stream, each the newest sample of the range.
+export { busViewSchema } from './operations.js';
+export type { BusView } from './operations.js';
+
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.
 export { loginInfoPageSchema, loginInfoSchema } from './domain.js';

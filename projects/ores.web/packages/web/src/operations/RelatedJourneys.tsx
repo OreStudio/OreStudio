@@ -70,7 +70,10 @@ export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
         to: '/operations/grid',
     },
     // Watch the message bus.
-    'EE26E58C-F389-4E82-BF96-EC5324F9F795': { titleKey: 'operations.journeys.bus' },
+    'EE26E58C-F389-4E82-BF96-EC5324F9F795': {
+        titleKey: 'operations.journeys.bus',
+        to: '/operations/bus',
+    },
     // Check the versions and the database.
     'C3D59907-9D6A-448C-9A61-9E750755BBFB': {
         titleKey: 'operations.journeys.versions',

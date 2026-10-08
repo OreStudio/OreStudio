@@ -20,13 +20,18 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { z } from 'zod';
 import {
+    busViewSchema,
     fromWireTimestamp,
     gridStatsRequestSchema,
     gridViewSchema,
     isWireTimestamp,
     serviceRosterRequestSchema,
     serviceRosterViewSchema,
+    toWireTimestamp,
+    type BusView,
+    type WireTimestamp,
 } from '@ores/wire-protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import type { LiveSession } from './sessions.js';
@@ -43,6 +48,66 @@ import type { LiveSession } from './sessions.js';
  * into the roster rather than one screen's constant deciding both.
  */
 const COMPUTE_RUNNER = 'ores.compute.wrapper';
+
+/**
+ * The range presets the bus screen offers, and the window each names.
+ *
+ * The window is computed here rather than in the browser, because the
+ * deployment's clock is the one the samples were stamped against. Every
+ * window is open at its end: the read answers a sample at or after the start
+ * and before the end, so a window that shares a boundary with the next does
+ * not double-count the sample on it.
+ */
+export const BUS_RANGES = ['15m', '1h', '6h'] as const;
+export type BusRange = (typeof BUS_RANGES)[number];
+
+const RANGE_SECONDS: Readonly<Record<BusRange, number>> = {
+    '15m': 15 * 60,
+    '1h': 60 * 60,
+    '6h': 6 * 60 * 60,
+};
+
+/**
+ * The five JetStream streams this installation creates, by their suffix.
+ *
+ * The names are the deployment's own, from
+ * doc/knowledge/architecture/jetstream_streams_and_consumers.org. They are
+ * declared rather than read, because no operation lists the streams that
+ * exist; the screen states that gap.
+ */
+export const BUS_STREAM_SUFFIXES = [
+    'marketdata_ticks',
+    'synthetic_ticks',
+    'synthetic_sandbox_ticks',
+    'workflow',
+    'compute_assignments',
+] as const;
+
+/**
+ * The full name of every stream the installation creates, for one broker.
+ *
+ * A JetStream stream name is the broker's subject prefix with its dots turned
+ * into underscores, then the logical suffix, matching the C++ client's
+ * `make_stream_name`.
+ */
+export function busStreamNames(subjectPrefix: string): readonly string[] {
+    const prefix = subjectPrefix.replaceAll('.', '_');
+    return BUS_STREAM_SUFFIXES.map((suffix) => `${prefix}_${suffix}`);
+}
+
+/** The window one range preset names, as the wire timestamps the reads take. */
+export function busWindow(
+    range: BusRange,
+    now: number,
+): { readonly start: WireTimestamp; readonly end: WireTimestamp } {
+    return {
+        start: toWireTimestamp(new Date(now - RANGE_SECONDS[range] * 1000)),
+        end: toWireTimestamp(new Date(now)),
+    };
+}
+
+/** The one field the bus read takes: the range the person chose. */
+const busRequestSchema = z.object({ range: z.enum(BUS_RANGES) }).strict();
 
 /**
  * The operations routes: what the installation is doing, as the screens read
@@ -72,6 +137,7 @@ export function secondsSinceReport(sampledAt: string | null, now: number): numbe
 export function registerOperationsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
+    streamPrefix: string,
 ): void {
     /**
      * The services roster: every expected instance, with the age of its last
@@ -162,6 +228,55 @@ export function registerOperationsRoutes(
                     version: runner?.version ?? null,
                 };
             }),
+        });
+    });
+
+    /**
+     * The message bus: the NATS server samples over a range, and one row per
+     * stream.
+     *
+     * The window is derived from the deployment's clock, so the browser never
+     * states a time the deployment did not measure, and it is start-inclusive
+     * and end-exclusive so adjacent windows tile. The server samples travel
+     * whole, newest first, because the vitals and the movement across the range
+     * are two readings of the same series and the counters are running totals
+     * that only a subtraction over the range turns into movement.
+     *
+     * The stream rows come from one read per stream. The streams are named here
+     * rather than discovered, because no operation lists the streams that exist
+     * or have samples; the screen states that gap. A stream with no sample in
+     * the range contributes no row rather than a row of zeros.
+     */
+    server.get('/api/operations/bus', async (request) => {
+        const session = requireSession(request);
+        if (session.mode !== 'system-administration') {
+            throw notPermitted('The message bus of a deployment is read in system administration.');
+        }
+        const parsed = busRequestSchema.safeParse(request.query ?? {});
+        if (!parsed.success) {
+            throw invalidRequest('The message bus read takes a range of 15m, 1h or 6h.');
+        }
+        const window = busWindow(parsed.data.range, Date.now());
+        const samples = await session.client.natsServerSamples({
+            startTime: window.start,
+            endTime: window.end,
+        });
+        const streams: BusView['streams'] = [];
+        for (const streamName of busStreamNames(streamPrefix)) {
+            const rows = await session.client.natsStreamSamples({
+                streamName,
+                startTime: window.start,
+                endTime: window.end,
+            });
+            const newest = rows[0];
+            if (newest !== undefined) {
+                streams.push(newest);
+            }
+        }
+        return busViewSchema.parse({
+            sampled_at: samples[0]?.sampled_at ?? null,
+            samples,
+            streams,
         });
     });
 }

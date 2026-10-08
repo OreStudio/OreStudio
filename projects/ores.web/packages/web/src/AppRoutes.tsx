@@ -38,6 +38,7 @@ import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
+import { BusPage } from './operations/BusPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
@@ -297,14 +298,15 @@ export function AppRoutes({
             />
             {/*
              * The operations area: its hub, the versions screen the prototype
-             * established, and the services and grid screens. No route here is
-             * gated: any signed-in person who knows the URL reaches them, and
-             * the menus decide only what is offered, not who may look. The
-             * services and grid reads are refused by their BFF routes unless
-             * the session acts on the deployment, so that reachability is
-             * enforced where the data is. The hub, the roster and the grid are
-             * grids, so they take the width; the versions panels are a column
-             * of detail, so they keep the default.
+             * established, and the services, grid and bus screens. No route
+             * here is gated: any signed-in person who knows the URL reaches
+             * them, and the menus decide only what is offered, not who may
+             * look. The services, grid and bus reads are refused by their BFF
+             * routes unless the session acts on the deployment, so that
+             * reachability is enforced where the data is. The hub, the roster,
+             * the grid and the bus are grids, so they take the width; the
+             * versions panels are a column of detail, so they keep the
+             * default.
              */}
             <Route
                 path="/operations"
@@ -338,6 +340,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <GridPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/bus"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <BusPage />
                     ),
                     'workspace',
                 )}

@@ -22,6 +22,10 @@
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
 import type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
 import type { Host } from './generated/compute/domain/host.js';
+import type {
+    NatsServerSample,
+    NatsStreamSample,
+} from './generated/telemetry/protocol/nats_samples_protocol.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -87,6 +91,10 @@ import {
     gridStatsRequestSchema,
     listHostsReplySchema,
     listHostsRequestSchema,
+    natsServerSamplesReplySchema,
+    natsServerSamplesRequestSchema,
+    natsStreamSamplesReplySchema,
+    natsStreamSamplesRequestSchema,
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
@@ -119,7 +127,7 @@ import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
-import { uuid, type Uuid } from './primitives.js';
+import { uuid, type Uuid, type WireTimestamp } from './primitives.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -1035,6 +1043,72 @@ export class OresClient {
             throw new OperationFailedError(SUBJECTS.listHosts, reply.result.message);
         }
         return reply.hosts;
+    }
+
+    /**
+     * The NATS server samples in a time range, newest first.
+     *
+     * The range is start-inclusive and end-exclusive, which is the read's own
+     * rule, so adjacent ranges tile without overlapping. The counters the
+     * samples carry run since the NATS server started, so a caller that wants
+     * a rate subtracts two samples rather than expecting one here.
+     *
+     * A refusal the read states in its body is an error rather than an empty
+     * list: an empty list is the answer an empty range gives.
+     */
+    async natsServerSamples(input: {
+        readonly startTime: WireTimestamp;
+        readonly endTime: WireTimestamp;
+        readonly limit?: number;
+    }): Promise<readonly NatsServerSample[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.natsServerSamples,
+            natsServerSamplesRequestSchema.parse({
+                query: {
+                    start_time: input.startTime,
+                    end_time: input.endTime,
+                    limit: input.limit ?? 1000,
+                },
+            }),
+            natsServerSamplesReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.natsServerSamples, reply.message);
+        }
+        return reply.samples;
+    }
+
+    /**
+     * One stream's samples in a time range, newest first.
+     *
+     * The stream is named rather than discovered, because no read lists the
+     * streams that have samples. The range tiles the same way the server
+     * read's does.
+     */
+    async natsStreamSamples(input: {
+        readonly streamName: string;
+        readonly startTime: WireTimestamp;
+        readonly endTime: WireTimestamp;
+        readonly limit?: number;
+    }): Promise<readonly NatsStreamSample[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.natsStreamSamples,
+            natsStreamSamplesRequestSchema.parse({
+                query: {
+                    stream_name: input.streamName,
+                    start_time: input.startTime,
+                    end_time: input.endTime,
+                    limit: input.limit ?? 1000,
+                },
+            }),
+            natsStreamSamplesReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.natsStreamSamples, reply.message);
+        }
+        return reply.samples;
     }
 
     /**

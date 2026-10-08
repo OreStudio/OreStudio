@@ -110,7 +110,7 @@ Top-level product classification codes, shown on instrument_code and
 asset_class_code.
 #+end_quote
 
-[[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]]
+[[id:4043de4c-5cdb-455e-b208-5aff69aa76ae][ores.refdata.asset_class_catalogue]]
 declares seven classes: =fx=, =interest_rates=, =credit=, =equity=,
 =commodity=, =inflation= and =bond=. It defines =interest_rates= as
 "deposits, forward rate agreements, interest rate swaps and swaptions,
@@ -565,7 +565,7 @@ Each unit ends in a state a reviewer can verify on its own.
   class, not the catalogue's =product_type= value. =RiskParticipationAgreement=
   and =InflationSwap= are credit and inflation products and leave. Reason:
   the refdata taxonomy is the single source for the class
-  ([[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][asset_class_catalogue]]) and the two
+  ([[id:4043de4c-5cdb-455e-b208-5aff69aa76ae][asset_class_catalogue]]) and the two
   domain notes state the classes independently; =product_type= is defect
   10's misnamed column.
 - *D2, the header's name.* =rate_instruments=, after =bond_instruments=.

@@ -31,6 +31,7 @@ import { AppShell } from '../components/AppShell.js';
 import { AskForRoleDialog } from './AskForRoleDialog.js';
 import { NotificationBell, notificationRoute } from './NotificationBell.js';
 import { RequestDetailPage } from './RequestDetailPage.js';
+import { RequestStoryPage } from './RequestStoryPage.js';
 import { RequestsPage } from './RequestsPage.js';
 
 /**
@@ -481,5 +482,105 @@ describe('the requests menu item', () => {
 
     it('is left out of the menu for somebody who may not', () => {
         expect(shell(['refdata::currencies:read'])).not.toContain('href="/requests"');
+    });
+});
+
+/*
+ * The story of one request is the same request read across every table that
+ * wrote a row for it. What the screen promises is the order, the change each
+ * event made, and that a reader who may not read the answer is told so rather
+ * than shown a request that appears to have answered itself.
+ */
+describe('the story of one request', () => {
+    /** The request's own versions, newest first, as the server orders them. */
+    function versions(): readonly Record<string, unknown>[] {
+        return [
+            {
+                entityType: 'ores.inbox.approval_request',
+                entityId: REQUEST,
+                kind: 'changed',
+                at: '2026-10-05 10:00:00Z',
+                actor: 'priya',
+                version: 2,
+                reasonCode: 'system.update',
+                commentary: 'Decision: approve',
+                fields: [
+                    { name: 'State Code', value: 'approved' },
+                    { name: 'Reason', value: 'I price the FX book.' },
+                ],
+            },
+            {
+                entityType: 'ores.inbox.approval_request',
+                entityId: REQUEST,
+                kind: 'raised',
+                at: '2026-10-04 09:00:00Z',
+                actor: 'daniel',
+                version: 1,
+                reasonCode: 'system.new_record',
+                commentary: '',
+                fields: [
+                    { name: 'State Code', value: 'waiting' },
+                    { name: 'Reason', value: 'I price the FX book.' },
+                ],
+            },
+        ];
+    }
+
+    function story(events: readonly Record<string, unknown>[], stateCode = 'approved'): string {
+        return render(
+            (client) => {
+                client.setQueryData(['request', REQUEST], queued({ stateCode }));
+                client.setQueryData(['request-story', REQUEST], { requestId: REQUEST, events });
+            },
+            <RequestStoryPage />,
+            `/requests/${REQUEST}/story`,
+            '/requests/:id/story',
+        );
+    }
+
+    it('draws every version of the request, newest first, with what each changed', () => {
+        const html = story(versions());
+
+        expect(html).toContain('priya');
+        expect(html).toContain('daniel');
+        expect(html).toContain('Decision: approve');
+        // A field that moved is drawn as it was and as it is, so both values
+        // are on the page; a field that did not move is drawn once.
+        expect(html).toContain('waiting');
+        expect(html).toContain('approved');
+        expect(html.match(/I price the FX book\./g)).toHaveLength(1);
+        expect(html).toContain('Raised');
+        expect(html).toContain('Moved');
+    });
+
+    it('names the answer when the reader may read it', () => {
+        const html = story([
+            ...versions(),
+            {
+                entityType: 'ores.inbox.approval_decision',
+                entityId: REQUEST,
+                kind: 'decided',
+                at: '2026-10-05 10:00:00Z',
+                actor: 'priya',
+                version: 1,
+                reasonCode: '',
+                commentary: '',
+                fields: [
+                    { name: 'Decision', value: 'approve' },
+                    { name: 'Comment', value: 'Induction done.' },
+                ],
+            },
+        ]);
+
+        expect(html).toContain('Answered');
+        expect(html).toContain('Induction done.');
+        expect(html).not.toContain('the answer is not yours to read');
+    });
+
+    it('says that the answer is not the reader to read, rather than hiding the hole', () => {
+        const html = story(versions());
+
+        expect(html).not.toContain('Answered');
+        expect(html).toContain('the answer is not yours to read');
     });
 });

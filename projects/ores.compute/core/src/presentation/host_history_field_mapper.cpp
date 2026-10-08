@@ -43,8 +43,6 @@ std::vector<ores::diff::domain::field_value> render_host_fields(const domain::ho
     fields.push_back({.name = "Cpu Count", .value = std::to_string(v.cpu_count)});
     fields.push_back({.name = "Gpu Type", .value = v.gpu_type});
     fields.push_back({.name = "Display Name", .value = v.display_name});
-    fields.push_back({.name = "Last Rpc Time",
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.last_rpc_time)});
     fields.push_back({.name = "Credit Total", .value = std::to_string(v.credit_total)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

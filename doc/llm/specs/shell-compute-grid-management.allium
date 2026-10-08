@@ -102,14 +102,17 @@ entity ComputeHost {
     cpu_count: Integer
     ram_mb: Integer
     gpu_type: String?
-    last_rpc_time: Timestamp?
     credit_total: Decimal
     modified_by: String
     recorded_at: Timestamp
 
-    -- Derived: three missed 30s heartbeats declare the host offline.
-    -- No column exists; the drain-time checks read this property.
-    online: last_rpc_time != null and last_rpc_time >= now - config.heartbeat_timeout
+    -- Relationships
+    samples: HostTelemetry with host = this
+
+    -- Derived: a host is online while its newest sample is within the
+    -- heartbeat timeout; three missed 30s heartbeats declare it offline.
+    -- Liveness is the sample series, not a column.
+    online: samples.any(s => s.sampled_at >= now - config.heartbeat_timeout)
 }
 
 -- One per-node telemetry sample (ores_node_samples_tbl), produced by
@@ -261,11 +264,12 @@ rule DispatchBatch {
         )
 }
 
--- A node heartbeats; the grid records it. The online property follows
--- from last_rpc_time and the heartbeat timeout.
+-- A node heartbeats. The grid registers the host on its first heartbeat
+-- and writes nothing on later ones; the online property follows from the
+-- newest sample and the heartbeat timeout.
 rule RecordHeartbeat {
     when: HostHeartbeatReceived(host, timestamp)
-    ensures: host.last_rpc_time = timestamp
+    ensures: host.created()
 }
 
 -- A node reports the outcome of a workunit it ran. Success makes the
@@ -378,7 +382,6 @@ surface ComputeGridShell {
             h.cpu_count
             h.ram_mb
             h.gpu_type
-            h.last_rpc_time
             h.credit_total
             h.modified_by
             h.recorded_at

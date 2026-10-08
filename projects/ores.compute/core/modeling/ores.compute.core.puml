@@ -159,7 +159,6 @@ namespace ores #F2F2F2 {
                 +cpu_count : int
                 +ram_mb : int64_t
                 +gpu_type : optional<string>
-                +last_rpc_time : optional<db_timestamp>
                 +credit_total : double
                 +modified_by : string
                 +performed_by : string

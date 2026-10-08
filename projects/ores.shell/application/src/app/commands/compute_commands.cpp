@@ -105,20 +105,9 @@ resolve_platform_id(std::ostream& out, nats_client& session, const std::string& 
     return std::nullopt;
 }
 
-// The server's grid-stats function counts a host as online when
-// last_rpc_time is within the last 5 minutes
-// (ores_compute_grid_stats_fn_create.sql). Keep the shell's online
-// window on the same value so the smoke assertion agrees with the
-// server's online_hosts count.
-constexpr std::chrono::seconds online_window{300};
-
 // Result outcome codes, per ores.compute.api domain docs: 1=Success,
 // 3=ClientError, 4=NoReply.
 constexpr int outcome_success = 1;
-
-bool is_online(const compute::domain::host& h) {
-    return std::chrono::system_clock::now() - h.last_rpc_time <= online_window;
-}
 
 std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& out,
                                                                  nats_client& session,
@@ -560,9 +549,6 @@ void compute_commands::process_grid_stats(std::ostream& out,
     // loop because the .ores script language has no flow control.
     std::uint32_t workunit_count = 0;
     std::uint32_t terminal_count = 0;
-    // Hosts online when the batch drains; the smoke assertion must
-    // judge that set, not whoever is online after the wait loop.
-    std::vector<compute::domain::host> online_hosts_at_drain;
     if (batch) {
         const auto deadline = std::chrono::steady_clock::now() + *timeout;
         while (true) {
@@ -577,16 +563,6 @@ void compute_commands::process_grid_stats(std::ostream& out,
             if (workunit_count > 0 && terminal_count == workunit_count) {
                 BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
                                           << "/" << workunit_count << " workunits).";
-                compute::messaging::list_hosts_request hosts_req;
-                hosts_req.limit = 1000;
-                auto hosts_resp =
-                    do_request(out, session, hosts_req, std::chrono::seconds(30), true);
-                if (!hosts_resp)
-                    return;
-                for (const auto& h : hosts_resp->hosts) {
-                    if (is_online(h))
-                        online_hosts_at_drain.push_back(h);
-                }
                 break;
             }
             if (workunit_count == 0) {
@@ -644,9 +620,11 @@ void compute_commands::process_grid_stats(std::ostream& out,
     if (batch && smoke) {
         // The drained batch is the smoke verdict: every result has
         // outcome Success, and every host online at the drain
-        // transition has at least one result in the batch. A failed
-        // check marks the command failed, so the script runner aborts
-        // the smoke-test script.
+        // transition has at least one result in the batch. The grid
+        // summary just read is the drain-time one, because the watch
+        // loop ends the moment the batch drains. A failed check marks
+        // the command failed, so the script runner aborts the
+        // smoke-test script.
         auto results = results_of_batch(out, session, batch->id);
         if (!results)
             return;
@@ -658,31 +636,34 @@ void compute_commands::process_grid_stats(std::ostream& out,
         }
         const bool all_success = !results->empty() && success_count == results->size();
 
-        // The host set captured when the batch drained (see the watch
-        // loop above); a fresh fetch here could judge a different set.
-        const auto& online_hosts = online_hosts_at_drain;
-        std::vector<compute::domain::host> unexercised;
-        for (const auto& h : online_hosts) {
-            const bool exercised = std::any_of(
-                results->begin(), results->end(), [&](const auto& r) { return r.host_id == h.id; });
-            if (!exercised)
-                unexercised.push_back(h);
+        // Every host that produced a result ran a task, so it was online;
+        // the exercised set is therefore contained in the online set the
+        // summary counted. The check is a count: an online host with no
+        // result makes the exercised count fall short.
+        std::vector<boost::uuids::uuid> exercised_hosts;
+        for (const auto& r : *results) {
+            if (r.host_id == boost::uuids::uuid{})
+                continue;
+            if (std::find(exercised_hosts.begin(), exercised_hosts.end(), r.host_id) ==
+                exercised_hosts.end())
+                exercised_hosts.push_back(r.host_id);
         }
+        const int unexercised =
+            std::max(resp->online_hosts - static_cast<int>(exercised_hosts.size()), 0);
 
         out << "Smoke check for batch " << batch_ref << ":" << std::endl;
         out << "  results: " << success_count << "/" << results->size() << " success" << std::endl;
-        out << "  nodes exercised: " << (online_hosts.size() - unexercised.size()) << "/"
-            << online_hosts.size() << " online hosts" << std::endl;
-        if (all_success && unexercised.empty()) {
+        out << "  nodes exercised: " << exercised_hosts.size() << "/" << resp->online_hosts
+            << " online hosts" << std::endl;
+        if (all_success && unexercised == 0) {
             out << "SMOKE PASS" << std::endl;
         } else {
             if (!all_success)
                 out << "  FAIL: " << (results->size() - success_count) << " result(s) not success"
                     << std::endl;
-            for (const auto& h : unexercised) {
-                out << "  FAIL: online host " << h.display_name << " (" << h.external_id
-                    << ") has no result in this batch" << std::endl;
-            }
+            if (unexercised > 0)
+                out << "  FAIL: " << unexercised << " online host(s) have no result in this batch"
+                    << std::endl;
             out << "SMOKE FAIL" << std::endl;
             command_feedback::mark_failure();
         }

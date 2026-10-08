@@ -148,7 +148,7 @@ record is the use-case analysis on
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =host= | The grid's ceiling: =external_id=, =display_name=, =location=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =host= | The grid's ceiling: =external_id=, =display_name=, =location=, =cpu_count=, =ram_mb= and =gpu_type= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
 | =grid_sample= | The usage the grid records: =total_hosts=, =online_hosts= and =idle_hosts= per interval | [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]] |
 | =node_sample= | A node's interval, for the load behind the usage: =tasks_since_last=, =avg_task_duration_ms= and =input_bytes_fetched= | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
 | =workunit= | A job waiting for capacity: =app_version_id=, =priority= and =target_redundancy= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |

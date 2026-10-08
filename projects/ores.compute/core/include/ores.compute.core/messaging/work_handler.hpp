@@ -22,6 +22,7 @@
 
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/service/host_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -40,6 +41,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
@@ -57,7 +59,7 @@ inline auto& work_handler_lg() {
  * hexadecimal discriminator, from a UUID.
  *
  * The first four bytes of the UUID seed the adjective and the animal; the
- * next two bytes are appended as four hexadecimal digits to separate names
+ * next four bytes are appended as eight hexadecimal digits to separate names
  * that would otherwise collide. Every part comes from the host id alone, so
  * the name is deterministic: the same host id always produces the same name.
  */
@@ -77,10 +79,16 @@ inline std::string make_display_name(const boost::uuids::uuid& id) {
                                (static_cast<std::uint32_t>(id.data[1]) << 16) |
                                (static_cast<std::uint32_t>(id.data[2]) << 8) |
                                static_cast<std::uint32_t>(id.data[3]);
-    const std::uint16_t discriminator =
-        (static_cast<std::uint16_t>(id.data[4]) << 8) | static_cast<std::uint16_t>(id.data[5]);
+    const std::uint32_t discriminator = (static_cast<std::uint32_t>(id.data[4]) << 24) |
+                                        (static_cast<std::uint32_t>(id.data[5]) << 16) |
+                                        (static_cast<std::uint32_t>(id.data[6]) << 8) |
+                                        static_cast<std::uint32_t>(id.data[7]);
     std::string name = std::string(adjectives[seed % adjectives.size()]) + "-" +
                        std::string(animals[(seed >> 8) % animals.size()]) + "-";
+    name += hex_digits[(discriminator >> 28) & 0x0F];
+    name += hex_digits[(discriminator >> 24) & 0x0F];
+    name += hex_digits[(discriminator >> 20) & 0x0F];
+    name += hex_digits[(discriminator >> 16) & 0x0F];
     name += hex_digits[(discriminator >> 12) & 0x0F];
     name += hex_digits[(discriminator >> 8) & 0x0F];
     name += hex_digits[(discriminator >> 4) & 0x0F];
@@ -234,7 +242,12 @@ public:
         static constexpr auto stale_threshold = std::chrono::minutes(5);
         try {
             service::result_service result_svc(ctx_);
-            service::host_service host_svc(ctx_);
+            repository::compute_telemetry_repository telemetry;
+            // A node's liveness is its newest sample; the host row no longer
+            // carries a last-seen column.
+            std::map<boost::uuids::uuid, std::chrono::system_clock::time_point> last_sample;
+            for (const auto& s : telemetry.latest_node_samples(ctx_))
+                last_sample[s.host_id] = s.sampled_at;
             // InProgress.
             auto in_progress = result_svc.list_by_state(4);
             int reaped = 0;
@@ -244,14 +257,10 @@ public:
                 if (r.host_id == boost::uuids::uuid{})
                     continue;
                 const auto host_id_str = boost::uuids::to_string(r.host_id);
-                const auto host_opt = host_svc.get_host(r.host_id);
-                if (!host_opt)
+                const auto sample = last_sample.find(r.host_id);
+                if (sample == last_sample.end())
                     continue;
-
-                const auto& last_seen = host_opt->last_rpc_time;
-                if (last_seen == std::chrono::system_clock::time_point{})
-                    continue;
-                if (now - last_seen <= stale_threshold)
+                if (now - sample->second <= stale_threshold)
                     continue;
 
                 r.host_id = boost::uuids::uuid{};

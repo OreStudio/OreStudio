@@ -163,7 +163,7 @@ question the walk is for, and that the charts must be drawn from mock series.
 |--------+---------------------+-------|
 | =grid_sample= | The work and host counters as one stored sample: states, batches, workunits and outcomes | [[id:7C4E1A62-9B3D-4F18-A5E2-6D8C0F3B7A94][ores.compute.grid_sample]] |
 | =node_sample= | One node's work in one interval: tasks, mean and longest duration, bytes and seconds since heartbeat | [[id:3F8B2D15-6A47-4C93-B8E1-2F5A9D0C4E76][ores.compute.node_sample]] |
-| =host= | The node's name, hostname and capacity: =external_id=, =display_name=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =host= | The node's name, hostname and capacity: =external_id=, =display_name=, =cpu_count=, =ram_mb= and =gpu_type= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
 | =result= | The execution attempt behind a state count, with its =server_state=, =outcome=, =host_id= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
 | =workunit= | The job behind a result: its =batch_id=, =app_version_id= and =target_redundancy= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
 | =batch= | The container behind a workunit, with its =external_ref= and =status= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
@@ -245,8 +245,8 @@ a compute screen yet.
    ([[id:8C1D6E61-3661-49F2-90BB-00ED7C4F113C][The node summary drops the
    failure fields]]).
 5. *A node has no state but its heartbeat age.* The ribbon wants to state
-   online, quiet or lost, and only the first two can be derived from
-   =last_rpc_time= and =seconds_since_hb=. There is no draining state and no
+   online, quiet or lost, and only the first two can be derived from the age
+   of the node's newest sample. There is no draining state and no
    maintenance flag on =host=, so the deferred control of use case 6 has no row
    to set.
 6. *The installation's own ledger is not built.* The work counts come from the

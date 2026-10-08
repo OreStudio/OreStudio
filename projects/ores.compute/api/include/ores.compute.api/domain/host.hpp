@@ -81,15 +81,10 @@ struct host final {
     std::string gpu_type;
 
     /**
-     * @brief Whimsical adjective-animal display name with a four-hex-digit discriminator taken from
-     * the host id, assigned on first registration. Display-only; never used as a key.
+     * @brief Whimsical adjective-animal display name with an eight-hex-digit discriminator taken
+     * from the host id, assigned on first registration. Display-only; never used as a key.
      */
     std::string display_name;
-
-    /**
-     * @brief Timestamp of the last heartbeat received from this node.
-     */
-    std::chrono::system_clock::time_point last_rpc_time = {};
 
     /**
      * @brief Accumulated work units successfully processed by this host.

@@ -28,12 +28,10 @@
 #include "ores.compute.core/repository/host_entity.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <chrono>
 #include <optional>
 #include <vector>
 
@@ -57,10 +55,6 @@ domain::host host_mapper::map(const host_entity& v) {
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.value_or("");
     r.display_name = v.display_name.value_or("");
-    if (v.last_rpc_time)
-        r.last_rpc_time = timestamp_to_timepoint(*v.last_rpc_time);
-    else
-        r.last_rpc_time = {};
     r.credit_total = v.credit_total;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -87,10 +81,6 @@ host_entity host_mapper::map(const domain::host& v) {
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.empty() ? std::nullopt : std::optional(v.gpu_type);
     r.display_name = v.display_name.empty() ? std::nullopt : std::optional(v.display_name);
-    r.last_rpc_time =
-        v.last_rpc_time != std::chrono::system_clock::time_point{} ?
-            std::optional(ores::platform::time::datetime::to_db_string(v.last_rpc_time)) :
-            std::nullopt;
     r.credit_total = v.credit_total;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

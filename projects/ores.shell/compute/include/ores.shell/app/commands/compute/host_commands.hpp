@@ -87,7 +87,7 @@ public:
 
     /**
      * @brief add <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name>
-     * <last_rpc_time> <credit_total> <reason> <commentary>
+     * <credit_total> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -95,7 +95,7 @@ public:
 
     /**
      * @brief set <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name>
-     * <last_rpc_time> <credit_total> <reason> <commentary> [--version <n>]
+     * <credit_total> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -103,7 +103,7 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type>
-     * <display_name> <last_rpc_time> <credit_total> <reason> <commentary>
+     * <display_name> <credit_total> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -113,12 +113,15 @@ In execution order:
    first heartbeat:
    #+begin_example
    select count(*) as hosts,
-          count(*) filter (where last_rpc_time > now() - interval '5 minutes') as online
-     from ores_compute_hosts_tbl where valid_to > now();
+          count(*) filter (where exists (
+            select 1 from ores_compute_node_samples_tbl sample
+             where sample.host_id = h.id
+               and sample.sampled_at > now() - interval '5 minutes')) as online
+     from ores_compute_hosts_tbl h where h.valid_to > now();
    #+end_example
-   =hosts = online= is the arithmetic that matters: a host outside the
-   five-minute window is not in the grid, and =--smoke= asserts every online
-   host was exercised.
+   =hosts = online= is the arithmetic that matters: a host whose newest
+   sample is outside the five-minute window is not in the grid, and
+   =--smoke= asserts every online host was exercised.
 
 5. /Create the batch and dispatch the sample job./ A batch is a container
    with an operator-chosen reference; dispatch is what stores the workunits,

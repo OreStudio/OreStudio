@@ -129,48 +129,57 @@ The readiness rule is already the fan-in rule: it waits on every producer that
 writes an input, proven by a test with two batch-keyed producers. What is
 missing is a loop that acts on it.
 
-* Blocked: the chain's rows cannot be inserted for another tenant
+* The chain's rows take the run's tenant
 
-Re-pointing the engine at the two relations was built and reverted. What it
-found is worth recording, because it is the next thing to fix and it is not
-obvious.
+Re-pointing the engine at the two relations is done. The graph is drawn from
+the plan rows and their edges. The deadlines and the step words a screen shows
+come from the same rows. =materialised_steps_json= is gone from the model and
+from every generated artefact.
 
-The reading side works. The graph is drawn from the plan rows and their edges,
-the query handler takes a step's words from the chain, and every single-tenant
-run passes. What fails is *writing the chain* for a run that belongs to another
-tenant, which is exactly the arrangement a deployed engine runs in: it holds
-the system tenant and acts for whoever asked.
+One thing about the write is worth recording, because the symptom points
+somewhere other than the cause.
 
-The plan step's insert is refused by its own soft-FK check:
+The chain's rows carry =tenant_id=. Written with the engine's own tenant, the
+plan step's insert is refused by its own soft-FK check:
 
 #+begin_example
 Invalid workflow_id: <id>. No active workflow instance found with this id.
 #+end_example
 
-The check is the generated one, and it is byte-for-byte the check the execution
-rows already use — =where tenant_id = NEW.tenant_id and id = NEW.workflow_id
-and valid_to = ores_utility_infinity_timestamp_fn()=. The execution rows insert
-happily in the same run, into a table whose trigger is identical.
+The cause is not the row-level security policy, and the row was never hidden.
+The trigger's first statement rewrites the tenant it was handed:
 
-The evidence narrows it to the trigger's own view, and the measurements are:
+#+begin_src sql
+NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+#+end_src
 
-- The instance row exists, is current, and its =tenant_id= is *exactly* the one
-  the plan row is being written with. Checked by reading both back.
-- The engine's own context, reading the same instance by the same id at the same
-  moment, returns one row — with the system tenant set.
-- So the row is committed and visible to the engine, and invisible to the
-  trigger's identical lookup.
-- Neither table forces row-level security (=relforcerowsecurity= is false), and
-  both insert functions are =security definer= owned by the same role that owns
-  the tables.
+That function maps the system tenant to whatever the session says. Its own
+comment states the rule: =Treat system tenant ID (nil UUID) as placeholder
+meaning "use session tenant"=. The engine holds the system tenant while it
+starts runs for everyone. So a row written with the engine's tenant becomes a
+lookup for instances under the system tenant, and the run's own instance
+carries the run's tenant. The lookup finds nothing.
 
-*What to do next.* Reproduce the lookup the way the trigger runs it — set the
-role and the session tenant as the trigger has them, then run the same
-statement — and read back the tenant the policy sees. The likely answers are
-that the policy is evaluated under a tenant the trigger does not expect, or
-that the update trigger on the instance has left the row current under a
-different version. Either way the fix belongs in the policy or the check, not
-in the caller, and it must not be made by weakening the check.
+Measured on one instance, in one session, with only the written tenant varying:
+
+| Tenant written on the row    | Rows the trigger finds |
+|------------------------------+------------------------|
+| the engine's (system) tenant |                      0 |
+| the run's tenant             |                      1 |
+
+The execution rows insert in the same run because they already take
+=instance.tenant_id=. The engine states that three screens above the write, in
+a comment on the execution step.
+
+So the caller was wrong, and the engine already held the answer. Each row of
+the chain takes the instance's tenant. Nothing in a policy, a check or a
+generator changes.
+
+The rewrite inside =ores_iam_validate_tenant_fn= is a pre-existing
+compatibility affordance, and it is not the fault. A caller that states the
+wrong tenant must be corrected whether or not the function hides it. Removing
+the placeholder would change every generated insert trigger, so it is not part
+of this task.
 
 * Test Scenarios
 

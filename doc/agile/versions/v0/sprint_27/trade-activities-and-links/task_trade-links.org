@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trade-links
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-07
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,17 +26,16 @@ Every relation between two trades that a process did not create is a typed, dire
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities and trade links]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing. This task does not wait on the process run model: a link is a relation that holds nothing, and the amendment stamps already exist. |
-| Next         | Seed trade_link_type from the catalogue, then add trade_link. |
-| Last touched | 2026-10-07                               |
+| Now          | The shape of both entities is settled; the models are next. |
+| Waiting on   | Nothing. A link holds nothing and needs no run. |
+| Next         | Write trade_link_type and trade_link, seed the types, then regenerate. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
 - trade_link joins two trades with enforced foreign keys and a type from trade_link_type, and records the trade activity stamp that made it.
-- A link a process created carries that run as well, once the run model lands; the column is nullable until then.
 - trade_link_type names the from and to roles and the economic effect, seeded from the link catalogue (novation, exercise, roll and the rest).
 - Nothing in the tree carries a successor trade id.
 

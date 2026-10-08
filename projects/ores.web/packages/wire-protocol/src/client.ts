@@ -90,6 +90,7 @@ import {
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
+    resultEnvelopeSchema,
     signupCommandSchema,
     signupReplySchema,
     toSignupOutcome,
@@ -112,6 +113,8 @@ import {
     type GridStatsReply,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
+import { subjects as variabilityOperationSubjects } from './generated/variability/protocol/operations_protocol.js';
+import { subjects as systemSettingSubjects } from './generated/variability/protocol/system_setting_protocol.js';
 import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
@@ -221,6 +224,28 @@ interface SessionState {
     sessionId: string;
     refreshInFlight: Promise<string> | undefined;
 }
+
+/** The setting a completed first-run installation states. */
+const ONBOARDING_SYSTEM_SETTING = 'onboarding.system';
+
+const completeSystemOnboardingReplySchema = z.object({
+    result: resultEnvelopeSchema,
+});
+
+/**
+ * A settings read, reduced to the one field an onboarding gate needs.
+ *
+ * A setting that is absent is not an error here: the gate it feeds treats a
+ * missing flag as unfinished, which is the state the deployment is in before
+ * anybody completes the wizard.
+ */
+const systemSettingReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    system_setting: z
+        .object({ value: z.string().default('false') })
+        .nullable()
+        .default(null),
+});
 
 /**
  * The typed client for the ORE Studio bus.
@@ -333,6 +358,49 @@ export class OresClient {
             accountId: reply.account_id,
             tenantId: reply.tenant_id,
         };
+    }
+
+    /**
+     * Records that the first-run journey finished, for the caller's tenant.
+     *
+     * It is an operation rather than an ordinary settings write because it
+     * marks a platform milestone: a first-run installation that keeps only the
+     * system tenant has no other deployed fact that says the wizard finished,
+     * and the interface would otherwise hold it on the setup screen. The tenant
+     * is the token's, so the request carries nothing.
+     */
+    async completeSystemOnboarding(): Promise<void> {
+        const reply = await this.#authenticatedCall(
+            variabilityOperationSubjects.complete_system_onboarding_request,
+            {},
+            completeSystemOnboardingReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(
+                variabilityOperationSubjects.complete_system_onboarding_request,
+                reply.result.message,
+            );
+        }
+    }
+
+    /**
+     * Whether the system provisioner wizard has completed, read from the
+     * settings the deployment holds.
+     *
+     * A missing flag reads as false, which is the state before the wizard runs.
+     * A read that cannot be made at all throws, and the caller decides what a
+     * refusal means; the one caller here treats it as false, because holding an
+     * installation on its setup screen is the safe direction.
+     */
+    async onboardingSystemComplete(): Promise<boolean> {
+        const reply = await this.#authenticatedCall(
+            systemSettingSubjects.get_system_setting_request,
+            { key: { name: ONBOARDING_SYSTEM_SETTING } },
+            systemSettingReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return reply.system_setting?.value === 'true';
     }
 
     /**

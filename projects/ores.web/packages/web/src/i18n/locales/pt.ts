@@ -1259,8 +1259,19 @@ const pt: SourceCatalogue = {
 
         welcome: {
             title: 'Bem-vindo ao ORE Studio',
-            lead: 'Esta instalação está vazia. Configure-a em três etapas. A lista à esquerda indica cada passo.',
+            lead: 'Configure uma nova instalação: crie o administrador que a possui e depois escolha com o que a instalação fica.',
             start: 'Começar',
+            choiceLabel: 'Com o que a instalação fica',
+            choice: {
+                'first-tenant': {
+                    title: 'Criar o primeiro inquilino',
+                    body: 'Dê um nome a um inquilino e ao seu administrador. A instalação fica com um inquilino próprio.',
+                },
+                'system-only': {
+                    title: 'Manter apenas o inquilino de sistema',
+                    body: 'Não crie nenhum inquilino. A instalação fica apenas com o inquilino de sistema, o que é útil para testes.',
+                },
+            },
             stage: {
                 admin: 'Criar o administrador',
                 adminBody: 'A conta proprietária desta instalação.',
@@ -1270,6 +1281,8 @@ const pt: SourceCatalogue = {
                 signIn: 'Iniciar sessão',
                 signInBody:
                     'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
+                systemSignInBody:
+                    'O primeiro início de sessão do administrador, com a palavra-passe que o percurso guarda.',
             },
         },
 
@@ -1384,6 +1397,9 @@ const pt: SourceCatalogue = {
         signIn: {
             title: 'Primeiro início de sessão',
             lead: 'O administrador do inquilino inicia sessão pela primeira vez.',
+            systemLead: 'O administrador da instalação inicia sessão, e a instalação fica pronta.',
+            administrator:
+                'A conta que inicia sessão é {principal}, o administrador que esta instalação acabou de receber.',
             username: 'Nome de utilizador',
             password: 'Palavra-passe',
             submit: 'Iniciar sessão',

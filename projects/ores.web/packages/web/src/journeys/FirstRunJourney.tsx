@@ -23,10 +23,12 @@
  * The first run journey: the rail, and the state that fills it in.
  *
  * An installation with no administrator and no tenant is brought to life on one
- * rail: the administrator is created, the first tenant's steps run inline, its
- * administrator takes over, signs in and the screen reads *Ready*. The five
- * tenant steps are the shared library, so the new tenant journey runs the same
- * ones rather than a copy of them.
+ * rail. The person chooses at the start what the installation is left with: the
+ * ordinary ending creates the first tenant, whose steps run inline, and its
+ * administrator takes over and signs in; the other creates no tenant, so the
+ * installation keeps the system tenant alone. The five tenant steps are the
+ * shared library, so the new tenant journey runs the same ones rather than a
+ * copy of them.
  *
  * Two things the journey does are worth stating where they happen. The browser
  * signs in as the administrator it just created, because the starting-point
@@ -38,12 +40,12 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Input, Notice } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice, cx } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { JourneyPage } from './JourneyPage.js';
 import { JourneyHeader } from './parts.js';
 import { indexOfStep } from './runtime.js';
-import { firstRunSteps, type AdministratorDraft } from './firstRunSteps.js';
+import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './firstRunSteps.js';
 import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
 import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
@@ -66,28 +68,108 @@ function reasonOf(error: unknown): string {
 }
 
 /**
- * The three stages, and what each one leaves behind.
+ * The two endings the person chooses between, in the order they are offered.
  *
- * The rail already names all nine steps, so these cards say what a stage
- * produces rather than repeating the step titles: a person who counts the rail
- * and reads "three stages" should find both statements true.
+ * Creating the first tenant is the ordinary case, so it is stated first.
  */
-function Welcome(): ReactNode {
-    const { t } = useTranslation();
-    const stages: readonly (readonly [string, string])[] = [
+const CHOICES: readonly FirstRunChoice[] = ['first-tenant', 'system-only'];
+
+/** The stages the chosen rail runs, as a title key and a body key. */
+export function welcomeStages(choice: FirstRunChoice): readonly (readonly [string, string])[] {
+    if (choice === 'system-only') {
+        return [
+            ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
+            ['journey.welcome.stage.signIn', 'journey.welcome.stage.systemSignInBody'],
+        ];
+    }
+    return [
         ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
         ['journey.welcome.stage.tenant', 'journey.welcome.stage.tenantBody'],
         ['journey.welcome.stage.signIn', 'journey.welcome.stage.signInBody'],
     ];
+}
+
+/**
+ * The choice, and what the chosen journey leaves behind.
+ *
+ * The rail names every step of the chosen journey, so these cards say what a
+ * stage produces rather than repeating the step titles; the stages change with
+ * the choice because the rail does, and a person who counts the rail and reads
+ * the stages should find both statements true.
+ *
+ * The choice is made here, deliberately and in front of the person, because it
+ * decides whether the installation ends up half provisioned. It is not a flag
+ * read from the browser's environment: a control somebody can switch on without
+ * seeing it is not a control at all.
+ */
+export function WelcomeCard({
+    choice,
+    onChoice,
+}: {
+    readonly choice: FirstRunChoice;
+    readonly onChoice: (choice: FirstRunChoice) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const stages = welcomeStages(choice);
     return (
-        <ul className="grid gap-4 sm:grid-cols-3">
-            {stages.map(([title, body]) => (
-                <li key={title} className="rounded-md border border-line p-4">
-                    <p className="text-sm font-medium">{t(title)}</p>
-                    <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
-                </li>
-            ))}
-        </ul>
+        <div className="space-y-5">
+            <div
+                role="radiogroup"
+                aria-label={t('journey.welcome.choiceLabel')}
+                className="grid gap-3 sm:grid-cols-2"
+            >
+                {CHOICES.map((option) => (
+                    <button
+                        key={option}
+                        type="button"
+                        role="radio"
+                        aria-checked={choice === option}
+                        onClick={() => onChoice(option)}
+                        className={cx(
+                            'card p-4 text-left transition-colors',
+                            choice === option
+                                ? 'border-accent ring-3 ring-accent/20'
+                                : 'hover:border-line-strong',
+                        )}
+                    >
+                        <span className="font-semibold">
+                            {t(`journey.welcome.choice.${option}.title`)}
+                        </span>
+                        <p className="mt-1 text-sm text-ink-muted">
+                            {t(`journey.welcome.choice.${option}.body`)}
+                        </p>
+                    </button>
+                ))}
+            </div>
+            <ul
+                className={cx(
+                    'grid gap-4',
+                    stages.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
+                )}
+            >
+                {stages.map(([title, body]) => (
+                    <li key={title} className="rounded-md border border-line p-4">
+                        <p className="text-sm font-medium">{t(title)}</p>
+                        <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+/**
+ * What the system-only rail's sign-in shows.
+ *
+ * No tenant was created, so there is no tenant administrator to hand over to:
+ * the account that signs in is the administrator the journey just made. The
+ * journey holds that password, so the step signs in with it rather than asking
+ * for it a second time.
+ */
+export function AdministratorArrival({ principal }: { readonly principal: string }): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <p className="text-sm text-ink-muted">{t('journey.signIn.administrator', { principal })}</p>
     );
 }
 
@@ -222,6 +304,17 @@ export function FirstRunJourney({
     const [entry, setEntry] = useState<TenantEntry>();
     const [tenantSignInComplete, setTenantSignInComplete] = useState(false);
     /*
+     * What the installation is left with. The ordinary ending is the default,
+     * and the choice lives here rather than on the server because it is the
+     * person's, made in front of them on the welcome card.
+     *
+     * The choice changes the rail's shape: the five tenant steps and the
+     * tenant sign-in come and go. The control that makes it is on the welcome
+     * step, which is the rail's first, so only steps after the one the person
+     * stands on change and the position stays inside both rails.
+     */
+    const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
+    /*
      * Where the rail stands. Nothing is stated until somebody moves: the
      * deployment decides where the journey opens, which is the step that signs
      * in as its administrator when it has one and the welcome when it does not.
@@ -299,14 +392,14 @@ export function FirstRunJourney({
     };
 
     /**
-     * Signing in as the deployment's administrator, which the starting-point
-     * read and the provisioning request both belong to.
+     * Signing in as the deployment's administrator.
      *
-     * The password is kept for the journey's length, because a profile may hand
-     * the creating administrator's password to the tenant's administrator and
-     * the hand-over signs in with it. It reaches no storage.
+     * The starting-point read and the provisioning request both belong to an
+     * account, so the journey enters as the administrator before either. An
+     * account that works in exactly one party is settled here; one that works
+     * in several cannot be guessed at, and the person is asked to choose.
      */
-    const enterAsAdministrator = async (password: string): Promise<void> => {
+    const signInAsAdministrator = async (password: string): Promise<void> => {
         const outcome = await server.signIn({ username: draft.principal, password });
         if (outcome.outcome === 'party-required') {
             const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
@@ -315,6 +408,17 @@ export function FirstRunJourney({
             }
             await server.chooseParty(only.id, outcome.parties);
         }
+    };
+
+    /**
+     * Entering as the administrator, and reading what it may build.
+     *
+     * The password is kept for the journey's length, because a profile may hand
+     * the creating administrator's password to the tenant's administrator and
+     * the hand-over signs in with it. It reaches no storage.
+     */
+    const enterAsAdministrator = async (password: string): Promise<void> => {
+        await signInAsAdministrator(password);
         setCreatingPassword(password);
         setProfiles(await server.seedProfiles());
     };
@@ -371,7 +475,9 @@ export function FirstRunJourney({
         entry,
         tenantSignInComplete,
         onTenantSignInComplete: () => setTenantSignInComplete(true),
-        welcome: <Welcome />,
+        choice,
+        welcome: <WelcomeCard choice={choice} onChoice={setChoice} />,
+        administratorArrival: <AdministratorArrival principal={draft.principal} />,
         administratorForm: (
             <AdministratorForm
                 policy={policy}
@@ -394,7 +500,9 @@ export function FirstRunJourney({
         ),
         onCreateAdministrator: createAdministrator,
         onAdministratorEntered: () => enterAsAdministrator(draft.password),
+        onAdministratorSignIn: () => signInAsAdministrator(creatingPassword),
         onHandOff: handOff,
+        onCompleteSystemOnboarding: () => server.completeSystemOnboarding(),
         onFinished: () => onFinished(),
     });
 

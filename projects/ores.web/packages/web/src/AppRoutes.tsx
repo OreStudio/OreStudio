@@ -79,9 +79,12 @@ import type { Account, SessionView } from '@ores/wire-protocol/browser';
  * renders the first run journey rather than redirecting to a setup path: there
  * is nothing else to be at, and a redirect leaves a URL somebody can share that
  * leads nowhere. Creating the administrator closes that question but not the
- * job, so the gate carries two further reasons to stay: the deployment has no
- * tenant of its own, which is the state the journey exists to leave behind, and
- * the journey has begun in this browser, which holds the rail after the tenant
+ * job, so the gate carries two further reasons to stay. The first is that the
+ * deployment has no tenant of its own *and* the system provisioner wizard has
+ * not recorded that it finished: an installation may keep only the system
+ * tenant, so "no tenant" alone would hold it on the setup screen forever, and
+ * the flag is what the wizard writes as its last act. The second is that the
+ * journey has begun in this browser, which holds the rail after the tenant
  * exists until the person finishes. The deployment's own state is what survives
  * a reload; the tab's memory only outlives the tenant.
  */
@@ -164,7 +167,11 @@ export function AppRoutes({
         );
     }
 
-    if (gate.inBootstrapMode || !gate.hasTenant || journeyInProgress) {
+    if (
+        gate.inBootstrapMode ||
+        (!gate.hasTenant && !gate.onboardingComplete) ||
+        journeyInProgress
+    ) {
         return (
             <Routes>
                 <Route

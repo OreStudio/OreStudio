@@ -55,6 +55,7 @@ const inBootstrap: BootstrapState = {
     status: 'ready',
     inBootstrapMode: true,
     hasTenant: false,
+    onboardingComplete: false,
     message: 'This deployment has not been provisioned.',
     version: 'v0.0.25 (test)',
 };
@@ -62,11 +63,14 @@ const ready: BootstrapState = {
     status: 'ready',
     inBootstrapMode: false,
     hasTenant: true,
+    onboardingComplete: true,
     message: '',
     version: 'v0.0.25 (test)',
 };
 /** An installation whose administrator exists and whose first tenant does not. */
-const tenantless: BootstrapState = { ...ready, hasTenant: false };
+const tenantless: BootstrapState = { ...ready, hasTenant: false, onboardingComplete: false };
+/** A system-only installation that finished its wizard, so it has no user tenant. */
+const systemOnlyComplete: BootstrapState = { ...tenantless, onboardingComplete: true };
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
 
@@ -281,6 +285,18 @@ describe('an installation that has no tenant of its own', () => {
         expect(visitor).toContain('First run journey');
         expect(signedIn).toContain('First run journey');
         expect(signedIn).not.toContain('Sign out');
+    });
+
+    it('releases the browser once the wizard recorded that it finished', () => {
+        /*
+         * A system-only installation keeps no tenant of its own, so "has no
+         * tenant" is true forever; the wizard's flag is what says the setup job
+         * is done and the browser may leave the rail.
+         */
+        const visitor = render('/login', systemOnlyComplete, anonymous);
+
+        expect(visitor).not.toContain('First run journey');
+        expect(visitor).toContain('Sign in');
     });
 
     it('hands the browser over as soon as there is one', () => {

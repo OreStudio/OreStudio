@@ -139,6 +139,84 @@ describe('OresClient bootstrap status', () => {
     });
 });
 
+describe('OresClient system onboarding', () => {
+    it('records the finish under the op subject, with no request body', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.ops.complete_system_onboarding': [
+                { body: { result: { outcome: 'ok', code: '', message: '' } } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await client.completeSystemOnboarding();
+
+        expect(transport.calls[1]?.subject).toBe('variability.v1.ops.complete_system_onboarding');
+        expect(transport.decodeCall(1)).toEqual({});
+    });
+
+    it('refuses a finish the server did not record', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.ops.complete_system_onboarding': [
+                {
+                    body: {
+                        result: {
+                            outcome: 'failed',
+                            code: 'operation_failed',
+                            message: 'no write',
+                        },
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.completeSystemOnboarding()).rejects.toBeInstanceOf(
+            OperationFailedError,
+        );
+    });
+
+    it('reads the wizard flag by name through the settings read', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'ok', code: '', message: '' },
+                        system_setting: { value: 'true' },
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingSystemComplete()).toBe(true);
+        expect(transport.decodeCall(1)).toEqual({ key: { name: 'onboarding.system' } });
+    });
+
+    it('reads a missing flag as unfinished rather than as an error', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'missing', code: 'not_found', message: '' },
+                        system_setting: null,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingSystemComplete()).toBe(false);
+    });
+});
+
 describe('OresClient login', () => {
     it('sends the credential in the principal field', async () => {
         const transport = new ScriptedTransport({ 'iam.v1.ops.login': [{ body: loginReply() }] });

@@ -209,6 +209,22 @@ export const api = {
         return initialAdministratorSchema.parse(payload);
     },
 
+    /**
+     * Records that the first-run journey finished.
+     *
+     * The session names the tenant the write lands in, so the request carries
+     * nothing. The setup screen calls it as its last act, so the gate sees a
+     * finished installation on its next read even when the installation keeps no
+     * tenant of its own.
+     */
+    async completeSystemOnboarding(): Promise<void> {
+        await request('/api/bootstrap/complete', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({}),
+        });
+    },
+
     async login(credentials: Credentials): Promise<LoginResult> {
         const payload = await request('/api/session', {
             method: 'POST',

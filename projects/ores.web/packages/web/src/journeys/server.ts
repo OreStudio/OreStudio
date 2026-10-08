@@ -54,6 +54,11 @@ export interface JourneyServer {
     readonly createAdministrator: (request: CreateAdministratorRequest) => Promise<void>;
     /** Ask whether the deployment still needs an administrator, after creating one. */
     readonly recheckBootstrap: () => Promise<void>;
+    /**
+     * Record that the first-run journey finished, so an installation that keeps
+     * only the system tenant can leave the setup screen.
+     */
+    readonly completeSystemOnboarding: () => Promise<void>;
     readonly signIn: (credentials: {
         readonly username: string;
         readonly password: string;
@@ -93,6 +98,7 @@ export function useJourneyServer(): JourneyServer {
                 await api.createAdministrator(request);
             },
             recheckBootstrap: recheck,
+            completeSystemOnboarding: api.completeSystemOnboarding,
             signIn,
             chooseParty,
             switchParty,

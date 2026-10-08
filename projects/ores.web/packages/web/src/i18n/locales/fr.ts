@@ -1265,8 +1265,19 @@ const fr: SourceCatalogue = {
 
         welcome: {
             title: 'Bienvenue dans ORE Studio',
-            lead: 'Cette installation est vide. Configurez-la en trois étapes. La liste de gauche nomme chaque étape.',
+            lead: "Configurez une nouvelle installation : créez l'administrateur qui la possède, puis choisissez ce que l'installation conserve.",
             start: 'Commencer',
+            choiceLabel: "Ce que l'installation conserve",
+            choice: {
+                'first-tenant': {
+                    title: 'Créer le premier locataire',
+                    body: "Nommez un locataire et son administrateur. L'installation finit avec un locataire qui lui est propre.",
+                },
+                'system-only': {
+                    title: 'Garder le locataire système seul',
+                    body: "Ne créez aucun locataire. L'installation finit avec le seul locataire système, ce qui est utile pour les tests.",
+                },
+            },
             stage: {
                 admin: "Créer l'administrateur",
                 adminBody: 'Le compte propriétaire de cette installation.',
@@ -1276,6 +1287,8 @@ const fr: SourceCatalogue = {
                 signIn: 'Se connecter',
                 signInBody:
                     "La première connexion de l'administrateur du locataire, avec son propre mot de passe.",
+                systemSignInBody:
+                    "La première connexion de l'administrateur, avec le mot de passe que le parcours détient.",
             },
         },
 
@@ -1390,6 +1403,10 @@ const fr: SourceCatalogue = {
         signIn: {
             title: 'Première connexion',
             lead: "L'administrateur du locataire se connecte pour la première fois.",
+            systemLead:
+                "L'administrateur de l'installation se connecte, et l'installation est prête.",
+            administrator:
+                "Le compte qui se connecte est {principal}, l'administrateur que cette installation vient de recevoir.",
             username: "Nom d'utilisateur",
             password: 'Mot de passe',
             submit: 'Se connecter',

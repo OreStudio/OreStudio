@@ -1249,8 +1249,19 @@ export const en: SourceCatalogue = {
 
         welcome: {
             title: 'Welcome to ORE Studio',
-            lead: "Set up a new installation: the administrator that owns it, the first tenant, and the tenant administrator's first sign-in.",
+            lead: 'Set up a new installation: create the administrator that owns it, then choose what the installation is left with.',
             start: 'Get started',
+            choiceLabel: 'What the installation is left with',
+            choice: {
+                'first-tenant': {
+                    title: 'Create the first tenant',
+                    body: 'Name a tenant and its administrator. The installation ends with a tenant of its own.',
+                },
+                'system-only': {
+                    title: 'Keep the system tenant alone',
+                    body: 'Create no tenant. The installation ends with only the system tenant, which is useful for testing.',
+                },
+            },
             stage: {
                 admin: 'Create the administrator',
                 adminBody: 'The account that owns this installation.',
@@ -1259,6 +1270,8 @@ export const en: SourceCatalogue = {
                 signIn: 'Sign in',
                 signInBody:
                     "The tenant administrator's first sign-in, with a password of their own.",
+                systemSignInBody:
+                    "The administrator's first sign-in, with the password the journey holds.",
             },
         },
 
@@ -1372,6 +1385,9 @@ export const en: SourceCatalogue = {
         signIn: {
             title: 'First sign-in',
             lead: 'The tenant administrator signs in for the first time.',
+            systemLead: 'The installation administrator signs in, and the installation is ready.',
+            administrator:
+                'The account that signs in is {principal}, the administrator this installation was just given.',
             username: 'Username',
             password: 'Password',
             submit: 'Sign in',

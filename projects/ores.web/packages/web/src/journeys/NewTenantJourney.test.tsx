@@ -91,6 +91,7 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
     return {
         createAdministrator: vi.fn(async () => undefined),
         recheckBootstrap: vi.fn(async () => undefined),
+        completeSystemOnboarding: vi.fn(async () => undefined),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
         chooseParty: vi.fn(async () => undefined),
         switchParty: vi.fn(async () => undefined),

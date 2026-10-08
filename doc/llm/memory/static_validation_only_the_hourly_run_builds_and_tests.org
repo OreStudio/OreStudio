@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 76BE5596-DC13-430B-855F-73EAF9A33897
+:END:
+#+title: Validate statically; the hourly run owns the build and the tests
+#+description: The implementing agent inspects the code and runs the static checks, then raises and merges the PR. It does not build or run the test suites. A scheduled hourly validation builds latest main and tests everything merged since the last run, and owns the build lock.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :process:gate:local-checks:build:memory:feedback:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Implementation and verification are split by machine and by hour. The agent that writes a change validates it statically and merges it; it does not run compass build, the database recreate or ctest, and it does not wait for them. A separate hourly validation builds latest main and tests every change merged since the previous run, and reports whether the build is green. A failure it finds becomes its own task, not a reason to hold the merge.
+
+*Why:* A full build of this tree takes an hour and a half on one workstation and holds the build lock for all of it, so an agent that builds before every merge spends most of its time compiling and blocks everyone else while it does. Splitting the two lets implementation run at full speed and keeps the expensive verification on a fixed cadence that nobody has to remember, which is also the answer to the gate that nothing was running.
+
+*How to apply:* After implementing, inspect the code and run the static checks that need no build -- lint, org-links, drift, format, subject-conformance, codegen-tests, and the rest of the checks phase. Do not run compass build, compass db recreate, ctest, or compass check without --exclude-heavy. Then raise the PR and merge it. Leave the build and the suites to the hourly validation and triage what it reports as tasks.

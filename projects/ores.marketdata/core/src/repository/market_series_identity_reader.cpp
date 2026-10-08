@@ -18,8 +18,8 @@
  *
  */
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/list_filter.hpp"
+#include "ores.database/repository/stated_order.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
@@ -84,6 +84,7 @@ market_series_identity_reader::read(ores::database::context ctx,
     using namespace ores::marketdata::datum;
     using namespace ores::database::repository;
     using namespace sqlgen;
+    using namespace sqlgen::literals;
 
     const auto type = instrument_type_named(upper_text(identity.instrument_type));
     if (!type)
@@ -113,7 +114,6 @@ market_series_identity_reader::read(ores::database::context ctx,
      */
     std::vector<sqlgen::dynamic::Condition> conditions{
         equals("tenant_id", filter_value(ctx.tenant_id().to_string())),
-        equals("identity_kind", filter_value(std::string("series"))),
         equals("asset_class", filter_value(identity.asset)),
         equals("instrument_type", filter_value(identity.instrument_type)),
         equals("quote_type", filter_value(identity.quote_type)),
@@ -126,12 +126,19 @@ market_series_identity_reader::read(ores::database::context ctx,
     if (!identity.party_id.empty())
         conditions.push_back(equals("party_id", filter_value(identity.party_id)));
 
+    /*
+     * A condition built at run time reaches a read as its filter, not through
+     * the query's own where clause, so the query states the one condition that
+     * holds of every series identity and the rest travel beside it.
+     */
     const auto query = sqlgen::read<std::vector<market_series_identity_entity>> |
-                       where(all_of(std::move(conditions)).value());
+                       where("identity_kind"_c == std::string("series"));
     const auto identities =
-        execute_read_query<market_series_identity_entity, domain::market_series_identity>(
+        execute_ordered_read_query<market_series_identity_entity, domain::market_series_identity>(
             ctx,
             query,
+            make_order({}, false, {"series_id"}),
+            all_of(std::move(conditions)),
             [](const auto& entities) { return market_series_identity_mapper::map(entities); },
             reader_lg(),
             "Reading the series identity projection by typed identity");

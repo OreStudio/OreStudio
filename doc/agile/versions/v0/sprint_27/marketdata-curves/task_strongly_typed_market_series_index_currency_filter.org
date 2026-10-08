@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/strongly-typed-market-series-index-currency-filter
-#+pr:
+#+pr: 2853
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -406,7 +406,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2853][#2853]] | [marketdata] Resolve a composite object from its typed identity |
 
 * Review
 

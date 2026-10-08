@@ -5,15 +5,15 @@
 #+description: A term structure is drawn from points that rarely share an observation instant, so a plot can mix market horizons without saying so. Every point must carry its age and the view must show it.
 #+type: task
 #+level: s1
-#+filetags: :inbox:product_backlog:agile:
+#+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-term-structure-staleness
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Make a term structure's staleness visible whenever it is drawn, so a composite o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -46,9 +46,28 @@ Make a term structure's staleness visible whenever it is drawn, so a composite o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The read a term-structure view already uses is the one that gains the
+capability, so no second read returns the same points. Three steps.
+
+1. *The repository.* =market_observation_repository::read_as_of_records= is the
+   read: one =DISTINCT ON (oresmd_uri)= query plus the existing manual overlay,
+   returning each point beside the =valid_from= of the row it came from. The
+   private =read_manual_points= returns the same pair, so the manual row carries
+   its own record time into the overlay. =read_as_of= keeps its signature and
+   behaviour and becomes a projection of it, so the paging rule and the overlay
+   exist once. The pair is =repository::observation_record=, and the record time
+   is read by =as_of_recorded_at=, beside =as_of_observation= in =as_of_rows=.
+2. *The wire.* =get_curve_snapshot_response= gains =as_of=, a parallel
+   =recorded_at= aligned index-for-index with =observations=, and the derived
+   =oldest_age_seconds=, =spread_seconds= and =warning=. The change is additive:
+   no existing field moves. =operations.org= is edited and the protocol is
+   regenerated, never hand-edited.
+3. *The summary and the view.* =summarise_staleness= in
+   =curve_snapshot_staleness.hpp= computes the ages from the read's own instant,
+   so a client needs no clock of its own and the rule is unit-testable; the
+   handler fills the parallel array and calls it. The prototype draws a per-point
+   age band, the oldest age, the spread and the warning, and the evolution
+   journey states the threshold at half an hour of spread.
 
 * Measurements
 
@@ -62,9 +81,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Prototypes in the inventory | 46, all listed and published, no React tree | =python3 build/scripts/check_prototype_inventory.py= | b03dcb850b + working tree |
 
 * Notes
+
+- The threshold is half an hour of spread, stated in
+  [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]]
+  under =* The staleness threshold=. The number is in the journey, not in the
+  code: the read reports the crossing and the view decides what to draw.
+- The two ages answer different questions and both are derivable from the same
+  row. Market staleness, the read's instant minus the point's instant, is the age
+  of the market state and is what the spread measures. Record staleness, now
+  minus the point's =valid_from=, is how long ago the value arrived and is what
+  =recorded_at= carries. The capability added here reports the first and carries
+  the second, so a consumer never needs a second call for either.
+- =valid_from= is projected rather than added as a column: it is already stored
+  and selected by every as-of read, so the gap was one projection. The reasoning
+  is recorded in
+  [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], where a
+  reader who wonders why a transaction-time column reaches the wire will look.
+- The prototype's =stable= market is a curve read from one instant and its
+  =churn= market is one stitched across market horizons, so switching between
+  them shows the warning appearing at the threshold without editing the page.
 
 * Test Scenarios
 
@@ -75,7 +113,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:5DEA2E99-FDE1-452B-B1A9-C9077478508E][A drawn term structure shows how stale each point is]] | PENDING | The view under test does not exist yet; the read it will use is done. |
 
 * PRs
 
@@ -90,3 +128,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The read a term-structure view already uses now carries each point's record time
+and a derived staleness summary, from one query and one manual overlay, with no
+schema change.
+
+=read_as_of_records= is the read and =read_as_of= is its projection, so the
+paging rule and the manual overlay exist once and a value and its record time
+cannot come from two queries that disagree. The manual overlay carries the manual
+row's own =valid_from=, so a hand-keyed point is not reported as having arrived
+when the feed wrote the value it replaced.
+
+=curve_snapshot.get= states the instant it is relative to and returns the record
+times as a parallel array aligned index-for-index with =observations=, plus the
+oldest point's age, the spread between the oldest and the newest, and the warning
+that the spread crosses the threshold. The change is additive: no existing
+response field was renamed or removed. A snapshot whose points share one instant
+has a spread of zero however old that instant is, so age alone never warns; only
+mixing does.
+
+The prototype settles the encoding -- an age band per point, the oldest point's
+age, the spread, and a visible warning -- and the journey states the threshold at
+half an hour of spread.

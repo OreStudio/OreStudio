@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 5DEA2E99-FDE1-452B-B1A9-C9077478508E
+:END:
+#+title: Test Scenario: A drawn term structure shows how stale each point is
+#+description: A market data consumer reads a curve whose pillars were observed at different times, and the view shows each point's age, the oldest point's age and the spread, and warns when the curve is stitched across market horizons.
+#+type: test_scenario
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+target_dialog:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: prime_origin
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] in [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- NATS and PostgreSQL are up: =compass services status= reports every
+  service running.
+- The database schema matches this checkout. If =compass services status=
+  reports the database fingerprint out of step, stop: a test binary refuses
+  to start on a mismatch, and recreating the database is not this scenario's
+  business.
+- The tenant is provisioned and an operator account exists, per the
+  provisioning recipe the shell tests use.
+- There is no client screen for this read yet. The journey names the view
+  this read will feed and the view is not built, so the steps below check the
+  read itself, over =compass shell= and =compass sql=, which is what a view
+  will consume. Replace step 3 with the evolution screen when it exists.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:EAE01E59-19F7-4DF0-9944-EC22183FE03E][Show how stale each point of a term structure is]] |
+| Parent story  | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]]   |
+| Target screen | None yet — the read behind the evolution view, =marketdata.v1.curve_snapshot.get= |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Start the shell against the running environment: =compass shell=.
+- Log in with the provisioned tenant administrator account and its password,
+  and confirm the shell reports the login succeeded before continuing.
+
+*** Result
+
+** Import a curve whose pillars are staggered
+
+- Run =marketdata import --file external/ore/examples/Legacy/Example_56/Input/market.txt --source ore.reference=.
+- Confirm the import reports the series and observation counts it read and
+  no hard failure.
+- The import gives every observation the instant it was read at. To get a
+  stitched curve, backdate one pillar with
+  =compass sql -- -c "update ores_marketdata_market_observations_tbl set observation_datetime = observation_datetime - interval '3 days' where oresmd_uri = '<one pillar of the imported curve>' and valid_to = '9999-12-31 23:59:59'"=,
+  and confirm one row was updated.
+
+*** Result
+
+** Read the snapshot and check the ages
+
+- Ask the read for that series, over the shell command that sends
+  =marketdata.v1.curve_snapshot.get=, or over =compass shell= with the raw
+  subject.
+- Confirm the reply states =as_of=, the instant the read is relative to.
+- Confirm =recorded_at= has exactly as many entries as =observations=, so
+  each point has a record time and none is missing or extra.
+- Confirm =oldest_age_seconds= equals the read's instant minus the oldest
+  point's =observation_datetime=, and that the backdated pillar is the oldest
+  one.
+- Confirm =spread_seconds= equals the difference between the oldest and the
+  newest age, and that it is at least three days minus the range the import
+  covered.
+- Confirm =warning= is true: with one pillar three days behind the rest, the
+  curve is stitched and must not be drawn silently.
+
+*** Result
+
+** Read a snapshot whose points share one instant
+
+- Choose a series whose observations were all imported in one run and were
+  not backdated, and ask the same read for it.
+- Confirm =spread_seconds= is zero and =warning= is false, however old the
+  points are: the age of a curve is not the warning, the mixing is.
+
+*** Result
+
+** Confirm the old read is unchanged
+
+- Ask for the same snapshot through any caller that used =read_as_of= before
+  this change — the curve bootstrap and the republish path are the two in the
+  tree — and confirm the points come back exactly as they did, with no record
+  time added and no field removed.
+
+*** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

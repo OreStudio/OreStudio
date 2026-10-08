@@ -34,7 +34,7 @@ own ordinal within that leg.
 :schema:           public
 :product:          ores
 :component:        trading
-:profile:          trading-instrument
+:has_tenant_id:    true
 :END:
 
 * Natural keys
@@ -181,6 +181,7 @@ is immutable.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_swap_leg_rates_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

@@ -23,11 +23,11 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/repository/counterparty_scope_type_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/counterparty_scope_type.hpp"
 #include "ores.trading.api/domain/counterparty_scope_type_json_io.hpp" // IWYU pragma: keep.
@@ -41,13 +41,10 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/begin_transaction.hpp>
-#include <sqlgen/commit.hpp>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
 #include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/insert.hpp>
 #include <sqlgen/limit.hpp>
 #include <sqlgen/literals.hpp>
 #include <sqlgen/offset.hpp>
@@ -120,10 +117,8 @@ counterparty_scope_type_repository::replace_claim(context ctx,
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
-    // No version column to state, so a replace names no claim at all; the
-    // store replaces the row as it stands. A create over a live row is refused
-    // by the read in apply_claim.
-    return {ores::utility::domain::precondition_kind::any, std::nullopt};
+    return {ores::utility::domain::precondition_kind::must_match_version,
+            static_cast<std::uint32_t>(current.front().version)};
 }
 
 domain::counterparty_scope_type
@@ -132,13 +127,25 @@ counterparty_scope_type_repository::apply_claim(context ctx,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
-    // No version column to state, so the claim is honoured by the read alone.
-    if (claim.kind == precondition_kind::must_match_version)
-        throw std::invalid_argument(
-            "counterparty_scope_type_repository::write: this table keeps no version to match");
-    if (claim.kind == precondition_kind::must_not_exist && !read_latest(ctx, v.code).empty())
-        throw std::invalid_argument(
-            "counterparty_scope_type_repository::write: a current row already exists");
+    switch (claim.kind) {
+        case precondition_kind::must_not_exist:
+            // Zero states that no current row exists, which is the one meaning the
+            // store gives a zero version.
+            t.version = 0;
+            break;
+        case precondition_kind::must_match_version:
+            t.version = claim.version ? static_cast<int>(*claim.version) : 0;
+            break;
+        case precondition_kind::any: {
+            // A caller that claims nothing still has to say what it replaces, so
+            // the row is read and its version stated. A row that moved on between
+            // this read and the write is a conflict the trigger raises, never a
+            // silent overwrite.
+            const auto current = read_latest(ctx, v.code);
+            t.version = current.empty() ? 0 : current.front().version;
+            break;
+        }
+    }
     return t;
 }
 
@@ -161,10 +168,10 @@ void counterparty_scope_type_repository::write(context ctx,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty scope type. " << "code: " << v.code;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(ctx,
-                     sqlgen::insert(counterparty_scope_type_mapper::map(t)),
-                     lg(),
-                     "Writing counterparty scope type to database.");
+    execute_write_query(ctx,
+                        counterparty_scope_type_mapper::map(t),
+                        lg(),
+                        "Writing counterparty scope type to database.");
 }
 
 void counterparty_scope_type_repository::write(
@@ -176,16 +183,17 @@ void counterparty_scope_type_repository::write(
     batch.reserve(v.size());
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
-    execute_write_op(ctx,
-                     sqlgen::insert(counterparty_scope_type_mapper::map(batch)),
-                     lg(),
-                     "Writing counterparty scope types to database.");
+    execute_write_query(ctx,
+                        counterparty_scope_type_mapper::map(batch),
+                        lg(),
+                        "Writing counterparty scope types to database.");
 }
 
 std::vector<domain::counterparty_scope_type>
 counterparty_scope_type_repository::read_latest(context ctx) {
-    const auto query =
-        sqlgen::read<std::vector<counterparty_scope_type_entity>> | order_by("code"_c);
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<counterparty_scope_type_entity, domain::counterparty_scope_type>(
         ctx,
@@ -198,8 +206,9 @@ counterparty_scope_type_repository::read_latest(context ctx) {
 std::vector<domain::counterparty_scope_type>
 counterparty_scope_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty scope type. " << "code: " << code;
-    const auto query =
-        sqlgen::read<std::vector<counterparty_scope_type_entity>> | where("code"_c == code);
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<counterparty_scope_type_entity, domain::counterparty_scope_type>(
         ctx,
@@ -215,7 +224,8 @@ counterparty_scope_type_repository::read_all(context ctx, const std::string& cod
     BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty scope type versions. "
                                << "code: " << code;
     const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
-                       where("code"_c == code) | order_by("code"_c);
+                       where("code"_c == code) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<counterparty_scope_type_entity, domain::counterparty_scope_type>(
         ctx,
@@ -225,21 +235,51 @@ counterparty_scope_type_repository::read_all(context ctx, const std::string& cod
         "Reading all counterparty scope type versions by code.");
 }
 
+std::optional<domain::counterparty_scope_type> counterparty_scope_type_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty scope type at version. " << "code: " << code
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
+                       where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<counterparty_scope_type_entity, domain::counterparty_scope_type>(
+            ctx,
+            query,
+            [](const auto& entities) { return counterparty_scope_type_mapper::map(entities); },
+            lg(),
+            "Reading counterparty scope type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 counterparty_scope_type_repository::remove_status counterparty_scope_type_repository::remove(
     context ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty scope type. " << "code: " << code;
-    // The store keeps no version column, so a caller that stated a version
-    // asked a question this table cannot answer.
-    if (version)
-        return remove_status::unsupported;
     const auto current = read_latest(ctx, code);
     if (current.empty())
         return remove_status::missing;
+    // The protocol states the version as a uint32 and the row carries it as an
+    // int, so the comparison states the conversion rather than relying on one.
+    if (version && static_cast<std::uint32_t>(current.front().version) != *version)
+        return remove_status::conflicting;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    // The row is named by its version as well as by its key, so the removal
+    // cannot close a row that replaced the one the caller read between the
+    // read above and this statement.
+    const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto query =
-        sqlgen::delete_from<counterparty_scope_type_entity> | where("code"_c == code);
+        sqlgen::delete_from<counterparty_scope_type_entity> |
+        where("code"_c == code && "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing counterparty scope type from database.");
+    // The delete reports no affected-row count, so the row is read back: a row
+    // still open after the statement means the store refused the removal, and
+    // the caller hears "conflicting" rather than "removed".
+    if (!read_latest(ctx, code).empty())
+        return remove_status::conflicting;
     return remove_status::removed;
 }
 
@@ -252,7 +292,8 @@ std::vector<domain::counterparty_scope_type> counterparty_scope_type_repository:
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
-    const std::optional<messaging::counterparty_scope_types_filter>& filter) {
+    const std::optional<messaging::counterparty_scope_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty scope types with offset: " << offset
                                << " and limit: " << limit;
     const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
@@ -263,20 +304,26 @@ std::vector<domain::counterparty_scope_type> counterparty_scope_type_repository:
         ctx,
         query,
         list_order(order, {"code"}, false),
-        filter_condition(filter),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return counterparty_scope_type_mapper::map(entities); },
         lg(),
         "Reading latest counterparty scope types with pagination.");
 }
 
 std::uint32_t counterparty_scope_type_repository::get_total_counterparty_scope_type_count(
-    context ctx, const std::optional<messaging::counterparty_scope_types_filter>& filter) {
+    context ctx,
+    const std::optional<messaging::counterparty_scope_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty scope type count";
 
     const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>>;
 
     return execute_count_query<counterparty_scope_type_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting counterparty scope types");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting counterparty scope types");
 }
 
 std::vector<domain::counterparty_scope_type>
@@ -284,8 +331,9 @@ counterparty_scope_type_repository::read_latest(context ctx,
                                                 const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
-    const auto query =
-        sqlgen::read<std::vector<counterparty_scope_type_entity>> | where("code"_c.in(codes));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<counterparty_scope_type_entity>> |
+                       where("code"_c.in(codes) && "valid_to"_c == max.value());
     auto result =
         execute_read_query<counterparty_scope_type_entity, domain::counterparty_scope_type>(
             ctx,
@@ -306,8 +354,9 @@ void counterparty_scope_type_repository::remove(context ctx,
     // asymmetric pair.
     if (codes.empty())
         return;
-    const auto query =
-        sqlgen::delete_from<counterparty_scope_type_entity> | where("code"_c.in(codes));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<counterparty_scope_type_entity> |
+                       where("code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing counterparty scope types.");
 }
 

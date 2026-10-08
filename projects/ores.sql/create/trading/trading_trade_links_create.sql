@@ -48,7 +48,6 @@ create table if not exists "ores_trading_trade_links_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -67,11 +66,7 @@ create table if not exists "ores_trading_trade_links_tbl" (
     check ("from_trade_id" <> ores_utility_nil_uuid_fn()),
     check ("to_trade_id" <> ores_utility_nil_uuid_fn()),
     check ("link_type" <> ''),
-    check ("from_trade_id" <> "to_trade_id"),
-    constraint ores_trading_trade_links_from_trade_id_fk foreign key ("tenant_id", "from_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_links_to_trade_id_fk foreign key ("tenant_id", "to_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_links_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_links_anchor_party_pin foreign key ("tenant_id", "from_trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
+    check ("from_trade_id" <> "to_trade_id")
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -95,6 +90,28 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate from_trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.from_trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid from_trade_id: %. No active trade found with this id.', NEW.from_trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate to_trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.to_trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid to_trade_id: %. No active trade found with this id.', NEW.to_trade_id
+            using errcode = '23503';
+    end if;
+
     -- Validate link_type (soft FK to ores_trading_trade_link_types_tbl)
     if not exists (
         select 1 from ores_trading_trade_link_types_tbl
@@ -103,6 +120,17 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid link_type: %. No active trade link type found with this code.', NEW.link_type
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
     end if;
 

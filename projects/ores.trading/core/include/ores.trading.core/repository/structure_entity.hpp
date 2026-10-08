@@ -44,11 +44,18 @@ struct structure_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    int version = 0;
     std::string party_id;
     std::string counterparty_id;
     std::string kind;
     std::optional<std::string> template_code;
     std::optional<std::string> parent_structure_id;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const structure_entity& v);

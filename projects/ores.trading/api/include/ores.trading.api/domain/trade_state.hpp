@@ -71,11 +71,6 @@ struct trade_state final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The trade's party, copied from the anchor.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
      * @brief The state the trade occupies in the trade_status machine.
      *
      * The generated sample leaves it nil: the insert trigger sets it from the activity's

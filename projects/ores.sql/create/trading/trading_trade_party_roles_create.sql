@@ -41,8 +41,6 @@ create table if not exists "ores_trading_party_roles_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
-    "counterparty_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -59,10 +57,7 @@ create table if not exists "ores_trading_party_roles_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("role" <> ''),
-    check ("role" <> 'Counterparty'),
-    constraint ores_trading_party_roles_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_party_roles_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
-    constraint ores_trading_party_roles_anchor_party_pin foreign key ("tenant_id", "trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
+    check ("role" <> 'Counterparty')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -90,6 +85,28 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. No active trade found with this id.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
+            using errcode = '23503';
+    end if;
+
     -- Validate role (soft FK to ores_trading_party_role_types_tbl)
     if not exists (
         select 1 from ores_trading_party_role_types_tbl
@@ -98,17 +115,6 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid role: %. No active party role type found with this code.', NEW.role
-            using errcode = '23503';
-    end if;
-
-    -- Validate counterparty_id (soft FK to ores_refdata_counterparties_tbl)
-    if not exists (
-        select 1 from ores_refdata_counterparties_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.counterparty_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid counterparty_id: %. Counterparty must exist for tenant.', NEW.counterparty_id
             using errcode = '23503';
     end if;
 

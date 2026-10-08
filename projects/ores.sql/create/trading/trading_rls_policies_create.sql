@@ -103,7 +103,7 @@ create policy trade_bookings_party_isolation_policy
 on ores_trading_trade_bookings_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ create policy trade_states_party_isolation_policy
 on ores_trading_trade_states_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ create policy identifiers_party_isolation_policy
 on ores_trading_trade_identifiers_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ create policy party_roles_party_isolation_policy
 on ores_trading_party_roles_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -211,7 +211,7 @@ create policy trade_additional_fields_party_isolation_policy
 on ores_trading_trade_additional_fields_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -238,7 +238,7 @@ create policy trade_portfolios_party_isolation_policy
 on ores_trading_trade_portfolios_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, trade_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -268,7 +268,22 @@ create policy trade_links_party_isolation_policy
 on ores_trading_trade_links_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_trading_trade_party_fn(tenant_id, from_trade_id) = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- Structure Members
+-- -----------------------------------------------------------------------------
+-- The member holds no party of its own; it reaches the deal's through the
+-- structure it points at.
+drop policy if exists structure_members_party_isolation_policy
+    on ores_trading_structure_members_tbl;
+
+create policy structure_members_party_isolation_policy
+on ores_trading_structure_members_tbl
+as restrictive
+for select using (
+    ores_trading_structure_party_fn(tenant_id, structure_id) = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- =============================================================================

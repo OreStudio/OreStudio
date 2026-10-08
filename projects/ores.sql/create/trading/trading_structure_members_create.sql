@@ -45,8 +45,6 @@ create table if not exists "ores_trading_structure_members_tbl" (
     "structure_id" uuid not null,
     "role" text not null,
     "sequence_number" integer not null,
-    "party_id" uuid not null,
-    "counterparty_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -61,11 +59,7 @@ create table if not exists "ores_trading_structure_members_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("sequence_number" >= 1),
-    constraint ores_trading_structure_members_trade_id_fk foreign key ("tenant_id", "trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_structure_members_structure_id_fk foreign key ("tenant_id", "structure_id") references "ores_trading_structures_tbl" ("tenant_id", "id"),
-    constraint ores_trading_structure_members_structure_party_pin foreign key ("tenant_id", "structure_id", "party_id") references "ores_trading_structures_tbl" ("tenant_id", "id", "party_id"),
-    constraint ores_trading_structure_members_structure_counterparty_pin foreign key ("tenant_id", "structure_id", "counterparty_id") references "ores_trading_structures_tbl" ("tenant_id", "id", "counterparty_id")
+    check ("sequence_number" >= 1)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -88,6 +82,28 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate trade_id (soft FK to ores_trading_trades_tbl)
+    if not exists (
+        select 1 from ores_trading_trades_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_id: %. No active trade found with this id.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate structure_id (soft FK to ores_trading_structures_tbl)
+    if not exists (
+        select 1 from ores_trading_structures_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.structure_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid structure_id: %. No active structure found with this id.', NEW.structure_id
+            using errcode = '23503';
+    end if;
 
     -- A leg fills a role its template allows, and no more legs than the
     -- template states for that role. A package rests on no template, so it

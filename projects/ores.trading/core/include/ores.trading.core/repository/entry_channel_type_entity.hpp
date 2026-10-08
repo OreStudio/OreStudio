@@ -43,7 +43,14 @@ struct entry_channel_type_entity {
     constexpr static const char* tablename = "ores_trading_entry_channel_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    int version = 0;
     std::string description;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const entry_channel_type_entity& v);

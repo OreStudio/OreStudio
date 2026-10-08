@@ -36,7 +36,6 @@ export interface TradeAdditionalField {
     trade_id: string;
     sequence_number: number;
     trade_activity_id: string;
-    party_id: string;
     name: string;
     value: string;
     modified_by: string;

@@ -71,19 +71,6 @@ Ordinal of this field among the trade's additional fields, from one.
 1
 #+end_src
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The trade's party, copied from the anchor.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
 ** name
 :PROPERTIES:
 :type:             text
@@ -123,18 +110,12 @@ std::string("MyValue")
 |-----------------------|
 | "sequence_number" > 0 |
 
-** Pinned keys
-
-| name         | columns            | table                          | target_columns | error_message                                                |
-|--------------+--------------------+--------------------------------+----------------+--------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The field's party must be the trade's. |
-
 * Foreign keys
 
 ** trade_id
 :PROPERTIES:
 :table:    ores_trading_trades_tbl
-:enforce:  true
+:error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
 :END:
 
@@ -143,7 +124,7 @@ A database foreign key: the anchor is immutable.
 ** trade_activity_id
 :PROPERTIES:
 :table:    ores_trading_trade_activities_tbl
-:enforce:  true
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
 :nullable: false
 :END:
 

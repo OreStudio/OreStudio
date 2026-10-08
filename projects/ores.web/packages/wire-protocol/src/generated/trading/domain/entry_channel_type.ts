@@ -31,6 +31,12 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface EntryChannelType {
+    version: number;
     code: string;
     description: string;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }

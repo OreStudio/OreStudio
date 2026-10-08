@@ -44,7 +44,6 @@ struct structure_member_write {
     boost::uuids::uuid structure_id;
     std::string role;
     int sequence_number;
-    boost::uuids::uuid counterparty_id;
 };
 
 struct structure_member_change {

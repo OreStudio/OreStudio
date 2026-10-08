@@ -23,11 +23,28 @@
  * To modify, update the template and regenerate.
  */
 import type { BookingNatureType } from '../domain/booking_nature_type.js';
+import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
+import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
 
 export interface BookingNatureTypeKey {
     code: string;
+}
+
+export interface BookingNatureTypeWrite {
+    code: string;
+    description: string;
+}
+
+export interface BookingNatureTypeChange {
+    write: BookingNatureTypeWrite;
+    precondition: Precondition;
+}
+
+export interface BookingNatureTypeRemoval {
+    key: BookingNatureTypeKey;
+    precondition: Precondition;
 }
 
 export interface BookingNatureTypeLookup {
@@ -48,11 +65,23 @@ export interface BookingNatureTypeEvent {
     correlation_id: string | null;
 }
 
+export interface BookingNatureTypeVersionKey {
+    booking_nature_type: BookingNatureTypeKey;
+    version: number;
+}
+
+export interface BookingNatureTypeVersionsFilter {
+    version: number | null;
+    from_version: number | null;
+    to_version: number | null;
+}
+
 export interface ListBookingNatureTypesRequest {
     offset: number;
     limit: number;
     order: Order;
     filter: BookingNatureTypesFilter | null;
+    as_of: string | null;
 }
 
 export interface ListBookingNatureTypesResponse {
@@ -79,10 +108,77 @@ export interface GetManyBookingNatureTypesResponse {
     entries: BookingNatureTypeLookup[];
 }
 
+export interface PutBookingNatureTypeRequest {
+    change: BookingNatureTypeChange;
+    intent: ChangeIntent;
+}
+
+export interface PutBookingNatureTypeResponse {
+    result: Result;
+    booking_nature_type: BookingNatureType | null;
+}
+
+export interface PutManyBookingNatureTypesRequest {
+    changes: BookingNatureTypeChange[];
+    intent: ChangeIntent;
+}
+
+export interface PutManyBookingNatureTypesResponse {
+    result: Result;
+    booking_nature_types: BookingNatureType[];
+}
+
+export interface DeleteBookingNatureTypeRequest {
+    removal: BookingNatureTypeRemoval;
+    intent: ChangeIntent;
+}
+
+export interface DeleteBookingNatureTypeResponse {
+    result: Result;
+}
+
+export interface DeleteManyBookingNatureTypesRequest {
+    removals: BookingNatureTypeRemoval[];
+    intent: ChangeIntent;
+}
+
+export interface DeleteManyBookingNatureTypesResponse {
+    result: Result;
+}
+
+export interface ListBookingNatureTypeVersionsRequest {
+    key: BookingNatureTypeKey;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BookingNatureTypeVersionsFilter | null;
+}
+
+export interface ListBookingNatureTypeVersionsResponse {
+    result: Result;
+    versions: BookingNatureType[];
+    total: number;
+}
+
+export interface GetBookingNatureTypeVersionRequest {
+    key: BookingNatureTypeVersionKey;
+}
+
+export interface GetBookingNatureTypeVersionResponse {
+    result: Result;
+    version: BookingNatureType | null;
+}
+
 export const subjects = {
     list_booking_nature_types_request: 'trading.v1.booking_nature_types.list',
     get_booking_nature_type_request: 'trading.v1.booking_nature_types.get',
     get_many_booking_nature_types_request: 'trading.v1.booking_nature_types.get_many',
+    put_booking_nature_type_request: 'trading.v1.booking_nature_types.put',
+    put_many_booking_nature_types_request: 'trading.v1.booking_nature_types.put_many',
+    delete_booking_nature_type_request: 'trading.v1.booking_nature_types.delete',
+    delete_many_booking_nature_types_request: 'trading.v1.booking_nature_types.delete_many',
+    list_booking_nature_type_versions_request: 'trading.v1.booking_nature_types_versions.list',
+    get_booking_nature_type_version_request: 'trading.v1.booking_nature_types_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -93,6 +189,12 @@ export const requiresSession = {
     list_booking_nature_types_request: true,
     get_booking_nature_type_request: true,
     get_many_booking_nature_types_request: true,
+    put_booking_nature_type_request: true,
+    put_many_booking_nature_types_request: true,
+    delete_booking_nature_type_request: true,
+    delete_many_booking_nature_types_request: true,
+    list_booking_nature_type_versions_request: true,
+    get_booking_nature_type_version_request: true,
 } as const;
 
 /**

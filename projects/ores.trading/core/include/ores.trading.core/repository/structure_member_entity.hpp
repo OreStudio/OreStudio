@@ -48,8 +48,6 @@ struct structure_member_entity {
     std::string structure_id;
     std::string role;
     int sequence_number = 0;
-    std::string party_id;
-    std::string counterparty_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

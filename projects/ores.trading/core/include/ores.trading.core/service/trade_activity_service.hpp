@@ -81,6 +81,18 @@ public:
     get_trade_activity(const messaging::get_trade_activity_request& request);
     messaging::get_many_trade_activities_response
     get_many_trade_activities(const messaging::get_many_trade_activities_request& request);
+    messaging::put_trade_activity_response
+    put_trade_activity(const messaging::put_trade_activity_request& request);
+    messaging::put_many_trade_activities_response
+    put_many_trade_activities(const messaging::put_many_trade_activities_request& request);
+    messaging::delete_trade_activity_response
+    delete_trade_activity(const messaging::delete_trade_activity_request& request);
+    messaging::delete_many_trade_activities_response
+    delete_many_trade_activities(const messaging::delete_many_trade_activities_request& request);
+    messaging::list_trade_activity_versions_response
+    list_trade_activity_versions(const messaging::list_trade_activity_versions_request& request);
+    messaging::get_trade_activity_version_response
+    get_trade_activity_version(const messaging::get_trade_activity_version_request& request);
     /**@}*/
 
     /**
@@ -99,6 +111,16 @@ public:
      */
     std::uint32_t count_activities();
 
+
+    /**
+     * @brief Retrieves a single trade activity as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The trade activity at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::trade_activity> get_activity_at_version(const boost::uuids::uuid& id,
+                                                                  std::uint32_t version);
 
     /**
      * @brief Retrieves a single trade activity by its primary key.
@@ -143,10 +165,33 @@ public:
      */
     void delete_activities(const std::vector<std::string>& ids);
 
+    /**
+     * @brief Retrieves all historical versions of a trade activity.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::trade_activity> get_activity_history(const std::string& id);
 
 private:
     context ctx_;
     repository::trade_activity_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result prepare_change(const messaging::trade_activity_change& change,
+                                                 const ores::utility::domain::change_intent& intent,
+                                                 domain::trade_activity& out);
 };
 
 }

@@ -39,7 +39,6 @@ std::vector<ores::diff::domain::field_value> render_trade_link_fields(const doma
     fields.push_back({.name = "From Trade ID", .value = boost::uuids::to_string(v.from_trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

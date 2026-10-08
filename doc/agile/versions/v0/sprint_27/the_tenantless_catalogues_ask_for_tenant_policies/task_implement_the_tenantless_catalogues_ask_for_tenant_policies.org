@@ -26,11 +26,11 @@ Let the database schema load.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D5F977B-6E6F-4C5D-962E-5FA819323D1C][Hotfix: the tenantless catalogues ask for tenant policies]] |
-| Now          | The four flags are gone and the generator refuses both shapes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -117,3 +117,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2889. The four flags are gone, both rules are in the generator,
+and the schema phase of a database recreate now completes.

@@ -21,11 +21,11 @@ Let the database schema load.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The four flags are gone and the generator refuses both shapes. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Open the PR and merge it.              |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -37,8 +37,8 @@ Let the database schema load.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:80D374A8-B6DB-43E2-BF00-B7FE199C9AF3][Scaffold story: Hotfix: the tenantless catalogues ask for tenant policies]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:DB2079E3-D0DA-4817-B0BF-FE246B7170E2][Implement Hotfix: the tenantless catalogues ask for tenant policies]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the tenantless catalogues ask for tenant policies |
+| [[id:80D374A8-B6DB-43E2-BF00-B7FE199C9AF3][Scaffold story: Hotfix: the tenantless catalogues ask for tenant policies]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DB2079E3-D0DA-4817-B0BF-FE246B7170E2][Implement Hotfix: the tenantless catalogues ask for tenant policies]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the tenantless catalogues ask for tenant policies |
 
 * Decisions
 
@@ -57,3 +57,16 @@ Let the database schema load.
 - Why the flags and the columns could drift apart. A gate over the generated
   policies rather than the model would catch any missing column, not just the
   three a policy names; the two rules here are the ones with a proven failure.
+
+* Result
+
+Done. The generated create scripts name no column their table lacks, and the
+generator refuses both shapes at model-read time. A recreate now completes its
+schema phase.
+
+It does not complete its populate phase. `trading_entry_channel_types_populate.sql`
+still fails: `on conflict (code)` matches no unique constraint on a table whose
+key is `(code, valid_from, valid_to)`, and the insert trigger refuses a live row
+outright. The same mistake is in the other two catalogues. Whether they should
+keep the versioning a2dcf034fa gave them, or be plain immutable tables like
+inbox.delivery_outcome_type, is a design question and is not decided here.

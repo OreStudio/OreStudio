@@ -8,7 +8,7 @@
 #+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
 #+owner: marco
 #+branch: fix/commit-the-risk-report-config-output
-#+pr:
+#+pr: 2878
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2878][#2878]] | [codegen] Commit the risk report config generated output |
 
 * Review
 

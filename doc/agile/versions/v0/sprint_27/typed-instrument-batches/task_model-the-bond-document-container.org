@@ -29,11 +29,11 @@ then carry the bond family as a generated type.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
-| Now          | Code and models are written; the drift gate and the round-trip suite are being run. |
+| Now          | Complete. The container is generated, the gates pass, and the batch task can carry the bond family. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, run the gate, raise the PR.    |
+| Next         | Raise the PR and merge.                |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -82,9 +82,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Hand-written document structs replaced by models | 23 | evidence/check_bond_container.py --original-rev 3096504bcd | cc62a2637a |
+| Structs whose members, order and types match the originals | 23 of 23 | evidence/check_bond_container.py --original-rev 3096504bcd | cc62a2637a |
+| Compiler errors, compiler warnings | 0, 0 | cmake --build --preset linux-clang-debug-make -j 3 | cc62a2637a |
+| ores.ore.core.tests | 614 cases, 482159 assertions, all pass | ./ores.ore.core.tests | cc62a2637a |
+| ores.trading.api.tests | 88 cases, 395 assertions, all pass | ./ores.trading.api.tests | cc62a2637a |
+| Trading drift gate | no drift | check_component_drift.py --component trading-cpp | cc62a2637a |
+| Documentation checks | 42 of 42 components pass | validate_docs.sh | cc62a2637a |
+| Size of the change | 86 files, +5423/-499 | git diff --shortstat 3096504bcd cc62a2637a | cc62a2637a |
 
 * Notes
+
+- The generated headers carry the same structs as before, so nothing in the
+  bond mapper, the ORE importer or the exporter changed beyond the include of
+  =bond_document_ops.hpp= and the two =is_empty= call sites.
+- The C++ field-group template writes one =@brief= line per member, so a
+  member's long explanation belongs in the model body rather than in its field
+  description. The struct-level prose carries the fidelity notes.
+- The generated TypeScript interface for a group imports the types it names.
+  Before this change no group needed an import, because every existing group
+  declares scalars only.
+- The =bond_leg_data= field descriptions are new one-line texts: the
+  hand-written struct described its members in one block comment, and the
+  template needs a line per member.
+- =ores.trading.api.puml= is hand-maintained; the =is_empty= method was
+  removed from it. The PNG is rendered by the =generate_ores.trading.api_diagram=
+  target and was not re-rendered here.
 
 * Test Scenarios
 
@@ -110,3 +133,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The bond document container is generated from 23 =field_group= models. The
+generated structs are member-for-member identical to the hand-written ones,
+proved by =evidence/check_bond_container.py= against the revision the migration
+replaced. The build is clean, the ORE round trip is unchanged at 614 cases and
+482159 assertions, the trading drift gate is clean, and the scaffold defect
+that sent a new field group to the wrong output path is fixed.
+
+The parent story's batch task can now carry the bond family as a generated
+type, so every member of the export batch is generated.

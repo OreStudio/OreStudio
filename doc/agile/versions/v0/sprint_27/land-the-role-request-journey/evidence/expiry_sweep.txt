@@ -3,8 +3,8 @@ Run as: compass sql -- -f expiry_job_instances.sql
 
           job_name          | schedule_expression |  status   |      triggered_at      | error_message
 ----------------------------+---------------------+-----------+------------------------+---------------
- ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 00:55:00+01 |
- ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 00:50:00+01 |
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:15:00+01 |
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:10:00+01 |
 (2 rows)
 
 The schedule is the value of the system setting

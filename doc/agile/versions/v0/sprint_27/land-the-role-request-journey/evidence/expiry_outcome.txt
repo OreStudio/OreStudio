@@ -1,4 +1,4 @@
-What the sweep left behind, read from the store after the 00:55 firing.
+What the sweep left behind, read from the store after the 01:15 firing.
 
 The walk is read by the request id the ask printed, not by "the newest role
 request": the lifecycle suite raises requests of its own and sweeps them, and
@@ -8,34 +8,34 @@ compass sql -- -f expiry_walk_check.sql
 
                   id                  | version | state_code |          expires_at           | change_reason_code |                 change_commentary
 --------------------------------------+---------+------------+-------------------------------+--------------------+----------------------------------------------------
- 01a118c8-9cac-786d-9544-b6bca94b6ae0 |       3 | expired    | 2026-10-08 00:51:46.983726+01 | system.update      | Closed because nobody answered before its deadline
+ 01a118da-98a7-7c2a-a803-e00de8c00001 |       3 | expired    | 2026-10-08 01:11:27.253139+01 | system.update      | Closed because nobody answered before its deadline
 (1 row)
 
        kind_code        |             message_key             |          raised_at           |     arguments
 ------------------------+-------------------------------------+------------------------------+-------------------
- inbox.approval_expired | notification.inbox.approval_expired | 2026-10-08 00:55:00.19816+01 | kind=Role request
+ inbox.approval_expired | notification.inbox.approval_expired | 2026-10-08 01:15:00.163917+01 | kind=Role request
 (1 row)
 
           job_name          | schedule_expression |  status   |      triggered_at      | error_message
 ----------------------------+---------------------+-----------+------------------------+---------------
- ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 00:55:00+01 |
- ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 00:50:00+01 |
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:15:00+01 |
+ ores.inbox.approval_expiry | */5 * * * *         | succeeded | 2026-10-08 01:10:00+01 |
 (2 rows)
 
 Two things the walk establishes.
 
 The request closed on the scheduled path. Nobody decided it and nobody
-withdrew it: the scheduler fired the job at 00:55:00, the job published the
+withdrew it: the scheduler fired the job at 01:15:00, the job published the
 inbox operation, and the row now states what the decide path states --
 system.update, with the commentary that gives the same reason. The version went
 from 2 to 3, so the backdate and the close are both in its history.
 
-The person who asked was told. The notice was raised at 00:55:00.198, a fifth
-of a second after the fire, so the firing is what raised it and nothing else
-did; it names the kind as a person reads it ("Role request") and not the code
-the row holds, and it is addressed to the asker.
+The person who asked was told. The notice was raised at 01:15:00.164, about a
+sixth of a second after the fire, so the firing is what raised it and nothing
+else did; it names the kind as a person reads it ("Role request") and not the
+code the row holds, and it is addressed to the asker.
 
-The 00:50 firing ran before the request was backdated, so it closed nothing.
+The 01:10 firing ran before the request was backdated, so it closed nothing.
 That is why the check reads two firings and one outcome.
 
 The walk does not establish that a decider arriving after the sweep is

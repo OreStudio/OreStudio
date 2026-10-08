@@ -31,7 +31,7 @@ The row those two runs left behind:
 
           job_name          | version | schedule_expression | is_active |          valid_from           |           modified_by            |             performed_by
 ----------------------------+---------+---------------------+-----------+-------------------------------+----------------------------------+--------------------------------------
- ores.inbox.approval_expiry |       1 | */5 * * * *         | t         | 2026-10-08 00:47:24.195715+01 | ores_eager_maxwell_inbox_service | ores_eager_maxwell_scheduler_service
+ ores.inbox.approval_expiry |       1 | */5 * * * *         | t         | 2026-10-08 01:07:00.455944+01 | ores_eager_maxwell_inbox_service | ores_eager_maxwell_scheduler_service
 (1 row)
 
 One live row at version 1 is what idempotence looks like here: the restart
@@ -44,3 +44,9 @@ the row.
 The registration is the reason the job exists at all: nothing seeds it, so a
 build that did not write it would have no sweep, and the service would refuse
 to start rather than run without one.
+
+One restart during this walk did not reach the registration at all: it stalled
+part-way through registering its entity-change event mappings and never logged
+=Service ready.= A restart a minute later completed. That intermittent startup
+stall is not this component's, and it is recorded in
+is_a_steady_timer_spawned_from_on_started_the_right_design.org.

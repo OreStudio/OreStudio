@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :capture:architecture:scheduler:variability:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -54,6 +54,23 @@ events minutes later. Root cause not found. Whatever it turns out to be, work
 that only exists inside a timer shares a fate with a hook that can silently not
 fire.
 
+It happened again on 2026-10-08, and the second time it stalled earlier and
+therefore says more. The service was restarted, logged its version banner, its
+mTLS connect, its service login and the creation of its database context, then
+stopped part-way through registering the entity-change event mappings: the last
+line it wrote was =Subscribed to PostgreSQL channel:
+ores_inbox_notification_deliveries=, and it never reached =Service ready.=, its
+heartbeat, or the job it registers at start. It wrote nothing for the next
+minute and served nothing. A restart a minute later came up healthy and
+complete.
+
+So the failure is not peculiar to =on_started=, and it is not deterministic. A
+service can stall anywhere between taking its database context and finishing
+its startup, silently, and one restart in some number of them will do it. The
+argument above stands and is stronger than it was: what a component starts is
+worth a mechanism that can be observed, reported and retried, rather than a
+few runs of statements whose completion nothing checks.
+
 A job in the catalogue, by contrast, survives the service restarting, is
 visible in the job list, and can be rescheduled by an operator. What none of
 these shapes should be is compiled-in.
@@ -76,4 +93,6 @@ these shapes should be is compiled-in.
 - [[id:9C0A20E9-6C1F-4A3B-9A21-3E4D6F1B8C77][The metrics scrape fixes its schedule in a seed]] — the same
   argument for the MQ scrape.
 - [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the
-  flow that raised this, and the sweep that should take its timing from here.
+  flow that raised this, and the shape the sweep took instead: it registers a
+  job at start and takes its timing from the system setting
+  =inbox.approval_expiry.schedule=.

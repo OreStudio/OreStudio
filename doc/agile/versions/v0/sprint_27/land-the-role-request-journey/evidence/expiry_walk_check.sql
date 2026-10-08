@@ -9,7 +9,7 @@
 select r.id, r.version, r.state_code, r.expires_at,
        r.change_reason_code, r.change_commentary
 from ores_inbox_approval_requests_tbl r
-where r.id = :'request_id'::uuid
+where r.id = '01a118da-98a7-7c2a-a803-e00de8c00001'::uuid
   and r.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- What the person who asked was told, and the values its sentence names.
@@ -29,7 +29,7 @@ join ores_inbox_notification_recipients_tbl rec
   on rec.notification_id = n.id
  and rec.valid_to = ores_utility_infinity_timestamp_fn()
 where n.kind_code = 'inbox.approval_expired'
-  and n.link_id = :'request_id'
+  and n.link_id = '01a118da-98a7-7c2a-a803-e00de8c00001'
   and n.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- An expired request is not open, so the administrator's queue no longer

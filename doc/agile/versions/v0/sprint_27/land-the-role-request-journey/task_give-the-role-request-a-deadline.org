@@ -111,9 +111,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Lifecycle suite | 146 assertions in 26 cases, all passing | =compass build test_ores.inbox.core.tests= | =0f18d590a3= plus this branch |
-| Component drift | 0 files this branch touched would change; 253 elsewhere in the catalogue | =check_component_drift.py --sweep= | =0f18d590a3= plus this branch |
-| Scheduler firings of the expiry job | 2, both =succeeded=, both on a =*/5= boundary | =compass sql -- -f evidence/expiry_job_instances.sql= | =0f18d590a3= plus this branch |
+| Lifecycle suite | 146 assertions in 26 cases, all passing | =compass build test_ores.inbox.core.tests= | =647e7c6a56= |
+| Component drift | 0 files this branch touched would change; 253 elsewhere in the catalogue | =check_component_drift.py --sweep= | =647e7c6a56= |
+| Scheduler firings of the expiry job | 2, both =succeeded=, both on a =*/5= boundary | =compass sql -- -f evidence/expiry_job_instances.sql= | =647e7c6a56= |
 
 * Notes
 

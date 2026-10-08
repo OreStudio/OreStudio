@@ -129,8 +129,11 @@ function Request({
     return (
         <div className="space-y-6">
             <nav className="flex items-center gap-2 text-sm text-ink-muted">
-                <Link to="/requests" className="hover:text-ink">
-                    {t('inbox.queue.title')}
+                {/* Back to where this reader works. A member has no queue and
+                    an empty one would send them nowhere, so their own request
+                    goes back to the screen that lists their own requests. */}
+                <Link to={self ? '/access' : '/requests'} className="hover:text-ink">
+                    {self ? t('shell.menu.access') : t('inbox.queue.title')}
                 </Link>
                 {/* The whole story of this request, which is the same request
                     read across every table it wrote rather than one at a time. */}

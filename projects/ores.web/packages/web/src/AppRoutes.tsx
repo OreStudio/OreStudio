@@ -658,7 +658,7 @@ export function AppRoutes({
                     gate.version,
                     session,
                     shell,
-                    () => <RequestStoryPage />,
+                    (view) => <RequestStoryPage me={view.username} />,
                     'workspace',
                 )}
             />

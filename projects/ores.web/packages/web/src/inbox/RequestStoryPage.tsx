@@ -46,7 +46,7 @@ import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
  * where the answer was given, and the screen says so rather than letting the
  * request look as if it went straight from waiting to answered.
  */
-export function RequestStoryPage(): ReactNode {
+export function RequestStoryPage({ me }: { readonly me: string }): ReactNode {
     const { t, language } = useTranslation();
     const { id = '' } = useParams();
     const story = useQuery({
@@ -75,12 +75,16 @@ export function RequestStoryPage(): ReactNode {
     // between a story with a hole in it and a story that lies.
     const answered = request.stateCode !== 'waiting' && request.stateCode !== 'held';
     const showsAnswer = events.some((event) => event.kind === 'decided');
+    const mine = request.requestedBy === me;
 
     return (
         <div className="space-y-6">
             <nav className="flex items-center gap-2 text-sm text-ink-muted">
-                <Link to="/requests" className="hover:text-ink">
-                    {t('inbox.queue.title')}
+                {/* Back to where this reader works. A member has no queue and
+                    an empty one would send them nowhere, so their own request
+                    goes back to the screen that lists their own requests. */}
+                <Link to={mine ? '/access' : '/requests'} className="hover:text-ink">
+                    {mine ? t('shell.menu.access') : t('inbox.queue.title')}
                 </Link>
                 <span aria-hidden>/</span>
                 <Link to={`/requests/${encodeURIComponent(id)}`} className="hover:text-ink">

@@ -95,7 +95,7 @@ repository and the service, and the protocol and NATS-handler entries
 that reach them.
 
 All three properties sit in the entity's *root* =* Flags= drawer, beside
-=:has_tenant_id:= and =:has_workspace_id:=. =:has_parent_id:= is a
+=:has_tenant_id:=. =:has_parent_id:= is a
 structural feature, not one of this section's =ores.sql.schema= knobs;
 its bundle is [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]].
 

@@ -53,9 +53,6 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{#domain_entity.has_image_id}}
     "image_id" uuid,
 {{/domain_entity.has_image_id}}
-{{#domain_entity.has_workspace_id}}
-    "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
-{{/domain_entity.has_workspace_id}}
 {{#domain_entity.has_audit_columns}}
     "modified_by" text not null,
     "performed_by" text not null,
@@ -227,12 +224,6 @@ where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
   and {{{where_extra}}}{{/where_extra}}{{/current_only}}{{^current_only}}{{#where_extra}}
 where {{{where_extra}}}{{/where_extra}}{{/current_only}};
 {{/domain_entity.indexes}}
-{{#domain_entity.has_workspace_id}}
-
-create index if not exists {{domain_entity.index_name_prefix}}_workspace_idx
-on "{{domain_entity.sql_name_base}}_tbl" (workspace_id)
-{{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
-{{/domain_entity.has_workspace_id}}
 
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.generate_touch_function}}
@@ -396,11 +387,6 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
 {{/domain_entity.validates_tenant_on_insert}}
-{{#domain_entity.has_workspace_id}}
-    -- Validate workspace_id
-    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
-
-{{/domain_entity.has_workspace_id}}
 {{#domain_entity.sql.nullable_tenant_id}}
     -- Validate tenant_id only when set (system records have NULL tenant_id)
     if NEW.tenant_id is not null then

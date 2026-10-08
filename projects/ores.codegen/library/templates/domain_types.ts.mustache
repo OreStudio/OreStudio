@@ -43,9 +43,6 @@ export interface {{entity_pascal}} {
     tenant_id: string;
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    workspace_id: string;
-{{/has_workspace_id}}
 {{#primary_key.columns}}
     {{column}}: {{ts_type}};
 {{/primary_key.columns}}

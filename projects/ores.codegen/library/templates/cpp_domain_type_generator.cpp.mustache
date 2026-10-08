@@ -60,9 +60,6 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
         .value_or(utility::uuid::tenant_id::system());
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.{{{scaffold_prefix}}}workspace_id = utility::uuid::live_workspace_id();
-{{/has_workspace_id}}
 {{#primary_key.is_text}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{#primary_key.generator_expr}}

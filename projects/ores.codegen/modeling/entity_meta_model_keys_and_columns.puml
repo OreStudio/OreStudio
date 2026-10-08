@@ -51,7 +51,7 @@ class Column <<segment>> {
 }
 
 note right of KeysAndColumns
-  has_tenant_id and has_workspace_id
+  has_tenant_id and has_parent_id
   are not drawn here -- they are
   non-structural features, not fields
   of the entity itself. See this page's

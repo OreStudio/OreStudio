@@ -44,7 +44,6 @@ def test_load_profile_assignments_reads_real_catalogue_file():
     # simple-lookup is a real, checked-in profile; this is not a fixture.
     assignments = dict(_load_profile_assignments("simple_lookup"))
     assert assignments["has_tenant_id"] is True
-    assert assignments["has_workspace_id"] is False
 
 
 def test_unknown_profile_raises():
@@ -60,7 +59,6 @@ def test_profile_supplies_root_level_defaults():
         ":profile: simple-lookup\n"
     )
     assert de["has_tenant_id"] is True
-    assert de["has_workspace_id"] is False
 
 
 def test_profile_supplies_presentation_namespace_defaults():
@@ -76,9 +74,9 @@ def test_profile_supplies_presentation_namespace_defaults():
 def test_explicit_value_overrides_profile_default():
     de = _model_with_flags(
         ":schema: public\n:product: ores\n:component: refdata\n"
-        ":profile: simple-lookup\n:has_workspace_id: true\n"
+        ":profile: simple-lookup\n:has_tenant_id: false\n"
     )
-    assert de["has_workspace_id"] is True
+    assert de["has_tenant_id"] is False
 
 
 def test_no_profile_leaves_model_unaffected():
@@ -207,10 +205,10 @@ def test_multiple_profiles_compose_orthogonal_traits():
 def test_conflicting_profiles_raise():
     import pytest
 
-    # simple-lookup fixes has_workspace_id=false; workspace-scoped-lookup
-    # fixes it true -- a genuine disagreement between two real profiles.
+    # simple-lookup fixes has_tenant_id=true; table-less-record fixes it
+    # false -- a genuine disagreement between two real profiles.
     text = _file_header(
-        "simple-lookup, workspace-scoped-lookup",
+        "simple-lookup, table-less-record",
         ":schema: public\n:product: ores\n:component: dq\n",
     )
     with pytest.raises(ValueError, match="conflicting profiles"):

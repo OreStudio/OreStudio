@@ -13,7 +13,7 @@
 #+created: 2026-09-26
 #+updated: 2026-09-26
 
-Two operations act on settings without being entity verbs, so they live in the
+Four operations act on settings without being entity verbs, so they live in the
 component's reserved =ops= namespace rather than in the resource grammar
 [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] § "Domain operations" defines for
 entities.
@@ -30,6 +30,16 @@ and the two are different parties here. The tenant is still derived from the
 validated token, so the operation can only ever affect a party inside the
 caller's own tenant.
 
+=complete_system_onboarding= records that the system provisioner wizard
+finished for the caller's own tenant. That tenant is the one the validated
+token states, so the operation carries no field of its own: unlike a party,
+which is not the caller's own, the subject of the write is already known. It
+is an operation rather than an ordinary setting write because it marks a
+platform milestone -- a first-run installation holding only the system tenant
+has no other deployed fact that says the wizard finished -- and it must
+succeed whether or not the activating account holds the permission an ordinary
+setting write needs.
+
 =get_setting= reads one setting by the name it is known by. The entity's own
 read is addressed by identifier, which no caller outside this component holds,
 and a setting is always spoken of by name. It is the read a component makes of
@@ -44,11 +54,11 @@ matter which.
 
 * Physical space
 
-The shell commands are switched off. Two of these messages change platform
+The shell commands are switched off. Three of these messages change platform
 state rather than read or write a row: one clears bootstrap mode once the first
-administrator exists, and the other completes a party's onboarding. The shell
-renders the =system_setting= entity's unit, and nothing in the shell sends
-these three.
+administrator exists, one completes a party's onboarding, and one records that
+the system provisioner wizard finished. The shell renders the
+=system_setting= entity's unit, and nothing in the shell sends these four.
 
 * Includes
 
@@ -74,6 +84,23 @@ these three.
 
 Outcome of the operation, in the same shape every entity operation answers
 with, so a caller reads one result convention across the component.
+
+** complete_system_onboarding_request
+:PROPERTIES:
+:subject: variability.v1.ops.complete_system_onboarding
+:response: complete_system_onboarding_response
+:END:
+
+The caller's tenant is the subject of the write, and the validated token
+already states it, so the request carries no field. A party being onboarded
+belongs to somebody else and is named; the tenant a caller works in is not.
+
+** complete_system_onboarding_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
 
 ** complete_party_onboarding_request
 :PROPERTIES:

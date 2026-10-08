@@ -101,6 +101,23 @@ alter default privileges in schema public
 grant execute on function ores_assets_get_template_image_fn(text)
     to :test_dml_user, :test_ddl_user;
 
+-- The variability service reads a tenant's settings through a SECURITY DEFINER
+-- function, because its service context holds no direct SELECT grant on the
+-- settings table. The test users stand in for that service, so the function is
+-- granted to them too; the production roles do not get it, because it takes a
+-- tenant as a parameter and reads across the tenant boundary.
+grant execute on function ores_variability_get_system_settings_fn(uuid, uuid)
+    to :test_dml_user, :test_ddl_user;
+
+-- The settings trigger resolves a tenant-wide write to the tenant's system
+-- party through this function, and a trigger runs with the writing role's
+-- privileges, so the role that writes a tenant-wide setting needs EXECUTE on
+-- it. A service writes settings its tenant already holds, so the function stays
+-- off the production service roles; the test users, which create the row as
+-- well as update it, are granted it here.
+grant execute on function ores_variability_resolve_system_party_fn(uuid)
+    to :test_dml_user, :test_ddl_user;
+
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql
 

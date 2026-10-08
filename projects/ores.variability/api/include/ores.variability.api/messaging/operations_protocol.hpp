@@ -46,6 +46,23 @@ struct clear_bootstrap_mode_response {
     ores::utility::domain::result result;
 };
 
+struct complete_system_onboarding_request {
+    using response_type = struct complete_system_onboarding_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.ops.complete_system_onboarding";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct complete_system_onboarding_response {
+    ores::utility::domain::result result;
+};
+
 struct complete_party_onboarding_request {
     using response_type = struct complete_party_onboarding_response;
     static constexpr std::string_view nats_subject = "variability.v1.ops.complete_party_onboarding";

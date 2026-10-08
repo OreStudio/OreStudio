@@ -142,6 +142,13 @@ public:
     [[nodiscard]] bool is_onboarding_party_complete() const;
 
     /**
+     * @brief Whether the system provisioner wizard has completed for this
+     * tenant (=onboarding.system=, tenant-wide, under the tenant's system
+     * party). Construct this instance with the tenant's own id and no party.
+     */
+    [[nodiscard]] bool is_onboarding_system_complete() const;
+
+    /**
      * @brief Marks the tenant provisioner wizard complete
      * (=onboarding.tenant=, tenant-wide).
      */
@@ -158,6 +165,15 @@ public:
                                        std::string_view modified_by,
                                        std::string_view change_reason_code,
                                        std::string_view change_commentary);
+
+    /**
+     * @brief Marks the system provisioner wizard complete
+     * (=onboarding.system=, tenant-wide, under the tenant's system party).
+     */
+    void set_onboarding_system_complete(bool complete,
+                                        std::string_view modified_by,
+                                        std::string_view change_reason_code,
+                                        std::string_view change_commentary);
 
 private:
     /**

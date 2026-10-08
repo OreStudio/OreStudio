@@ -30,6 +30,12 @@ export interface ClearBootstrapModeResponse {
     result: Result;
 }
 
+export interface CompleteSystemOnboardingRequest {}
+
+export interface CompleteSystemOnboardingResponse {
+    result: Result;
+}
+
 export interface CompletePartyOnboardingRequest {
     /*
      * The party being onboarded, which is not the caller's own party.
@@ -70,6 +76,7 @@ export interface GetSettingResponse {
 
 export const subjects = {
     clear_bootstrap_mode_request: 'variability.v1.ops.clear_bootstrap_mode',
+    complete_system_onboarding_request: 'variability.v1.ops.complete_system_onboarding',
     complete_party_onboarding_request: 'variability.v1.ops.complete_party_onboarding',
     get_setting_request: 'variability.v1.ops.get_setting',
 } as const;
@@ -80,6 +87,7 @@ export const subjects = {
  */
 export const requiresSession = {
     clear_bootstrap_mode_request: true,
+    complete_system_onboarding_request: true,
     complete_party_onboarding_request: true,
     get_setting_request: true,
 } as const;

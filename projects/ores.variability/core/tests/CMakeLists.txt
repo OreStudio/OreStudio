@@ -33,6 +33,7 @@ target_link_libraries(${tests_target_name}
         ores.telemetry.core.lib
         ores.utility.lib
         ores.logging.lib
+        ores.service.lib
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.refdata.core.lib

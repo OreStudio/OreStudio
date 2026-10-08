@@ -123,7 +123,7 @@ gate is a migration that grows back.
 | [[id:203EF2C1-57A8-4919-A9EC-0E56ADD0F4F3][Record what a subject rename strands]] | DONE | | 2026-10-07 | A rename leaves durable consumers stored under the old filter, and they fail closed on the next start. Record the lesson so the next migration looks for them. |
 | [[id:DA3321DC-463E-4F6F-8C82-663C5EA7787E][Document JetStream in the NATS hub]] | DONE | | 2026-10-07 | The cluster documents a message and a subject but not the streams that hold them. Add the page: what JetStream adds, why we use it, the streams and durable consumers, and what a rename strands. |
 | [[id:5DCA75C1-D7A5-425E-A2E4-CBE070DC71CB][Heal a durable consumer after a subject rename]] | DONE | 2026-10-07 | 2026-10-08 | js_queue_subscribe reconciles the stored consumer filter when the caller names the stream, so a renamed subject no longer strands the durable and its service. |
-| [[id:7B127A0F-220A-45A0-9959-616CF35091EF][State the event wildcard once]] | STARTED | 2026-10-08 | | The eventing traits offer event_subject(action) for one action but no wildcard sibling, so the codegen template appends ">\"" itself and 265 generated integration tests carry the literal. |
+| [[id:7B127A0F-220A-45A0-9959-616CF35091EF][State the event wildcard once]] | DONE | 2026-10-08 | 2026-10-08 | The eventing traits offer event_subject(action) for one action but no wildcard sibling, so the codegen template appends ">\"" itself and 265 generated integration tests carry the literal. |
 
 * Decisions
 

@@ -26,11 +26,11 @@ Give the eventing traits the wildcard helper its own docstring promises, and let
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Helper added, template changed, 263 tests regenerated. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the suite and open the PR.         |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

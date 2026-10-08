@@ -8,7 +8,7 @@
 #+filetags: :trade-process-runs:sprint_27:v0:
 #+owner: marco
 #+branch: feature/trade-process-runs
-#+pr:
+#+pr: 2793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2793][#2793]] | [agile] Give the process run its own story |
 
 * Review
 

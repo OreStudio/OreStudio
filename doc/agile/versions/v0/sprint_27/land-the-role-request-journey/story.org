@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:journeys:access:sprint_27:v0:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -27,8 +27,12 @@ four-eyes guard, the grant, the two notifications and both screens. Four of the
 journey's seven gaps closed there, and a fifth was answered by the change of
 design.
 
-What remains is what no screen can yet say: which roles a member may ask for,
-and what becomes of a request that nobody answers.
+What remained was what no screen could yet say: which roles a member may ask
+for, and what becomes of a request that nobody answers. Both are built. A role
+now says whether it may be asked for, and a request carries a deadline, closes
+as expired when it passes, and tells the person who asked. The journey document
+has been rewritten around the design all of this landed, and it marks every one
+of its seven gaps.
 
 This story was split from
 [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in
@@ -42,10 +46,10 @@ request moved here.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The journey is delivered except for two gaps. |
-| Waiting on    | Nothing.                               |
-| Next          | Say which roles may be asked for, then give the role request a deadline. |
-| Last touched  | 2026-10-07                               |
+| Now           | All four tasks are done; two pull requests are in review. |
+| Waiting on    | PR #2784 and PR #2785 to merge.        |
+| Next          | Merge the two pull requests, then close the story. |
+| Last touched  | 2026-10-08                               |
 
 * Acceptance
 

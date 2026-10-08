@@ -130,6 +130,17 @@ ctx.generate_uuid()
 :no_audit_columns: true
 :END:
 
+** Indexes
+
+The two unique keys are what a member pins its copied party and counterparty
+to: a database pin can only name a key, and the primary key =(tenant_id, id)=
+carries neither column.
+
+| name            | columns                        | unique | current_only | where_extra |
+|-----------------+--------------------------------+--------+--------------+-------------|
+| id_party        | tenant_id, id, party_id        | true   | false        |             |
+| id_counterparty | tenant_id, id, counterparty_id | true   | false        |             |
+
 ** Extra drops
 
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D

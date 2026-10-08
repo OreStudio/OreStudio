@@ -71,6 +71,7 @@ set(files
     "settlement_type_commands_tests.cpp"
     "structure_commands_tests.cpp"
     "structure_kind_commands_tests.cpp"
+    "structure_member_commands_tests.cpp"
     "structure_template_commands_tests.cpp"
     "structure_template_role_commands_tests.cpp"
     "swap_leg_commands_tests.cpp"

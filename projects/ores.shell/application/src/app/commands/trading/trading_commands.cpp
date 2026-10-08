@@ -74,6 +74,7 @@
 #include "ores.shell/app/commands/trading/settlement_type_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_kind_commands.hpp"
+#include "ores.shell/app/commands/trading/structure_member_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_template_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_template_role_commands.hpp"
 #include "ores.shell/app/commands/trading/swap_leg_commands.hpp"
@@ -146,6 +147,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     settlement_type_commands::register_commands(root_menu, session);
     structure_commands::register_commands(root_menu, session);
     structure_kind_commands::register_commands(root_menu, session);
+    structure_member_commands::register_commands(root_menu, session);
     structure_template_commands::register_commands(root_menu, session);
     structure_template_role_commands::register_commands(root_menu, session);
     swap_leg_commands::register_commands(root_menu, session);

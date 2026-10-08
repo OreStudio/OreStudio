@@ -8,7 +8,7 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-role-request-a-deadline
-#+pr:
+#+pr: 2784
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2784][#2784]] | [inbox] Close a lapsed approval request from a scheduled job |
 
 * Review
 

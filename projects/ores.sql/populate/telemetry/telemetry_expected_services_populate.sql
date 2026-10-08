@@ -54,16 +54,6 @@ on conflict (service_name) do update set
 
 insert into ores_telemetry_expected_services_tbl
     (service_name, replicas, display_name, description, service_account)
-values ('ores.workspace.service', 1, 'Workspace Service', 'Serves each person''s workspaces and the layout preferences saved with them.',
-        :'workspace_service_user')
-on conflict (service_name) do update set
-    replicas = excluded.replicas,
-    display_name = excluded.display_name,
-    description = excluded.description,
-    service_account = excluded.service_account;
-
-insert into ores_telemetry_expected_services_tbl
-    (service_name, replicas, display_name, description, service_account)
 values ('ores.dq.service', 1, 'Data Quality Service', 'Serves data quality: datasets and their bundles, code domains, badges and severities, and publishes datasets into tenants.',
         :'dq_service_user')
 on conflict (service_name) do update set

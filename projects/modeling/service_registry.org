@@ -96,25 +96,6 @@
 # it named here.
 - ores_assets_get_template_image_
 
-* ores.workspace.service
-:PROPERTIES:
-:psql_var:    workspace_service
-:env_key:     WORKSPACE_SERVICE
-:iam_role:    WorkspaceService
-:description: Workspace
-:display_name: Workspace Service
-:summary:     Serves each person's workspaces and the layout preferences saved with them.
-:email:       workspace_service@system.ores
-:replicas:    1
-:enabled:     true
-:depends_on:  ores.iam.service
-:END:
-
-** DML prefixes
-
-- ores_workspaces_
-- ores_workspace_
-
 * ores.dq.service
 :PROPERTIES:
 :psql_var:    dq_service

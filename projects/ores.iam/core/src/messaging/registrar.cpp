@@ -602,7 +602,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Generic history.v1.get subject. The registrar resolves each
     // request into a scoped context exactly like every other subject
     // (make_request_context), so a provider sees the same
-    // tenant/party/roles/workspace visibility any other handler in
+    // tenant/party/roles visibility any other handler in
     // this file would. Providers are keyed by entity_type, which is a
     // domain type's entity_type_of(), so one subject serves every
     // entity in this component.

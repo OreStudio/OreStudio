@@ -92,18 +92,6 @@ from dataclasses import dataclass
 # with its reason on the task:
 # doc/agile/versions/v0/sprint_26/clean-variability/task_clean_variability.org.
 #
-# workspace-cpp joins at the end of its clean-standard pass. Its one entity and
-# its one operation model regenerate byte for byte, every protocol header has
-# its TypeScript twin, and the database recreates from scratch with the
-# generated table: the same seventeen columns, the same seven index names and
-# the same three checks the hand-written schema carried. The entity's verbs
-# also have their generated shell command unit and its test, in the shell
-# composite's workspace adapter part, and the literate recipe that goes with
-# them. What stays hand-written is recorded with its reason on the task -- the
-# resolution-order and workspace-validation functions, the trade-scope
-# whitelist, the RLS layer, and the two operation handlers:
-# doc/agile/versions/v0/sprint_26/clean-workspace/task_clean_workspace.org.
-#
 # marketdata left the list on 2026-10-04. Its joining record passed items it
 # did not pass, and a re-measurement at ec37b05f77 found eleven that fail: W02,
 # P01, P02, G02, G04, H01, H03, S01, S02, V04 and V08. The owner chose to take
@@ -284,4 +272,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp")

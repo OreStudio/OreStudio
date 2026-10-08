@@ -194,7 +194,6 @@ namespace ores #F2F2F2 {
                 +tablename : constexpr static const char*
                 +id : sqlgen::PrimaryKey<string>
                 +tenant_id : string
-                +workspace_id : string
                 +version : int
                 +party_id : string
                 +source_name : string

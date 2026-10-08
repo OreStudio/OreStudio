@@ -886,10 +886,6 @@ tangled into the runnable script library
 
 - [[id:E62F4BEE-B2DA-5D94-91E8-6296964418E3][How do I run the series_classification_rules commands from the shell?]]
 
-* Workspaces
-
-- [[id:6B3B2660-726F-5EAC-961A-B845325D21D6][How do I run the workspaces commands from the shell?]]
-
 * Activity Categories
 
 - [[id:1CEF23DD-6FD5-59E9-B27B-0458F17BA001][How do I run the activity_categories commands from the shell?]]

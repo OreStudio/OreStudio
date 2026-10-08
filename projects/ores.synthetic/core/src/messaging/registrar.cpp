@@ -137,7 +137,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Generic history.v1.get subject. The registrar resolves each
     // request into a scoped context exactly like every other subject,
-    // so a provider sees the same tenant/party/roles/workspace
+    // so a provider sees the same tenant/party/roles
     // visibility any other handler in this file would.
     // ----------------------------------------------------------------
     {

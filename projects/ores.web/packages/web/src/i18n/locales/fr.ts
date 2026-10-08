@@ -210,7 +210,6 @@ const fr: SourceCatalogue = {
             marketdata: 'Données de marché',
             synthetic: 'Données synthétiques',
             assets: 'Ressources',
-            workspace: 'Espaces de travail',
             workflow: 'Flux de travail',
             variability: 'Indicateurs de fonctionnalité',
             telemetry: 'Télémétrie',

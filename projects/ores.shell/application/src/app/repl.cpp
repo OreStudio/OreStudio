@@ -80,7 +80,6 @@
 #include "ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
-#include "ores.shell/app/commands/workspace/workspace_commands.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -155,7 +154,6 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workflow_step_commands::register_commands(*root, session_);
     workflow_operations_commands::register_commands(*root, session_);
     workflow_run_commands::register_commands(*root, session_);
-    workspace_commands::register_commands(*root, session_);
     approval_kind_commands::register_commands(*root, session_);
     approval_request_state_commands::register_commands(*root, session_);
     approval_decision_type_commands::register_commands(*root, session_);

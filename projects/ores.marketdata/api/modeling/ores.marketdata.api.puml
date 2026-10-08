@@ -294,7 +294,6 @@ namespace ores #F2F2F2 {
             class feed_binding <<struct>> {
                 +version : int
                 +tenant_id : utility::uuid::tenant_id
-                +workspace_id : boost::uuids::uuid
                 +id : boost::uuids::uuid
                 +party_id : boost::uuids::uuid
                 +source_name : string
@@ -1578,7 +1577,7 @@ note as OresMarketdataDomainHelpers
     synthetic_tick_wildcard() : string
     market_tick_wildcard() : string
     synthetic_tick_subject(source_name) : string
-    market_tick_subject(tenant_id, workspace_id, party_id, ore_key) : string
+    market_tick_subject(tenant_id, party_id, ore_key) : string
     asset_class_for_authority maps an oresmd authority to the refdata
     asset class the catalogue declares; an authority that maps to
     none, such as a pairwise correlation or the generic wrapper,

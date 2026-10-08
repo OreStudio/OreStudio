@@ -23,7 +23,6 @@ from pathlib import Path
 _SERVICES = [
     "ores.iam.service",
     "ores.refdata.service",
-    "ores.workspace.service",
     "ores.dq.service",
     "ores.variability.service",
     "ores.assets.service",

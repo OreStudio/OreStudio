@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that every prototype is in the inventory, and that no prototype is React.
+"""Check that every prototype is grouped, listed, reviewed and published.
 
 Why this exists
 ---------------
@@ -12,16 +12,28 @@ not open without running the app, could not deploy with the documentation, it
 drifted with the product, and the two inventories disagreed.
 
 On 2026-10-06 the project kept one way: plain HTML, CSS and JavaScript under
-doc/prototypes/<name>/, listed in doc/prototypes/index.org and published by
-the site build. This gate keeps the second way from growing back.
+doc/prototypes/<name>/, listed in doc/prototypes/index.org.
+
+That left one flat list of every prototype, so nothing could be found. On
+2026-10-08 the prototypes were grouped by the journey topic they answer to:
+one top page naming the groups, one page per group listing its prototypes, and
+one folder per group holding them. A Gemini review, where one exists, sits at
+doc/prototypes/<group>/<name>/review/, beside the prototype it reviews.
+
+This gate keeps the second way from growing back, and keeps the group pages
+the only inventory a reader can trust.
 
 How it checks
 -------------
 
-- Every doc/prototypes/<name>/index.html has a row in doc/prototypes/index.org.
-- Every row in the inventory names a real prototype directory.
-- Every prototype directory is published by an ores-deploy-web-app call in
-  projects/ores.lisp/src/ores-build-site.el.
+- Every doc/prototypes/<group>/<name>/index.html has a row on
+  doc/prototypes/<group>/index.org.
+- Every row on a group page names a real prototype directory.
+- Every group that holds a prototype has a group page.
+- Every group page is linked from doc/prototypes/index.org.
+- Every review directory holds an index.html and is named on its group page.
+- The site build discovers the prototypes rather than naming them, so a new
+  prototype needs no change there.
 - The React prototype tree and its route table are gone.
 
 Usage
@@ -37,42 +49,82 @@ import pathlib
 import re
 import sys
 
-# A row opens its prototype with [[file:<name>/][...]].
-INVENTORY_RE = re.compile(r"\[\[file:([^/\]]+)/")
+# A group page opens a prototype with [[file:<name>/][...]], and a review with
+# [[file:<name>/review/][...]].
+PROTOTYPE_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/")
+REVIEW_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/review/")
 
-# The site build publishes each prototype with one call naming its directory.
-DEPLOY_RE = re.compile(r"\./doc/prototypes/([a-z0-9-]+)")
+# The top page opens a group page with [[file:<group>/][...]].
+GROUP_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9_]*)/")
 
-# The React prototype tree is retired; its presence is the drift this gate exists
-# to catch.
+# The site build deploys every prototype it finds under the group folders.
+DISCOVERY_CALL = "ores-deploy-prototypes"
+
+# The React prototype tree is retired; its presence is the drift this gate
+# exists to catch.
 REACT_PROTOTYPE_DIRS = (
     "projects/ores.web/packages/web/src/prototype",
     "projects/ores.web/packages/web/src/pages/prototype",
 )
 
 
-def prototype_dirs(root: pathlib.Path) -> set[str]:
-    """Every directory under doc/prototypes/ that holds an index.html."""
+def prototypes(root: pathlib.Path) -> set[tuple[str, str]]:
+    """Every (group, name) with a doc/prototypes/<group>/<name>/index.html."""
     base = root / "doc" / "prototypes"
     if not base.is_dir():
         return set()
-    return {path.parent.name for path in base.glob("*/index.html")}
+    return {(path.parent.parent.name, path.parent.name)
+            for path in base.glob("*/*/index.html")}
 
 
-def listed(root: pathlib.Path) -> set[str]:
-    """Every prototype name the inventory links."""
-    index = root / "doc" / "prototypes" / "index.org"
-    if not index.is_file():
+def reviews(root: pathlib.Path) -> set[tuple[str, str]]:
+    """Every (group, name) holding a review directory."""
+    base = root / "doc" / "prototypes"
+    if not base.is_dir():
         return set()
-    return set(INVENTORY_RE.findall(index.read_text(encoding="utf-8")))
+    return {(path.parent.parent.name, path.parent.name)
+            for path in base.glob("*/*/review")}
 
 
-def published(root: pathlib.Path) -> set[str]:
-    """Every prototype name the site build publishes."""
+def group_pages(root: pathlib.Path) -> set[str]:
+    """Every group that has a page."""
+    base = root / "doc" / "prototypes"
+    if not base.is_dir():
+        return set()
+    return {path.parent.name for path in base.glob("*/index.org")}
+
+
+def _read(path: pathlib.Path) -> str:
+    return path.read_text(encoding="utf-8") if path.is_file() else ""
+
+
+def listed_on_group_pages(root: pathlib.Path) -> set[tuple[str, str]]:
+    """Every (group, prototype) a group page links."""
+    found: set[tuple[str, str]] = set()
+    for group in group_pages(root):
+        page = root / "doc" / "prototypes" / group / "index.org"
+        found |= {(group, name) for name in PROTOTYPE_RE.findall(_read(page))}
+    return found
+
+
+def reviews_on_group_pages(root: pathlib.Path) -> set[tuple[str, str]]:
+    """Every (group, prototype) whose group page names a review."""
+    found: set[tuple[str, str]] = set()
+    for group in group_pages(root):
+        page = root / "doc" / "prototypes" / group / "index.org"
+        found |= {(group, name) for name in REVIEW_RE.findall(_read(page))}
+    return found
+
+
+def linked_groups(root: pathlib.Path) -> set[str]:
+    """Every group the top page links."""
+    return set(GROUP_RE.findall(_read(root / "doc" / "prototypes" / "index.org")))
+
+
+def site_build_discovers(root: pathlib.Path) -> bool:
+    """Whether the site build deploys the prototypes it finds."""
     site = root / "projects" / "ores.lisp" / "src" / "ores-build-site.el"
-    if not site.is_file():
-        return set()
-    return set(DEPLOY_RE.findall(site.read_text(encoding="utf-8")))
+    return DISCOVERY_CALL in _read(site)
 
 
 def main() -> int:
@@ -81,28 +133,62 @@ def main() -> int:
     args = parser.parse_args()
     root = pathlib.Path(args.root).resolve()
 
-    present = prototype_dirs(root)
-    inventory = listed(root)
-    deployed = published(root)
+    present = prototypes(root)
+    pages = group_pages(root)
+    listed = listed_on_group_pages(root)
+    reviewed = reviews(root)
+    named = reviews_on_group_pages(root)
+    groups_linked = linked_groups(root)
     problems: list[str] = []
 
-    for name in sorted(present - inventory):
+    for group, name in sorted(present - listed):
         problems.append(
-            f"doc/prototypes/{name}/index.html is not in doc/prototypes/index.org"
+            f"doc/prototypes/{group}/{name}/index.html is not listed on "
+            f"doc/prototypes/{group}/index.org"
         )
-    for name in sorted(inventory - present):
+    for group, name in sorted(listed - present):
         problems.append(
-            f"doc/prototypes/index.org lists {name}, but "
-            f"doc/prototypes/{name}/index.html does not exist"
+            f"doc/prototypes/{group}/index.org lists {name}, but "
+            f"doc/prototypes/{group}/{name}/index.html does not exist"
         )
-    for name in sorted(present - deployed):
+    for group in sorted({g for g, _ in present} - pages):
         problems.append(
-            f"doc/prototypes/{name}/ is not published: add an ores-deploy-web-app "
-            "call in projects/ores.lisp/src/ores-build-site.el"
+            f"doc/prototypes/{group}/ holds prototypes but has no index.org: "
+            "the group needs a page"
         )
-    for name in sorted(deployed - present):
+    for group in sorted(pages - groups_linked):
         problems.append(
-            f"ores-build-site.el publishes doc/prototypes/{name}/, which does not exist"
+            f"doc/prototypes/{group}/index.org is not linked from "
+            "doc/prototypes/index.org: the top page must name every group"
+        )
+    for group in sorted(groups_linked - pages):
+        problems.append(
+            f"doc/prototypes/index.org links the group {group}, but "
+            f"doc/prototypes/{group}/index.org does not exist"
+        )
+    for group, name in sorted(reviewed):
+        review_index = (root / "doc" / "prototypes" / group / name
+                        / "review" / "index.html")
+        if not review_index.is_file():
+            problems.append(
+                f"doc/prototypes/{group}/{name}/review/ has no index.html: a "
+                "review lists its screens on one page"
+            )
+    for group, name in sorted(reviewed - named):
+        problems.append(
+            f"doc/prototypes/{group}/{name}/review/ is not named on "
+            f"doc/prototypes/{group}/index.org: the group page must say which "
+            "prototypes carry a review"
+        )
+    for group, name in sorted(named - reviewed):
+        problems.append(
+            f"doc/prototypes/{group}/index.org names a review for {name}, but "
+            f"doc/prototypes/{group}/{name}/review/ does not exist"
+        )
+    if not site_build_discovers(root):
+        problems.append(
+            f"the site build does not call {DISCOVERY_CALL}: the prototypes "
+            "must be deployed where they sit, with no list to keep in step"
         )
     for relative in REACT_PROTOTYPE_DIRS:
         if (root / relative).exists():
@@ -117,7 +203,8 @@ def main() -> int:
         return 1
 
     print(
-        f"Prototype inventory: {len(present)} prototype(s), all listed and published; "
+        f"Prototype inventory: {len(present)} prototype(s) in {len(pages)} "
+        f"group(s), all listed and published; {len(reviewed)} Gemini review(s); "
         "no React prototype tree."
     )
     return 0

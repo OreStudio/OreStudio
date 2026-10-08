@@ -28,9 +28,9 @@ The projection exists and every write fills it, but series that predate it carry
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] |
-| Now          | Not yet started.                       |
+| Now          | The views, the backfill and the check are written. Nothing is built. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Open the pull request.                 |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -43,9 +43,28 @@ The projection exists and every write fills it, but series that predate it carry
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two halves, and the check holds both to the codec schema.
+
+The views are one file of plain SQL, one view per asset class, written from
+=schema.hpp= once and guarded afterwards. A view exposes the context columns every
+view needs, then exactly the identity fields that class's instrument types fill,
+and it filters on its own instrument type list rather than on the asset class,
+because the instrument index is what the planner can use. Every view is
+=security_invoker=, so the tenant policy on the table decides what the reading
+session sees rather than the view owner.
+
+The backfill is an operation on the series subject, because the rows it repairs
+are ones the write path never saw: a database restored from a dump, or a series
+written before the projection existed. It reads the projected series, inverts
+that set, and projects only the rest, so a second call finds nothing and says so.
+The projector returns how many series carried a URI neither codec reads, and the
+backfill reports it, so an identity the database cannot state is visible rather
+than quietly written as an empty row.
+
+=check_marketdata_identity_columns.py= grows the view half: every class with a
+series must have a view, a view must not carry a field its class does not give,
+and a view must name every instrument type of its class. It also keeps the two
+earlier assertions, the table's columns and the projector's field placement.
 
 * Measurements
 
@@ -59,7 +78,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Asset-class views | 10 | =python3 build/scripts/check_marketdata_identity_columns.py= | 50e9ce5ced |
+| Identity fields across those views | 45 | same | 50e9ce5ced |
+| Classes the schema gives a series | 10 (generic gives none) | same | 50e9ce5ced |
+| Local checks passing, heavy excluded | 30 of 34 | =python3 build/scripts/local_checks.py --exclude-heavy= | 50e9ce5ced |
+| Components drifting under =component-drift --all= | 1 (=ores.trading=, not this change) | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all= | 50e9ce5ced |
 
 * Notes
 

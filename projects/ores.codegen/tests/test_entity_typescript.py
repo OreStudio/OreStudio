@@ -417,9 +417,13 @@ def test_an_entity_declares_messages_beside_its_derived_set():
     assert [m["name"] for m in declared] == [
         "get_party_composite_as_of_request",
         "get_party_composite_as_of_response",
+        "put_party_composite_request",
+        "put_party_composite_response",
     ]
     assert declared[0]["subject"] == "refdata.v1.ops.get_party_composite_as_of"
     assert declared[0]["response_type"] == "get_party_composite_as_of_response"
+    assert declared[2]["subject"] == "refdata.v1.ops.put_party_composite"
+    assert declared[2]["response_type"] == "put_party_composite_response"
     assert [(f["name"], f.get("ts_type")) for f in declared[1]["fields"]] == [
         ("success", "boolean"),
         ("message", "string"),
@@ -430,8 +434,8 @@ def test_an_entity_declares_messages_beside_its_derived_set():
 
     names = [m["name"] for m in entity_protocol_messages(entity)]
     assert names[-2:] == [
-        "get_party_composite_as_of_request",
-        "get_party_composite_as_of_response",
+        "put_party_composite_request",
+        "put_party_composite_response",
     ]
 
 

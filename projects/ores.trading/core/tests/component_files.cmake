@@ -83,6 +83,7 @@ set(files
     "swap_leg_eventing_integration_tests.cpp"
     "trade_booking_eventing_integration_tests.cpp"
     "trade_id_type_eventing_integration_tests.cpp"
+    "trade_link_type_eventing_integration_tests.cpp"
     "trade_state_eventing_integration_tests.cpp"
     "trade_type_eventing_integration_tests.cpp"
 )

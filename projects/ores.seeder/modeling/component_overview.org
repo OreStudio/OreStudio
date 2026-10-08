@@ -110,6 +110,9 @@ ready when a use case appears.
 
 * See also
 
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — when a
+  table's rows belong in a seeder dataset at all, and which of the other
+  delivery mechanisms takes the tables this component does not.
 - [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] — sibling concern (runtime, not file
   output).
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the renderer that =ores.seeder= delegates to.

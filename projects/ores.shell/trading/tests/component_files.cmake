@@ -74,6 +74,8 @@ set(files
     "trade_booking_commands_tests.cpp"
     "trade_id_type_commands_tests.cpp"
     "trade_identifier_commands_tests.cpp"
+    "trade_link_commands_tests.cpp"
+    "trade_link_type_commands_tests.cpp"
     "trade_party_role_commands_tests.cpp"
     "trade_state_commands_tests.cpp"
     "trade_type_commands_tests.cpp"

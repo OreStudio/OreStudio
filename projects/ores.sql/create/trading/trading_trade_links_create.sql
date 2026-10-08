@@ -67,9 +67,11 @@ create table if not exists "ores_trading_trade_links_tbl" (
     check ("from_trade_id" <> ores_utility_nil_uuid_fn()),
     check ("to_trade_id" <> ores_utility_nil_uuid_fn()),
     check ("link_type" <> ''),
+    check ("from_trade_id" <> "to_trade_id"),
     constraint ores_trading_trade_links_from_trade_id_fk foreign key ("tenant_id", "from_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
     constraint ores_trading_trade_links_to_trade_id_fk foreign key ("tenant_id", "to_trade_id") references "ores_trading_trades_tbl" ("tenant_id", "id"),
-    constraint ores_trading_trade_links_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
+    constraint ores_trading_trade_links_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id"),
+    constraint ores_trading_trade_links_anchor_party_pin foreign key ("tenant_id", "from_trade_id", "party_id") references "ores_trading_trades_tbl" ("tenant_id", "id", "party_id")
 );
 
 -- Version uniqueness for optimistic concurrency

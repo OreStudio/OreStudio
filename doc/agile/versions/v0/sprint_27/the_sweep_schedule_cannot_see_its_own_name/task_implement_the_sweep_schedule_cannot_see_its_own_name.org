@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: B00091EE-B105-4C11-B645-1E5076E8387E
+:END:
+#+title: Task: Implement Hotfix: the sweep schedule cannot see its own name
+#+description: Initial task for: Hotfix: the sweep schedule cannot see its own name
+#+type: task
+#+level: s1
+#+filetags: :the_sweep_schedule_cannot_see_its_own_name:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-sweep-schedule-cannot-see-its-own-name
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:405C065F-29FB-46C0-BDD5-C6D1890C3639][Hotfix: the sweep schedule cannot see its own name]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let ores.inbox.service compile again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:405C065F-29FB-46C0-BDD5-C6D1890C3639][Hotfix: the sweep schedule cannot see its own name]] |
+| Now          | The lookup's predicate names a local holding the job name. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The job lookup captures what its predicate reads.
+
+* Plan
+
+=try_register_once()= recognises the job it registered last time by comparing
+each definition's name to =described_.job_name=. The predicate is a lambda with
+an empty capture list, so =described_= is out of reach: clang refuses the
+implicit capture of =this= and then refuses the =find_if= whose predicate
+concept is unsatisfied. Both errors are the one cause.
+
+Hold the name in a local and capture that. The alternative, =[this]=, captures
+the whole object for a predicate that reads one string, and the job name is what
+the comment above the lookup already says the match is by.
+
+Nothing else in the file is affected: this is its only lambda, and every other
+use of =described_= and =svc_nats_= is in a member function body.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Errors clang reported for the translation unit | 2, one cause | the build log | 62d99c07c9 |
+| Lambdas in the file | 1, and it was the failing one | =grep -n "\\[.*\\]("= | 62d99c07c9 |
+
+* Notes
+
+The file came in with the reminder work, =0640cb0f2f=, which was merged without
+a build like everything else in this run. It is the first thing to compile the
+service side of that feature, so the lambda had never been seen by a compiler.
+
+The rest of that commit's hand-written C++ was read while this was fixed:
+=approval_windows.cpp=, =application.cpp=, =registrar.cpp=,
+=approval_lifecycle.cpp= and their headers. Their lambdas all capture what they
+read -- =[&subs]= for the subscription list, =[h]= for the handler,
+=[&]= for the erase predicate, =[answered_window, reminder_window]= and
+=[&nats]= for the registrar callback -- and the two names the heartbeat lambda
+uses are file-scope constants, so none of them needs =this=.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

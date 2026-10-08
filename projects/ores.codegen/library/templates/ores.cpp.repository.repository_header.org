@@ -50,6 +50,7 @@ The full template source. Edit here and re-tangle with
 {{/has_parent_id}}
 
 namespace ores::{{component}}::repository {
+<<paste:E4B7A1C3-9D25-4F68-B0A7-3C6E8D1F5A92>>
 
 /**
  * @brief Reads and writes {{entity_plural_words}} to data storage.

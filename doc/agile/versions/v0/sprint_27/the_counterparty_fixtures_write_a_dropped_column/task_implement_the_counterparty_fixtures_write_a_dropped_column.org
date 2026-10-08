@@ -8,7 +8,7 @@
 #+filetags: :the_counterparty_fixtures_write_a_dropped_column:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-counterparty-fixtures-write-a-dropped-column
-#+pr:
+#+pr: 2886
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2886][#2886]] | [refdata] Stop writing the counterparty's dropped business centre |
 
 * Review
 

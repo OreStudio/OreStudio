@@ -48,9 +48,9 @@ it.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | The market data and the fixings are implemented: the gather step stores both ORE bodies, and the packaging step places each at the path the run document names. |
-| Waiting on   | Nothing.                               |
-| Next         | Re-run and read where the engine now stops. The portfolio is the input it will want next, and no exporter for it exists. |
+| Now          | The market data and the fixings are implemented: the gather step stores both ORE bodies, and the packaging step places each at the path the run document names. PR 2857 does the same for the portfolio, which completes all three of the run's own data files. |
+| Waiting on   | The hourly validation build, then a run, to confirm the engine reads all three and stops no later than the analytics that need the compute packages. |
+| Next         | Re-run and read where the engine now stops. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

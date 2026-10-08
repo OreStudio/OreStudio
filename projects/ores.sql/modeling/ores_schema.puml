@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T16:07:10.064858Z
+' Generated: 2026-10-08T16:22:07.965885Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -12869,6 +12869,76 @@ package "compute" #EDE7F6 {
 ' ==================== workflow (Workflow Orchestration (Saga)) ====================
 '
 package "workflow" #FFF8E1 {
+    entity ores_workflow_plan_dependencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * consumer_step_index : integer
+        * producer_step_index : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_dependencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Dependency Table
+    One edge of a run's chain. The producer names the step that writes a result and
+    the consumer the step that reads it, both by their position in the same run's
+    chain.
+    This is a relation and not a list on the step, because a step may read any
+    number of producers and a producer may feed any number of consumers. It is
+    what makes the chain a graph the engine can read: the questions "what is
+    waiting", "what may run now" and "what has to be rolled back, in what order"
+    are all queries over these rows and the steps' states, where they used to be a
+    parse of a document and a cursor.
+    end note
+
+    entity ores_workflow_plan_steps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * step_index : integer
+        * name : text
+        * label : text
+        * description : text
+        * command_subject : text
+        * compensation_subject : text
+        * timeout_seconds : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Step Table
+    One step of the chain a run was started with. workflow_step records a step
+    that ran and what came back; this records a step that *will* run, from the
+    moment the run starts, so the engine can answer what the chain is before it has
+    dispatched anything.
+    The chain is built per instance by the definition's build_steps, which is a
+    function of the start request and not of the definition alone — tenant
+    provisioning orders one step per kind its request names. A run therefore
+    carries its own chain rather than pointing at one, because the definition that
+    produced it may not produce the same chain twice and must never reshape a run
+    that is already in flight.
+    end note
+
     entity ores_workflow_workflow_instances_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -12883,9 +12953,7 @@ package "workflow" #FFF8E1 {
           error : text
           correlation_id : text <<FK>>
         * created_by : text
-        * current_step_index : integer
         * step_count : integer
-        * materialised_steps_json : text
           completed_at : timestamptz
           last_event_at : timestamptz
         * modified_by : text

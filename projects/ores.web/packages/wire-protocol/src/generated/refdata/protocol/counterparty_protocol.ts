@@ -25,6 +25,11 @@
 import type { Counterparty } from '../domain/counterparty.js';
 import type { CounterpartyContactInformation } from '../domain/counterparty_contact_information.js';
 import type { CounterpartyIdentifier } from '../domain/counterparty_identifier.js';
+import type { Csa } from '../domain/csa.js';
+import type { CsaEligibleCurrency } from '../domain/csa_eligible_currency.js';
+import type { NettingAgreement } from '../domain/netting_agreement.js';
+import type { NettingSet } from '../domain/netting_set.js';
+import type { NettingSetIdentifier } from '../domain/netting_set_identifier.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
@@ -196,6 +201,28 @@ export interface GetCounterpartyCompositeAsOfResponse {
     contacts: CounterpartyContactInformation[];
 }
 
+/**
+ * @brief Writes a counterparty and the children a confirmed review staged, in
+ * one transaction. The eight writes the confirm lists are one act: a refusal
+ * or a failure leaves none of them behind.
+ */
+export interface PutCounterpartyCompositeRequest {
+    intent: ChangeIntent;
+    counterparty: Counterparty;
+    identifiers: CounterpartyIdentifier[];
+    contacts: CounterpartyContactInformation[];
+    agreements: NettingAgreement[];
+    netting_sets: NettingSet[];
+    netting_set_identifiers: NettingSetIdentifier[];
+    csas: Csa[];
+    eligible_currencies: CsaEligibleCurrency[];
+}
+
+export interface PutCounterpartyCompositeResponse {
+    result: Result;
+    counterparty: Counterparty;
+}
+
 export const subjects = {
     list_counterparties_request: 'refdata.v1.counterparties.list',
     get_counterparty_request: 'refdata.v1.counterparties.get',
@@ -207,6 +234,7 @@ export const subjects = {
     list_counterparty_versions_request: 'refdata.v1.counterparties_versions.list',
     get_counterparty_version_request: 'refdata.v1.counterparties_versions.get',
     get_counterparty_composite_as_of_request: 'refdata.v1.ops.get_counterparty_composite_as_of',
+    put_counterparty_composite_request: 'refdata.v1.ops.put_counterparty_composite',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -224,6 +252,7 @@ export const requiresSession = {
     list_counterparty_versions_request: true,
     get_counterparty_version_request: true,
     get_counterparty_composite_as_of_request: true,
+    put_counterparty_composite_request: true,
 } as const;
 
 /**

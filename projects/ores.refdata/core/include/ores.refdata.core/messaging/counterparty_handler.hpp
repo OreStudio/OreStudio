@@ -26,6 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_COUNTERPARTY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -33,6 +34,11 @@
 #include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
 #include "ores.refdata.core/service/counterparty_identifier_service.hpp"
 #include "ores.refdata.core/service/counterparty_service.hpp"
+#include "ores.refdata.core/service/csa_eligible_currency_service.hpp"
+#include "ores.refdata.core/service/csa_service.hpp"
+#include "ores.refdata.core/service/netting_agreement_service.hpp"
+#include "ores.refdata.core/service/netting_set_identifier_service.hpp"
+#include "ores.refdata.core/service/netting_set_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -546,6 +552,117 @@ public:
             reply(nats_,
                   msg,
                   get_counterparty_composite_as_of_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void put_composite(ores::nats::message msg) {
+        BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::counterparties:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_counterparty_composite_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(counterparty_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            // One transaction over every row the confirm staged. The unit of
+            // work rolls back when it is destroyed uncommitted, so a refusal
+            // anywhere leaves none of the eight writes behind. Each service is
+            // built on the unit of work's context, which is what makes its
+            // repository calls join the transaction rather than open their own.
+            ores::database::repository::unit_of_work uow(req_ctx);
+            const auto& uctx = uow.ctx();
+            const auto reason =
+                req->intent.reason_code.empty() ?
+                    std::string(ores::service::messaging::change_reasons::new_record) :
+                    req->intent.reason_code;
+            // The reason is the caller's, and the commentary with it; the audit
+            // stamps stay the services' to fill.
+            const auto apply_intent = [&](auto& row) {
+                if (row.change_reason_code.empty())
+                    row.change_reason_code = reason;
+                row.change_commentary = req->intent.commentary;
+            };
+
+            auto counterparty = req->counterparty;
+            apply_intent(counterparty);
+            service::counterparty_service counterparties(uctx);
+            counterparties.save_counterparty(counterparty);
+
+            auto identifiers = req->identifiers;
+            for (auto& row : identifiers)
+                apply_intent(row);
+            service::counterparty_identifier_service identifier_service(uctx);
+            identifier_service.save_counterparty_identifiers(identifiers);
+
+            auto contacts = req->contacts;
+            for (auto& row : contacts)
+                apply_intent(row);
+            service::counterparty_contact_information_service contact_service(uctx);
+            contact_service.save_counterparty_contact_informations(contacts);
+
+            auto agreements = req->agreements;
+            for (auto& row : agreements)
+                apply_intent(row);
+            service::netting_agreement_service agreement_service(uctx);
+            agreement_service.save_netting_agreements(agreements);
+
+            auto netting_sets = req->netting_sets;
+            for (auto& row : netting_sets)
+                apply_intent(row);
+            service::netting_set_service netting_set_service(uctx);
+            netting_set_service.save_netting_sets(netting_sets);
+
+            auto set_identifiers = req->netting_set_identifiers;
+            for (auto& row : set_identifiers)
+                apply_intent(row);
+            service::netting_set_identifier_service set_identifier_service(uctx);
+            set_identifier_service.save_netting_set_identifiers(set_identifiers);
+
+            auto csas = req->csas;
+            for (auto& row : csas)
+                apply_intent(row);
+            service::csa_service csa_service(uctx);
+            csa_service.save_csas(csas);
+
+            auto currencies = req->eligible_currencies;
+            for (auto& row : currencies)
+                apply_intent(row);
+            service::csa_eligible_currency_service eligible_currency_service(uctx);
+            eligible_currency_service.save_csa_eligible_currencies(currencies);
+
+            uow.commit();
+
+            // Read the row back from the committed transaction, so the reply
+            // carries the version and the audit stamps the store gave it.
+            service::counterparty_service reader(req_ctx);
+            auto written = reader.find_counterparty(counterparty.id);
+            BOOST_LOG_SEV(counterparty_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  put_counterparty_composite_response{
+                      .result = {},
+                      .counterparty = written ? std::move(*written) : std::move(counterparty)});
+        } catch (const std::exception& e) {
+            // The store refused one of the rows and the transaction is gone
+            // with it. The reason is the store's own words, so nothing here
+            // states a code the catalogue could own instead.
+            BOOST_LOG_SEV(counterparty_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            put_counterparty_composite_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

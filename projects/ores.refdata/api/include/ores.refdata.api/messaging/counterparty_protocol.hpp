@@ -28,6 +28,11 @@
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.refdata.api/domain/csa.hpp"
+#include "ores.refdata.api/domain/csa_eligible_currency.hpp"
+#include "ores.refdata.api/domain/netting_agreement.hpp"
+#include "ores.refdata.api/domain/netting_set.hpp"
+#include "ores.refdata.api/domain/netting_set_identifier.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -292,6 +297,37 @@ struct get_counterparty_composite_as_of_response {
     ores::refdata::domain::counterparty counterparty;
     std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
     std::vector<ores::refdata::domain::counterparty_contact_information> contacts;
+};
+
+/**
+ * @brief Writes a counterparty and the children a confirmed review staged, in
+ * one transaction. The eight writes the confirm lists are one act: a refusal
+ * or a failure leaves none of them behind.
+ */
+struct put_counterparty_composite_request {
+    using response_type = struct put_counterparty_composite_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.put_counterparty_composite";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ores::utility::domain::change_intent intent;
+    ores::refdata::domain::counterparty counterparty;
+    std::vector<ores::refdata::domain::counterparty_identifier> identifiers;
+    std::vector<ores::refdata::domain::counterparty_contact_information> contacts;
+    std::vector<ores::refdata::domain::netting_agreement> agreements;
+    std::vector<ores::refdata::domain::netting_set> netting_sets;
+    std::vector<ores::refdata::domain::netting_set_identifier> netting_set_identifiers;
+    std::vector<ores::refdata::domain::csa> csas;
+    std::vector<ores::refdata::domain::csa_eligible_currency> eligible_currencies;
+};
+
+struct put_counterparty_composite_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::counterparty counterparty;
 };
 
 /**

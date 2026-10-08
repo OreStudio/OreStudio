@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/write-a-party-or-counterparty-and-its-children-as-one-unit
-#+pr:
+#+pr: 2873
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-08
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,77 @@ Journey 5 confirms eight subjects and journey 6 a party with its children, and n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- One operation writes a counterparty with its identifiers, contacts, netting
+  agreements, netting sets, netting set identifiers, CSAs and eligible
+  currencies, or none of them.
+- One operation writes a party with its identifiers and contacts, or none.
+- Both are reached on a subject of their own and both carry the caller's change
+  reason and commentary through to every row.
+- The reply carries the parent as the store left it, so a caller reads the
+  version it must state next.
+- =compass check= is green apart from what is already red on main.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The shape already exists for the read
+
+=counterparty= and =party= each declare a =composite_as_of= read pair in their
+own =* Messages= section, and the generated protocol header and its TypeScript
+twin render it from there. A hand-written handler method and a custom
+subscription complete it. The composite write takes that shape, because it is
+the one the two models already teach a reader.
+
+| parent       | operation                                       | children |
+|--------------+-------------------------------------------------+----------|
+| counterparty | =refdata.v1.ops.put_counterparty_composite=      | identifiers, contacts, netting agreements, netting sets, netting set identifiers, CSAs, eligible currencies |
+| party        | =refdata.v1.ops.put_party_composite=             | identifiers, contacts |
+
+The counterparty's eight are the eight the journey's confirm lists. The
+visibility row is the journey's ninth write and is not one of them, so it stays
+out: it belongs to the party that grants the visibility, not to the
+counterparty.
+
+** One transaction, and the mechanism is already there
+
+=ores::database::repository::unit_of_work= owns one pooled connection and one
+transaction, and its =ctx()= returns a context bound to that transaction. Every
+repository call made with that context joins it, and the destructor rolls back
+what was not committed.
+
+So the handler opens one unit of work, builds each service on =uow.ctx()=, and
+calls the services' domain-level =save_*= methods. Nothing new is needed in the
+repository layer, and no service grows a method of its own.
+
+** What the caller states
+
+The request carries a =change_intent=. The handler applies its reason and
+commentary to every row before the services stamp it, so the audit trail reads
+the caller's reason rather than a default. The reply reads the parent back from
+the committed transaction, so it carries the version the store gave it.
+
+** What this does not do
+
+It does not delete children the caller left out. A composite write upserts what
+it is given, in one transaction; the journeys remove a child through its own
+delete operation, and folding removal into the composite needs the current set
+to diff against, which the request does not carry.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| composite writes added | 2 | =grep -c 'put_.*_composite_request::nats_subject'= | uncommitted |
+| subjects added | 2 | =grep -c 'refdata.v1.ops.put_' ores.refdata.*.org= | uncommitted |
+| repositories touched | 0 | =git diff --name-only -- '*repository*'= | uncommitted |
 
 * Measurements
 
@@ -74,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2873][#2873]] | [refdata] Write a party or a counterparty with its children as one act |
 
 * Review
 
@@ -83,3 +138,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Both composite writes exist and the two subjects are reachable.
+
+=counterparty= declares =put_counterparty_composite_request= carrying the
+counterparty and its seven children, and =party= declares
+=put_party_composite_request= carrying the party and its two. Each has a handler
+method and a custom subscription, and each renders into the C++ protocol header
+and its TypeScript twin.
+
+The handler opens one =unit_of_work=, builds every service on =uow.ctx()=, calls
+the services' =save_*= methods in turn, and commits once. The unit of work rolls
+back when it is destroyed uncommitted, so a refusal anywhere leaves none of the
+writes behind.
+
+What was verified, and how:
+
+| Check | Result |
+|-------+--------|
+| =compass check --exclude-heavy= | green on everything this branch can affect |
+| =check_component_drift --component refdata --address ores= | no drift, across every address |
+| generated protocol, read | both request structs carry the fields and the subjects, and the response members match the designated initialisers the handler writes |
+| generated handler, read | both methods build their services on the unit of work's context and commit once |
+| generated registrar, read | both subjects are subscribed |
+
+**What this task does not land.** No suite covers the composite handler. The
+rollback it relies on is covered by =ores.database.tests=, but the wiring from
+the request to the eight services is reachable only through NATS, and the
+repository has no handler-level test precedent to copy. The hourly validator's
+ctest will not reach it.
+
+It also does not remove a child the caller leaves out; that needs the current
+set, which the request does not carry.

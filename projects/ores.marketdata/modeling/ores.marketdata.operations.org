@@ -1134,6 +1134,22 @@ nothing to do.
  */
 #+end_src
 
+*** unreadable_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many of the projected series carried a URI neither codec reads.
+ *
+ * Their rows are written with their kind and no field value, so the series is
+ * findable and never mistaken for one whose identity was read. The count is
+ * what says how many identities the database could not state.
+ */
+#+end_src
+
 ** export_market_data_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.export_market_data

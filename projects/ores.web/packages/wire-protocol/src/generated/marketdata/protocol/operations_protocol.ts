@@ -452,6 +452,14 @@ export interface BackfillSeriesIdentityResponse {
      * @brief How many current series already carried a projection.
      */
     already_projected_count: number;
+    /**
+     * @brief How many of the projected series carried a URI neither codec reads.
+     *
+     * Their rows are written with their kind and no field value, so the series is
+     * findable and never mistaken for one whose identity was read. The count is
+     * what says how many identities the database could not state.
+     */
+    unreadable_count: number;
 }
 
 /**

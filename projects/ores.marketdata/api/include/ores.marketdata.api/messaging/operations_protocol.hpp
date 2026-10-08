@@ -574,6 +574,14 @@ struct backfill_series_identity_response {
      * @brief How many current series already carried a projection.
      */
     int already_projected_count = 0;
+    /**
+     * @brief How many of the projected series carried a URI neither codec reads.
+     *
+     * Their rows are written with their kind and no field value, so the series is
+     * findable and never mistaken for one whose identity was read. The count is
+     * what says how many identities the database could not state.
+     */
+    int unreadable_count = 0;
 };
 
 /**

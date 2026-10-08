@@ -389,13 +389,16 @@ nothing to do and says so.
                 if (!projected.contains(boost::uuids::to_string(s.id)))
                     missing.push_back(s);
             }
-            repository::market_series_identity_projector::project(req_ctx, missing);
+            const auto unreadable =
+                repository::market_series_identity_projector::project(req_ctx, missing);
 
             resp.projected_count = static_cast<int>(missing.size());
             resp.already_projected_count = static_cast<int>(series.size() - missing.size());
+            resp.unreadable_count = static_cast<int>(unreadable);
             resp.success = true;
             resp.message = "Projected " + std::to_string(missing.size()) + " of " +
-                           std::to_string(series.size()) + " series.";
+                           std::to_string(series.size()) + " series, " +
+                           std::to_string(unreadable) + " with an unreadable URI.";
             BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_series_handler_lg(), error)

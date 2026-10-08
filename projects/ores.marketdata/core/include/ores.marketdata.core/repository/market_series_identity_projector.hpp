@@ -1,0 +1,56 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_PROJECTOR_HPP
+#define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_IDENTITY_PROJECTOR_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.core/export.hpp"
+#include <vector>
+
+namespace ores::marketdata::repository {
+
+/**
+ * @brief Writes the joinable identity of each series, read from its oresmd URI
+ * through the codec.
+ *
+ * The series row carries its identity only inside its URI, so a query cannot
+ * join on it. This projects that identity into one column per field the codec
+ * schema declares, and writes the row in the same transaction as the series
+ * when the context carries one.
+ *
+ * The projection is a projection: it is written from the URI and never read
+ * back to rebuild one, and the codec stays the only thing that reads the
+ * grammar. A URI neither =oresmd_uri_codec::read= nor =read_index= admits is
+ * recorded with its kind and no field value rather than refused, so a series
+ * that already holds such a URI stays findable and a write cannot fail because
+ * of data an earlier writer left behind.
+ */
+class ORES_MARKETDATA_CORE_EXPORT market_series_identity_projector final {
+public:
+    /// Projects @p series, replacing the identity of any series already
+    /// projected.
+    static void project(ores::database::context ctx,
+                        const std::vector<domain::market_series>& series);
+};
+
+}
+
+#endif

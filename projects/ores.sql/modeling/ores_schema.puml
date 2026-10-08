@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T16:22:07.965885Z
+' Generated: 2026-10-08T16:47:45.745874Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -13179,6 +13179,85 @@ package "marketdata" #E3F2FD {
     pairwise correlation relates two -- an equity index against an FX rate,
     say -- and belongs to both. A not-null column cannot hold that, so the
     relationship is a junction.
+    end note
+
+    entity ores_marketdata_market_series_identity_tbl  #F7E5FF {
+        * series_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * identity_kind : text
+          asset_class : text
+          instrument_type : text
+          quote_type : text
+          atm : text
+          cap_floor : text
+          ccy : text
+          cds_index_name : text
+          commodity_name : text
+          contract : text
+          contract_name : text
+          curve_id : text <<FK>>
+          day_counter : text
+          doc_clause : text
+          dst : text
+          eq_name : text
+          fixed_ccy : text
+          fixed_tenor : text
+          flat_ccy : text
+          flat_term : text
+          float_ccy : text
+          float_tenor : text
+          future_contract : text
+          fwd_start : text
+          identifier : text
+          index : text
+          index1 : text
+          index2 : text
+          index_name : text
+          index_tenor : text
+          index_term : text
+          offset : text
+          option_type : text
+          payer_receiver : text
+          qualifier : text
+          quote_name : text
+          quote_tag : text
+          rating_name : text
+          relative : text
+          running_spread : text
+          seasonality_type : text
+          security_id : text <<FK>>
+          seniority : text
+          side : text
+          tenor : text
+          term : text
+          time_unit : text
+          underlying_name : text
+          unit_ccy : text
+    }
+
+    note right of ores_marketdata_market_series_identity_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Series Identity Table
+    A projection of market_series.oresmd_uri, one row per series, so a query can
+    join on the series and filter on a real column. The URI stays the only spelling
+    the system writes and the codec stays the only thing that reads it; this table is
+    written from that parse, never read back to rebuild a URI.
+    The column set is the identity fields ores.marketdata declares in its codec
+    schema, one column per field the schema marks field_role::identity, plus the
+    columns that say which kind of identity the row carries. A field the type's
+    schema row does not declare is empty, because the row holds only the columns its
+    own type fills. A column is text, not a typed relational form, because the codec
+    keeps every value as the key spelled it and a projection that reinterpreted it
+    would be a second spelling of the same identity.
+    The table is a current state, not a history: the series row is already temporal
+    and the identity does not change under it, so one row per series is enough and
+    the primary key is the series. The column list is checked against the codec
+    schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
+    drift.
     end note
 
     entity ores_marketdata_market_series_tbl <<temporal>> #C6F0D8 {

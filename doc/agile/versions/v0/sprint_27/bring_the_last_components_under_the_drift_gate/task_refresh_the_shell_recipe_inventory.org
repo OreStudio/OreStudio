@@ -26,11 +26,11 @@ Regenerate the shell recipe inventory so the two new trading categories appear a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -84,3 +84,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The inventory lists the trade_link_types and trade_links categories, and
+recipe-inventories passes.
+
+The task also closed the reason the drift was invisible: a check applies only
+when the change class intersects the check classes, and doc/recipes/ classifies
+as docs while recipe-inventories was declared modeling and codegen with no
+paths. It now carries the docs class and both recipe paths, so a recipe change
+runs the gate that owns it. Verified: the check is selected and passes.
+
+tangle-shell and tangle-http carry the same missing class and are left alone.

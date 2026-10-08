@@ -1,10 +1,4 @@
-drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
-on ores_workflow_plan_dependencies_tbl;
-
-drop policy if exists workflow_plan_steps_tenant_isolation_policy
-on ores_workflow_plan_steps_tbl;
-
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -23,9 +17,21 @@ on ores_workflow_plan_steps_tbl;
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_entity.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.workflow.core/repository/workflow_plan_dependency_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <ostream>
+#include <rfl/json/write.hpp>
 
-drop policy if exists workflow_steps_tenant_isolation_policy
-on ores_workflow_workflow_steps_tbl;
+namespace ores::workflow::repository {
 
-drop policy if exists workflow_instances_tenant_isolation_policy
-on ores_workflow_workflow_instances_tbl;
+std::ostream& operator<<(std::ostream& s, const workflow_plan_dependency_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}

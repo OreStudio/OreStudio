@@ -1,10 +1,4 @@
-drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
-on ores_workflow_plan_dependencies_tbl;
-
-drop policy if exists workflow_plan_steps_tenant_isolation_policy
-on ores_workflow_plan_steps_tbl;
-
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -23,9 +17,21 @@ on ores_workflow_plan_steps_tbl;
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_history_provider_registrar.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_PLAN_DEPENDENCY_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_PLAN_DEPENDENCY_HISTORY_PROVIDER_REGISTRAR_HPP
 
-drop policy if exists workflow_steps_tenant_isolation_policy
-on ores_workflow_workflow_steps_tbl;
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-drop policy if exists workflow_instances_tenant_isolation_policy
-on ores_workflow_workflow_instances_tbl;
+namespace ores::workflow::messaging {
+
+void register_workflow_plan_dependency_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+}
+
+#endif

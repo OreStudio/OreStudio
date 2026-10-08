@@ -68,3 +68,63 @@ for all using (
           and i.tenant_id = ores_iam_current_tenant_id_fn()
     )
 );
+
+-- -----------------------------------------------------------------------------
+-- Workflow Plan Steps (tenant isolation via parent instance join)
+-- -----------------------------------------------------------------------------
+-- A run's chain is the run's, so it is visible exactly when its instance is:
+-- the system tenant sees every run, and a caller sees the chain of its own.
+alter table ores_workflow_plan_steps_tbl enable row level security;
+
+drop policy if exists workflow_plan_steps_tenant_isolation_policy on ores_workflow_plan_steps_tbl;
+
+create policy workflow_plan_steps_tenant_isolation_policy
+on ores_workflow_plan_steps_tbl
+for all using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    OR exists (
+        select 1
+        from ores_workflow_workflow_instances_tbl i
+        where i.id = workflow_id
+          and i.tenant_id = ores_iam_current_tenant_id_fn()
+    )
+)
+with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    OR exists (
+        select 1
+        from ores_workflow_workflow_instances_tbl i
+        where i.id = workflow_id
+          and i.tenant_id = ores_iam_current_tenant_id_fn()
+    )
+);
+
+-- -----------------------------------------------------------------------------
+-- Workflow Plan Dependencies (tenant isolation via parent instance join)
+-- -----------------------------------------------------------------------------
+-- A run's chain is the run's, so it is visible exactly when its instance is:
+-- the system tenant sees every run, and a caller sees the chain of its own.
+alter table ores_workflow_plan_dependencies_tbl enable row level security;
+
+drop policy if exists workflow_plan_dependencies_tenant_isolation_policy on ores_workflow_plan_dependencies_tbl;
+
+create policy workflow_plan_dependencies_tenant_isolation_policy
+on ores_workflow_plan_dependencies_tbl
+for all using (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    OR exists (
+        select 1
+        from ores_workflow_workflow_instances_tbl i
+        where i.id = workflow_id
+          and i.tenant_id = ores_iam_current_tenant_id_fn()
+    )
+)
+with check (
+    ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+    OR exists (
+        select 1
+        from ores_workflow_workflow_instances_tbl i
+        where i.id = workflow_id
+          and i.tenant_id = ores_iam_current_tenant_id_fn()
+    )
+);

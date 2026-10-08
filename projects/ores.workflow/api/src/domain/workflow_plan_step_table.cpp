@@ -1,10 +1,4 @@
-drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
-on ores_workflow_plan_dependencies_tbl;
-
-drop policy if exists workflow_plan_steps_tenant_isolation_policy
-on ores_workflow_plan_steps_tbl;
-
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -23,9 +17,28 @@ on ores_workflow_plan_steps_tbl;
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.workflow.api/domain/workflow_plan_step_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-drop policy if exists workflow_steps_tenant_isolation_policy
-on ores_workflow_workflow_steps_tbl;
+namespace ores::workflow::domain {
 
-drop policy if exists workflow_instances_tenant_isolation_policy
-on ores_workflow_workflow_instances_tbl;
+
+std::string convert_to_table(const std::vector<workflow_plan_step>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for ([[maybe_unused]] const auto& e : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
+}
+
+}

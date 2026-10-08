@@ -27,5 +27,9 @@
 \ir ./workflow_workflow_instances_create.sql
 \ir ./workflow_workflow_instances_notify_trigger_create.sql
 \ir ./workflow_workflow_steps_create.sql
+\ir ./workflow_workflow_plan_steps_create.sql
+\ir ./workflow_workflow_plan_steps_notify_trigger_create.sql
+\ir ./workflow_workflow_plan_dependencies_create.sql
+\ir ./workflow_workflow_plan_dependencies_notify_trigger_create.sql
 \ir ./workflow_workflow_steps_notify_trigger_create.sql
 \ir ./workflow_constraints_create.sql

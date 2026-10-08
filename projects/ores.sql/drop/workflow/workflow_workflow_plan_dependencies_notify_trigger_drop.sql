@@ -1,9 +1,3 @@
-drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
-on ores_workflow_plan_dependencies_tbl;
-
-drop policy if exists workflow_plan_steps_tenant_isolation_policy
-on ores_workflow_plan_steps_tbl;
-
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
@@ -23,9 +17,11 @@ on ores_workflow_plan_steps_tbl;
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_notify_trigger_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
-drop policy if exists workflow_steps_tenant_isolation_policy
-on ores_workflow_workflow_steps_tbl;
-
-drop policy if exists workflow_instances_tenant_isolation_policy
-on ores_workflow_workflow_instances_tbl;
+drop trigger if exists ores_workflow_plan_dependencies_notify_trg on "ores_workflow_plan_dependencies_tbl";
+drop function if exists ores_workflow_plan_dependencies_notify_fn;

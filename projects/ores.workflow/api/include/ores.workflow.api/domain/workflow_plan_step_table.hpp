@@ -1,10 +1,4 @@
-drop policy if exists workflow_plan_dependencies_tenant_isolation_policy
-on ores_workflow_plan_dependencies_tbl;
-
-drop policy if exists workflow_plan_steps_tenant_isolation_policy
-on ores_workflow_plan_steps_tbl;
-
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -23,9 +17,26 @@ on ores_workflow_plan_steps_tbl;
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_table.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_WORKFLOW_API_DOMAIN_WORKFLOW_PLAN_STEP_TABLE_HPP
+#define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_PLAN_STEP_TABLE_HPP
 
-drop policy if exists workflow_steps_tenant_isolation_policy
-on ores_workflow_workflow_steps_tbl;
+#include "ores.workflow.api/domain/workflow_plan_step.hpp"
+#include "ores.workflow.api/export.hpp"
+#include <string>
+#include <vector>
 
-drop policy if exists workflow_instances_tenant_isolation_policy
-on ores_workflow_workflow_instances_tbl;
+namespace ores::workflow::domain {
+
+/**
+ * @brief Converts workflow_plan_steps to the table format.
+ */
+ORES_WORKFLOW_API_EXPORT std::string convert_to_table(const std::vector<workflow_plan_step>& v);
+
+}
+
+#endif

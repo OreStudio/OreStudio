@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 931737B4-1E7C-4030-B144-A188328D4F82
+:END:
+#+title: Story: Bring the generated column references under a gate
+#+description: A column removed from a codegen model's Columns can survive in its Table display or its Indexes, and the generator reproduces both verbatim, so generated code names a column the entity does not have and only the compiler or a database recreate finds it, after merge.
+#+type: story
+#+level: s2
+#+filetags: :codegen:gate:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Catch a generated reference to a column that does not exist before it merges.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The check is written, registered in the catalogue, and proven both ways. |
+| Waiting on    | Nothing.                               |
+| Next          | Open the PR and merge it.              |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- A generated table writer that streams a non-member fails the gate.
+- A generated create script whose index names a non-column fails the gate.
+- The gate is green on the tree it lands on.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3F69130B-BAA7-4FC4-AFD3-65AD84B7903A][Scaffold story: Bring the generated column references under a gate]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:58083095-9AB8-4B4B-83B1-4528D664B2D4][Implement Bring the generated column references under a gate]] | STARTED | 2026-10-08 | | Initial task for: Bring the generated column references under a gate |
+
+* Decisions
+
+- *Read the generated output, not the model.* =load_model= returns =columns=
+  without the primary key and without the flag-derived members, and
+  =** Table display= names those, so a rule stated over the model would fail on
+  correct entities. The generated class is the authority on what a member is.
+- *No baseline.* The tree the check lands on is clean, and the two defects it
+  finds are small and local: a baseline would only hide the next one.
+- *Every generated column reference names a column that exists.* Both rules are
+  the same question asked of two surfaces, so they belong in one check rather
+  than two.
+
+* Out of scope
+
+- The other free-text model sections. =** Checks= holds SQL expressions, so its
+  columns are not separable from the expression the way an index's column list
+  is; the database catches those on recreate.
+
+* See also
+
+- [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] — the
+  first defect the check reproduces.

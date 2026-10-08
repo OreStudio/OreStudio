@@ -263,6 +263,27 @@ deadline: closing a queue that has stopped moving is housekeeping, and warning
 somebody that it is about to stop moving is a nudge with its own timing and its
 own audience.
 
+* Prototype
+
+A static page at =doc/prototypes/access/see-the-story-of-a-request/index.html=: mock data
+only, no backend, no build step and no session. It argues that the whole story of
+one request -- the request raised, the detail written, the decisions, the
+notification and the grant -- belongs on one screen, the way a code review shows
+a pull request, because no single screen the journey has today holds more than
+one of those rows.
+
+The prototype exists because the journey writes to six tables and answers the
+reader from one of them at a time. Whether the answer is a story, a set of
+sections or a lane per table is the question it asks.
+
+- Variants :: a one merged stream, b one section per table, c one lane per table
+  on a shared time axis
+- Readers :: the administrator, who may read every row, and the member, who may
+  not read the decisions taken on their own request
+- Source :: =doc/prototypes/access/see-the-story-of-a-request/index.html=
+- Open :: =/OreStudio/doc/prototypes/access/see-the-story-of-a-request/= once the site is
+  built, or the file directly
+
 * Related journeys
 
 - [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — where the member reads the roles they hold, which is where the ask starts and where the answer is read.

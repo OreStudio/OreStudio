@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>See the story of a request prototype — Access journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+ *{box-sizing:border-box}[hidden]{display:none!important}
+ html,body{background:var(--bg);color:var(--ink)}
+ body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+ h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+ p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+ .mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+ .wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+ .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+ .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+ .panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+ .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+ .field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+ .field .value{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+ .btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:.8rem}
+ .btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+ .btn[disabled]{opacity:.45;cursor:not-allowed}
+ .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+ .tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.acc{color:var(--accent);border-color:#1f3d5c}
+ .notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+ .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+ .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+ .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+ .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+ .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+ /* one event in the merged stream */
+ .stream{display:grid;gap:0}
+ .ev{display:grid;grid-template-columns:5.6rem 1.6rem 1fr;gap:0}
+ .ev .at{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);padding-top:9px;text-align:right;padding-right:.6rem}
+ .ev .rail{position:relative;display:flex;justify-content:center}
+ .ev .rail::before{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+ .ev:first-child .rail::before{top:12px}
+ .ev:last-child .rail::before{bottom:calc(100% - 12px)}
+ .ev .dot{position:relative;z-index:1;width:9px;height:9px;border-radius:999px;margin-top:9px;background:var(--panel-2);border:1px solid var(--line)}
+ .ev.k-raised .dot{border-color:var(--accent);background:#123054}
+  .ev.k-decision .dot{border-color:var(--warn);background:#33280d}
+ .ev.k-granted .dot{border-color:var(--ok);background:#0f2d16}
+ .ev.k-told .dot{border-color:var(--ink-faint)}
+ .ev .body{padding:4px 0 14px 6px;display:grid;gap:6px;min-width:0}
+ .ev .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+ .ev .who{font-weight:600}
+ .ev table{width:100%;border-collapse:collapse;font-size:.84rem}
+ .ev th,.ev td{text-align:left;padding:3px 8px;border-bottom:1px solid var(--line-soft)}
+ .ev th{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+ .diffs{display:grid;gap:3px;margin-top:2px}
+ .dl{display:grid;grid-template-columns:1.1rem 1fr auto;gap:6px;align-items:baseline;border-radius:4px;padding:2px 6px}
+ .dl.old{background:rgba(248,81,73,.13)}.dl.new{background:rgba(63,185,80,.13)}
+ .dl mark{background:rgba(248,81,73,.45);color:inherit;border-radius:2px}
+ .dl.new mark{background:rgba(63,185,80,.45)}
+ .dl .name{font-family:var(--mono);font-size:.72rem;color:var(--ink-faint);padding-left:4px}
+ .unchanged td{color:var(--ink-dim)}
+ tr.changed td:first-child{box-shadow:inset 3px 0 0 var(--warn);padding-left:10px}
+ /* swimlanes */
+ .lanes{display:grid;gap:10px}
+ .lanes .lane{display:grid;grid-template-columns:11rem 1fr;gap:10px;align-items:start}
+ .lanes .lane>h3{font-family:var(--mono);font-size:.74rem;color:var(--ink-dim);padding-top:4px;overflow-wrap:anywhere}
+ .lanes ol{display:grid;gap:4px;border-left:1px solid var(--line);padding-left:10px}
+ .lanes li{font-size:.82rem}
+ .flash{border-color:var(--accent)!important}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The question: the role-request journey writes to six tables, and each screen
+  shows one of them. Should the person see the whole story in one place, the
+  way a code review shows a pull request?
+
+  Variants with ?variant=a|b|c: a is one merged stream, newest first, the way
+  GitHub draws a pull request; b is one section per table, in write order; c is
+  one lane per table on a shared time axis. ?who=admin|member switches the
+  reader, because entitlement decides which of these events a person may read
+  at all. Nothing here calls a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const who = params.get('who') || 'admin';
+
+/*
+ * One role request, raised by ashley.moore and answered by the tenant
+ * administrator, held once on the way. Every row the journey writes is here,
+ * in the order the store wrote it, with the version each write produced.
+ *
+ * `reader` says who may read the row at all. The member reads the request, the
+ * roles they asked for and their own notices; the decisions other people take
+ * are not theirs to read, and the grant is read as a role they now hold rather
+ * than as a row of the trail. The merged stream is therefore not the same
+ * stream for the two readers, which is the thing this prototype is for.
+ */
+const events = [
+  {at:'2026-10-08 09:00:00.000', entity:'approval_request', version:1, kind:'raised', reader:['admin','member'],
+   actor:'ashley.moore', head:'raised the request', tag:'waiting',
+   fields:[['kind_code','','iam.role_grant','added'],['state_code','','waiting','added'],
+           ['requested_by','','b2cf82a3','added'],['reason','','Covers the FX desk','added'],
+           ['expires_at','','2026-10-15 09:00:00Z','added']]},
+
+  {at:'2026-10-08 09:00:00.010', entity:'role_grant_request', version:1, kind:'raised', reader:['admin','member'],
+   actor:'ashley.moore', head:'recorded who would hold it',
+   fields:[['account_id','','b2cf82a3','added']]},
+
+  {at:'2026-10-08 09:00:00.020', entity:'role_grant_request_role', version:1, kind:'raised', reader:['admin','member'],
+   actor:'ashley.moore', head:'recorded the role asked for',
+   fields:[['role_id','','09280e5b (Trading)','added']]},
+
+  {at:'2026-10-08 09:00:00.100', entity:'notification', version:1, kind:'told', reader:['admin'],
+   actor:'ores.inbox.service', head:'told whoever may decide it',
+   fields:[['message_key','','notification.inbox.approval_waiting','added'],
+           ['recipients','','4 holders of iam::roles:assign','added']]},
+
+  {at:'2026-10-08 09:12:44.100', entity:'approval_decision', version:1, kind:'decision', reader:['admin'],
+   actor:'priya.nair', head:'held the request', tag:'hold',
+   fields:[['decision_code','','hold','added'],['decided_by','','8a1c0d44','added'],
+           ['comment','','Needs the desk lead to confirm','added']]},
+
+  {at:'2026-10-08 09:12:44.110', entity:'approval_request', version:2, kind:'decision', reader:['admin'],
+   actor:'priya.nair', comment:'Decision: hold', head:'moved it to held',
+   fields:[['state_code','waiting','held','changed']]},
+
+  {at:'2026-10-08 09:12:44.200', entity:'notification', version:1, kind:'told', reader:['member'],
+   actor:'ores.inbox.service', head:'told ashley.moore it was held',
+   fields:[['message_key','','notification.inbox.approval_held','added'],
+           ['recipients','','ashley.moore','added']]},
+
+  {at:'2026-10-08 11:30:02.000', entity:'approval_decision', version:1, kind:'decision', reader:['admin'],
+   actor:'priya.nair', head:'resumed the request', tag:'resume',
+   fields:[['decision_code','','resume','added'],['comment','','Desk lead agreed','added']]},
+
+  {at:'2026-10-08 11:30:02.010', entity:'approval_request', version:3, kind:'decision', reader:['admin'],
+   actor:'priya.nair', comment:'Decision: resume', head:'moved it back to waiting',
+   fields:[['state_code','held','waiting','changed']]},
+
+  {at:'2026-10-08 17:05:11.000', entity:'approval_decision', version:1, kind:'decision', reader:['admin'],
+   actor:'priya.nair', head:'approved the request', tag:'approve',
+   fields:[['decision_code','','approve','added'],['decided_by','','8a1c0d44','added'],
+           ['comment','','Induction done.','added']]},
+
+  {at:'2026-10-08 17:05:11.010', entity:'approval_request', version:4, kind:'decision', reader:['admin','member'],
+   actor:'priya.nair', comment:'Decision: approve', head:'closed it as approved',
+   fields:[['state_code','waiting','approved','changed']]},
+
+  {at:'2026-10-08 17:05:11.500', entity:'account_role', version:1, kind:'granted', reader:['admin','member'],
+   actor:'ores.iam.service', head:'gave ashley.moore the role',
+   fields:[['role_id','','09280e5b (Trading)','added'],
+           ['change_reason_code','','access.approved_request','added']]},
+
+  {at:'2026-10-08 17:05:11.600', entity:'notification', version:1, kind:'told', reader:['member'],
+   actor:'ores.inbox.service', head:'told ashley.moore it was approved',
+   fields:[['message_key','','notification.inbox.approval_approved','added'],
+           ['recipients','','ashley.moore','added']]}
+];
+
+const visible = events.filter(e => e.reader.includes(who));
+const entitiesOf = list => [...new Set(list.map(e => e.entity))];
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const shortEntity = n => n.replace(/^(approval_|role_|account_)/, m => m === 'approval_' ? '' : m);
+
+/*
+ * The green and red widget, as the record screens draw it: a changed value is
+ * split into its common prefix, its changed middle and its common suffix, and
+ * the middle is marked on the old line and on the new. A value that appeared
+ * whole is all middle.
+ */
+function split(before, after){
+  let prefix = 0;
+  while (prefix < before.length && prefix < after.length && before[prefix] === after[prefix]) prefix++;
+  let suffix = 0;
+  while (suffix < before.length - prefix && suffix < after.length - prefix &&
+         before[before.length-1-suffix] === after[after.length-1-suffix]) suffix++;
+  const parts = t => [t.slice(0,prefix), t.slice(prefix, t.length-suffix), t.slice(t.length-suffix)];
+  return {old:parts(before), new:parts(after)};
+}
+function line(sign, parts, tone){
+  const [a,b,c] = parts;
+  return `<div class="dl ${tone}"><span class="faint">${sign}</span>`+
+         `<span class="mono">${escapeHtml(a)}${b!==''?`<mark>${escapeHtml(b)}</mark>`:''}${escapeHtml(c)}</span>`+
+         `<span></span></div>`;
+}
+function escapeHtml(t){ return String(t).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+/*
+ * Reverting a field is only meaningful where the field is a value on a record
+ * the reader may write. Almost nothing in this journey is: a decision is an act
+ * with a reason and an actor, not an edit, and a state is the consequence of
+ * acts rather than a field somebody sets. What is left is the free text the
+ * asker wrote and the deadline. That scarcity is the finding, and the button is
+ * offered only where a write exists to serve it.
+ */
+const revertable = new Set(['reason','expires_at']);
+
+function eventBody(e){
+  const rows = e.fields.map(f => {
+    const [name, before, after, how] = f;
+    const parts = split(before, after);
+    const canRevert = revertable.has(name);
+    return `<tr class="${how === 'changed' ? 'changed' : ''}">
+      <td class="mono faint">${name}</td>
+      <td colspan="2">
+        <div class="diffs">
+          ${how === 'changed' ? line('−', parts.old, 'old') : ''}
+          ${line('+', parts.new, 'new')}
+        </div>
+      </td>
+      <td>${canRevert ? `<button class="btn" data-revert="${e.entity}|${e.version}|${name}">revert</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+  const note = e.comment ? `<span class="faint">change commentary <span class="mono">${e.comment}</span></span>` : '';
+  return `<div class="diffs-wrap">
+    <table><thead><tr><th>Field</th><th colspan="2">Value</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+    ${note}
+  </div>`;
+}
+
+function dotClass(kind){ return 'k-' + kind; }
+
+function streamRow(e){
+  const kindTag = e.tag ? tag(e.tag, e.tag === 'approve' ? 'ok' : e.tag === 'hold' ? 'warn' : '')
+                        : tag(e.kind, e.kind === 'granted' ? 'ok' : e.kind === 'told' ? '' : 'acc');
+  return `<li class="ev ${dotClass(e.kind)}">
+    <div class="at">${e.at.slice(11, 19)}</div>
+    <div class="rail"><span class="dot"></span></div>
+    <div class="body">
+      <div class="head">
+        ${kindTag}
+        <span class="who">${e.actor}</span>
+        <span>${e.head}</span>
+        ${tag(e.entity + ' v' + e.version, '')}
+        <span class="faint" style="margin-left:auto">${e.at.slice(0, 10)}</span>
+      </div>
+      ${eventBody(e)}
+    </div>
+  </li>`;
+}
+
+function stream(){
+  return `<div class="panel">
+    <h2>The story, newest first</h2>
+    <ul class="stream">${[...visible].reverse().map(streamRow).join('')}</ul>
+    <div class="notice">One stream is the shortest read, and the only one that shows the
+    order things actually happened in. It also mixes rows the reader may open with rows
+    they may not, so the story has holes where the answer was given &mdash; switch the
+    reader to see them. Only the asker's own words and the deadline offer a revert: a
+    decision is an act, not a diff, and undoing one is a further act.</div>
+  </div>`;
+}
+
+function byEntity(){
+  return entitiesOf(visible).map(entity => {
+    const rows = visible.filter(e => e.entity === entity).sort((a,b) => a.at < b.at ? 1 : -1);
+    return `<div class="panel">
+      <h2 class="mono">${entity}</h2>
+      <ul class="stream">${rows.map(streamRow).join('')}</ul>
+    </div>`;
+  }).join('');
+}
+
+function lanes(){
+  const all = entitiesOf(events);
+  return `<div class="panel">
+    <h2>One lane per table</h2>
+    <div class="lanes">
+      ${all.map(entity => {
+        const rows = events.filter(e => e.entity === entity);
+        const readable = rows.filter(e => e.reader.includes(who)).length;
+        return `<div class="lane">
+          <h3>${entity}<br><span class="faint">${readable}/${rows.length} readable</span></h3>
+          <ol>${rows.map(e => `<li>${e.reader.includes(who)
+            ? `<span class="mono faint">${e.at.slice(11,19)}</span> ${e.head} ${tag(e.actor,'')}`
+            : `<span class="mono faint">${e.at.slice(11,19)}</span> <span class="faint">not the reader's to see</span>`}</li>`).join('')}</ol>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="notice">The lanes show what each table contributes and which of its rows the
+    reader may open, and they keep the order inside a table. They do not show the order
+    across tables, which is the thing the story is about.</div>
+  </div>`;
+}
+
+function header(){
+  const request = {id:'01a11bc3-6ffd-74ac-9fdf-34f3c144813c', state:'approved', kind:'iam.role_grant'};
+  return `<div class="top">
+    <h1>Request ${request.id}</h1>
+    ${tag(request.kind, '')} ${tag(request.state, 'ok')}
+    <span class="faint" style="margin-left:auto">reading as the ${who}</span>
+  </div>
+  <div class="panel">
+    <h2>What the trail holds</h2>
+    <div class="row">
+      <div class="field"><label>Tables</label><div class="value">${entitiesOf(events).length}</div></div>
+      <div class="field"><label>Rows written</label><div class="value">${events.length}</div></div>
+      <div class="field"><label>The reader may open</label><div class="value">${visible.length}</div></div>
+      <div class="field"><label>Elapsed</label><div class="value">8h 5m 11s</div></div>
+      <div class="field"><label>People</label><div class="value">2, and a service</div></div>
+    </div>
+    <div class="notice">Every row here is a version with an actor and a time, so the trail needs
+    no new store: it is a read across the histories the components already keep. What it does
+    need is a decision about the reader &mdash; a request's story is written by two people who
+    may not read each other's part of it.</div>
+  </div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const body = variant === 'b' ? byEntity() : variant === 'c' ? lanes() : stream();
+  app.innerHTML = header() + body;
+  document.getElementById('note').textContent =
+    `Prototype \u00b7 the story of a request \u00b7 variant ${variant.toUpperCase()} \u00b7 reading as the ${who} \u00b7 mock data, no service is called`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Variant</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Reader</span>` +
+    ['admin','member'].map(s => `<button data-s="${s}" class="${s===who?'on':''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('who', b.dataset.s));
+  document.querySelectorAll('[data-revert]').forEach(b => b.onclick = () => {
+    const [entity, version, field] = b.dataset.revert.split('|');
+    b.textContent = 'revert ' + field + ' to v' + (Number(version) - 1) + '?';
+    b.classList.add('flash');
+  });
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

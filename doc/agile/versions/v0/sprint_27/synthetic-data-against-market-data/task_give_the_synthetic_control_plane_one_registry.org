@@ -140,6 +140,16 @@ Follow-ups found while grounding this task, deliberately left out of it:
   permission to derive a gate from. It is unreachable in production, where
   every subject comes from a registration, but a reader should not mistake it
   for an auth gap.
+- The FX vintage anchor sets no party id, while the IR anchor does and the FX
+  producer's own read does. An FX config can therefore report =valid= and then
+  fail to start on a party-scoped series. The retired FX-only helper passed no
+  party either, so this is carried over rather than introduced, but the
+  registry was the moment to make the check read the series the way the feed
+  reads it.
+- The stub-kind test drives =vintage_validity_handler::list= and
+  =simulate_handler::simulate= without asserting on either, and does not drive
+  =feed_config_handler::list= or the boot walk. Those paths pass for
+  crash-freedom only, so the test pins dispatch for four verbs and not eight.
 
 * Test Scenarios
 

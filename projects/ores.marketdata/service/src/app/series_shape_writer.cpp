@@ -71,7 +71,7 @@ void collect(const datum::market_datum& point, datum::field f, std::vector<std::
 
 }
 
-void series_shape_writer::declare(context ctx,
+void series_shape_writer::declare(ores::database::context ctx,
                                   const datum::market_datum& series,
                                   const boost::uuids::uuid& series_id,
                                   const boost::uuids::uuid& party_id,

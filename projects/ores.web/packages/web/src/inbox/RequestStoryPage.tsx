@@ -175,12 +175,16 @@ function StoryRow({
             <div className="min-w-0 pb-5 pl-3">
                 <div className="flex flex-wrap items-baseline gap-2 pt-2.5 text-sm">
                     <Tag tone={kindTone(event.kind)}>{t(`inbox.story.kind.${event.kind}`)}</Tag>
+                    {/* An event that names nobody draws nobody. The ask that
+                        precedes a role is made by the person who raised the
+                        request, and naming them here would say they acted
+                        twice. */}
                     {event.actor !== '' && (
-                        <AccountPicture username={event.actor} name={event.actor} size="sm" />
+                        <>
+                            <AccountPicture username={event.actor} name={event.actor} size="sm" />
+                            <span className="font-medium">{event.actor}</span>
+                        </>
                     )}
-                    <span className="font-medium">
-                        {event.actor === '' ? t('inbox.story.noActor') : event.actor}
-                    </span>
                     <span className="text-ink-muted">{event.entityType}</span>
                     <span className="text-xs tabular-nums text-ink-faint">
                         {formatDateTime(event.at, language)}

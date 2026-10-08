@@ -21,12 +21,13 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/domain/wire_format.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
-#include "ores.trading.api/domain/instrument_payload.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -41,22 +42,17 @@ const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[messaging][codec]");
 
 /**
- * A bond export item carrying the identity fields a caller can check. Every
- * other member is left default: the point of the case is which alternative
- * survives the codec, not how rich the instrument is.
+ * A bond whose identity fields a caller can check, appended to the batch that
+ * carries it. Every other member is left default: the point of the case is
+ * that the instrument crosses the codec as its own typed array, not how rich
+ * the instrument is.
  */
-trade_export_item make_bond_item(boost::uuids::uuid trade_id, boost::uuids::uuid issue_id) {
+bond_instrument_data make_bond(boost::uuids::uuid trade_id, boost::uuids::uuid issue_id) {
     bond_instrument_data bond;
     bond.instrument.identity.trade_id = trade_id;
     bond.instrument.issue_id = issue_id;
     bond.trs_price_type = "Dirty";
-
-    trade_export_item item;
-    item.ore_id = "CodecBond001";
-    item.anchor.trade_type = "Bond";
-    item.instrument =
-        ores::trading::domain::encode_instrument(ores::trading::domain::trade_instrument{bond});
-    return item;
+    return bond;
 }
 
 std::string check_bond_survives_the_codec(wire_format format) {
@@ -66,7 +62,13 @@ std::string check_bond_survives_the_codec(wire_format format) {
 
     export_portfolio_response sent;
     sent.success = true;
-    sent.items.push_back(make_bond_item(trade_id, issue_id));
+    trade_export_item item;
+    item.ore_id = "CodecBond001";
+    item.anchor.id = trade_id;
+    item.anchor.trade_type = "Bond";
+    sent.items.push_back(item);
+    ores::trading::domain::append_instrument(
+        sent.instruments, ores::trading::domain::trade_instrument{make_bond(trade_id, issue_id)});
 
     const auto bytes = codec.encode(sent);
     const auto decoded = codec.decode<export_portfolio_response>(bytes);
@@ -74,10 +76,11 @@ std::string check_bond_survives_the_codec(wire_format format) {
     REQUIRE(decoded->items.size() == 1);
     CHECK(decoded->items[0].ore_id == "CodecBond001");
 
-    // An untagged variant decodes as its first alternative, so a bond that
-    // comes back as monostate is a silent loss, not an error: the codec
-    // reports success either way. Assert the data, not the success.
-    const auto instrument = ores::trading::domain::decode_instrument(decoded->items[0].instrument);
+    // The batch's array states its element's type, so a bond the wire dropped
+    // would come back absent rather than as an untagged variant. Assert the
+    // data the caller observes, not that the codec reported success.
+    const auto instrument =
+        ores::trading::domain::rebuild_instrument(decoded->instruments, trade_id);
     REQUIRE(std::holds_alternative<bond_instrument_data>(instrument));
     const auto& bond = std::get<bond_instrument_data>(instrument);
     CHECK(bond.instrument.identity.trade_id == trade_id);
@@ -100,7 +103,7 @@ TEST_CASE("export_portfolio_response_survives_the_msgpack_codec", tags) {
     CHECK(check_bond_survives_the_codec(wire_format::msgpack) == "CodecBond001");
 }
 
-TEST_CASE("export_portfolio_response_carries_an_absent_instrument", tags) {
+TEST_CASE("export_portfolio_response_carries_a_trade_with_no_instrument", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto codec = wire_codec{wire_format::msgpack};
@@ -113,9 +116,9 @@ TEST_CASE("export_portfolio_response_carries_an_absent_instrument", tags) {
     const auto decoded = codec.decode<export_portfolio_response>(codec.encode(sent));
     REQUIRE(decoded.has_value());
     REQUIRE(decoded->items.size() == 1);
-    CHECK(decoded->items[0].instrument.type.empty());
-    CHECK(std::holds_alternative<std::monostate>(
-        ores::trading::domain::decode_instrument(decoded->items[0].instrument)));
+    CHECK(decoded->instruments.bond_instruments.empty());
+    CHECK(std::holds_alternative<std::monostate>(ores::trading::domain::rebuild_instrument(
+        decoded->instruments, decoded->items[0].anchor.id)));
 }
 
 TEST_CASE("export_portfolio_response_carries_the_envelope", tags) {

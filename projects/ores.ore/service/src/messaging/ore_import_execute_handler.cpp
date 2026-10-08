@@ -90,7 +90,6 @@
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
-#include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
@@ -2158,21 +2157,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 auto resp = nats_call(delegated_nats, req, instr_error);
                                 return resp &&
                                        resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
-                                put_rpa_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.reference_counterparty =
-                                    instr.reference_counterparty;
-                                req.change.write.participation_rate = instr.participation_rate;
-                                req.change.write.protection_fee = instr.protection_fee;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
                             } else {
                                 return true;
                             }
@@ -2188,8 +2172,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         leg_req.change.write.trade_activity_id = leg.identity.trade_activity_id;
                         leg_req.change.write.payer = leg.payer;
                         leg_req.change.write.leg_type_code = leg.leg_type_code;
-                        leg_req.change.write.day_count_fraction_code =
-                            leg.day_count_fraction_code;
+                        leg_req.change.write.day_count_fraction_code = leg.day_count_fraction_code;
                         leg_req.change.write.business_day_convention_code =
                             leg.business_day_convention_code;
                         leg_req.change.write.payment_frequency_code = leg.payment_frequency_code;
@@ -2205,8 +2188,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         amount_req.change.write.trade_id = amount.trade_id;
                         amount_req.change.write.leg_number = amount.leg_number;
                         amount_req.change.write.sequence_number = amount.sequence_number;
-                        amount_req.change.write.trade_activity_id =
-                            amount.trade_activity_id;
+                        amount_req.change.write.trade_activity_id = amount.trade_activity_id;
                         amount_req.change.write.start_date = amount.start_date;
                         amount_req.change.write.amount = amount.amount;
                         auto amount_resp = nats_call(delegated_nats, amount_req, instr_error);

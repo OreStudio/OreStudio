@@ -25,6 +25,7 @@ routing in hand-written conditions.
 
 | Archetype | Description |
 |-----------+-------------|
+| [[id:4c843ca3-122a-4fe0-875d-149bd5aea924][ores.cpp.trade_type.batch]] | The export's typed instrument arrays, generated from the trade-type catalogue. |
 | [[id:1ddf3fc1-a3f6-44d8-936e-b9a5efcae9d0][ores.cpp.trade_type.routing]] | The routing from a trade type to the instrument table that holds it, generated from the trade-type catalogue. |
 
 * See also

@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: a3572ff3-ecfd-430e-864b-5af4b90f2fcb
+:END:
+#+title: ores.ts.trade_type
+#+description: TypeScript projection of the trade-type catalogue: the export's typed instrument arrays.
+#+type: facet
+#+model_types: trade_type_catalogue
+#+level: cross
+#+facet_group: ores.ts
+#+filetags: :codegen:physical-space:typescript:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is the node for the =ores.ts.trade_type= facet of the codegen
+template library, part of the [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own linked page —
+this page is the facet-level summary and the routing table to them.
+
+* Summary
+
+One template: the TypeScript twin of the export's typed instrument arrays. It
+reads the same trade-type catalogue as the C++ archetype under
+[[id:2d187ab0-0676-45aa-9e0f-aca18580d3e0][ores.cpp.trade_type]], so the two state the wire shape once.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:00894ce9-2bfa-4b52-ab08-4fade4cc2ff2][ores.ts.trade_type.batch]] | The export's typed instrument arrays as TypeScript interfaces. |
+
+* See also
+
+- [[id:1E93BE86-58BF-40FB-BB93-132D639BDC87][ores.ts]] — the parent technical space's facet catalogue and shared Mustache conventions.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

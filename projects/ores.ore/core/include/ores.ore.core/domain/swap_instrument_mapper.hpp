@@ -31,7 +31,6 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rates_instrument_variant.hpp"
-#include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
@@ -137,10 +136,11 @@ public:
     /**
      * @brief Reverse-maps ORES domain types back to a CapFloor ORE XSD trade.
      */
-    static trade reverse_capfloor(const ores::trading::domain::cap_floor_instrument& instr,
-                                  const std::vector<ores::trading::domain::swap_leg>& legs,
-                                  const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
-                                  const std::vector<ores::trading::domain::swap_leg_rate>& rates);
+    static trade
+    reverse_capfloor(const ores::trading::domain::cap_floor_instrument& instr,
+                     const std::vector<ores::trading::domain::swap_leg>& legs,
+                     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                     const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Forward-maps a Swaption trade (SwaptionData) to ORES domain types,
@@ -154,10 +154,11 @@ public:
     /**
      * @brief Reverse-maps ORES domain types back to a Swaption ORE XSD trade.
      */
-    static trade reverse_swaption(const ores::trading::domain::swaption_instrument& instr,
-                                  const std::vector<ores::trading::domain::swap_leg>& legs,
-                                  const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
-                                  const std::vector<ores::trading::domain::swap_leg_rate>& rates);
+    static trade
+    reverse_swaption(const ores::trading::domain::swaption_instrument& instr,
+                     const std::vector<ores::trading::domain::swap_leg>& legs,
+                     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                     const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES
@@ -206,9 +207,8 @@ private:
      * Appends one leg of an ORE leg list to the family carrier: the leg row
      * itself and the notional and rate children that carry its schedule.
      */
-    static void append_leg(trading::domain::swap_instrument_data& result,
-                           const legData& ld,
-                           int leg_number);
+    static void
+    append_leg(trading::domain::swap_instrument_data& result, const legData& ld, int leg_number);
 
     static ores::trading::domain::swap_leg map_leg(const legData& ld, int leg_number);
 

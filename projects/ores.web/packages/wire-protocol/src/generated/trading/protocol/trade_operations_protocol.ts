@@ -24,7 +24,7 @@
  */
 import type { Trade } from '../domain/trade.js';
 import type { TradeBooking } from '../domain/trade_booking.js';
-import type { InstrumentPayload } from '../../../trading/payload.js';
+import type { InstrumentBatch } from '../../../generated/trading/instrument_batch.js';
 import type { Result } from '../../../utility/protocol.js';
 import type { TradeEnvelopeData } from '../../../trading/payload.js';
 
@@ -70,13 +70,13 @@ export interface BookTradeResponse {
 }
 
 /**
- * @brief One trade with its resolved instrument and envelope, as an export
- * writes it.
+ * @brief One trade's anchor, its ORE identifier and its envelope, as an
+ * export writes it.
  *
- * The instrument is carried as a payload rather than as a trade_instrument
- * variant: reflect-cpp cannot name the active alternative of that variant
- * (see instrument_payload). The payload's type is empty when the trade has no
- * instrument.
+ * The trade's instrument is not here. The export carries it in the batch's
+ * typed array for the table the trade type routes to, and every element of
+ * that array names the trade id this item states, so a reader joins the two
+ * without an element tag.
  */
 export interface TradeExportItem {
     /**
@@ -87,10 +87,6 @@ export interface TradeExportItem {
      * @brief The trade's ORE identifier, or its id when it has none.
      */
     ore_id: string;
-    /**
-     * @brief The trade's instrument, encoded.
-     */
-    instrument: InstrumentPayload;
     /**
      * @brief The names the trade's source used: counterparty, netting set, portfolios and additional fields. Absent when the trade has none.
      */
@@ -134,6 +130,17 @@ export interface ExportPortfolioResponse {
      * @brief The trades, in trade id order.
      */
     items: TradeExportItem[];
+    /**
+     * @brief The trades' instruments, one typed array per instrument entity and
+     * per child table, every element keyed by its trade id.
+     *
+     * An instrument is not a field of the item above: a std::variant cannot cross
+     * the wire, because reflect-cpp names no alternative, and an encoded payload
+     * would be an untyped field. So the tag sits on the container: a reader takes
+     * the trade's type from the anchor, routes it with instrument_table_for, and
+     * joins the array that table names by the trade id.
+     */
+    instruments: InstrumentBatch;
 }
 
 /**

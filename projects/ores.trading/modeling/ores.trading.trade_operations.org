@@ -32,7 +32,7 @@ generates no service handler.
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/instrument_payload.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
@@ -133,13 +133,13 @@ generates no service handler.
 
 #+begin_src cpp :name comment
 /**
- * @brief One trade with its resolved instrument and envelope, as an export
- * writes it.
+ * @brief One trade's anchor, its ORE identifier and its envelope, as an
+ * export writes it.
  *
- * The instrument is carried as a payload rather than as a trade_instrument
- * variant: reflect-cpp cannot name the active alternative of that variant
- * (see instrument_payload). The payload's type is empty when the trade has no
- * instrument.
+ * The trade's instrument is not here. The export carries it in the batch's
+ * typed array for the table the trade type routes to, and every element of
+ * that array names the trade id this item states, so a reader joins the two
+ * without an element tag.
  */
 #+end_src
 
@@ -162,17 +162,6 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The trade's ORE identifier, or its id when it has none.
- */
-#+end_src
-
-*** instrument
-:PROPERTIES:
-:cpp_type: ores::trading::domain::instrument_payload
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The trade's instrument, encoded.
  */
 #+end_src
 
@@ -278,6 +267,24 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The trades, in trade id order.
+ */
+#+end_src
+
+*** instruments
+:PROPERTIES:
+:cpp_type: ores::trading::domain::instrument_batch
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trades' instruments, one typed array per instrument entity and
+ * per child table, every element keyed by its trade id.
+ *
+ * An instrument is not a field of the item above: a std::variant cannot cross
+ * the wire, because reflect-cpp names no alternative, and an encoded payload
+ * would be an untyped field. So the tag sits on the container: a reader takes
+ * the trade's type from the anchor, routes it with instrument_table_for, and
+ * joins the array that table names by the trade id.
  */
 #+end_src
 

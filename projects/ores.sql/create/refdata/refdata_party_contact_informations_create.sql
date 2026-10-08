@@ -43,6 +43,7 @@ create table if not exists "ores_refdata_party_contact_informations_tbl" (
     "phone" text null,
     "email" text null,
     "web_page" text null,
+    "is_primary" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -76,6 +77,10 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists party_contact_informations_tenant_idx
 on "ores_refdata_party_contact_informations_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists party_contact_informations_primary_party_contact_uniq_idx
+on "ores_refdata_party_contact_informations_tbl" (party_id)
+where is_primary and valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_party_contact_informations_insert_fn()
 returns trigger as $$

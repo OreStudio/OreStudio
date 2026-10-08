@@ -66,6 +66,12 @@ generate_synthetic_counterparty_identifier(utility::generation::generation_conte
         }();
     r.id_value = std::string(faker::string::alphanumeric(20)) + "-" + std::to_string(idx);
     r.description = std::string("Test identifier");
+    r.is_authoritative = // The first row a batch generates carries the LEI scheme, which is the
+                         // precedence a screen applied while the column did not exist. Ten schemes
+                         // rotate per counterparty, so at most one of its rows is marked.
+        [idx] {
+            return idx % 10 == 0;
+        }();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

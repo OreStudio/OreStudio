@@ -88,7 +88,7 @@ public:
 
     /**
      * @brief add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state>
-     * <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+     * <country_code> <postal_code> <phone> <email> <web_page> <is_primary> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,7 +96,8 @@ public:
 
     /**
      * @brief set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state>
-     * <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version <n>]
+     * <country_code> <postal_code> <phone> <email> <web_page> <is_primary> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -104,7 +105,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2>
-     * <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>
+     * <city> <state> <country_code> <postal_code> <phone> <email> <web_page> <is_primary> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

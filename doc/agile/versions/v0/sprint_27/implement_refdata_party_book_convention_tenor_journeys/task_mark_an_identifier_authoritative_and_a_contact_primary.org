@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/mark-an-identifier-authoritative-and-a-contact-primary
-#+pr:
+#+pr: 2840
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-08
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,88 @@ Journey 5 can say which identifier decides who the counterparty is. Journey 6 ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
--
+- =counterparty_identifier= carries =is_authoritative= and
+  =party_contact_information= carries =is_primary=, both =not null default
+  false=.
+- Each flag is carried on the domain, the write record and the TypeScript
+  domain, so a screen reads it and a screen writes it.
+- A partial unique index over the owner keeps at most one live row per owner
+  with the flag set, and a second row that claims it is refused with =23505=.
+- A row that leaves the flag alone is accepted.
+- =compass check= is green apart from what is already red on main.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Two flags, in the shape the party already uses
+
+The party carries =is_registration_default= as a boolean column with =:default:
+false= and a partial unique index over =tenant_id= where the flag is set and
+the row is live. Both new flags take that shape, because a reader of either
+model has already seen it.
+
+| entity | flag | owner the index scopes |
+|--------+------+------------------------|
+| =counterparty_identifier= | =is_authoritative= | =counterparty_id= |
+| =party_contact_information= | =is_primary= | =party_id= |
+
+** Why a partial unique index and not a check
+
+A check sees one row, and "at most one per owner" is a statement about a set.
+A partial unique index is the only store-level shape that states it, and it
+already states the same thing for =is_registration_default=. It also means a
+second write that claims the mark is refused rather than silently leaving two
+rows that both claim it.
+
+** The precedence is the generator's default, not a rule
+
+Journey 5 inferred the authoritative identifier by precedence, LEI first and
+then BIC, because the column did not exist. The generator marks the first
+identifier it makes for a counterparty, and the ten schemes rotate, so that row
+carries LEI. Nothing in the store derives the mark from the scheme: the tenant
+states it, and the precedence is only what a screen starts from.
+
+The primary contact has no precedence to copy. The generator marks the first
+row it makes for a party, which is the Legal contact.
+
+** What this does not do
+
+It does not make the flags settable from a journey screen. That is the jobs of
+the screens themselves. Nor does it add the flag to the legacy Qt detail
+fields, which =is_registration_default= is also absent from.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| columns added | 2 | =grep -c 'is_primary\|is_authoritative' refdata_*_create.sql= | uncommitted |
+| partial unique indexes added | 2 | =grep -c 'uniq_idx' refdata_party_contact_informations_create.sql= | uncommitted |
+| pgTAP assertions added | 7 | =grep -c '^select ' refdata_ownership_marks_test.sql= | uncommitted |
 
 * Notes
+
+- The fixture publishes nothing: it writes one party and one counterparty
+  directly, then two contacts and three identifiers. The suite rolls back.
+- =LEI= carries =max_cardinality 1= in the seeded schemes, so the test uses
+  =BIC= and =MIC= for the rows a counterparty may hold more than one of.
+- The branch also regenerates artefacts that were stale on main and that this
+  task's checks surfaced: five categories of shell recipe script, the shell
+  recipe inventory, the physical-space field-group description, the trading
+  structure service and the ER diagram. None of them is hand-edited; each is
+  the output of its generator.
+- Two checks stay red, and neither touches a file this branch changes.
+  =web= fails prettier on nine files under =packages/web=. =codegen-tests=
+  fails on three things that are main's: =trading/.../domain/structure.hpp=
+  declares =<optional>= and uses none, the fleet process count, and the
+  provision step translations. Both are for the worktrees that own them.
 
 * Test Scenarios
 
@@ -74,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2840][#2840]] | [refdata] Mark an identifier authoritative and a contact primary |
 
 * Review
 
@@ -83,3 +133,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every acceptance criterion holds on PR #2840.
+
+=counterparty_identifier= carries =is_authoritative= and
+=party_contact_information= carries =is_primary=, both =boolean not null
+default false=. Each has a partial unique index over the owner, so the store
+keeps at most one live row per owner with the flag set:
+
+#+begin_src sql
+create unique index if not exists counterparty_identifiers_authoritative_identifier_uniq_idx
+on "ores_refdata_counterparty_identifiers_tbl" (counterparty_id)
+where is_authoritative and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+Each flag is carried on 14 generated surfaces, symmetrically: the C++ domain
+and write record, the repository entity and mapper, the history field mapper,
+the service's table display, the generator, the shell command, and the
+TypeScript domain and protocol.
+
+What was verified, and how:
+
+| Check | Result |
+|-------+--------|
+| =compass check --exclude-heavy= | every check passes except =web= and =codegen-tests=, both of which fail on main |
+| =tangle-shell=, =recipe-inventories=, =physical-inventory=, =component-drift= | green after the drift repairs |
+| =er-diagram= | green after regenerating the diagram |
+| generated DDL, read | both columns and both partial unique indexes are present |
+| generated wire, read | both flags reach the C++ domain, the write record and the TypeScript domain |
+
+The pgTAP suite =refdata_ownership_marks_test.sql= makes seven assertions: a
+first claimant is accepted, a second is refused with =23505=, and a row that
+leaves the mark alone is accepted, once for each flag, plus the count of
+primary contacts on the party. Every fixture value it uses was checked against
+the seeded schemes, contact types and lookup tables by reading them: =LEI= and
+=BIC= and =MIC= are seeded schemes, =Legal= and =Operations= are seeded contact
+types, and =WRLD=, =Operational=, =Bank=, =Corporate= and =Active= are the
+values the neighbouring party and counterparty suites already use.
+
+This branch also repairs what main had drifted: five categories of shell recipe
+script, the shell recipe inventory, the physical-space field-group
+description, the trading structure service, and the ER diagram. Each is the
+output of its generator.
+
+**What this task does not land.** The flags are not settable from a journey
+screen; that is the screens' own tasks. A write that marks a second row while
+the first still holds the mark is refused, so the screen that changes the mark
+has to clear the old one in the same save, which the journey documents do not
+yet say.

@@ -1465,3 +1465,19 @@ tangled into the runnable script library
 * Workflow Plan Steps
 
 - [[id:E8F7757C-493B-5422-9BE2-53522AB6A17C][How do I run the workflow_plan_steps commands from the shell?]]
+
+* Structure Kinds
+
+- [[id:BD7A4533-D135-5BD5-A58D-408A54839E61][How do I run the structure_kinds commands from the shell?]]
+
+* Structure Template Roles
+
+- [[id:5134A0AE-D530-5C57-9FA5-B1928255169B][How do I run the structure_template_roles commands from the shell?]]
+
+* Structure Templates
+
+- [[id:2FF212E5-A560-58B1-8E40-2E0233276081][How do I run the structure_templates commands from the shell?]]
+
+* Structures
+
+- [[id:4057A3D8-11A2-5981-9A3E-B63433EF9653][How do I run the structures commands from the shell?]]

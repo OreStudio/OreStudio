@@ -66,6 +66,11 @@ generate_synthetic_party_contact_information(utility::generation::generation_con
     r.phone = std::string("+44 20 7000 0000");
     r.email = std::string("contact@example.com");
     r.web_page = std::string("https://example.com");
+    r.is_primary = // The first row a batch generates is the primary one, and four contact types
+                   // rotate per party, so at most one of a party's rows is marked.
+        [idx] {
+            return idx % 4 == 0;
+        }();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

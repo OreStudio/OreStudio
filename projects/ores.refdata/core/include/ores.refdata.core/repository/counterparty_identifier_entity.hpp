@@ -54,6 +54,7 @@ struct counterparty_identifier_entity {
     std::string id_value;
 
     std::optional<std::string> description;
+    bool is_authoritative = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

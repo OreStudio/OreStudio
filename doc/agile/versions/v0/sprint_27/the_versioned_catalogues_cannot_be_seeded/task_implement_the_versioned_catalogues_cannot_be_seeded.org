@@ -8,7 +8,7 @@
 #+filetags: :the_versioned_catalogues_cannot_be_seeded:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-versioned-catalogues-cannot-be-seeded
-#+pr:
+#+pr: 2892
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -26,11 +26,11 @@ Let compass db recreate finish, so a database can be built from scratch on this 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E768954-DF47-4EE6-89A0-0497C451F3CA][Hotfix: the versioned catalogues cannot be seeded]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ Let compass db recreate finish, so a database can be built from scratch on this 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Fix the two generated and hand-written writers, not the tables.
+
+- The insert trigger's tenantless branch names the system tenant, so the
+  generated create scripts load.
+- The three seeds name the full versioned column list and conflict on the live
+  version, so the populate phase completes.
+
+The versioning =a2dcf034fa= introduced stays. Whether it should is the parent
+story's open question, and this task does not decide it.
 
 * Measurements
 
@@ -107,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2892 | [codegen,sql,trading] Seed the three versioned catalogues |
 
 * Review
 
@@ -116,3 +122,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. `compass db recreate -y -k` completes its populate phase and the three
+catalogues hold their live rows: =entry_channel_types= 4, =booking_nature_types=
+3, =counterparty_scope_types= 3, every row live. The tenantless insert trigger
+validates =change_reason_code= against the system tenant, and no generated create
+script calls the validator with one argument.
+
+The three seed scripts are hand-written, so no test exercises them. The evidence
+is a recreate, which is the only thing that runs a seed.

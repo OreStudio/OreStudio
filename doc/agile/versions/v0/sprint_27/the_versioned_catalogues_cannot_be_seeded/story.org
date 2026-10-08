@@ -21,11 +21,11 @@ Let compass db recreate finish, so a database can be built from scratch on this 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -38,11 +38,40 @@ Let compass db recreate finish, so a database can be built from scratch on this 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F7A2B18C-5C92-4533-B76E-F2300F803CFD][Scaffold story: Hotfix: the versioned catalogues cannot be seeded]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:05F3B121-EB12-4F3B-8957-B829FCDB6E6B][Seed the three closed vocabularies in their versioned shape]] | BACKLOG | | | Initial task for: Hotfix: the versioned catalogues cannot be seeded |
+| [[id:F7A2B18C-5C92-4533-B76E-F2300F803CFD][Scaffold story: Hotfix: the versioned catalogues cannot be seeded]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:05F3B121-EB12-4F3B-8957-B829FCDB6E6B][Seed the three closed vocabularies in their versioned shape]] | DONE | | 2026-10-08 | Initial task for: Hotfix: the versioned catalogues cannot be seeded |
 
 * Decisions
 
+- *The tables stay versioned.* #2889 reserved the question of whether these
+  three catalogues keep the versioning =a2dcf034fa= gave them, or become plain
+  immutable tables like =inbox.delivery_outcome_type=. This hotfix makes the
+  committed shape work and does not answer that question. Restoring immutability
+  would delete the audit tail, the history tables and the write handlers, and is
+  a change of its own.
+- *A tenantless entity's change reasons are the system tenant's.* The insert
+  trigger has no tenant column to validate against, and a table with no tenant
+  holds data the whole installation shares. The branch names
+  =ores_utility_system_tenant_id_fn()=, as the adjacent =system_scope= branch
+  already does.
+- *The models' prose is left alone.* The three models and the anchor still call
+  these tables immutable and their references database foreign keys, where the
+  generator now emits a soft check against a temporal row. Rewriting that prose
+  is a decision about the question above, so it waits for it.
+
 * Out of scope
 
--
+- Whether the three catalogues keep their versioning. See the first decision.
+- The prose that describes them as immutable. It moves with that decision.
+
+* Result
+
+Done. `compass db recreate -y -k` completes its populate phase and the three
+catalogues hold their live rows: =entry_channel_types= 4, =booking_nature_types=
+3, =counterparty_scope_types= 3, every row live.
+
+One commit caused all three defects. =a2dcf034fa= gave the tables an audit tail
+and a versioned key, which made a dead template branch live and left the seeds
+written for the shape the tables no longer had.
+
+It does not decide whether the versioning stays.

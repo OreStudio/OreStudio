@@ -233,13 +233,23 @@ BEGIN
 
     -- --- Party Essentials Bundle Members ---
 
-    -- The two datasets every party gets, in the seed-profile contract's
-    -- order: its report definitions (ore.report_definitions), then its CRM
-    -- topology (refdata.crm_topology_bundles, the crm_topology bundle's
-    -- only member). Both are party-scoped: the report publish resolves the
-    -- party from params.party_id (or the tenant root), and the CRM publish
-    -- requires params.party_id.
+    -- The three datasets every party gets, in the seed-profile contract's
+    -- order: its report definitions (ore.report_definitions), the run settings
+    -- those definitions resolve (ore.risk_report_configs), then its CRM
+    -- topology (refdata.crm_topology_bundles, the crm_topology bundle's only
+    -- member). All are party-scoped: the report publish resolves the party
+    -- from params.party_id (or the tenant root), and the CRM publish requires
+    -- params.party_id.
+    --
+    -- The configurations belong here and not only in risk_management, because
+    -- risk_management is published before the party exists: the profile's
+    -- publish_bundle is step 10, the parties arrive with import_lei_hierarchy
+    -- at step 20, so both report datasets are skipped with skipped_no_party
+    -- and never published again. party_essentials runs at step 30, once the
+    -- party is there, and is the first point at which a configuration can
+    -- resolve the definition it is keyed by.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.report_definitions', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.risk_report_configs', 15);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 
     -- The ORE samples, in publish order. Party-scoped like party_essentials.

@@ -68,9 +68,12 @@ between related screens without going back to a menu.
 
 Some journeys have a clickable prototype. Every prototype is a static page
 under [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]], which is the
-only inventory and states the one way to add one: plain HTML, CSS and
-JavaScript, no framework and no build step. A journey document links its own
-prototype under =* Prototype= and names the commit that accepted it.
+only inventory: it names the journey groups, and each group has a page that
+lists its prototypes and what each argues. A prototype sits at
+=doc/prototypes/<journey group>/<name>/=, and the one way to add one is plain
+HTML, CSS and JavaScript, no framework and no build step. A journey document
+links its own prototype under =* Prototype= and names the commit that accepted
+it.
 
 * One screen, not one per entity
 

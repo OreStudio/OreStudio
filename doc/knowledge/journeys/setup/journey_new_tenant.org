@@ -105,8 +105,8 @@ Accepted by the user on 2026-09-22. The prototype is merged into =main= and
 kept there as the record; the accepted commit names the state.
 
 - Accepted commit :: =9dee57ccee=, the tip of =prototype/new-tenant-journey=, merged into =main=
-- Route :: =/prototype/tenant= (the branch served it at =/iam/tenant/onboard=)
-- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
+- Source :: =doc/prototypes/setup/new-tenant/index.html=
+- Open :: =/OreStudio/doc/prototypes/setup/new-tenant/= once the site is built, or the file directly
 - Design record :: [[id:7C655052-D82F-485A-A506-6F0C496546C6][Task: Prototype the new tenant journey]]
 
 Variant A, the stepper page, is the accepted one and is the base the first run

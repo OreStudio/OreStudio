@@ -29,6 +29,16 @@ user accepted. A reader who follows it finds nothing, and cannot tell
 whether the prototype was deleted or moved. The credentials and operations
 journeys were written before the move and were not updated with it.
 
+* Resolution
+
+Fixed on 2026-10-08 by
+[[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the
+Gemini reviews]]. Eleven journey documents named the moved tree; each now
+names =doc/prototypes/<group>/<name>/index.html= and opens the built page. The
+=Route= lines are gone, because no =/prototype= route exists, and a variant
+that only the route carried is kept as =Accepted variant=. This capture is
+done and can be closed.
+
 * References
 
 - =doc/prototypes/index.org= — the hub that replaced the route

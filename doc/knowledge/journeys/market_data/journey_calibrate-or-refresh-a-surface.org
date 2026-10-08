@@ -97,13 +97,13 @@ state line at the foot says the surface is a candidate only.
 
 * Prototype
 
-A static page at =doc/prototypes/calibrate-or-refresh-a-surface/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/calibrate-or-refresh-a-surface/index.html=: mock data only, no backend,
 no build step and no session. It argues that a surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions.
 
 - Variants :: a the slice table, b the 2-D smile, c the fit-error summary
 - States :: converged, failed (no convergence, the last iterate shown as such)
-- Source :: =doc/prototypes/calibrate-or-refresh-a-surface/index.html=
-- Open :: =/OreStudio/doc/prototypes/calibrate-or-refresh-a-surface/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/calibrate-or-refresh-a-surface/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/calibrate-or-refresh-a-surface/= once the site is built, or the
   file directly
 
 * Entities composed

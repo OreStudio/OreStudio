@@ -143,7 +143,7 @@ drop function if exists ores_trading_validate_trade_link_fn;
 ** from_trade_id
 :PROPERTIES:
 :table:    ores_trading_trades_tbl
-:enforce:  true
+:error_message: Invalid from_trade_id: %. No active trade found with this id.
 :nullable: false
 :END:
 
@@ -152,7 +152,7 @@ A database foreign key: the anchor is immutable.
 ** to_trade_id
 :PROPERTIES:
 :table:    ores_trading_trades_tbl
-:enforce:  true
+:error_message: Invalid to_trade_id: %. No active trade found with this id.
 :nullable: false
 :END:
 
@@ -172,7 +172,7 @@ The type catalogue is system reference data.
 ** trade_activity_id
 :PROPERTIES:
 :table:    ores_trading_trade_activities_tbl
-:enforce:  true
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
 :nullable: false
 :END:
 

@@ -31,6 +31,7 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface TradeActivity {
+    version: number;
     tenant_id: string;
     id: string;
     party_id: string;
@@ -39,4 +40,9 @@ export interface TradeActivity {
     occurred_at: string;
     comment: string;
     is_operational_error: boolean;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }

@@ -60,6 +60,30 @@ register_trade_activity_handlers(ores::nats::service::client& nats,
         get_many_trade_activities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->get_many_trade_activities(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        put_trade_activity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_trade_activity(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        put_many_trade_activities_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->put_many_trade_activities(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_trade_activity_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->delete_trade_activity(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        delete_many_trade_activities_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->delete_many_trade_activities(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_trade_activity_versions_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_trade_activity_versions(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_trade_activity_version_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_trade_activity_version(std::move(msg)); }));
     return subs;
 }
 

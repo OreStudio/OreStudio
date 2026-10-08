@@ -82,6 +82,18 @@ public:
     get_counterparty_scope_type(const messaging::get_counterparty_scope_type_request& request);
     messaging::get_many_counterparty_scope_types_response get_many_counterparty_scope_types(
         const messaging::get_many_counterparty_scope_types_request& request);
+    messaging::put_counterparty_scope_type_response
+    put_counterparty_scope_type(const messaging::put_counterparty_scope_type_request& request);
+    messaging::put_many_counterparty_scope_types_response put_many_counterparty_scope_types(
+        const messaging::put_many_counterparty_scope_types_request& request);
+    messaging::delete_counterparty_scope_type_response delete_counterparty_scope_type(
+        const messaging::delete_counterparty_scope_type_request& request);
+    messaging::delete_many_counterparty_scope_types_response delete_many_counterparty_scope_types(
+        const messaging::delete_many_counterparty_scope_types_request& request);
+    messaging::list_counterparty_scope_type_versions_response list_counterparty_scope_type_versions(
+        const messaging::list_counterparty_scope_type_versions_request& request);
+    messaging::get_counterparty_scope_type_version_response get_counterparty_scope_type_version(
+        const messaging::get_counterparty_scope_type_version_request& request);
     /**@}*/
 
     /**
@@ -101,6 +113,16 @@ public:
      */
     std::uint32_t count_counterparty_scope_types();
 
+
+    /**
+     * @brief Retrieves a single counterparty scope type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The counterparty scope type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_scope_type>
+    get_counterparty_scope_type_at_version(const std::string& code, std::uint32_t version);
 
     /**
      * @brief Retrieves a single counterparty scope type by its primary key.
@@ -146,10 +168,35 @@ public:
      */
     void delete_counterparty_scope_types(const std::vector<std::string>& codes);
 
+    /**
+     * @brief Retrieves all historical versions of a counterparty scope type.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::counterparty_scope_type>
+    get_counterparty_scope_type_history(const std::string& code);
 
 private:
     context ctx_;
     repository::counterparty_scope_type_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::counterparty_scope_type_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::counterparty_scope_type& out);
 };
 
 }

@@ -291,7 +291,7 @@ its trade, so a row cannot exist without one.
 ** trade_activity_id
 :PROPERTIES:
 :table:    ores_trading_trade_activities_tbl
-:enforce:  true
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
 :nullable: false
 :constraint_name: ores_trading_equity_accumulator_instruments_activity_fk
 :END:

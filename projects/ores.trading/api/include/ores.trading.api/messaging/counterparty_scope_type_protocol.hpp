@@ -39,6 +39,21 @@ struct counterparty_scope_type_key {
     std::string code;
 };
 
+struct counterparty_scope_type_write {
+    std::string code;
+    std::string description;
+};
+
+struct counterparty_scope_type_change {
+    counterparty_scope_type_write write;
+    ores::utility::domain::precondition precondition;
+};
+
+struct counterparty_scope_type_removal {
+    counterparty_scope_type_key key;
+    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
+};
+
 struct counterparty_scope_type_lookup {
     counterparty_scope_type_key key;
     std::optional<ores::trading::domain::counterparty_scope_type> counterparty_scope_type;
@@ -57,6 +72,17 @@ struct counterparty_scope_type_event {
     std::optional<std::string> correlation_id;
 };
 
+struct counterparty_scope_type_version_key {
+    counterparty_scope_type_key counterparty_scope_type;
+    std::uint32_t version;
+};
+
+struct counterparty_scope_type_versions_filter {
+    std::optional<std::uint32_t> version;
+    std::optional<std::uint32_t> from_version;
+    std::optional<std::uint32_t> to_version;
+};
+
 struct list_counterparty_scope_types_request {
     using response_type = struct list_counterparty_scope_types_response;
     static constexpr std::string_view nats_subject = "trading.v1.counterparty_scope_types.list";
@@ -71,6 +97,7 @@ struct list_counterparty_scope_types_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<counterparty_scope_types_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_counterparty_scope_types_response {
@@ -113,6 +140,124 @@ struct get_many_counterparty_scope_types_request {
 struct get_many_counterparty_scope_types_response {
     ores::utility::domain::result result;
     std::vector<counterparty_scope_type_lookup> entries;
+};
+
+struct put_counterparty_scope_type_request {
+    using response_type = struct put_counterparty_scope_type_response;
+    static constexpr std::string_view nats_subject = "trading.v1.counterparty_scope_types.put";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_scope_type_change change;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_counterparty_scope_type_response {
+    ores::utility::domain::result result;
+    std::optional<ores::trading::domain::counterparty_scope_type> counterparty_scope_type;
+};
+
+struct put_many_counterparty_scope_types_request {
+    using response_type = struct put_many_counterparty_scope_types_response;
+    static constexpr std::string_view nats_subject = "trading.v1.counterparty_scope_types.put_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<counterparty_scope_type_change> changes;
+    ores::utility::domain::change_intent intent;
+};
+
+struct put_many_counterparty_scope_types_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::counterparty_scope_type> counterparty_scope_types;
+};
+
+struct delete_counterparty_scope_type_request {
+    using response_type = struct delete_counterparty_scope_type_response;
+    static constexpr std::string_view nats_subject = "trading.v1.counterparty_scope_types.delete";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_scope_type_removal removal;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_counterparty_scope_type_response {
+    ores::utility::domain::result result;
+};
+
+struct delete_many_counterparty_scope_types_request {
+    using response_type = struct delete_many_counterparty_scope_types_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.counterparty_scope_types.delete_many";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<counterparty_scope_type_removal> removals;
+    ores::utility::domain::change_intent intent;
+};
+
+struct delete_many_counterparty_scope_types_response {
+    ores::utility::domain::result result;
+};
+
+struct list_counterparty_scope_type_versions_request {
+    using response_type = struct list_counterparty_scope_type_versions_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.counterparty_scope_types_versions.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_scope_type_key key;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<counterparty_scope_type_versions_filter> filter;
+};
+
+struct list_counterparty_scope_type_versions_response {
+    ores::utility::domain::result result;
+    std::vector<ores::trading::domain::counterparty_scope_type> versions;
+    std::uint64_t total;
+};
+
+struct get_counterparty_scope_type_version_request {
+    using response_type = struct get_counterparty_scope_type_version_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.counterparty_scope_types_versions.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    counterparty_scope_type_version_key key;
+};
+
+struct get_counterparty_scope_type_version_response {
+    ores::utility::domain::result result;
+    std::optional<ores::trading::domain::counterparty_scope_type> version;
 };
 
 /**

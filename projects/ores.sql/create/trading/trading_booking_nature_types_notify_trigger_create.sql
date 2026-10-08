@@ -36,13 +36,22 @@ begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
         changed_code := OLD.code;
+        changed_version := OLD.version;
     elsif TG_OP = 'UPDATE' then
-        change_action := 'updated';
-        changed_code := NEW.code;
-        changed_version := 0;
+        -- A versioned table's update is the internal close of the current
+        -- row; the insert that follows it carries the change. Announcing
+        -- both would report one change twice, so the close announces
+        -- nothing.
+        return null;
     else
-        change_action := 'created';
-        changed_version := 0;
+        -- The first version of a row is a create; every later one is an
+        -- update, because the row it replaces was already there.
+        if NEW.version <= 1 then
+            change_action := 'created';
+        else
+            change_action := 'updated';
+        end if;
+        changed_version := NEW.version;
         changed_code := NEW.code;
     end if;
 

@@ -33,7 +33,6 @@ deal has no confirmation to hang on. The insert trigger enforces it.
 :schema:        public
 :product:       ores
 :component:     trading
-:profile:       read-only-current-state
 :has_tenant_id: true
 :END:
 
@@ -126,8 +125,7 @@ ctx.generate_uuid()
 ** Flags
 :PROPERTIES:
 :tablename:        ores_trading_structures_tbl
-:immutable:        true
-:no_audit_columns: true
+:rls_tenant_isolation: true
 :END:
 
 ** Indexes
@@ -200,7 +198,7 @@ template, so the column is nullable.
 ** parent_structure_id
 :PROPERTIES:
 :table:    ores_trading_structures_tbl
-:enforce:  true
+:error_message: Invalid parent_structure_id: %. No active structure found with this id.
 :nullable: true
 :END:
 

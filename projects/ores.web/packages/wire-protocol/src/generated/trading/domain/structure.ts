@@ -31,6 +31,7 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface Structure {
+    version: number;
     tenant_id: string;
     id: string;
     party_id: string;
@@ -38,4 +39,9 @@ export interface Structure {
     kind: string;
     template_code: string;
     parent_structure_id: string;
+    modified_by: string;
+    performed_by: string;
+    change_reason_code: string;
+    change_commentary: string;
+    recorded_at: string;
 }

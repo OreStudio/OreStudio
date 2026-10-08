@@ -140,7 +140,7 @@ std::nullopt
 ** trade_id
 :PROPERTIES:
 :table:    ores_trading_trades_tbl
-:enforce:  true
+:error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
 :END:
 
@@ -149,7 +149,7 @@ A database foreign key: the anchor is immutable.
 ** trade_activity_id
 :PROPERTIES:
 :table:    ores_trading_trade_activities_tbl
-:enforce:  true
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
 :nullable: false
 :END:
 

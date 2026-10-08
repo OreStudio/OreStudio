@@ -175,7 +175,7 @@ the system tenant.
 :PROPERTIES:
 :table:         ores_trading_counterparty_scope_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid counterparty_scope: %. No active counterparty scope found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:
@@ -186,7 +186,7 @@ A database foreign key: the lookup is immutable and has no tenant.
 :PROPERTIES:
 :table:         ores_trading_booking_nature_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid booking_nature: %. No active booking nature found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:
@@ -197,7 +197,7 @@ A database foreign key: the lookup is immutable and has no tenant.
 :PROPERTIES:
 :table:         ores_trading_entry_channel_types_tbl
 :target_column: code
-:enforce:       true
+:error_message: Invalid entry_channel: %. No active entry channel found with this id.
 :use_no_tenant: true
 :nullable:      false
 :END:

@@ -202,7 +202,7 @@ drop function if exists ores_trading_validate_structure_member_fn;
 ** trade_id
 :PROPERTIES:
 :table:    ores_trading_trades_tbl
-:enforce:  true
+:error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
 :END:
 
@@ -211,7 +211,7 @@ A database foreign key: the anchor is immutable.
 ** structure_id
 :PROPERTIES:
 :table:    ores_trading_structures_tbl
-:enforce:  true
+:error_message: Invalid structure_id: %. No active structure found with this id.
 :nullable: false
 :END:
 

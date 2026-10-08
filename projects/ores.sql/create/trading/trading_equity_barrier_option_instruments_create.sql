@@ -77,8 +77,7 @@ create table if not exists "ores_trading_equity_barrier_option_instruments_tbl" 
     check ("option_type" in ('Call', 'Put')),
     check ("exercise_type" in ('European', 'Bermudan', 'American')),
     check ("lower_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
-    check ("upper_barrier_type" is null or "upper_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
-    constraint ores_trading_equity_barrier_option_instruments_activity_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
+    check ("upper_barrier_type" is null or "upper_barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -118,8 +117,20 @@ begin
         select 1 from ores_trading_trades_tbl
         where tenant_id = NEW.tenant_id
           and id = NEW.trade_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_id: %. Trade must exist for tenant.', NEW.trade_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate trade_activity_id (soft FK to ores_trading_trade_activities_tbl)
+    if not exists (
+        select 1 from ores_trading_trade_activities_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.trade_activity_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
     end if;
 

@@ -64,10 +64,7 @@ create table if not exists "ores_trading_trades_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("counterparty_scope" = 'intra_entity' or "counterparty_id" is not null),
-    constraint ores_trading_trades_counterparty_scope_fk foreign key ("counterparty_scope") references "ores_trading_counterparty_scope_types_tbl" ("code"),
-    constraint ores_trading_trades_booking_nature_fk foreign key ("booking_nature") references "ores_trading_booking_nature_types_tbl" ("code"),
-    constraint ores_trading_trades_entry_channel_fk foreign key ("entry_channel") references "ores_trading_entry_channel_types_tbl" ("code")
+    check ("counterparty_scope" = 'intra_entity' or "counterparty_id" is not null)
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -135,6 +132,36 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_type: %. No active trade type found with this code.', NEW.trade_type
+            using errcode = '23503';
+    end if;
+
+    -- Validate counterparty_scope (soft FK to ores_trading_counterparty_scope_types_tbl)
+    if not exists (
+        select 1 from ores_trading_counterparty_scope_types_tbl
+        where code = NEW.counterparty_scope
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid counterparty_scope: %. No active counterparty scope found with this id.', NEW.counterparty_scope
+            using errcode = '23503';
+    end if;
+
+    -- Validate booking_nature (soft FK to ores_trading_booking_nature_types_tbl)
+    if not exists (
+        select 1 from ores_trading_booking_nature_types_tbl
+        where code = NEW.booking_nature
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid booking_nature: %. No active booking nature found with this id.', NEW.booking_nature
+            using errcode = '23503';
+    end if;
+
+    -- Validate entry_channel (soft FK to ores_trading_entry_channel_types_tbl)
+    if not exists (
+        select 1 from ores_trading_entry_channel_types_tbl
+        where code = NEW.entry_channel
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid entry_channel: %. No active entry channel found with this id.', NEW.entry_channel
             using errcode = '23503';
     end if;
 

@@ -461,6 +461,17 @@ CATALOGUE: tuple[Check, ...] = (
             " identity field the schema declares, and no other.",
     ),
     Check(
+        id="generated-column-refs",
+        title="Generated code names no column its entity does not have",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_generated_column_refs.py"),
+        classes=("cpp", "sql", "modeling", "codegen"),
+        fix="Remove the column from the model's Table display or Indexes table,"
+            " or declare it in Columns, then regenerate the entity."
+            " check_model_drift cannot see this: the generator reproduces both"
+            " sections verbatim, so the output is in step with the model and"
+            " only the compiler or a database recreate disagrees.",
+    ),
+    Check(
         id="protocol-twins",
         title="Every protocol header has its TypeScript twin",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_protocol_twin_coverage.py"),

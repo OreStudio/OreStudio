@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/move-the-leg-economics-into-children
-#+pr:
+#+pr: 2802
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2802][#2802]] | [trading,ore] Move a swap leg's notionals and rates into child rows |
 
 * Review
 

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 9E768954-DF47-4EE6-89A0-0497C451F3CA
+:END:
+#+title: Story: Hotfix: the versioned catalogues cannot be seeded
+#+description: a2dcf034fa made the three closed trading vocabularies regular, versioned tables and so deleted their :immutable: flag, but left the models' prose and the hand-written seeds describing the immutable shape. The seeds still say on conflict (code), which matches no unique constraint, and supply none of the audit columns the versioned insert trigger now requires, so compass db recreate stops in its populate phase.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:trading:sql:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let compass db recreate finish, so a database can be built from scratch on this branch.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The three catalogue seeds insert every column the versioned shape requires.
+- The tenantless insert trigger validates change_reason_code against the system tenant.
+- compass db recreate completes and the three catalogues hold their rows.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7A2B18C-5C92-4533-B76E-F2300F803CFD][Scaffold story: Hotfix: the versioned catalogues cannot be seeded]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:05F3B121-EB12-4F3B-8957-B829FCDB6E6B][Seed the three closed vocabularies in their versioned shape]] | BACKLOG | | | Initial task for: Hotfix: the versioned catalogues cannot be seeded |
+
+* Decisions
+
+* Out of scope
+
+-

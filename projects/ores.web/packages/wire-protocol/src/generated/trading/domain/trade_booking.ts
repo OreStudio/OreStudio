@@ -35,8 +35,6 @@ export interface TradeBooking {
     tenant_id: string;
     trade_id: string;
     trade_activity_id: string;
-    party_id: string;
-    counterparty_id: string | null;
     book_id: string;
     netting_set_id: string | null;
     counterparty_identifier_id: string | null;

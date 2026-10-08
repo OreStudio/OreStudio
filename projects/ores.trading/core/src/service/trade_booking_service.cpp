@@ -102,7 +102,6 @@ domain::trade_booking to_domain(const messaging::trade_booking_write& write) {
     domain::trade_booking v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
-    v.counterparty_id = write.counterparty_id;
     v.book_id = write.book_id;
     v.netting_set_id = write.netting_set_id;
     v.counterparty_identifier_id = write.counterparty_identifier_id;

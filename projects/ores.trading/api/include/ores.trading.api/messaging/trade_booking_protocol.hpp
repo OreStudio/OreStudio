@@ -42,7 +42,6 @@ struct trade_booking_key {
 struct trade_booking_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
-    std::optional<boost::uuids::uuid> counterparty_id;
     boost::uuids::uuid book_id;
     std::optional<boost::uuids::uuid> netting_set_id;
     std::optional<boost::uuids::uuid> counterparty_identifier_id;

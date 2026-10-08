@@ -46,8 +46,6 @@ generate_synthetic_trade_booking(utility::generation::generation_context& ctx) {
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
-    r.counterparty_id = std::nullopt;
     r.book_id = ctx.generate_uuid();
     r.netting_set_id = std::nullopt;
     r.counterparty_identifier_id = std::nullopt;

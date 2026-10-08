@@ -87,16 +87,15 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_activity_id> <counterparty_id> <book_id> <netting_set_id>
-     * <counterparty_identifier_id> <netting_set_identifier_id> <trade_date> <execution_timestamp>
-     * <reason> <commentary>
+     * @brief add <trade_activity_id> <book_id> <netting_set_id> <counterparty_identifier_id>
+     * <netting_set_identifier_id> <trade_date> <execution_timestamp> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_activity_id> <counterparty_id> <book_id> <netting_set_id>
+     * @brief set <trade_id> <trade_activity_id> <book_id> <netting_set_id>
      * <counterparty_identifier_id> <netting_set_identifier_id> <trade_date> <execution_timestamp>
      * <reason> <commentary> [--version <n>]
      */
@@ -105,9 +104,9 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <trade_id> <trade_activity_id> <counterparty_id> <book_id>
-     * <netting_set_id> <counterparty_identifier_id> <netting_set_identifier_id> <trade_date>
-     * <execution_timestamp> <reason> <commentary>
+     * @brief put-many --count <n> <trade_id> <trade_activity_id> <book_id> <netting_set_id>
+     * <counterparty_identifier_id> <netting_set_identifier_id> <trade_date> <execution_timestamp>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

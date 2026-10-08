@@ -41,10 +41,6 @@ render_trade_booking_fields(const domain::trade_booking& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back(
-        {.name = "Counterparty ID",
-         .value = v.counterparty_id ? boost::uuids::to_string(*v.counterparty_id) : std::string{}});
     fields.push_back({.name = "Book ID", .value = boost::uuids::to_string(v.book_id)});
     fields.push_back(
         {.name = "Netting Set ID",

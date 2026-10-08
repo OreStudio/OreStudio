@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Regenerate ores.synthetic from the current templates, verify the tree builds and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -84,3 +84,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.synthetic is named in COMPONENTS_UNDER_TEST, so check_component_drift
+--all covers it. On current main its generated C++ is already byte-identical,
+so what regeneration found was its six shell recipes, the tangle and the
+inventory that follow them, and one trading service file. All are caught up.
+
+The tangle also absorbed the scripts drifted to __none__, which was the
+re-tangle task, so that task is done as a side effect.
+
+Two trunk defects were fixed on the way. The parser behind er-diagram runs
+--strict with no reachable-file exemption, and sixteen trading drop scripts had
+no \ir entry -- four from the trade link merge and twelve from the structures
+work. They are wired and the diagram is regenerated.
+
+Static validation leaves two failures, both trunk and neither this change's:
+er-diagram, on six RLS and tenant warnings over marketdata_market_series_
+identity, trading_structures, trading_swap_leg_amounts and trading_swap_leg_
+rates; and codegen-tests, on test_twenty_one_fleet_processes and a
+test_provision_step_words translation case.
+

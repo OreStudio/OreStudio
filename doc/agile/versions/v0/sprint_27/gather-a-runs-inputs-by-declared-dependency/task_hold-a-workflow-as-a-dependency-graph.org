@@ -34,11 +34,11 @@ dispatchable.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:1B2F990C-CCF0-4246-ACFD-AD6CC3D7AD1C][Declare what a step consumes and produces]] |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 
@@ -207,3 +207,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered and merged as [[https://github.com/OreStudio/OreStudio/pull/2783][2783]].
+
+A run's chain is two relations rather than a document. =workflow_plan_step= holds
+one step of the chain the run was started with and =workflow_plan_dependency=
+holds one edge, so "what is waiting", "what may run now" and "what rolls back, in
+what order" became queries over rows instead of a parse. =materialised_steps_json=
+left the model, and regeneration removed it from the domain, protocol, entity,
+mapper, service, shell commands and TypeScript bindings with it.
+
+The engine dispatches *every step the graph says may run* rather than one per
+completion. A run completes when every step of its chain has answered -- read
+from the chain, not counted from steps taken -- and a run that can neither run a
+step nor has one in flight is failed rather than left in progress for ever.
+=current_step_index= went with the ordinal it belonged to; =step_count= stayed,
+because it is the chain's length fixed at start.
+
+Declaring what a step reads stopped being optional: a chain that declares nothing
+now runs flat. So every definition that meant one step after another says so --
+identity (a sequence of outcomes), bundle publishing (display order), and the
+provisioning chain, which states its *real* dependencies, a kind's needs sitting
+beside its words and its budget, with a need the run did not order answered by the
+nearest step it did.
+
+Measured on a live tenant bootstrap from =acme_demo=: =import_lei_hierarchy= and
+=start_market_feeds= were published in the same second, while =provision_party=
+did not yet exist. One completion made two steps ready.
+
+*What this did not settle.* The engine asks the graph what may run, but a step's
+command is still built by the definition's own =build_steps=, so the rows are the
+authority for the graph and not yet for the builder, and a non-deterministic
+definition could still build a different chain than the run holds. Making the
+rows the only authority is the next slice.

@@ -124,6 +124,30 @@ The last question catches the tables that need no seeding at all, which
 is the most common mistake in the other direction: seeding transactional
 data to make a screen look populated.
 
+** What this page does not cover
+
+This page says which data exists, who owns its values and how the rows
+arrive. It says nothing about where the bytes live, which is the storage
+cluster's subject.
+
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the
+  storage cluster's structure note: the relational database, object
+  storage, the durable stream and the caches, and which of them owns
+  what.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object storage]] — the
+  bucket-and-key contract, the HTTP interface for bytes and the NATS
+  interface for commands, over a replaceable backend.
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — the
+  policy for the installation's own data, and why it is the
+  installation's.
+- [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] and
+  [[id:D469834F-DB7C-4486-B43F-CBD984744C36][ores.storage.objects]] —
+  the service and the entity that records a stored artefact.
+
+The two subjects meet at one point. A tier-2 dataset and a tier-4 sample
+both end up as bytes somewhere, and which bucket holds them is the
+storage pages' answer, not this page's.
+
 * Sources
 
 The tiers are this page's synthesis, drawn from the classification the DQ
@@ -140,5 +164,4 @@ uses. The words are this page's choice; no external standard fixes them.
 - [[id:6D8510CF-B977-4126-9051-5BFA9DE929B3][ores.dq.artefact_type]] — the endpoint a tier-2 or tier-4 dataset publishes through.
 - [[id:04F5EFF1-D4B5-4BD0-8CBC-4EF5DDF97921][Trade link types]] — the worked case that put this page on paper: a vocabulary the platform defines, and therefore tier 1.
 - [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — tier 3, and an example of a domain object whose rows belong to one installation.
-- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — where an installation's own data is held, and why it is the installation's.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

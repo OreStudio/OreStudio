@@ -107,6 +107,7 @@ domain::counterparty_identifier to_domain(const messaging::counterparty_identifi
     v.id_scheme = write.id_scheme;
     v.id_value = write.id_value;
     v.description = write.description;
+    v.is_authoritative = write.is_authoritative;
     return v;
 }
 

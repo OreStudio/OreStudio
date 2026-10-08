@@ -143,7 +143,8 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
-        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary>");
+        "<country_code> <postal_code> <phone> <email> <web_page> <is_primary> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +152,8 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <party_id> <contact_type> <street_line_1> <street_line_2> <city> <state> "
-        "<country_code> <postal_code> <phone> <email> <web_page> <reason> <commentary> [--version "
-        "<n>]");
+        "<country_code> <postal_code> <phone> <email> <web_page> <is_primary> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,8 +161,8 @@ void party_contact_information_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <contact_type> <street_line_1> <street_line_2> "
-        "<city> <state> <country_code> <postal_code> <phone> <email> <web_page> <reason> "
-        "<commentary>");
+        "<city> <state> <country_code> <postal_code> <phone> <email> <web_page> <is_primary> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -363,8 +364,8 @@ void party_contact_information_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -380,6 +381,7 @@ void party_contact_information_commands::process_add(std::ostream& out,
         read_token(req.change.write.phone, parsed->positionals[next++], "phone");
         read_token(req.change.write.email, parsed->positionals[next++], "email");
         read_token(req.change.write.web_page, parsed->positionals[next++], "web_page");
+        read_token(req.change.write.is_primary, parsed->positionals[next++], "is_primary");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -422,8 +424,8 @@ void party_contact_information_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -439,6 +441,7 @@ void party_contact_information_commands::process_set(std::ostream& out,
         read_token(req.change.write.phone, parsed->positionals[next++], "phone");
         read_token(req.change.write.email, parsed->positionals[next++], "email");
         read_token(req.change.write.web_page, parsed->positionals[next++], "web_page");
+        read_token(req.change.write.is_primary, parsed->positionals[next++], "is_primary");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -493,8 +496,8 @@ void party_contact_information_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -512,6 +515,7 @@ void party_contact_information_commands::process_put_many(std::ostream& out,
             read_token(change.write.phone, parsed->positionals[next++], "phone");
             read_token(change.write.email, parsed->positionals[next++], "email");
             read_token(change.write.web_page, parsed->positionals[next++], "web_page");
+            read_token(change.write.is_primary, parsed->positionals[next++], "is_primary");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

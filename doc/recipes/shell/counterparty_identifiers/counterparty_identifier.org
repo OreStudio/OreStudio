@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-counterparty_identifiers add <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary>
+counterparty_identifiers add <counterparty_id> <id_scheme> <id_value> <description> <is_authoritative> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparty_identifiers.put=.
 
 #+name: counterparty_identifiers-add
 #+begin_src ores-shell :tangle counterparty_identifiers-add.ores :exports none
-counterparty_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+counterparty_identifiers add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-counterparty_identifiers set <id> <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary> [--version <n>]
+counterparty_identifiers set <id> <counterparty_id> <id_scheme> <id_value> <description> <is_authoritative> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.counterparty_identifiers.put=.
 
 #+name: counterparty_identifiers-set
 #+begin_src ores-shell :tangle counterparty_identifiers-set.ores :exports none
-counterparty_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+counterparty_identifiers set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-counterparty_identifiers put-many --count <n> <id> <counterparty_id> <id_scheme> <id_value> <description> <reason> <commentary>
+counterparty_identifiers put-many --count <n> <id> <counterparty_id> <id_scheme> <id_value> <description> <is_authoritative> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.counterparty_identifiers.put_many=.
 
 #+name: counterparty_identifiers-put-many
 #+begin_src ores-shell :tangle counterparty_identifiers-put-many.ores :exports none
-counterparty_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ system.new_record generated_script
+counterparty_identifiers put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ false system.new_record generated_script
 #+end_src
 
 ** =delete=

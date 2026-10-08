@@ -115,6 +115,7 @@ to_domain(const messaging::party_contact_information_write& write) {
     v.phone = write.phone;
     v.email = write.email;
     v.web_page = write.web_page;
+    v.is_primary = write.is_primary;
     return v;
 }
 

@@ -49,6 +49,7 @@ render_party_contact_information_fields(const domain::party_contact_information&
     fields.push_back({.name = "Phone", .value = v.phone});
     fields.push_back({.name = "Email", .value = v.email});
     fields.push_back({.name = "Web Page", .value = v.web_page});
+    fields.push_back({.name = "Is Primary", .value = v.is_primary ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

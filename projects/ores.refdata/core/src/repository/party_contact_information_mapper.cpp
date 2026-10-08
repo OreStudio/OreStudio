@@ -62,6 +62,7 @@ party_contact_information_mapper::map(const party_contact_information_entity& v)
     r.phone = v.phone.value_or("");
     r.email = v.email.value_or("");
     r.web_page = v.web_page.value_or("");
+    r.is_primary = v.is_primary;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -94,6 +95,7 @@ party_contact_information_mapper::map(const domain::party_contact_information& v
     r.phone = v.phone.empty() ? std::nullopt : std::optional(v.phone);
     r.email = v.email.empty() ? std::nullopt : std::optional(v.email);
     r.web_page = v.web_page.empty() ? std::nullopt : std::optional(v.web_page);
+    r.is_primary = v.is_primary;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

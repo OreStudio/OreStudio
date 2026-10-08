@@ -122,18 +122,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // ----------------------------------------------------------------
     // Engine subscriptions (durable JetStream — survive service restarts)
+    //
+    // The stream is named so the subscribe reconciles the durable first: a
+    // subject rename leaves a consumer whose stored filter the server will not
+    // attach, and the engine would never start.
     // ----------------------------------------------------------------
+    const std::string engine_stream(nats.make_stream_name("workflow"));
+
     subs.push_back(nats.js_queue_subscribe(
         messaging::step_completed_event::nats_subject,
         "workflow-engine-step-completed",
         qg,
-        [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); }));
+        [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); },
+        engine_stream));
 
     subs.push_back(nats.js_queue_subscribe(
         messaging::start_workflow_message::nats_subject,
         "workflow-engine-start",
         qg,
-        [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); }));
+        [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); },
+        engine_stream));
 
     // ----------------------------------------------------------------
     // Query handler (list instances, get steps).

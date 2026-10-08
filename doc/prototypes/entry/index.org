@@ -26,7 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                                         | What it argues | Open it | Review |
 |---------------------------------------------------+----------------+---------+--------|
-| [[file:registration-door.org][Registration door]] | Registration has five states and one of them is “waiting for an administrator”. The door must show that before the person submits, not at sign-in. | [[file:registration-door/][prototype]] | — |
+| [[file:registration-door.org][Registration door]] | Registration has five states and one of them is “waiting for an administrator”. The door must show that before the person submits, not at sign-in. | [[file:registration-door/][prototype]] | none |
 
 * Adding a prototype
 

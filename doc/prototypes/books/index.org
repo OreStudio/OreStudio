@@ -26,8 +26,8 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                             | What it argues | Open it | Review |
 |---------------------------------------+----------------+---------+--------|
-| Shape the book structure              | A book is a leaf under a portfolio, so shaping the structure means showing what a book reads from its portfolio, keeping the tenant’s own books apart from the shared taxonomy they name, and refusing a close the book cannot make. | [[file:shape-the-book-structure/][prototype]] | — |
-| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. No journey group owns the trading desk, so this prototype answers to the book it books into. | [[file:trade-entry/][prototype]] | — |
+| Shape the book structure              | A book is a leaf under a portfolio, so shaping the structure means showing what a book reads from its portfolio, keeping the tenant’s own books apart from the shared taxonomy they name, and refusing a close the book cannot make. | [[file:shape-the-book-structure/][prototype]] | none |
+| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. No journey group owns the trading desk, so this prototype answers to the book it books into. | [[file:trade-entry/][prototype]] | none |
 
 * Adding a prototype
 

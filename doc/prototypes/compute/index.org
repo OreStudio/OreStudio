@@ -26,7 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype        | What it argues | Open it | Review |
 |------------------+----------------+---------+--------|
-| Compute journeys | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][prototype]] | — |
+| Compute journeys | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][prototype]] | none |
 
 * Adding a prototype
 

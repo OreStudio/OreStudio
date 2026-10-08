@@ -26,8 +26,8 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                      | What it argues | Open it | Review |
 |--------------------------------+----------------+---------+--------|
-| Onboard a counterparty         | A counterparty is a legal entity before it is a trading relationship: the identifiers that name it, the people to call, and the agreements that govern it. | [[file:onboard-a-counterparty/][prototype]] | — |
-| Keep a party's details current | A party's record is corrected, not replaced: a name, an identifier, a contact and the countries and currencies it works in, each with a version to fall back to. | [[file:keep-a-partys-details-current/][prototype]] | — |
+| Onboard a counterparty         | A counterparty is a legal entity before it is a trading relationship: the identifiers that name it, the people to call, and the agreements that govern it. | [[file:onboard-a-counterparty/][prototype]] | none |
+| Keep a party's details current | A party's record is corrected, not replaced: a name, an identifier, a contact and the countries and currencies it works in, each with a version to fall back to. | [[file:keep-a-partys-details-current/][prototype]] | none |
 
 * Adding a prototype
 

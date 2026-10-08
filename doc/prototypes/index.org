@@ -61,35 +61,26 @@ the prototypes it lists.
 A design note, where one exists, is the file =<name>.org= beside the prototype
 folder, and the group page links it.
 
-The site publishes a prototype exactly as it was written. Nothing is injected
-into it. The site's stylesheet and header are for the documentation, and a
-prototype is a whole screen written to stand alone: the stylesheet sets the
-root font size, which moves every =rem= measurement the page makes, and the
-body line height, so the published design is not the design that was agreed.
-The prototype carries its own links table instead.
+The site publishes a prototype exactly as it was written, and adds nothing to
+it: no stylesheet, no header, no links of its own. The site's stylesheet is for
+the documentation, and a prototype is a whole screen written to stand alone:
+that stylesheet sets the root font size, which moves every =rem= measurement the
+page makes, and the body line height, so a page the site decorates is no longer
+the page that was agreed. A reader who wants the prototype's group, or the
+review beside it, follows the group's page, or the browser's back button.
 
-Every page that presents a prototype heads itself with a links table naming the
-prototype, its review and its group: the prototype itself, the design note
-beside it that the group page's title opens, and every page of its review. The
-review row holds a link where a review exists, and =none= where it does not, so
-one grep over the prototype pages names every prototype nobody has reviewed:
+The group page is where a prototype is registered, and its review cell says
+=none= for a prototype nobody has reviewed, so the unreviewed set is one grep:
 
 #+begin_src sh :results verbatim
-grep -rl 'prototype-review[^>]*>none' doc/prototypes --include=index.html
+grep -rn '| none |$' doc/prototypes/*/index.org
 #+end_src
 
 A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, beside the
 prototype it reviews. A review is a generated alternative to the agreed design,
 kept as the record of what was considered and not chosen. Its =index.html=
-lists its screens, and every review page carries the same links table, pointing
-back at the prototype.
-
-A review deploys exactly as it was written. The site's stylesheet and header
-belong to the documentation, and a review is a whole screen drawn to stand
-alone, so neither is injected into it: the document rules on =html=, =body=,
-headings, links, images and tables move every measurement a screen sets in
-=rem=, which is not a fair reading of the design. Every group page states, for
-each prototype, whether a review exists.
+lists its screens, and a review screen carries one banner saying what it is.
+Every group page states, for each prototype, whether a review exists.
 
 * Adding a prototype; there is no second way, and none is planned.
 
@@ -100,27 +91,27 @@ each prototype, whether a review exists.
    =prototype.css= and =prototype.js= when the prototype needs them. Plain
    HTML, CSS and JavaScript: no framework, no build step, no backend. Switch
    variants and states with query parameters, as every prototype here does.
-   Open the page with the links table described above, copied from any
-   prototype, and leave its review row at =none=.
+   Write it as it should be read: the site adds nothing to it.
 3. Copy the design tokens from
    =projects/ores.web/packages/web/src/styles.css= so the prototype reads in
    the application's own colours.
 4. Add a row to the group's page, =doc/prototypes/<group>/index.org=, and
-   describe what the prototype argues. To keep a design note, put it at
+   describe what the prototype argues. Its review cell stays at =none= until a
+   review lands. To keep a design note, put it at
    =doc/prototypes/<group>/<name>.org= and link it from the row.
 5. Publish nothing by hand. The site build finds every prototype under
    =doc/prototypes/<group>/<name>/= and deploys it where it sits, so no build
    file names it.
 6. For a review, add =doc/prototypes/<group>/<name>/review/= with an
-   =index.html= that lists its screens, and name it in the row.
+   =index.html= that lists its screens, and point the row's review cell at it.
 
 A prototype is never a route in =ores.web=. React is for the product, and a
 prototype must open without a build, a server or a session.
 
 =build/scripts/check_prototype_inventory.py= enforces this: it fails when a
 prototype is missing from its group page, when a group page is missing from the
-table above, when a review is listed nowhere, when a prototype page's links
-table disagrees with whether that review exists, and when a React prototype tree
+table above, when a review row disagrees with whether a review exists, when a
+review directory holds no =index.html=, and when a React prototype tree
 reappears.
 
 * See also

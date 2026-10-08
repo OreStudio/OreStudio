@@ -26,11 +26,11 @@ Give a swap leg's notionals and rates child rows keyed by the leg, populate them
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Scoped, not started.                   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Move the flat economics into the children, carry them on the wire, and read them back on export. |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -43,23 +43,48 @@ Give a swap leg's notionals and rates child rows keyed by the leg, populate them
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The leg's economics become rows of their own and the wire carries them, in
+five parts.
+
+1. Two child models, =swap_leg_amount= and =swap_leg_rate=, keyed by the trade,
+   the leg ordinal and their own ordinal, with =rate_role= naming the arm that
+   stated the rate (=fixed= or =spread=).
+2. =swap_leg= loses =notional=, =fixed_rate= and =spread=: a single column
+   cannot hold a schedule, and keeping both would state one fact twice.
+3. =map_leg= stops taking the first of each list; =map_leg_amounts= and
+   =map_leg_rates= read every entry, including the =Amortizations= arm when
+   the document states a schedule instead of a list.
+4. The carrier =swap_instrument_data= gains the two collections, and the
+   hand-written payload codec carries them, so the export can rebuild the
+   lists it reads.
+5. The import writes the children after the legs, and the export reads them
+   back through a batch read on each child.
+
+The children are flat, like the =instrument_*= children beside them: no
+identity field group and no audit group, so their domain class is one struct.
 
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+and the commit it was measured at.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =legData= members the mapper read, before | 3 of the list arms, first entry only (=Notionals=, =Rates=, =Spreads=) | =read map_leg in swap_instrument_mapper.cpp= | 616eb59f95 |
+| =legData= members the mapper reads, after | every entry of all three, plus =Amortizations= | the same | working tree |
+| =swap_leg= economics columns, before | 3 (=notional=, =fixed_rate=, =spread=) | =sed -n '/^create table/,/^);/p' trading_swap_legs_create.sql= | 616eb59f95 |
+| =swap_leg= economics columns, after | 0 | the same | working tree |
+| New tables | 2 (=swap_leg_amounts=, =swap_leg_rates=) | =ls projects/ores.sql/create/trading/trading_swap_leg_*s_create.sql= | working tree |
+| Files the unit touches | 99 | =git status --short= | working tree |
+| ORE mapper round-trip tests | 614 cases, 482159 assertions, all passing | =ores.ore.core.tests= against a recreated database | working tree |
+
+* Notes
+
+The children's tables are new, so their permission codes had to be seeded in
+=iam_permissions_populate.sql=; the handler-permission gate fails without
+them. The component's =component_files.cmake= lists also had to be
+regenerated, or the new repository units are never compiled and the link
+fails.
 
 * Notes
 
@@ -87,3 +112,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A leg's notionals and its rates are rows of their own, and the import keeps
+every one of them.
+
+- *Two child tables.* =swap_leg_amount= holds one notional per row, dated from
+  the day it applies; =swap_leg_rate= holds one rate or spread, with
+  =rate_role= naming the arm of the document that stated it. Both are keyed by
+  the trade, the leg ordinal and their own ordinal.
+- *=swap_leg= lost its economics columns.* =notional=, =fixed_rate= and
+  =spread= are gone, because a single column cannot hold a schedule and
+  keeping both would state the same fact twice.
+- *The mapper keeps the whole list.* =map_leg= read
+  =first_notional(...)=, =Rates.Rate.front()= and =Spreads.Spread.front()= and
+  dropped the rest; the new =map_leg_amounts= and =map_leg_rates= read every
+  entry, and read the =Amortizations= arm when the document states a schedule
+  rather than a list. The amortisation's own type, end date and frequency are
+  not carried yet, and the reason is that this row states a value and a start
+  date.
+- *The children cross the wire.* =swap_instrument_data= gained the two
+  collections and the hand-written payload codec carries them, with a
+  fallback tier for a payload written before the change, because the export
+  rebuilds a leg from the payload and nothing else.
+- *The import writes them and the export reads them back*, through a batch
+  read on each child that mirrors the legs' own.
+
+Verification: the component regenerates with no drift; the codegen suite is
+1276 passed; the full preset build exits 0 with no errors and no compiler
+warnings; and the ORE mapper round-trip suite is 614 cases and 482159
+assertions, all passing, against a database recreated from this branch. That
+last one is the proof that matters: the golden IR and swaption documents state
+stepped legs, the export rebuilds them from the children, and the comparison
+is byte-level.
+
+Not run: the trading service's eventing integration tests. They need the
+service fleet, and this environment's user systemd bus is down, so services
+cannot start. The database was recreated for the mapper suite, which needs no
+fleet.

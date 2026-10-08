@@ -1,0 +1,280 @@
+:PROPERTIES:
+:ID: CE925DD6-311E-47EE-A9B9-D124F3610E65
+:END:
+#+title: ores.trading.swap_leg_amount
+#+description: Codegen entity model for the trading =swap_leg_amount= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: swap_leg_amount
+#+entity_plural: swap_leg_amounts
+#+entity_title: Swap Leg Amount
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+One numbered amount of a swap leg: a notional the leg pays on, dated from
+the day it applies. A leg whose notional amortises or accretes states one row
+per step; a leg with a single notional states one row.
+
+ORE states the notionals as a list on =legData/Notionals= and the dated
+variation as =legData/Amortizations=. Both describe the same column, so both
+land here: the import reads whichever the document states, and the export
+writes the list back. The leg itself carries no notional, because a single
+column cannot hold a schedule.
+
+The row is a child of the leg rather than an entity with a life of its own:
+=swap_leg= names the trade and the ordinal, and this row adds its own ordinal
+within that leg.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The trade whose leg this amount belongs to.
+
+** leg_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of the leg within the trade, matching the leg row's own.
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of this amount within the leg, in the order the document
+states it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The day this amount starts to apply.
+
+Null when the leg states a single undated notional, which is how ORE states
+the common case.
+
+** amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+The notional the leg pays on from =start_date= onwards.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this leg.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_swap_leg_amounts_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "sequence_number" >= 1 |
+| "amount" >= 0 |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| trade_id | tenant_id, trade_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+The C++ domain class is flat, like the shared =instrument_*= children
+beside it: the scaffolding columns, the identity columns and the audit
+columns are all members of the class, and no sub-struct decomposition is
+needed because the row is narrow.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swap_leg_amount
+:entity_plural_short:   swap_leg_amounts
+:entity_singular_words: swap leg amount
+:entity_plural_words:   swap leg amounts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sla
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| trade_id            | Instrument  |
+| leg_number          | Leg         |
+| sequence_number     | Sequence    |
+| start_date          | From        |
+| amount              | Notional    |
+| recorded_at         | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the notionals of many instruments' legs at once,
+and no generated read covers that: the generated reads address one key group
+at a time. The batch read below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 4C0BC117-F9DE-48AB-988E-CE8540B2DBA0
+:END:
+
+Reads every current notional of the given instruments' legs, ordered by
+instrument, leg and sequence, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::swap_leg_amount>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::swap_leg_amount>
+swap_leg_amount_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<swap_leg_amount_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_number"_c, "sequence_number"_c);
+    return execute_read_query<swap_leg_amount_entity, domain::swap_leg_amount>(
+        ctx,
+        query,
+        [](const auto& entities) { return swap_leg_amount_mapper::map(entities); },
+        lg(),
+        "Reading swap leg amounts for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:6F6B42BE-C8BB-4105-9ED3-7E87D67F9EB7][ores.trading.swap_leg]] — the leg this amount belongs to.

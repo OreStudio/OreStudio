@@ -32,8 +32,14 @@
  *
  * leg_type_code is the discriminator and the leg type is data, not a table, so
  * one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
- * leg type does not state are null: fixed_rate is null for a floating leg and
- * floating_index_code is null for a fixed leg.
+ * leg type does not state are null: floating_index_code is null for a fixed
+ * leg, for instance.
+ *
+ * The leg's economics are rows beside it, not columns on it: its notionals are
+ * swap_leg_amount rows and its rates or spreads are swap_leg_rate rows,
+ * because both are lists the document may state one entry at a time or one per
+ * step. A single column cannot hold a schedule, and the two arms of a stepping
+ * leg were flattened into one until these children landed.
  *
  * The row keeps its own id surrogate and names the parent through trade_id.
  * The instrument is keyed by its trade, so all nine rates families name the one
@@ -67,9 +73,6 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "business_day_convention_code" text not null,
     "payment_frequency_code" text not null,
     "floating_index_code" text null,
-    "fixed_rate" numeric(18, 10) null,
-    "spread" numeric(18, 10) null,
-    "notional" numeric(28, 10) not null,
     "currency" text not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -86,7 +89,6 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("leg_number" >= 1),
-    check ("notional" > 0),
     check ("currency" <> ''),
     constraint ores_trading_swap_legs_trade_activity_id_fk foreign key ("tenant_id", "trade_activity_id") references "ores_trading_trade_activities_tbl" ("tenant_id", "id")
 );

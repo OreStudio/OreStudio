@@ -77,6 +77,20 @@ namespace {
 
 } // namespace
 
+
+/**
+ * The leg's economics are rows beside it, so a test reads the child of the
+ * leg it is asserting on rather than a column of the leg.
+ */
+static double leg_rate(const ores::trading::domain::swap_instrument_data& data,
+                int leg_number,
+                const std::string& rate_role) {
+    for (const auto& r : data.leg_rates)
+        if (r.leg_number == leg_number && r.rate_role == rate_role)
+            return r.value;
+    return 0.0;
+}
+
 TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_trade("IR_Swaption_European.xml", 0);
@@ -94,7 +108,7 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     CHECK(result.legs[0].floating_index_code == "EUR-EURIBOR-3M");
     // leg 1: fixed (2%)
     CHECK(result.legs[1].leg_type_code == "Fixed");
-    CHECK(result.legs[1].fixed_rate == Approx(0.02).epsilon(0.0001));
+    CHECK(leg_rate(result, 2, "fixed") == Approx(0.02).epsilon(0.0001));
     BOOST_LOG_SEV(lg, info) << "Swaption European forward-mapper test passed";
 }
 
@@ -104,7 +118,7 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swaption(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swaption(
-        std::get<ores::trading::domain::swaption_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::swaption_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.SwaptionData.operator bool());
     const auto& sd = *reconstructed.SwaptionData;
@@ -206,6 +220,8 @@ TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
     const auto reconstructed = swap_instrument_mapper::reverse_callable_swap(
         std::get<ores::trading::domain::callable_swap_instrument>(result.instrument),
         result.legs,
+        result.leg_amounts,
+        result.leg_rates,
         result.call_dates);
 
     REQUIRE(reconstructed.CallableSwapData.operator bool());

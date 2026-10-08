@@ -28,7 +28,6 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -58,9 +57,6 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.business_day_convention_code = v.business_day_convention_code;
     r.payment_frequency_code = v.payment_frequency_code;
     r.floating_index_code = v.floating_index_code.value_or("");
-    r.fixed_rate = v.fixed_rate.value_or(0);
-    r.spread = v.spread.value_or(0);
-    r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
     r.currency = v.currency;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -90,9 +86,6 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.payment_frequency_code = v.payment_frequency_code;
     r.floating_index_code =
         v.floating_index_code.empty() ? std::nullopt : std::optional(v.floating_index_code);
-    r.fixed_rate = v.fixed_rate == 0 ? std::nullopt : std::optional(v.fixed_rate);
-    r.spread = v.spread == 0 ? std::nullopt : std::optional(v.spread);
-    r.notional = v.notional.to_string();
     r.currency = v.currency;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

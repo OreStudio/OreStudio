@@ -143,7 +143,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "add <id> <trade_id> <trade_activity_id> <leg_number> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary>");
+        "<floating_index_code> <currency> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,8 +152,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "set <id> <trade_id> <trade_activity_id> <leg_number> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <fixed_rate> <spread> <notional> <currency> <reason> <commentary> "
-        "[--version <n>]");
+        "<floating_index_code> <currency> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,8 +161,7 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_number> <payer> "
         "<leg_type_code> <day_count_fraction_code> <business_day_convention_code> "
-        "<payment_frequency_code> <floating_index_code> <fixed_rate> <spread> <notional> "
-        "<currency> <reason> <commentary>");
+        "<payment_frequency_code> <floating_index_code> <currency> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -365,8 +363,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 14 + 2) {
-            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -389,9 +387,6 @@ void swap_leg_commands::process_add(std::ostream& out,
         read_token(req.change.write.floating_index_code,
                    parsed->positionals[next++],
                    "floating_index_code");
-        read_token(req.change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
-        read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        read_token(req.change.write.notional, parsed->positionals[next++], "notional");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -435,8 +430,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 14 + 2) {
-            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -459,9 +454,6 @@ void swap_leg_commands::process_set(std::ostream& out,
         read_token(req.change.write.floating_index_code,
                    parsed->positionals[next++],
                    "floating_index_code");
-        read_token(req.change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
-        read_token(req.change.write.spread, parsed->positionals[next++], "spread");
-        read_token(req.change.write.notional, parsed->positionals[next++], "notional");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -517,8 +509,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 14 + 2) {
-            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 11 + 2) {
+            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -543,9 +535,6 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             read_token(change.write.floating_index_code,
                        parsed->positionals[next++],
                        "floating_index_code");
-            read_token(change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
-            read_token(change.write.spread, parsed->positionals[next++], "spread");
-            read_token(change.write.notional, parsed->positionals[next++], "notional");
             read_token(change.write.currency, parsed->positionals[next++], "currency");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

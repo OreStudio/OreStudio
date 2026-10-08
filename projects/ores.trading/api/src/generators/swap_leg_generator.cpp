@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/swap_leg_generator.hpp"
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -53,8 +52,6 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.day_count_fraction_code = std::string("A365F");
     r.business_day_convention_code = std::string("ModifiedFollowing");
     r.payment_frequency_code = std::string("Annual");
-    r.fixed_rate = 0.05;
-    r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
     r.currency = std::string("USD");
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;

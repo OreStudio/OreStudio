@@ -1262,6 +1262,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::settlement_types:read',                      'View settlement types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::settlement_types:write',                     'Create and modify settlement types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::settlement_types:delete',                    'Delete settlement types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:read',                           'View swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:write',                          'Create and modify swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:delete',                         'Delete swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:read',                             'View swap leg rates');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:write',                            'Create and modify swap leg rates');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:delete',                           'Delete swap leg rates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_legs:read',                             'View swap legs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_legs:write',                            'Create and modify swap legs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_legs:delete',                           'Delete swap legs');

@@ -124,6 +124,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :tablename: ores_trading_structure_members_tbl
 :rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Checks

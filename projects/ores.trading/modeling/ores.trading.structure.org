@@ -128,6 +128,8 @@ ctx.generate_uuid()
 :tablename:        ores_trading_structures_tbl
 :immutable:        true
 :no_audit_columns: true
+:rls_tenant_isolation: true
+:rls_party_isolation: true
 :END:
 
 ** Indexes
@@ -225,7 +227,6 @@ enforced rather than checked.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

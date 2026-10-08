@@ -143,3 +143,40 @@ create or replace trigger ores_trading_structures_immutable_truncate_trg
 before truncate on "ores_trading_structures_tbl"
 for each statement execute function ores_trading_structures_immutable_fn();
 
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Structure
+-- =============================================================================
+alter table ores_trading_structures_tbl enable row level security;
+
+drop policy if exists structures_tbl_tenant_isolation_policy
+    on ores_trading_structures_tbl;
+
+create policy structures_tbl_tenant_isolation_policy
+on ores_trading_structures_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists structures_tbl_party_isolation_policy
+    on ores_trading_structures_tbl;
+
+create policy structures_tbl_party_isolation_policy
+on ores_trading_structures_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

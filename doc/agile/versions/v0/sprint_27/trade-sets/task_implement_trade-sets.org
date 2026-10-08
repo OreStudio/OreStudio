@@ -8,7 +8,7 @@
 #+filetags: :trade-sets:sprint_27:v0:
 #+owner: marco
 #+branch: feature/trade-sets
-#+pr:
+#+pr: 2787
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2787][#2787]] | [doc] Define the trade set model |
 
 * Review
 

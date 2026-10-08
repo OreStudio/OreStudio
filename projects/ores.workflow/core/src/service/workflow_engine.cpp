@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <format>
@@ -46,6 +47,8 @@ std::string materialise_steps_json(const std::vector<workflow_step_def>& steps) 
                       s.description,
                       s.command_subject,
                       s.compensation_subject,
+                      s.consumes,
+                      s.produces,
                       static_cast<std::uint32_t>(s.timeout.count())});
     return rfl::json::write(ms);
 }
@@ -85,6 +88,31 @@ std::optional<std::string> undeclared_deadline(const std::vector<workflow_step_d
         if (step.timeout.count() <= 0)
             return "The definition built step '" + step.name +
                    "' with no deadline, so the engine would wait on it for ever.";
+    return std::nullopt;
+}
+
+/**
+ * @brief The reason a step's declared inputs cannot be satisfied, or nothing.
+ *
+ * A step names the steps whose results it reads. Until this check existed the
+ * only statement of that dependency was inside the step's own command builder,
+ * so a missing input surfaced as whatever that builder said when it could not
+ * find one, and the engine could not tell a run that is waiting on work from a
+ * run that is waiting on nothing.
+ *
+ * The same check catches two mistakes that are different spellings of one: a
+ * step that names a step no chain contains, and a step that names one which
+ * comes after it. Nothing has produced that result at the point the step runs.
+ */
+std::optional<std::string> undeclared_inputs(const std::vector<workflow_step_def>& steps) {
+    std::vector<std::string> produced;
+    for (const auto& step : steps) {
+        for (const auto& input : step.consumes)
+            if (std::ranges::find(produced, input) == produced.end())
+                return "The definition built step '" + step.name + "' to read '" + input +
+                       "', which no earlier step produces.";
+        produced.push_back(step.name);
+    }
     return std::nullopt;
 }
 
@@ -290,6 +318,14 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         return;
     }
 
+    if (const auto undeclared = undeclared_inputs(steps)) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot advance workflow " << instance.type << ": " << *undeclared;
+        set_instance_state(instance.id, instance_states_.require("failed"), "", *undeclared);
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
+        return;
+    }
+
     if (next_index >= static_cast<int>(steps.size())) {
         BOOST_LOG_SEV(lg(), error)
             << "Step index " << next_index << " out of range for type: " << instance.type;
@@ -313,6 +349,39 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         if (s.step_index >= 0)
             results.push_back(
                 workflow_step_result{.name = s.name, .response_json = s.response_json});
+    }
+
+    // The steps this one declares it reads must have answered. A builder would
+    // refuse a missing result on its own, but it refuses in its own words and
+    // from inside itself, where a step still in flight and a step that never
+    // ran look identical: the engine is the only place that can say which of
+    // its declared inputs the run is waiting for.
+    {
+        const auto answered = [&](const std::string& input) {
+            return std::ranges::any_of(all_steps, [&](const auto& s) {
+                if (s.step_index < 0 || s.name != input)
+                    return false;
+                return s.state_id == step_states_.require("completed") ||
+                       s.state_id == step_states_.require("completed_with_warnings");
+            });
+        };
+        std::string missing;
+        for (const auto& input : step_def.consumes) {
+            if (answered(input))
+                continue;
+            if (!missing.empty())
+                missing += ", ";
+            missing += "'" + input + "'";
+        }
+        if (!missing.empty()) {
+            const auto reason = "Step '" + step_def.name + "' reads " + missing +
+                                ", which have not answered, so the step cannot run.";
+            BOOST_LOG_SEV(lg(), error)
+                << "Cannot dispatch step " << step_def.name << " of workflow "
+                << boost::uuids::to_string(instance.id) << ": " << reason;
+            begin_compensation(instance, reason);
+            return;
+        }
     }
 
     // A builder that cannot produce a command — a result it depends on is
@@ -690,6 +759,11 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     try {
         steps = def->build_steps(req.request_json, req.tenant_id, req.correlation_id);
         if (const auto undeclared = undeclared_deadline(steps)) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Cannot run workflow type " << req.type << ": " << *undeclared;
+            return;
+        }
+        if (const auto undeclared = undeclared_inputs(steps)) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot run workflow type " << req.type << ": " << *undeclared;
             return;

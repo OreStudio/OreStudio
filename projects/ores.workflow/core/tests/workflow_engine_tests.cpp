@@ -194,6 +194,47 @@ struct fixture {
             };
         registry->register_definition(std::move(def));
     }
+
+    /**
+     * @brief Register a definition whose steps declare the steps they read.
+     *
+     * register_steps builds a chain of bare steps, which is what most of these
+     * tests want. This one exists so a test can state a chain that reads a step
+     * it does not contain, or one that comes after it, and watch the engine
+     * refuse it.
+     */
+    void register_chain(
+        const std::string& type,
+        const std::vector<std::pair<std::string, std::vector<std::string>>>& steps) {
+        workflow_definition def;
+        def.type_name = type;
+        def.description = "engine fixture";
+        def.on_failure = failure_policy::compensate;
+        def.build_steps = [steps](const std::string& request,
+                                  const std::string&,
+                                  const std::string&) {
+            std::vector<workflow_step_def> built;
+            built.reserve(steps.size());
+            for (const auto& [name, consumes] : steps) {
+                workflow_step_def s;
+                s.name = name;
+                s.description = name;
+                s.command_subject = step_subject;
+                s.timeout = write_step_timeout;
+                s.compensation_subject = compensation_subject;
+                s.consumes = consumes;
+                s.build_command = [request](const std::string&, const workflow_step_results&) {
+                    return request;
+                };
+                s.build_compensation = [](const std::string& command, const std::string&) {
+                    return command;
+                };
+                built.push_back(std::move(s));
+            }
+            return built;
+        };
+        registry->register_definition(std::move(def));
+    }
 };
 
 template <typename T>
@@ -356,6 +397,46 @@ TEST_CASE("workflow_engine starts nothing for a type it does not know", tags) {
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Unregistered type created nothing.";
+}
+
+TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // "two" reads "nowhere", which no earlier step of this chain produces. That
+    // is a mistake in the definition and not a state of the run, so the engine
+    // must refuse it before it publishes anything: the alternative is a run
+    // that discovers the typo after it has done work it then has to roll back.
+    f.register_chain("test_unknown_input_workflow", {{"one", {}}, {"two", {"nowhere"}}});
+    // "two" reads a step that comes after it, which is the same mistake spelled
+    // so that the name does exist in the chain.
+    f.register_chain("test_forward_input_workflow", {{"one", {"two"}}, {"two", {}}});
+    f.register_steps("test_well_formed_workflow", {"one"});
+
+    const auto unknown_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto forward_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+
+    f.engine->on_start_workflow(
+        as_message(start_for("test_unknown_input_workflow", f.tenant(), unknown_id)));
+    f.engine->on_start_workflow(
+        as_message(start_for("test_forward_input_workflow", f.tenant(), forward_id)));
+
+    workflow_instance_repository instances;
+    CHECK(instances.read_latest(f.h.context(), unknown_id).empty());
+    CHECK(instances.read_latest(f.h.context(), forward_id).empty());
+    CHECK(wait_for_instance(commands, unknown_id, 1, std::chrono::milliseconds(300)).empty());
+    CHECK(wait_for_instance(commands, forward_id, 1, std::chrono::milliseconds(300)).empty());
+
+    // The control is the same call, harness and tenant with only the
+    // declarations changed, so the refusals above are about the declarations
+    // and not about a start that could not have worked either way.
+    const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    f.engine->on_start_workflow(
+        as_message(start_for("test_well_formed_workflow", f.tenant(), accepted_id)));
+    CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
+    CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
+    BOOST_LOG_SEV(lg, debug) << "A chain that cannot deliver its inputs created nothing.";
 }
 
 TEST_CASE("workflow_engine starts nothing for a definition with no steps", tags) {

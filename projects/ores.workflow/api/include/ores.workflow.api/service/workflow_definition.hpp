@@ -105,6 +105,36 @@ struct workflow_step_def {
     std::string description;
 
     /**
+     * @brief The steps whose results this step reads.
+     *
+     * A step's result is addressed by the name of the step that produced it,
+     * and until this field existed the only place that dependency was stated
+     * was inside build_command, which failed at dispatch with whatever the
+     * reader of a missing result happened to say. Naming them here lets the
+     * engine answer two questions it could not answer before: whether a chain
+     * is coherent at all, and whether a step is waiting on work or on nothing.
+     *
+     * Every name must be an earlier step of the same chain. A definition that
+     * names a step it does not contain, or one that comes after it, is a
+     * mistake in the definition rather than a state of the run, so build_steps
+     * refuses it before the run starts.
+     */
+    std::vector<std::string> consumes;
+
+    /**
+     * @brief The artifacts this step writes beyond its own result.
+     *
+     * A step always produces its result, which is addressed by its name. What
+     * it may also produce is a file: an export writes one object per key, and a
+     * step that fans out writes one per book. Those keys are not known when the
+     * chain is built, so the declaration names the artifact and the instance
+     * says which of them exist.
+     *
+     * Empty for a step that writes nothing but its result.
+     */
+    std::vector<std::string> produces;
+
+    /**
      * @brief NATS subject to which the step command is published.
      *
      * E.g. "refdata.v1.parties.save"
@@ -173,6 +203,19 @@ struct materialised_step {
     std::string description;
     std::string command_subject;
     std::string compensation_subject;
+    /**
+     * @brief The steps whose results this step reads, as the definition gave
+     * them.
+     *
+     * Carried with the run for the same reason the deadline is: a definition
+     * edited after a run started would otherwise change what that run was
+     * waiting for, and the engine would judge it by a chain it never built.
+     */
+    std::vector<std::string> consumes;
+    /**
+     * @brief The artifacts this step writes beyond its own result.
+     */
+    std::vector<std::string> produces;
     /**
      * @brief The deadline the run was started with, in seconds.
      *

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 3D7BDF75-135C-44A0-B166-7BA98DDE1B9B
+:END:
+#+title: Task: Repair the rates trade-type routing
+#+description: The generated routing, the ORE importer and the instrument tables disagree about three things. RiskParticipationAgreement routes to rpa_instruments while the importer writes credit_instruments, whose check refuses the code; RPA is classified swap in the trade-type seed while the domain note, the refdata instrument codes and the importer all call it credit; and three models generate trade type codes the catalogue and the seed do not hold (FRA, EuropeanSwaption, ZeroCouponInflationSwap). Repair all three so the routing is the single truth, and record the unproduced rpa_instruments table with its disposition.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/repair-the-rates-routing
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the generated trade-type routing, the ORE importer and the instrument tables agree, and make every rates model generate a code the catalogue holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- RiskParticipationAgreement routes to credit_instrument, its product_type is credit, and the credit table's generated check accepts the code, so an RPA document imports.
+- fra_instrument, swaption_instrument and inflation_swap_instrument generate trade type codes the catalogue and the seed hold.
+- The tree regenerates drift-clean and builds, and the codegen suite passes.
+- The unproduced rpa_instruments table is recorded with its disposition.
+
+* Plan
+
+Three repairs, all at the catalogue and the models, then regenerate:
+
+1. RiskParticipationAgreement's catalogue row becomes
+   =product_type= =credit= and =instrument= =credit_instrument=. The
+   generated routing follows, the credit table's check gains the code,
+   and the trade-types seed carries the class the domain note, the
+   refdata instrument codes and the importer already state.
+2. The three generator defaults that name a code the seed does not hold
+   are corrected to the catalogue's code.
+3. The unproduced =rpa_instruments= table is recorded with its
+   disposition rather than retired here: retiring a generated entity
+   touches five components and no tool prunes the files it leaves
+   behind, so it is its own unit.
+
+Removing the route empties the generated =instrument_table= enum of
+=rpa_instrument=, so the hand-written export switch that read it is
+migrated in the same change rather than left to fail to compile.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Catalogue codes routed to =rpa_instrument=, before | 1 | =grep '| rpa_instrument' ores.trading.trade_type_catalogue.org= | 0e38c2a6fe |
+| Catalogue codes routed to =rpa_instrument=, after | 0 | the same | working tree |
+| Codes in the =credit_instruments= trade-type check, before | 7 | =grep -o "'[A-Za-z]*'" trading_credit_instruments_create.sql= | 0e38c2a6fe |
+| Codes in the =credit_instruments= trade-type check, after | 8 | the same | working tree |
+| Models generating a code absent from the seed, before | 3 (=FRA=, =EuropeanSwaption=, =ZeroCouponInflationSwap=) | =grep "'<code>'" trading_trade_types_populate.sql= | 0e38c2a6fe |
+| Models generating a code absent from the seed, after | 0 | the same | working tree |
+| Generated files the route change touches | 6 | =check_component_drift.py --component trading-cpp --dry-run= | working tree |
+
+* Notes
+
+The hand-written export switch is migrated in this change: the switch now
+has no =rpa_instrument= case, and the =rpa_ids= vector, its legs batch entry
+and its service dispatch are deleted with it. RPA flows through the credit
+path, which the file already had.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generated routing, the ORE importer and the instrument tables now
+agree, and every rates model generates a code the catalogue holds.
+
+- *RiskParticipationAgreement leaves the rates family.* Its catalogue row
+  is =product_type= =credit= and =instrument= =credit_instrument=. The
+  generated =credit_instruments= check gains the code (eight codes now,
+  seven before), the trade-types seed classifies it =credit=, and the
+  generated =instrument_table_for= returns =credit_instrument=. That is
+  the table the ORE importer has always written, so the import no longer
+  contradicts its own check. Three independent sources already said
+  =credit=: the =rpa.org= domain note, the refdata instrument codes
+  (=refdata_instrument_codes_populate.sql:76=) and the importer itself.
+- *The three generator defaults name real codes.* =fra_instrument=,
+  =swaption_instrument= and =inflation_swap_instrument= generated =FRA=,
+  =EuropeanSwaption= and =ZeroCouponInflationSwap=; they now generate
+  =ForwardRateAgreement=, =Swaption= and =InflationSwap=, which are the
+  codes the seed and the per-table checks carry. The =FRA= string was the
+  refdata market-data short code for the same product, not a trade type.
+- *=rpa_instrument= left the generated enum*, since nothing routes to it
+  any more. The hand-written export switch that had a case for it is
+  migrated in the same change: the case, the =rpa_ids= vector, its legs
+  batch entry and its service dispatch are deleted, and RPA flows through
+  the credit path the file already had.
+- *The unproduced =rpa_instruments= table is recorded*, not retired here:
+  capture [[id:76C8D07B-775A-48E0-80C6-42368D85141E][Retire the unproduced
+  rpa_instruments table]], because retiring a generated entity touches five
+  components and no tool prunes the files it leaves behind.
+
+Verification: the component regenerates with no drift; the codegen suite
+is 1276 passed; the full preset build exits 0 with no errors and no
+warnings.
+
+Not verified live: that an RPA document imports and round trips. The
+database and the service fleet are down in this environment, and
+recreating the database is shared work across eleven worktrees. The
+import path is proven statically instead: the catalogue routes the code to
+=credit_instrument=, that table's generated check now lists it, and the
+importer writes that table.

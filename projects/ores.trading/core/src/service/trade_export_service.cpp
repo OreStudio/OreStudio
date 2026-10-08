@@ -98,7 +98,7 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
     // Phase 1: bucket instrument IDs by the table that holds them
     std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
         fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids, infl_ids,
-        rpa_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
+        fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids;
 
@@ -191,9 +191,6 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
             case instrument_table::knock_out_swap_instrument:
                 koswap_ids.push_back(id);
                 break;
-            case instrument_table::rpa_instrument:
-                rpa_ids.push_back(id);
-                break;
             case instrument_table::scripted_instrument:
                 scripted_ids.push_back(id);
                 break;
@@ -217,8 +214,7 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
                         &bgs_ids,
                         &callable_ids,
                         &koswap_ids,
-                        &infl_ids,
-                        &rpa_ids})
+                        &infl_ids})
             all_swap.insert(all_swap.end(), v->begin(), v->end());
         if (!all_swap.empty()) {
             repository::swap_leg_repository leg_repo;
@@ -370,10 +366,6 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
     if (!infl_ids.empty()) {
         service::inflation_swap_instrument_service svc(ctx);
         add_swap(svc.get_inflation_swap_instruments(infl_ids));
-    }
-    if (!rpa_ids.empty()) {
-        service::rpa_instrument_service svc(ctx);
-        add_swap(svc.get_rpa_instruments(rpa_ids));
     }
 
     // FX types

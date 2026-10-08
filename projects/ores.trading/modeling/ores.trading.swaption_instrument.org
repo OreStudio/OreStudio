@@ -12,7 +12,7 @@
 #+entity_plural: swaption_instruments
 #+entity_title: Swaption Instrument
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-10-08
 
 Represents a swaption — an option granting the right to enter into an
 interest rate swap at a future date. Exercise type may be European,
@@ -41,7 +41,7 @@ Bermudan, or American.
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
 #+begin_src cpp :name generator
-std::string("EuropeanSwaption")
+std::string("Swaption")
 #+end_src
 
 ** party_id

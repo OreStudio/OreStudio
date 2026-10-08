@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 76C8D07B-775A-48E0-80C6-42368D85141E
+:END:
+#+title: Retire the unproduced rpa_instruments table
+#+description: RiskParticipationAgreement now routes to credit_instrument, so nothing writes ores_trading_rpa_instruments_tbl and nothing reads it. Dispose of the table when the credit family is reworked.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Retire =ores_trading_rpa_instruments_tbl= and the =ores.trading.rpa_instrument=
+model behind it, once the credit family has decided where the risk
+participation agreement's own facts live.
+
+* Why
+
+RiskParticipationAgreement routes to =credit_instrument=, so nothing writes
+the =rpa_instruments= table and nothing reads it. Before the routing repair
+the generated route pointed at =rpa_instruments= while the ORE importer
+wrote =credit_instruments=, whose check refused the code: the import was
+refused and the export found no row to rebuild from.
+
+The table's own columns — =reference_counterparty=, =participation_rate=
+and =protection_fee= — were never written by any mapper, and the credit
+mapper does not fill them either. They are the credit family's RPA facts,
+so the credit family decides whether they get a home or are not persisted.
+
+Retiring a generated entity is its own unit: it touches the model, the
+generated C++ and SQL, the shell command unit and its recipe, and the
+=rpa_instrument= leaf of the rates wire variant, and no tool prunes the
+files it leaves behind.
+
+* References
+
+- The routing repair that made the table unreachable:
+  [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to
+  the instrument table rule]], task =repair-the-rates-routing=.
+- The family analysis that recorded the contradiction: findings R1, R2,
+  R8 and R19 of the rates story's =design.org=.
+
+* See also
+
+- [[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]] — the taxonomy that classes RiskParticipationAgreement =credit=.

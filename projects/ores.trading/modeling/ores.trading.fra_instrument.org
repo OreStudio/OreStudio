@@ -12,7 +12,7 @@
 #+entity_plural: fra_instruments
 #+entity_title: FRA Instrument
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-10-08
 
 Represents a Forward Rate Agreement instrument that fixes a future
 interest rate for a notional principal amount over a specified period.
@@ -40,7 +40,7 @@ interest rate for a notional principal amount over a specified period.
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
 #+begin_src cpp :name generator
-std::string("FRA")
+std::string("ForwardRateAgreement")
 #+end_src
 
 ** party_id

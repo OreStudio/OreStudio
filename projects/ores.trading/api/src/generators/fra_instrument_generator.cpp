@@ -46,7 +46,7 @@ generate_synthetic_fra_instrument(utility::generation::generation_context& ctx) 
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.trade_id = ctx.generate_uuid();
-    r.identity.trade_type_code = std::string("FRA");
+    r.identity.trade_type_code = std::string("ForwardRateAgreement");
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};

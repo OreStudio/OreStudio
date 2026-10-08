@@ -8,7 +8,7 @@
 #+filetags: :model:trade_type:catalogue:trading:
 #+brief: The trade types and the instrument table that holds each.
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-08
 
 Every trade type ORE knows, and the instrument table that holds a trade of
 that type. Each instrument table used to list the codes it accepts by hand,
@@ -24,6 +24,15 @@ export handler reads is generated from it.
 
 An empty =instrument= means no table holds the type yet: nothing imports it,
 so nothing can export it. A type is routed where the ORE importer writes it.
+
+=product_type= is the asset class the refdata taxonomy carries, not the
+table the type routes to. RiskParticipationAgreement is a credit product
+whose importer has always written the credit table, so it is classified
+=credit= and routed there; its columns on the old =rpa_instruments= table
+were never written by any mapper. InflationSwap is an inflation product
+whose importer writes =inflation_swap_instruments=; it stays classified
+=swap= until an inflation family is scaffolded, and the reason is recorded
+on the rates story.
 
 The =Failed= type ORE uses for a trade it could not load is deliberately
 absent: it is a placeholder, not a product.
@@ -45,7 +54,7 @@ absent: it is a placeholder, not a product.
 | BalanceGuaranteedSwap               | Balance Guaranteed Swap                      | swap         | false       | true          | balance_guaranteed_swap_instrument |
 | CallableSwap                        | Callable Swap                                | swap         | false       | true          | callable_swap_instrument           |
 | KnockOutSwap                        | Knock-Out Swap                               | swap         | false       | true          | knock_out_swap_instrument          |
-| RiskParticipationAgreement          | Risk Participation Agreement                 | swap         | false       | true          | rpa_instrument                     |
+| RiskParticipationAgreement          | Risk Participation Agreement                 | credit       | false       | true          | credit_instrument                  |
 | InflationSwap                       | Inflation Swap                               | swap         | false       | true          | inflation_swap_instrument          |
 | FxForwardVolatilityAgreement        | FX Forward Volatility Agreement              | fx           | true        | false         |                                    |
 | FxForward                           | FX Forward                                   | fx           | false       | false         | fx_forward_instrument              |

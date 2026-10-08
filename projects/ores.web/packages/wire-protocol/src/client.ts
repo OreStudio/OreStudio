@@ -107,7 +107,7 @@ import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
-import { LIVE_WORKSPACE_ID, uuid, type Uuid } from './primitives.js';
+import { uuid, type Uuid } from './primitives.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -189,13 +189,6 @@ export interface OresClientOptions {
     readonly generateId?: IdGenerator;
 }
 
-/** A request context attached to every authenticated call. */
-export interface WorkspaceContext {
-    readonly workspaceId: string;
-    /** Ancestor chain, nearest first, for inherited definitions. */
-    readonly resolutionOrder?: readonly string[];
-}
-
 const enterTenantResponseSchema = z.object({
     success: z.boolean().default(false),
     message: z.string().default(''),
@@ -218,7 +211,6 @@ interface SessionState {
     /** IAM session id, forwarded as `Nats-Session-Id` on every authenticated call. */
     sessionId: string;
     refreshInFlight: Promise<string> | undefined;
-    workspace: WorkspaceContext | undefined;
 }
 
 /**
@@ -641,7 +633,6 @@ export class OresClient {
             token: reply.token,
             sessionId: reply.sessionId,
             refreshInFlight: undefined,
-            workspace: undefined,
         };
 
         if (reply.selectedPartyId.length > 0) {
@@ -891,13 +882,6 @@ export class OresClient {
         });
     }
 
-    /** Sets the workspace context sent on every subsequent authenticated call. */
-    setWorkspace(context: WorkspaceContext | undefined): void {
-        if (this.#session !== undefined) {
-            this.#session.workspace = context;
-        }
-    }
-
     /** Lists one page of accounts. */
     async listAccounts(
         input: {
@@ -1036,15 +1020,10 @@ export class OresClient {
 
     #authenticatedHeaders(session: SessionState): Record<string, string> {
         // A fresh trace key per top-level operation, matching ClientManager.
-        const headers: Record<string, string> = {
+        return {
             ...tracingHeaders(session.sessionId, this.#generateId),
             Authorization: `Bearer ${session.token}`,
-            'X-Workspace-Id': session.workspace?.workspaceId ?? LIVE_WORKSPACE_ID,
         };
-        if (session.workspace?.resolutionOrder !== undefined) {
-            headers['X-Workspace-Resolution'] = session.workspace.resolutionOrder.join(',');
-        }
-        return headers;
     }
 
     #requireSession(): SessionState {

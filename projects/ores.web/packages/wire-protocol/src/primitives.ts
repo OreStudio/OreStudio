@@ -130,6 +130,3 @@ export function fromWireTimestamp(value: WireTimestamp): Date {
 
 /** The system tenant, {@code ffffffff-ffff-ffff-ffff-ffffffffffff}. */
 export const SYSTEM_TENANT_ID = uuid('ffffffff-ffff-ffff-ffff-ffffffffffff');
-
-/** The Live workspace, {@code aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}. */
-export const LIVE_WORKSPACE_ID = uuid('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');

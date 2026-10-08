@@ -25,7 +25,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <sstream>
 #include <vector>
 
 namespace ores::service::service {
@@ -106,33 +105,6 @@ make_request_context(const ores::database::context& base_ctx,
     if (!verifier)
         return base_ctx;
 
-    // Applies workspace ID and optional resolution chain from request headers.
-    // Absence of X-Workspace-Id leaves the default Live workspace intact.
-    // Absence of X-Workspace-Resolution means single-workspace query only.
-    using ctx_result_t = std::expected<ores::database::context, ores::service::error_code>;
-    const auto apply_workspace = [&](ctx_result_t r) -> ctx_result_t {
-        if (!r)
-            return r;
-        const auto ws_it = msg.headers.find(std::string(ores::nats::headers::x_workspace_id));
-        if (ws_it != msg.headers.end() && !ws_it->second.empty())
-            r = r->with_workspace(ws_it->second);
-
-        const auto res_it =
-            msg.headers.find(std::string(ores::nats::headers::x_workspace_resolution));
-        if (res_it != msg.headers.end() && !res_it->second.empty()) {
-            std::vector<std::string> chain;
-            std::istringstream ss(res_it->second);
-            std::string token;
-            while (std::getline(ss, token, ',')) {
-                if (!token.empty())
-                    chain.push_back(std::move(token));
-            }
-            if (!chain.empty())
-                r = r->with_workspace_resolution(std::move(chain));
-        }
-        return r;
-    };
-
     // Check X-Delegated-Authorization first: a downstream service forwarded
     // the original end-user JWT.  Validate it and build the user's full context
     // (tenant, party, actor, roles).  An expired delegated token is a hard
@@ -142,8 +114,8 @@ make_request_context(const ores::database::context& base_ctx,
         const auto& val = del_it->second;
         if (!val.starts_with(ores::nats::headers::bearer_prefix))
             return std::unexpected(ores::service::error_code::unauthorized);
-        return apply_workspace(make_context_from_jwt(
-            base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier));
+        return make_context_from_jwt(
+            base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier);
     }
 
     const auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
@@ -154,8 +126,8 @@ make_request_context(const ores::database::context& base_ctx,
     if (!val.starts_with(ores::nats::headers::bearer_prefix))
         return std::unexpected(ores::service::error_code::unauthorized);
 
-    return apply_workspace(make_context_from_jwt(
-        base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier));
+    return make_context_from_jwt(
+        base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier);
 }
 
 } // namespace ores::service::service

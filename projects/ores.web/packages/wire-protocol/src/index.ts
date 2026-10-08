@@ -30,7 +30,6 @@
  */
 
 export {
-    LIVE_WORKSPACE_ID,
     SYSTEM_TENANT_ID,
     fromWireTimestamp,
     isUuid,
@@ -230,7 +229,6 @@ export type {
     OresClientOptions,
     PartySelectionRequired,
     Timeouts,
-    WorkspaceContext,
 } from './client.js';
 
 export {

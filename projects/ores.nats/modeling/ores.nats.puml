@@ -67,8 +67,6 @@ namespace ores #F2F2F2 {
                 -delegation_token_ : string
                 -correlation_id_ : string
                 -session_id_ : string
-                -workspace_id_ : string
-                -workspace_resolution_ : vector<string>
             }
             enum nats_error_kind {
                 server_unreachable
@@ -140,7 +138,6 @@ class ores::nats::service::nats_client {
     +authenticated_request(subject : string_view, body, timeout) : message
     +with_delegation(token : string) : nats_client
     +with_correlation_id(cid : string) : nats_client
-    +with_workspace_resolution(chain : vector<string>) : nats_client
 }
 note right of "ores.nats::service::nats_client"
 The authenticated wrapper a service handler is given. It either

@@ -98,7 +98,6 @@ TEST_CASE("counterparty_generator_produces_valid_instance", tags) {
     CHECK(!sut.full_name.empty());
     CHECK(!sut.short_code.empty());
     CHECK(sut.party_type == "Bank");
-    CHECK(sut.business_center_code == "WRLD");
     CHECK(sut.status == "Active");
     CHECK(!sut.image_id.has_value());
     CHECK(!sut.modified_by.empty());

@@ -50,13 +50,12 @@ insert into ores_refdata_parties_tbl (
 );
 
 insert into ores_refdata_counterparties_tbl (
-    id, tenant_id, version, full_name, short_code, party_type,
-    business_center_code, status,
+    id, tenant_id, version, full_name, short_code, party_type, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     'b0000000-0000-0000-0000-0000000000f1'::uuid,
     ores_utility_system_tenant_id_fn(), 0, 'Ownership Mark Test Counterparty', 'OMTC',
-    'Corporate', 'WRLD', 'Active',
+    'Corporate', 'Active',
     current_user, current_user, 'system.test', 'Ownership mark fixture'
 );
 

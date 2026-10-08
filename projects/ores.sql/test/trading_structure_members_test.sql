@@ -38,12 +38,12 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id, business_center_code, status,
+    parent_counterparty_id, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values (
     '00000000-0000-0000-0000-0000000cf105'::uuid, ores_utility_system_tenant_id_fn(), 0,
     'Members Counterparty', 'TSM-CP', 'Corporate',
-    null, 'WRLD', 'Active', current_user, current_user,
+    null, 'Active', current_user, current_user,
     'system.test', 'Structure members pgTAP fixture');
 
 insert into ores_refdata_parties_tbl (

@@ -65,18 +65,18 @@ insert into ores_refdata_parties_tbl (
 
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version, full_name, short_code, party_type,
-    parent_counterparty_id, business_center_code, status,
+    parent_counterparty_id, status,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     ('00000000-0000-0000-0000-0000000cf111'::uuid, ores_utility_system_tenant_id_fn(), 0,
      'Envelope Counterparty One', 'ENV-CP1', 'Corporate',
-     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+     null, 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
     ('00000000-0000-0000-0000-0000000cf112'::uuid, ores_utility_system_tenant_id_fn(), 0,
      'Envelope Counterparty Two', 'ENV-CP2', 'Corporate',
-     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
+     null, 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture'),
     ('00000000-0000-0000-0000-0000000cf113'::uuid, ores_utility_system_tenant_id_fn(), 0,
      'Envelope Counterparty Three', 'ENV-CP3', 'Corporate',
-     null, 'WRLD', 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture');
+     null, 'Active', current_user, current_user, 'system.test', 'Trading pgTAP fixture');
 
 -- The aliases the suite reads. CPTY_7 sorts before CPTY_B, so it is the one
 -- an unrecorded envelope name falls back to.

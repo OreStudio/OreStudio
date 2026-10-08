@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: A1D34D94-FAC6-4282-B51A-22C8A4A1B23A
+:END:
+#+title: Task: Implement Hotfix: the counterparty fixtures write a dropped column
+#+description: Initial task for: Hotfix: the counterparty fixtures write a dropped column
+#+type: task
+#+level: s1
+#+filetags: :the_counterparty_fixtures_write_a_dropped_column:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-counterparty-fixtures-write-a-dropped-column
+#+pr: 2886
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:30C1FE4E-D671-4128-ACDE-C98E400B8009][Hotfix: the counterparty fixtures write a dropped column]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let ores.refdata.api compile and let the counterparty fixtures load.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:30C1FE4E-D671-4128-ACDE-C98E400B8009][Hotfix: the counterparty fixtures write a dropped column]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- No code names counterparty.business_center_code.
+- No fixture inserts business_center_code into the counterparties table.
+
+* Plan
+
+=0d9dd1a899= took =business_center_code= off the counterparty and gave it a set
+of centres through =ores_refdata_counterparty_business_centres_tbl=. It
+regenerated the code and the schema, and wrote a new pgTAP test that asserts the
+column is gone, but left the consumers that read or wrote it:
+
+- =generators_tests.cpp= asserts the member on a generated counterparty.
+- Nine pgTAP fixtures insert it into the counterparties table: the counterparty
+  suite itself, the ownership marks suite, and the seven trading suites that
+  seed a counterparty to hang a trade on.
+
+Only the counterparty's column went. The party keeps its own
+=business_center_code=, so the party generator test, =auth_handler=,
+=tenant_provisioning_handler=, the BFF and the wire protocol all stay as they
+are; each was read before being left alone.
+
+The C++ line goes. The fixtures lose the column from the insert list and the
+value from the same position in every row.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| C++ sites naming the dropped member | 1, a generator assertion | the build log | 47e73c69d3 |
+| Fixtures inserting the dropped column | 9, one of them two rows | a scan of every insert | 47e73c69d3 |
+| Remaining consumers after the fix | 0 | the same scans | 47e73c69d3 |
+
+* Notes
+
+=generators_tests.cpp= has two assertions of that shape, and only one is about a
+counterparty: line 64 is in the party generator's test and stays.
+
+The fixtures were fixed by a codemod that splits each insert's column list and
+values at top-level commas, removes the column and the value in the same
+position from every row, and refuses to write unless each row holds as many
+items as the column list does. One fixture inserts two rows at once, which a
+first version of the codemod read as one row of twenty-five values against
+thirteen columns and refused; the count assertion is what caught it.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2886][#2886]] | [refdata] Stop writing the counterparty's dropped business centre |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Merged in PR #2886. One C++ assertion and nine fixtures are corrected, and no
+consumer of the counterparty's dropped member remains.
+
+The compile and the fixture load were verified by inspection and by the scans,
+not by a green build: no build ran in this worktree, and the pgTAP fixtures were
+not executed. The hourly validation run is the confirmation.

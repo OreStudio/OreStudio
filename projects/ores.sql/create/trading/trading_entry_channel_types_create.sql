@@ -136,20 +136,3 @@ on delete to "ores_trading_entry_channel_types_tbl" do instead (
     where code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
-
--- =============================================================================
--- Row-level security: tenant isolation for Entry Channel Type
--- =============================================================================
-alter table ores_trading_entry_channel_types_tbl enable row level security;
-
-drop policy if exists entry_channel_types_tbl_tenant_isolation_policy
-    on ores_trading_entry_channel_types_tbl;
-
-create policy entry_channel_types_tbl_tenant_isolation_policy
-on ores_trading_entry_channel_types_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);

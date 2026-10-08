@@ -1546,6 +1546,21 @@ def validate_cache_aux_type(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cache_aux_type requires cached_by")
 
 
+def _declared_columns(model) -> set:
+    """The column names a domain entity declares, whatever list carries them."""
+    names = set()
+    for key in ('columns', 'natural_keys'):
+        for entry in model.get(key) or []:
+            column = entry.get('column') or entry.get('name')
+            if column:
+                names.add(column)
+    for entry in (model.get('primary_key') or {}).get('columns') or []:
+        column = entry.get('column') or entry.get('name')
+        if column:
+            names.add(column)
+    return names
+
+
 def validate_rls_isolation(model):
     """
     Validate the rls_* sql flags that shape the emitted tenant policy.
@@ -1564,17 +1579,34 @@ def validate_rls_isolation(model):
     both call this validator: a junction that set one of these flags on its
     own would otherwise fail silently, exactly as a domain entity would.
 
+    Tenant isolation itself needs a tenant to isolate. An entity that declares
+    ``:has_tenant_id: false`` -- a closed set that is the same for every tenant
+    -- has no tenant_id column, so a policy that reads one fails when the
+    schema is loaded rather than when the model is read.
+
     Args:
         model (dict): a domain_entity or junction dict; not mutated.
 
     Raises:
-        ValueError: if rls_party_isolation is set without rls_tenant_isolation,
-            if rls_own_or_system_tenant_rows is set without
-            rls_tenant_isolation, or if rls_own_or_system_tenant_rows and
-            rls_system_tenant_visible are both set.
+        ValueError: if rls_tenant_isolation is set on an entity with no
+            tenant_id, if rls_party_isolation is set on a domain entity that
+            declares no party_id, if rls_party_isolation is set without
+            rls_tenant_isolation, if rls_own_or_system_tenant_rows is set
+            without rls_tenant_isolation, or if rls_own_or_system_tenant_rows
+            and rls_system_tenant_visible are both set.
     """
     sql_section = model.get('sql', {})
     name = model.get('entity_singular') or model.get('name_singular') or '?'
+    if sql_section.get('rls_tenant_isolation') and not model.get('has_tenant_id'):
+        raise ValueError(
+            f"{name}: rls_tenant_isolation requires has_tenant_id, because the "
+            f"policy it emits reads tenant_id")
+    if (sql_section.get('rls_party_isolation')
+            and model.get('entity_singular')
+            and 'party_id' not in _declared_columns(model)):
+        raise ValueError(
+            f"{name}: rls_party_isolation requires a party_id column, because "
+            f"the policy it emits reads one")
     if sql_section.get('rls_party_isolation') and not sql_section.get('rls_tenant_isolation'):
         raise ValueError(
             f"{name}: rls_party_isolation requires "

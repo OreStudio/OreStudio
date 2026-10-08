@@ -159,6 +159,12 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
                                                               .delay_seconds = 0});
             };
 
+            // The request states a sequence of outcomes to drive the engine
+            // through, so each step runs after the one before it. Left to run
+            // together, the outcomes would be a set rather than a sequence.
+            if (!steps.empty())
+                s.consumes = {steps.back().name};
+
             steps.push_back(std::move(s));
         }
 

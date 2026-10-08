@@ -142,8 +142,8 @@ void workflow_instance_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> "
-        "<correlation_id> <created_by> <current_step_index> <step_count> <completed_at> "
-        "<last_event_at> <reason> <commentary>");
+        "<correlation_id> <created_by> <step_count> <completed_at> <last_event_at> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +151,8 @@ void workflow_instance_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <type> <target_kind> <target_id> <state_id> <request_json> <result_json> <error> "
-        "<correlation_id> <created_by> <current_step_index> <step_count> <completed_at> "
-        "<last_event_at> <reason> <commentary> [--version <n>]");
+        "<correlation_id> <created_by> <step_count> <completed_at> <last_event_at> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,8 +160,8 @@ void workflow_instance_commands::register_commands(cli::Menu& root_menu, nats_cl
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <type> <target_kind> <target_id> <state_id> <request_json> "
-        "<result_json> <error> <correlation_id> <created_by> <current_step_index> <step_count> "
-        "<completed_at> <last_event_at> <reason> <commentary>");
+        "<result_json> <error> <correlation_id> <created_by> <step_count> <completed_at> "
+        "<last_event_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void workflow_instance_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,8 +370,6 @@ void workflow_instance_commands::process_add(std::ostream& out,
         read_token(req.change.write.error, parsed->positionals[next++], "error");
         read_token(req.change.write.correlation_id, parsed->positionals[next++], "correlation_id");
         read_token(req.change.write.created_by, parsed->positionals[next++], "created_by");
-        read_token(
-            req.change.write.current_step_index, parsed->positionals[next++], "current_step_index");
         read_token(req.change.write.step_count, parsed->positionals[next++], "step_count");
         read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         read_token(req.change.write.last_event_at, parsed->positionals[next++], "last_event_at");
@@ -417,8 +415,8 @@ void workflow_instance_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 14 + 2) {
-            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,8 +430,6 @@ void workflow_instance_commands::process_set(std::ostream& out,
         read_token(req.change.write.error, parsed->positionals[next++], "error");
         read_token(req.change.write.correlation_id, parsed->positionals[next++], "correlation_id");
         read_token(req.change.write.created_by, parsed->positionals[next++], "created_by");
-        read_token(
-            req.change.write.current_step_index, parsed->positionals[next++], "current_step_index");
         read_token(req.change.write.step_count, parsed->positionals[next++], "step_count");
         read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         read_token(req.change.write.last_event_at, parsed->positionals[next++], "last_event_at");
@@ -491,8 +487,8 @@ void workflow_instance_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 14 + 2) {
-            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -508,8 +504,6 @@ void workflow_instance_commands::process_put_many(std::ostream& out,
             read_token(change.write.error, parsed->positionals[next++], "error");
             read_token(change.write.correlation_id, parsed->positionals[next++], "correlation_id");
             read_token(change.write.created_by, parsed->positionals[next++], "created_by");
-            read_token(
-                change.write.current_step_index, parsed->positionals[next++], "current_step_index");
             read_token(change.write.step_count, parsed->positionals[next++], "step_count");
             read_token(change.write.completed_at, parsed->positionals[next++], "completed_at");
             read_token(change.write.last_event_at, parsed->positionals[next++], "last_event_at");

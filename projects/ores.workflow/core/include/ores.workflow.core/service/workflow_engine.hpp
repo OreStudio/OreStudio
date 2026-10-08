@@ -251,9 +251,6 @@ private:
                             const std::string& result_json,
                             const std::string& error);
 
-    /** @brief Advances an instance's step index, leaving everything else alone. */
-    void set_step_progress(const boost::uuids::uuid& instance_id, int step_index);
-
     /**
      * @brief Moves a step to a state, recording its response, error and log.
      *
@@ -324,13 +321,16 @@ private:
                               const boost::uuids::uuid& tenant_id);
 
     /**
-     * @brief Dispatches the next step in the workflow after a success.
+     * @brief Dispatches every step of the run that may run now.
      *
-     * Builds the next step's command, persists the step record, publishes
-     * the command, and advances the instance's current_step_index.
+     * The chain is a graph, so one answer can make more than one step ready: a
+     * consumer of two producers becomes ready when the second answers, and two
+     * steps that share no inputs are ready together. Each ready step's command
+     * is built, persisted and published here. When no step is ready, the run is
+     * either complete, still waiting on a step in flight, or waiting on a step
+     * that will never answer.
      */
-    void dispatch_next_step(domain::workflow_instance& instance,
-                            const std::string& last_result_json);
+    void dispatch_ready_steps(domain::workflow_instance& instance);
 
     /**
      * @brief Begins saga compensation for a failed workflow instance.

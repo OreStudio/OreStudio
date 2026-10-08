@@ -252,7 +252,6 @@ struct workflow_instance_summary {
     std::string id;
     std::string type;
     std::string status;
-    int current_step_index = 0;
     int step_count = 0;
     std::string correlation_id;
     std::string created_by;
@@ -391,10 +390,6 @@ struct get_workflow_steps_response {
      * not all steps have been created yet).
      */
     int step_count = 0;
-    /**
-     * @brief Zero-based index of the step currently being executed.
-     */
-    int current_step_index = 0;
     std::vector<workflow_step_summary> steps;
 };
 

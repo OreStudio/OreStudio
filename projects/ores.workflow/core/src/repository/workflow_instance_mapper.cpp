@@ -58,7 +58,6 @@ domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_
     r.error = v.error.value_or("");
     r.correlation_id = v.correlation_id.value_or("");
     r.created_by = v.created_by;
-    r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
     r.completed_at = v.completed_at.has_value() ?
                          std::optional(timestamp_to_timepoint(*v.completed_at)) :
@@ -94,7 +93,6 @@ workflow_instance_entity workflow_instance_mapper::map(const domain::workflow_in
     r.error = v.error.empty() ? std::nullopt : std::optional(v.error);
     r.correlation_id = v.correlation_id.empty() ? std::nullopt : std::optional(v.correlation_id);
     r.created_by = v.created_by;
-    r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;
     r.completed_at =
         v.completed_at.has_value() ?

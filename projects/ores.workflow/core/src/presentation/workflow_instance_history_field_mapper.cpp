@@ -48,7 +48,6 @@ render_workflow_instance_fields(const domain::workflow_instance& v) {
     fields.push_back({.name = "Error", .value = v.error});
     fields.push_back({.name = "Correlation ID", .value = v.correlation_id});
     fields.push_back({.name = "Created By", .value = v.created_by});
-    fields.push_back({.name = "Current Step Index", .value = std::to_string(v.current_step_index)});
     fields.push_back({.name = "Step Count", .value = std::to_string(v.step_count)});
     fields.push_back({.name = "Completed At",
                       .value = v.completed_at ?

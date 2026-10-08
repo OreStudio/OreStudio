@@ -295,15 +295,6 @@ void workflow_engine::set_instance_state(const boost::uuids::uuid& instance_id,
     instance_repo_.write(ctx_, instance);
 }
 
-void workflow_engine::set_step_progress(const boost::uuids::uuid& instance_id, int step_index) {
-    const auto rows = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
-    if (rows.empty())
-        return;
-    auto instance = rows.front();
-    instance.current_step_index = step_index;
-    instance_repo_.write(ctx_, instance);
-}
-
 void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id) {
     const auto rows = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
     if (rows.empty())
@@ -349,9 +340,7 @@ void workflow_engine::set_step_state(const boost::uuids::uuid& step_id,
     step_repo_.write(ctx_, step);
 }
 
-void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
-                                         const std::string& last_result_json) {
-
+void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) {
     const auto* def = registry_->find(instance.type);
     if (!def) {
         BOOST_LOG_SEV(lg(), error) << "No workflow definition for type: " << instance.type;
@@ -359,29 +348,109 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
                            instance_states_.require("failed"),
                            "",
                            "Unknown workflow type: " + instance.type);
-        return;
-    }
-
-    const int next_index = instance.current_step_index + 1;
-
-    if (next_index >= instance.step_count) {
-        // All steps complete.
-        BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:" << " type=" << instance.type
-                                  << " workflow=" << boost::uuids::to_string(instance.id)
-                                  << " steps=" << instance.step_count;
-        set_instance_state(
-            instance.id, instance_states_.require("completed"), last_result_json, "");
         publish_status_event(instance.id, instance.tenant_id.to_uuid());
         return;
     }
 
-    // The next step is still walked by ordinal and its command built from the
-    // definition, which is a function of the same request the instance stored.
-    // What the run is judged against below is its own rows, not this list.
-    const auto steps = def->build_steps(instance.request_json,
-                                        boost::uuids::to_string(instance.tenant_id.to_uuid()),
-                                        instance.correlation_id);
+    const auto id_str = boost::uuids::to_string(instance.id);
 
+    // The run's own chain is what it is judged by, not the definition as it
+    // stands now, so a definition edited after the run started cannot change
+    // what the run was waiting for.
+    const auto chain = plan_step_repo_.read_latest_by_workflow_id(ctx_, id_str, 0, 1000);
+    if (chain.empty()) {
+        const auto reason =
+            "The run holds no plan steps, so the chain it was started with cannot be read.";
+        BOOST_LOG_SEV(lg(), error) << "Cannot advance workflow " << instance.type << ": " << reason;
+        set_instance_state(instance.id, instance_states_.require("failed"), "", reason);
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
+        return;
+    }
+
+    const auto edges = plan_dependency_repo_.read_latest_by_workflow_id(ctx_, id_str, 0, 1000);
+    const auto graph = workflow_graph(nodes_of_chain(chain, edges));
+    if (const auto& incoherent = graph.incoherent()) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot advance workflow " << instance.type << ": " << *incoherent;
+        set_instance_state(instance.id, instance_states_.require("failed"), "", *incoherent);
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
+        return;
+    }
+
+    const auto all_steps = step_repo_.read_latest_by_workflow_id(ctx_, id_str, 0, 1000);
+
+    // Only forward steps count. A compensation step answers a different
+    // question -- whether the work was undone -- and its negative position is
+    // how it says so.
+    std::set<std::string> satisfied;
+    std::set<std::string> dispatched;
+    for (const auto& s : all_steps) {
+        if (s.step_index < 0)
+            continue;
+        dispatched.insert(s.name);
+        if (s.state_id == step_states_.require("completed") ||
+            s.state_id == step_states_.require("completed_with_warnings"))
+            satisfied.insert(s.name);
+    }
+
+    // Every step of the chain has answered, so the run is done. The chain is
+    // the authority rather than a count of steps taken, because the steps now
+    // run in the order the graph allows and several of them at once. The run's
+    // result is the answer of the step the graph puts last.
+    const bool all_answered = std::ranges::all_of(
+        graph.order(), [&](const std::string& name) { return satisfied.contains(name); });
+    if (all_answered) {
+        std::string last_result;
+        const auto& last = graph.order().back();
+        for (const auto& s : all_steps) {
+            if (s.step_index >= 0 && s.name == last)
+                last_result = s.response_json;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Workflow COMPLETED:" << " type=" << instance.type
+                                  << " workflow=" << id_str << " steps=" << graph.size();
+        set_instance_state(instance.id, instance_states_.require("completed"), last_result, "");
+        publish_status_event(instance.id, instance.tenant_id.to_uuid());
+        return;
+    }
+
+    const auto ready = graph.ready(satisfied, dispatched);
+    if (ready.empty()) {
+        // Nothing may run. If nothing is in flight either, the chain is waiting
+        // on a step that will never answer: a run in that state is a run the
+        // caller must be told about, not one left in progress for ever.
+        if (dispatched.size() == satisfied.size()) {
+            std::string waiting;
+            for (const auto& name : graph.order()) {
+                if (satisfied.contains(name))
+                    continue;
+                if (!waiting.empty())
+                    waiting += ", ";
+                waiting += "'" + name + "'";
+            }
+            const auto reason = "The run has no step left that can run: " + waiting +
+                                " have not answered and none of them is in flight.";
+            BOOST_LOG_SEV(lg(), error) << "Workflow " << id_str << " is stuck: " << waiting;
+            begin_compensation(instance, reason);
+        }
+        // Otherwise a step is still in flight and its answer brings the next
+        // dispatch, so the engine says nothing and waits.
+        return;
+    }
+
+    // The command builders live on the definition, which is a function of the
+    // request the run stored. A definition that no longer builds the steps the
+    // run holds is a definition that cannot finish this run.
+    std::vector<workflow_step_def> steps;
+    try {
+        steps = def->build_steps(instance.request_json,
+                                 boost::uuids::to_string(instance.tenant_id.to_uuid()),
+                                 instance.correlation_id);
+    } catch (const std::exception& ex) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Cannot build the step list for workflow " << id_str << ": " << ex.what();
+        begin_compensation(instance, ex.what());
+        return;
+    }
     if (const auto undeclared = undeclared_deadline(steps)) {
         BOOST_LOG_SEV(lg(), error)
             << "Cannot advance workflow " << instance.type << ": " << *undeclared;
@@ -390,22 +459,13 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
         return;
     }
 
-    if (next_index >= static_cast<int>(steps.size())) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Step index " << next_index << " out of range for type: " << instance.type;
-        set_instance_state(instance.id,
-                           instance_states_.require("failed"),
-                           "",
-                           "Step index out of range: " + std::to_string(next_index));
-        return;
-    }
+    std::unordered_map<std::string, const workflow_step_def*> def_by_name;
+    for (const auto& s : steps)
+        def_by_name.emplace(s.name, &s);
+    std::unordered_map<std::string, const domain::workflow_plan_step*> row_by_name;
+    for (const auto& p : chain)
+        row_by_name.emplace(p.name, &p);
 
-    // Build the command for the next step.
-    const auto& step_def = steps[next_index];
-    const auto all_steps =
-        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance.id), 0, 1000);
-
-    // Only include forward step results (step_index >= 0), not compensation.
     // Each result is named by the step that produced it, so a step that
     // answered nothing cannot shift what a later step reads.
     workflow_step_results results;
@@ -415,108 +475,69 @@ void workflow_engine::dispatch_next_step(domain::workflow_instance& instance,
                 workflow_step_result{.name = s.name, .response_json = s.response_json});
     }
 
-    // The graph is the authority on what may run. It is drawn from the run's
-    // own rows, so the run is judged by the chain it was started with, and
-    // its answer decides whether the step the run is about to take may be
-    // taken. A builder would refuse a missing result on its own, but from
-    // inside itself, where a step still in flight and a step that never ran
-    // look identical: only the graph can say which declared inputs a run is
-    // waiting for.
-    {
-        const auto chain = plan_step_repo_.read_latest_by_workflow_id(
-            ctx_, boost::uuids::to_string(instance.id), 0, 1000);
-        const auto edges = plan_dependency_repo_.read_latest_by_workflow_id(
-            ctx_, boost::uuids::to_string(instance.id), 0, 1000);
-        const auto graph = workflow_graph(nodes_of_chain(chain, edges));
-
-        std::set<std::string> satisfied;
-        std::set<std::string> dispatched;
-        for (const auto& s : all_steps) {
-            if (s.step_index < 0)
-                continue;
-            dispatched.insert(s.name);
-            if (s.state_id == step_states_.require("completed") ||
-                s.state_id == step_states_.require("completed_with_warnings"))
-                satisfied.insert(s.name);
-        }
-
-        const auto ready = graph.ready(satisfied, dispatched);
-        if (std::ranges::find(ready, step_def.name) == ready.end()) {
-            std::string waiting;
-            for (const auto& input : step_def.consumes) {
-                if (satisfied.contains(input))
-                    continue;
-                if (!waiting.empty())
-                    waiting += ", ";
-                waiting += "'" + input + "'";
-            }
+    for (const auto& name : ready) {
+        const auto definition = def_by_name.find(name);
+        const auto row = row_by_name.find(name);
+        if (definition == def_by_name.end() || row == row_by_name.end()) {
             const auto reason =
-                "Step '" + step_def.name + "' reads " +
-                (waiting.empty() ? std::string("inputs that cannot be resolved") : waiting) +
-                ", which have not answered, so the step cannot run.";
+                "The run's chain holds '" + name + "', which the definition no longer builds.";
             BOOST_LOG_SEV(lg(), error)
-                << "Cannot dispatch step " << step_def.name << " of workflow "
-                << boost::uuids::to_string(instance.id) << ": " << reason;
+                << "Cannot advance workflow " << instance.type << ": " << reason;
             begin_compensation(instance, reason);
             return;
         }
+
+        // A builder that cannot produce a command -- a result it reads is
+        // missing, or the request no longer parses -- has nothing to publish,
+        // so the run is failed here rather than left in progress waiting for a
+        // step that was never dispatched.
+        std::string cmd_json;
+        try {
+            cmd_json = definition->second->build_command(instance.request_json, results);
+        } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(lg(), error) << "Cannot build the command for step " << name
+                                       << " of workflow " << id_str << ": " << ex.what();
+            begin_compensation(instance, ex.what());
+            return;
+        }
+
+        const auto new_id = boost::uuids::random_generator()();
+
+        domain::workflow_step step;
+        step.id = new_id;
+        step.workflow_id = instance.id;
+        // The step belongs to the instance's tenant, not to the session's. The
+        // insert trigger validates the workflow_id within the step's own
+        // tenant, so a step left to its default of "system" is refused for
+        // every instance started on behalf of anyone else.
+        step.tenant_id = instance.tenant_id;
+        // The subjects and the deadline come from the run's own row rather than
+        // from the definition, so the step goes to the service the run was
+        // started with and is judged by the deadline it was started under.
+        step.step_index = row->second->step_index;
+        step.name = name;
+        step.state_id = step_states_.require("in_progress");
+        step.request_json = cmd_json;
+        step.command_subject = row->second->command_subject;
+        step.command_json = cmd_json;
+        step.idempotency_key = boost::uuids::to_string(new_id);
+        step.compensation_subject = row->second->compensation_subject;
+        step.recorded_at = std::chrono::system_clock::now();
+        // The instance carries the actor from the start request, so every step
+        // of the run is attributed to the same caller.
+        step.modified_by = instance.modified_by;
+
+        // Persist before publishing (ensures restart can re-dispatch).
+        step_repo_.write(ctx_, step);
+
+        note_awaiting(step, instance.id, instance.tenant_id.to_uuid());
+        publish_command(step, instance.id, instance.tenant_id.to_uuid());
+        stamp_command_published(new_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Dispatched step " << row->second->step_index << " (" << name
+                                  << ") for workflow=" << id_str << " type=" << instance.type;
     }
 
-    // A builder that cannot produce a command — a result it depends on is
-    // missing, or the request no longer parses — has nothing to publish, so the
-    // run is failed here rather than left in progress waiting for a step that
-    // was never dispatched.
-    std::string cmd_json;
-    try {
-        cmd_json = step_def.build_command(instance.request_json, results);
-    } catch (const std::exception& ex) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Cannot build the command for step " << step_def.name << " of workflow "
-            << boost::uuids::to_string(instance.id) << ": " << ex.what();
-        begin_compensation(instance, ex.what());
-        return;
-    }
-    const auto next_id = boost::uuids::random_generator()();
-
-    domain::workflow_step next_step;
-    next_step.id = next_id;
-    next_step.workflow_id = instance.id;
-    // The step belongs to the instance's tenant, not to the session's. The
-    // insert trigger validates the workflow_id within the step's own tenant,
-    // so a step left to its default of "system" is refused for every instance
-    // started on behalf of anyone else.
-    next_step.tenant_id = instance.tenant_id;
-    next_step.step_index = next_index;
-    next_step.name = step_def.name;
-    next_step.state_id = step_states_.require("in_progress");
-    next_step.request_json = cmd_json;
-    next_step.command_subject = step_def.command_subject;
-    next_step.command_json = cmd_json;
-    next_step.idempotency_key = boost::uuids::to_string(next_id);
-    next_step.compensation_subject = step_def.compensation_subject;
-    next_step.recorded_at = std::chrono::system_clock::now();
-    // The instance carries the actor from the start request, so every step of
-    // the run is attributed to the same caller.
-    next_step.modified_by = instance.modified_by;
-
-    // Persist before publishing (ensures restart can re-dispatch).
-    step_repo_.write(ctx_, next_step);
-
-    // Publish the command, and record what its deadline is judged by.
-    note_awaiting(next_step, instance.id, instance.tenant_id.to_uuid());
-    publish_command(next_step, instance.id, instance.tenant_id.to_uuid());
-
-    // Record that the command was published.
-    stamp_command_published(next_id);
-
-    // Advance the instance's step index.
-    set_step_progress(instance.id, next_index);
-    instance.current_step_index = next_index;
-
-    BOOST_LOG_SEV(lg(), info) << "Dispatched step " << next_index << "/"
-                              << (instance.step_count - 1) << " (" << step_def.name << ")"
-                              << " for workflow=" << boost::uuids::to_string(instance.id)
-                              << " type=" << instance.type;
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
@@ -760,7 +781,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     } else {
         // Forward step completed.
         if (is_success) {
-            dispatch_next_step(*instance, event.result_json);
+            dispatch_ready_steps(*instance);
         } else {
             // The policy belongs to the definition. A run that declares stop
             // keeps its completed work and waits for a retry; the default is
@@ -906,13 +927,10 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.correlation_id = req.correlation_id;
     instance.created_by = actor;
     instance.modified_by = actor;
-    instance.current_step_index = 0;
     instance.step_count = static_cast<int>(steps.size());
     instance.recorded_at = std::chrono::system_clock::now();
 
     bool instance_created = false;
-    bool step_created = false;
-    boost::uuids::uuid step_id{};
     try {
         instance_repo_.write(ctx_, instance);
         instance_created = true;
@@ -923,61 +941,36 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         plan_step_repo_.write(ctx_, plan_steps_of(instance, steps, actor));
         plan_dependency_repo_.write(ctx_, plan_dependencies_of(instance, steps, actor));
 
-        // Build and dispatch step 0.
-        const auto& step_def = steps[0];
-        const auto cmd_json = step_def.build_command(req.request_json, {});
-        step_id = boost::uuids::random_generator()();
-
-        domain::workflow_step step;
-        step.id = step_id;
-        step.workflow_id = instance_id;
-        step.tenant_id = instance.tenant_id;
-        step.step_index = 0;
-        step.name = step_def.name;
-        step.state_id = step_states_.require("in_progress");
-        step.request_json = cmd_json;
-        step.command_subject = step_def.command_subject;
-        step.command_json = cmd_json;
-        step.idempotency_key = boost::uuids::to_string(step_id);
-        step.compensation_subject = step_def.compensation_subject;
-        step.recorded_at = std::chrono::system_clock::now();
-        step.modified_by = actor;
-
-        step_repo_.write(ctx_, step);
-        step_created = true;
-        note_awaiting(step, instance_id, tenant_id);
-        publish_command(step, instance_id, tenant_id);
-        stamp_command_published(step_id);
+        // The chain's roots run first. Asking the graph rather than taking the
+        // first step is what lets a chain begin with more than one step, which
+        // is the fan-out the gathering redesign needs.
+        dispatch_ready_steps(instance);
 
         BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
                                   << " workflow=" << boost::uuids::to_string(instance_id)
                                   << " step_count=" << steps.size()
-                                  << " first_step=" << step_def.name
-                                  << " subject=" << step_def.command_subject
                                   << " corr=" << req.correlation_id;
         publish_status_event(instance_id, tenant_id);
     } catch (const std::exception& e) {
         // A start that fails after the instance row exists (e.g. a dead
-        // database connection during step-0 persistence) must not leave an
-        // in_progress instance with no steps behind: waiters would poll it
+        // database connection while dispatching the first steps) must not leave
+        // an in_progress instance with no steps behind: waiters would poll it
         // until their timeout with no error surfaced. Record the failure so
         // the query path can report the exact reason.
         const auto id_str = boost::uuids::to_string(instance_id);
         if (instance_created) {
             BOOST_LOG_SEV(lg(), error) << "Failed to start workflow " << id_str << ": " << e.what();
-            set_instance_state(instance_id,
-                               instance_states_.require("failed"),
-                               "",
-                               "Failed to start workflow: " + std::string(e.what()));
+            const auto failure = "Failed to start workflow: " + std::string(e.what());
+            set_instance_state(instance_id, instance_states_.require("failed"), "", failure);
             publish_status_event(instance_id, tenant_id);
-            // The step-0 row persisted before the failure would otherwise
-            // stay in_progress forever: recovery re-dispatches only steps of
+            // A step persisted before the failure would otherwise stay
+            // in_progress for ever: recovery re-dispatches only steps of
             // instances still in_progress, and this instance is now failed.
-            if (step_created) {
-                set_step_state(step_id,
-                               step_states_.require("failed"),
-                               "",
-                               "Failed to start workflow: " + std::string(e.what()));
+            for (const auto& started :
+                 step_repo_.read_latest_by_workflow_id(ctx_, id_str, 0, 1000)) {
+                if (started.step_index >= 0 &&
+                    started.state_id == step_states_.require("in_progress"))
+                    set_step_state(started.id, step_states_.require("failed"), "", failure);
             }
         } else {
             BOOST_LOG_SEV(lg(), error)
@@ -1307,7 +1300,6 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     // engine's to catch rather than the retry's to prevent.
     set_step_state(target->id, in_progress_id, "", "", "[]");
     set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
-    set_step_progress(instance.id, target->step_index);
     publish_command(*target, instance.id, instance.tenant_id.to_uuid());
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 

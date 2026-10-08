@@ -99,6 +99,10 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
             // that writes it, so its budget is minutes of data work.
             s.timeout = data_step_timeout;
             s.compensation_subject = "";
+            // The datasets are published in the order the request states them,
+            // which is their display order, so each waits for the one before.
+            if (!steps.empty())
+                s.consumes = {steps.back().name};
 
             const std::string dataset_id = ds.dataset_id;
             const std::string tenant_id_v = req.tenant_id;

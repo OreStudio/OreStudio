@@ -212,7 +212,6 @@ export interface WorkflowInstanceSummary {
     id: string;
     type: string;
     status: string;
-    current_step_index: number;
     step_count: number;
     correlation_id: string;
     created_by: string;
@@ -333,10 +332,6 @@ export interface GetWorkflowStepsResponse {
      * not all steps have been created yet).
      */
     step_count: number;
-    /**
-     * @brief Zero-based index of the step currently being executed.
-     */
-    current_step_index: number;
     steps: WorkflowStepSummary[];
 }
 

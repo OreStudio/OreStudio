@@ -143,6 +143,82 @@ TEST_CASE("a profile's kinds become steps in order, with the completing step las
     }
 }
 
+TEST_CASE("a profile's steps declare which steps must answer first", tags) {
+    const auto def = definition();
+    const auto steps = def.build_steps(
+        request_json({declared("system_provision"),
+                      declared("publish_bundle", R"({"bundles":["acme_group"]})"),
+                      declared("import_lei_hierarchy"),
+                      declared("provision_party"),
+                      declared("load_staff"),
+                      declared("attach_photos"),
+                      declared("start_market_feeds")}),
+        tenant_id,
+        correlation_id);
+
+    const auto inputs_of = [&](const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == name)
+                return step.consumes;
+        return std::vector<std::string>{};
+    };
+
+    // A step reads nothing when nothing has to come first, and otherwise reads
+    // the step that produced what it works from.
+    CHECK(inputs_of("system_provision").empty());
+    CHECK(inputs_of("publish_bundle") == std::vector<std::string>{"system_provision"});
+    CHECK(inputs_of("import_lei_hierarchy") == std::vector<std::string>{"publish_bundle"});
+    CHECK(inputs_of("provision_party") == std::vector<std::string>{"import_lei_hierarchy"});
+    CHECK(inputs_of("load_staff") == std::vector<std::string>{"provision_party"});
+    CHECK(inputs_of("attach_photos") ==
+          (std::vector<std::string>{"load_staff", "provision_party"}));
+    // The feeds read the reference data and nothing else, which is what lets
+    // them run beside the party chain rather than after it.
+    CHECK(inputs_of("start_market_feeds") == std::vector<std::string>{"publish_bundle"});
+    // Nothing is finished before everything is, so the last step reads them all.
+    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
+}
+
+TEST_CASE("a need the run did not order is answered by the step that did", tags) {
+    const auto def = definition();
+    // A run that orders no import step still waits for whatever published the
+    // reference data before it provisions a party from it.
+    const auto steps =
+        def.build_steps(request_json({declared("publish_bundle"), declared("provision_party")}),
+                        tenant_id,
+                        correlation_id);
+
+    const auto inputs_of = [&](const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == name)
+                return step.consumes;
+        return std::vector<std::string>{};
+    };
+
+    CHECK(inputs_of("publish_bundle").empty());
+    CHECK(inputs_of("provision_party") == std::vector<std::string>{"publish_bundle"});
+}
+
+TEST_CASE("a step that needs two kinds reads one step when both resolve to it", tags) {
+    const auto def = definition();
+    // With no staff step, both of the photograph step's needs are met by the
+    // party step, and a step reads a step once however many needs found it.
+    const auto steps = def.build_steps(request_json({declared("import_lei_hierarchy"),
+                                                     declared("provision_party"),
+                                                     declared("attach_photos")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto inputs_of = [&](const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == name)
+                return step.consumes;
+        return std::vector<std::string>{};
+    };
+
+    CHECK(inputs_of("attach_photos") == std::vector<std::string>{"provision_party"});
+}
+
 TEST_CASE("a profile that orders nothing still runs the completing step", tags) {
     const auto def = definition();
     const auto steps = def.build_steps(request_json({}), tenant_id, correlation_id);

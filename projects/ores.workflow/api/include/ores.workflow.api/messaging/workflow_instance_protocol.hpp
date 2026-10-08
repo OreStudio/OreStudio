@@ -50,7 +50,6 @@ struct workflow_instance_write {
     std::string error;
     std::string correlation_id;
     std::string created_by;
-    int current_step_index;
     int step_count;
     std::optional<std::chrono::system_clock::time_point> completed_at;
     std::optional<std::chrono::system_clock::time_point> last_event_at;

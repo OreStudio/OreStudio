@@ -168,7 +168,6 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         s.id = boost::uuids::to_string(inst.id);
         s.type = inst.type;
         s.status = state_name(inst.state_id);
-        s.current_step_index = inst.current_step_index;
         s.step_count = inst.step_count;
         s.correlation_id = inst.correlation_id;
         s.created_by = inst.created_by;
@@ -271,7 +270,6 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
     resp.status = state_name(instance->state_id);
     resp.error = instance->error;
     resp.step_count = instance->step_count;
-    resp.current_step_index = instance->current_step_index;
     resp.steps.reserve(raw_steps.size());
 
     for (const auto& s : raw_steps) {

@@ -339,6 +339,85 @@ make_step(const provision_tenant_workflow_request& run,
 }
 
 /**
+ * @brief The kinds a kind cannot run before, nearest first.
+ *
+ * The chain's shape, stated once, for the same reason the words and the budgets
+ * are: what a kind needs is knowledge about the kind. Until this existed the
+ * order the profile declared was the only statement of it, and an order cannot
+ * say that two steps are independent -- so a bootstrapping chain ran one step at
+ * a time whether or not its work allowed it, and a run could not say what it was
+ * waiting for.
+ */
+[[nodiscard]] inline std::vector<std::string_view> needs_of_step_kind(std::string_view kind) {
+    if (kind == publish_bundle_step_kind)
+        return {system_provision_step_kind};
+    if (kind == import_lei_hierarchy_step_kind)
+        return {publish_bundle_step_kind};
+    if (kind == provision_party_step_kind)
+        return {import_lei_hierarchy_step_kind};
+    if (kind == load_staff_step_kind)
+        return {provision_party_step_kind};
+    if (kind == attach_photos_step_kind)
+        return {load_staff_step_kind, provision_party_step_kind};
+    if (kind == start_market_feeds_step_kind)
+        return {publish_bundle_step_kind};
+    return {};
+}
+
+/**
+ * @brief The step that stands in for a kind this run did not order.
+ *
+ * A profile need not order every kind: the run that provisions a party of an
+ * existing tenant orders neither the bundle step nor the import, and that step's
+ * need for parties is already met by whatever provisioned the tenant. So a need
+ * the run did not order is answered by the nearest step it did, found by walking
+ * back through the absent kind's own needs. A need the run ordered is answered
+ * by itself, which is the common case.
+ */
+[[nodiscard]] inline const std::string*
+nearest_producer(std::string_view kind,
+                 const std::unordered_map<std::string, std::string>& present,
+                 int depth = 0) {
+    // The catalogue is a fixed, shallow chain, so a walk this long means the
+    // table above has grown a cycle rather than that the run is unusual.
+    if (depth > 8)
+        return nullptr;
+    if (const auto found = present.find(std::string(kind)); found != present.end())
+        return &found->second;
+    for (const auto& need : needs_of_step_kind(kind))
+        if (const auto* producer = nearest_producer(need, present, depth + 1))
+            return producer;
+    return nullptr;
+}
+
+/**
+ * @brief States, for each step, the steps it must wait for.
+ *
+ * A step reads the nearest step this run declared for each kind it needs. Only
+ * steps already declared are in reach, because the engine advances along the
+ * chain's declaration order and refuses a consumer of a step it reaches later.
+ * The declaration order is therefore a topological one, and it stays that way
+ * without the engine having to check the profile against the catalogue above.
+ */
+inline void declare_inputs(std::vector<ores::workflow::service::workflow_step_def>& steps,
+                           const std::vector<std::string>& kinds) {
+    std::unordered_map<std::string, std::string> present;
+    for (std::size_t i = 0; i < steps.size(); ++i) {
+        for (const auto& need : needs_of_step_kind(kinds[i])) {
+            const auto* producer = nearest_producer(need, present);
+            if (producer == nullptr)
+                continue;
+            // Two needs may resolve to one step -- a step that is the nearest
+            // present producer of two kinds -- and a step reads it once.
+            if (std::find(steps[i].consumes.begin(), steps[i].consumes.end(), *producer) ==
+                steps[i].consumes.end())
+                steps[i].consumes.push_back(*producer);
+        }
+        present.insert_or_assign(kinds[i], steps[i].name);
+    }
+}
+
+/**
  * @brief One engine step per kind the run declares, in the order it declares
  * them.
  *
@@ -355,7 +434,9 @@ make_step(const provision_tenant_workflow_request& run,
 build_declared_steps(const provision_tenant_workflow_request& run,
                      std::unordered_map<std::string, int>& seen) {
     std::vector<ores::workflow::service::workflow_step_def> steps;
+    std::vector<std::string> kinds;
     steps.reserve(run.steps.size());
+    kinds.reserve(run.steps.size());
 
     for (const auto& declared : run.steps) {
         if (declared.kind == complete_provisioning_step_kind)
@@ -368,7 +449,10 @@ build_declared_steps(const provision_tenant_workflow_request& run,
             throw std::runtime_error("The profile orders the step kind '" + declared.kind +
                                      "', which this deployment does not execute.");
         steps.push_back(make_step(run, declared.kind, declared.arguments_json, seen));
+        kinds.push_back(declared.kind);
     }
+
+    declare_inputs(steps, kinds);
     return steps;
 }
 
@@ -404,8 +488,16 @@ register_provision_tenant_workflow(ores::workflow::service::workflow_registry& r
         const auto run = detail::read_workflow_request(request_json);
         std::unordered_map<std::string, int> seen;
         auto steps = detail::build_declared_steps(run, seen);
-        steps.push_back(
-            detail::make_step(run, std::string(complete_provisioning_step_kind), "{}", seen));
+        auto finish =
+            detail::make_step(run, std::string(complete_provisioning_step_kind), "{}", seen);
+        // Nothing is finished before everything is: the finishing step marks the
+        // tenant active, so it reads every step the run declared rather than
+        // only the last. A chain of seven kinds therefore ends in a fan-in of
+        // seven, which is also what lets the middle of the chain fan out.
+        finish.consumes.reserve(steps.size());
+        for (const auto& declared : steps)
+            finish.consumes.push_back(declared.name);
+        steps.push_back(std::move(finish));
         return steps;
     };
 

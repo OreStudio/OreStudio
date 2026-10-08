@@ -43,7 +43,6 @@ export interface WorkflowInstanceWrite {
     error: string;
     correlation_id: string;
     created_by: string;
-    current_step_index: number;
     step_count: number;
     completed_at: string | null;
     last_event_at: string | null;

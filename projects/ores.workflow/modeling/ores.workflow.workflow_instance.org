@@ -133,16 +133,6 @@ Distributed tracing correlation ID (Nats-Correlation-Id header value).
 
 Username or service identity that initiated the workflow.
 
-** current_step_index
-:PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
-:default:  0
-:END:
-
-Zero-based index of the step currently being executed.
-
 ** step_count
 :PROPERTIES:
 :type:     integer
@@ -151,7 +141,10 @@ Zero-based index of the step currently being executed.
 :default:  0
 :END:
 
-Total number of steps in this workflow definition.
+How many steps the run's chain holds, fixed when the run starts. Nothing
+advances it, and a run's chain never changes, so this is a fact about the run
+rather than a cursor over it. It is stored so that a list of runs can say how
+long each one is without reading every chain.
 
 ** completed_at
 :PROPERTIES:

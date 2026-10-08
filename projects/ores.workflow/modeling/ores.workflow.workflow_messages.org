@@ -432,12 +432,6 @@ so they cross to TypeScript as strings.
 :cpp_type: std::string
 :END:
 
-*** current_step_index
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
 *** step_count
 :PROPERTIES:
 :cpp_type: int
@@ -749,18 +743,6 @@ so they cross to TypeScript as strings.
 /**
  * @brief Total step count of the instance (may exceed steps.size() when
  * not all steps have been created yet).
- */
-#+end_src
-
-*** current_step_index
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief Zero-based index of the step currently being executed.
  */
 #+end_src
 

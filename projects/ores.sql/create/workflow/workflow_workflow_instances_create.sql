@@ -43,7 +43,6 @@ create table if not exists "ores_workflow_workflow_instances_tbl" (
     "error" text null,
     "correlation_id" text null,
     "created_by" text not null,
-    "current_step_index" integer not null default 0,
     "step_count" integer not null default 0,
     "completed_at" timestamp with time zone null,
     "last_event_at" timestamp with time zone null,

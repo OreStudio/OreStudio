@@ -8,7 +8,7 @@
 #+filetags: :the_party_role_names_a_dropped_column:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-party-role-names-a-dropped-column
-#+pr:
+#+pr: 2880
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2880][#2880]] | [trading] Drop the party role's reference to a column it lost |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
 #+branch: feature/structure-anchor
-#+pr:
+#+pr: 2826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2826][#2826]] | [trading] Add the immutable structure |
 
 * Review
 

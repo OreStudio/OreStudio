@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists market_series_identity_tbl_party_isolation_policy on "ores_marketdata_market_series_identity_tbl";
 drop policy if exists market_series_identity_tbl_tenant_isolation_policy on "ores_marketdata_market_series_identity_tbl";
 drop rule if exists ores_marketdata_market_series_identity_delete_rule on "ores_marketdata_market_series_identity_tbl";
 drop trigger if exists ores_marketdata_market_series_identity_insert_trg on "ores_marketdata_market_series_identity_tbl";

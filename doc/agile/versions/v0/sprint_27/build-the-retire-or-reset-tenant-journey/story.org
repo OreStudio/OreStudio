@@ -49,6 +49,7 @@ not built.
 |------+-------+-------+-----+-------------|
 | [[id:63EB45DE-FCF8-433A-B680-5DE24A392581][Land the retire and reset operations]] | BACKLOG | | | Build the server path behind the Retire or reset a tenant journey: a suspend operation with its subject, subjects for terminate, deprovision and purge, a subject for the party-level reset, and the roster's row menu item. |
 | [[id:88A9FB9C-8F9D-4EEC-A57A-B5139F5F834C][Configure every report ACME seeds]] | DONE | 2026-10-08 | 2026-10-08 | ACME is seeded with report definitions and no configurations, so no seeded report can run. Walk every definition ACME carries, build the configuration its run needs from the external/ore examples, and scope each to the root portfolio. Where a root portfolio does not apply, record why. Add the SQL function that returns every book under a root portfolio, which is the population the run reads. |
+| [[id:4BE909F3-D2B5-4FB5-A6F4-7791936B9B90][Commit the risk report config generated output]] | DONE | | 2026-10-08 | 97051b9fd0 added the dq risk report config staging entity and committed the model, but not everything it generates: the dq TypeScript domain and protocol twins are untracked, and the marketdata identity SQL and reporting operations protocol moved with it. component-drift --all names the untracked files explicitly and fails. |
 
 * Decisions
 

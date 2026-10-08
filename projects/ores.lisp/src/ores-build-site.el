@@ -278,37 +278,29 @@ managed uniformly: copy, then patch index.html with the site chrome."
   "Undo the site body flex and padding for a prototype page.
 A prototype styles its own layout, so it wants a plain block body.")
 
-(defvar ores/review-fix-tag
-  "<style>body{padding:0;align-items:unset;}</style>"
-  "Undo the site body padding for a Gemini review page.
-A review page is built with Tailwind and wants the flex column body the
-site styles, so only the centre alignment and the padding are undone.")
-
 (defun ores-deploy-prototypes (site-dir)
   "Deploy every prototype under doc/prototypes/GROUP/NAME/ into SITE-DIR.
 A prototype is a directory one level under a group folder that holds an
 index.html. It deploys where it sits, so adding a prototype is adding a
-folder and no list here can go stale. A review under the prototype's
-review/ directory is copied with it, and is given the site chrome too."
+folder and no list here can go stale.
+
+A review under the prototype's review/ directory is copied with it and is
+left exactly as it was written. The site stylesheet and the site header are
+for the documentation, and a review is a whole screen drawn to stand alone:
+the document rules on html, body, headings, links, images and tables move
+every measurement a Tailwind page sets in rem, so the chrome is not injected
+there. A review carries its own links table instead."
   (dolist (group (directory-files (expand-file-name "./doc/prototypes")
                                   t "^[^.]"))
     (when (file-directory-p group)
       (dolist (prototype (directory-files group t "^[^.]"))
         (when (and (file-directory-p prototype)
                    (file-exists-p (expand-file-name "index.html" prototype)))
-          (let* ((target (format "doc/prototypes/%s/%s"
-                                 (file-name-nondirectory group)
-                                 (file-name-nondirectory prototype)))
-                 (review (expand-file-name "review" prototype)))
+          (let ((target (format "doc/prototypes/%s/%s"
+                                (file-name-nondirectory group)
+                                (file-name-nondirectory prototype))))
             (ores-deploy-web-app prototype site-dir target
-                                 ores/prototype-fix-tag)
-            (when (file-directory-p review)
-              (dolist (page (directory-files review t "^[^.].*\\.html$"))
-                (ores-inject-site-nav
-                 (expand-file-name (file-name-nondirectory page)
-                                   (expand-file-name "review"
-                                                     (expand-file-name target site-dir)))
-                 site-html-preamble ores/review-fix-tag)))))))))
+                                 ores/prototype-fix-tag)))))))
 
 (defun ores-deploy-web-apps (site-dir)
   "Deploy every static web app into SITE-DIR.

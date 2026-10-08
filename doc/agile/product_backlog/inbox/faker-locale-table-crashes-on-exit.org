@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: C410FAE0-C7D3-444B-9EBF-E28A3C2265F0
+:END:
+#+title: A service crashes on exit in faker's locale table
+#+description: Every service that links faker-cxx segfaults while shutting down, inside the static destructor of faker's locale map, so every stop reports the unit as failed and writes a core dump.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A service that links faker-cxx segfaults while it shuts down. glibc runs the
+static destructors at exit, one of them is faker's locale table -- a global
+=std::map<faker::Locale, std::vector<std::string_view>>= -- and its destructor
+calls =free= on memory that is already gone.
+
+The service is not failing at its work. It serves for hours and dies on the way
+out, so systemd records =core-dump= and the unit reads as =failed= every time it
+is stopped.
+
+* Why
+
+Observed on =ores.workflow.service=, 2026-10-08, bright faraday, stopping a fleet
+that had been up for 2h 46m:
+
+#+begin_example
+Main process exited, code=dumped, status=11/SEGV
+Failed with result 'core-dump'
+Consumed 12.010s CPU time over 2h 46min 19.693s wall clock time
+#+end_example
+
+The stack holds no application frame at all. Every frame from the fault back to
+=main= is finalisation, which is what says this is a teardown fault rather than a
+logic fault:
+
+#+begin_example
+#0  __GI___libc_free
+#3  std::vector<std::string_view>::~vector
+#5  std::pair<const faker::Locale, std::vector<std::string_view>>::~pair
+#13 std::map<faker::Locale, std::vector<std::string_view>>::~map
+#14 __cxa_finalize
+#16 _dl_call_fini
+#18 __run_exit_handlers
+#20 __libc_start_call_main
+#22 _start
+#+end_example
+
+Two things make this worth fixing rather than tolerating:
+
+- *Every stop of every faker-linking service looks like a failure.* The unit
+  reads =failed=, so a fleet that is down on purpose is indistinguishable from
+  one that fell over -- which is the first check a person runs when something is
+  wrong.
+- *It writes a core dump each time*, which costs disk and invites an
+  investigation that ends at "it is only faker" every time. It charges whoever
+  looks the same tax this one did.
+
+* What is not known
+
+- *Which services are affected.* faker is linked wherever a generated
+  =*_generator= is, so the set is probably wide. =libores.workflow.api.so= alone
+  carries 206 faker symbols, pulled in by =workflow_step_generator= and
+  =workflow_instance_generator=, and by the plan step and dependency generators
+  that arrived with the run's chain.
+- *Whether the fault is faker-cxx's or ours.* The locale table is faker's own
+  global. A static destruction order that drops the library's allocator before
+  its tables would explain it, and so would faker holding a =string_view= into a
+  container it destroys first.
+- *Whether a version bump fixes it, or the fix is ours* -- not calling faker from
+  anything statically initialised, or putting its globals behind a function-local
+  static so they are never torn down at exit.
+
+* References
+
+- =projects/ores.eventing/api/src/generators/entity_change_event_generator.cpp= -- one of the places that calls faker.
+- =projects/ores.workflow/api/src/generators/= -- the generated generators that link faker into a service.
+
+* See also
+
+-

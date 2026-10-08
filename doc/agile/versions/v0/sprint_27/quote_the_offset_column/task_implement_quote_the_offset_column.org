@@ -8,7 +8,7 @@
 #+filetags: :quote_the_offset_column:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 2862
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2862][#2862]] | [marketdata] Quote the offset column in the commodity identity view |
 
 * Review
 

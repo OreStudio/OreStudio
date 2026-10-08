@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.service/app/application.hpp"
 #include "../feed_controller.hpp"
+#include "../feed_kind_registry.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -30,28 +31,14 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
-#include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
-#include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/gmm_component_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
-#include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
-#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
-#include <chrono>
-#include <map>
 #include <memory>
 #include <rfl/json.hpp>
 #include <span>
@@ -66,165 +53,34 @@ namespace {
 constexpr std::string_view service_name = "ores.synthetic.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-// One boot-time walk: start every auto-startable feed of every kind. The
-// startability gate is uniform (enabled + auto_start + an enabled
-// container); candidates of each kind are collected in the same pass and
-// added through the factory and the single controller.
+// One boot-time walk: start every auto-startable feed of every kind the
+// registry knows. The startability gate lives on the attempt itself, and the
+// walk adds its own auto_start term, which is genuinely about blameless boot
+// behaviour rather than about a kind.
 auto& auto_start_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.service.app.auto_start");
     return instance;
 }
 
-// One auto-start candidate: the factory kind string, a display name for
-// log messages, the binding mode to register the feed with, and the
-// already-assembled per-kind build input.
-struct auto_start_candidate {
-    std::string kind;
-    std::string name;
-    ores::synthetic::domain::binding_mode binding_mode;
-    ores::synthetic::feed::feed_build_input input;
-};
-
 void auto_start_feeds(feed_controller& ctrl,
+                      const feed_kind_registry& registry,
                       const ores::synthetic::feed::feed_build_context& bctx,
                       const ores::database::context& ctx) {
-    namespace repo = ores::synthetic::repository;
-    using ores::synthetic::feed::build_ir_curve_refdata_context;
-    using ores::synthetic::feed::fx_spot_feed_build_input;
-    using ores::synthetic::feed::fx_spot_feed_kind;
-    using ores::synthetic::feed::ir_curve_feed_build_input;
-    using ores::synthetic::feed::ir_curve_feed_kind;
-    using ores::synthetic::feed::ir_curve_qualifier;
-    using ores::synthetic::feed::ir_curve_tenor_convention_code;
-    using ores::synthetic::feed::default_feed_factory;
-
-    repo::market_data_generation_config_repository feed_repo;
-    repo::fx_spot_generation_config_repository fx_repo;
-    repo::gmm_component_repository comp_repo;
-    repo::ir_curve_generation_config_repository config_repo;
-    repo::ir_curve_template_entry_repository entry_repo;
-    repo::ir_curve_generation_config_process_parameter_value_repository value_repo;
-    repo::yield_curve_process_parameter_definition_repository definition_repo;
-
-    const auto feeds = feed_repo.read_latest(ctx);
-    const auto fxs = fx_repo.read_latest(ctx);
-    const auto comps = comp_repo.read_latest(ctx);
-    const auto configs = config_repo.read_latest(ctx);
-    const auto entries = entry_repo.read_latest(ctx);
-    const auto values = value_repo.read_latest(ctx);
-    const auto definitions = definition_repo.read_latest(ctx);
-
-    // Enabled containers only: a feed under a disabled container is not
-    // startable at boot. Keyed by container id rather than a plain set, so
-    // each candidate's binding_mode (bound/sandboxed) can be looked up when
-    // starting it — see the "Synthetic data scope and binding" story.
-    std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
-        enabled_feeds;
-    for (const auto& f : feeds)
-        if (f.enabled)
-            enabled_feeds.emplace(f.id, f);
-
-    // The uniform startability gate: enabled + auto_start + an enabled
-    // container. auto_start is the auto-start-eligibility flag; enabled
-    // alone only means "startable at all" (manually or automatically) — an
-    // enabled=true, auto_start=false config (e.g. a legacy/alternate-index
-    // variant) is deliberately skipped here and left for on-demand start
-    // only.
-    const auto startable = [&enabled_feeds](
-                               bool config_enabled, bool auto_start, boost::uuids::uuid config_id) {
-        return config_enabled && auto_start && enabled_feeds.find(config_id) != enabled_feeds.end();
-    };
-
-    // Group children by their parent config id; note the field asymmetry —
-    // gmm_component::fx_spot_config_id keys against
-    // fx_spot_generation_config::id, while the IR entry and parameter-value
-    // rows key against ir_curve_generation_config::id.
-    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> by_fx;
-    for (const auto& c : comps)
-        by_fx[c.fx_spot_config_id].push_back(c);
-
-    std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::ir_curve_template_entry>>
-        entries_by_config;
-    for (const auto& e : entries)
-        entries_by_config[e.ir_curve_config_id].push_back(e);
-
-    // Row-based parameters: group the config's {parameter_definition_id, value} rows by
-    // config id (the generated repository has no parent-scoped read -- same pattern as
-    // entries_by_config), and load the system-tenant definitions catalogue once;
-    // make_ir_curve_feed joins the two.
-    std::map<
-        boost::uuids::uuid,
-        std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
-        values_by_config;
-    for (const auto& v : values)
-        values_by_config[v.config_id].push_back(v);
-
-    std::vector<auto_start_candidate> candidates;
-
-    for (const auto& fx : fxs) {
-        if (!startable(fx.enabled, fx.auto_start, fx.config_id))
-            continue;
-        const auto container = enabled_feeds.find(fx.config_id);
-        const auto it = by_fx.find(fx.id);
-        if (it == by_fx.end() || it->second.empty()) {
-            BOOST_LOG_SEV(auto_start_lg(), warn)
-                << "Skipping enabled FX rate " << fx.ore_key << " — no GMM components.";
-            continue;
-        }
-        candidates.push_back(
-            {std::string(fx_spot_feed_kind),
-             fx.ore_key,
-             container->second.binding_mode,
-             fx_spot_feed_build_input{fx, it->second, container->second.binding_mode}});
-    }
-
-    for (const auto& cfg : configs) {
-        if (!startable(cfg.enabled, cfg.auto_start, cfg.config_id))
-            continue;
-        const auto container = enabled_feeds.find(cfg.config_id);
-        const auto it = entries_by_config.find(cfg.id);
-        if (it == entries_by_config.end() || it->second.empty()) {
-            BOOST_LOG_SEV(auto_start_lg(), warn)
-                << "Skipping enabled IR curve config " << cfg.currency_code << "/"
-                << cfg.index_family << " — no template entries.";
-            continue;
-        }
-        const auto vit = values_by_config.find(cfg.id);
-        if (vit == values_by_config.end() || vit->second.empty()) {
-            BOOST_LOG_SEV(auto_start_lg(), warn)
-                << "Skipping enabled IR curve config " << cfg.currency_code << "/"
-                << cfg.index_family << " — no parameter value rows.";
-            continue;
-        }
-
-        // The context is per config: the series qualifier selects the tenor
-        // convention (the FOMC grid resolves under RATES_SPOT_FOMC).
-        const auto refctx = build_ir_curve_refdata_context(
-            ctx, ir_curve_tenor_convention_code(ir_curve_qualifier(cfg)));
-        if (!refctx) {
-            BOOST_LOG_SEV(auto_start_lg(), error)
-                << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                << " — tenor convention not found.";
-            continue;
-        }
-        candidates.push_back({std::string(ir_curve_feed_kind),
-                              cfg.currency_code + "/" + cfg.index_family,
-                              container->second.binding_mode,
-                              ir_curve_feed_build_input{cfg,
-                                                        it->second,
-                                                        vit->second,
-                                                        definitions,
-                                                        *refctx,
-                                                        container->second.binding_mode}});
-    }
-
-    const auto& factory = default_feed_factory();
     int started = 0;
-    for (const auto& c : candidates) {
+    for (const auto& target : registry.targets(ctx)) {
+        const auto& c = target.row.candidate;
+        if (!c.auto_start)
+            continue;
         try {
+            auto attempt = registry.make_feed(target, bctx);
+            if (!attempt.feed) {
+                BOOST_LOG_SEV(auto_start_lg(), warn)
+                    << "Skipping enabled feed " << c.display_name << " — " << attempt.failure;
+                continue;
+            }
             std::string conflicting_source_name;
-            if (ctrl.add(factory.make(c.kind, bctx, c.input),
-                         c.binding_mode,
+            if (ctrl.add(std::move(attempt.feed),
+                         target.binding_mode,
                          bctx.caller_bearer_token,
                          &conflicting_source_name)) {
                 ++started;
@@ -235,12 +91,14 @@ void auto_start_feeds(feed_controller& ctrl,
                 // whole auto-start pass. An already-running same-source row
                 // (a duplicate config) stays silent, as before.
                 BOOST_LOG_SEV(auto_start_lg(), error)
-                    << "Skipping auto-start of " << c.name << " — feed '" << conflicting_source_name
+                    << "Skipping auto-start of " << c.display_name << " — feed '"
+                    << conflicting_source_name
                     << "' is already running for the same market data key.";
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auto_start_lg(), error)
-                << "Failed to auto-start " << c.name << " (" << c.kind << "): " << e.what();
+                << "Failed to auto-start " << c.display_name << " (" << target.row.kind->kind
+                << "): " << e.what();
         }
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
@@ -316,6 +174,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto ctrl = std::make_shared<feed_controller>(nats, svc_nats);
 
+    // The one per-kind registry: the config-plane dispatch table every
+    // control-plane verb and the boot walk below read.
+    const auto registry = make_default_feed_kind_registry();
+
     // The shared inputs every producer builder needs. Auto-start has no
     // end-user session, so the caller bearer token is empty.
     const ores::synthetic::feed::feed_build_context bctx{nats, svc_nats, {}};
@@ -323,7 +185,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Autonomous, config-driven generation: one boot-time walk starts every
     // auto-startable feed of every kind. Each feed resolves its own series
     // and publishes on its synthetic producer channel.
-    auto_start_feeds(*ctrl, bctx, db_ctx);
+    auto_start_feeds(*ctrl, registry, bctx, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
 
@@ -332,10 +194,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, &svc_nats](auto& n, auto c, auto v) {
+        [ctrl, &svc_nats, &registry](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs =
-                ores::synthetic::service::registrar::register_handlers(n, svc_nats, ctrl, c, v);
+            auto market_subs = ores::synthetic::service::registrar::register_handlers(
+                n, svc_nats, ctrl, c, v, registry);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

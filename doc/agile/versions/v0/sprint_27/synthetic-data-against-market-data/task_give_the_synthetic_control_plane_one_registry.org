@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-synthetic-control-plane-one-registry
+#+pr: 2782
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,67 @@ Give the per-kind registry the two things the control plane keeps re-deriving, s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:18458C9D-FF7C-4CFE-AB13-7E5EEBAB8408][Implement synthetic data generation against the new market data model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- A third asset class registers in one place and is reached by start, stop, list,
+  folder start, folder stop, auto-start, vintage validity and simulate, with no edit to
+  a handler file or to =application.cpp=. A test registering a stub kind proves it and
+  needs no database.
+- No per-kind config permission literal, no =ores.synthetic.core= repository include,
+  no =fx_spot_feed_kind=/=ir_curve_feed_kind= literal and no per-kind loop remain in
+  =feed_config_handler.hpp=, =folder_feed_control_handler.hpp=,
+  =vintage_validity_handler.hpp=, =simulate_handler.hpp=,
+  =ir_curve_preview_handler.hpp= or =application.cpp=.
+- The registry entry carries the kind's config read permission and a
+  =config_id -> feed_build_input= resolver, beside the factory builder.
+- =feed_config_handler_tests.cpp= and =folder_feed_control_handler_tests.cpp= pass with
+  their assertions unchanged. The AND-over-all-kinds gate still holds for =list= and the
+  folder cascade.
+- =feed_factory= stays the single producer-construction dispatch point and
+  =make_default_feed_factory()= stays, so =feed_factory_tests.cpp= is untouched.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The work is a cross-cutting structural change, so it ran as a designed playbook rather
+than a narrow refactor. The steps below are the historical record.
+
+**Grounding.** Four parallel explorers mapped the persisted config model, the
+simulate/preview path, the callers and permissions, and the factory and vintage seam.
+The two integration suites are the behaviour contract; they were run green before
+anything moved. The dev database was rebuilt from current SQL first, because main's SQL
+had moved past the running database and the fresh test binary refused to start on the
+fingerprint mismatch.
+
+**One-way-door design.** The registry shape is the seam every future asset class
+registers through, so three candidate designs were built in parallel and scored by an
+independent cross-judge. The deciding constraints were two repo conventions:
+=polymorphic_types_over_nats.org= fixes one NATS subject per concrete type, which rules
+out merging the two simulate requests into one variant payload, and
+=feed_factory_and_kind_seam.org= pins =feed_factory= as the one construction dispatch
+point, which rules out folding it into the registry. The chosen design keeps both, and
+registers a per-kind vintage anchor coordinate that one shared check reads, instead of a
+second per-kind copy of the paging rule.
+
+**Two registration points stay.** The factory builder and the control-plane entry are
+registered separately, because the factory's own test pins =make_default_feed_factory()=.
+=register_kind= throws at startup when the factory has no builder for the kind, so the
+two cannot drift.
+
+**Migration.** New registry first, wired to nothing; then one verb at a time, each
+ending green against the pin. The vintage wire field is changed in the model and
+regenerated, never by hand. =feed_controller::validate= and its private vintage helper
+become caller-less and are deleted in the same wave, per the one-pipeline rule.
+
+**Verification.** The two integration suites unchanged; the new stub-kind dispatch test
+without a database; the grep predicate for per-kind literals; a before-and-after line
+count; and the component drift and link-structure gates.
 
 * Measurements
 
@@ -55,9 +100,56 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Control-plane handler lines, before | 1766 over 6 files | =wc -l= on =feed_config_handler.hpp=, =folder_feed_control_handler.hpp=, =vintage_validity_handler.hpp=, =simulate_handler.hpp=, =ir_curve_preview_handler.hpp=, =app/application.cpp= | =9d12f82b8c= |
+| Control-plane handler lines, after | 1165 over the same 6 files (−601) | same | =dfe7434da6= |
+| Per-kind literals, repository includes and per-kind loops, before | 55 | =grep -cE "generation_configs:read\|ores\.synthetic\.core/repository/\|fx_spot_feed_kind\|ir_curve_feed_kind"= on the 6 files | =9d12f82b8c= |
+| Same, after | 0 (grep exits 1) | same grep with =-n= | =dfe7434da6= |
+| New registry | 858 lines (=feed_kind_registry.hpp= 313, =.cpp= 545) | =wc -l= | =dfe7434da6= |
+| Synthetic suites | 3/3 pass; api 26 cases, core 41, service 54 | =ctest --test-dir build/output/linux-clang-debug-make -R 'ores.synthetic' --output-on-failure= | =ca9ff291b9= |
+| Stub-kind dispatch test | 6 cases, 54 assertions, reads no repository | =./compass.sh build ores.synthetic.service.tests= | =ca9ff291b9= |
 
 * Notes
+
+Follow-ups found while grounding this task, deliberately left out of it:
+
+- =ir_curve_preview_handler::preview_shape= builds its reference-data context
+  from a hardcoded =RATES_SPOT_FORWARD= convention, while every feed path
+  derives the convention from the config's qualifier. An FOMC-grid config
+  therefore previews under the wrong grid. A live divergence between preview
+  and run.
+- The boot auto-start walk reads the IR process-parameter definitions
+  catalogue without the system-tenant context the two handlers use, so on a
+  real tenant it may read nothing.
+- The shell keeps its own client-side FX-then-IR probe when it resolves a feed
+  by id or name, so a third kind stays invisible to =synthetic= name
+  resolution even though the server registry now dispatches it.
+- The two generation-config entities still duplicate nineteen plumbing fields.
+  Collapsing them needs a codegen model and a schema change, which this task
+  put out of scope.
+- =feed_kind_registry::targets()= drops a config whose container is not
+  visible, so the folder cascade no longer counts it as skipped. The
+  =config_id= foreign key makes this reachable only under row-level security,
+  where the config is invisible anyway.
+- =ores.marketdata.api.puml= is stale by more than this change. Running its
+  generator would also rewrite =feed_binding= (the workspace removal and the
+  producer kind) and several other structs, none of them this task's, so the
+  full regeneration is its own cleanup. This change's own struct,
+  =vintage_validity_entry=, is updated in place to match the generated shape.
+- The unknown-kind guard in =simulate= and =preview_shape= replies before the
+  JWT check, because an unregistered kind has no typed response and no
+  permission to derive a gate from. It is unreachable in production, where
+  every subject comes from a registration, but a reader should not mistake it
+  for an auth gap.
+- The FX vintage anchor sets no party id, while the IR anchor does and the FX
+  producer's own read does. An FX config can therefore report =valid= and then
+  fail to start on a party-scoped series. The retired FX-only helper passed no
+  party either, so this is carried over rather than introduced, but the
+  registry was the moment to make the check read the series the way the feed
+  reads it.
+- The stub-kind test drives =vintage_validity_handler::list= and
+  =simulate_handler::simulate= without asserting on either, and does not drive
+  =feed_config_handler::list= or the boot walk. Those paths pass for
+  crash-freedom only, so the test pins dispatch for four verbs and not eight.
 
 * Test Scenarios
 
@@ -74,7 +166,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2782][#2782]] | [synthetic] Give the feed control plane one per-kind registry |
 
 * Review
 
@@ -83,3 +175,50 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The control plane now asks one per-kind registry instead of re-deriving each
+asset class's facts in every verb. A kind registers once, in
+=make_default_feed_kind_registry()=, and that one entry carries its factory
+kind, its config read permission, a loader over its own config rows, a lazy
+resolver from a config row to a =feed_build_input=, its vintage anchor, and its
+simulate decode and reply pair. =feed_factory= stays the one
+producer-construction dispatch point; =register_kind= refuses a kind the
+factory cannot build, so the two registrations cannot drift.
+
+The verb bodies became registry code. The startability gate, the child load and
+the factory call exist once, in =make_feed=; start, the folder cascade and the
+boot walk keep only their own outcome handling. The permission gate that spans
+kinds is derived from the registrations, so it holds for every registered kind
+by construction. The vintage entry is keyed by config id and tagged with its
+kind, so an IR curve config finally has a validity entry; that field change went
+through the model and its generated C++ and TypeScript, not through a
+hand-edited header. The two simulate subjects and their typed payloads stay,
+per the one-subject-per-concrete-type rule; only the server-side envelope is
+shared, so simulate has no client impact. =feed_controller::validate= and its
+private vintage helper lost their last caller and are deleted.
+
+Verification. The two integration suites pass with every assertion unchanged —
+the test fixtures changed only to pass the registry into the handler
+constructors. The new =feed_kind_registry_tests.cpp= registers a stub kind and
+drives the real handlers, proving that start, stop, list, the folder cascade,
+vintage validity and the simulate envelope all reach the stub with no handler
+edit. It reads no repository and opens no query, but it does construct a real
+database context, and the boot walk itself is not driven by a test: that path is
+covered by compilation and by the =make_feed= gate the test does exercise. The
+grep for per-kind permission literals, =ores.synthetic.core= repository
+includes, kind constants and per-kind loops over the six control-plane files
+returns nothing. The six files fell from 1766 to 1165 lines while the registry
+adds 858.
+
+Behaviour changes, all intended and stated: kind resolution follows the
+registry's sorted kind order rather than a hand-written repository probe (the
+same winner, now stated); an IR config gains a vintage entry, and that check is
+now party-scoped where the old FX-only controller helper passed no party at all;
+the vintage verb's gate widens to the same all-kinds gate as =list= and the
+cascade, so an FX-only caller who could read the list now gets a forbidden
+reply; the on-demand start failure message is one unified string, so an enabled
+row under a disabled container no longer says which half failed; and the folder
+response keys are registry-derived. =targets()= drops a config whose container is
+not visible, so the cascade counts it in neither =started= nor =skipped=.
+Out-of-scope defects found during grounding are recorded in Notes rather than
+fixed here.

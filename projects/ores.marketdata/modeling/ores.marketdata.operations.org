@@ -791,20 +791,37 @@ Request to stop every running feed under a synthetic folder subtree. Same
 
 ** vintage_validity_entry
 
-Vintage-availability status for one fx_spot_generation_config, computed live
+Vintage-availability status for one feed config of any asset class, computed live
 against market_observation rather than stored.
 
 #+begin_src cpp :name comment
 /**
- * @brief Vintage-availability status for one fx_spot_generation_config,
+ * @brief Vintage-availability status for one feed config of any asset class,
  * computed live (not stored) against market_observation.
  */
 #+end_src
 
-*** fx_spot_generation_config_id
+*** config_id
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+#+begin_src cpp :name comment
+/** The feed config row's own id: fx_spot_generation_config::id for an FX
+ * feed, ir_curve_generation_config::id for an IR curve feed.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The registered feed kind the row belongs to, so a caller can tell the
+ * asset classes apart without probing.
+ */
+#+end_src
 
 *** applicable
 :PROPERTIES:

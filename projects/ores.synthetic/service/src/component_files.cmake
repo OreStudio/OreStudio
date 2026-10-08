@@ -24,6 +24,7 @@ set(files
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
+    "feed_kind_registry.cpp"
     "main.cpp"
     "messaging/event_registrar.cpp"
     "messaging/folder_event_registrar.cpp"

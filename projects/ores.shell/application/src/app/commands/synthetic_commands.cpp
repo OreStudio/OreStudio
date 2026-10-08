@@ -1316,9 +1316,9 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
                                           nats_client& session,
                                           const std::string& token) {
     // Resolve the feed (id, ore key or source name), then look up its
-    // live server-side vintage validity entry. Entries are keyed by fx
-    // config id, so only FX feeds match one; IR curve feeds report no
-    // entry. The ore key renders only for FX feeds.
+    // live server-side vintage validity entry. Entries are keyed by
+    // feed config id, of every asset class. The ore key renders only for
+    // FX feeds.
     const auto feed = resolve_feed(out, session, token);
     if (!feed)
         return false;
@@ -1336,7 +1336,7 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
     }
 
     for (const auto& e : result->entries) {
-        if (e.fx_spot_generation_config_id != feed_id)
+        if (e.config_id != feed_id)
             continue;
         if (!e.applicable) {
             out << "⚠ Vintage check not applicable to feed " << feed->source_name << ore_key

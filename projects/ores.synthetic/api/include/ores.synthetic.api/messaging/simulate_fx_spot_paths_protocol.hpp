@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_SIMULATE_FX_SPOT_PATHS_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_SIMULATE_FX_SPOT_PATHS_PROTOCOL_HPP
 
+#include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -39,8 +40,8 @@ struct simulate_fx_spot_paths_request {
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.simulate_fx_spot_paths";
 
     /** @brief Shared batch-size limits, applied by the service clamp and the UI spinners. */
-    static constexpr int max_num_ticks = 5000;
-    static constexpr int max_num_paths = 50;
+    static constexpr int max_num_ticks = max_simulate_num_ticks;
+    static constexpr int max_num_paths = max_simulate_num_paths;
 
     /** @brief GMM component parameters (means, stdevs, weights of equal size). */
     std::vector<double> gmm_means;

@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_SIMULATE_IR_CURVE_PATHS_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_SIMULATE_IR_CURVE_PATHS_PROTOCOL_HPP
 
+#include "ores.synthetic.api/messaging/simulate_paths_common.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -52,8 +53,8 @@ struct simulate_ir_curve_paths_request {
     static constexpr std::string_view nats_subject = "synthetic.v1.ops.simulate_ir_curve_paths";
 
     /** @brief Shared batch-size limits, applied by the service clamp and the UI spinners. */
-    static constexpr int max_num_ticks = 5000;
-    static constexpr int max_num_paths = 50;
+    static constexpr int max_num_ticks = max_simulate_num_ticks;
+    static constexpr int max_num_paths = max_simulate_num_paths;
 
     /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", "hull_white", or
      * "two_factor_gaussian". */

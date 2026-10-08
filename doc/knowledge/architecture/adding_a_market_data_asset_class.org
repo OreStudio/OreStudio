@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:feeds:producers:extension:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-07
 
 * Summary
 
@@ -30,29 +30,38 @@ ingest loop.
    a kind constant declared beside the producer. The two constants in the
    tree today are =fx_spot_feed_kind= and =ir_curve_feed_kind=.
 
-** The edits a new kind still requires
+** The edits a new kind requires
 
-The seam is not yet complete, and the shape of the gap is worth knowing
-before starting. The factory is kind agnostic, but three call sites name
-the existing kinds explicitly and each needs a new block for a new kind.
+A new kind is four edits, and none of them is in a handler.
 
-- =ores.synthetic/service/src/app/application.cpp= builds the boot auto
-  start candidates, with one loop per kind that reads that kind's config
-  table, groups its child rows and pushes a candidate.
-- =ores.synthetic/service/src/feed_config_handler.hpp= has one on demand
-  start path per kind, each constructing that kind's build input.
-- =ores.synthetic/service/src/folder_feed_control_handler.hpp= has one
-  cascade loop per kind and one per kind result count in the response.
+1. Its own codegen entity model, regenerated, because the config table is
+   the asset class's own.
+2. A struct in =feed_build_input= and a builder registered in
+   =make_default_feed_factory()=, in =ores.synthetic/api=. The inputs
+   genuinely differ, so the variant is real.
+3. One =register_kind= call in =make_default_feed_kind_registry()=, in
+   =ores.synthetic/service/src/feed_kind_registry.cpp=. That entry carries
+   the kind's config read permission, its config-row loader, its lazy
+   build-input resolver, its vintage anchor and its simulate decode/reply
+   pair.
+4. Its permission row and role grant in the IAM populate SQL. The gate over
+   a span of kinds is the conjunction of every registered kind's config read
+   permission, so a kind with no grant refuses every caller of =list=, the
+   folder cascade and vintage validity. This step is easy to forget because
+   it is data, not code.
 
-None of these sits inside the lifecycle machinery. A new kind adds a block
-to each and leaves =feed_controller=, =producer_subject=, =market_tick= and
-=feed_ingest_loop= untouched.
+=feed_config_handler=, =folder_feed_control_handler=,
+=vintage_validity_handler=, =simulate_handler=, =ir_curve_preview_handler=
+and =application.cpp= need no edit, and =feed_controller=,
+=producer_subject=, =market_tick= and =feed_ingest_loop= stay untouched.
 
 ** Why the list is the point
 
-The list is the evidence about where the seam ends today. A note that
-claimed a new asset class is one registration would be wrong, and a future
-reader would find the three call sites by compiling rather than by reading.
+The list is the evidence about where the seam ends today. It shrank from
+three service call sites to a registration and a grant when the per-kind
+registry landed; before that, a note claiming one registration would have
+been wrong. The one entry point the registry cannot absorb is the SQL grant,
+so it is named rather than implied.
 
 * See also
 

@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 
 #include "feed_controller.hpp"
+#include "feed_kind_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -33,15 +34,14 @@
 namespace ores::synthetic::service {
 
 /**
- * @brief Registers NATS handlers for the FX spot and IR curve synthetic tick generation PoC.
+ * @brief Registers NATS handlers for the synthetic feed control plane.
  *
  * Wires:
- *   synthetic.v1.ops.start_feed  — starts a feed by config_id, any kind (auth + RBAC)
+ *   synthetic.v1.ops.start_feed  — starts a feed by config_id, any registered kind (auth + RBAC)
  *   synthetic.v1.ops.stop_feed   — stops a running feed by config_id or source_name
  *   synthetic.v1.feed_configs.list   — lists running feed source_names, every kind
- *   synthetic.v1.ops.simulate_fx_spot_paths    — batch dry-run sample paths (auth + RBAC)
- *   synthetic.v1.ops.simulate_ir_curve_paths — batch dry-run short-rate sample paths (auth + RBAC)
- *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (auth + RBAC)
+ *   one <kind>.simulate subject per registered kind — batch dry-run sample paths (auth + RBAC)
+ *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (IR only; auth + RBAC)
  */
 class registrar {
 public:
@@ -50,7 +50,8 @@ public:
                       ores::nats::service::nats_client& auth_nats,
                       std::shared_ptr<feed_controller> ctrl,
                       ores::database::context ctx,
-                      std::optional<ores::security::jwt::jwt_authenticator> verifier);
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                      const feed_kind_registry& registry);
 };
 
 }

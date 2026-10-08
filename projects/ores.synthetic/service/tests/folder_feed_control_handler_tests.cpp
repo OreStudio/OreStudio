@@ -405,6 +405,7 @@ struct cascade_fixture {
     ores::nats::service::nats_client auth_nats;
     std::shared_ptr<ores::synthetic::service::feed_controller> ctrl;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
+    ores::synthetic::service::feed_kind_registry registry;
     std::optional<ores::nats::service::subscription> start_sub;
     std::optional<ores::nats::service::subscription> stop_sub;
 
@@ -417,19 +418,20 @@ struct cascade_fixture {
         ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats, auth_nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
+        registry = ores::synthetic::service::make_default_feed_kind_registry();
 
         using ores::marketdata::messaging::start_feeds_under_folder_request;
         using ores::marketdata::messaging::stop_feeds_under_folder_request;
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, ctrl, auth_nats, db.context(), verifier);
+                    nats, ctrl, auth_nats, db.context(), verifier, registry);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, ctrl, auth_nats, db.context(), verifier);
+                    nats, ctrl, auth_nats, db.context(), verifier, registry);
                 h.stop(std::move(msg));
             });
     }

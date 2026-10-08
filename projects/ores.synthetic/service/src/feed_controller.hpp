@@ -23,21 +23,16 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
-#include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <atomic>
 #include <chrono>
 #include <expected>
-#include <format>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <random>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -147,13 +142,13 @@ private:
     }
 
 public:
-    // nats is the raw transport the feeds build with; the controller itself
-    // needs only the authenticated client, for the vintage and binding calls.
+    // nats is the raw transport the feeds build with, kept so a caller
+    // constructs the controller and the build context from one client.
+    // auth_nats builds the default marketdata binding store.
     feed_controller(ores::nats::service::client& nats,
                     ores::nats::service::nats_client& auth_nats,
                     std::shared_ptr<feed_binding_store> bindings = {})
-        : auth_nats_(auth_nats)
-        , bindings_(bindings ? std::move(bindings) : make_marketdata_binding_store(auth_nats)) {
+        : bindings_(bindings ? std::move(bindings) : make_marketdata_binding_store(auth_nats)) {
         (void)nats;
     }
 
@@ -339,33 +334,6 @@ public:
         return names;
     }
 
-    /**
-     * @brief Check whether a feed's required vintage data exists, without
-     * starting it. Powers the Market Simulator "validate all" action.
-     *
-     * FX-only surface (the IR producers resolve vintage at build time, in
-     * the factory builder): the vintage_validity_handler iterates
-     * fx_spot_generation_config rows exclusively.
-     *
-     * @param error_detail Set to an actionable message when unavailable;
-     * untouched otherwise.
-     * @param resolved_price Set to the found observation's value on success;
-     * untouched otherwise.
-     */
-    bool validate(const std::string& ore_key,
-                  const std::string& vintage_source,
-                  const std::string& vintage_date,
-                  std::string& error_detail,
-                  const std::string& caller_bearer_token = {},
-                  double* resolved_price = nullptr) {
-        return vintage_data_available(ore_key,
-                                      vintage_source,
-                                      vintage_date,
-                                      error_detail,
-                                      caller_bearer_token,
-                                      resolved_price);
-    }
-
 private:
     // The one binding rule, applied by every start path: a bound feed is
     // bound, a sandboxed feed never is. Skipped when there is no caller
@@ -392,52 +360,6 @@ private:
 
     feed_binding_store& bindings() {
         return *bindings_;
-    }
-
-    // Core vintage-availability check shared by start() and validate(). Delegates
-    // to the one paged vintage read, which looks the series and the row up with the
-    // caller's own bearer token when available, so the lookup runs in the caller's
-    // tenant/party context rather than this service's own (system-tenant) service
-    // account, which cannot see another tenant's market_observation rows under RLS.
-    // Falls back to the service's own client if no token is supplied (e.g. an
-    // internal/ad-hoc call with no end-user session).
-    //
-    // On success, @p resolved_price (if non-null) is set to the matching
-    // observation's value — the real imported spot, not a placeholder.
-    bool vintage_data_available(const std::string& ore_key,
-                                const std::string& vintage_source,
-                                const std::string& vintage_date,
-                                std::string& error_detail,
-                                const std::string& caller_bearer_token = {},
-                                double* resolved_price = nullptr) {
-        const auto datum = ores::marketdata::datum::ore_key_codec::read(ore_key);
-        if (!datum) {
-            error_detail = "ORE key '" + ore_key + "': " + datum.error();
-            return false;
-        }
-        const auto series_uri = ores::marketdata::datum::oresmd_uri_codec::write(
-                                    ores::marketdata::datum::series_of(*datum))
-                                    .value();
-        const auto datum_uri =
-            ores::marketdata::datum::oresmd_uri_codec::write(*datum).value();
-
-        const auto missing_message =
-            "No vintage data found for source=" + vintage_source + ", date=" + vintage_date + ".";
-        const auto found = ores::synthetic::feed::find_vintage_observation(auth_nats_,
-                                                                          caller_bearer_token,
-                                                                          series_uri,
-                                                                          datum_uri,
-                                                                          vintage_source,
-                                                                          vintage_date,
-                                                                          missing_message,
-                                                                          ore_key);
-        if (!found) {
-            error_detail = found.error();
-            return false;
-        }
-        if (resolved_price)
-            *resolved_price = *found;
-        return true;
     }
 
     static constexpr std::chrono::minutes status_interval_{1};
@@ -520,7 +442,6 @@ private:
         return std::nullopt;
     }
 
-    ores::nats::service::nats_client& auth_nats_;
     // Injected or, by default, the marketdata-over-NATS store.
     std::shared_ptr<feed_binding_store> bindings_;
 

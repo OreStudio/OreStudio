@@ -318,11 +318,18 @@ export interface StopFeedsUnderFolderResponse {
 }
 
 /**
- * @brief Vintage-availability status for one fx_spot_generation_config,
+ * @brief Vintage-availability status for one feed config of any asset class,
  * computed live (not stored) against market_observation.
  */
 export interface VintageValidityEntry {
-    fx_spot_generation_config_id: string;
+    /** The feed config row's own id: fx_spot_generation_config::id for an FX
+     * feed, ir_curve_generation_config::id for an IR curve feed.
+     */
+    config_id: string;
+    /** The registered feed kind the row belongs to, so a caller can tell the
+     * asset classes apart without probing.
+     */
+    kind: string;
     /** False for price_source = "fixed" feeds -- the vintage check does not
      * apply to them, so `valid` is meaningless and should not be shown.
      */

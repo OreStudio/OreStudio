@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:feeds:producers:factory:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-07
 
 * Summary
 
@@ -59,6 +59,21 @@ A process that wants a different kind set builds its own factory and
 registers into it, because =make_default_feed_factory= is an ordinary
 function rather than a static registry. That is the property the lifecycle
 depends on, since adding a kind adds a registration and no lifecycle code.
+
+** The factory is not the whole kind seam
+
+Construction is one of the things the control plane needs per kind, not the
+only one. The config read permission, the kind's config rows, the loader that
+turns one row into a build input, the vintage anchor and the simulate payload
+also vary by kind, and the factory knows none of them.
+
+That second seam is =feed_kind_registry=, in
+=ores.synthetic/service/src/feed_kind_registry.hpp=. It is service-private
+because its entries read =ores.synthetic.core= repositories, which
+=ores.synthetic.api= cannot name. One =register_kind= there carries the
+factory kind string, its permission, and its closures; =register_kind=
+refuses a kind the factory cannot build, so the two registrations cannot
+drift apart. The handlers ask the registry, never a concrete kind.
 
 * See also
 

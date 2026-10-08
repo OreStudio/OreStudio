@@ -1154,7 +1154,8 @@ namespace ores #F2F2F2 {
                 +stopped_by_kind : map<string, int>
             }
             class vintage_validity_entry <<struct>> {
-                +fx_spot_generation_config_id : string
+                +config_id : string
+                +kind : string
                 +applicable : bool
                 +valid : bool
             }

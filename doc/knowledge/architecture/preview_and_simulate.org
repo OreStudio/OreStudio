@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :synthetic:operations:preview:simulate:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-07
 
 * Summary
 
@@ -56,11 +56,12 @@ stopped.
 
 ** How the counts are bounded
 
-=simulate_fx_spot_paths_request= and =simulate_ir_curve_paths_request= each
-declare =max_num_ticks = 5000= and =max_num_paths = 50=. The handlers apply
-them with =std::clamp= before generating anything, so a UI bug cannot ask
-for a runaway batch. The UI spinners read the same two constants, which
-makes the wire limit and the widget limit one number.
+=simulate_paths_common.hpp= declares =max_simulate_num_ticks = 5000= and
+=max_simulate_num_paths = 50= once. Each request type aliases them as
+=max_num_ticks= and =max_num_paths= so the wire shape does not change, and the
+shared =run_simulate_paths()= applies them with =std::clamp= before generating
+anything, so a UI bug cannot ask for a runaway batch. The UI spinners read the
+same two names, which keeps the wire limit and the widget limit one number.
 
 =preview_ir_curve_shape_request= declares =max_entries = 50= and the handler
 rejects an empty entry list and a list above the ceiling.
@@ -78,6 +79,9 @@ The IR simulate rebuilds the ={definition, value}= shape the mapping layer
 consumes, from the request's named parameters, and calls
 =map_parameters_to_yield_curve_process=. The definitions are made up on the
 fly because the request carries parameter names rather than catalogue ids.
+That helper is =make_preview_process=, in
+=projects/ores.synthetic/service/src/ir_curve_preview_process.hpp=, and the
+curve shape preview calls the same one.
 
 The curve shape preview builds a refdata context from the
 =RATES_SPOT_FORWARD= tenor convention, resolves the template rows with
@@ -87,11 +91,13 @@ the same parameters and template always give the same shape.
 
 ** Authorisation
 
-Each handler authenticates the request and then checks a permission. The FX
-simulate needs =synthetic::fx_spot_generation_configs:read= and the two IR
-operations need =synthetic::ir_curve_generation_configs:read=. A caller who
-can read a config can preview it, and no separate operation permission
-exists.
+Each handler authenticates the request and then checks a permission. The
+permission is the kind's own =config_permission=, read from its entry in
+=feed_kind_registry=; the FX simulate uses
+=synthetic::fx_spot_generation_configs:read= and the two IR operations use
+=synthetic::ir_curve_generation_configs:read=, but no handler holds either
+literal. A caller who can read a config can preview it, and no separate
+operation permission exists.
 
 ** Facts the code shape does not show
 
@@ -107,6 +113,15 @@ exists.
 - All three operations are registered in
   =projects/ores.synthetic/service/src/registrar.cpp=, which is the one list
   of the service's subjects.
+- One =simulate_handler::simulate= serves both simulate subjects. It takes its
+  kind string from the registration, and the kind's entry supplies the
+  permission, the request decoder, the process maker and the reply writer.
+  Only the envelope, the clamp, the per-path seeding and the stepping are
+  shared.
+- The two simulate subjects stay separate even though one handler serves
+  them, because the project carries one subject per concrete type and never a
+  payload that carries its own type tag; see
+  [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]].
 
 * See also
 
@@ -114,8 +129,12 @@ exists.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][Synthetic data generation screens]], the two editors that call these operations.
 - [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]], the process interface and factory both simulations build on.
-- The handlers are =projects/ores.synthetic/service/src/simulate_handler.hpp= and
-  =projects/ores.synthetic/service/src/ir_curve_preview_handler.hpp=.
+- The simulate handler is
+  =projects/ores.synthetic/service/src/simulate_handler.hpp=, and the curve
+  shape preview is
+  =projects/ores.synthetic/service/src/ir_curve_preview_handler.hpp=. The
+  per-kind entries both read are in
+  =projects/ores.synthetic/service/src/feed_kind_registry.hpp=.
 - The wire shapes and their bounds are
   =projects/ores.synthetic/api/include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp=
   and

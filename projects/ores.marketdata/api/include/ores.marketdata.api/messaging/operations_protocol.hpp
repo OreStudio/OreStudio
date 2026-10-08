@@ -411,11 +411,18 @@ struct stop_feeds_under_folder_response {
 };
 
 /**
- * @brief Vintage-availability status for one fx_spot_generation_config,
+ * @brief Vintage-availability status for one feed config of any asset class,
  * computed live (not stored) against market_observation.
  */
 struct vintage_validity_entry {
-    std::string fx_spot_generation_config_id;
+    /** The feed config row's own id: fx_spot_generation_config::id for an FX
+     * feed, ir_curve_generation_config::id for an IR curve feed.
+     */
+    std::string config_id;
+    /** The registered feed kind the row belongs to, so a caller can tell the
+     * asset classes apart without probing.
+     */
+    std::string kind;
     /** False for price_source = "fixed" feeds -- the vintage check does not
      * apply to them, so `valid` is meaningless and should not be shown.
      */

@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_VINTAGE_VALIDITY_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_VINTAGE_VALIDITY_HANDLER_HPP
 
-#include "feed_controller.hpp"
+#include "feed_kind_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -28,9 +28,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <memory>
 #include <optional>
 
 namespace ores::synthetic::service {
@@ -44,7 +41,6 @@ inline auto& vintage_validity_handler_lg() {
 } // namespace
 
 using ores::service::messaging::error_reply;
-using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::reply;
 using namespace ores::logging;
@@ -60,13 +56,15 @@ using namespace ores::logging;
 class vintage_validity_handler {
 public:
     vintage_validity_handler(ores::nats::service::client& nats,
-                             std::shared_ptr<feed_controller> ctrl,
+                             ores::nats::service::nats_client& auth_nats,
                              ores::database::context ctx,
-                             std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             const feed_kind_registry& registry)
         : nats_(nats)
-        , ctrl_(std::move(ctrl))
+        , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , verifier_(std::move(verifier))
+        , registry_(registry) {}
 
     void list(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
@@ -81,38 +79,19 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "synthetic::fx_spot_generation_configs:read")) {
+        if (!registry_.permits_all_configs(ctx)) {
             BOOST_LOG_SEV(vintage_validity_handler_lg(), warn)
-                << "Rejecting vintage_validity request: missing permission "
-                   "synthetic::fx_spot_generation_configs:read.";
+                << "Rejecting vintage_validity request: missing a registered kind's config "
+                   "read permission.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
 
         const auto bearer = ores::nats::service::extract_bearer(msg);
 
-        namespace repo = ores::synthetic::repository;
-        repo::fx_spot_generation_config_repository fx_repo;
-        const auto fxs = fx_repo.read_latest(ctx);
-
         get_vintage_validity_response resp;
         resp.success = true;
-        resp.entries.reserve(fxs.size());
-
-        for (const auto& fx : fxs) {
-            vintage_validity_entry entry;
-            entry.fx_spot_generation_config_id = boost::uuids::to_string(fx.id);
-            if (fx.price_source != "vintage") {
-                entry.applicable = false;
-                resp.entries.push_back(entry);
-                continue;
-            }
-            entry.applicable = true;
-            std::string error_detail;
-            entry.valid = ctrl_->validate(
-                fx.ore_key, fx.vintage_source, fx.vintage_date, error_detail, bearer);
-            resp.entries.push_back(entry);
-        }
+        resp.entries = registry_.vintage_validity(ctx, auth_nats_, bearer);
 
         BOOST_LOG_SEV(vintage_validity_handler_lg(), info)
             << msg.subject << " — " << resp.entries.size() << " feed(s) checked.";
@@ -121,9 +100,10 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    std::shared_ptr<feed_controller> ctrl_;
+    ores::nats::service::nats_client& auth_nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    const feed_kind_registry& registry_;
 };
 
 }

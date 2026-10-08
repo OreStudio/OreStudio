@@ -36,8 +36,10 @@ CATALOGUES = {
 _LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 
 # The catalogue group the server's own sentences live in, and the keys inside
-# it. Prettier puts one key per line, quoted with either kind of quote.
-_GROUP_START = "    server: {"
+# it. Prettier puts one key per line, quoted with either kind of quote. The
+# markers start at the newline so a nested `server` key, which shares the
+# name, cannot be taken for the group.
+_GROUP_START = "\n    server: {"
 _GROUP_END = "\n    },"
 _KEY = re.compile(
     r"^\s+(?:'((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"|([A-Za-z_][A-Za-z0-9_]*)):",

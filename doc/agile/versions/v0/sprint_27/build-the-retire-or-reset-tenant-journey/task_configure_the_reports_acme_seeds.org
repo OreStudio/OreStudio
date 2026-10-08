@@ -8,7 +8,7 @@
 #+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/configure-the-reports-acme-seeds
-#+pr:
+#+pr: 2845
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2845][#2845]] | [reporting] Seed the report configurations a party's definitions need |
 
 * Review
 

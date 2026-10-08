@@ -427,6 +427,34 @@ export interface ExportMarketDataToStorageResponse {
 }
 
 /**
+ * @brief Projects the identity of every series that has none.
+ *
+ * The projection is written by the series write path, so only rows that
+ * predate it or that were written outside it are missing. This finds those
+ * and writes them, and touches nothing that already has a row.
+ */
+export interface BackfillSeriesIdentityRequest {
+    /**
+     * @brief The owning party to narrow to, or empty for every party the caller
+     * can see.
+     */
+    party_id: string;
+}
+
+export interface BackfillSeriesIdentityResponse {
+    success: boolean;
+    message: string;
+    /**
+     * @brief How many series were projected by this call.
+     */
+    projected_count: number;
+    /**
+     * @brief How many current series already carried a projection.
+     */
+    already_projected_count: number;
+}
+
+/**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
  * Takes no arguments: the export is the whole tenant's, because that is the
@@ -492,6 +520,7 @@ export const subjects = {
     stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
     get_vintage_validity_request: 'marketdata.v1.ops.get_vintage_validity',
     export_market_data_to_storage_request: 'marketdata.v1.ops.export_market_data_to_storage',
+    backfill_series_identity_request: 'marketdata.v1.ops.backfill_series_identity',
     export_market_data_request: 'marketdata.v1.ops.export_market_data',
     market_tick: 'marketdata.v1.ops.market_tick',
 } as const;
@@ -512,6 +541,7 @@ export const requiresSession = {
     stop_feeds_under_folder_request: true,
     get_vintage_validity_request: true,
     export_market_data_to_storage_request: true,
+    backfill_series_identity_request: true,
     export_market_data_request: true,
     market_tick: false,
 } as const;

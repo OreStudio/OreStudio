@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :joinable-series-identity:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/backfill-the-projection-and-view-it-by-asset-class
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The projection exists and every write fills it, but series that predate it carry
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

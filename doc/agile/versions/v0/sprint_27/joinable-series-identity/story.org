@@ -42,7 +42,7 @@ Make the identity of a market series queryable in the database. Today the identi
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:326FB65A-5133-487A-BCDF-EB289384DC51][Project the series identity into typed columns]] | DONE | 2026-10-08 | 2026-10-08 | Add a projection table keyed by the series id with one column per identity field the codec schema declares, written from the same codec parse that writes the URI and in the same transaction as the series row, so a query filters and joins on identity fields. |
-| [[id:0A1AB9D4-AA89-490A-AC1D-44B0AF3BA90D][Backfill the projection and read it by asset class]] | BACKLOG | | | Seed the projection for the series rows that predate it, and give each asset class a view of the identity, so a caller reads the columns its class uses without knowing which ones its instrument type fills. |
+| [[id:0A1AB9D4-AA89-490A-AC1D-44B0AF3BA90D][Backfill the projection and read it by asset class]] | STARTED | 2026-10-08 | | Seed the projection for the series rows that predate it, and give each asset class a view of the identity, so a caller reads the columns its class uses without knowing which ones its instrument type fills. |
 
 * Decisions
 

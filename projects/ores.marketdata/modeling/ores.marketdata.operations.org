@@ -1064,6 +1064,76 @@ reads, so the engine can be handed the file its run document names.
  */
 #+end_src
 
+** backfill_series_identity_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.backfill_series_identity
+:response: backfill_series_identity_response
+:END:
+
+Projects the identity of every series the tenant holds that has none, so a
+series written before the projection existed becomes joinable. A series that
+already carries a projection is left alone, so running this again finds
+nothing to do.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Projects the identity of every series that has none.
+ *
+ * The projection is written by the series write path, so only rows that
+ * predate it or that were written outside it are missing. This finds those
+ * and writes them, and touches nothing that already has a row.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The owning party to narrow to, or empty for every party the caller
+ * can see.
+ */
+#+end_src
+
+** backfill_series_identity_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** projected_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many series were projected by this call.
+ */
+#+end_src
+
+*** already_projected_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many current series already carried a projection.
+ */
+#+end_src
+
 ** export_market_data_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.export_market_data

@@ -29,6 +29,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 #include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -38,7 +41,11 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <optional>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace ores::marketdata::messaging {
 
@@ -480,6 +487,61 @@ public:
             failure.result.message = e.what();
             reply(nats_, msg, failure);
         }
+    }
+
+    void backfill_identity(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<backfill_series_identity_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        backfill_series_identity_response resp;
+        try {
+            auto series = repository::market_series_repository{}.read_latest(req_ctx);
+            if (!req->party_id.empty())
+                std::erase_if(series, [&](const ores::marketdata::domain::market_series& s) {
+                    return boost::uuids::to_string(s.party_id) != req->party_id;
+                });
+
+            // The projection keeps one row per series, so what is already
+            // there is what a writer has seen. Only the rest are projected.
+            std::set<std::string> projected;
+            for (const auto& row :
+                 repository::market_series_identity_repository{}.read_latest(req_ctx))
+                projected.insert(boost::uuids::to_string(row.series_id));
+
+            std::vector<ores::marketdata::domain::market_series> missing;
+            for (const auto& s : series) {
+                if (!projected.contains(boost::uuids::to_string(s.id)))
+                    missing.push_back(s);
+            }
+            repository::market_series_identity_projector::project(req_ctx, missing);
+
+            resp.projected_count = static_cast<int>(missing.size());
+            resp.already_projected_count = static_cast<int>(series.size() - missing.size());
+            resp.success = true;
+            resp.message = "Projected " + std::to_string(missing.size()) + " of " +
+                           std::to_string(series.size()) + " series.";
+            BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(market_series_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
     }
 
     void export_to_storage(ores::nats::message msg, const std::string& http_base_url) {

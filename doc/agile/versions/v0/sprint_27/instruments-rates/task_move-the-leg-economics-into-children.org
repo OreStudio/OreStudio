@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: C65D7E33-311E-4D73-B1DD-E336DEE95FFB
+:END:
+#+title: Task: Move the swap leg's notionals and rates into child rows
+#+description: A swap leg stores one notional, one fixed rate and one spread, so a leg whose notional amortises or whose rate steps is flattened at the boundary: map_leg reads first_notional, Rates.Rate.front() and Spreads.Spread.front() and drops the rest, and the amortisation list has nowhere to go at all. Move the leg's economics into keyed child rows, as the bond family's leg amounts are held, so the importing mapper can keep every step it reads.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/move-the-leg-economics-into-children
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give a swap leg's notionals and rates child rows keyed by the leg, populate them from the full ORE lists, and stop the flat columns from standing in for a schedule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Scoped, not started.                   |
+| Waiting on   | Nothing.                               |
+| Next         | Move the flat economics into the children, carry them on the wire, and read them back on export. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- ores_trading_swap_leg_amounts_tbl and ores_trading_swap_leg_rates_tbl exist, keyed by the trade, the leg ordinal and an entry ordinal.
+- swap_leg no longer carries notional, fixed_rate or spread; the children carry them.
+- map_leg reads every notional and every rate or spread, not the first of each.
+- The import writes the children and the export reads them back, so a stepped leg round trips.
+- The component regenerates drift-clean and builds, and the codegen suite passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

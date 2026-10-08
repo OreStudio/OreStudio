@@ -129,7 +129,7 @@ struct fixture {
         nats.connect();
         nats.make_admin().ensure_stream(
             nats.make_stream_name("marketdata_ticks"),
-            {nats.make_subject(ores::marketdata::domain::market_tick_wildcard())});
+            nats.covering_subjects({ores::marketdata::messaging::market_tick::nats_subject}));
         REQUIRE(nats.is_connected());
     }
 

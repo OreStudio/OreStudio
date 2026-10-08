@@ -31,28 +31,22 @@ namespace ores::marketdata::domain {
  * @brief The subjects a live market_tick travels on.
  *
  * A producer publishes on "synthetic.v1.ops.tick.<source>", or under the sandbox
- * prefix, which the ingest loop never subscribes to. The ingest loop
+ * base, which the ingest loop never subscribes to. The ingest loop
  * republishes each tick to every consumer the source's feed bindings name, on
  * the market_tick subject extended with the consumer and the datum's
  * canonical ORE key.
+ *
+ * These name the base of each family, not a subject a producer uses and not
+ * the wildcard a reader wants. ores.nats::client derives those: ask it for
+ * `subjects_below(base)` to subscribe, or `covering_subjects({base})` to
+ * provision the stream that holds them.
  */
-inline constexpr std::string_view synthetic_tick_subject_prefix = "synthetic.v1.ops.tick.";
-inline constexpr std::string_view synthetic_sandbox_tick_subject_prefix =
-    "synthetic.v1.ops.sandbox_tick.";
-
-/// Every producer's ticks; '>' because a source name may itself be dotted.
-inline std::string synthetic_tick_wildcard() {
-    return std::string(synthetic_tick_subject_prefix).append(">");
-}
-
-/// Every consumer's ticks.
-inline std::string market_tick_wildcard() {
-    return std::string(messaging::market_tick::nats_subject).append(".>");
-}
+inline constexpr std::string_view synthetic_tick_subject = "synthetic.v1.ops.tick";
+inline constexpr std::string_view synthetic_sandbox_tick_subject = "synthetic.v1.ops.sandbox_tick";
 
 /// The subject a producer publishes @p source_name's ticks on.
-inline std::string synthetic_tick_subject(std::string_view source_name) {
-    return std::string(synthetic_tick_subject_prefix).append(source_name);
+inline std::string synthetic_tick_subject_for(std::string_view source_name) {
+    return std::string(synthetic_tick_subject).append(".").append(source_name);
 }
 
 /**

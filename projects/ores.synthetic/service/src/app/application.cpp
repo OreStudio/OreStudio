@@ -25,6 +25,7 @@
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -295,18 +296,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         auto admin = nats.make_admin();
         // The unified tick scheme (synthetic.v1.ops.tick.<kind>.<source>) is fully covered
-        // by synthetic_ticks's "synthetic.v1.ops.tick.>" filter; the retired
-        // synthetic_curve_ticks stream (curve_family subjects) is no longer ensured —
-        // a stale one on an already-running server is inert (no producers, no consumers).
-        admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
-                            {nats.make_subject("synthetic.v1.ops.tick.>")});
+        // by synthetic_ticks's filter; the retired synthetic_curve_ticks stream
+        // (curve_family subjects) is no longer ensured — a stale one on an
+        // already-running server is inert (no producers, no consumers).
+        admin.ensure_stream(
+            nats.make_stream_name("synthetic_ticks"),
+            nats.covering_subjects({ores::marketdata::domain::synthetic_tick_subject}));
         // Sandboxed feeds (binding_mode::sandboxed, see feed_controller's
-        // producer_subject) publish under a distinct
-        // "synthetic.v1.ops.sandbox_tick.>" subject, not covered by
-        // synthetic_ticks's "synthetic.v1.ops.tick.>" filter -- js_publish to a
-        // subject with no matching stream throws, so this needs its own stream.
-        admin.ensure_stream(nats.make_stream_name("synthetic_sandbox_ticks"),
-                            {nats.make_subject("synthetic.v1.ops.sandbox_tick.>")});
+        // producer_subject) publish under the sandbox base, not covered by
+        // synthetic_ticks's filter -- js_publish to a subject with no matching
+        // stream throws, so this needs its own stream.
+        admin.ensure_stream(
+            nats.make_stream_name("synthetic_sandbox_ticks"),
+            nats.covering_subjects({ores::marketdata::domain::synthetic_sandbox_tick_subject}));
         BOOST_LOG_SEV(lg(), info)
             << "JetStream streams ready: synthetic_ticks, synthetic_sandbox_ticks";
     } catch (const std::exception& e) {

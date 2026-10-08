@@ -52,9 +52,8 @@ inline std::string producer_subject(std::string_view source_name,
     }
     const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
     return sandboxed ?
-               std::string(ores::marketdata::domain::synthetic_sandbox_tick_subject_prefix) +
-                   token :
-               ores::marketdata::domain::synthetic_tick_subject(token);
+               std::string(ores::marketdata::domain::synthetic_sandbox_tick_subject) + "." + token :
+               ores::marketdata::domain::synthetic_tick_subject_for(token);
 }
 
 }

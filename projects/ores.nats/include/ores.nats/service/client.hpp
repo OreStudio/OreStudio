@@ -30,11 +30,13 @@
 #include <boost/asio/awaitable.hpp>
 #include <chrono>
 #include <cstddef>
+#include <initializer_list>
 #include <memory>
 #include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 namespace ores::nats::service {
 
@@ -255,6 +257,31 @@ public:
      * Pass the result directly to @c jetstream_admin::ensure_stream().
      */
     [[nodiscard]] std::string make_stream_name(std::string_view logical_suffix) const;
+
+    /**
+     * @brief The subjects below @p subject, prefixed for this environment.
+     *
+     * A @c nats_subject constant names one subject. A subscription that must
+     * also see the family below it needs the trailing @c ">" wildcard, which
+     * is a different string: a filter on the bare subject matches none of its
+     * children. Ask here rather than appending @c ".>" by hand, so the two
+     * spellings cannot drift.
+     */
+    [[nodiscard]] std::string subjects_below(std::string_view subject) const;
+
+    /**
+     * @brief The filters that cover each of @p subjects and everything below
+     *        it, prefixed for this environment.
+     *
+     * What a JetStream stream's subject filter needs. A stream provisioned on
+     * the bare constant alone holds nothing a producer publishes below it,
+     * and the bare constant sitting beside the wildcard is what made that
+     * mistake easy to make.
+     *
+     * Returns the prefixed subjects and their wildcards, in the order given.
+     */
+    [[nodiscard]] std::vector<std::string>
+    covering_subjects(std::initializer_list<std::string_view> subjects) const;
 
 private:
     struct impl;

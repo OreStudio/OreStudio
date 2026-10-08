@@ -120,7 +120,7 @@ for select using (
 #+end_src
 
 If the entity has a sentinel value that must be readable by all parties in
-the tenant (analogous to the Live workspace), add an explicit exemption to
+the tenant, add an explicit exemption to
 the =USING= clause rather than widening the policy unconditionally.
 
 ** File placement and registration

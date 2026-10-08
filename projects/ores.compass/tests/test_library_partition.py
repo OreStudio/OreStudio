@@ -422,7 +422,6 @@ class TestRealBinaries:
             "ores.iam.service",
             "ores.refdata.service",
             "ores.dq.service",
-            "ores.workspace.service",
         ]
         # Only test services whose binaries exist.
         present = [s for s in services if (self.stage / "bin" / s).is_file()]

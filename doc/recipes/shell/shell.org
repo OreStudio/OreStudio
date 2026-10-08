@@ -886,10 +886,6 @@ tangled into the runnable script library
 
 - [[id:E62F4BEE-B2DA-5D94-91E8-6296964418E3][How do I run the series_classification_rules commands from the shell?]]
 
-* Workspaces
-
-- [[id:6B3B2660-726F-5EAC-961A-B845325D21D6][How do I run the workspaces commands from the shell?]]
-
 * Activity Categories
 
 - [[id:1CEF23DD-6FD5-59E9-B27B-0458F17BA001][How do I run the activity_categories commands from the shell?]]
@@ -1461,3 +1457,11 @@ tangled into the runnable script library
 * Trade Links
 
 - [[id:7AFAB50B-A084-5141-A5DA-211E8B459CE8][How do I run the trade_links commands from the shell?]]
+
+* Workflow Plan Dependencies
+
+- [[id:E5EF8A66-B086-5761-9380-941A67D1E38B][How do I run the workflow_plan_dependencies commands from the shell?]]
+
+* Workflow Plan Steps
+
+- [[id:E8F7757C-493B-5422-9BE2-53522AB6A17C][How do I run the workflow_plan_steps commands from the shell?]]

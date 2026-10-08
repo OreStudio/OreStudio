@@ -49,7 +49,7 @@ the core's handlers.
 =src/app/application.cpp= wires the change-event pipeline and the domain
 service runner, which the generated service-app template does not, so the
 service-app facet is switched off and the part owns its host, configuration and
-entry point from here, as =ores.workspace.service= does.
+entry point from here, as every other domain service does.
 
 * Build dependencies
 

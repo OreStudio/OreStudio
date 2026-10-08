@@ -44,23 +44,18 @@
 \ir ./refdata/refdata_drop.sql
 
 -- =============================================================================
--- 3. Workspace Tables (dropped after refdata — refdata has FKs to workspace)
--- =============================================================================
-\ir ./workspace/workspace_drop.sql
-
--- =============================================================================
--- 4. Data Governance Tables (dropped after operational tables)
+-- 3. Data Governance Tables (dropped after operational tables)
 -- =============================================================================
 \ir ./dq/dq_drop.sql
 
 -- =============================================================================
--- 5. Bootstrap Metadata (nothing references it; dropped before the functions
+-- 4. Bootstrap Metadata (nothing references it; dropped before the functions
 --    its nil-uuid check depends on)
 -- =============================================================================
 \ir ./database/database_drop.sql
 
 -- =============================================================================
--- 6. Utility Functions (dropped last)
+-- 5. Utility Functions (dropped last)
 -- =============================================================================
 \ir ./seed/seed_drop.sql
 \ir ./utility/utility_drop.sql

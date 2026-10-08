@@ -26,6 +26,8 @@ set(files
     "config/parser.cpp"
     "main.cpp"
     "messaging/workflow_instance_event_registrar.cpp"
+    "messaging/workflow_plan_dependency_event_registrar.cpp"
+    "messaging/workflow_plan_step_event_registrar.cpp"
     "messaging/workflow_step_event_registrar.cpp"
 )
 
@@ -39,6 +41,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/messaging/workflow_instance_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/messaging/workflow_plan_dependency_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/messaging/workflow_plan_step_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/messaging/workflow_step_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.service/ores.workflow.service.hpp"
 )

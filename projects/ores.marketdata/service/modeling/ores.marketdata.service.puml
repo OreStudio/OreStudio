@@ -218,7 +218,7 @@ end note
 
 note right of "ores::marketdata::service::app::feed_ingest_loop"
 Two private nested types, so neither is drawn above:
-binding_key -- source_name, tenant_id, party_id and workspace_id,
+binding_key -- source_name, tenant_id and party_id,
 all string, ordered by that tuple; the key of stats_.
 feed_stats -- tick_count : atomic<uint64_t> and last_tick_rep :
 atomic<system_clock::time_point::rep>; one per binding_key.

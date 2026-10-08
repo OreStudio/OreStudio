@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T12:55:34.378279Z
+' Generated: 2026-10-08T16:22:07.965885Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -11064,6 +11064,81 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_swap_leg_amounts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+        * amount : numeric(28, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_swap_leg_amounts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Leg Amount Table
+    One numbered amount of a swap leg: a notional the leg pays on, dated from
+    the day it applies. A leg whose notional amortises or accretes states one row
+    per step; a leg with a single notional states one row.
+    ORE states the notionals as a list on legData/Notionals and the dated
+    variation as legData/Amortizations. Both describe the same column, so both
+    land here: the import reads whichever the document states, and the export
+    writes the list back. The leg itself carries no notional, because a single
+    column cannot hold a schedule.
+    The row is a child of the leg rather than an entity with a life of its own:
+    swap_leg names the trade and the ordinal, and this row adds its own ordinal
+    within that leg.
+    end note
+
+    entity ores_trading_swap_leg_rates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * rate_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+        * value : numeric(18, 10)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_swap_leg_rates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Leg Rate Table
+    One numbered rate or spread of a swap leg, dated from the day it applies. A
+    leg whose rate steps states one row per step; a leg with a single rate states
+    one row.
+    ORE states a fixed leg's rate as a list on legData/FixedLegData/Rates and a
+    floating leg's spread as a list on legData/FloatingLegData/Spreads. Both are
+    a list of values that vary over the leg's life, so both land here and
+    rate_role says which arm stated the row. The leg itself carries no rate and
+    no spread, because a single column cannot hold a schedule.
+    rate_role is data, not a table: the closed set is fixed and spread, and
+    the schema states it.
+    The row is a child of the leg rather than an entity with a life of its own:
+    swap_leg names the trade and the ordinal, and this row adds its role and its
+    own ordinal within that leg.
+    end note
+
     entity ores_trading_swap_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -11079,9 +11154,6 @@ package "trading" #E8F5E9 {
         * business_day_convention_code : text
         * payment_frequency_code : text
           floating_index_code : text
-          fixed_rate : numeric(18, 10)
-          spread : numeric(18, 10)
-        * notional : numeric(28, 10)
         * currency : text
         * modified_by : text
         * performed_by : text
@@ -11103,8 +11175,13 @@ package "trading" #E8F5E9 {
     swap has two rows with different currencies.
     leg_type_code is the discriminator and the leg type is data, not a table, so
     one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
-    leg type does not state are null: fixed_rate is null for a floating leg and
-    floating_index_code is null for a fixed leg.
+    leg type does not state are null: floating_index_code is null for a fixed
+    leg, for instance.
+    The leg's economics are rows beside it, not columns on it: its notionals are
+    swap_leg_amount rows and its rates or spreads are swap_leg_rate rows,
+    because both are lists the document may state one entry at a time or one per
+    step. A single column cannot hold a schedule, and the two arms of a stepping
+    leg were flattened into one until these children landed.
     The row keeps its own id surrogate and names the parent through trade_id.
     The instrument is keyed by its trade, so all nine rates families name the one
     parent the trades table holds rather than a table per family.
@@ -11315,6 +11392,71 @@ package "trading" #E8F5E9 {
     database foreign key. It copies the anchor's party, pinned to the anchor,
     because row-level security needs the party on every row. The issuer is
     the party or counterparty that issued the value, when it is known.
+    end note
+
+    entity ores_trading_trade_link_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * from_role : text
+        * to_role : text
+        * has_economic_effect : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_link_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Link Type Table
+    Reference data table defining the reasons two trades are joined. Each
+    type names the role of each end and says whether the link carries an
+    economic effect, which is what tells a trade event from an annotation.
+    Examples: 'Novation', 'Roll', 'Exercise', 'Hedge'.
+    end note
+
+    entity ores_trading_trade_links_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * from_trade_id : uuid <<PK, FK>>
+        * to_trade_id : uuid <<PK, FK>>
+        * link_type : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_trade_links_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Trade Link Table
+    One relation between two trades, with a direction, a type and nothing
+    else. A close-out answers a live trade, a roll replaces one, an exercise
+    produces one. The link holds no cash flow, no amount and no state: the
+    [[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] pattern of a
+    typed reference applies here as well, with the type carrying the role of
+    each end.
+    The row is keyed by its two ends and its type, and the type is a
+    [[id:8C8D3355-1797-4D8E-A47D-07D4402B2794][trade link type]] code. It
+    records the trade activity that made it, because a link is created by an
+    amendment like anything else, and it copies the party of the from end so
+    row level security can see it on every row.
+    A process that created a link records the run on the trade group, not
+    here: a link holds nothing and stands alone.
     end note
 
     entity ores_trading_trade_portfolios_tbl <<junction>> #ECECEC {
@@ -12727,6 +12869,76 @@ package "compute" #EDE7F6 {
 ' ==================== workflow (Workflow Orchestration (Saga)) ====================
 '
 package "workflow" #FFF8E1 {
+    entity ores_workflow_plan_dependencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * consumer_step_index : integer
+        * producer_step_index : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_dependencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Dependency Table
+    One edge of a run's chain. The producer names the step that writes a result and
+    the consumer the step that reads it, both by their position in the same run's
+    chain.
+    This is a relation and not a list on the step, because a step may read any
+    number of producers and a producer may feed any number of consumers. It is
+    what makes the chain a graph the engine can read: the questions "what is
+    waiting", "what may run now" and "what has to be rolled back, in what order"
+    are all queries over these rows and the steps' states, where they used to be a
+    parse of a document and a cursor.
+    end note
+
+    entity ores_workflow_plan_steps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * step_index : integer
+        * name : text
+        * label : text
+        * description : text
+        * command_subject : text
+        * compensation_subject : text
+        * timeout_seconds : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Step Table
+    One step of the chain a run was started with. workflow_step records a step
+    that ran and what came back; this records a step that *will* run, from the
+    moment the run starts, so the engine can answer what the chain is before it has
+    dispatched anything.
+    The chain is built per instance by the definition's build_steps, which is a
+    function of the start request and not of the definition alone — tenant
+    provisioning orders one step per kind its request names. A run therefore
+    carries its own chain rather than pointing at one, because the definition that
+    produced it may not produce the same chain twice and must never reshape a run
+    that is already in flight.
+    end note
+
     entity ores_workflow_workflow_instances_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -12741,9 +12953,7 @@ package "workflow" #FFF8E1 {
           error : text
           correlation_id : text <<FK>>
         * created_by : text
-        * current_step_index : integer
         * step_count : integer
-        * materialised_steps_json : text
           completed_at : timestamptz
           last_event_at : timestamptz
         * modified_by : text
@@ -13770,74 +13980,6 @@ package "analytics" #E8F5E9 {
     SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
     once, so key_value_2 carries the second. SwapIndexCurves is the only
     collection whose entry nests, and discounting carries its one child.
-    end note
-
-}
-
-'
-' ==================== workspace (Workspace — Isolated Data Contexts) ====================
-'
-package "workspace" #E8F5E9 {
-    entity ores_workspace_trade_scope_tbl  #F7E5FF {
-        * workspace_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        --
-    }
-
-    note right of ores_workspace_trade_scope_tbl
-    Trade scope whitelist (references workspace UUID, not integer).
-    end note
-
-    entity ores_workspaces_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * name : text
-        * party_id : uuid <<FK>>
-        * owner_id : uuid <<FK>>
-        * description : text
-          source_path : text
-          parent_workspace_id : uuid <<FK>>
-          scope_portfolio_id : uuid <<FK>>
-        * status_code : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_workspaces_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Workspace Table
-    A named, isolated data context. Data a workspace does not carry is
-    resolved from its parent chain, up to the Live workspace
-    (ores_utility_live_workspace_id_fn()).
-    The table is bi-temporal and audited (see
-    projects/ores.sql/create/workspace/workspace_create.sql): it carries
-    version, the four audit columns and the valid_from/valid_to pair
-    with the GIST exclusion and the delete rule, so the model takes the
-    ordinary audited shape and needs no shape flag.
-    A workspace belongs to one tenant and one party, and its name is unique
-    within that pair. party_id is a natural key beside name for that
-    reason: two parties in one tenant may each hold a workspace named prod.
-    Only an active workspace holds its name, so the uniqueness index covers
-    the active rows and an archived name is free to be taken again.
-    parent_workspace_id is a self-referencing soft foreign key, so the model
-    binds self-referencing-hierarchy for its UUID surrogate key, its tenant
-    scope and its self-reference. The same profile generates the recursive
-    subtree read over parent_workspace_id.
-    scope_portfolio_id optionally narrows a workspace to one portfolio. It is
-    a soft foreign key with no declared target, because ores.refdata is
-    created after this component.
-    The component's row-level security stays hand-written in
-    create/workspace/workspace_rls_policies_create.sql: the live fleet creates
-    this table before the iam section that defines
-    ores_iam_current_tenant_id_fn, so an inline policy cannot be emitted here.
     end note
 
 }

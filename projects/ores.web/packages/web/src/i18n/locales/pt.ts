@@ -213,7 +213,6 @@ const pt: SourceCatalogue = {
             marketdata: 'Dados de mercado',
             synthetic: 'Dados sintéticos',
             assets: 'Recursos',
-            workspace: 'Espaços de trabalho',
             workflow: 'Fluxos de trabalho',
             variability: 'Sinalizadores de funcionalidade',
             telemetry: 'Telemetria',

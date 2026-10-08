@@ -213,8 +213,7 @@ uses for CRM topology and stochastic price processes.
 
 Workflow management for multi-step compute pipelines — tracks pipeline state,
 retries failed steps, and signals completion. Works with ores.scheduler and
-ores.compute to orchestrate end-to-end valuation runs. See [[id:CEAD2E6A-8C12-489F-B64A-652EE2B81811][Workspace design]] for
-how workspaces scope workflow execution.
+ores.compute to orchestrate end-to-end valuation runs.
 
 | Sub-component         | Role                                         | Dependencies                     |
 |-----------------------+----------------------------------------------+----------------------------------|

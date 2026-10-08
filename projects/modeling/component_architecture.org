@@ -125,7 +125,6 @@ Current composite components and their active sub-components:
 | =ores.trading= | =api=, =core=, =service=, =modeling= |
 | =ores.variability= | =api=, =core=, =service= |
 | =ores.workflow= | =api=, =core=, =service=, =modeling= |
-| =ores.workspace= | =api=, =core=, =service=, =modeling= |
 
 ⚠ *Stale top-level directories* (decommissioned in sprint 19, not yet deleted):
 =projects/ores.refdata.api/=, =projects/ores.refdata.core/=,

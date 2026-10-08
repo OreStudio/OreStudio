@@ -34,6 +34,7 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
  */
 export interface SwapLeg {
     identity: SwapLegIdentity;
+    payer: boolean | null;
     leg_type_code: string;
     day_count_fraction_code: string;
     business_day_convention_code: string;

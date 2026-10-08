@@ -98,6 +98,7 @@ domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     v.identity.trade_id = write.trade_id;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.identity.leg_number = write.leg_number;
+    v.payer = write.payer;
     v.leg_type_code = write.leg_type_code;
     v.day_count_fraction_code = write.day_count_fraction_code;
     v.business_day_convention_code = write.business_day_convention_code;

@@ -69,6 +69,14 @@ struct swap_leg final {
     swap_leg_identity identity;
 
     /**
+     * @brief True when the leg's payer is the trade's counterparty rather than the party.
+     *
+     * ORE's legData states Payer as a required member, so a leg without it has lost which side
+     * pays. It is nullable because a leg a caller writes directly may not state it.
+     */
+    std::optional<bool> payer;
+
+    /**
      * @brief Leg type code (soft FK to ores_refdata_leg_types_tbl).
      *
      * Routes the leg economics: Fixed for a fixed leg, Floating for a floating leg, and the CMS,

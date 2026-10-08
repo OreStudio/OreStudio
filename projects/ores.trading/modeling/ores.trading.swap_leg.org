@@ -13,7 +13,7 @@
 #+entity_title: Swap Leg
 #+brief: One leg of a rates instrument.
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-08
 
 The shared legs table of the nine rates instrument families. Each row is one
 leg of an FRA, vanilla swap, cap/floor, swaption, balance-guaranteed swap,
@@ -122,6 +122,20 @@ The activity that wrote this version.
 #+begin_src cpp :name generator
 faker::number::integer(1, 2)
 #+end_src
+
+** payer
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg's payer is the trade's counterparty rather than the
+party.
+
+ORE's =legData= states =Payer= as a required member, so a leg without it
+has lost which side pays. It is nullable because a leg a caller writes
+directly may not state it.
 
 ** leg_type_code
 :PROPERTIES:

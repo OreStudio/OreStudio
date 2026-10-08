@@ -413,6 +413,7 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     auto& tm = sl;
     auto& au = sl.audit;
     id.leg_number = leg_number;
+    tm.payer = ld.Payer;
     tm.leg_type_code = to_string(ld.LegType);
 
     if (ld.Currency)
@@ -687,6 +688,7 @@ swap_instrument_mapper::reverse_leg(const std::optional<std::chrono::year_month_
         throw std::runtime_error("reverse_leg: unrecognised leg type '" + tm.leg_type_code +
                                  "' — cannot produce valid ORE XML");
     ld.LegType = *leg_type;
+    ld.Payer = tm.payer.value_or(false);
     ld.Currency = tm.currency;
 
     if (!tm.notional.is_zero())

@@ -44,6 +44,7 @@ struct swap_leg_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
     int leg_number;
+    std::optional<bool> payer;
     std::string leg_type_code;
     std::string day_count_fraction_code;
     std::string business_day_convention_code;

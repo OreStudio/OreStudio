@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 1B67B92A-A6B5-4BC9-87E2-51DB13941CCD
+:END:
+#+title: Task: Write the swap legs on import and record their direction
+#+description: The rates legs never reach the database. The ORE importer builds them and stamp_ids stamps them, and then the import drops them, so a stored swap exports with no legs; the table cannot even record a leg's direction, because legData/Payer is required by ORE and has no column. Add the payer column, read the direction in the mapper both ways, and write the legs the importer already builds.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/write-the-swap-legs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the swap legs the importer builds reach the database, keyed by the trade and the ordinal as bond_legs is, with the leg's direction recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- ores_trading_swap_legs_tbl is keyed by (tenant_id, trade_id, leg_number) with no surrogate id, and carries payer.
+- swap_instrument_mapper::map_leg reads legData/Payer.
+- The import writes every leg of a swap-shaped trade after its instrument, and fails the item when a leg write fails.
+- The component regenerates drift-clean and builds, and the codegen suite passes.
+
+* Plan
+
+The importer already builds the legs and =stamp_ids= already stamps them, so
+the work is two small changes: the leg gains the direction ORE requires, and
+the import writes the legs it already builds.
+
+1. =payer= joins =swap_leg=, =map_leg= reads =legData/Payer= and =reverse_leg=
+   emits it, so the direction survives import and export both.
+2. The handler writes each leg after its instrument, and fails the item when
+   a leg write fails. The leg's id is minted at the write site, because the
+   table still keys the leg by its surrogate.
+
+The re-key to =(trade_id, leg_number)= was attempted and set aside. It
+surfaces a codegen defect: the compound-key path cannot generate a compilable
+eventing integration test, because =cpp_nats_integration_test.cpp.mustache=
+inserts each extra key column's raw domain value where the generated service
+takes every key part as text. Fixing that template regenerates every component
+under test, so the re-key is recorded as capture
+[[id:A814259E-6E2C-4E37-B3E5-5D60FBF176C3][Re-key the swap legs to the trade,
+after the compound-key test template is fixed]] and the surrogate key stands
+here.
+
+The amount and rate children that carry an amortising notional and a stepping
+rate are the next unit: =map_leg= reads only the first notional, rate and
+spread today, so the children would be empty until the mapper reads the lists.
+
+The database is recreated rather than migrated (=recreate_is_the_only_db_migration=).
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =payer= column on the leg, before | absent | =sed -n '/^create table/,/^);/p' trading_swap_legs_create.sql= | 02da314ddc |
+| =payer= column on the leg, after | present, =boolean null= | the same | working tree |
+| =swap_legs= primary key | unchanged, =(tenant_id, id, valid_from, valid_to)= | the same | working tree |
+| =legData= members with no destination, before | =Payer= and the amortisation, payment-date and settlement groups | =external/ore/xsd/instruments.xsd= against the create script | 02da314ddc |
+| ORE mapper lines that read =Payer=, before | 0 | =grep Payer swap_instrument_mapper.cpp= | 02da314ddc |
+| ORE mapper lines that read =Payer=, after | 2, one per direction | the same | working tree |
+
+* Notes
+
+The =swap_leg= row keeps its =:default: 1= syntax on =leg_number= rather than
+the =:default_value:= its siblings use. It emits the correct SQL default, so
+it is left alone here rather than changed in an unrelated diff.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The swap legs the importer builds now reach the database, and a leg records
+which side pays.
+
+- *The direction is recorded both ways.* =payer= joins =swap_leg=, =map_leg=
+  reads ORE's required =legData/Payer= and =reverse_leg= emits it. Before
+  this, even a mapper that built the legs dropped the direction, and the
+  stored shape had nowhere to put it.
+- *The import writes the legs.* The handler's =swap_instrument_data= branch
+  wrote the instrument and its call dates and dropped the leg vector that
+  =stamp_ids= had already stamped with the trade and the activity. It now
+  writes each leg after its instrument and fails the item when a leg write
+  fails, so a stored swap is an instrument rather than a row. This is
+  finding R15 of the family design, and it is why a swap imported before
+  this change exported with no legs at all.
+- *The re-key was attempted and set aside.* Dropping the surrogate =id= for
+  =(trade_id, leg_number)= fails to compile a generated test: the
+  compound-key path inserts each extra key column's raw domain value where
+  the generated service takes every key part as text, so an =int= ordinal
+  lands in a =std::vector<std::string>=. The fix is a template change that
+  regenerates every component under test, so it belongs with the codegen
+  work; the re-key is recorded as capture
+  [[id:A814259E-6E2C-4E37-B3E5-5D60FBF176C3][Re-key the swap legs to the
+  trade]] and the surrogate key stands.
+
+Verification: the component regenerates with no drift; the codegen suite is
+1276 passed; the full preset build exits 0 with no errors and no warnings.
+
+Not verified live: that an imported swap lands its leg rows. The database
+and the service fleet are down in this environment. Proving it means
+=compass db recreate= followed by a fleet start and an ORE import, which is
+a deliberate, whole-environment step rather than something to do as a
+side-effect of a build.

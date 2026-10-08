@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 7F9DD321-272F-44D9-8E0C-B898A49CC85F
+:END:
+#+title: ores.trading.bond_schedule_dates
+#+description: A bond document schedule stated as an explicit date list.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_schedule_dates
+#+namespace: ores::trading::domain
+#+brief: A schedule the document states as an explicit date list.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A schedule the ORE document states as a date list rather than as a rule
+block, with the codes the list is read under. This is the date-list arm of
+[[id:2A836172-C47A-48B6-A548-A28129C28B88][bond_schedule_data]], so the schema's choice between the two spellings is
+mirrored as two lists and the mapping between the document and the lists
+needs no case analysis.
+
+The two flags carry the document's own spelling of the schema's own
+boolean type, as the rule arm does, so a writer re-emits the spelling the
+reader stored.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Fields
+
+** calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day calendar the dates are adjusted against (soft FK to ores_refdata_calendars_tbl).
+
+** convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day convention code the dates are adjusted under (soft FK to ores_refdata_business_day_convention_types_tbl).
+
+** tenor
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The period between dates, when the document states one.
+
+** end_of_month
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the end-of-month flag.
+
+** include_duplicate_dates
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the flag that keeps two dates that fall together.
+
+** dates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The schedule's dates, as ISO 8601 text, in document order.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

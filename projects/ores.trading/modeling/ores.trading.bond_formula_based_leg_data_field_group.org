@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 65FA96D1-4967-4E8D-81A2-D1942239BF0A
+:END:
+#+title: ores.trading.bond_formula_based_leg_data
+#+description: A formula-based leg's rate terms.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_formula_based_leg_data
+#+namespace: ores::trading::domain
+#+brief: A formula-based leg's rate terms.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <cstdint>
+#+end_src
+
+* Fields
+
+** index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The index the formula reads.
+
+** is_in_arrears
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the formula fixes after the accrual period ends.
+
+** fixing_days
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default_value: {}
+:END:
+
+How many days before the period end the formula fixes.
+
+** fixing_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The calendar that resolves the fixing dates, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

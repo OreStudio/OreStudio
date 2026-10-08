@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: DE00FE27-1C16-4D32-850B-FF4DCD608A36
+:END:
+#+title: ores.trading.bond_option_payment_rules
+#+description: The rule an option's payment dates are derived from.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_payment_rules
+#+namespace: ores::trading::domain
+#+brief: The rule an option's payment dates are derived from.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <cstdint>
+#+end_src
+
+* Fields
+
+** lag
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default_value: 0
+:END:
+
+How long after each period end the payment falls.
+
+** calendar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Business day calendar the payment dates are adjusted against.
+
+** convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Business day convention the payment dates are adjusted under.
+
+** relative_to
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+What the payment dates are stated relative to, when the document states it.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

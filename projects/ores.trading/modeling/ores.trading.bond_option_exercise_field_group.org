@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 391371A4-D9A8-45BC-893D-20B34EC655E0
+:END:
+#+title: ores.trading.bond_option_exercise
+#+description: One exercise the document states outright: a date and a price.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_exercise
+#+namespace: ores::trading::domain
+#+brief: One exercise the document states outright: a date and a price.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the holder may exercise on.
+
+** price
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The price the exercise pays, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

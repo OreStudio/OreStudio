@@ -30,7 +30,7 @@ The full template source. Edit here and re-tangle with
 ,#+description: {{description}}
 ,#+type: ores.codegen.field_group
 ,#+component: {{component}}
-,#+component_include: {{component}}.api
+,#+subcomponent: api
 ,#+product: ores
 ,#+entity_singular: {{slug}}
 ,#+namespace: ores::{{component}}::domain

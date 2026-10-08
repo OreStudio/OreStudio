@@ -18,6 +18,14 @@
     independently, keeping the per-struct field count low while
     preserving the original flat JSON wire format.
 
+    The second use case is a document-only struct: a shape the ORE
+    schema states and no table holds, such as a bond's option block.
+    It is not flattened into a parent.  It crosses the wire as its
+    own JSON object, and the container above it holds it whole so
+    that export re-emits what the document held.  A document-only
+    struct has no DB table either, so the same rules apply: one
+    model, one header, no repository.
+
     WHAT IS GENERATED
     -----------------
     One header file (.hpp) containing a single plain struct inside
@@ -39,9 +47,10 @@
     ----------------------
     * Do NOT use for structs that have their own DB table — use
       domain_entity instead.
-    * Do NOT use for structs that are serialised independently on
-      the wire — their parent entity handles serialisation via
-      rfl::Flatten.
+    * Do NOT compose a group with rfl::Flatten when the group crosses
+      the wire as its own object: flattening it would change the wire
+      shape.  A group that is part of a document is written whole, as
+      the bond container writes its parts.
     * Do NOT use for enums — use the enum model type.
     * Do NOT add a primary_key, natural_keys, or audit columns
       to the field_group model — they have no meaning here.

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: BDF47DED-A551-4C54-9F05-C467CE6F1641
+:END:
+#+title: ores.trading.bond_leg_rate_data
+#+description: The rate group of a leg, one alternative per leg type.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_leg_rate_data
+#+namespace: ores::trading::domain
+#+brief: The rate group of a leg, one alternative per leg type.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The ORE schema states the group as a choice of eighteen alternatives. A bond
+leg carries a coupon, and the corpus states three of them: fixed, floating and
+formula-based. The other fifteen are a recorded boundary, and the alternative
+a document states is the engaged member here.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
+#include "ores.trading.api/domain/bond_floating_leg_data.hpp"
+#include "ores.trading.api/domain/bond_formula_based_leg_data.hpp"
+#+end_src
+
+* Fields
+
+** fixed
+:PROPERTIES:
+:cpp_type: std::optional<bond_fixed_leg_data>
+:END:
+
+The fixed leg's rate terms, when the document states a fixed coupon.
+
+** floating
+:PROPERTIES:
+:cpp_type: std::optional<bond_floating_leg_data>
+:END:
+
+The floating leg's rate terms, when the document states a floating coupon.
+
+** formula_based
+:PROPERTIES:
+:cpp_type: std::optional<bond_formula_based_leg_data>
+:END:
+
+The formula-based leg's rate terms, when the document states that coupon.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 7399D6CA-8FF5-497B-94AA-7172DCF31E60
+:END:
+#+title: Task: Model the bond document container
+#+description: Replace the hand-written bond document structs (bond_instrument_data and the 22 types beside it in bond_schedule_data.hpp) with codegen field_group models, so the export batch can carry the bond family as a generated type. Field groups already generate both the C++ domain header and the TypeScript interface; the only codegen gap is that a field group cannot import the types its members reference.
+#+type: task
+#+level: s1
+#+filetags: :typed-instrument-batches:sprint_27:v0:
+#+owner: marco
+#+branch: feature/model-the-bond-document-container
+#+pr: 2812
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The bond family's document shape is generated from the model, not hand-written
+in C++. =bond_instrument_data= and the 22 document types beside it stop being
+hand-written headers and become =field_group= models, and the export batch can
+then carry the bond family as a generated type.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
+| Now          | Complete. The container is generated, the gates pass, and the batch task can carry the bond family. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and merge.                |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- =bond_instrument_data= and the 22 document types beside it are declared as
+  =field_group= models under =projects/ores.trading/modeling/=, and their C++
+  headers and TypeScript interfaces are generated.
+- The generated C++ structs declare the same members, in the same order, with
+  the same types as the hand-written ones, so the bond mapper and the ORE
+  import and export paths compile with no change to their member accesses.
+- No non-generated behaviour is lost: =bond_leg_data::is_empty()= and the
+  =stamp_ids(bond_instrument_data&)= overload move to a hand-written ops header.
+- =bond_schedule_data.hpp= and =bond_instrument_data.hpp= carry the generated
+  banner; no document struct is declared in a hand-written header.
+- The trading drift gate is clean and the ORE import/export round trip is
+  unchanged.
+
+* Plan
+
+1. Field groups already generate a C++ domain header (=ores.cpp.field-group=)
+   and a TypeScript interface (=ores.ts.domain=), so the container needs no new
+   model type. The one codegen gap is that a field group's TypeScript interface
+   emits no imports for the types its members reference, which the existing
+   group TS files never needed because their members are scalars. Add that
+   derivation.
+2. Declare each document struct as its own =field_group= model, one file each,
+   transcribing members, order, types and defaults from the hand-written
+   headers.
+3. Move the behaviour that is not data — =bond_leg_data::is_empty()= and the
+   =stamp_ids= overload for the carrier — into a hand-written
+   =bond_document_ops.hpp=, and point the call sites at the free functions.
+4. Delete the hand-written declarations and let the generated headers take
+   their paths.
+5. Verify: regenerate the component, build, and run the ORE mapper round-trip
+   suite.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Hand-written document structs replaced by models | 23 | evidence/check_bond_container.py --original-rev 3096504bcd | cc62a2637a |
+| Structs whose members, order and types match the originals | 23 of 23 | evidence/check_bond_container.py --original-rev 3096504bcd | cc62a2637a |
+| Compiler errors, compiler warnings | 0, 0 | cmake --build --preset linux-clang-debug-make -j 3 | cc62a2637a |
+| ores.ore.core.tests | 614 cases, 482159 assertions, all pass | ./ores.ore.core.tests | cc62a2637a |
+| ores.trading.api.tests | 88 cases, 395 assertions, all pass | ./ores.trading.api.tests | cc62a2637a |
+| Trading drift gate | no drift | check_component_drift.py --component trading-cpp | cc62a2637a |
+| Documentation checks | 42 of 42 components pass | validate_docs.sh | cc62a2637a |
+| Size of the change | 86 files, +5423/-499 | git diff --shortstat 3096504bcd cc62a2637a | cc62a2637a |
+
+* Notes
+
+- The generated headers carry the same structs as before, so nothing in the
+  bond mapper, the ORE importer or the exporter changed beyond the include of
+  =bond_document_ops.hpp= and the two =is_empty= call sites.
+- The C++ field-group template writes one =@brief= line per member, so a
+  member's long explanation belongs in the model body rather than in its field
+  description. The struct-level prose carries the fidelity notes.
+- The generated TypeScript interface for a group imports the types it names.
+  Before this change no group needed an import, because every existing group
+  declares scalars only.
+- The =bond_leg_data= field descriptions are new one-line texts: the
+  hand-written struct described its members in one block comment, and the
+  template needs a line per member.
+- =ores.trading.api.puml= is hand-maintained; the =is_empty= method was
+  removed from it. The PNG is rendered by the =generate_ores.trading.api_diagram=
+  target and was not re-rendered here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2812][#2812]] | [codegen,trading] Model the bond document container |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The bond document container is generated from 23 =field_group= models. The
+generated structs are member-for-member identical to the hand-written ones,
+proved by =evidence/check_bond_container.py= against the revision the migration
+replaced. The build is clean, the ORE round trip is unchanged at 614 cases and
+482159 assertions, the trading drift gate is clean, and the scaffold defect
+that sent a new field group to the wrong output path is fixed.
+
+The parent story's batch task can now carry the bond family as a generated
+type, so every member of the export batch is generated.

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 6C9902BD-8946-45DB-ACE2-22B30DA6C2C9
+:END:
+#+title: ores.trading.bond_option_settlement
+#+description: The settlement terms an option or a premium pays under.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_settlement
+#+namespace: ores::trading::domain
+#+brief: The settlement terms an option or a premium pays under.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The pay currency and the FX index are required and the fixing date is
+optional. The schema spells the same three members twice, once under the
+option and once under each premium, so the container holds one type for both.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** pay_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The currency the option or premium pays in.
+
+** fx_index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The FX index the payment settles against.
+
+** fixing_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the index fixes on, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

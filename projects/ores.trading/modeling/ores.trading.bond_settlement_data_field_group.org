@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 6B20EB71-A96C-4B55-BE8B-FC7B14A7B23F
+:END:
+#+title: ores.trading.bond_settlement_data
+#+description: The leg's settlement block: the index and the date it fixes on.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_settlement_data
+#+namespace: ores::trading::domain
+#+brief: The leg's settlement block: the index and the date it fixes on.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** fx_index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The FX index the leg settles against.
+
+** fixing_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the index fixes on, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

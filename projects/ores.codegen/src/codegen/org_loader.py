@@ -2653,6 +2653,66 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     return _ts_type(cpp_type)
 
 
+def field_group_ts_imports(fg: dict[str, Any]) -> list[dict[str, str]]:
+    """The modules a field group's TypeScript interface imports.
+
+    A field group's interface names each member's type, so the module that
+    declares that type is imported, the same way an entity's interface
+    imports its identity and audit groups. A type the group's own component
+    declares sits beside it in the generated tree; one from another
+    component sits under that component's directory; and a hand-written
+    wire type carries its own module in ``_TS_UTILITY_DOMAIN_TYPES``.
+
+    A container is unwrapped, because only the member type is named. A type
+    with no projection and no module is skipped: this function never invents
+    a module path for a name no template writes, and the C++ build refuses a
+    member the wire cannot carry.
+    """
+    component = fg.get("component")
+    own = fg.get("entity_singular")
+    found: dict[str, str] = {}
+
+    def walk(cpp_type: str) -> None:
+        cpp_type = (cpp_type or "").strip()
+        if not cpp_type:
+            return
+        for container in ("std::optional<", "std::vector<"):
+            if cpp_type.startswith(container) and cpp_type.endswith(">"):
+                walk(cpp_type[len(container):-1])
+                return
+        if cpp_type.startswith("std::map<") and cpp_type.endswith(">"):
+            arguments = _split_template_arguments(cpp_type[len("std::map<"):-1])
+            if len(arguments) == 2:
+                walk(arguments[1])
+            return
+        if cpp_type in _TS_SCALARS or cpp_type in _TS_DOMAIN_STRING_TYPES:
+            return
+        if cpp_type in _custom_type_names() or cpp_type.startswith("domain::"):
+            return
+        utility = _TS_UTILITY_DOMAIN_TYPES.get(cpp_type)
+        if utility:
+            found[utility[0]] = f"../../../{utility[1]}.js"
+            return
+        domain = _TS_DOMAIN_TYPE_RE.match(cpp_type)
+        if domain:
+            owner, name = cpp_type.split("::")[1], domain.group(1)
+        elif "::" in cpp_type:
+            return
+        else:
+            owner, name = component, cpp_type
+        if name == own:
+            return
+        found[_to_pascal_case(name)] = (
+            f"./{name}.js" if owner == component
+            else f"../../{owner}/domain/{name}.js"
+        )
+
+    for field in fg.get("fields") or []:
+        walk(field.get("cpp_type"))
+    return [{"pascal": pascal, "module": module}
+            for pascal, module in sorted(found.items())]
+
+
 def _ts_field(name: str, cpp_type: str, comment: str = "",
               default: str = "") -> dict[str, Any]:
     """One derived protocol field, with its TypeScript type when one exists.

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 63F0A94E-322E-4CA4-BA26-D47ED6F6320F
+:END:
+#+title: ores.trading.bond_forward_settlement
+#+description: A forward bond's settlement block.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_forward_settlement
+#+namespace: ores::trading::domain
+#+brief: A forward bond's settlement block.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The forward maturity date is required and every other member is optional. The
+nine tables carry no forward settlement column, so the container holds the
+block whole and export re-emits it.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** forward_maturity_date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The forward's maturity date, as ISO 8601 text.
+
+** forward_settlement_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the forward settles on, when the document states one.
+
+** settlement
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The settlement the forward takes, when the document states one.
+
+** amount
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The amount the forward settles for, when the document states one.
+
+** lock_rate
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The rate the forward locks, when the document states one.
+
+** dv01
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The position's sensitivity to a basis point, when the document states one.
+
+** lock_rate_day_counter
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Day count convention the lock rate accrues under, when the document states one.
+
+** settlement_dirty
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The dirty settlement the forward takes, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

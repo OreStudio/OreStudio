@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/structure-kinds-and-templates
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The kinds of structure and the templates that constrain their legs are reference
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

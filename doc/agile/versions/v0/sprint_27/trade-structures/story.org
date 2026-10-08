@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-02
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Implement section 11 of the trade shape investigation, so a structure is a group
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ Implement section 11 of the trade shape investigation, so a structure is a group
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CAA2C6D8-DD27-4659-B2FE-43174D477935][Add structure kinds and templates]] | BACKLOG | | | Add structure_kind, which states whether a kind confirms as a whole (strategy, typed, dynamic) or trade by trade (package), and structure_template, which states the roles and leg counts a strategy or typed product allows. |
+| [[id:CAA2C6D8-DD27-4659-B2FE-43174D477935][Add structure kinds and templates]] | STARTED | 2026-10-08 | | Add structure_kind, which states whether a kind confirms as a whole (strategy, typed, dynamic) or trade by trade (package), and structure_template, which states the roles and leg counts a strategy or typed product allows. |
 | [[id:D6CE615F-9595-42FD-BEEE-1A1F276C4011][Add the immutable structure]] | BACKLOG | | | Add structure, an immutable anchor keyed by tenant and id with party, counterparty, kind, template and a nullable parent, nested one level at most. |
 | [[id:C8DAEC5D-0A38-4DA3-A919-1DBF25A4FF2B][Link trades into structures]] | BACKLOG | | | Add structure_member, temporal and keyed by the trade, with role and sequence; pin each leg's party and counterparty to the structure's, and check the template's roles and leg counts when a leg is linked. |
 | [[id:7817465D-5DD5-49D1-87AF-B02C4CF60A22][Read a structure's version from its legs]] | BACKLOG | | | Derive a structure's internal version from the versions of its legs and its membership, so no stored counter can drift; the external version belongs to the agreement and is out of this story. |

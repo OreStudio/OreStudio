@@ -118,14 +118,14 @@ then what changed.
 
 * Prototype
 
-A static page at =doc/prototypes/watch-a-curve-or-surface-evolve/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/watch-a-curve-or-surface-evolve/index.html=: mock data only, no backend,
 no build step and no session. It argues that one instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument.
 
 - Variants :: a the matrix of instants by nodes, b a per-node sparkline list, c a two-instant compare
 - States :: stable, churn, surface; =?show== picks one instant or a range
 - Staleness :: every panel carries an age band per point, the oldest point's age and the spread; the =stable= market is a curve read from one instant and the =churn= and =surface= markets are stitched across market horizons, so switching between them shows the warning appearing at the threshold above
-- Source :: =doc/prototypes/watch-a-curve-or-surface-evolve/index.html=
-- Open :: =/OreStudio/doc/prototypes/watch-a-curve-or-surface-evolve/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/watch-a-curve-or-surface-evolve/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/watch-a-curve-or-surface-evolve/= once the site is built, or the
   file directly
 
 * Entities composed

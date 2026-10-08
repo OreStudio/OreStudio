@@ -115,7 +115,7 @@ open.
 * Prototype
 
 A clickable prototype is merged at
-=doc/prototypes/keep-a-partys-details-current/=, and it is the design record for
+=doc/prototypes/parties/keep-a-partys-details-current/=, and it is the design record for
 this journey. It is plain HTML, CSS and JavaScript over mock data, with no
 service behind it. It draws the same screens as the wireframe, and it adds the
 three refusal variants the wireframe states in words:
@@ -316,4 +316,4 @@ not.
 
 - [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties journeys]]
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
-- =doc/prototypes/keep-a-partys-details-current/= — the merged prototype that answers the design questions above
+- =doc/prototypes/parties/keep-a-partys-details-current/= — the merged prototype that answers the design questions above

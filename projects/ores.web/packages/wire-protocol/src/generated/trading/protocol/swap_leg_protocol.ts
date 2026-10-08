@@ -44,9 +44,6 @@ export interface SwapLegWrite {
     business_day_convention_code: string;
     payment_frequency_code: string;
     floating_index_code: string;
-    fixed_rate: number;
-    spread: number;
-    notional: string;
     currency: string;
 }
 

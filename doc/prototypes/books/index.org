@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: CFC0CD71-5E31-46F4-B606-AB1CCEDA7499
+:END:
+#+title: Books and portfolios prototypes
+#+description: The prototypes that answer to the Books and portfolios journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:books:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it.
+
+2 prototypes answer to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                             | What it argues | Open it | Review |
+|---------------------------------------+----------------+---------+--------|
+| Shape the book structure              | A book is a leaf under a portfolio, so shaping the structure means showing what a book reads from its portfolio, keeping the tenant’s own books apart from the shared taxonomy they name, and refusing a close the book cannot make. | [[file:shape-the-book-structure/][prototype]] | none |
+| [[file:trade-entry.org][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. No journey group owns the trading desk, so this prototype answers to the book it books into. | [[file:trade-entry/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/books/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/books/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/books/books.org][Books and portfolios journeys]] — the journeys these prototypes answer.

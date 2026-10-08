@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 897C048B-BBCA-4A83-A6A6-F47E0C738168
+:END:
+#+title: Model cash flows, and decide what represents an amount of cash
+#+description: Four knowledge pages describe cash and none of it is modelled: cash, cash_flow, cashposition and linked_cash. Decide whether a cash flow is an entity of its own, whether cash is represented by a trade (ORE prices a CashPosition), or both, and how summary cash and orphan cash are held. Needs analysis before anything is built.
+#+type: capture
+#+level: cross
+#+filetags: :trading:cash:cash_flow:modeling:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Nothing in the tree models cash. Four knowledge pages describe it —
+[[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][cash]],
+[[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][cash flow]],
+[[id:940CB31A-BD50-45D6-98AC-4B0D53973825][cash position]] and
+[[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][linked cash]] — and no
+component has a table, a domain class or a link for any of them. This
+capture is the analysis that has to happen before one is built.
+
+The question is what represents an amount of cash. Three shapes are on
+the table:
+
+- A *cash flow*: a dated amount, in a currency, with a direction against
+  the trade or the book that explains it. This is the detail a stream
+  decomposes into.
+- A *trade that represents cash*. ORE prices a =CashPosition=, which
+  carries a currency and an amount, and the knowledge page calls it "the
+  trade representation of an amount of cash", stand-alone or as a
+  component of a total return swap. A system or dummy trade of this kind
+  is what a sweep, a netting or a summarisation run would book.
+- *Both*: the flows as detail, and a cash trade as the aggregate the
+  engine and the ledger act on.
+
+* Why
+
+Three pieces of work already in flight depend on the answer.
+
+- *Linked cash.* The page says some cash explains a trade and some stands
+  alone. The typed links task in flight joins two trades, so it cannot
+  carry a trade-to-cash relation, and linked cash stays out of its seed
+  until this is settled.
+- *Summary cash and orphan cash.* Summarisation strips settled cash into
+  summary deals and orphans the children. Nothing holds either today.
+- *The processes that move cash.* The funding roll, the spot sweep and
+  the profit cleardown all generate cash movements. They wait on the run
+  model, and every one of them will need somewhere to put the cash.
+
+* Questions the analysis has to answer
+
+- Is a cash flow an entity of its own, or a projection computed from the
+  trades and instruments that produce it?
+- Does a cash trade need the whole trade envelope, or is it a record the
+  aggregation reports happen to read alongside trades?
+- If it is a trade, what does it reference, and does it carry an
+  instrument?
+- How is summary cash held, and what orphans the children it replaces?
+- Does a cash flow point at the trade that explains it, or does the trade
+  carry its flows?
+- What does ORE need in order to value a cash position? ORE is the ground
+  truth for what can be priced, so the answer constrains the model.
+
+* References
+
+- [[id:A281A64C-5A52-4747-BBDD-3CECB7A72F3C][Cash]] — the asset class.
+- [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash flow]] — the magnitude and the direction.
+- [[id:940CB31A-BD50-45D6-98AC-4B0D53973825][Cash position]] — the trade representation of an amount of cash, and its ORE product.
+- [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][Linked cash]] — the cash a trade explains, and the drill-down from a balance to the trades behind it.
+
+* See also
+
+- [[id:CF865781-BE15-42F7-BB13-7107BF06F97C][Join trades with typed links]] — the task that has to leave linked cash out until this is settled.
+- [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] — the run whose groups the processes that move cash will carry.
+- [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]], [[id:53841E4A-C5F3-4B7A-A269-45B8010C708A][Spot Sweep]] and [[id:DFC04627-FB0F-4FFF-973E-E3EC9E05AD87][Central remittance]] — the three processes that generate cash today.

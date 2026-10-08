@@ -87,14 +87,14 @@ asking does. The blueprint and the as-of sit above all three.
 
 * Prototype
 
-A static page at =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/bootstrap-or-refresh-a-curve/index.html=: mock data only, no backend,
 no build step and no session. It argues that a build produces a candidate, not a curve the system uses: the observations, their provenance and the health read together, unpublished.
 
 - Screens :: =?variant=a= Result (observations and solved pillars), =?variant=b= Curves (the four curves), =?variant=c= Checks (residual, convergence, missing and stale)
 - Input source :: =?source=real= market observations, =?source=synthetic= a generated feed; the same bootstrap either way, so only the provenance differs
 - States :: clean, missing (inputs absent), projection (a projection whose discount curve is absent)
-- Source :: =doc/prototypes/bootstrap-or-refresh-a-curve/index.html=
-- Open :: =/OreStudio/doc/prototypes/bootstrap-or-refresh-a-curve/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/bootstrap-or-refresh-a-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/bootstrap-or-refresh-a-curve/= once the site is built, or the
   file directly
 
 * Entities composed

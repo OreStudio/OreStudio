@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: 8822E861-397E-4951-93C5-B1F6D6152103
+:END:
+#+title: ores.trading.swap_leg_rate
+#+description: Codegen entity model for the trading =swap_leg_rate= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: swap_leg_rate
+#+entity_plural: swap_leg_rates
+#+entity_title: Swap Leg Rate
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+One numbered rate or spread of a swap leg, dated from the day it applies. A
+leg whose rate steps states one row per step; a leg with a single rate states
+one row.
+
+ORE states a fixed leg's rate as a list on =legData/FixedLegData/Rates= and a
+floating leg's spread as a list on =legData/FloatingLegData/Spreads=. Both are
+a list of values that vary over the leg's life, so both land here and
+=rate_role= says which arm stated the row. The leg itself carries no rate and
+no spread, because a single column cannot hold a schedule.
+
+=rate_role= is data, not a table: the closed set is =fixed= and =spread=, and
+the schema states it.
+
+The row is a child of the leg rather than an entity with a life of its own:
+=swap_leg= names the trade and the ordinal, and this row adds its role and its
+own ordinal within that leg.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The trade whose leg this rate belongs to.
+
+** leg_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of the leg within the trade, matching the leg row's own.
+
+** rate_role
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Which arm of the leg stated this row: =fixed= for a fixed leg's rate,
+=spread= for a floating leg's spread.
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of this rate within the leg, in the order the document states
+it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The day this rate starts to apply.
+
+Null when the leg states a single undated rate, which is how ORE states the
+common case.
+
+** value
+:PROPERTIES:
+:type:          numeric(18, 10)
+:cpp_type:      double
+:nullable:      false
+:END:
+
+The rate or the spread, as a decimal: 0.05 is five per cent.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade that carries this leg.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_swap_leg_rates_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "rate_role" in ('fixed', 'spread') |
+| "sequence_number" >= 1 |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| trade_id | tenant_id, trade_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+The C++ domain class is flat, like the shared =instrument_*= children
+beside it: the scaffolding columns, the identity columns and the audit
+columns are all members of the class, and no sub-struct decomposition is
+needed because the row is narrow.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: swap_leg_rate
+:entity_plural_short:   swap_leg_rates
+:entity_singular_words: swap leg rate
+:entity_plural_words:   swap leg rates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: slr
+:END:
+
+** Table display
+
+| column              | header      |
+|---------------------+-------------|
+| trade_id            | Instrument  |
+| leg_number          | Leg         |
+| rate_role           | Role        |
+| sequence_number     | Sequence    |
+| start_date          | From        |
+| value               | Rate        |
+| recorded_at         | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the rates of many instruments' legs at once, and
+no generated read covers that: the generated reads address one key group at a
+time. The batch read below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 64AE2796-F132-404C-AA06-9F0C8D335C9E
+:END:
+
+Reads every current rate of the given instruments' legs, ordered by
+instrument, leg, role and sequence, in one statement. An empty input reads
+nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::swap_leg_rate>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::swap_leg_rate>
+swap_leg_rate_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<swap_leg_rate_entity>> |
+                       where("tenant_id"_c == tid &&
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "leg_number"_c, "rate_role"_c, "sequence_number"_c);
+    return execute_read_query<swap_leg_rate_entity, domain::swap_leg_rate>(
+        ctx,
+        query,
+        [](const auto& entities) { return swap_leg_rate_mapper::map(entities); },
+        lg(),
+        "Reading swap leg rates for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:6F6B42BE-C8BB-4105-9ED3-7E87D67F9EB7][ores.trading.swap_leg]] — the leg this rate belongs to.

@@ -2,31 +2,44 @@
 :ID: 708C2462-C1F8-455B-B091-9D9690FEEAAB
 :END:
 #+title: Keep journey prototypes on main
-#+description: An accepted prototype stays on main as the design record, as plain static files under doc/prototypes/; React is for the product, never for a prototype.
+#+description: An accepted prototype stays on main as the design record, as plain static files under doc/prototypes/<group>/<name>/; React is for the product, never for a prototype.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :web:prototype:journeys:memory:feedback:
 #+created: 2026-10-05
-#+updated: 2026-10-06
+#+updated: 2026-10-08
 
 An accepted prototype merges into main and stays there as the design record.
-It is plain HTML, CSS and JavaScript under =doc/prototypes/<name>/=, it is
-listed in =doc/prototypes/index.org=, and the site build publishes it. React is
-for the product.
+It is plain HTML, CSS and JavaScript under =doc/prototypes/<group>/<name>/=,
+where the group is the journey topic it answers to. It is listed on the group's
+page, =doc/prototypes/<group>/index.org=, and the site build publishes it.
+React is for the product.
 
 *Why:* Two mechanisms grew. The first was static pages under =doc/prototypes/=.
 The second was React routes in =ores.web=, added on 2026-10-06. The React form
 needed the application's shell, its build and its types, so a prototype could
 not open without running the app, could not deploy with the documentation,
 drifted with the product, and left two inventories that disagreed. The
-operator's words: "we want it to be quick".
+operator's words: "we want it to be quick". One flat list of every prototype
+then made the record unreadable, so on 2026-10-08 the prototypes were grouped
+by journey topic: one top page naming the groups, one page per group, one
+folder per group.
 
-*How to apply:* Add a prototype as plain files under =doc/prototypes/<name>/=,
-copy the design tokens from
-=projects/ores.web/packages/web/src/styles.css=, add a row to
-=doc/prototypes/index.org=, and wire one =ores-deploy-web-app= call in
-=projects/ores.lisp/src/ores-build-site.el=. Do not add a prototype route to
-=ores.web=: React is for the product. =build/scripts/check_prototype_inventory.py
---check= fails when a prototype is missing from the inventory. The empirical
+*How to apply:* Put the files under =doc/prototypes/<group>/<name>/=, copy the
+design tokens from =projects/ores.web/packages/web/src/styles.css=, and write
+the page as it should be read: the site adds nothing to a prototype, not even a
+stylesheet, because injecting one moves every =rem= measurement the page makes.
+Add a row to the group's page =doc/prototypes/<group>/index.org=, leave its
+review cell at =none= until a review lands, and stop there:
+=ores-deploy-prototypes= copies every prototype it finds under the tree, so no
+build file names one. A Gemini review, where one exists, goes at
+=doc/prototypes/<group>/<name>/review/=, and the row's review cell points at it.
+=grep -rn '| none |$' doc/prototypes/*/index.org= names every prototype nobody
+has reviewed; do not let that list grow unnoticed. Do not add a prototype route
+to =ores.web=.
+=build/scripts/check_prototype_inventory.py= fails when a prototype is missing
+from its group page, when a group is missing from the top page, when a review is
+named nowhere, when a prototype page's links table disagrees with whether that
+review exists, and when a React prototype tree reappears. The empirical
 apparatus of compass-method-prototype is still thrown away.

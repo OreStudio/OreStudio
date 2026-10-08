@@ -55,9 +55,6 @@ struct swap_leg_entity {
     std::string business_day_convention_code;
     std::string payment_frequency_code;
     std::optional<std::string> floating_index_code;
-    std::optional<double> fixed_rate;
-    std::optional<double> spread;
-    std::string notional;
     std::string currency;
     std::string modified_by;
     std::string performed_by;

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 413AD807-D74A-499F-B7D8-1ABB7D37B81F
+:END:
+#+title: Story: Bring the last components under the drift gate
+#+description: inbox, synthetic and scheduler generate C++ but are not named in COMPONENTS_UNDER_TEST, so check_component_drift --all never regenerates them. Their committed output has drifted from the templates across 195 files while the gate reported a clean tree, and bringing them under it exposed two more defects: the gate regeneration is not reproducible between --component and --all, and 21 tangled shell scripts have drifted.
+#+type: story
+#+level: s2
+#+filetags: :codegen:drift:gate:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Put every component that generates C++ under the drift gate, one component per change, so a template change can no longer pass through unseen.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- Every component that generates C++ is named in COMPONENTS_UNDER_TEST.
+- The gate regeneration is reproducible: --component and --all produce the same tree.
+- The local suite passes with all of them under the gate.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:10E4DB39-9876-4124-9ED7-A065BE9218E9][Scaffold story: Bring the last components under the drift gate]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1C69559-28D8-4320-9788-D851BBC452BC][Regenerate ores.inbox and bring it under the gate]] | BACKLOG | | | Initial task for: Bring the last components under the drift gate |
+| [[id:BDE540CD-31C0-4F0A-A295-A852DD201C4F][Regenerate ores.synthetic and bring it under the gate]] | BACKLOG | | | 90 committed files in ores.synthetic have drifted from the templates, and the component is not in COMPONENTS_UNDER_TEST so nothing regenerates it. |
+| [[id:A8C053F8-3088-47E3-B935-BE3D7F0C3F3F][Regenerate ores.scheduler and bring it under the gate]] | BACKLOG | | | 10 committed files in ores.scheduler have drifted from the templates, and the component is not in COMPONENTS_UNDER_TEST so nothing regenerates it. |
+| [[id:7FD64470-C7D3-4333-B721-ACA6058AA23D][Re-tangle the drifted shell scripts]] | BACKLOG | | | 21 generated .ores scripts under projects/ores.shell/scripts/library carry __none__ where the tangle now writes -, so tangle-shell fails on trunk. |
+| [[id:3648EAAC-5CD2-4D96-82A0-AEAF6221B1AD][Make the drift gate regeneration reproducible]] | BACKLOG | | | check_component_drift --component synthetic and --all produce different trees for the same component: the --all pass writes more includes into the synthetic event registrars than the single-component pass does. |
+| [[id:086572FA-E205-4BF9-BEB8-9DF1DE1DBCA6][State the environment the heavy checks need]] | BACKLOG | | | ctest needs the NATS server up while db recreate needs the services down, and compass services stop stops both. With the target fully stopped seventeen suites fail on NATS connect failed; with it up, db recreate --kill loses its race with five reconnecting services. The runner knows neither constraint. |
+| [[id:99FAC9DA-6801-4545-886D-9E1B9808F56D][Run the local checks without being asked]] | BACKLOG | | | Six trunk defects were found by two runs of the local gate, and none by a person looking. The gates are sound and nothing runs them: with the GitHub PR triggers gone, a red tree reaches main and waits for an unrelated branch to notice. |
+
+* Decisions
+
+* Out of scope
+
+-

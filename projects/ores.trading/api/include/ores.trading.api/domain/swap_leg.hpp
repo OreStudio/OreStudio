@@ -45,8 +45,14 @@ namespace ores::trading::domain {
  *
  * leg_type_code is the discriminator and the leg type is data, not a table, so
  * one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
- * leg type does not state are null: fixed_rate is null for a floating leg and
- * floating_index_code is null for a fixed leg.
+ * leg type does not state are null: floating_index_code is null for a fixed
+ * leg, for instance.
+ *
+ * The leg's economics are rows beside it, not columns on it: its notionals are
+ * swap_leg_amount rows and its rates or spreads are swap_leg_rate rows,
+ * because both are lists the document may state one entry at a time or one per
+ * step. A single column cannot hold a schedule, and the two arms of a stepping
+ * leg were flattened into one until these children landed.
  *
  * The row keeps its own id surrogate and names the parent through trade_id.
  * The instrument is keyed by its trade, so all nine rates families name the one
@@ -107,25 +113,6 @@ struct swap_leg final {
      * Empty for a fixed leg; validated only when stated.
      */
     std::string floating_index_code;
-
-    /**
-     * @brief Fixed rate of a fixed leg, as a decimal (e.g. 0.05 for 5%).
-     *
-     * Null for a floating leg.
-     */
-    double fixed_rate = 0.0;
-
-    /**
-     * @brief Spread over the floating index, as a decimal.
-     *
-     * Null for a fixed leg.
-     */
-    double spread = 0.0;
-
-    /**
-     * @brief Notional amount of the leg. Must be positive.
-     */
-    ores::utility::decimal::decimal notional;
 
     /**
      * @brief ISO 4217 currency code of the leg (e.g. USD).

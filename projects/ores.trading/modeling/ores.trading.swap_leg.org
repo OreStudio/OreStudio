@@ -23,8 +23,14 @@ swap has two rows with different currencies.
 
 =leg_type_code= is the discriminator and the leg type is data, not a table, so
 one model covers the shared table (story 0DC1BAC7, decision D10). The fields a
-leg type does not state are null: =fixed_rate= is null for a floating leg and
-=floating_index_code= is null for a fixed leg.
+leg type does not state are null: =floating_index_code= is null for a fixed
+leg, for instance.
+
+The leg's economics are rows beside it, not columns on it: its notionals are
+=swap_leg_amount= rows and its rates or spreads are =swap_leg_rate= rows,
+because both are lists the document may state one entry at a time or one per
+step. A single column cannot hold a schedule, and the two arms of a stepping
+leg were flattened into one until these children landed.
 
 The row keeps its own =id= surrogate and names the parent through =trade_id=.
 The instrument is keyed by its trade, so all nine rates families name the one
@@ -205,47 +211,6 @@ ores_refdata_floating_index_types_tbl).
 
 Empty for a fixed leg; validated only when stated.
 
-** fixed_rate
-:PROPERTIES:
-:type:          numeric(18, 10)
-:cpp_type:      double
-:nullable:      true
-:default_value: 0.0
-:END:
-
-Fixed rate of a fixed leg, as a decimal (e.g. 0.05 for 5%).
-
-Null for a floating leg.
-
-#+begin_src cpp :name generator
-0.05
-#+end_src
-
-** spread
-:PROPERTIES:
-:type:          numeric(18, 10)
-:cpp_type:      double
-:nullable:      true
-:default_value: 0.0
-:END:
-
-Spread over the floating index, as a decimal.
-
-Null for a fixed leg.
-
-** notional
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      ores::utility::decimal::decimal
-:nullable:      false
-:END:
-
-Notional amount of the leg. Must be positive.
-
-#+begin_src cpp :name generator
-ores::utility::decimal::decimal::from_string("1000000").value()
-#+end_src
-
 ** currency
 :PROPERTIES:
 :type:     text
@@ -328,7 +293,6 @@ is immutable.
 | expression |
 |---|
 | "leg_number" >= 1 |
-| "notional" > 0 |
 | "currency" <> '' |
 
 ** Indexes
@@ -404,8 +368,6 @@ nest.
 | identity.leg_number     | Leg         |
 | leg_type_code           | Type        |
 | currency                | Ccy         |
-| notional                | Notional    |
-| fixed_rate              | Fixed Rate  |
 | floating_index_code     | Index       |
 | audit.recorded_at       | Recorded At |
 

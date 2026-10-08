@@ -91,7 +91,9 @@
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
+#include "ores.trading.api/messaging/swap_leg_rate_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
@@ -2191,13 +2193,38 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             leg.business_day_convention_code;
                         leg_req.change.write.payment_frequency_code = leg.payment_frequency_code;
                         leg_req.change.write.floating_index_code = leg.floating_index_code;
-                        leg_req.change.write.fixed_rate = leg.fixed_rate;
-                        leg_req.change.write.spread = leg.spread;
-                        leg_req.change.write.notional = leg.notional;
                         leg_req.change.write.currency = leg.currency;
                         auto leg_resp = nats_call(delegated_nats, leg_req, instr_error);
                         if (!leg_resp ||
                             leg_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    for (const auto& amount : r.leg_amounts) {
+                        put_swap_leg_amount_request amount_req;
+                        amount_req.change.write.trade_id = amount.trade_id;
+                        amount_req.change.write.leg_number = amount.leg_number;
+                        amount_req.change.write.sequence_number = amount.sequence_number;
+                        amount_req.change.write.trade_activity_id =
+                            amount.trade_activity_id;
+                        amount_req.change.write.start_date = amount.start_date;
+                        amount_req.change.write.amount = amount.amount;
+                        auto amount_resp = nats_call(delegated_nats, amount_req, instr_error);
+                        if (!amount_resp ||
+                            amount_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    for (const auto& rate : r.leg_rates) {
+                        put_swap_leg_rate_request rate_req;
+                        rate_req.change.write.trade_id = rate.trade_id;
+                        rate_req.change.write.leg_number = rate.leg_number;
+                        rate_req.change.write.rate_role = rate.rate_role;
+                        rate_req.change.write.sequence_number = rate.sequence_number;
+                        rate_req.change.write.trade_activity_id = rate.trade_activity_id;
+                        rate_req.change.write.start_date = rate.start_date;
+                        rate_req.change.write.value = rate.value;
+                        auto rate_resp = nats_call(delegated_nats, rate_req, instr_error);
+                        if (!rate_resp ||
+                            rate_resp->result.outcome != ores::utility::domain::outcome::ok)
                             return false;
                     }
                     return true;

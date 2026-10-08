@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 27A66639-45CC-4C4F-A545-5BFD15DFC1CF
+:END:
+#+title: Story: Carry every trading instrument as a typed batch
+#+description: The export carries each trade's instrument as instrument_payload, an untyped std::string type plus a JSON std::string body, because rfl cannot tag a std::variant of the trading instrument types. That is an untyped payload and a hand-written second type system; the project's own wire rule forbids both. Replace it with one typed array per concrete instrument type, joined back to its trade by trade id, and delete the hand-written codec. Deprecate the polymorphic-payload pattern in the knowledge base and apply the same rule everywhere it is used.
+#+type: story
+#+level: s2
+#+filetags: :trading:codegen:nats:wire:data-oriented-design:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every trading instrument crosses the export boundary as a typed array, not as
+an untyped payload. A message carries no =std::variant= field and no
+=std::string= field holding an encoded value; a heterogeneous result set
+travels as one typed array per concrete type, and the receiver joins the
+arrays by key. The hand-written codec that named the active alternative and
+encoded it as JSON text is deleted.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The relation is deprecated and the replacement is designed; the code is not started. |
+| Waiting on    | Nothing.                               |
+| Next          | Generate the instrument batch, replace the export message field, and delete instrument_payload. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- =instrument_payload= and its codec are deleted. No message in ores.trading
+  declares a =std::variant= field or a =std::string= field that holds an
+  encoded value.
+- =export_portfolio_response= carries one typed array per concrete instrument
+  entity and per child entity, keyed by trade id, alongside the trade anchors.
+- The batch type and its append and lookup helpers are generated from the
+  model, not hand-written.
+- The producer appends typed values and the ORE exporter looks them up by
+  trade id; the XML round trip is unchanged.
+- The polymorphic-payload pattern is recorded as deprecated in the knowledge
+  base, with the replacement rule.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:979838DB-DEDC-4ABC-AC8F-A7A988C561F6][Scaffold story: Carry every trading instrument as a typed batch]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8C89C69C-4B08-4334-9649-39A1EEF83572][Deprecate the polymorphic payload and design its replacement]] | DONE | 2026-10-08 | 2026-10-08 | Record the wire rule in the knowledge base, deprecate the polymorphic-payload page, and write the replacement shape into this story. No code. |
+| [[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]] | BACKLOG | | | Generate the instrument batch, replace the export message's instrument field, append on the producer and look up on the exporter, delete instrument_payload and its codec, and update the codec and exporter tests. |
+
+* Decisions
+
+- *D1, the layout.* One typed array per concrete instrument entity, and one per
+  child entity, all flat. Struct-of-arrays, not array-of-structs with a tag.
+  The tag moves from every element to the container. Splitting only the
+  top-level alternatives is not enough: =swap_instrument_data= holds a
+  =rates_instrument_variant= and =fx_instrument_variant= is itself a variant,
+  and rfl cannot encode a nested variant for the same reason it cannot encode
+  the outer one.
+- *D2, generation.* The batch type and its append and lookup helpers are
+  generated. A hand-written aggregate of typed arrays is the same hand-written
+  second type system under another name, which is the defect being removed.
+  The existing trade-type routing generator is the hook: it already knows every
+  instrument table, and it already emits the include list.
+- *D3, the discriminator.* The trade type the anchor already carries decides
+  which array holds a trade's instrument, through the generated
+  =instrument_table_for=. No per-element tag is added, because the container
+  already states the type.
+- *D4, one round trip.* The exchange stays a single request and response.
+  Splitting it into one subject per family was considered and rejected: the
+  exporter rebuilds one document, so N round trips add a reassembly protocol
+  and remove no data. Per-type subjects remain correct for single-entity CRUD,
+  where the generated protocols already provide them.
+- *D5, the sweep is empty.* =instrument_payload= is the only untyped payload
+  in the tree; no protocol header declares a =std::variant= field. The
+  =std::string type= fields in ores.iam are tenant and account classifications,
+  which are business data and not tags, so the deprecation changes no other
+  code.

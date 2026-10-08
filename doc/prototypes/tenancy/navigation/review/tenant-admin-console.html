@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant administration console &mdash; Gemini review</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151c2c',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons for professional enterprise iconography -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Left Branding & Tenant Info -->
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-500/20">
+                        OS
+                    </div>
+                    <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">ORE Studio</span>
+                </div>
+                <div class="h-5 w-px bg-slate-800"></div>
+                <div class="flex items-center space-x-2 text-sm">
+                    <span class="text-slate-400">Tenant:</span>
+                    <span class="font-medium text-slate-200 bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700/50">Acme Corporation</span>
+                </div>
+            </div>
+
+            <!-- Center Navigation Tabs -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium bg-slate-800 text-white shadow-sm border border-slate-700/50">Home</a>
+                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/55 transition-colors">People</a>
+                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/55 transition-colors">Requests</a>
+                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/55 transition-colors">Reference data</a>
+                <a href="#" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/55 transition-colors">My access</a>
+            </nav>
+
+            <!-- Right Profile & Notifications -->
+            <div class="flex items-center space-x-3">
+                <button aria-label="Notifications" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full"></span>
+                </button>
+                <div class="h-6 w-px bg-slate-800"></div>
+                <div class="flex items-center space-x-3 pl-1">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-semibold text-sm shadow-inner">
+                        TA
+                    </div>
+                    <div class="hidden lg:block text-left">
+                        <div class="text-xs font-semibold text-slate-200">Tenant Admin</div>
+                        <div class="text-[11px] text-slate-400">UK plc Operations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <section class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+            <div>
+                <div class="flex items-center space-x-2 text-indigo-400 text-xs font-semibold tracking-wider uppercase mb-1">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    <span>Enterprise Control Center</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Tenant Administration & Environment</h1>
+                <p class="text-sm text-slate-400 mt-1">Managing environment configurations, identity, and reference parameters for <span class="text-slate-200 font-medium">ACME Corporation UK plc</span></p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+                    Environment Operational (v2.4.1)
+                </span>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+                    <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Active Administration Modules</span>
+                </h2>
+                <span class="text-xs text-slate-500">5 modules accessible</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- People Card -->
+                <a href="#" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <i data-lucide="users" class="w-5 h-5"></i>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors transform group-hover:translate-x-0.5"></i>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition-colors">People</h3>
+                        <p class="text-sm text-slate-400 mt-1">Manage user provisioning, active identities, and assigned security roles.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                        <span>Directory Active</span>
+                        <span class="text-indigo-400 font-medium">Configure &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Reference Data Card -->
+                <a href="#" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <i data-lucide="database" class="w-5 h-5"></i>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors transform group-hover:translate-x-0.5"></i>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition-colors">Reference data</h3>
+                        <p class="text-sm text-slate-400 mt-1">Maintain core currencies, trading calendars, market conventions, and counterparties.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                        <span>Master Dataset</span>
+                        <span class="text-indigo-400 font-medium">Configure &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Password & Sign-ins Card -->
+                <a href="#" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <i data-lucide="key" class="w-5 h-5"></i>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors transform group-hover:translate-x-0.5"></i>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition-colors">Password and sign-ins</h3>
+                        <p class="text-sm text-slate-400 mt-1">Update credential rules, MFA policies, and monitor active session logs.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                        <span>Security Settings</span>
+                        <span class="text-indigo-400 font-medium">Manage &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- My Access Card -->
+                <a href="#" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <i data-lucide="shield" class="w-5 h-5"></i>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors transform group-hover:translate-x-0.5"></i>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition-colors">My access</h3>
+                        <p class="text-sm text-slate-400 mt-1">Inspect your granted permission matrices and administrative entitlements.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                        <span>Entitlements</span>
+                        <span class="text-indigo-400 font-medium">Review &rarr;</span>
+                    </div>
+                </a>
+
+                <!-- Versions & Database Card -->
+                <a href="#" class="group bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-xl p-5 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <i data-lucide="server" class="w-5 h-5"></i>
+                            </div>
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition-colors transform group-hover:translate-x-0.5"></i>
+                        </div>
+                        <h3 class="font-semibold text-white group-hover:text-indigo-300 transition-colors">Versions and the database</h3>
+                        <p class="text-sm text-slate-400 mt-1">View browser runtime build, deployment topology, and database storage health.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                        <span>Build 2.4.1-prod</span>
+                        <span class="text-indigo-400 font-medium">Inspect &rarr;</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="space-y-4 pt-4 border-t border-slate-800/80">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+                        <i data-lucide="compass" class="w-4 h-4 text-sky-400"></i>
+                        <span>Upcoming Modules / Roadmap Preview</span>
+                    </h2>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                    Roadmap Q3 / Q4
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Market Data Card -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between opacity-9rochemical hover:opacity-100 transition-opacity">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded">Roadmap Q3</span>
+                    </div>
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="line-chart" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-semibold text-slate-200">Market data</h3>
+                        <p class="text-sm text-slate-400 mt-1">Manage yield curves, volatility surfaces, fixings, and observation-to-publication governance.</p>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/50 flex items-center justify-between text-xs text-slate-500">
+                        <span>Staging Environment</span>
+                        <span class="text-slate-400 italic">In Development</span>
+                    </div>
+                </div>
+
+                <!-- Trading Card -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between opacity-90 hover:opacity-100 transition-opacity">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded">Roadmap Q4</span>
+                    </div>
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="trending-up" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-semibold text-slate-200">Trading</h3>
+                        <p class="text-sm text-slate-400 mt-1">Book, amend, and review exotics and derivatives trades with front-office blotters.</p>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/50 flex items-center justify-between text-xs text-slate-500">
+                        <span>Order Management</span>
+                        <span class="text-slate-400 italic">Planned</span>
+                    </div>
+                </div>
+
+                <!-- Reporting Card -->
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 relative overflow-hidden flex flex-col justify-between opacity-90 hover:opacity-100 transition-opacity">
+                    <div class="absolute top-3 right-3">
+                        <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded">Roadmap Q4</span>
+                    </div>
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-400 mb-3">
+                            <i data-lucide="pie-chart" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="font-semibold text-slate-200">Reporting</h3>
+                        <p class="text-sm text-slate-400 mt-1">Generate comprehensive risk analytics, scenario stress tests, and P&L attribution reports.</p>
+                    </div>
+                    <div class="mt-6 pt-3 border-t border-slate-800/50 flex items-center justify-between text-xs text-slate-500">
+                        <span>Analytics Engine</span>
+                        <span class="text-slate-400 italic">Planned</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>&copy; 2026 ORE Studio Systems Ltd. All rights reserved.</div>
+            <div class="flex space-x-6">
+                <a href="#" class="hover:text-slate-400 transition-colors">Documentation</a>
+                <a href="#" class="hover:text-slate-400 transition-colors">API Reference</a>
+                <a href="#" class="hover:text-slate-400 transition-colors">Support Portal</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

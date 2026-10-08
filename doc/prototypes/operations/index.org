@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: D0E83F0B-399A-4FA9-AFA3-A8609D8BCEE2
+:END:
+#+title: Operations prototypes
+#+description: The prototypes that answer to the Operations journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:operations:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them.
+
+6 prototypes answer to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                           | What it argues | Open it | Review |
+|-------------------------------------+----------------+---------+--------|
+| Keep the market data feeds running  | A feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear. | [[file:keep-the-market-data-feeds-running/][prototype]] | none |
+| See the running services            | The roster the registry expects, met by the samples the instances send: a service that stopped keeps its row and a build that lags behind is visible. | [[file:services/][prototype]] | none |
+| Watch the compute grid              | The grid is the installation's, shared by every tenant's work, so the screen shows the nodes and the wrappers running on them. | [[file:compute-grid/][prototype]] | none |
+| Watch the message bus               | The streams and their samples, listed so a stream nobody publishes to is visible rather than silently absent. | [[file:message-bus/][prototype]] | none |
+| Read the telemetry logs             | The telemetry store read by source, with the client lines the compute wrapper publishes and the search a person actually reaches for. | [[file:telemetry-logs/][prototype]] | none |
+| Check the versions and the database | The versions of every service and the database under them, stating the migration the schema is at. | [[file:versions-and-database/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/operations/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/operations/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/operations/operations.org][Operations journeys]] — the journeys these prototypes answer.

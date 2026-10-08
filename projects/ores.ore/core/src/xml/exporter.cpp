@@ -133,25 +133,31 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                     if (tt == "Swap" || tt == "CrossCurrencySwap")
                         xsd_t = swap_instrument_mapper::reverse_swap(
                             std::get<trading::domain::vanilla_swap_instrument>(r.instrument),
-                            r.legs);
+                            r.legs,
+                            r.leg_amounts,
+                            r.leg_rates);
                     else if (tt == "ForwardRateAgreement")
                         xsd_t = swap_instrument_mapper::reverse_fra(
-                            std::get<trading::domain::fra_instrument>(r.instrument), r.legs);
+                            std::get<trading::domain::fra_instrument>(r.instrument), r.legs, r.leg_amounts, r.leg_rates);
                     else if (tt == "CapFloor")
                         xsd_t = swap_instrument_mapper::reverse_capfloor(
-                            std::get<trading::domain::cap_floor_instrument>(r.instrument), r.legs);
+                            std::get<trading::domain::cap_floor_instrument>(r.instrument), r.legs, r.leg_amounts, r.leg_rates);
                     else if (tt == "Swaption")
                         xsd_t = swap_instrument_mapper::reverse_swaption(
-                            std::get<trading::domain::swaption_instrument>(r.instrument), r.legs);
+                            std::get<trading::domain::swaption_instrument>(r.instrument), r.legs, r.leg_amounts, r.leg_rates);
                     else if (tt == "CallableSwap")
                         xsd_t = swap_instrument_mapper::reverse_callable_swap(
                             std::get<trading::domain::callable_swap_instrument>(r.instrument),
                             r.legs,
+                            r.leg_amounts,
+                            r.leg_rates,
                             r.call_dates);
                     else if (tt == "KnockOutSwap")
                         xsd_t = swap_instrument_mapper::reverse_knock_out_swap(
                             std::get<trading::domain::knock_out_swap_instrument>(r.instrument),
-                            r.legs);
+                            r.legs,
+                            r.leg_amounts,
+                            r.leg_rates);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for swap type: " << tt;
                         return;

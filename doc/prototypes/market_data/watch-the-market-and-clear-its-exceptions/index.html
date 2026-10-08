@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market watch prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
+.urlbtn:hover{border-color:var(--accent)}
+.urlbtn .mono{overflow-wrap:anywhere}
+.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The trader's "Watch the market and clear its exceptions" screen
+  (doc/knowledge/journeys/market_data/journey_watch-the-market-and-clear-its-exceptions.org):
+  the scope at the top, the raw observations with their source and age in the
+  middle, and the exceptions with the fallback the person chooses at the
+  bottom, so watching and clearing read as one act. Nothing cleared is stored.
+
+  The design question is where the exception list sits. Variants with
+  ?variant=a|b|c: a puts it beside the quotes, b below them, c is a
+  queue-first screen. ?state=clean|crossed|stale switches the mock market.
+  Nothing reads a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'clean';
+
+const source = 'synthetic.v1.ir_curve';
+const base = [
+  {t:'11:30:00', tenor:'3M',  term:'5Y', v:4.312, src:source, age:'0s'},
+  {t:'11:30:00', tenor:'6M',  term:'5Y', v:4.355, src:source, age:'0s'},
+  {t:'11:29:58', tenor:'1Y',  term:'5Y', v:4.401, src:source, age:'2s'},
+  {t:'11:29:56', tenor:'2Y',  term:'5Y', v:4.371, src:source, age:'4s'},
+  {t:'11:29:55', tenor:'5Y',  term:'5Y', v:4.248, src:source, age:'5s'},
+  {t:'11:29:52', tenor:'10Y', term:'5Y', v:4.185, src:source, age:'8s'},
+  {t:'11:29:50', tenor:'20Y', term:'5Y', v:4.022, src:source, age:'10s'},
+  {t:'11:28:41', tenor:'30Y', term:'5Y', v:3.911, src:'vendor.x.feed', age:'79s'}
+];
+
+function urlButton(url){
+  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
+         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+}
+function openOresmdEditor(url, host){
+  const ov=document.createElement('div'); ov.className='oresmd-overlay';
+  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
+  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
+  ov.appendChild(f); document.body.appendChild(ov);
+  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
+  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
+  function onKey(e){ if(e.key==='Escape') close(); }
+  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
+  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+}
+document.addEventListener('click', e=>{
+  const b=e.target.closest('.urlbtn'); if(!b) return;
+  openOresmdEditor(b.dataset.url||'', b);
+});
+function market(st){
+  const p = base.map(q => ({...q}));
+  const at = t => p.find(x => x.tenor === t);
+  let ex = [];
+  if(st === 'stale') {
+    const a = at('1Y'); a.age = '1h 12m'; a.t = '10:18:00';
+    const b = at('10Y'); b.age = '48m'; b.t = '10:42:00';
+    ex = [
+      {kind:'stale', tenor:'1Y',  term:'5Y', detail:'last point 1h 12m old, threshold 15m'},
+      {kind:'stale', tenor:'10Y', term:'5Y', detail:'last point 48m old, threshold 15m'}
+    ];
+  }
+  if(st === 'crossed') {
+    p.splice(p.findIndex(x => x.tenor === '2Y'), 1);
+    at('10Y').v = 4.612;
+    const c = at('30Y'); c.age = '6h 04m'; c.t = '05:26:00';
+    ex = [
+      {kind:'missing', tenor:'2Y',  term:'5Y', detail:'no point at this as-of'},
+      {kind:'crossed', tenor:'10Y', term:'5Y', detail:'4.612 is above the 20Y point 4.022'},
+      {kind:'stale',   tenor:'30Y', term:'5Y', detail:'last point 6h 04m old, source vendor.x.feed'}
+    ];
+  }
+  return {p, ex};
+}
+const {p: points, ex: exceptions} = market(state);
+
+const choices = {
+  carry:    {label:'carry forward', by:'a.reyes (trader)',  reason:'illiquid — the last good value stands'},
+  proxy:    {label:'proxy',         by:'m.oduya (quant)',   reason:'feed gap — proxied from the EUR 5Y point'},
+  escalate: {label:'escalate',      by:'j.silva (market data ops)', reason:'needs a human — raised to the ops desk'}
+};
+const res = {};
+const key = e => `${e.kind}:${e.tenor}`;
+
+function tag(text, kind){ return `<span class="tag ${kind||''}">${text}</span>`; }
+function quality(pt){
+  const e = exceptions.find(x => x.tenor === pt.tenor);
+  if(e) return tag(e.kind, e.kind === 'crossed' ? 'bad' : 'warn');
+  if(pt.src !== source) return tag('unknown source','warn');
+  return tag('fresh','ok');
+}
+
+function scope(){
+  return `
+  <div class="top">
+    <h1>Market watch: source ${source}, as of 2026-10-06 11:30</h1>
+    <span class="muted">watching and clearing are one act</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_watch-the-market-and-clear-its-exceptions.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <h2>Scope</h2>
+    <div class="row">
+      <div class="field" style="flex:1"><label>Feed binding</label><select><option>${source}</option><option>synthetic.v1.ops.tick.vol</option><option>refdata.v1.eod</option></select></div>
+      <div class="field"><label>As-of</label><div class="value mono">2026-10-06 11:30</div></div>
+      <div class="field"><label>Rows</label><div class="value mono">84 points</div></div>
+      <div class="field"><label>Exceptions</label><div class="value">${exceptions.length ? tag(exceptions.length + ' open','bad') : tag('none','ok')}</div></div>
+      <button class="btn" id="refresh">Refresh</button>
+      <span class="faint" id="refresh-note"></span>
+    </div>
+    <div class="notice">The screen holds one staleness threshold for every scope, 15m, because no exception policy is stored. The scope is not typed: it is a source tag or a series.</div>
+  </div>`;
+}
+
+function quotesPanel(){
+  return `
+  <div class="panel">
+    <h2>Raw points <span class="faint">— showing the newest 8 of 84</span></h2>
+    <table>
+      <thead><tr><th>Observation time</th><th>oresmd URI</th><th class="num">Value</th><th>Source</th><th>Age</th><th>Quality</th></tr></thead>
+      <tbody>${points.map(pt => `<tr>
+        <td class="mono">${pt.t}</td>
+        <td class="mono faint">${urlButton(`?type=quote&amp;tenor=${pt.tenor}&amp;term=${pt.term}`)}</td>
+        <td class="num">${pt.v.toFixed(3)}</td>
+        <td class="${pt.src === source ? 'muted' : ''}">${pt.src}</td>
+        <td class="faint">${pt.age}</td>
+        <td>${quality(pt)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="notice">An observation is evidence, not a signed object: nobody approves it. No quality is stored, so the screen marks what it can compute from the values and the ages.</div>
+  </div>`;
+}
+
+function exceptionsPanel(){
+  return `
+  <div class="panel">
+    <h2>Exceptions</h2>
+    ${exceptions.length ? `
+    <table>
+      <thead><tr><th>Kind</th><th>oresmd URI</th><th>Detail</th><th>Fallback</th></tr></thead>
+      <tbody>${exceptions.map(e => {
+        const k = key(e), done = res[k];
+        return `<tr>
+          <td>${tag(e.kind, e.kind === 'crossed' ? 'bad' : 'warn')}</td>
+          <td class="mono faint">${urlButton(`?type=quote&amp;tenor=${e.tenor}&amp;term=${e.term}`)}</td>
+          <td class="muted">${e.detail}</td>
+          <td>${done ? tag(done.label, 'ok') : ['carry','proxy','escalate'].map(c => `<button class="btn" data-c="${c}" data-k="${k}">${choices[c].label}</button>`).join(' ')}</td></tr>`;
+      }).join('')}</tbody>
+    </table>` : `<div class="notice">${tag('clean','ok')} Every point in the scope is fresh, present and consistent with its neighbours. Nothing to clear.</div>`}
+    <div class="notice">The three kinds are computed in the page from the points and the blueprint's pillars. No subject lists or resolves an exception.</div>
+  </div>`;
+}
+
+function resolutionsPanel(){
+  const done = Object.entries(res).map(([k, c]) => {
+    const e = exceptions.find(x => key(x) === k);
+    return {e, c};
+  });
+  return `
+  <div class="panel">
+    <h2>Resolutions this session</h2>
+    ${done.length ? `
+    <table>
+      <thead><tr><th>Exception</th><th>Choice</th><th>By</th><th>Reason</th></tr></thead>
+      <tbody>${done.map(({e, c}) => `<tr>
+        <td><span class="mono">${e.tenor}</span> <span class="faint">${e.kind}</span></td>
+        <td>${c.label}</td><td>${c.by}</td><td class="muted">${c.reason}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="faint">A carried-forward value can be written through market_observations.put, but the write carries no actor, no reason and no link to the exception.</div>`
+    : `<div class="notice">No choice yet. A fallback choice has no subject and no fields, so it lives on this page for the session only and the next reader sees the same exceptions.</div>`}
+  </div>`;
+}
+
+function render(){
+  const q = quotesPanel(), e = exceptionsPanel(), r = resolutionsPanel();
+  const body = variant === 'c'
+    ? e + r + `<div class="muted faint" style="text-align:center">— quotes behind the queue —</div>` + q
+    : variant === 'b' ? q + e + r : `<div class="grid2">${q}${e}</div>` + r;
+  document.getElementById('app').innerHTML = scope() + body;
+  document.querySelectorAll('#app [data-c]').forEach(b => b.onclick = () => {
+    res[b.dataset.k] = choices[b.dataset.c];
+    render();
+  });
+  document.getElementById('refresh').onclick = () => {
+    document.getElementById('refresh-note').textContent = 'refreshed 11:30:04 — the same scope, nothing written';
+  };
+  document.getElementById('note').textContent = `Prototype · watch the market and clear its exceptions · variant ${variant.toUpperCase()} · ${state} · resolutions are session-only`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Exception list</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Market</span>` +
+    ['clean','crossed','stale'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

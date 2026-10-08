@@ -97,8 +97,8 @@ five steps, its two ways of naming a party and its three exits; what it does not
 carry is the accounts picker, which the prototype showed and nothing writes.
 
 - Accepted commit :: =97d63a01f2=, the tip of =prototype/new-party-journey=, merged into =main=
-- Route :: =/prototype/party= (the branch served it at =/refdata/party/new=)
-- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
+- Source :: =doc/prototypes/setup/new-party/index.html=
+- Open :: =/OreStudio/doc/prototypes/setup/new-party/= once the site is built, or the file directly
 - Design record :: [[id:D9A5D631-E1F8-4DA7-A4A9-C991A3429D9A][Task: Prototype the new party journey]]
 
 The party journey was the first built on the shared journey page, and it proved

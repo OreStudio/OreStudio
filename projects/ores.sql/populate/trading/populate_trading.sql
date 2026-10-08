@@ -48,6 +48,7 @@
 \ir ./trading_activity_categories_populate.sql
 \ir ./trading_return_types_populate.sql
 \ir ./trading_payoff_types_populate.sql
+\ir ./trading_trade_link_types_populate.sql
 
 \echo ''
 \echo '=== Trade Population Complete ==='

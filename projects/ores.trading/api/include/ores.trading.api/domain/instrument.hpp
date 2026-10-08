@@ -29,6 +29,8 @@
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/rates_instrument_variant.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/swap_leg_amount.hpp"
+#include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
 #include <type_traits>
@@ -64,6 +66,8 @@ struct with_legs {
 struct swap_instrument_data {
     rates_instrument_variant instrument;
     std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
     std::vector<callable_swap_call_date> call_dates;
 };
 
@@ -121,6 +125,14 @@ inline void stamp_ids(swap_instrument_data& data,
     for (auto& leg : data.legs) {
         leg.identity.trade_id = trade_id;
         leg.identity.trade_activity_id = activity_id;
+    }
+    for (auto& amount : data.leg_amounts) {
+        amount.trade_id = trade_id;
+        amount.trade_activity_id = activity_id;
+    }
+    for (auto& rate : data.leg_rates) {
+        rate.trade_id = trade_id;
+        rate.trade_activity_id = activity_id;
     }
     for (auto& call_date : data.call_dates) {
         call_date.trade_id = trade_id;

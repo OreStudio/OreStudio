@@ -99,13 +99,13 @@ exists, and the panel says so, so the screen does not pretend the act succeeded.
 
 * Prototype
 
-A static page at =doc/prototypes/withdraw-or-replace-a-published-curve/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/withdraw-or-replace-a-published-curve/index.html=: mock data only, no backend,
 no build step and no session. It argues that a wrong publish is undone as an act with a reason, and the withdrawal can need its own approval.
 
 - Variants :: a the withdraw form, b the replace form, c the retired version against its replacement
 - States :: no-approval, approval, withdrawn
-- Source :: =doc/prototypes/withdraw-or-replace-a-published-curve/index.html=
-- Open :: =/OreStudio/doc/prototypes/withdraw-or-replace-a-published-curve/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/withdraw-or-replace-a-published-curve/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/withdraw-or-replace-a-published-curve/= once the site is built, or the
   file directly
 
 * Entities composed

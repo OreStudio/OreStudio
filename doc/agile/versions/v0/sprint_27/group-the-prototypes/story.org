@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 855D0907-26E3-48B9-A59F-5FEBE54C328C
+:END:
+#+title: Story: Group the prototypes and add the Gemini reviews
+#+description: The prototypes are one flat list of 46 directories, so nothing can be found. Group them under doc/prototypes/<group>/, give the top page the groups and what each gathers, give each group a page that lists its prototypes, and put the Gemini reviews beside the prototypes they review.
+#+type: story
+#+level: s2
+#+filetags: :prototype:ui:journeys:docs:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person looking for a prototype finds it by the journey topic it answers to,
+not by scanning one flat list of 46 directories. Every prototype carries its
+Gemini review beside it, and every index page says which prototypes have one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- =doc/prototypes/index.org= names every journey group with what it gathers,
+  and links the group's page where one exists.
+- Every prototype sits at =doc/prototypes/<group>/<name>/=, and the group page
+  lists it with what it argues and how to open it.
+- A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, and the
+  group page states which prototypes carry one.
+- The guard, the site build and every document that names a prototype path
+  agree with the new shape.
+- =compass lint=, the guard and the org link check pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the Gemini reviews]] | DONE | 2026-10-08 | 2026-10-08 | Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path. |
+
+* Decisions
+
+- *Group by journey topic, not by component.* The group folder carries the
+  journey group's own name, so a reader who knows which journey a prototype
+  answers to knows where the file is without a lookup.
+- *The pages are org.* The site build already publishes org to HTML, so the
+  index pages are searchable, tagged and linked like the rest of the corpus,
+  and the prototypes they describe stay HTML.
+- *The site build discovers the prototypes.* Naming all 46 in
+  =ores-build-site.el= is what let the list and the tree drift, so the build
+  walks the group folders instead. Adding a prototype now touches no build
+  file.
+- *Reviews live inside the prototype.* A review is not a prototype of its own
+  and must never be read as the agreed design, so =name/review/= keeps the
+  association and the page says so in a banner.
+- *The shell answers to Tenancy, not Profile.* The shell's landing page was
+  replaced by the home screen, and both read the tenant the sign-in chose, so
+  the group that owns the tenant owns the shell.
+- *Fix the unrelated site-build break in its own commit.* The rates-family
+  design document links an id in the wrong case, which aborts the whole site
+  export. It is pre-existing and belongs to another story, so it is one commit
+  on this branch rather than folded into the prototype work.
+
+* Out of scope
+
+- Filling the prototype gap in the four groups that have none: Membership,
+  Directory, Currencies and FX, and Calendars.
+
+* Result
+
+The prototypes are grouped by journey topic and readable. The top page names
+the eighteen journey groups and what each gathers, fourteen of them hold
+prototypes, and each of those has a page listing its prototypes, what each
+argues, how to open one and whether anyone has reviewed it. Every prototype
+sits under the topic it answers to, and the seven design notes sit beside the
+prototypes they describe.
+
+The protection moved with the shape. The guard enforces the group pages, the
+review cells and the top page, and the site build discovers the prototypes
+under the group folders instead of naming all 46, so a new prototype touches no
+build file. Every document that named a prototype path names the new one,
+including eleven journey documents that had pointed at the React tree deleted
+in October, and the capture that recorded those stale pointers is resolved.
+
+Six of the eight Gemini files are kept as review screens beside the prototypes
+they review; the other two were byte-for-byte truncated prefixes and are
+dropped.
+
+The lesson the task taught twice, and that the prototype pages now record at
+the top of this page: the site adds nothing to a prototype. The injected
+stylesheet moved the root font size from 16px to 17px, which moved every one of
+685 rem measurements, and the body line height from 21px to 24.5px; a links
+table was tried in its place and taken out again, because a reader judging a
+layout is judging everything above the first pixel of the design. Every
+prototype page, design note and review page is byte-identical to its source and
+renders exactly as its author wrote it. The unreviewed set is one grep over the
+group pages, which the guard holds to the review directories.
+
+Merged as PR #2794, merge commit f80a800f20.

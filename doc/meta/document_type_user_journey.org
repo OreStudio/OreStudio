@@ -42,8 +42,10 @@ carries only what is specific to =user_journey=.
   - =* Screens and wireframes= — PlantUML sketches exported to PNG beside the
     document and embedded with a caption.
   - =* Prototype= — where a clickable prototype exists, its directory under
-    =doc/prototypes/= and the states it draws. An accepted prototype merges
-    into main and stays there as the design record, as
+    =doc/prototypes/<journey group>/<name>/= and the states it draws. The
+    group is the journey topic the document belongs to, so the prototype sits
+    beside the journeys that answer to it. An accepted prototype merges into
+    main and stays there as the design record, as
     [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep journey prototypes on
     main]] requires; a prototype under review lives on the branch that
     proposes it.

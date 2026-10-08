@@ -109,7 +109,7 @@ reads and Outcome is the first that reports a write.
 
 The prototype is the design record for the screens above.
 
-- Directory :: =doc/prototypes/onboard-a-counterparty/=
+- Directory :: =doc/prototypes/parties/onboard-a-counterparty/=
 - States :: =landing=, =counterparty=, =identifiers=, =contacts=, =agreements=,
   =review=, =done=, =refused=, =history=
 - Refusals :: =?fail=duplicate=, =?fail=missing= and

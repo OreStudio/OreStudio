@@ -50,9 +50,6 @@ struct swap_leg_write {
     std::string business_day_convention_code;
     std::string payment_frequency_code;
     std::string floating_index_code;
-    double fixed_rate;
-    double spread;
-    ores::utility::decimal::decimal notional;
     std::string currency;
 };
 

@@ -91,13 +91,13 @@ before the maths.
 
 * Prototype
 
-A static page at =doc/prototypes/author-a-surfaces-framework/index.html=: mock data only, no backend,
+A static page at =doc/prototypes/market_data/author-a-surfaces-framework/index.html=: mock data only, no backend,
 no build step and no session. It argues that a surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold.
 
 - Variants :: a the two label ladders, b the full grid preview, c a convention-first form
 - States :: proposed, nostrike (no strike-label vocabulary, so the grid cannot be laid out)
-- Source :: =doc/prototypes/author-a-surfaces-framework/index.html=
-- Open :: =/OreStudio/doc/prototypes/author-a-surfaces-framework/= once the site is built, or the
+- Source :: =doc/prototypes/market_data/author-a-surfaces-framework/index.html=
+- Open :: =/OreStudio/doc/prototypes/market_data/author-a-surfaces-framework/= once the site is built, or the
   file directly
 
 * Entities composed

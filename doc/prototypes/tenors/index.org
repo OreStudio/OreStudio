@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 1AE85697-0010-4B67-B568-7656E9D1D395
+:END:
+#+title: Tenors prototypes
+#+description: The prototypes that answer to the Tenors journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:tenors:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+Tenor codes and the resolution the system computes from them, down to the date a tenor produces on a named calendar.
+
+One prototype answers to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                 | What it argues | Open it | Review |
+|---------------------------+----------------+---------+--------|
+| Define how tenors resolve | A tenor is a code a person reads and a resolution the system computes: the unit, the anchor, the schedule and the algorithm are shown against the date they produce on a named calendar. | [[file:define-how-tenors-resolve/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/tenors/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/tenors/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/tenors/tenors.org][Tenors journeys]] — the journeys these prototypes answer.

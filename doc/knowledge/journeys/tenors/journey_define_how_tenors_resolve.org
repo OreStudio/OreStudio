@@ -107,7 +107,7 @@ without leaving the screen.
 
 * Prototype
 
-A static page at =doc/prototypes/define-how-tenors-resolve/index.html=: mock
+A static page at =doc/prototypes/tenors/define-how-tenors-resolve/index.html=: mock
 data only, no backend, no build step and no session. It argues that a tenor is
 a code a person reads and a resolution the system computes, so the journey shows
 both at once and carries the resolution down to the date the tenor produces on a
@@ -115,8 +115,8 @@ named calendar.
 
 - States :: =list=, =tenor=, =convention=, =schedule=, =resolve=, =review=,
   =outcome=, =refused= (the alias =failure= opens the same screen) and =history=
-- Source :: =doc/prototypes/define-how-tenors-resolve/index.html=
-- Open :: =/OreStudio/doc/prototypes/define-how-tenors-resolve/= once the site
+- Source :: =doc/prototypes/tenors/define-how-tenors-resolve/index.html=
+- Open :: =/OreStudio/doc/prototypes/tenors/define-how-tenors-resolve/= once the site
   is built, or the file directly
 
 * Entities composed

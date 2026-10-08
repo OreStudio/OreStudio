@@ -124,8 +124,8 @@ Accepted by the user on 2026-09-22. The prototype is merged into =main= and
 kept there as the record; the accepted commit names the state.
 
 - Accepted commit :: =414b253586=, the tip of =prototype/first-run-journey=, merged into =main=
-- Route :: =/prototype/setup= (the branch served it at =/setup=)
-- Source :: =projects/ores.web/packages/web/src/pages/prototype/newTenantJourney/= on =main=; the hub at =/prototype= lists every prototype route
+- Source :: =doc/prototypes/setup/first-run/index.html=
+- Open :: =/OreStudio/doc/prototypes/setup/first-run/= once the site is built, or the file directly
 - Design record :: [[id:DA4BE50C-B2EC-4C6D-8DAA-9EB06D33B003][Task: Prototype the first run journey]]
 
 The prototype settled three things. Journeys are data: one page renders an

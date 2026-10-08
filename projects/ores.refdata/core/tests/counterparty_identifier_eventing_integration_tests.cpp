@@ -109,8 +109,7 @@ TEST_CASE("write_counterparty_identifier_publishes_an_event", tags) {
     // takes every action: the first write creates the row and a re-drive
     // updates it, and the chain is what is under test rather than which of
     // the three subjects carried it.
-    auto observer = nats.subscribe_buffered(
-        std::string(ev::domain::entity_event_traits<event_type>::subject_prefix) + ".>", 10);
+    auto observer = nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before

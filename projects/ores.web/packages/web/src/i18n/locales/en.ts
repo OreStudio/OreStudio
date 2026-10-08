@@ -1465,6 +1465,9 @@ export const en: SourceCatalogue = {
         client: 'client {version}',
         server: 'server {version}',
         serverUnknown: 'server version unknown',
+        environment: 'environment {name}',
+        environmentUnknown: 'environment unknown',
+        nonProduction: 'non-production',
     },
 
     server: {

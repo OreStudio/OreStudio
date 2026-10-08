@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { Account } from '@ores/wire-protocol/browser';
+import type { EnvironmentView } from '@ores/contracts';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { AppShell } from './AppShell.js';
 import { PublicShell } from './PublicShell.js';
@@ -33,6 +34,20 @@ import { PublicShell } from './PublicShell.js';
  * and the screen, and nothing else. The session is a prop rather than something
  * read from a provider here, which is what lets these render without a server.
  */
+
+const brightFaraday: EnvironmentView = {
+    id: 'bright_faraday',
+    displayName: 'Bright Faraday',
+    description: '',
+    nonProduction: true,
+};
+
+const production: EnvironmentView = {
+    id: 'production',
+    displayName: 'Production',
+    description: '',
+    nonProduction: false,
+};
 
 describe('the public shell', () => {
     it('shows the application name and the screen', () => {
@@ -86,6 +101,55 @@ describe('the public shell', () => {
 
         expect(html).toContain('server version unknown');
     });
+
+    it('states the environment it serves, and marks a non-production one', () => {
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell environment={brightFaraday}>
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+
+        expect(html).toContain('environment Bright Faraday (non-production)');
+    });
+
+    it('names a production environment without the marker', () => {
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell environment={production}>
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+
+        expect(html).toContain('environment Production');
+        expect(html).not.toContain('non-production');
+    });
+
+    it('says it does not know the environment when the site has not answered', () => {
+        const html = renderToStaticMarkup(
+            <QueryClientProvider client={new QueryClient()}>
+                <TranslationProvider>
+                    <MemoryRouter>
+                        <PublicShell>
+                            <p>the screen</p>
+                        </PublicShell>
+                    </MemoryRouter>
+                </TranslationProvider>
+            </QueryClientProvider>,
+        );
+
+        expect(html).toContain('environment unknown');
+    });
 });
 
 /*
@@ -100,6 +164,7 @@ describe('the application shell', () => {
         permissionCodes: readonly string[] = [],
         self?: Account | null,
         unread = 0,
+        environment?: EnvironmentView,
     ): string {
         const client = new QueryClient();
         client.setQueryData(['unread-notifications'], unread);
@@ -129,6 +194,7 @@ describe('the application shell', () => {
                             mode={mode}
                             {...(width !== undefined && { width })}
                             {...(self !== undefined && { self })}
+                            {...(environment !== undefined && { environment })}
                             onSignOut={() => undefined}
                         >
                             <p>the screen</p>
@@ -226,6 +292,20 @@ describe('the application shell', () => {
         expect(renderAppShell('Acme Operations', 'system-administration')).toContain(
             'System administration',
         );
+    });
+
+    it('states the environment the deployment serves', () => {
+        const html = renderAppShell(
+            'Acme Operations',
+            'application',
+            undefined,
+            [],
+            undefined,
+            0,
+            brightFaraday,
+        );
+
+        expect(html).toContain('environment Bright Faraday (non-production)');
     });
 
     /*

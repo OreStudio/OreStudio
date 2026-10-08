@@ -20,6 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
+import type { EnvironmentView } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { PROJECT_SITE, headerMark } from '../assets/brand.js';
 import { VersionFooter } from './VersionFooter.js';
@@ -36,6 +37,7 @@ export function PublicShell({
     children,
     wide = false,
     serverVersion,
+    environment,
 }: {
     readonly children: ReactNode;
     /**
@@ -49,6 +51,8 @@ export function PublicShell({
     readonly wide?: boolean;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
+    /** The environment the deployment serves, or nothing before it answers. */
+    readonly environment?: EnvironmentView | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const width = wide ? 'max-w-[1100px]' : 'max-w-[680px]';
@@ -67,7 +71,7 @@ export function PublicShell({
                 </div>
             </header>
             <main className={`mx-auto w-full flex-1 px-5 py-12 ${width}`}>{children}</main>
-            <VersionFooter serverVersion={serverVersion} />
+            <VersionFooter serverVersion={serverVersion} environment={environment} />
         </div>
     );
 }

@@ -1478,6 +1478,9 @@ const pt: SourceCatalogue = {
         client: 'cliente {version}',
         server: 'servidor {version}',
         serverUnknown: 'versão do servidor desconhecida',
+        environment: 'ambiente {name}',
+        environmentUnknown: 'ambiente desconhecido',
+        nonProduction: 'não produção',
     },
 
     server: {

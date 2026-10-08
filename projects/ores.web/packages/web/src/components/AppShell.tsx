@@ -22,6 +22,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router';
 import type { Account, SessionMode } from '@ores/wire-protocol/browser';
+import type { EnvironmentView } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { headerMark } from '../assets/brand.js';
 import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
@@ -76,6 +77,8 @@ export interface AppShellProps {
     readonly self?: Account | null;
     /** The build the deployment answers with, or nothing before it answers. */
     readonly serverVersion?: string;
+    /** The environment the deployment serves, or nothing before it answers. */
+    readonly environment?: EnvironmentView | undefined;
     readonly children: ReactNode;
 }
 
@@ -88,6 +91,7 @@ export function AppShell({
     onSignOut,
     self,
     serverVersion,
+    environment,
     children,
 }: AppShellProps): ReactNode {
     const { t } = useTranslation();
@@ -160,7 +164,7 @@ export function AppShell({
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
                 <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>{children}</div>
             </main>
-            <VersionFooter serverVersion={serverVersion} />
+            <VersionFooter serverVersion={serverVersion} environment={environment} />
         </div>
     );
 }

@@ -1,37 +1,37 @@
 :PROPERTIES:
 :ID: 610BCC5C-073D-4FF0-86D3-0EAA4727306A
 :END:
-#+title: Task: Add the act detail tables
+#+title: Task: Add the run detail tables
 #+description: Add one detail table per kind of process run, keyed by the run: compression (provider, cycle reference), allocation (block, source, template), merge (policy, expiry-netting style), roll and sweep runs (process, run date) and bulk book move (books, cash flows moved).
 #+type: task
 #+level: s1
-#+filetags: :trade-activities-and-links:sprint_27:v0:
+#+filetags: :trade-process-runs:sprint_27:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: A process run model: an enumeration of the processes, a table per run with its own id and a state machine, and the run id as the key the trade groups carry for their inputs and outputs. Captured in the inbox; it needs analysis before this task can hang its table off the right parent.
-#+blocked_since: 2026-10-07
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Each kind of process run records its own facts in a detail table keyed by the run.
+Each kind of run records its own facts in a detail table keyed by the run.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
-| Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
+| State        | BACKLOG                              |
+| Parent story | [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] |
 | Now          | Not yet started.                       |
-| Waiting on   | The process run model, so the detail table has the right parent. |
-| Next         | Settle the run, then key this table by the run. |
-| Last touched | 2026-10-07                               |
+| Waiting on   | The run record, which each detail table keys to. |
+| Next         | Add the detail table of the pilot process first. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 

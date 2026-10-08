@@ -1,42 +1,42 @@
 :PROPERTIES:
 :ID: 6165BF44-FAB9-4B94-B9FA-71292E0853AC
 :END:
-#+title: Task: Record an ORE import as one process run
-#+description: Make an ORE import one process run, with every imported trade as a participant and an import detail row keyed by the run, so the import has an identity rather than being a run of unrelated bookings.
+#+title: Task: Record an ORE import as one run
+#+description: Make an ORE import one run, with every imported trade in its group and an import detail row keyed by the run, so the import has an identity rather than being a run of unrelated bookings.
 #+type: task
 #+level: s1
-#+filetags: :trade-activities-and-links:sprint_27:v0:
+#+filetags: :trade-process-runs:sprint_27:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: A process run model: an enumeration of the processes, a table per run with its own id and a state machine, and the run id as the key the trade groups carry for their inputs and outputs. Captured in the inbox; it needs analysis before this task can hang its table off the right parent.
-#+blocked_since: 2026-10-07
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-An ORE import is one process run: its trades are participants and its source is recorded in an import detail row.
+An ORE import is one run: its trades are in the run's group and its source is recorded in an import detail row.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
-| Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] |
+| State        | BACKLOG                              |
+| Parent story | [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] |
 | Now          | Not yet started.                       |
-| Waiting on   | The process run model, so the import has a run to be recorded against. |
-| Next         | Settle the run, then record the import against it. |
-| Last touched | 2026-10-07                               |
+| Waiting on   | The run record and its group.          |
+| Next         | Record the import against a run.       |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
-- The import writes one run, one participant per booked trade and one import detail row naming the request and source.
-- The rollback closes the bookings of that run's participants.
+- The import writes one run, one member per booked trade in the run's group and one import detail row naming the request and source.
+- The rollback closes the bookings of that run's members.
 - The round trip stays at in-scope lost 0 with every envelope as stated.
 
 * Plan

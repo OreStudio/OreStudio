@@ -66,4 +66,4 @@ trade amendment it generates.
 
 * See also
 
-- [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities, their participants and trade links]] — the story whose remaining tasks wait on these processes being implemented.
+- [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] — the run record whose work waits on these processes being implemented.

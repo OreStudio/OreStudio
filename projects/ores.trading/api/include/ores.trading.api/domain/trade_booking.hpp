@@ -74,16 +74,6 @@ struct trade_booking final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The trade's party, copied from the anchor.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief The trade's counterparty, copied from the anchor. Absent on an intra-entity trade.
-     */
-    std::optional<boost::uuids::uuid> counterparty_id;
-
-    /**
      * @brief The book that holds the trade.
      */
     boost::uuids::uuid book_id;

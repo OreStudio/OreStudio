@@ -46,8 +46,6 @@ create table if not exists "ores_trading_trade_bookings_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
-    "counterparty_id" uuid null,
     "book_id" uuid not null,
     "netting_set_id" uuid null,
     "counterparty_identifier_id" uuid null,
@@ -85,10 +83,6 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists trade_bookings_book_idx
 on "ores_trading_trade_bookings_tbl" (tenant_id, book_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists trade_bookings_netting_set_idx
-on "ores_trading_trade_bookings_tbl" (tenant_id, netting_set_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_trading_trade_bookings_insert_fn()
@@ -171,83 +165,66 @@ begin
         end if;
     end if;
 
-    -- Validate the anchor_party pin to ores_trading_trades_tbl
-    if NEW.trade_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid trade_id: %. The booking''s party must be the trade''s.', NEW.trade_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the anchor_counterparty pin to ores_trading_trades_tbl
-    if NEW.trade_id is not null and NEW.counterparty_id is not null and not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
-          and counterparty_id = NEW.counterparty_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid trade_id: %. The booking''s counterparty must be the trade''s.', NEW.trade_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the book_party pin to ores_refdata_books_tbl
-    if NEW.book_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_refdata_books_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.book_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid book_id: %. The book must belong to the trade''s party.', NEW.book_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the netting_set pin to ores_refdata_netting_sets_tbl
-    if NEW.netting_set_id is not null and NEW.counterparty_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_refdata_netting_sets_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.netting_set_id
-          and counterparty_id = NEW.counterparty_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid netting_set_id: %. The set must be the trade''s counterparty''s and party''s.', NEW.netting_set_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the counterparty_name pin to ores_refdata_counterparty_identifiers_tbl
-    if NEW.counterparty_identifier_id is not null and NEW.counterparty_id is not null and not exists (
-        select 1 from ores_refdata_counterparty_identifiers_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.counterparty_identifier_id
-          and counterparty_id = NEW.counterparty_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid counterparty_identifier_id: %. The identifier must be the trade''s counterparty''s.', NEW.counterparty_identifier_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the netting_set_name pin to ores_refdata_netting_set_identifiers_tbl
-    if NEW.netting_set_identifier_id is not null and NEW.netting_set_id is not null and not exists (
-        select 1 from ores_refdata_netting_set_identifiers_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.netting_set_identifier_id
-          and netting_set_id = NEW.netting_set_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid netting_set_identifier_id: %. The identifier must be the netting set''s.', NEW.netting_set_identifier_id
-            using errcode = '23503';
-    end if;
-
     if ores_trading_book_is_virtual_fn(NEW.tenant_id, NEW.book_id)
        and not ores_trading_trade_may_be_virtual_fn(NEW.tenant_id, NEW.trade_id) then
         raise exception 'Invalid book_id: %. A virtual book holds only drafts, tests and hypotheticals.',
             NEW.book_id
+            using errcode = '23514';
+    end if;
+
+    -- The booking holds no party of its own. The party and the counterparty
+    -- are the deal's, so the book, the netting set and the counterparty
+    -- identifier are checked against the trade the booking names rather than
+    -- against a copy that could drift from it.
+    if not exists (
+        select 1 from ores_refdata_books_tbl b
+        join ores_trading_trades_tbl t
+          on t.tenant_id = b.tenant_id and t.party_id = b.party_id
+        where b.tenant_id = NEW.tenant_id and b.id = NEW.book_id
+          and b.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid book_id: %. The book must belong to the trade''s party.', NEW.book_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.netting_set_id is not null and not exists (
+        select 1 from ores_refdata_netting_sets_tbl s
+        join ores_trading_trades_tbl t
+          on t.tenant_id = s.tenant_id
+         and t.party_id = s.party_id
+         and t.counterparty_id = s.counterparty_id
+        where s.tenant_id = NEW.tenant_id and s.id = NEW.netting_set_id
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid netting_set_id: %. The set must be the trade''s counterparty''s and party''s.', NEW.netting_set_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.counterparty_identifier_id is not null and not exists (
+        select 1 from ores_refdata_counterparty_identifiers_tbl ci
+        join ores_trading_trades_tbl t
+          on t.tenant_id = ci.tenant_id and t.counterparty_id = ci.counterparty_id
+        where ci.tenant_id = NEW.tenant_id and ci.id = NEW.counterparty_identifier_id
+          and ci.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid counterparty_identifier_id: %. The identifier must be the trade''s counterparty''s.', NEW.counterparty_identifier_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.netting_set_identifier_id is not null and not exists (
+        select 1 from ores_refdata_netting_set_identifiers_tbl si
+        where si.tenant_id = NEW.tenant_id
+          and si.id = NEW.netting_set_identifier_id
+          and si.netting_set_id = NEW.netting_set_id
+          and si.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid netting_set_identifier_id: %. The identifier must be the netting set''s.', NEW.netting_set_identifier_id
             using errcode = '23514';
     end if;
     -- Validate change_reason_code

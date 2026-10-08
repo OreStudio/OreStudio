@@ -46,8 +46,6 @@ struct trade_booking_entity {
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
-    std::string party_id;
-    std::optional<std::string> counterparty_id;
     std::string book_id;
     std::optional<std::string> netting_set_id;
     std::optional<std::string> counterparty_identifier_id;

@@ -62,33 +62,6 @@ ctx.generate_uuid()
 
 The activity that wrote this version.
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The trade's party, copied from the anchor.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
-** counterparty_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
-:END:
-
-The trade's counterparty, copied from the anchor. Absent on an
-intra-entity trade.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
 ** book_id
 :PROPERTIES:
 :type:     uuid
@@ -181,17 +154,6 @@ std::nullopt
 :tablename: ores_trading_trade_bookings_tbl
 :END:
 
-** Pinned keys
-
-| name                | columns                                   | table                          | target_columns                | error_message                                                                    |
-|---------------------+-------------------------------------------+--------------------------------+-------------------------------+----------------------------------------------------------------------------------|
-| anchor_party        | trade_id, party_id                        | ores_trading_trades_tbl | id, party_id                  | Invalid trade_id: %. The booking's party must be the trade's.                    |
-| anchor_counterparty | trade_id, counterparty_id                 | ores_trading_trades_tbl | id, counterparty_id           | Invalid trade_id: %. The booking's counterparty must be the trade's.             |
-| book_party          | book_id, party_id                         | ores_refdata_books_tbl         | id, party_id                  | Invalid book_id: %. The book must belong to the trade's party.                   |
-| netting_set         | netting_set_id, counterparty_id, party_id | ores_refdata_netting_sets_tbl  | id, counterparty_id, party_id | Invalid netting_set_id: %. The set must be the trade's counterparty's and party's. |
-| counterparty_name   | counterparty_identifier_id, counterparty_id | ores_refdata_counterparty_identifiers_tbl | id, counterparty_id | Invalid counterparty_identifier_id: %. The identifier must be the trade's counterparty's. |
-| netting_set_name    | netting_set_identifier_id, netting_set_id   | ores_refdata_netting_set_identifiers_tbl  | id, netting_set_id  | Invalid netting_set_identifier_id: %. The identifier must be the netting set's.          |
-
 ** Virtual books
 
 A virtual book holds no position of the firm, so an actual trade may sit
@@ -206,6 +168,62 @@ that follows checks the booking in turn.
             NEW.book_id
             using errcode = '23514';
     end if;
+
+    -- The booking holds no party of its own. The party and the counterparty
+    -- are the deal's, so the book, the netting set and the counterparty
+    -- identifier are checked against the trade the booking names rather than
+    -- against a copy that could drift from it.
+    if not exists (
+        select 1 from ores_refdata_books_tbl b
+        join ores_trading_trades_tbl t
+          on t.tenant_id = b.tenant_id and t.party_id = b.party_id
+        where b.tenant_id = NEW.tenant_id and b.id = NEW.book_id
+          and b.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid book_id: %. The book must belong to the trade''s party.', NEW.book_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.netting_set_id is not null and not exists (
+        select 1 from ores_refdata_netting_sets_tbl s
+        join ores_trading_trades_tbl t
+          on t.tenant_id = s.tenant_id
+         and t.party_id = s.party_id
+         and t.counterparty_id = s.counterparty_id
+        where s.tenant_id = NEW.tenant_id and s.id = NEW.netting_set_id
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid netting_set_id: %. The set must be the trade''s counterparty''s and party''s.', NEW.netting_set_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.counterparty_identifier_id is not null and not exists (
+        select 1 from ores_refdata_counterparty_identifiers_tbl ci
+        join ores_trading_trades_tbl t
+          on t.tenant_id = ci.tenant_id and t.counterparty_id = ci.counterparty_id
+        where ci.tenant_id = NEW.tenant_id and ci.id = NEW.counterparty_identifier_id
+          and ci.valid_to = ores_utility_infinity_timestamp_fn()
+          and t.id = NEW.trade_id
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid counterparty_identifier_id: %. The identifier must be the trade''s counterparty''s.', NEW.counterparty_identifier_id
+            using errcode = '23514';
+    end if;
+
+    if NEW.netting_set_identifier_id is not null and not exists (
+        select 1 from ores_refdata_netting_set_identifiers_tbl si
+        where si.tenant_id = NEW.tenant_id
+          and si.id = NEW.netting_set_identifier_id
+          and si.netting_set_id = NEW.netting_set_id
+          and si.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid netting_set_identifier_id: %. The identifier must be the netting set''s.', NEW.netting_set_identifier_id
+            using errcode = '23514';
+    end if;
 #+end_src
 
 ** Indexes
@@ -213,7 +231,6 @@ that follows checks the booking in turn.
 | name        | columns                   | unique | current_only | where_extra |
 |-------------+---------------------------+--------+--------------+-------------|
 | book        | tenant_id, book_id        | false  | true         |             |
-| netting_set | tenant_id, netting_set_id | false  | true         |             |
 
 * Foreign keys
 
@@ -239,8 +256,6 @@ A database foreign key: the anchor is immutable.
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
-        v.party_id = anchor.party_id;
-        v.counterparty_id = std::nullopt;
     }
 #+end_src
 

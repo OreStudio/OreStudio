@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/state-the-event-wildcard-once
-#+pr:
+#+pr: 2804
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2804][#2804]] | [eventing,codegen] State the event wildcard once |
 
 * Review
 

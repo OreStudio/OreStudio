@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 23A83955-B93F-4039-9A35-E7F7F739875E
+:END:
+#+title: Setup prototypes
+#+description: The prototypes that answer to the Setup journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:setup:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+Standing up an installation: first run, a new tenant, a new party.
+
+3 prototypes answer to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype  | What it argues | Open it | Review |
+|------------+----------------+---------+--------|
+| First run  | A new installation is welcomed and walked through before any session exists, and the first account is the super administrator. | [[file:first-run/][prototype]] | — |
+| New tenant | A tenant is formed as a stepper that carries its own details and logo, with the super administrator's password started rather than asked for. | [[file:new-tenant/][prototype]] | — |
+| New party  | A party is added as a journey on the shared journey page, and its members are the accounts that work in it. | [[file:new-party/][prototype]] | — |
+
+* Adding a prototype
+
+Create =doc/prototypes/setup/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Add a row to the
+table above, with the design note beside the prototype when there is one.
+Stop there: the site build finds every prototype under this tree, so no
+build file names it.
+
+A review goes at =doc/prototypes/setup/<name>/review/=, with an
+=index.html= that lists its screens, and the row names it.
+[[file:../index.org][Prototypes]] states the whole method and the rules that hold
+for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/setup/setup.org][Setup journeys]] — the journeys these prototypes answer.

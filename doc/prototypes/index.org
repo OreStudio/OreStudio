@@ -2,12 +2,12 @@
 :ID: D913FE21-6CF6-439A-89CF-6A1928AFA094
 :END:
 #+title: Prototypes
-#+description: The only inventory of prototypes, and the one way to add one: plain HTML, CSS and JavaScript under doc/prototypes/.
+#+description: The only inventory of prototypes, and the one way to add one: plain HTML, CSS and JavaScript under doc/prototypes/<group>/<name>/.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:index:ui:
 #+created: 2026-09-11
-#+updated: 2026-10-06
+#+updated: 2026-10-08
 
 * Summary
 
@@ -16,92 +16,88 @@ argues badly. It is kept after the argument is settled, as the design record
 of what was agreed. A prototype is throwaway in spirit and plain in form:
 static files, mock data, no framework and no backend.
 
-This page is the only inventory. Every prototype appears in the table below,
-and every row opens its prototype. The one way to add a prototype is in
-| [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] | A curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits. | [[file:manage-a-curves-blueprint/][Blueprint editor]] |
-| [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]] | A surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold. | [[file:author-a-surfaces-framework/][Surface framework]] |
-| [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] | The market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen. | [[file:watch-the-market-and-clear-its-exceptions/][Market watch]] |
-| [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] | A build produces a candidate, not a curve the system uses. One bootstrap reads real or synthetic inputs: the same instruments reprice, and only the provenance differs, so the screen records where each rate came from. | [[file:bootstrap-or-refresh-a-curve/][Curve bootstrap]] |
-| [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] | A surface fit is a calibration error before it is a picture: the error, the slices and the mesh answer different questions. | [[file:calibrate-or-refresh-a-surface/][Surface calibration]] |
-| [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] | A hand adjustment is a first-class point with an actor and a reason, and it must read as a point the market did not send. | [[file:adjust-a-curve-or-surface-by-hand/][Hand adjustment]] |
-| [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] | A curve is checked against the quotes it came from: residuals, forward smoothness and the roll logic, on one screen. | [[file:check-a-curves-fit/][Curve fit]] |
-| [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] | A surface is read a slice at a time, and the arbitrage checks are what make the slices trustworthy. | [[file:inspect-a-surfaces-slices/][Surface slices]] |
-| [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] | A publish is a request, not a save: the maker raises it with the delta and cannot decide it. | [[file:ask-for-a-publish-to-be-approved/][Ask to publish]] |
-| [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] | The checker decides from the delta and the checks, with a comment, and the kind may ask for more than one pair of eyes. | [[file:decide-a-publish/][Decide a publish]] |
-| [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] | Publishing is the moment the candidate becomes what pricing uses, and the approval count decides whether a person stands in it. | [[file:publish-the-approved-set/][Publish]] |
-| [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] | A wrong publish is undone as an act with a reason, and the withdrawal can need its own approval. | [[file:withdraw-or-replace-a-published-curve/][Withdraw a curve]] |
-| [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] | One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument. | [[file:watch-a-curve-or-surface-evolve/][Evolution view]] |
-| [[id:BD160BFC-C112-4F6A-94D4-A11E5FFF7EAD][See who changed a curve, and when]] | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][Curve trail]] |
-| [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] | A feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear. | [[file:keep-the-market-data-feeds-running/][Market data feeds]] |
+Prototypes are grouped by the journey topic they answer to, because that is
+where a person looks for one. This page names the groups, with what each group
+gathers. Each group has its own page, which lists its prototypes, what each
+argues, and the Gemini review where one exists.
 
-| [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][oresmd URL editor]] |
+This page is the top of the tree and the only inventory.
+=build/scripts/check_prototype_inventory.py= enforces it.
 
-The synthetic data generation screens, modelled on the ores.qt Synthetic plugin:
+* The groups
 
-| [[id:A55C3FED-70A5-4C08-B4C4-39416682E886][Market simulator]] | Authoring synthetic feeds is one composite screen: a tree of the configured feeds, a summary of the selection, and the live chart it produces. Starting a collection is one folder-scoped request, and a node is running, stopped or partial. | [[file:synthetic-market-simulator/][Market simulator]] |
-| [[id:BDB77AC7-2442-4127-8CA6-B925759D6ADC][Author an FX price feed]] | An FX feed is a process plus a tick clock plus provenance, and the process is read twice before it is saved: the return distribution and the sample paths it implies. | [[file:author-an-fx-price-feed/][FX price feed]] |
-| [[id:6AE940F0-160F-4F14-91F0-038038F4D37A][Author an IR curve feed]] | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][IR curve feed]] |
-| [[id:74B498A1-8DB5-4D3B-86A2-28684269AC8A][Manage synthetic collections]] | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][Collections]] |
-| [[id:698F2B46-BDF7-420B-8DB0-DFD2B339C5E6][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][GMM components]] |
-| [[id:6513F5DF-2262-4845-8C23-A9CA7090DB5B][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][Process types]] |
+#+ATTR_HTML: :class hug-leading
+| Group | What it gathers | Prototypes |
+|-------+-----------------+------------|
+| [[file:entry/][Entry]] | Getting in: signing in and out, and self-registration | 1 |
+| [[file:setup/][Setup]] | Standing up an installation: first run, a new tenant, a new party | 3 |
+| [[file:profile/][Profile]] | How a person is represented: name, photo, job title, contact details | 1 |
+| [[file:credentials/][Credentials]] | Passwords, sign-in state, and the audit of who signed in | 3 |
+| [[file:access/][Access]] | Roles, and the permissions each role bundles | 1 |
+| [[file:../knowledge/journeys/membership/membership.org][Membership]] | Which parties a person works in, and who they report to | none yet |
+| [[file:../knowledge/journeys/directory/directory.org][Directory]] | The account roster, and bringing accounts in | none yet |
+| [[file:tenancy/][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things | 2 |
+| [[file:operations/][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them | 6 |
+| [[file:compute/][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run | 1 |
+| [[file:../knowledge/journeys/currencies/currencies.org][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | none yet |
+| [[file:../knowledge/journeys/calendars/calendars.org][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | none yet |
+| [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |
+| [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 2 |
+| [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 2 |
+| [[file:conventions/][Conventions]] | The market terms an instrument is built on, and the reference data lists each convention picks from | 1 |
+| [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
+| [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 21 |
+
+Four groups have no prototype yet: Membership, Directory, Currencies and FX,
+and Calendars. Their journeys are the first place a new prototype would go.
+
+* Where a prototype sits
+
+=doc/prototypes/<group>/<name>/= holds the prototype: an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. The group folder carries
+the journey group's own name, and the group page is the file =index.org= beside
+the prototypes it lists.
+
+A design note, where one exists, is the file =<name>.org= beside the prototype
+folder, and the group page links it.
+
+A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, beside the
+prototype it reviews. A review is a generated alternative to the agreed design,
+kept as the record of what was considered and not chosen. Its =index.html=
+lists its screens. Every group page states, for each prototype, whether a
+review exists.
 
 * Adding a prototype; there is no second way, and none is planned.
 
-* The prototypes
-
-#+ATTR_HTML: :class hug-leading
-| Prototype | What it argues | Open it |
-|-----------+----------------+---------|
-| [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. | [[file:trade-entry/][Booking screen]] |
-| [[id:6E98150F-FED9-42ED-B51F-8C7A099C7273][Registration door]] | Registration has five states and one of them is "waiting for an administrator". The door must show that before the person submits, not at sign-in. | [[file:registration-door/][Registration door]] |
-| [[id:0AB29C42-742A-4E63-AE31-E8B6787D314E][Profile screen]] | One profile screen is not in dispute; where the save boundary sits is. One Save, a save per panel, or the panels as rail steps — and how a read-only panel and a proposed reporting line read. | [[file:profile/][Profile screen]] |
-| [[id:E6E32AB5-2F25-4230-AB93-E38E75DE23B6][Application shell]] | The shell the journeys hang from: a menu of areas, the cards it opens, and the person's own journeys under their name — seen through the four sign-ins that decide the mode. | [[file:navigation/][Shell]] |
-| [[id:DD68AA9D-6EA5-477A-8432-566962D938FB][Home screen]] | Home and tenant management in a person's own words: the state of the work instead of journey cards, tenants as a list with add and remove, a tenant opened in place with no entering or leaving, and colour for each tenant's state. | [[file:home/][Home screen]] |
-| [[id:A5C3E9B1-7D24-4F6A-9B8E-2C1D0F3E5A71][Access screens]] | Access in a person's own words: a member's own roles and a "Can I…?" answer, the administrator giving and taking away roles with a reason, and a role catalogue whose permissions are a grid by area rather than a list of 890 codes. | [[file:access/][Access screens]] |
-| [[id:CB72DF9A-ED51-4E92-8A1E-FA03230FC077][Reference data]] | Reference data as an area: the classification lists found by topic, a list with its actions on it, and a row on its own page with Details and History, painted with the shared label catalogue. | [[file:refdata/][Reference data screens]] |
-| [[id:B8602F8B-AE64-4A45-8462-A3B17282D410][Onboard a counterparty]] | A counterparty is a legal entity before it is a trading relationship: the identifiers that name it, the people to call, and the agreements that govern it. | [[file:onboard-a-counterparty/][Counterparty onboarding]] |
-| [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][Keep a party's details current]] | A party's record is corrected, not replaced: a name, an identifier, a contact and the countries and currencies it works in, each with a version to fall back to. | [[file:keep-a-partys-details-current/][Party details]] |
-| [[id:FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C][Shape the book structure]] | A book is a leaf under a portfolio, so shaping the structure means showing what a book reads from its portfolio, keeping the tenant's own books apart from the shared taxonomy they name, and refusing a close the book cannot make. | [[file:shape-the-book-structure/][Book structure]] |
-| [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Define the conventions for an instrument]] | A person starts from the instrument they want to trade, not from the entity name: the picker walks from the instrument family to the convention that serves it, and the convention states the terms it fixes. | [[file:define-the-conventions-for-an-instrument/][Instrument conventions]] |
-| [[id:E27EB1B6-E030-468D-996E-FED71CC17F92][Define how tenors resolve]] | A tenor is a code a person reads and a resolution the system computes: the unit, the anchor, the schedule and the algorithm are shown against the date they produce on a named calendar. | [[file:define-how-tenors-resolve/][Tenor resolution]] |
-| [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]] | A new installation is welcomed and walked through before any session exists, and the first account is the super administrator. | [[file:first-run/][First run]] |
-| [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]] | A tenant is formed as a stepper that carries its own details and logo, with the super administrator's password started rather than asked for. | [[file:new-tenant/][New tenant]] |
-| [[id:9AB6C90E-5338-435A-9559-4E426D612EB6][New party]] | A party is added as a journey on the shared journey page, and its members are the accounts that work in it. | [[file:new-party/][New party]] |
-| [[id:5FB73D18-4734-485B-B414-9EBD1B76A239][Protect my account]] | The member's security screen: the password and the sign-in state, with the variants disagreeing about where the save boundary sits. | [[file:protect-my-account/][Protect my account]] |
-| [[id:A441DA2E-4B74-49B3-97AD-1861647B7D94][Rescue access]] | The administrator's rescue access: diagnose first and then act, so the recovery link is the administrator's action and not a self-service one. | [[file:rescue-access/][Rescue access]] |
-| [[id:22AC8DD8-A440-4330-9992-47A5E9985473][Audit sign-ins]] | The tenant administrator reads who signed in, what failed, and where from, without leaving the tenant's own area. | [[file:audit-sign-ins/][Audit sign-ins]] |
-| [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] | The roster the registry expects, met by the samples the instances send: a service that stopped keeps its row and a build that lags behind is visible. | [[file:services/][Services]] |
-| [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] | The grid is the installation's, shared by every tenant's work, so the screen shows the nodes and the wrappers running on them. | [[file:compute-grid/][Compute grid]] |
-| [[id:0169FDD7-9B88-4766-9AE9-93FE87200700][Compute journeys]] | A grid read as tables is a grid nobody can read: the five use cases, and every chart compute.org names, drawn from mock series at the size the real screen would give them. | [[file:compute/][Compute screens]] |
-| [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] | The streams and their samples, listed so a stream nobody publishes to is visible rather than silently absent. | [[file:message-bus/][Message bus]] |
-| [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | The telemetry store read by source, with the client lines the compute wrapper publishes and the search a person actually reaches for. | [[file:telemetry-logs/][Telemetry logs]] |
-| [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | The versions of every service and the database under them, stating the migration the schema is at. | [[file:versions-and-database/][Versions and database]] |
-
-* Adding a prototype
-
-There is one way, and it is this.
-
-1. Create =doc/prototypes/<name>/= with an =index.html=, and a
-   =prototype.css= and =prototype.js= when the prototype needs them.
-   Plain HTML, CSS and JavaScript: no framework, no build step, no
-   backend. Switch variants and states with query parameters, as every
-   prototype here does.
-2. Copy the design tokens from
-   =projects/ores.web/packages/web/src/styles.css= so the prototype reads
-   in the application's own colours.
-3. Describe what it argues on the journey's page, or on a knowledge page
-   beside this one.
-4. Add a row to the table above.
-5. Publish it with one =ores-deploy-web-app= call inside
-   =ores-deploy-web-apps=, in =projects/ores.lisp/src/ores-build-site.el=.
+1. Pick the journey group the prototype answers to. It is the group a designer
+   would look in, and it is the folder name under
+   =doc/knowledge/journeys/=.
+2. Create =doc/prototypes/<group>/<name>/= with an =index.html=, and a
+   =prototype.css= and =prototype.js= when the prototype needs them. Plain
+   HTML, CSS and JavaScript: no framework, no build step, no backend. Switch
+   variants and states with query parameters, as every prototype here does.
+3. Copy the design tokens from
+   =projects/ores.web/packages/web/src/styles.css= so the prototype reads in
+   the application's own colours.
+4. Add a row to the group's page, =doc/prototypes/<group>/index.org=, and
+   describe what the prototype argues. To keep a design note, put it at
+   =doc/prototypes/<group>/<name>.org= and link it from the row.
+5. Publish nothing by hand. The site build finds every prototype under
+   =doc/prototypes/<group>/<name>/= and deploys it where it sits, so no build
+   file names it.
+6. For a review, add =doc/prototypes/<group>/<name>/review/= with an
+   =index.html= that lists its screens, and name it in the row.
 
 A prototype is never a route in =ores.web=. React is for the product, and a
 prototype must open without a build, a server or a session.
 
-=build/scripts/check_prototype_inventory.py --check= enforces this: it fails
-when a =doc/prototypes/<name>/index.html= is missing from the table above.
+=build/scripts/check_prototype_inventory.py= enforces this: it fails when a
+prototype is missing from its group page, when a group page is missing from the
+table above, when a review is listed nowhere, and when a React prototype tree
+reappears.
 
 * See also
 
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the journeys the prototypes answer.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the rules the trade entry prototype follows.

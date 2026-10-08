@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 04F383CA-6007-4E68-9B4B-77ADDFD1B48B
+:END:
+#+title: Parties prototypes
+#+description: The prototypes that answer to the Parties journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:parties:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+The tenant's own legal entities and the counterparties it trades with: their identifiers, contacts, and the countries, currencies and units they connect to.
+
+2 prototypes answer to this group. Each one is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens each one and says what it argues. Where a
+prototype carries a Gemini review, the last column opens it: a review is a
+generated alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype                      | What it argues | Open it | Review |
+|--------------------------------+----------------+---------+--------|
+| Onboard a counterparty         | A counterparty is a legal entity before it is a trading relationship: the identifiers that name it, the people to call, and the agreements that govern it. | [[file:onboard-a-counterparty/][prototype]] | — |
+| Keep a party's details current | A party's record is corrected, not replaced: a name, an identifier, a contact and the countries and currencies it works in, each with a version to fall back to. | [[file:keep-a-partys-details-current/][prototype]] | — |
+
+* Adding a prototype
+
+Create =doc/prototypes/parties/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Add a row to the
+table above, with the design note beside the prototype when there is one.
+Stop there: the site build finds every prototype under this tree, so no
+build file names it.
+
+A review goes at =doc/prototypes/parties/<name>/review/=, with an
+=index.html= that lists its screens, and the row names it.
+[[file:../index.org][Prototypes]] states the whole method and the rules that hold
+for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/parties/parties.org][Parties journeys]] — the journeys these prototypes answer.

@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 6E98150F-FED9-42ED-B51F-8C7A099C7273
+:END:
+#+title: Registration door prototype
+#+description: Three structural variants of the Entry story's registration screen, with mock data, on a throwaway prototype page.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:security:identity:registration:
+#+created: 2026-09-29
+#+updated: 2026-09-29
+
+* Summary
+
+The registration door prototype argues what the [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] screen should look
+like before any of it is built. It carries three structural variants of the same
+door, and the five states the door can be in, so the layout can be judged with
+something concrete in front of you rather than in the abstract.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data. It exists because the [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][target state]] settles what a
+registration *does*; nothing yet settles what the person *sees* while it does it.
+
+The step rail, variant *C*, is accepted. It is drawn in the shape the new-system
+provisioning journeys use, so it is the same rail a person meets when they stand
+up a tenant.
+
+Open the [[file:registration-door/][door]].
+
+* Detail
+
+** The question
+
+The target state gives the door one answer to ask for and five states to render:
+closed, the form, a refusal, a usable account, and a waiting one. The open
+question is how those belong on one screen, and especially how a person learns
+that their new account may not be usable the moment it exists. Getting that wrong
+produces the journey's original defect: a person registers, then fails at sign-in
+with a message about a party they have never heard of.
+
+** The three variants
+
+Switch with the bottom bar, the left and right arrow keys, or =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | One panel | The form and the destination in a single column. The outcome replaces the form. Closest to the journey document, which says the whole door is one screen with panels. |
+| =B= | Form and status | The form beside a live column that states the tenant, the party, the role, and whether the account will work at once. The consequence is visible before the person submits, not after. |
+| =C= | Step rail | The journey shape the bootstrap screens use: a named rail, one step at a time, review before the write. Consistent with [[id:84C231B8-C861-44CF-89FB-D7A840D3EBDE][First run]], and the most work for the least certainty. |
+
+The variants disagree about structure, not colour. A is one column and hides the
+consequence below the fold until the outcome. B gives the consequence equal
+standing and spends horizontal space on it. C defers the write to a review step.
+
+** The five states
+
+Switch with the buttons at the top right, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =closed= | Self-registration is off. The screen states the reason and offers the way back to the door. |
+| =register= | The form: username, email, password and confirmation, with the password rules beside them. |
+| =refused= | The form with a refusal, carrying its code: =username_taken=. |
+| =created= | The confirmation for an account that can sign in now, naming the party and the role it received. |
+| =waiting= | The confirmation for an account that cannot sign in yet, naming what it waits for and carrying =account_pending=. |
+
+The nomination toggle changes the deployment's answer to "does this tenant
+nominate a default party?" while the form is up. With it on, the account is
+usable; with it off, the same screen produces a waiting account. That toggle is
+the whole point of the prototype: it makes the two confirmations distinguishable
+by a person who is not reading the code.
+
+** Driving it
+
+The form is live. Fill it in and press *Create account* on any variant, and the
+outcome follows the nomination toggle. Every control is prototype chrome, drawn
+to look unlike the design being judged.
+
+** What is fake
+
+Everything. The tenant, the party, the role and the rules are hard-coded. There
+is no policy read, no server, no account, and nothing is stored.
+
+** Where the code lives
+
+=doc/prototypes/entry/registration-door/=. Three files, plain HTML, CSS and
+JavaScript, no framework and no build step. The site build copies the directory
+through =ores-deploy-web-app=, beside the trade entry prototype.
+
+** The verdict
+
+The step rail, variant *C*, is accepted, with one change: it is drawn in the
+shape the new-system provisioning journeys use, so the rail is the same rail a
+person meets when they stand up a tenant. *A* and *B* stay on the page as the
+record, and a panel from either may still be borrowed.
+
+The page was corrected after the first review. It drew a rail of its own and
+cropped the splash with =max-height= and =object-fit: cover=, which is the exact
+failure the setup screen's own comment records; it now borrows =JourneyPage='s
+rail classes and =JourneyHeader='s ratio, and the splash states its 964:323
+dimensions so nothing clips the wordmark. The tokens are copied from the
+application's =styles.css= rather than the trade-entry palette, because a
+prototype in a theme of its own answers the wrong question.
+
+Every variant now carries the ORE Studio banner, which is a requirement of its
+own: the sign-in dialog and the door alike carry it.
+
+Registration grants one default role, and the question that raises — how a person
+asks for more — is its own journey, deliberately separate from this door.
+
+** What it does not settle
+
+The policy. [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] fixes what the door reads;
+this page only argues how it is shown, and the implementation is scheduled from
+that document's change table rather than from here.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — the target state this prototype renders.
+- [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] — the journey the screen belongs to.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the cluster this screen belongs to.

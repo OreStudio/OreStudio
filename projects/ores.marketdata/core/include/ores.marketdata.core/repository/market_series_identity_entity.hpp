@@ -76,7 +76,7 @@ struct market_series_identity_entity {
     std::optional<std::string> index_name;
     std::optional<std::string> index_tenor;
     std::optional<std::string> index_term;
-    std::optional<std::string> offset_value;
+    std::optional<std::string> spread_offset;
     std::optional<std::string> option_type;
     std::optional<std::string> payer_receiver;
     std::optional<std::string> qualifier;

@@ -129,8 +129,8 @@ void assign(domain::market_series_identity& row, field f, const std::string& tex
         case field::index_term:
             row.index_term = text;
             break;
-        case field::offset:
-            row.offset_value = text;
+        case field::spread_offset:
+            row.spread_offset = text;
             break;
         case field::option_type:
             row.option_type = text;

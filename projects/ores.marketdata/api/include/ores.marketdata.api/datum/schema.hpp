@@ -99,7 +99,7 @@ enum class field : std::uint8_t {
     index_term,
     side,
     commodity_name,
-    offset,
+    spread_offset,
     index1,
     index2,
     quote_name,
@@ -179,7 +179,7 @@ constexpr value_kind kind_of(field f) {
         case field::attachment_point:
         case field::detachment_point:
         case field::strike_level:
-        case field::offset:
+        case field::spread_offset:
         case field::start_time_in_sec:
             return value_kind::decimal;
         case field::strike:
@@ -383,7 +383,7 @@ inline constexpr std::array commodity_option{id(f::commodity_name),
                                              at_or_none(f::strike),
                                              id_or_none(f::option_type)};
 inline constexpr std::array commodity_calendar_spread_option{
-    id(f::commodity_name), id(f::offset), id(f::ccy), at(f::expiry), at(f::strike)};
+    id(f::commodity_name), id(f::spread_offset), id(f::ccy), at(f::expiry), at(f::strike)};
 inline constexpr std::array shape_profile{id(f::quote_name),
                                           at(f::delivery_date),
                                           at(f::start_time_in_sec),

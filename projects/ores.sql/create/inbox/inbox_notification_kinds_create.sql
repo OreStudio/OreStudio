@@ -92,6 +92,11 @@ begin
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- The actor is validated before the version management and any parent
+    -- touch below: the validator accepts a username only while a current
+    -- account row holds it, and a self write retires that row.
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+
     -- Version management
     select version into current_version
     from "ores_inbox_notification_kinds_tbl"
@@ -107,14 +112,20 @@ begin
         -- client, rather than by a check each client has to remember.
         if NEW.version = 0 then
             if not ores_utility_version_replace_allowed_fn() then
-                raise exception
-                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
-                    using errcode = '23505';
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'notification_kind',
+                    'code',
+                    NEW.code::text);
             end if;
         elsif NEW.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                NEW.version, current_version
-                using errcode = 'P0002';
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'notification_kind',
+                'code',
+                NEW.code::text,
+                NEW.version::text,
+                current_version::text);
         end if;
         NEW.version = current_version + 1;
         -- clock_timestamp(), not current_timestamp: current_timestamp is
@@ -134,7 +145,6 @@ begin
 
     NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
-    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
@@ -167,8 +177,7 @@ create or replace function ores_inbox_validate_notification_kind_fn(
 begin
     -- Return default if null or empty
     if p_value is null or p_value = '' then
-        raise exception 'Invalid notification_kind: value cannot be null or empty'
-            using errcode = '23502';
+        perform ores_outcome_raise_fn('missing_field', 'notification_kind');
     end if;
 
     -- Allow pass-through during bootstrap (no active rows for system tenant).

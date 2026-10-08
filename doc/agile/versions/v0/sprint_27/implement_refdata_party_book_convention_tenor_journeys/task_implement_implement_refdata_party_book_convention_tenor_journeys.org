@@ -7,57 +7,120 @@
 #+level: s1
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/carry-the-refusal-vocabulary
+#+pr: 2786
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A refusal says the same thing whichever side refuses it, and says it once.
+
+The C++ services and the PostgreSQL store both reject a write, and each carries
+its own copy of the code, the SQLSTATE and the sentence. The code vocabulary is
+30 string literals at 9,051 sites, every one of them generated from four
+templates. The SQLSTATE vocabulary is nine values at 1,417 sites, and two of
+those messages account for 673 of them. A caller cannot see the record, the
+version or the field in the reply, because the pre-check that decides a refusal
+sets a code and no message.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
 
--
+- One org document holds every refusal the generated code paths report, with
+  its code, its coarse outcome, its SQLSTATE, its arguments and its sentence.
+- Codegen renders the C++ =outcome_code= header in =ores.database= and the
+  PostgreSQL message functions and raiser in =ores.sql= from that document.
+- A database trigger names a code and a field and carries no wording and no
+  SQLSTATE of its own.
+- The two renderers produce the same sentence for the same outcome, and a test
+  on each side asserts the same literal.
+- =compass check= is green on the branch.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** One document, two rendered artefacts
+
+[[file:../../../../../projects/ores.database/modeling/ores.database.outcomes.org][ores.database.outcomes]] is the catalogue. It is a new codegen model type
+(=ores.codegen.outcome_catalogue=), registered in =core.py= and =manifest.py=
+and given a loader in =org_loader.py=. Each =**= entry under =* Outcomes=
+carries its values in a drawer and its sentence in a named =message= source
+block. The loader refuses a document whose placeholders and =:args:= disagree,
+whose =store= entry names no SQLSTATE, whose =request= entry names one, or
+whose codes or SQLSTATEs repeat.
+
+Two facets read it.
+
+| facet             | artefact                                                        |
+|-------------------+-----------------------------------------------------------------|
+| =ores.cpp.outcome= | =projects/ores.database/include/ores.database/domain/outcome_code.hpp= |
+| =ores.sql.outcome= | =projects/ores.sql/create/utility/outcome_functions_create.sql=  |
+
+The header holds the enum, =to_string=, =outcome_of=, =describe= and the two
+=refuse= overloads. The SQL holds one function per store outcome, the shared
+=ores_outcome_fill_fn= renderer, and =ores_outcome_raise_fn=, which maps a code
+to its SQLSTATE and calls the function.
+
+** Why a codegen model type and not a bespoke generator
+
+The physical-space graph already gives the drift gates for free. A second
+generation path would need its own.
+
+** Where the two renderers agree
+
+=ores_outcome_fill_fn= and =describe= substitute the same ={name}= placeholders
+from the same closed argument vocabulary. The C++ test and the pgTAP test
+assert the same literal, so a change to one renderer alone fails a gate.
+
+** What this unit migrates
+
+The two messages every entity repeats, 673 sites, and the null-value message,
+77 sites. A trigger now states the code, the entity, the field and the value.
+
+The per-model foreign-key wording already lives once, in the model, and stays
+there.
+
+** What the next unit carries
+
+The service template's 44 refusal sites. They cannot fill a sentence from what
+the repository returns: =remove= reports an enum rather than the versions
+behind the conflict, and =prepare_change= holds no stringified key. Migrating
+them needs the repository to carry the current version on a conflict.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| outcomes in the catalogue | 14 (3 store, 11 request) | =load_org_outcome_catalogue_model= | uncommitted |
+| generated create files changed | 339 | =git diff --name-only -- projects/ores.sql/create= | uncommitted |
+| raise sites left in the entity create template | 14 of 17 | =grep -c 'raise exception' sql_schema_domain_entity_create.mustache= | uncommitted |
 
 * Notes
+
+- The null-value sentence is unified to =value cannot be null or empty=. The
+  non-text form read =value cannot be null=, and one catalogue entry holds one
+  sentence.
+- =compass check= reports two pre-existing failures on =origin/main= that this
+  branch does not cause: =subject-conformance= and =protocol-twins= both fail
+  on =projects/ores.iam/modeling/ores.iam.storage_capability_messages.org=,
+  which carries =:ores.ts.protocol.enabled: nil= and the subject
+  =iam.v1.storage_capabilities.mint=. A hotfix worktree is on it.
 
 * Test Scenarios
 
@@ -74,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2786][#2786]] | [codegen,database,sql] Carry every refusal from one outcome catalogue |
 
 * Review
 
@@ -83,3 +146,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+PR #2786 lands the catalogue and the store side, and every acceptance
+criterion above holds on it.
+
+The catalogue is [[file:../../../../../projects/ores.database/modeling/ores.database.outcomes.org][ores.database.outcomes]], a new codegen model type. It
+holds 14 outcomes, three refused by the store and 11 by a request. Codegen
+renders both artefacts from it:
+
+- =projects/ores.database/include/ores.database/domain/outcome_code.hpp=, which
+  holds the enum, =to_string=, =outcome_of=, =describe= and the two =refuse=
+  overloads.
+- =projects/ores.sql/create/utility/outcome_functions_create.sql=, which holds
+  one message function per store outcome, the shared =ores_outcome_fill_fn=
+  renderer, and =ores_outcome_raise_fn=.
+
+339 regenerated create files lost their inline wording and their inline
+SQLSTATE. A trigger now states the code, the entity, the field and nothing
+else.
+
+Evidence, all on the merged tree:
+
+| Check | Result |
+|-------+--------|
+| =compass check --exclude-heavy= | 43 of 46 green; the three failures are pre-existing on =origin/main= |
+| =compass check --only build= | green |
+| =compass check --only db= | green, and the schema rebuilds from the regenerated SQL with exit code 0 |
+| =compass check --only ctest= | green across all 94 suites, services up |
+| =compass check --only pgtap= | green, including the new suite at 8 of 8 |
+| =outcome_code_tests.cpp= | green; it asserts the same literals as the pgTAP suite, so the two renderers cannot drift |
+
+**What this task does not land.** The service template keeps its 44 refusal
+sites. Two shapes cannot fill a catalogue sentence from what they hold today:
+a removal conflict returns =remove_status::conflicting=, an enum with no
+version behind it, and =prepare_change= holds no stringified key. The unit
+that follows either drops the concrete key value from the two store sentences
+or has the repository carry the current version on a conflict.
+
+**A drift repair this task did not do, and the next one must.** Regenerating
+=ores.cpp= at =HEAD= does not reproduce the committed scheduler, inbox,
+synthetic and trading sources. =check_component_drift.py --all= never saw it,
+because =COMPONENTS_UNDER_TEST= omits those components, and =--sweep= only
+fails on files the branch touched. The visible symptom is
+=job_definition_service.cpp= calling =request.filter= and =request.as_of=,
+which the committed protocol lacks; regenerating the protocol adds both.

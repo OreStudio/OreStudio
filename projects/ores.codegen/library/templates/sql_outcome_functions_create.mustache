@@ -1,0 +1,66 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.sql.outcome.outcome_functions_create.org. Edit the org source. }}
+{{{sql_license}}}
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_outcome_functions_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Outcome functions
+ *
+ * One function per store outcome composes the sentence that outcome reports,
+ * and ores_outcome_raise_fn maps an outcome code to the SQLSTATE the store
+ * raises for it. A trigger names the outcome and the field; it carries neither
+ * the wording nor the SQLSTATE, so both exist once, in the outcome catalogue.
+ */
+
+-- Fills a message template's {name} placeholders with the matching values. The
+-- one renderer, shared by every outcome function below and mirrored by
+-- ores::database::domain::describe in C++.
+create or replace function ores_outcome_fill_fn(
+    p_template text,
+    p_names text[],
+    p_values text[]
+) returns text language plpgsql immutable as $$
+declare
+    v_text text := p_template;
+    i integer;
+begin
+    for i in 1 .. coalesce(array_length(p_names, 1), 0) loop
+        v_text := replace(v_text, '{' || p_names[i] || '}', coalesce(p_values[i], ''));
+    end loop;
+    return v_text;
+end;
+$$;
+
+{{#outcome_catalogue.store_outcomes}}
+-- {{code}}: {{summary}}
+create or replace function ores_outcome_{{code}}_fn(
+{{#args}}
+    p_{{name}} text{{comma}}
+{{/args}}
+) returns text language sql immutable as $$
+    select ores_outcome_fill_fn(
+        '{{message_sql}}',
+        array[{{#args}}'{{name}}'{{comma}}{{/args}}]::text[],
+        array[{{#args}}coalesce(p_{{name}}, ''){{comma}}{{/args}}]::text[]);
+$$;
+
+{{/outcome_catalogue.store_outcomes}}
+-- Raises the SQLSTATE the outcome catalogue binds to p_code, with the sentence
+-- that outcome's own function composes. A trigger calls this and nothing else.
+create or replace function ores_outcome_raise_fn(
+    p_code text{{#outcome_catalogue.raiser_args}},
+    p_{{name}} text default null{{/outcome_catalogue.raiser_args}}
+) returns void language plpgsql as $$
+begin
+    case p_code
+{{#outcome_catalogue.store_outcomes}}
+    when '{{code}}' then
+        raise exception '%', ores_outcome_{{code}}_fn({{#args}}p_{{name}}{{comma}}{{/args}})
+            using errcode = {{sqlstate_quoted}};
+{{/outcome_catalogue.store_outcomes}}
+    else
+        raise exception 'Unknown outcome code: %', p_code using errcode = 'XX000';
+    end case;
+end;
+$$;

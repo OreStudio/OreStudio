@@ -121,14 +121,20 @@ begin
         -- client, rather than by a check each client has to remember.
         if NEW.version = 0 then
             if not ores_utility_version_replace_allowed_fn() then
-                raise exception
-                    'Row already exists: a create cannot replace it. State the version you read to replace the row, or ask for a version replace.'
-                    using errcode = '23505';
+                perform ores_outcome_raise_fn(
+                    'already_exists',
+                    'sandbox_member',
+                    'id',
+                    NEW.id::text);
             end if;
         elsif NEW.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                NEW.version, current_version
-                using errcode = 'P0002';
+            perform ores_outcome_raise_fn(
+                'version_conflict',
+                'sandbox_member',
+                'id',
+                NEW.id::text,
+                NEW.version::text,
+                current_version::text);
         end if;
         if exists (
             select 1 from "ores_refdata_sandbox_members_tbl"

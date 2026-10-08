@@ -24,6 +24,7 @@ set(files
     "database_options_tests.cpp"
     "list_filter_tests.cpp"
     "main.cpp"
+    "outcome_code_tests.cpp"
     "postgres_listener_service_tests.cpp"
     "session_settings_tests.cpp"
     "stated_order_tests.cpp"

@@ -6088,3 +6088,180 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
         "true", "yes", "1")
     return {"component": c}
+
+
+# The coarse outcome a catalogue entry may declare. Mirrors
+# ores::utility::domain::outcome; a name outside this set would render a C++
+# enumerator that does not exist, so codegen refuses it here instead.
+_OUTCOME_CLASSES = frozenset(
+    {"ok", "invalid", "denied", "missing", "conflict", "unavailable", "failed"})
+
+# The closed argument vocabulary a message placeholder may name. Closed on
+# purpose: the SQL raiser declares one parameter per name, so a new name is a
+# change to that signature, not a string an author can invent in a model.
+_OUTCOME_ARG_NAMES = ("entity", "field", "value", "expected", "current",
+                      "reason", "limit")
+
+_OUTCOME_PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
+
+
+def load_org_outcome_catalogue_model(path: Path | str) -> dict[str, Any]:
+    """Load the outcome catalogue into the shape its two renderers want.
+
+    Each ``**`` child of the ``* Outcomes`` section is one refusal. Its
+    drawer carries the machine-readable values -- ``:code:``, ``:outcome:``,
+    ``:producer:``, and, for a store refusal, ``:sqlstate:`` -- and its named
+    ``message`` source block carries the sentence the client reads. The body
+    prose is the entry's documentation and is not rendered anywhere.
+
+    A ``store`` entry is refused by a database trigger, so it must declare the
+    SQLSTATE that trigger raises. A ``request`` entry is refused by a C++
+    service, which never raises a SQLSTATE, so declaring one is an error.
+
+    The message's ``{name}`` placeholders must be a subset of the entry's
+    ``:args:``, and every name must come from the closed vocabulary: a
+    placeholder the raiser does not accept would render a function that does
+    not compile.
+    """
+    text = Path(path).read_text(encoding="utf-8")
+    doc = parse_org(text)
+    _ensure_profile_binding(doc)
+    fm = doc.frontmatter
+
+    catalogue: dict[str, Any] = {}
+    for key in ("component", "brief"):
+        if key in fm:
+            catalogue[key] = fm[key]
+
+    outcomes_section = _section(doc.root, "Outcomes")
+    if not outcomes_section or not outcomes_section.children:
+        raise ValueError(
+            f"{Path(path).name}: no * Outcomes section; the catalogue declares "
+            "every refusal there, one ** entry each"
+        )
+
+    outcomes: list[dict[str, Any]] = []
+    for node in outcomes_section.children:
+        props = {k.lower(): v for k, v in node.properties.items()}
+        code = props.get("code", node.title).strip()
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", code):
+            raise ValueError(
+                f"{Path(path).name}: outcome {node.title!r} carries a :code: "
+                f"{code!r} that is not a snake_case C++ identifier"
+            )
+        coarse = props.get("outcome", "").strip()
+        if coarse not in _OUTCOME_CLASSES:
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} declares :outcome: "
+                f"{coarse!r}; known outcomes: "
+                f"{', '.join(sorted(_OUTCOME_CLASSES))}"
+            )
+        producer = props.get("producer", "").strip()
+        if producer not in ("store", "request"):
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} declares :producer: "
+                f"{producer!r}; it must be 'store' or 'request'"
+            )
+        sqlstate = props.get("sqlstate", "").strip()
+        if producer == "store" and not sqlstate:
+            raise ValueError(
+                f"{Path(path).name}: store outcome {code!r} declares no "
+                ":sqlstate:; the trigger that raises it has nothing to raise with"
+            )
+        if producer == "request" and sqlstate:
+            raise ValueError(
+                f"{Path(path).name}: request outcome {code!r} declares "
+                f":sqlstate: {sqlstate!r}; a service refuses in C++ and raises "
+                "no SQLSTATE"
+            )
+
+        args = [a.strip() for a in props.get("args", "").split(",") if a.strip()]
+        unknown = [a for a in args if a not in _OUTCOME_ARG_NAMES]
+        if unknown:
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} names unknown argument(s) "
+                f"{', '.join(unknown)}; known arguments: "
+                f"{', '.join(_OUTCOME_ARG_NAMES)}"
+            )
+        if len(set(args)) != len(args):
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} repeats an :args: name"
+            )
+
+        message = node.src_blocks.get("message", "").strip()
+        if not message:
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} has no named 'message' "
+                "source block; a refusal with no sentence tells the caller nothing"
+            )
+        named = set(_OUTCOME_PLACEHOLDER_RE.findall(message))
+        unstated = sorted(named - set(args))
+        if unstated:
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} fills {', '.join(unstated)} "
+                "in its message but does not declare it in :args:"
+            )
+        unused = sorted(set(args) - named)
+        if unused:
+            raise ValueError(
+                f"{Path(path).name}: outcome {code!r} declares :args: "
+                f"{', '.join(unused)} that its message never fills"
+            )
+
+        outcomes.append({
+            "code": code,
+            "class": coarse,
+            "producer": producer,
+            "sqlstate": sqlstate,
+            "sqlstate_quoted": f"'{sqlstate}'" if sqlstate else "",
+            "args": [
+                {"name": a, "comma": "" if i == len(args) - 1 else ","}
+                for i, a in enumerate(args)
+            ],
+            "arg_names": args,
+            # The message is a SQL string literal and a C++ string literal, so
+            # it is escaped once here rather than in each template.
+            "message": message,
+            "message_sql": message.replace("'", "''"),
+            "message_cpp": message.replace("\\", "\\\\").replace('"', '\\"'),
+            "description": _strip_body(node),
+            # The entry's prose on one line, for a SQL comment: the full body
+            # is paragraphs, and a paragraph break inside a -- comment would
+            # leave the rest of the text as SQL.
+            "summary": " ".join(_strip_body(node).split()),
+            "is_store": producer == "store",
+            "is_request": producer == "request",
+        })
+
+    codes = [o["code"] for o in outcomes]
+    repeated = sorted({c for c in codes if codes.count(c) > 1})
+    if repeated:
+        raise ValueError(
+            f"{Path(path).name}: duplicate outcome code(s): {', '.join(repeated)}"
+        )
+    sqlstates = [o["sqlstate"] for o in outcomes if o["sqlstate"]]
+    repeated = sorted({s for s in sqlstates if sqlstates.count(s) > 1})
+    if repeated:
+        raise ValueError(
+            f"{Path(path).name}: SQLSTATE(s) raised by more than one outcome: "
+            f"{', '.join(repeated)}"
+        )
+
+    for i, entry in enumerate(outcomes):
+        entry["last"] = i == len(outcomes) - 1
+        entry["comma"] = "" if entry["last"] else ","
+
+    # The arguments the single raiser declares: the union of every store
+    # entry's, in the catalogue's own order, so the function's signature is
+    # derived from the document rather than restated in the template.
+    raiser_args = [a for a in _OUTCOME_ARG_NAMES
+                   if any(a in o["arg_names"] for o in outcomes if o["is_store"])]
+
+    catalogue["outcomes"] = outcomes
+    catalogue["store_outcomes"] = [o for o in outcomes if o["is_store"]]
+    catalogue["request_outcomes"] = [o for o in outcomes if o["is_request"]]
+    catalogue["raiser_args"] = [
+        {"name": a, "comma": "" if i == len(raiser_args) - 1 else ","}
+        for i, a in enumerate(raiser_args)
+    ]
+    return {"outcome_catalogue": catalogue}

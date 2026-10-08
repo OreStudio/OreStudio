@@ -38,7 +38,6 @@ create table if not exists "ores_refdata_counterparties_tbl" (
     "transliterated_name" text null,
     "party_type" text not null,
     "parent_counterparty_id" uuid null,
-    "business_center_code" text not null,
     "status" text not null default 'Active',
     "image_id" uuid null,
     "modified_by" text not null,
@@ -198,9 +197,6 @@ begin
 
     -- Validate status
     NEW.status := ores_refdata_validate_party_status_fn(NEW.tenant_id, NEW.status);
-
-    -- Validate business_center_code
-    NEW.business_center_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.business_center_code);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

@@ -618,6 +618,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::overnight_index_conventions:write',        'Create and modify overnight index conventions');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::overnight_index_conventions:delete',       'Delete overnight index conventions');
 
+    -- Counterparty business centres permissions
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_business_centres:read',   'View the business centres a counterparty deals through');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_business_centres:write',  'Create and modify the business centres a counterparty deals through');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::counterparty_business_centres:delete', 'Delete the business centres a counterparty deals through');
+
     -- Party counterparties permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_counterparties:read',                'View party counterparties');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_counterparties:write',               'Create and modify party counterparties');

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T18:04:31.936281Z
+' Generated: 2026-10-08T18:34:27.259146Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2319,7 +2319,6 @@ package "refdata" #FFF3E0 {
           transliterated_name : text
         * party_type : text
           parent_counterparty_id : uuid <<FK>>
-        * business_center_code : text
         * status : text
           image_id : uuid <<FK>>
         * modified_by : text
@@ -2338,6 +2337,33 @@ package "refdata" #FFF3E0 {
     External trading partners and counterparties that participate in financial
     transactions with the organisation. Counterparties form a hierarchy through
     parent_counterparty_id for group structures.
+    end note
+
+    entity ores_refdata_counterparty_business_centres_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * counterparty_id : uuid <<PK, FK>>
+        * business_centre_code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_counterparty_business_centres_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Counterparty Business Centre Table
+    Many-to-many junction between counterparty and business_centre. A counterparty
+    deals through any number of centres: one is the usual case, and a bank that
+    books in London and Singapore states both.
+    This replaces the single business_center_code column the counterparty used to
+    carry, which could only ever name one centre and left the second as a gap in
+    journey 5.
     end note
 
     entity ores_refdata_counterparty_contact_informations_tbl <<temporal>> #C6F0D8 {
@@ -11091,6 +11117,41 @@ package "trading" #E8F5E9 {
     that follows for the customer: whether the deal is confirmed as one
     document or trade by trade.
     Examples: 'Strategy', 'Typed', 'Dynamic', 'Package'.
+    end note
+
+    entity ores_trading_structure_members_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * structure_id : uuid <<FK>>
+        * role : text
+        * sequence_number : integer
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_members_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Member Table
+    The link between a structure and one of its legs. The trade is not owned by
+    the deal: it points at it, so the same trade can be unlinked from one
+    structure and linked to another without being rewritten.
+    The row is keyed by the trade and is temporal, which says the rule directly: a
+    trade sits in at most one structure at a time, and unlinking closes the row
+    rather than deleting it. The history of what a trade belonged to survives.
+    The member copies the party and the counterparty from its structure, and the
+    pins hold the copies to their source, so a leg cannot disagree with the deal
+    it belongs to. The insert trigger holds a leg to the roles its template
+    allows, and to the number of legs the template states for that role.
     end note
 
     entity ores_trading_structure_template_roles_tbl <<temporal>> #C6F0D8 {

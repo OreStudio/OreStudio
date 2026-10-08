@@ -107,7 +107,6 @@ domain::counterparty to_domain(const messaging::counterparty_write& write) {
     v.transliterated_name = write.transliterated_name;
     v.party_type = write.party_type;
     v.parent_counterparty_id = write.parent_counterparty_id;
-    v.business_center_code = write.business_center_code;
     v.status = write.status;
     v.image_id = write.image_id;
     return v;

@@ -51,7 +51,6 @@ domain::counterparty generate_synthetic_counterparty(utility::generation::genera
     r.transliterated_name = std::nullopt;
     r.party_type = std::string("Bank");
     r.parent_counterparty_id = std::nullopt;
-    r.business_center_code = std::string("WRLD");
     r.status = std::string("Active");
     r.image_id = std::nullopt;
     r.modified_by = modified_by;

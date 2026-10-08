@@ -165,6 +165,9 @@
 -- Party-country visibility junction
 \ir ./refdata_party_country_create.sql
 
+-- Counterparty-to-centre junction: the centres a counterparty deals through
+\ir ./refdata_counterparty_business_centre_create.sql
+
 -- Party and counterparty identifiers
 \ir ./refdata_party_identifiers_create.sql
 \ir ./refdata_party_identifiers_notify_trigger_create.sql

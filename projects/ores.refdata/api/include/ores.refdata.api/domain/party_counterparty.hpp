@@ -61,6 +61,9 @@ struct party_counterparty final {
      * @brief ID of the counterparty visible to this party.
      *
      * References ores_refdata_counterparties_tbl.id (soft FK).
+
+A counterparty-side read answers which parties may trade with a counterparty, which journey 5 needs
+and the party-side read cannot answer without scanning the whole junction.
      */
     boost::uuids::uuid counterparty_id;
 

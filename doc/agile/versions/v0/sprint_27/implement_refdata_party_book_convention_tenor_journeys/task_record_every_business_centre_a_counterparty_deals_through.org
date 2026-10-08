@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/record-every-business-centre-a-counterparty-deals-through
-#+pr:
+#+pr: 2851
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-08
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Journey 5 shows every business centre the counterparty deals through rather than
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -39,25 +39,55 @@ Journey 5 shows every business centre the counterparty deals through rather than
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the journey asks for
+
+Journey 5 draws a second business centre and admits it draws a gap rather than
+a field. The counterparty carries one =business_center_code=, so the screen can
+offer the one column and nothing more. The journey also needs the parties that
+may trade with a counterparty, and the only read on
+=ores_refdata_party_counterparties_tbl= is by party.
+
+** Three changes
+
+| change | shape |
+|--------+-------|
+| a counterparty-to-centre junction | a new =ores.codegen.junction= model, in the shape of =party_country_junction= |
+| the single column goes | =business_center_code= leaves the counterparty, with its validation row and its four presentation rows |
+| the counterparty-side read | =list_by: true= on the right of =party_counterparty_junction= |
+
+The junction takes =counterparty_id= on the left and =business_centre_code= on
+the right, so the generated protocol carries =list_by_counterparty_id= and the
+screen reads a counterparty's centres in one call. The right column takes the
+spelling the rest of the schema uses, =business_centre_code=, which also
+retires the counterparty's lone American spelling.
+
+The read on the party-counterparty junction needs no new index: the junction
+create template already emits an index per side, and the right side's comment
+already says it serves a counterparty-side lookup.
+
+** What the removal touches
+
+Only the counterparty model. A census of =business_center_code= over the
+component finds it in the model and in the generated surfaces that derive from
+it, and nowhere hand-written: the hits in =refdata_publish_from_dq_create.sql=
+are the business unit's column of a similar name, not the counterparty's.
+
+** What the next unit still owns
+
+The screen. The flags reach the wire; the counterparty screen is its own task.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| counterparty column removals | 1 column and 6 references | =grep -c business_center_code= | uncommitted |
+| hand-written consumers of the column | 0 | =grep -rn business_center_code --include=*.sql --include=*.cpp --include=*.ts= | uncommitted |
 
 * Notes
+
+- The counterparty's column is spelled =business_center_code= while the entity
+  and every other column is =business_centre=. The junction takes the entity's
+  spelling, so the outlier goes with the column.
 
 * Test Scenarios
 
@@ -74,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2851][#2851]] | [refdata] Record every business centre a counterparty deals through |
 
 * Review
 
@@ -83,3 +113,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every acceptance criterion the plan set holds.
+
+=ores_refdata_counterparty_business_centres_tbl= holds the centres a
+counterparty deals through, one row per centre, with the counterparty on the
+left and =business_centre_code= on the right. The generated protocol carries
+=refdata.v1.counterparty_business_centres.list_by_counterparty_id=, so a screen
+reads a counterparty's set in one call.
+
+The counterparty no longer carries =business_center_code=. A grep over every
+=C++=, =SQL=, =TypeScript=, =org= and =mustache= source finds no reader or
+writer of it left outside the pgTAP assertion that pins its absence.
+
+=refdata.v1.party_counterparties.list_by_counterparty_id= now exists, so the
+parties that may trade with a counterparty are read from that side.
+
+What was verified, and how:
+
+| Check | Result |
+|-------+--------|
+| =compass check --exclude-heavy= | everything that this branch can turn green is green; the two failures are main's |
+| =tangle-shell=, =cmake-sources=, =component-drift=, =recipe-inventories=, =physical-inventory= | green |
+| =handler-permissions= | green after seeding the junction's three permissions |
+| =create-reachability= | green after wiring the create file into the refdata aggregator |
+| =populate-refs= | green |
+
+The GLEIF counterparty publisher wrote the column, and a census missed it the
+first time. It now records the centre in the junction, from the country the
+registered address sits in, and the country-to-centre list lives in a temp
+table so one copy serves both statements.
+
+A pgTAP suite makes five assertions: a counterparty takes one centre, then a
+second, holds both, upserts the first when it is written again, and no longer
+has the single column.
+
+**What this task does not land.** The screen. The junction and the two reads
+reach the wire; the counterparty screen is its own task, and it is the one that
+decides how a tenant states several centres rather than one.

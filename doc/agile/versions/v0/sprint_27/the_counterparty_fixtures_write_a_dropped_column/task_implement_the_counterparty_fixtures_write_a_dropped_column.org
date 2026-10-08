@@ -26,11 +26,11 @@ Let ores.refdata.api compile and let the counterparty fixtures load.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:30C1FE4E-D671-4128-ACDE-C98E400B8009][Hotfix: the counterparty fixtures write a dropped column]] |
-| Now          | The member is gone from the code and the fixtures; the scans find no other consumer. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -109,3 +109,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2886. One C++ assertion and nine fixtures are corrected, and no
+consumer of the counterparty's dropped member remains.
+
+The compile and the fixture load were verified by inspection and by the scans,
+not by a green build: no build ran in this worktree, and the pgTAP fixtures were
+not executed. The hourly validation run is the confirmation.

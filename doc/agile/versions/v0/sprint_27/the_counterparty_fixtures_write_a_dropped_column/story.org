@@ -37,8 +37,8 @@ Let ores.refdata.api compile and let the counterparty fixtures load.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CEF77AF3-77C0-4232-9DF2-9DBDDE60A6DB][Scaffold story: Hotfix: the counterparty fixtures write a dropped column]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A1D34D94-FAC6-4282-B51A-22C8A4A1B23A][Implement Hotfix: the counterparty fixtures write a dropped column]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the counterparty fixtures write a dropped column |
+| [[id:CEF77AF3-77C0-4232-9DF2-9DBDDE60A6DB][Scaffold story: Hotfix: the counterparty fixtures write a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A1D34D94-FAC6-4282-B51A-22C8A4A1B23A][Implement Hotfix: the counterparty fixtures write a dropped column]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the counterparty fixtures write a dropped column |
 
 * Decisions
 

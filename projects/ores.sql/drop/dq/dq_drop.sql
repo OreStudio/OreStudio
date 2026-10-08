@@ -36,6 +36,7 @@
 \ir ./dq_account_contact_informations_artefact_drop.sql
 \ir ./dq_accounts_artefact_drop.sql
 \ir ./dq_report_definitions_artefact_drop.sql
+\ir ./dq_risk_report_configs_artefact_drop.sql
 \ir ./dq_synthetic_ir_curve_template_entries_artefact_drop.sql
 \ir ./dq_synthetic_ir_curve_configs_artefact_drop.sql
 \ir ./dq_synthetic_gmm_components_artefact_drop.sql

@@ -128,6 +128,7 @@
 -- Analytics artefact tables
 \ir ./dq_report_definitions_artefact_create.sql
 \ir ./dq_report_definitions_artefact_tier_alter.sql
+\ir ./dq_risk_report_configs_artefact_create.sql
 
 -- Synthetic market data artefact tables
 \ir ./dq_synthetic_fx_spot_configs_artefact_create.sql

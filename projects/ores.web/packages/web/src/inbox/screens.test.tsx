@@ -264,7 +264,11 @@ describe('the request queue', () => {
     it('names who asked, what for and why, and opens the request from the row', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1, answered: [] });
+                client.setQueryData(['request-queue'], {
+                    items: [queued()],
+                    total: 1,
+                    answered: [],
+                });
             },
             <RequestsPage />,
             '/requests',

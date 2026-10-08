@@ -1077,7 +1077,8 @@ const pt: SourceCatalogue = {
             trend: {
                 title: 'Tendência',
                 lead: 'mensagens de entrada, ao longo do intervalo',
-                caption: 'Mensagens de entrada ao longo do intervalo, a partir da série de amostras.',
+                caption:
+                    'Mensagens de entrada ao longo do intervalo, a partir da série de amostras.',
                 note: 'Desenhada a partir das amostras que o intervalo devolve. O ecrã calcula o movimento sozinho: os contadores são totais acumulados, e nenhuma operação envia uma taxa.',
             },
             gap: {
@@ -1150,8 +1151,7 @@ const pt: SourceCatalogue = {
                 showing: 'A mostrar {from}–{to} de {total} entradas',
                 previous: 'Anterior',
                 next: 'Seguinte',
-                paging:
-                    'A leitura responde uma página de cada vez; o total é tudo o que o filtro corresponde.',
+                paging: 'A leitura responde uma página de cada vez; o total é tudo o que o filtro corresponde.',
                 nothingMatches: 'Nada corresponde',
                 empty: 'Nenhuma entrada corresponde ao filtro neste intervalo. Alargue o intervalo ou remova um filtro.',
                 emptyHint:

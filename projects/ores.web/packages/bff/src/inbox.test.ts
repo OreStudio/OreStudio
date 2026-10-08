@@ -282,7 +282,7 @@ describe('the story of one request', () => {
     it('merges every row the request wrote into one stream, newest first', async () => {
         const response = await storyOf({
             'inbox.v1.ops.get_approval_history': history,
-            'inbox.v1.ops.get_request_roles': roles,
+            'iam.v1.ops.get_request_roles': roles,
             'inbox.v1.approval_decisions.list': decision,
             'inbox.v1.ops.list_my_notifications': notices,
             // The decision names the decider by account id, and the story
@@ -297,9 +297,7 @@ describe('the story of one request', () => {
         expect(response.statusCode).toBe(200);
         const story = response.json();
         expect(story.requestId).toBe(REQUEST);
-        const decided = story.events.find(
-            (event: { kind: string }) => event.kind === 'decided',
-        );
+        const decided = story.events.find((event: { kind: string }) => event.kind === 'decided');
         expect(decided.actor).toBe('priya');
         expect(story.events.map((event: { kind: string }) => event.kind)).toEqual([
             'granted',
@@ -310,8 +308,7 @@ describe('the story of one request', () => {
             'raised',
         ]);
         const told = story.events.filter(
-            (event: { entityType: string }) =>
-                event.entityType === 'ores.inbox.notification',
+            (event: { entityType: string }) => event.entityType === 'ores.inbox.notification',
         );
         expect(told).toHaveLength(1);
         expect(told[0].entityId).toBe(NOTICE);
@@ -320,7 +317,7 @@ describe('the story of one request', () => {
     it('leaves the answer out of a story whose reader may not read it', async () => {
         const response = await storyOf({
             'inbox.v1.ops.get_approval_history': history,
-            'inbox.v1.ops.get_request_roles': roles,
+            'iam.v1.ops.get_request_roles': roles,
             'inbox.v1.approval_decisions.list': { result: DENIED },
             'inbox.v1.ops.list_my_notifications': notices,
         });

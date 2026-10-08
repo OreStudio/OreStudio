@@ -313,12 +313,7 @@ function EntriesPanel({
                 >
                     {t('operations.logs.entries.previous')}
                 </Button>
-                <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={!hasNext(view)}
-                    onClick={onNext}
-                >
+                <Button size="sm" variant="secondary" disabled={!hasNext(view)} onClick={onNext}>
                     {t('operations.logs.entries.next')}
                 </Button>
                 <span className="text-xs text-ink-faint">

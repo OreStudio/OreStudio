@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_API_MESSAGING_ROLE_REQUEST_OPERATIONS_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_ROLE_REQUEST_OPERATIONS_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/role.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <string>
 #include <vector>
@@ -64,6 +65,38 @@ struct ask_for_roles_response {
      * @brief The approval request raised, when the outcome is ok.
      */
     std::string request_id;
+};
+
+/**
+ * @brief Reads the roles one approval request asks for.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * the roles of role grant requests. Answered as not found otherwise, so a
+ * caller learns nothing about a request they may not read.
+ */
+struct get_request_roles_request {
+    using response_type = struct get_request_roles_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_request_roles";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The approval request to read the roles of, as a UUID string.
+     */
+    std::string request_id;
+};
+
+struct get_request_roles_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The roles the request asks for, whole, so a screen draws them
+     * without a second read.
+     */
+    std::vector<ores::iam::domain::role> roles;
 };
 
 }

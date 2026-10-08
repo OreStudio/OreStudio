@@ -261,4 +261,5 @@ export type {
     InboxRequestDecisionView,
     InboxRequestRoleView,
     InboxRequestView,
+    RequestViewer,
 } from './inbox.js';

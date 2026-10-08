@@ -33,6 +33,7 @@ import {
     readUnreadNotificationCount,
     withdrawRequest,
 } from '@ores/wire-protocol';
+import type { RequestViewer } from '@ores/wire-protocol';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
@@ -116,6 +117,17 @@ function requestIdOf(request: FastifyRequest): string {
     return id.data;
 }
 
+/**
+ * Who the reads are for.
+ *
+ * The join cannot turn an account id into a username for a member, who may not
+ * read the account list, so it is told who is asking. Their own name is the one
+ * name it never has to be told twice.
+ */
+function viewerOf(session: LiveSession): RequestViewer {
+    return { accountId: session.accountId, username: session.username };
+}
+
 export function registerInboxRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -124,7 +136,7 @@ export function registerInboxRoutes(
     server.get('/api/me/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);
-        return await readMyRequests(session.client, page);
+        return await readMyRequests(session.client, page, viewerOf(session));
     });
 
     /** Asks for roles for the signed-in person, and answers the request raised. */
@@ -168,7 +180,7 @@ export function registerInboxRoutes(
     server.get('/api/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);
-        return await readRequestQueue(session.client, page);
+        return await readRequestQueue(session.client, page, viewerOf(session));
     });
 
     /**
@@ -182,7 +194,7 @@ export function registerInboxRoutes(
      */
     server.get('/api/requests/:id', async (request) => {
         const session = requireSession(request);
-        return await readRequest(session.client, requestIdOf(request));
+        return await readRequest(session.client, requestIdOf(request), viewerOf(session));
     });
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

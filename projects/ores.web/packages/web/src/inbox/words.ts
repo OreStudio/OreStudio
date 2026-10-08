@@ -67,9 +67,9 @@ export function kindLabel(t: (key: string) => string, kindCode: string): string 
 /**
  * What a request asks for, as a row names it.
  *
- * The server resolves the roles from the account list, which a member may not
- * read, so a person's own requests come back with no roles and their reason is
- * the only thing that says what they asked for. The kind's label stands in.
+ * A person's own requests name the roles they asked for, because IAM answers
+ * the read that asks for them. A request the reader may not read the roles of
+ * says nothing about what it asks for, and the kind's label stands in.
  */
 export function askedFor(
     t: (key: string) => string,

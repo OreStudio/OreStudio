@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
 #include "ores.iam.api/messaging/role_request_operations_protocol.hpp"
@@ -29,6 +30,7 @@
 #include "ores.iam.core/repository/role_grant_request_repository.hpp"
 #include "ores.iam.core/repository/role_grant_request_role_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -150,7 +152,103 @@ public:
         }
     }
 
+    /**
+     * @brief Reads the roles one approval request asks for.
+     *
+     * The person who raised the request may read what it asks for; an
+     * administrator, who may read the roles of any request, may read it too. A
+     * caller entitled to neither is told the request does not exist, so the
+     * answer is not a way to learn who asked for what.
+     */
+    void get_roles(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        BOOST_LOG_SEV(role_request_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        auto req = decode<get_request_roles_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  get_request_roles_response{
+                      .result = role_request_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+
+        try {
+            reply(nats_, msg, read_request_roles(*ctx, req->request_id));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(role_request_handler_lg(), error)
+                << "Reading the roles of " << req->request_id << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_request_roles_response{
+                      .result = role_request_result(
+                          outcome::failed, "read_failed", "The roles could not be read.")});
+        }
+    }
+
 private:
+    /**
+     * @brief Reads the roles, or says the request does not exist.
+     *
+     * Refused and absent give one answer, so a caller who may not read a
+     * request cannot tell a request they may not read from one that never
+     * existed.
+     */
+    get_request_roles_response read_request_roles(const ores::database::context& ctx,
+                                                  const std::string& request_id) {
+        using ores::utility::domain::outcome;
+        boost::uuids::string_generator parse;
+        boost::uuids::uuid id;
+        try {
+            id = parse(request_id);
+        } catch (const std::exception&) {
+            return get_request_roles_response{
+                .result = role_request_result(
+                    outcome::invalid, "bad_request", "The request could not be read.")};
+        }
+
+        repository::role_grant_request_repository requests;
+        const auto detail = requests.read_latest(ctx, boost::uuids::to_string(id));
+        const auto absent = get_request_roles_response{
+            .result = role_request_result(outcome::missing, "not_found", "No such request.")};
+        if (detail.empty())
+            return absent;
+
+        service::authorization_service auth(ctx);
+        const auto me = auth.caller_account();
+        const auto asked_by = detail.front().account_id;
+        // The permission is read only when the caller did not ask, so the
+        // person who did pays no lookup for their own request.
+        const bool entitled =
+            (me && *me == asked_by) ||
+            (me && auth.has_permission(*me, domain::permissions::role_grant_request_roles_read));
+        if (!entitled) {
+            BOOST_LOG_SEV(role_request_handler_lg(), warn)
+                << "Reading the roles of request " << request_id << " denied to " << ctx.actor();
+            return absent;
+        }
+
+        get_request_roles_response answer;
+        repository::role_grant_request_role_repository rows(ctx);
+        std::vector<std::string> role_ids;
+        for (const auto& row : rows.read_latest_by_request(id))
+            role_ids.push_back(boost::uuids::to_string(row.role_id));
+
+        if (!role_ids.empty()) {
+            repository::role_repository roles;
+            answer.roles = roles.read_latest(ctx, role_ids);
+            std::sort(answer.roles.begin(),
+                      answer.roles.end(),
+                      [](const domain::role& a, const domain::role& b) { return a.name < b.name; });
+        }
+        return answer;
+    }
+
     /**
      * @brief Why a request may not be made, or nothing when it may.
      *

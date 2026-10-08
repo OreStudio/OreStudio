@@ -47,20 +47,13 @@ import {
     type ListAccountsRequest,
 } from './generated/iam/protocol/account_protocol.js';
 import {
-    subjects as roleSubjects,
-    type ListRolesRequest,
-} from './generated/iam/protocol/role_protocol.js';
-import {
     subjects as roleGrantRequestSubjects,
     type ListRoleGrantRequestsRequest,
 } from './generated/iam/protocol/role_grant_request_protocol.js';
 import {
-    subjects as roleGrantRequestRoleSubjects,
-    type ListByRequestIdRoleGrantRequestRolesRequest,
-} from './generated/iam/protocol/role_grant_request_role_protocol.js';
-import {
     subjects as roleRequestSubjects,
     type AskForRolesRequest,
+    type GetRequestRolesRequest,
 } from './generated/iam/protocol/role_request_operations_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
 
@@ -79,6 +72,7 @@ import { resultEnvelopeSchema } from './operations.js';
 /** Subjects for the inbox operations, kept beside the operations that use them. */
 export const INBOX_SUBJECTS = {
     askForRoles: roleRequestSubjects.ask_for_roles_request,
+    getRequestRoles: roleRequestSubjects.get_request_roles_request,
     mine: approvalSubjects.list_my_approval_requests_request,
     queue: approvalSubjects.list_approval_queue_request,
     getRequest: approvalSubjects.get_approval_request,
@@ -94,15 +88,16 @@ export const INBOX_SUBJECTS = {
  * The reads that put the names back into an approval request.
  *
  * None of them is an inbox operation: each is the store that holds the piece
- * the request itself omits. They are named here rather than in a screen
- * because a screen may not make them, and refused together rather than one at
- * a time, because a member holds none of the permissions they need.
+ * the request itself omits. The roles a request asks for are not here, because
+ * no store serves them to the person who asked: IAM answers those through the
+ * operation named in {@link INBOX_SUBJECTS}. The rest are named here rather
+ * than in a screen because a screen may not make them, and refused together
+ * rather than one at a time, because a member holds none of the permissions
+ * they need.
  */
 export const INBOX_JOIN_SUBJECTS = {
     decisions: approvalDecisionSubjects.list_approval_decisions_request,
-    requestRoles: roleGrantRequestRoleSubjects.list_by_request_id_role_grant_request_roles_request,
     roleGrantRequests: roleGrantRequestSubjects.list_role_grant_requests_request,
-    roles: roleSubjects.list_roles_request,
     accounts: accountSubjects.list_accounts_request,
 } as const;
 
@@ -148,20 +143,9 @@ const wireNotificationSchema = z.object({
     read_at: z.string().default(''),
 });
 
-const wireRequestRoleSchema = z.object({
-    request_id: z.string().default(''),
-    role_id: z.string().default(''),
-});
-
 const wireRoleGrantRequestSchema = z.object({
     request_id: z.string().default(''),
     account_id: z.string().default(''),
-});
-
-const wireRoleSchema = z.object({
-    id: z.string().default(''),
-    name: z.string().default(''),
-    description: z.string().default(''),
 });
 
 const wireAccountSchema = z.object({
@@ -195,19 +179,18 @@ const decisionsReplySchema = z.object({
 
 const requestRolesReplySchema = z.object({
     result: resultEnvelopeSchema,
-    role_grant_request_roles: z.array(wireRequestRoleSchema).default([]),
-    total: z.int().nonnegative().default(0),
+    roles: z.array(
+        z.object({
+            id: z.string().default(''),
+            name: z.string().default(''),
+            description: z.string().default(''),
+        }),
+    ).default([]),
 });
 
 const roleGrantRequestsReplySchema = z.object({
     result: resultEnvelopeSchema,
     role_grant_requests: z.array(wireRoleGrantRequestSchema).default([]),
-    total: z.int().nonnegative().default(0),
-});
-
-const rolesReplySchema = z.object({
-    result: resultEnvelopeSchema,
-    roles: z.array(wireRoleSchema).default([]),
     total: z.int().nonnegative().default(0),
 });
 
@@ -347,8 +330,8 @@ function isRefusal(error: unknown): boolean {
  *
  * Answers nothing when the server refuses, because the permission needed for
  * the join is not the permission needed for the operation that asked for it: a
- * plain member reads their own requests and may read neither another person's
- * request roles nor the account list behind them. Anything that is not a
+ * plain member reads their own requests and may read neither the decisions
+ * taken on them nor the account list behind them. Anything that is not a
  * refusal still throws, so a store that is broken is not mistaken for one that
  * is closed.
  */
@@ -369,6 +352,18 @@ async function readJoin<Schema extends z.ZodType>(
     if (result.outcome === 'ok') return reply;
     if (result.outcome === 'denied') return undefined;
     throw new OperationFailedError(subject, result.message);
+}
+
+/**
+ * Who is reading, so a join can name the one account it always may: their own.
+ *
+ * A member may not read the account list, so the store cannot turn the account
+ * id on their own request into a username. The reader is that person, which
+ * makes their own name the one answer no store has to be asked for.
+ */
+export interface RequestViewer {
+    readonly accountId: string;
+    readonly username: string;
 }
 
 /**
@@ -395,69 +390,48 @@ const NO_JOIN: RequestJoin = {
 /**
  * The roles each request asks for.
  *
- * The store refuses every filter on this resource and offers only a read by
- * one request, so the page costs one call per request. The first refusal
- * abandons the whole join, which is what a plain member meets: they may not
- * read another person's request roles, and they pay one call to find out
- * rather than one per row. An administrator, who may read them, is the only
- * caller that pays the full number, and that number is the size of the page.
+ * The store refuses every filter on its own read of these roles, so the join
+ * goes through the operation IAM keeps for the purpose, which is entitled to
+ * the person who raised the request. One call answers for one request, and a
+ * request the caller may not read answers as absent rather than as refused, so
+ * the two are one answer here.
  */
 async function readRolesByRequest(
     caller: AuthenticatedCaller,
     requestIds: readonly string[],
-): Promise<Map<string, string[]>> {
-    const rolesByRequest = new Map<string, string[]>();
-    const [first, ...rest] = requestIds;
-    if (first === undefined) return rolesByRequest;
-
-    const readOne = async (requestId: string): Promise<string[] | undefined> => {
-        const request: ListByRequestIdRoleGrantRequestRolesRequest = {
-            request_id: requestId,
-            scope: 'direct',
-            offset: 0,
-            limit: JOIN_PAGE,
-            order: UNORDERED,
-            filter: null,
-        };
-        const reply = await readJoin(
-            caller,
-            INBOX_JOIN_SUBJECTS.requestRoles,
-            request,
-            requestRolesReplySchema,
-        );
-        return reply?.role_grant_request_roles.map((held) => held.role_id);
+): Promise<Map<string, InboxRequestRoleView[]>> {
+    const rolesByRequest = new Map<string, InboxRequestRoleView[]>();
+    const readOne = async (requestId: string): Promise<InboxRequestRoleView[] | undefined> => {
+        const request: GetRequestRolesRequest = { request_id: requestId };
+        let reply: z.infer<typeof requestRolesReplySchema>;
+        try {
+            reply = await caller.callAuthenticated(
+                INBOX_SUBJECTS.getRequestRoles,
+                request,
+                requestRolesReplySchema,
+            );
+        } catch (error) {
+            if (isRefusal(error)) return undefined;
+            throw error;
+        }
+        if (reply.result.outcome === 'missing' || reply.result.outcome === 'denied') {
+            return undefined;
+        }
+        ok(INBOX_SUBJECTS.getRequestRoles, reply.result);
+        return reply.roles.map((role) => ({
+            roleId: role.id,
+            name: role.name,
+            description: role.description,
+        }));
     };
 
-    const probe = await readOne(first);
-    if (probe === undefined) return rolesByRequest;
-    rolesByRequest.set(first, probe);
-
-    const answers = await Promise.all(rest.map(async (id) => [id, await readOne(id)] as const));
-    for (const [id, roleIds] of answers) {
-        if (roleIds !== undefined) rolesByRequest.set(id, roleIds);
+    const answers = await Promise.all(
+        requestIds.map(async (id) => [id, await readOne(id)] as const),
+    );
+    for (const [id, roles] of answers) {
+        if (roles !== undefined) rolesByRequest.set(id, roles);
     }
     return rolesByRequest;
-}
-
-/** The names of the roles the page asks for, in one read. */
-async function readRoleNames(
-    caller: AuthenticatedCaller,
-    roleIds: readonly string[],
-): Promise<Map<string, { name: string; description: string }>> {
-    const named = new Map<string, { name: string; description: string }>();
-    if (roleIds.length === 0) return named;
-    const request: ListRolesRequest = {
-        offset: 0,
-        limit: JOIN_PAGE,
-        order: UNORDERED,
-        filter: { id_one_of: roleIds.slice(0, JOIN_PAGE) },
-        as_of: null,
-    };
-    const reply = await readJoin(caller, INBOX_JOIN_SUBJECTS.roles, request, rolesReplySchema);
-    for (const role of reply?.roles ?? []) {
-        named.set(role.id, { name: role.name, description: role.description });
-    }
-    return named;
 }
 
 /** The account that raised each request, and the username of each account. */
@@ -564,30 +538,18 @@ async function joinRequests(
     caller: AuthenticatedCaller,
     requestIds: readonly string[],
     withDecision: boolean,
+    viewer: RequestViewer,
 ): Promise<RequestJoin> {
     if (requestIds.length === 0) return NO_JOIN;
 
     const rolesByRequest = await readRolesByRequest(caller, requestIds);
-    const roleNames = await readRoleNames(caller, [
-        ...new Set([...rolesByRequest.values()].flat()),
-    ]);
     const { accountByRequest, usernameByAccount } = await readRequesters(caller, requestIds);
     const decisionByRequest = withDecision
         ? await readDecisionsByRequest(caller, requestIds)
         : new Map<string, InboxRequestDecisionView>();
 
-    const named = new Map<string, InboxRequestRoleView[]>();
-    for (const [requestId, roleIds] of rolesByRequest) {
-        named.set(
-            requestId,
-            roleIds.map((roleId) => ({
-                roleId,
-                name: roleNames.get(roleId)?.name ?? '',
-                description: roleNames.get(roleId)?.description ?? '',
-            })),
-        );
-    }
-    return { rolesByRequest: named, accountByRequest, usernameByAccount, decisionByRequest };
+    if (viewer.accountId !== '') usernameByAccount.set(viewer.accountId, viewer.username);
+    return { rolesByRequest, accountByRequest, usernameByAccount, decisionByRequest };
 }
 
 function toRequestView(
@@ -655,6 +617,7 @@ export async function askForRoles(
 export async function readMyRequests(
     caller: AuthenticatedCaller,
     input: { readonly offset: number; readonly limit: number },
+    viewer: RequestViewer,
 ): Promise<InboxPage<InboxRequestView>> {
     const request: ListMyApprovalRequestsRequest = {
         offset: input.offset,
@@ -666,6 +629,7 @@ export async function readMyRequests(
         caller,
         reply.requests.map((raised) => raised.id),
         true,
+        viewer,
     );
     return {
         items: reply.requests.map((raised) => toRequestView(raised, join)),
@@ -685,6 +649,7 @@ export async function readMyRequests(
 export async function readRequest(
     caller: AuthenticatedCaller,
     requestId: string,
+    viewer: RequestViewer,
 ): Promise<InboxRequestView | null> {
     const request: GetApprovalRequest = { request_id: requestId };
     const reply = await caller.callAuthenticated(
@@ -695,7 +660,7 @@ export async function readRequest(
     if (reply.result.outcome === 'missing') return null;
     ok(INBOX_SUBJECTS.getRequest, reply.result);
     if (reply.request === null) return null;
-    const join = await joinRequests(caller, [reply.request.id], true);
+    const join = await joinRequests(caller, [reply.request.id], true, viewer);
     return toRequestView(reply.request, join);
 }
 
@@ -708,6 +673,7 @@ export async function readRequest(
 export async function readRequestQueue(
     caller: AuthenticatedCaller,
     input: { readonly offset: number; readonly limit: number },
+    viewer: RequestViewer,
 ): Promise<InboxPage<InboxRequestView>> {
     const request: ListApprovalQueueRequest = {
         offset: input.offset,
@@ -723,6 +689,7 @@ export async function readRequestQueue(
         caller,
         reply.requests.map((raised) => raised.id),
         false,
+        viewer,
     );
     return {
         items: reply.requests.map((raised) => toRequestView(raised, join)),

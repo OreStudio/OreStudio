@@ -100,15 +100,9 @@ function wireRequest(id: string, requestedBy: string) {
  */
 function joins() {
     return {
-        'iam.v1.role_grant_request_roles.list_by_request_id': {
-            result: OK,
-            role_grant_request_roles: [{ request_id: REQUEST, role_id: TRADING }],
-            total: 1,
-        },
-        'iam.v1.roles.list': {
+        'iam.v1.ops.get_request_roles': {
             result: OK,
             roles: [{ id: TRADING, name: 'Trading', description: 'Trading role' }],
-            total: 1,
         },
         'iam.v1.role_grant_requests.list': {
             result: OK,
@@ -236,7 +230,7 @@ describe('inbox routes', () => {
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
             },
-            'iam.v1.role_grant_request_roles.list_by_request_id': { result: DENIED },
+            'iam.v1.ops.get_request_roles': { result: DENIED },
             'iam.v1.role_grant_requests.list': { result: DENIED },
             'inbox.v1.approval_decisions.list': { result: DENIED },
         });
@@ -264,14 +258,15 @@ describe('inbox routes', () => {
         });
     });
 
-    it('gives up the whole roles join when the first read of it is refused', async () => {
+    it('reads the roles of each request, once each, through the entitled operation', async () => {
+        const SECOND = '99999999-9999-4999-8999-999999999999';
         const { server, cookies, calls } = buildTestServer({
             'inbox.v1.ops.list_my_approval_requests': {
                 result: OK,
-                requests: [wireRequest(REQUEST, DANIEL)],
-                total: 1,
+                requests: [wireRequest(REQUEST, PRIYA), wireRequest(SECOND, PRIYA)],
+                total: 2,
             },
-            'iam.v1.role_grant_request_roles.list_by_request_id': { result: DENIED },
+            'iam.v1.ops.get_request_roles': { result: DENIED },
             'iam.v1.role_grant_requests.list': { result: DENIED },
             'inbox.v1.approval_decisions.list': { result: DENIED },
         });
@@ -280,10 +275,11 @@ describe('inbox routes', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(
-            calls.filter((c) => c.subject === 'iam.v1.role_grant_request_roles.list_by_request_id'),
-        ).toHaveLength(1);
-        expect(calls.filter((c) => c.subject === 'iam.v1.roles.list')).toHaveLength(0);
+        const reads = calls.filter((call) => call.subject === 'iam.v1.ops.get_request_roles');
+        expect(reads.map((call) => (call.body as { request_id: string }).request_id)).toEqual([
+            REQUEST,
+            SECOND,
+        ]);
     });
 
     it('sends the page the screen asked for', async () => {

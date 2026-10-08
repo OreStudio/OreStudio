@@ -198,6 +198,7 @@ needs any of them.
 | Ask for the role | Ask for the roles named | =iam.v1.ops.ask_for_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
 | Ask for the role | Raise the request the ask makes | =inbox.v1.ops.raise_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Wait | Read my own requests and their answers | =inbox.v1.ops.list_my_approval_requests= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Wait | Read the roles my request asks for | =iam.v1.ops.get_request_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
 | Wait | Withdraw my request | =inbox.v1.ops.withdraw_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Read the answer | Read what I have been told | =inbox.v1.ops.list_my_notifications= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Read the queue | List the requests waiting in the tenant | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
@@ -209,6 +210,15 @@ The ask is two subjects because two components own a part of it. IAM owns the
 question "may this role be asked for", so =iam.v1.ops.ask_for_roles= is IAM's;
 the inbox owns waiting, so the request it raises is the inbox's. Nothing
 suspends, so nothing follows a run's steps.
+
+The roles a request asks for are read through an operation rather than through
+the generated read of =role_grant_request_role=. That read is gated on
+=iam::role_grant_request_roles:read= and IAM isolates those rows by tenant
+alone, so granting it would let any member read what every other member asked
+for. =iam.v1.ops.get_request_roles= is entitled to the person who raised the
+request and to whoever may read the roles of any, so one read serves the
+member's own screen and the administrator's queue, and a caller entitled to
+neither is told the request does not exist.
 
 =iam.v1.ops.assign_role= checks =iam::roles:assign= before it writes, so the
 administrator's decision carries the check the member's ask must not.

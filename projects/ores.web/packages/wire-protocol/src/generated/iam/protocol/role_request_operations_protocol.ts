@@ -22,6 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { Role } from '../domain/role.js';
 import type { Result } from '../../../utility/protocol.js';
 
 /**
@@ -50,8 +51,32 @@ export interface AskForRolesResponse {
     request_id: string;
 }
 
+/**
+ * @brief Reads the roles one approval request asks for.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * the roles of role grant requests. Answered as not found otherwise, so a
+ * caller learns nothing about a request they may not read.
+ */
+export interface GetRequestRolesRequest {
+    /**
+     * @brief The approval request to read the roles of, as a UUID string.
+     */
+    request_id: string;
+}
+
+export interface GetRequestRolesResponse {
+    result: Result;
+    /**
+     * @brief The roles the request asks for, whole, so a screen draws them
+     * without a second read.
+     */
+    roles: Role[];
+}
+
 export const subjects = {
     ask_for_roles_request: 'iam.v1.ops.ask_for_roles',
+    get_request_roles_request: 'iam.v1.ops.get_request_roles',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -60,4 +85,5 @@ export const subjects = {
  */
 export const requiresSession = {
     ask_for_roles_request: true,
+    get_request_roles_request: true,
 } as const;

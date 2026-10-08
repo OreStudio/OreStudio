@@ -38,9 +38,10 @@ import { askedFor, stateLabel } from './words.js';
  * One request, and the answer to it.
  *
  * What the role would let the person do is the whole point of the screen: the
- * administrator decides on the bundle, not on the role's name. There is no
- * single-request read, so the queue is read and the row is found in it; the
- * queue carries the roles the person may not read for themselves.
+ * administrator decides on the bundle, not on the role's name. The request is
+ * read on its own, so a notice that names a request already answered still
+ * opens it; the roles it asks for arrive with it, through the read IAM keeps
+ * for the person who asked.
  *
  * The role request kind cannot be held, so the two answers offered are yes and
  * no. A refusal needs a reason the person will read, so the control stays
@@ -108,7 +109,6 @@ function Request({
                 roles.find((candidate) => candidate.id === role.roleId)?.permissionCodes ?? [],
         ),
     );
-    const named = request.roles[0];
     const self = request.requestedBy === me;
     const open = request.stateCode === 'waiting' || request.stateCode === 'held';
     const refusedWithoutReason = comment.trim() === '';
@@ -151,14 +151,12 @@ function Request({
             <section className="flex items-center gap-3 rounded-md border border-line bg-surface-raised px-4 py-3">
                 <AccountPicture
                     username={request.requestedBy}
-                    name={named === undefined ? request.requestedBy : named.name}
+                    name={request.requestedBy}
                     size="lg"
                 />
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                        {request.requestedBy === me
-                            ? t('inbox.request.you')
-                            : (named?.name ?? request.requestedBy)}
+                        {self ? t('inbox.request.you') : request.requestedBy}
                         <RequestStateChip stateCode={request.stateCode} />
                     </div>
                     {/* A deadline only means something while the request is

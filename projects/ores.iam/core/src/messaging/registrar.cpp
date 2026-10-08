@@ -579,6 +579,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ask_for_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
                 rh->ask(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            get_request_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
+                rh->get_roles(std::move(msg));
+            }));
     }
 
     // --- Publish-from-DQ workflow step handlers ---

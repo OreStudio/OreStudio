@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 8055844A-9594-4133-A7A2-E62F59805DD0
+:END:
+#+title: Task: Let an import declare the shape it carries
+#+description: Give an observed or imported structure a shape of its own, so the point check has something to enforce on it, and settle where the shape writer lives once the import can reach it.
+#+type: task
+#+level: s1
+#+filetags: :marketdata-curves:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A curve declares its shape when a build publishes it, so the point check has something to enforce. An observed or imported structure declares nothing, so every point of it is accepted and its shape is inferred from whatever arrived, which is the state the shape tables exist to end. Let an import declare the shape of each series it carries, from what the file states, and settle the layering first: the shape writer sits in ores.marketdata.service because it reads the reference tenors, and the import sits in ores.marketdata.core, so the writer has to move down or the tenor check has to move into the store.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- An import declares the shape of every series it creates, from what the file it reads states rather than from whatever points it happened to write.
+- A series the import does not name keeps the shape it had.
+- The reference-tenor check applies to an imported shape as it does to a built one, or the task says which path is not checked and why.
+- The layering is stated in the task result: where the writer lives and why, and what the tenor check costs the component that cannot reach the reference data.
+- Re-importing the same file declares the same shape and writes no duplicate axis or value rows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

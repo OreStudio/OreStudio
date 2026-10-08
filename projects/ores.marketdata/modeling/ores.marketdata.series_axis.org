@@ -89,6 +89,42 @@ declares is the order the values are read.
 :entity_plural_words:   series axes
 :END:
 
+*** read_latest_for_series
+:PROPERTIES:
+:ID: 4C1E7A93-6B25-4D08-9F31-8A5C2E7B4D16
+:END:
+
+Reads the current axes of the series @p series_ids names, in one statement
+however many series are asked for.
+
+The generated key read wants a series and an axis per row, which cannot serve a
+caller that asks for every axis of a series before it knows which axes the series
+has. This read filters by the series alone, so a caller that checks a batch of
+points reads the shapes of those points' series and nothing else.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::series_axis> read_latest_for_series(context ctx,
+    const std::vector<std::string>& series_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::series_axis>
+series_axis_repository::read_latest_for_series(context ctx,
+                                               const std::vector<std::string>& series_ids) {
+    if (series_ids.empty())
+        return {};
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<series_axis_entity>> |
+                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    return execute_read_query<series_axis_entity, domain::series_axis>(
+        ctx,
+        query,
+        [](const auto& entities) { return series_axis_mapper::map(entities); },
+        lg(),
+        "Reading series axes by series.");
+}
+#+end_src
+
 ** Conventions
 :PROPERTIES:
 :iterator_var: sa

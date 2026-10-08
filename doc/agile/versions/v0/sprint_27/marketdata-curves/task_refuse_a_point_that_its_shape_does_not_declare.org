@@ -7,45 +7,52 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/refuse-a-point-that-its-shape-does-not-declare
+#+pr: 2897
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The shape tables say what a composite object comprises, but nothing enforces it: a point whose coordinate the shape does not list is still written, so the shape and the points can disagree and the disagreement is silent. Refuse such a point at write time, wherever a point is written, so the two cannot drift. Then let an import declare the shape of the series it carries, so an observed or imported structure has a shape without a build to write one.
+The shape tables say what a composite object comprises, but nothing enforces it: a point whose coordinate the shape does not list is still written, so the shape and the points can disagree and the disagreement is silent. Refuse such a point at write time, wherever a point is written, so the two cannot drift. The import declaring a shape is its own task: the shape writer sits in ores.marketdata.service because it reads the reference tenors, and the import sits in ores.marketdata.core, which cannot reach it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
 
-- A point whose coordinate is not a declared axis value of its series is refused, and the refusal names the series, the coordinate and the value.
+- A point whose coordinate is not a declared axis value of its series is refused, and the refusal names the series, the value and the axis that does not declare it.
 - The refusal holds for every writer of a point, not only the one that was changed, or the task says which writer it does not cover and why.
 - A point for a series that declares no shape is written as it is today, so no existing series stops accepting points.
-- An import declares the shape of the series it carries, from the declaration rather than from the points, and a series it does not declare keeps whatever shape it had.
+- A point whose URI the codec cannot read is accepted, so a defect the identity projection already records does not stop a write.
 - A series whose declared shape gains a value accepts points at that value without any further change.
+- The check reads only the shapes of the series a batch names, so the ingest path pays for the series it is writing and not for every shape in the installation.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two pieces: a check in core, and a hook where a point is written.
+
+The check is =series_shape_check=. It gathers the distinct series of the batch, reads those series' axes and values in two filtered statements, and refuses the first observation that carries a value one of its series' axes does not declare. A series with no axis row declares nothing, so nothing about it is refused, and a URI the codec cannot read is accepted and logged, because a URI the codec cannot read is a defect the identity projection already records rather than a point outside the shape.
+
+The filtered reads are new: =read_latest_for_series= on each shape repository. The generated key read wants a series and an axis or a value per row, and a caller that checks points does not yet know which axes a series has, so the key read cannot serve. The new read filters by the series alone and the index on =(tenant_id, series_id)= carries it. Without it the check would read both shape tables whole on every observation insert, which is per tick on the ingest path.
+
+The hook is two paste points in the repository template, at the top of the generated single and batch =insert=, before the row is written. Every writer of a point uses =market_observation_repository::insert=, so the refusal holds for the ingest loop, the curve republish and the import alike. A repository of another entity collapses both markers.
+
+Out of this task, and recorded as the next one: the import declaring a shape from what it carries. The writer is in =ores.marketdata.service= because it reads the reference tenors, and the import is in =ores.marketdata.core=, so that task either moves the writer down or moves the tenor check into the store.
 
 * Measurements
 
@@ -59,7 +66,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Writers of a point the hook covers | 3 of 3: the ingest loop, the curve republish and the import, all through =market_observation_repository::insert= | =grep -rn "obs_repo.insert\|observation_repository{}.insert" projects/ores.marketdata= | =55a04fadd8= |
+| Statements the check issues per batch | 2, whatever the batch size and however many shapes the installation holds | inspection of =series_shape_check.cpp= | =55a04fadd8= |
+| Identity fields that collide with a SQL reserved word | 1 of 45 (=offset=), which is why the projection column is renamed | the reserved-word census in the hotfix PR | =55a04fadd8= |
+| Local checks passing, heavy excluded | 32 of 34 | =python3 build/scripts/local_checks.py --exclude-heavy= | =55a04fadd8= |
 
 * Notes
 
@@ -78,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2897][#2897]] | [marketdata] Refuse a point its shape does not declare |
 
 * Review
 
@@ -87,3 +97,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A point that leaves the shape its series declares is now refused before it is written,
+wherever it is written.
+
+What landed:
+
+- =series_shape_check= in =ores.marketdata.core=, which reads the shapes of the series a
+  batch names and refuses the first observation carrying a value one of those series'
+  axes does not declare.
+- Two paste points in the repository template, at the top of the generated single and
+  batch =insert=, carrying the check before the row is written. Every writer of a point
+  goes through that method, so all three are covered. The markers collapse for every
+  other entity.
+- =read_latest_for_series= on both shape repositories, so the check reads two statements
+  per batch rather than both tables whole.
+
+Limitations:
+
+- Nothing was compiled and no test was run. The build and the suites are swift curie's
+  hourly validation.
+- The check is not proven against a live database. The statements the filtered reads emit
+  were read, not run.
+- The import declaring a shape from what it carries is out of scope and is the next task,
+  =let_an_import_declare_the_shape_it_carries=. The shape writer sits in
+  =ores.marketdata.service= to read the reference tenors, and the import sits in
+  =ores.marketdata.core=, which cannot reach it.
+- =er-diagram= fails on the missing =pystache= in this checkout. The committed diagram is
+  up to date, which the renderer's =--check= confirms under the codegen venv.
+- =codegen-tests= fails its unrelated tests and names neither entity this change touches.
+- This task uncovered a defect in already-merged work: the identity projection's =offset=
+  column is a PostgreSQL reserved word, and the data layer names its columns without
+  quoting them, so every series write failed. It was fixed in its own hotfix, PR #2896,
+  before this branch was rebased onto it.

@@ -338,4 +338,20 @@ void series_axis_value_repository::remove(context ctx,
 }
 
 
+std::vector<domain::series_axis_value>
+series_axis_value_repository::read_latest_for_series(context ctx,
+                                                     const std::vector<std::string>& series_ids) {
+    if (series_ids.empty())
+        return {};
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<series_axis_value_entity>> |
+                       where("tenant_id"_c == tid && "series_id"_c.in(series_ids));
+    return execute_read_query<series_axis_value_entity, domain::series_axis_value>(
+        ctx,
+        query,
+        [](const auto& entities) { return series_axis_value_mapper::map(entities); },
+        lg(),
+        "Reading series axis values by series.");
+}
+
 }

@@ -250,6 +250,7 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
 
 void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_singular}}& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
+<<paste:A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04>>
     execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Inserting {{entity_singular_words}} into database.");
 }
@@ -257,6 +258,7 @@ void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_
 void {{entity_singular}}_repository::insert(
     context ctx, const std::vector<domain::{{entity_singular}}>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_plural_words}}. Count: " << v.size();
+<<paste:B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15>>
     execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
         lg(), "Inserting {{entity_plural_words}} into database.");
 }

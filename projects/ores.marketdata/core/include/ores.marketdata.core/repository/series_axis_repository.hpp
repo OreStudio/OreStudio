@@ -193,6 +193,8 @@ public:
                 const std::vector<std::string>& series_ids,
                 const std::vector<std::string>& axis_fields);
 
+    std::vector<domain::series_axis>
+    read_latest_for_series(context ctx, const std::vector<std::string>& series_ids);
 
 private:
     /**

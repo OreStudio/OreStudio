@@ -658,6 +658,30 @@ void market_observation_repository::clear_manual_point(
 }
 #+end_src
 
+*** check_series_shape
+:PROPERTIES:
+:ID: 23197DDC-9048-462B-BDC8-E72E722F20FB
+:END:
+
+Refuses an insert whose point is not a node of the shape its series
+declares. A composite series states the axes it varies over and the values
+of each, so an observation that carries a value no axis declares is a defect
+in the writer rather than market data. The check runs before the row is
+written, in both the single and the batch insert, so a refused observation
+never reaches the store.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.marketdata.core/repository/series_shape_check.hpp"
+#+end_src
+
+#+begin_src cpp :name check_shape :implements A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04
+    series_shape_check::check(ctx, std::vector<domain::market_observation>{v});
+#+end_src
+
+#+begin_src cpp :name check_shapes :implements B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15
+    series_shape_check::check(ctx, v);
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

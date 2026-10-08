@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 405C065F-29FB-46C0-BDD5-C6D1890C3639
+:END:
+#+title: Story: Hotfix: the sweep schedule cannot see its own name
+#+description: 0640cb0f2f, the reminder-before-the-deadline work, compares the registered job's name to described_.job_name inside a lambda that captures nothing, so ores.inbox.service does not compile and the build stops at 98%.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:inbox:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let ores.inbox.service compile again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The lookup's predicate names a local holding the job name. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The job lookup captures what its predicate reads.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3B6FE8FB-3702-433A-9C11-B2E4FC235FA6][Scaffold story: Hotfix: the sweep schedule cannot see its own name]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B00091EE-B105-4C11-B645-1E5076E8387E][Implement Hotfix: the sweep schedule cannot see its own name]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the sweep schedule cannot see its own name |
+
+* Decisions
+
+- *Capture the name, not the object.* =[this]= would fix the lookup by capturing
+  the whole sweep schedule for a predicate that reads one string. The lookup's
+  own comment says the match is by name, so a local holding the name and a
+  reference capture say the same thing with less in scope.
+- *Read the rest of the feature before shipping this.* None of it had been
+  compiled either, so the other hand-written files from the same commit were
+  checked for the same fault. Their lambdas all capture what they read.
+
+* Out of scope
+
+- A gate for this. A lambda that reads a member without capturing =this= is a
+  compile error every time, which is what the compiler is for; the cost here was
+  that the file had never been compiled, not that the rule is hard to see.
+
+* See also
+
+- [[id:8D6BEBC3-A56A-4A00-B9B0-B7A7B364A616][Hotfix: the oresmd codec does not compile]] — the
+  same shape: merged without a build, refused on the first compile.

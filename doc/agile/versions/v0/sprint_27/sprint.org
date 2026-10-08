@@ -131,6 +131,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9][Hotfix: the generated headers miss the chrono include]] | STARTED | 2026-10-08 | | The domain class template emits a std::chrono member for every entity with audit columns and supplies no include with it, so 126 generated headers named std::chrono without <chrono> and compiled only where the consumer pulled it in first. |
 | [[id:30C1FE4E-D671-4128-ACDE-C98E400B8009][Hotfix: the counterparty fixtures write a dropped column]] | STARTED | 2026-10-08 | | 0d9dd1a899 replaced the counterparty's business_center_code column with a business centres junction, but a C++ generator test still asserts the member and nine pgTAP fixtures still insert it, so the build stops at 81% and no fixture can run against a recreated database. |
 | [[id:E26E3F25-0290-4247-BA89-471519E427B8][Hotfix: the series shape writer cannot name its context]] | STARTED | 2026-10-08 | | bdb7215934 declared series_shape_writer::declare with a fully qualified ores::database::context in the header and an unqualified context in the definition, so ores.marketdata.service does not compile and the build stops at 87%. |
+| [[id:405C065F-29FB-46C0-BDD5-C6D1890C3639][Hotfix: the sweep schedule cannot see its own name]] | STARTED | 2026-10-08 | | 0640cb0f2f, the reminder-before-the-deadline work, compares the registered job's name to described_.job_name inside a lambda that captures nothing, so ores.inbox.service does not compile and the build stops at 98%. |
 
 * Achievements
 

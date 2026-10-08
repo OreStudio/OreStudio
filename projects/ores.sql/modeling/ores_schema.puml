@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T18:34:27.259146Z
+' Generated: 2026-10-08T20:06:13.296298Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -7081,6 +7081,37 @@ package "dq_staging" #F3E5F5 {
     Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
     end note
 
+    entity ores_dq_risk_report_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * report_name : text
+        * base_currency : text
+        * observation_model : text
+        * n_threads : integer
+        * market_data_type : text
+        * npv_enabled : integer
+        * cashflow_enabled : integer
+        * curves_enabled : integer
+        * sensitivity_enabled : integer
+        * simulation_enabled : integer
+        * xva_enabled : integer
+        * stress_enabled : integer
+        * parametric_var_enabled : integer
+        * initial_margin_enabled : integer
+        * pfe_enabled : integer
+        * xva_cva_enabled : integer
+        * xva_dva_enabled : integer
+        * xva_fva_enabled : integer
+        * display_order : integer
+    }
+
+    note right of ores_dq_risk_report_configs_artefact_tbl
+    Risk report configuration artefacts - the run settings a seeded report definition resolves. - Artefact Table
+    end note
+
     entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -9224,10 +9255,17 @@ package "trading" #E8F5E9 {
     round trip is whole without them, and they are a recorded scope limit.
     end note
 
-    entity ores_trading_booking_nature_types_tbl  #F7E5FF {
+    entity ores_trading_booking_nature_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
+        * version : integer
         * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_booking_nature_types_tbl
@@ -9512,10 +9550,17 @@ package "trading" #E8F5E9 {
     own key.
     end note
 
-    entity ores_trading_counterparty_scope_types_tbl  #F7E5FF {
+    entity ores_trading_counterparty_scope_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
+        * version : integer
         * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_counterparty_scope_types_tbl
@@ -9595,10 +9640,17 @@ package "trading" #E8F5E9 {
     protocol.
     end note
 
-    entity ores_trading_entry_channel_types_tbl  #F7E5FF {
+    entity ores_trading_entry_channel_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
+        * version : integer
         * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_entry_channel_types_tbl
@@ -10874,8 +10926,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
-        * counterparty_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11127,8 +11177,6 @@ package "trading" #E8F5E9 {
         * structure_id : uuid <<FK>>
         * role : text
         * sequence_number : integer
-        * party_id : uuid <<FK>>
-        * counterparty_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11214,15 +11262,22 @@ package "trading" #E8F5E9 {
     Examples: 'Straddle', 'RiskReversal', 'Butterfly', 'CallableSwap'.
     end note
 
-    entity ores_trading_structures_tbl  #F7E5FF {
+    entity ores_trading_structures_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
+        * version : integer
         * party_id : uuid <<FK>>
         * counterparty_id : uuid <<FK>>
         * kind : text
           template_code : text
           parent_structure_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_structures_tbl
@@ -11410,16 +11465,23 @@ package "trading" #E8F5E9 {
     Bermudan, or American.
     end note
 
-    entity ores_trading_trade_activities_tbl  #F7E5FF {
+    entity ores_trading_trade_activities_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
+        * version : integer
         * party_id : uuid <<FK>>
         * activity_type_code : text
         * actor : text
         * occurred_at : timestamptz
         * comment : text
         * is_operational_error : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_trade_activities_tbl
@@ -11445,7 +11507,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * name : text
         * value : text
         * modified_by : text
@@ -11480,8 +11541,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
-          counterparty_id : uuid <<FK>>
         * book_id : uuid <<FK>>
           netting_set_id : uuid <<FK>>
           counterparty_identifier_id : uuid <<FK>>
@@ -11546,7 +11605,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * id_value : text
           issuing_party_id : uuid <<FK>>
         * modified_by : text
@@ -11610,7 +11668,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11646,7 +11703,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * portfolio_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -11680,7 +11736,6 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * status_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
@@ -11734,16 +11789,23 @@ package "trading" #E8F5E9 {
     categorise trades in the system.
     end note
 
-    entity ores_trading_trades_tbl  #F7E5FF {
+    entity ores_trading_trades_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
+        * version : integer
         * party_id : uuid <<FK>>
           counterparty_id : uuid <<FK>>
         * trade_type : text
         * counterparty_scope : text
         * booking_nature : text
         * entry_channel : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
     }
 
     note right of ores_trading_trades_tbl
@@ -13546,6 +13608,60 @@ package "marketdata" #E3F2FD {
     convention every other bitemporal entity in this codebase already
     gets, mirroring (not literally reusing) how market_observations
     itself handles a rerun.
+    end note
+
+    entity ores_marketdata_series_axes_tbl  #F7E5FF {
+        * series_id : uuid <<PK, FK>>
+        * axis_field : text <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * sequence : integer
+    }
+
+    note right of ores_marketdata_series_axes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Axis Table
+    The axes a composite market series varies over. A term structure varies over one
+    axis and a surface over two. Each row names one field the series' instrument type
+    marks as a coordinate, so the object's shape is a declared thing rather than an
+    inference from whatever points happen to be stored.
+    The rows are ordered. The sequence column holds the position of each axis among
+    the object's coordinates, so a reader walks the axes in the order the type's key
+    writes them and a hole in a grid is a hole rather than an absent row.
+    The table is a current state, not a history: the series row is already temporal
+    and the shape of a series is written again whenever it is built. A series with no
+    rows here declares no shape, and a caller that reads one gets nothing rather than
+    a fabricated default.
+    end note
+
+    entity ores_marketdata_series_axis_values_tbl  #F7E5FF {
+        * series_id : uuid <<PK, FK>>
+        * axis_field : text <<PK>>
+        * value : text <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * sequence : integer
+    }
+
+    note right of ores_marketdata_series_axis_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Series Axis Value Table
+    One value an axis of a composite market series holds. The rows of one axis are
+    its ordered values, so a grid can be read as coordinates rather than as the set
+    of points that survived a build.
+    The sequence column holds the position of each value among its axis's values.
+    A value that the axis declares and no point uses is still a declared value, and
+    a reader can tell it apart from a value the build never saw.
+    The table is a current state, not a history: a rebuilt series writes its shape
+    again. A value is text because the codec keeps every value as the key spelled
+    it, and a projection that reinterpreted it would be a second spelling of the
+    same coordinate.
     end note
 
     entity ores_marketdata_series_classification_rules_tbl <<temporal>> #C6F0D8 {

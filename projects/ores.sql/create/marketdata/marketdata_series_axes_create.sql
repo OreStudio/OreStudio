@@ -89,3 +89,23 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+drop policy if exists series_axes_tbl_party_isolation_policy
+    on ores_marketdata_series_axes_tbl;
+
+create policy series_axes_tbl_party_isolation_policy
+on ores_marketdata_series_axes_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);

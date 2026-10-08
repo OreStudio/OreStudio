@@ -135,6 +135,13 @@ TENANT_002 ores_iam_login_info_tbl
 TENANT_002 ores_marketdata_market_series_identity_tbl
 
 # =============================================================================
+# Market series axes and their values - current-state tables keyed on the axis,
+# for the same reason as the identity table above.
+# =============================================================================
+TENANT_002 ores_marketdata_series_axes_tbl
+TENANT_002 ores_marketdata_series_axis_values_tbl
+
+# =============================================================================
 # TimescaleDB hypertable tables - tenant_id is present for RLS but excluded
 # from the primary key by design. Hypertable PKs must include the partition
 # column (a timestamp) and typically a UUID; adding tenant_id would add

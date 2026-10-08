@@ -111,6 +111,13 @@
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
 
+-- A swap leg's notionals and its rates or spreads are child rows, so they
+-- come after the leg they belong to.
+\ir ./trading_swap_leg_amounts_create.sql
+\ir ./trading_swap_leg_amounts_notify_trigger_create.sql
+\ir ./trading_swap_leg_rates_create.sql
+\ir ./trading_swap_leg_rates_notify_trigger_create.sql
+
 -- Rates instruments (depend on swap_legs and reference data above)
 \ir ./trading_fra_instruments_create.sql
 \ir ./trading_fra_instruments_notify_trigger_create.sql

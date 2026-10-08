@@ -8,7 +8,7 @@
 #+filetags: :mop_up_after_the_workspace_removal:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-mop-up-after-the-workspace-removal
-#+pr:
+#+pr: 2824
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2824][#2824]] | [sql,docs,eventing] Mop up after the workspace removal |
 
 * Review
 

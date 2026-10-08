@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-the-last-components-under-the-drift-gate
-#+pr: 2808
+#+pr: 2860
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2860][#2860]] | [agile] Close the drift-gate gap story |
 | [[https://github.com/OreStudio/OreStudio/pull/2808][#2808]] | [agile] Scaffold the drift-gate gap story |
 
 * Review

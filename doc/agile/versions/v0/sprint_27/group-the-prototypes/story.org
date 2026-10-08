@@ -23,11 +23,11 @@ Gemini review beside it, and every index page says which prototypes have one.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The task is implemented and its PR is open. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, then close.                     |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -46,7 +46,7 @@ Gemini review beside it, and every index page says which prototypes have one.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the Gemini reviews]] | STARTED | 2026-10-08 | | Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path. |
+| [[id:4BC92424-C73B-4E74-ABEA-5F0A979AD91C][Group the prototypes and add the Gemini reviews]] | DONE | 2026-10-08 | 2026-10-08 | Move every prototype under its journey group, add the group and top-level index pages, copy the Gemini review screens beside the prototypes they review, and update the guard, the site build and every document that names a prototype path. |
 
 * Decisions
 
@@ -75,3 +75,35 @@ Gemini review beside it, and every index page says which prototypes have one.
 
 - Filling the prototype gap in the four groups that have none: Membership,
   Directory, Currencies and FX, and Calendars.
+
+* Result
+
+The prototypes are grouped by journey topic and readable. The top page names
+the eighteen journey groups and what each gathers, fourteen of them hold
+prototypes, and each of those has a page listing its prototypes, what each
+argues, how to open one and whether anyone has reviewed it. Every prototype
+sits under the topic it answers to, and the seven design notes sit beside the
+prototypes they describe.
+
+The protection moved with the shape. The guard enforces the group pages, the
+review cells and the top page, and the site build discovers the prototypes
+under the group folders instead of naming all 46, so a new prototype touches no
+build file. Every document that named a prototype path names the new one,
+including eleven journey documents that had pointed at the React tree deleted
+in October, and the capture that recorded those stale pointers is resolved.
+
+Six of the eight Gemini files are kept as review screens beside the prototypes
+they review; the other two were byte-for-byte truncated prefixes and are
+dropped.
+
+The lesson the task taught twice, and that the prototype pages now record at
+the top of this page: the site adds nothing to a prototype. The injected
+stylesheet moved the root font size from 16px to 17px, which moved every one of
+685 rem measurements, and the body line height from 21px to 24.5px; a links
+table was tried in its place and taken out again, because a reader judging a
+layout is judging everything above the first pixel of the design. Every
+prototype page, design note and review page is byte-identical to its source and
+renders exactly as its author wrote it. The unreviewed set is one grep over the
+group pages, which the guard holds to the review directories.
+
+Merged as PR #2794, merge commit f80a800f20.

@@ -30,11 +30,11 @@ every index page which prototypes carry a review.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] |
-| Now          | All five commits are on the branch and its PR is open. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then close the story. |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

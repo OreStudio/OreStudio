@@ -91,6 +91,7 @@
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/rpa_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/swap_leg_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
@@ -101,6 +102,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <format>
@@ -2012,7 +2014,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 if constexpr (std::is_same_v<T, std::monostate>) {
                     return true; // no instrument for this trade type
                 } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                    return std::visit(
+                    // The instrument is written first and its legs beside it: a
+                    // swap's economics are its leg rows, so the item is written
+                    // only when both succeed.
+                    const bool instrument_ok = std::visit(
                         [&](const auto& instr) -> bool {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
@@ -2170,6 +2175,32 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             }
                         },
                         r.instrument);
+                    if (!instrument_ok)
+                        return false;
+                    for (const auto& leg : r.legs) {
+                        put_swap_leg_request leg_req;
+                        leg_req.change.write.id = boost::uuids::random_generator()();
+                        leg_req.change.write.trade_id = leg.identity.trade_id;
+                        leg_req.change.write.leg_number = leg.identity.leg_number;
+                        leg_req.change.write.trade_activity_id = leg.identity.trade_activity_id;
+                        leg_req.change.write.payer = leg.payer;
+                        leg_req.change.write.leg_type_code = leg.leg_type_code;
+                        leg_req.change.write.day_count_fraction_code =
+                            leg.day_count_fraction_code;
+                        leg_req.change.write.business_day_convention_code =
+                            leg.business_day_convention_code;
+                        leg_req.change.write.payment_frequency_code = leg.payment_frequency_code;
+                        leg_req.change.write.floating_index_code = leg.floating_index_code;
+                        leg_req.change.write.fixed_rate = leg.fixed_rate;
+                        leg_req.change.write.spread = leg.spread;
+                        leg_req.change.write.notional = leg.notional;
+                        leg_req.change.write.currency = leg.currency;
+                        auto leg_resp = nats_call(delegated_nats, leg_req, instr_error);
+                        if (!leg_resp ||
+                            leg_resp->result.outcome != ores::utility::domain::outcome::ok)
+                            return false;
+                    }
+                    return true;
                 } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                     return std::visit(
                         [&](const auto& instr) -> bool {

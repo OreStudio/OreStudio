@@ -38,6 +38,7 @@ export interface SwapLegWrite {
     trade_id: string;
     trade_activity_id: string;
     leg_number: number;
+    payer: boolean | null;
     leg_type_code: string;
     day_count_fraction_code: string;
     business_day_convention_code: string;

@@ -49,6 +49,7 @@ struct swap_leg_entity {
     std::string trade_id;
     std::string trade_activity_id;
     int leg_number = 0;
+    std::optional<bool> payer;
     std::string leg_type_code;
     std::string day_count_fraction_code;
     std::string business_day_convention_code;

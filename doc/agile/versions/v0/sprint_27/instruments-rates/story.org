@@ -42,6 +42,7 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 |------+-------+-------+-----+-------------|
 | [[id:1FBC8267-A81F-40A5-A3CE-46ACA3250C52][Analyse the rates family and propose its relational data model]] | DONE | 2026-10-08 | 2026-10-08 | Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks. |
 | [[id:3D7BDF75-135C-44A0-B166-7BA98DDE1B9B][Repair the rates trade-type routing]] | DONE | 2026-10-08 | 2026-10-08 | The generated routing, the ORE importer and the instrument tables disagree about three things. RiskParticipationAgreement routes to rpa_instruments while the importer writes credit_instruments, whose check refuses the code; RPA is classified swap in the trade-type seed while the domain note, the refdata instrument codes and the importer all call it credit; and three models generate trade type codes the catalogue and the seed do not hold (FRA, EuropeanSwaption, ZeroCouponInflationSwap). Repair all three so the routing is the single truth, and record the unproduced rpa_instruments table with its disposition. |
+| [[id:1B67B92A-A6B5-4BC9-87E2-51DB13941CCD][Write the swap legs on import and record their direction]] | DONE | 2026-10-08 | 2026-10-08 | The rates legs never reach the database. The ORE importer builds them and stamp_ids stamps them, and then the import drops them, so a stored swap exports with no legs; the table cannot even record a leg's direction, because legData/Payer is required by ORE and has no column. Add the payer column, read the direction in the mapper both ways, and write the legs the importer already builds. |
 
 * Decisions
 
@@ -65,11 +66,12 @@ decisions are what they are.
   behind.
 - *No security level.* A rates trade has no issuer and no ISIN, so
   there is no master entity to normalise the economics onto.
-- *The legs are re-keyed to the trade and given their direction and
-  their schedules.* =(trade_id, leg_number)= replaces the surrogate
-  =id= as =bond_legs= is keyed, =payer= joins the row, and amount and
-  rate children carry the amortisation and step schedules the single
-  columns cannot.
+- *In the target model the legs are re-keyed to the trade and given their
+  schedules.* =(trade_id, leg_number)= replaces the surrogate =id= as
+  =bond_legs= is keyed, and amount and rate children carry the amortisation
+  and step schedules the single columns cannot. =payer= has since joined the
+  row; the re-key itself is deferred behind the compound-key template defect
+  the capture below records.
 - *=netting_set_id= leaves the instrument.* =trade_booking= already
   holds it, as a uuid foreign key where the instrument's copy is bare
   text.
@@ -85,6 +87,17 @@ decisions are what they are.
   retirement rather than removed here. Reason: the =rpa.org= domain note,
   the refdata instrument codes and the importer all called it =credit=
   already, and the routing was the only source that disagreed.
+- *A leg records its direction, and the import writes the legs it builds.*
+  =payer= joins =swap_leg= and is mapped both ways, and the handler writes
+  each leg after its instrument and fails the item when a leg fails. A
+  stored swap is an instrument rather than a row.
+- *The legs keep their surrogate key for now.* Re-keying =swap_legs= to
+  =(trade_id, leg_number)= fails to compile a generated test: the
+  compound-key path inserts each extra key column's raw domain value where
+  the generated service takes every key part as text. The fix is a template
+  change that regenerates every component under test, so it belongs with the
+  codegen work and the re-key is recorded as a capture. Reason: a family
+  rework should not carry a tree-wide regeneration behind it.
 
 * Documents
 

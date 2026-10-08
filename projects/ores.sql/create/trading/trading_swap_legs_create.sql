@@ -61,6 +61,7 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "trade_id" uuid not null,
     "trade_activity_id" uuid not null,
     "leg_number" integer not null default 1,
+    "payer" boolean null,
     "leg_type_code" text not null,
     "day_count_fraction_code" text not null,
     "business_day_convention_code" text not null,

@@ -17,15 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_domain_entity_drop.mustache
- * To modify, update the template and regenerate.
- */
 
-drop policy if exists series_axis_values_tbl_party_isolation_policy on "ores_marketdata_series_axis_values_tbl";
-drop policy if exists series_axis_values_tbl_tenant_isolation_policy on "ores_marketdata_series_axis_values_tbl";
-drop rule if exists ores_marketdata_series_axis_values_delete_rule on "ores_marketdata_series_axis_values_tbl";
-drop trigger if exists ores_marketdata_series_axis_values_insert_trg on "ores_marketdata_series_axis_values_tbl";
-drop function if exists ores_marketdata_series_axis_values_insert_fn;
-drop table if exists "ores_marketdata_series_axis_values_tbl";
+drop policy if exists counterparty_business_centres_tbl_tenant_isolation_policy on "ores_refdata_counterparty_business_centres_tbl";
+drop rule if exists ores_refdata_counterparty_business_centres_delete_rule on "ores_refdata_counterparty_business_centres_tbl";
+drop trigger if exists ores_refdata_counterparty_business_centres_insert_trg on "ores_refdata_counterparty_business_centres_tbl";
+drop function if exists ores_refdata_counterparty_business_centres_insert_fn();
+drop index if exists counterparty_business_centres_uniq_idx;
+drop index if exists counterparty_business_centres_counterparty_idx;
+drop index if exists counterparty_business_centres_business_centre_idx;
+drop index if exists counterparty_business_centres_tenant_idx;
+drop table if exists "ores_refdata_counterparty_business_centres_tbl";

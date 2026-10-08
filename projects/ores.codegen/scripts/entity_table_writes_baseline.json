@@ -668,9 +668,9 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_reporting_seed_report_configurations_fn",
-      "file": "projects/ores.sql/create/reporting/reporting_seed_report_configurations_create.sql",
-      "reason": "seeds the risk report config and its root portfolio scope for every definition a party carries, one idempotent pass the per-entity repository cannot express"
+      "name": "ores_reporting_publish_risk_report_configs_from_dq_fn",
+      "file": "projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql",
+      "reason": "publishes the risk report configs the dq catalogue defines into the tenant in one idempotent pass, the reporting publish-from-dq pattern beside it"
     },
     {
       "kind": "sql_function",

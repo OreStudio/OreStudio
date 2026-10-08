@@ -808,6 +808,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::data_domains:write', 'Create and modify data domains');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::data_domains:delete', 'Delete data domains');
 
+    -- Risk report configs
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:read', 'View risk report configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:write', 'Create and modify risk report configs');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::risk_report_configs:delete', 'Delete risk report configs');
+
     -- Subject areas
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::subject_areas:read', 'View subject areas');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'dq::subject_areas:write', 'Create and modify subject areas');

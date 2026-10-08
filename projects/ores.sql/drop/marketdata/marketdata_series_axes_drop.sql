@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists series_axes_tbl_party_isolation_policy on "ores_marketdata_series_axes_tbl";
 drop policy if exists series_axes_tbl_tenant_isolation_policy on "ores_marketdata_series_axes_tbl";
 drop rule if exists ores_marketdata_series_axes_delete_rule on "ores_marketdata_series_axes_tbl";
 drop trigger if exists ores_marketdata_series_axes_insert_trg on "ores_marketdata_series_axes_tbl";

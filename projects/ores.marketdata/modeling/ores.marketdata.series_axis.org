@@ -102,6 +102,7 @@ declares is the order the values are read.
 :current_state:         true
 :no_audit_columns:      true
 :rls_tenant_isolation:  true
+:rls_party_isolation:   true
 :END:
 
 The table is current state and carries no validity window. A rebuilt series

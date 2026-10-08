@@ -8,7 +8,7 @@
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
 #+branch: feature/state-the-stream-wildcard-once
-#+pr:
+#+pr: 2796
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -135,7 +135,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2796][#2796]] | [nats] State the stream wildcard once |
 
 * Review
 

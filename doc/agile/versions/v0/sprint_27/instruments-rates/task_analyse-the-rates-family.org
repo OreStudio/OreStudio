@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 1FBC8267-A81F-40A5-A3CE-46ACA3250C52
+:END:
+#+title: Task: Analyse the rates family and propose its relational data model
+#+description: Rates is the first family after the bond pilot for the relational target of the trade shape investigation, section 14. Survey every rates-related type and subtype in the tree (modeling orgs, SQL, domain C++, mappers, repositories, services, messaging, the ores.ore mapping), then propose the entity-relationship model based on the existing tables but in the clean data-oriented shape: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum. Deliverable is the analysis and ER proposal only; codegen of the types and SQL and the ore mapping update are follow-up tasks.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:rates:data-model:trading:codegen:sprint_27:v0:
+#+owner: marco
+#+branch: feature/analyse-the-rates-family
+#+pr: 2780
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every rates surface and propose the relational entity-relationship model that reworks the family to the instrument table rule of the trade shape investigation section 14, following the bond pilot.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- Every rates-related type and subtype is inventoried across the modeling orgs, SQL, domain C++, mappers, repositories, services, messaging and the ores.ore mapping.
+- The current model's divergences from the instrument table rule are recorded as findings, each with its evidence.
+- The proposed entity-relationship model is recorded as a diagram and table set: family header, product facts, shared children and securities.
+- The rework is staged into verifiable units; no code changes land on this task.
+
+* Plan
+
+Three read-only surveys run in parallel over the family's surfaces — the
+modeling orgs, the generated and hand-written C++/service/messaging
+surface, and the ORE mapping. Their findings are reconciled against the
+instrument table rule section 14 states and against the bond pilot's
+implemented shape, and recorded as the design document beside this task.
+No code changes land on this task.
+
+The one question the bond pilot does not answer is the family boundary:
+the catalogue files fourteen trade types under =product_type= =swap=, and
+two of them are not interest-rate products. The refdata asset class
+catalogue and the domain notes settle it, and the design records the
+decision.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rates instrument tables | 9 | =ls projects/ores.sql/create/trading/trading_*_instruments_create.sql= and select the nine rates names | 514e27f5d1 |
+| Rates tables with no =trade_type= check | 1 (=rpa_instruments=) | =grep -L 'trade_type_code" in'= over the nine create scripts | 514e27f5d1 |
+| Trade types filed under =product_type= =swap= | 14 | =awk -F'|'= over =ores.trading.trade_type_catalogue.org= | 514e27f5d1 |
+| =swap_legs= primary key | =(tenant_id, id, valid_from, valid_to)= — a surrogate =id=, not the trade | =sed -n '/^create table/,/^);/p' trading_swap_legs_create.sql | grep "primary key"= | 514e27f5d1 |
+| Example documents holding a rates trade | 229 of 1623 | =grep -rl "<TradeType>" external/ore/examples/ --include=*.xml= and filter the rates types | 514e27f5d1 |
+| =Swap= trades in the examples tree | 1352 | =grep -c "<TradeType>Swap</TradeType>"= over =external/ore/examples/= | 514e27f5d1 |
+| Hand-written ORE mapper lines for the family | 1129 (=swap_instrument_mapper.cpp=) + 392 (=credit_instrument_mapper.cpp=) + 349 (=trade_mapper.cpp=) + 451 (=exporter.cpp=) | =wc -l= over the four files | 514e27f5d1 |
+
+* Notes
+
+The design document beside this task carries the inventory, the findings
+and the proposal. Its two diagrams are =design_er.puml= and
+=design_er.png=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2780][#2780]] | [agile] Analyse the rates family and propose its relational model |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The analysis is delivered as =design.org= beside this task, with its
+entity-relationship diagram in =design_er.puml= and =design_er.png=. No
+code changed.
+
+- *The family.* The boundary is the refdata =interest_rates= asset class:
+  nine codes over nine tables. =RiskParticipationAgreement= is a credit
+  product and =InflationSwap= an inflation product, though the catalogue
+  files both under =product_type= =swap=; three further codes are
+  unrouted.
+- *The findings.* Twenty, each with its evidence. The schema defects are
+  the missing header, the surrogate-keyed legs, the text-typed option
+  block, and the one table with no coverage. The boundary defects are
+  larger: the import never writes the legs it builds, a cross-currency
+  swap's type is overwritten to =Swap=, seven columns that exist are
+  never written, direction is lost on every leg, and three products have
+  no reverse mapper.
+- *The proposal.* A family header =rate_instruments= with the family's
+  coverage check and its delete cascade; product fact tables for the
+  products that own fields; the legs re-keyed to the trade with a
+  direction and amount and rate children; and the rates family writing
+  to the shared option, schedule and strike shapes the bond pilot built.
+  No security level, because a rates trade has no issuer.
+- *The staging.* Eight units, each ending in a verifiable state, the
+  routing repairs first and the mapping repair as a unit of its own
+  rather than a follow-up.
+
+Implementation does not start on this task. The story carries the
+decisions and the next unit is the routing repairs.

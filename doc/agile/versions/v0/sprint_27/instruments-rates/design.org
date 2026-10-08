@@ -1,0 +1,602 @@
+:PROPERTIES:
+:ID: DAD1E4E9-B54F-496C-A78E-25893AFC3FEA
+:END:
+#+title: Design: A relational model for the rates family
+#+description: The argument from the nine flat rates instrument tables to the instrument table rule of the trade shape investigation: what the rates family is, what the current surfaces hold, the findings against the rule, and the proposed family header, product facts, legs and shared children.
+#+type: design
+#+level: s2
+#+filetags: :trading:data_model:data_oriented_design:codegen:instrument:rates:design:instruments_rates:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
+#+outcome:
+
+#+begin_note
+*This document describes a transition, not the current state.* It argues
+from the rates tables as they are today to the model we intend, and it
+expires when the work lands. It is scoped to the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates
+instruments to the instrument table rule]] story and lives with it, so it
+leaves the default grounding path when this sprint closes.
+
+Do not link to it from durable documentation. The link runs one way, from
+here to the durable document this produces, never back.
+#+end_note
+
+* Summary
+
+The rates family is the first family after the bond pilot. It is nine
+instrument models over nine tables, and it already carries more of the
+target shape than the bond family did: every table is keyed by its trade,
+carries the audit spine, and — with one exception — declares a
+=trade_type_code= check generated from the trade-type catalogue
+([[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][the catalogue]]). What it
+lacks is the factoring the instrument table rule asks for: there is no
+family header, the shared legs table keeps a surrogate key, the option
+block's dates and collections are text, one product has no coverage at
+all, and two of the trade types the catalogue files under =swap= are not
+interest-rate products.
+
+The larger problem is the boundary. The ORE mapping never writes the
+family's legs to the database, overwrites a cross-currency swap's type to
+=Swap=, leaves seven product columns that exist permanently empty, and
+has no reverse mapper for three products. The schema and the mapper
+between them lose what the instrument is.
+
+This page inventories the family across its surfaces and proposes the
+target model: one family header holding the codes and the fields every
+product shares, product fact tables for the products that state fields of
+their own, a re-keyed legs table with amount and rate children, and the
+family's use of the shared option, schedule and strike shapes the bond
+pilot built. It closes with the routing repairs the family needs, the
+blotter's common-date view, and the staging.
+
+The proposal follows the rule section 14 states, after the bond pilot:
+
+| Level | Table | Holds |
+|-------+-------+-------|
+| Family header | one per family | the fields every product in the family shares; a =trade_type= check listing exactly the family's codes; keyed by the trade and pinned to the anchor |
+| Product facts | one per product with fields of its own | only those fields; keyed by the trade, with a check on its own codes |
+| Shared children | legs, schedules, option block, strikes, premiums | keyed by the trade, an ordinal and a role code; the role is data, not a table |
+| Security | issue or contract | the terms the issuer fixes, keyed by the reference datum id and shared by every trade on it |
+
+The rates family has no security level. A swap has no issuer and no ISIN:
+every field of a rates trade belongs to that trade. That is the one place
+the rule's four levels do not all apply, and it is why the proposal below
+spends its length on the header, the legs and the shared children rather
+than on a master entity.
+
+* Detail
+
+** Context: the bond pilot and the instrument table rule
+
+The rates story exists to apply what the bond pilot proved. Three bodies
+of prior work bound this one, and their conclusions are assumed.
+
+- Section 14 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]],
+  which states the instrument table rule and names the families still to
+  be reworked: "The rates, FX, equity, credit and commodity families are
+  still to do."
+- The clean-trading story
+  [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][0DC1BAC7]] and its
+  decisions, which set the shape the rates family must now join: the
+  instrument's key is its trade (D14), the relationship the schema can
+  hold is declared and enforced at the insert trigger rather than by a DDL
+  foreign key (D15), the family header names the rows it owns and the
+  generated delete rule closes them (D27), every instrument table declares
+  the codes it accepts (D28), and the shared schedule table is the home
+  for an observation schedule any family writes to (D29).
+- The bond relational model deliverable
+  [[id:9ABB181D-2582-4084-8FFB-A0CE4114B171][9ABB181D]] and its
+  implementation, which is the shape the rates models are compared
+  against: =bond_instruments= as the header, =bond_options= and its
+  siblings as the product facts, =bond_legs= as the trade-owned legs, and
+  the shared =instrument_*= children as the list shapes.
+
+The rates analysis is deliberately narrower than the bond one. Bond asked
+"where do the terms live?" because ten products share an ISIN and the
+answer was a master entity. Rates has no such shared entity, so this page
+asks a different question: *what does a rates family header hold when the
+family has no security?*
+
+** What counts as the rates family
+
+The family boundary is the refdata product taxonomy, not the catalogue's
+=product_type= column. That column is misnamed — the trade-model
+investigation calls it defect 10 — and it carries the asset class:
+
+#+begin_quote
+Top-level product classification codes, shown on instrument_code and
+asset_class_code.
+#+end_quote
+
+[[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][ores.refdata.asset_class_catalogue]]
+declares seven classes: =fx=, =interest_rates=, =credit=, =equity=,
+=commodity=, =inflation= and =bond=. It defines =interest_rates= as
+"deposits, forward rate agreements, interest rate swaps and swaptions,
+caps/floors, and cross-currency swaps".
+
+The domain notes agree with the taxonomy and disagree with the catalogue
+on two codes:
+
+| Code | Table today | Asset class (domain note) | Catalogue =product_type= |
+|------+-------------+---------------------------+--------------------------|
+| Swap | =vanilla_swap_instruments= | =rates= | swap |
+| CrossCurrencySwap | =vanilla_swap_instruments= | =rates= | swap |
+| FlexiSwap | =vanilla_swap_instruments= | =rates= | swap |
+| ForwardRateAgreement | =fra_instruments= | =rates= | swap |
+| CapFloor | =cap_floor_instruments= | =rates= | swap |
+| Swaption | =swaption_instruments= | =rates= | swap |
+| BalanceGuaranteedSwap | =balance_guaranteed_swap_instruments= | =rates= | swap |
+| CallableSwap | =callable_swap_instruments= | =rates= | swap |
+| KnockOutSwap | =knock_out_swap_instruments= | =rates= | swap |
+| RateDigitalOption | none | =rates= | swap |
+| SwaptionStraddle | none | =rates= | swap |
+| ForwardVolatilityAgreement | none | rates-shaped, vol product | swap |
+| RiskParticipationAgreement | =rpa_instruments= | *credit* | swap |
+| InflationSwap | =inflation_swap_instruments= | *inflation* | swap |
+
+The evidence for the two outliers is the knowledge base's own
+identifier tables: =rpa.org= states =Asset class =credit=, and
+=cpiswap.org= states =Asset class =inflation= with =ORE Studio product
+code = none; not a product in its own right=. The catalogue's =swap=
+for both is the taxonomy disagreement defect 10 describes.
+
+*Decision proposed.* The rates family is the eleven =interest_rates=
+codes. =RiskParticipationAgreement= leaves for the credit family and
+=InflationSwap= for an inflation family that has no story yet;
+=ForwardVolatilityAgreement= is recorded with them as a product the
+family does not yet model. The three codes with no instrument cell keep
+that state until the ORE importer writes them.
+
+** The current model, surface by surface
+
+*** The instrument tables
+
+Nine tables, one per model, all keyed by =(tenant_id, trade_id)= with the
+SCD2 spine and the audit columns. Their own columns, over the scaffolding
+every entity carries:
+
+| Table | Own columns |
+|-------+-------------|
+| =vanilla_swap_instruments= | start_date, maturity_date, settlement_lag, netting_set_id, description |
+| =fra_instruments= | start_date, end_date, currency, rate_index, long_short, strike, notional, description |
+| =cap_floor_instruments= | start_date, maturity_date, description |
+| =swaption_instruments= | expiry_date, exercise_type, settlement_type, long_short, start_date, maturity_date, description |
+| =balance_guaranteed_swap_instruments= | start_date, maturity_date, lockout_days, description |
+| =callable_swap_instruments= | start_date, maturity_date, description |
+| =knock_out_swap_instruments= | start_date, maturity_date, barrier_start_date, barrier_level, barrier_type, description |
+| =inflation_swap_instruments= | start_date, maturity_date, inflation_index_code, base_cpi, lag_convention, description |
+| =rpa_instruments= | start_date, maturity_date, reference_counterparty, participation_rate, protection_fee, description |
+
+The three swaps — Swap, CrossCurrencySwap and FlexiSwap — share
+=vanilla_swap_instruments=, so nine tables carry eleven
+=interest_rates= codes.
+
+Every table but =rpa_instruments= declares the codes it accepts. The
+check is not written by hand: the model states
+=:routed_by: ores.trading.trade_type_catalogue= and
+=:routed_column: trade_type_code=, and the check is generated from the
+catalogue so the lists are disjoint and a trade's instrument can sit in
+one table only. =vanilla_swap_instruments= accepts the three swap codes,
+=balance_guaranteed_swap_instruments= one, and so on.
+
+*** The legs
+
+=ores_trading_swap_legs_tbl= is the one shared legs table of the nine
+families. Its row keeps a surrogate =id= and names the parent through
+=trade_id=; =leg_number= is the 1-based ordinal and =leg_type_code= is the
+discriminator (Fixed, Floating, CMS, CPI, OIS and the rest), so the leg
+type is data and not a table — decision D10 of the clean-trading story
+([[id:6F6B42BE-C8BB-4105-9ED3-7E87D67F9EB7][the model]]).
+
+The leg carries one =notional=, one =fixed_rate= and one =spread=, with
+=floating_index_code= null on a fixed leg and =fixed_rate= null on a
+floating leg. It carries no amortisation row and no rate schedule, so a
+leg whose notional amortises or whose rate steps is flattened at the
+boundary. It validates five code columns against ores.refdata through
+insert-trigger functions, and exposes one custom read,
+=read_by_instruments_batch=, that the trade read path needs because no
+generated read covers a fetch of many instruments' legs at once.
+
+*** The shared children
+
+The bond pilot built a family of list-shaped children under
+=ores_trading_instrument_*=. Nine of them exist:
+
+| Table | Key | Holds |
+|-------+-----+-------|
+| =instrument_schedules= | trade, owner_role, owner_number, schedule_role, sequence_number | a rule-based or date-based schedule |
+| =instrument_schedule_dates= | the same, plus the entry ordinal | one date of a date-based schedule |
+| =instrument_option= | trade | the option block |
+| =instrument_option_premiums= | trade, sequence_number | one premium |
+| =instrument_option_exercise_fees= | trade, sequence_number | one exercise fee |
+| =instrument_option_payment_dates= | trade, sequence_number | one payment date |
+| =instrument_strikes= | trade | the strike block |
+| =callable_swap_call_dates= | trade, sequence_number | one call date of a callable swap |
+
+The rates models do not reference any of them. The rates facts are flat
+columns on the product table, the legs are in the legs table, and
+=callable_swap_call_dates= is the one rates-owned child. The option block
+and the schedule pair are used by bond alone today.
+
+*** The ORE shape the tables have to hold
+
+The upstream schema names one product data type per rates trade type, and
+the family's own economics are defined there. The types that matter to
+this family are =swapData=, =flexiSwapData=, =callableSwapData=,
+=knockOutSwapData=, =bgSwapData=, =capFloorData=, =swaptionData=,
+=swaptionStraddleData= and =forwardRateAgreementData=, in
+=external/ore/xsd/instruments.xsd=.
+
+Two properties of that schema shape the proposal below:
+
+- Every swap-shaped product — =swapData=, =flexiSwapData=,
+  =callableSwapData=, =knockOutSwapData=, =bgSwapData=, =capFloorData= and
+  the =swaptionData='s underlying — holds its economics as a list of
+  =LegData= elements. The leg list is the family's shared child, and the
+  product data type is what distinguishes one product from another.
+- =swaptionData= carries an inner =swapData=, so a swaption's underlying
+  swap is the same structure as a standalone swap.
+
+*** The ORE mapping
+
+The importer and the exporter are hand-written end to end:
+=swap_instrument_mapper.cpp= (1129 lines) holds a forward mapper for each
+of the ten swap-family types and a reverse mapper for six;
+=credit_instrument_mapper.cpp= (392 lines) holds RPA;
+=trade_mapper.cpp= dispatches by trade type; =exporter.cpp:132-158=
+routes the way back. The generated ORE binding, =domain.hpp= and
+=domain.cpp=, is 13506 and 108648 lines and is not the problem.
+
+Four things the mapping does to the family's data are worth stating
+plainly, because they, not the schema, define what the target has to
+repair.
+
+- *The legs never reach the database.* =map_leg= fills a
+  =swap_instrument_data::legs= vector for every swap-shaped product, and
+  the import handler never reads it: the only =r.legs= use in
+  =ore_import_execute_handler.cpp= is the scripted branch. No file under
+  =projects/ores.ore/= sends a =put_swap_leg_request=. The export path
+  reads legs back from the database, so a stored swap exports with no
+  legs at all. The two legs of an IRS are the instrument.
+- *CrossCurrencySwap and FlexiSwap are flattened onto the vanilla swap
+  table, and the currency swap's type is lost.* =forward_swap= reads
+  either =SwapData= or =CrossCurrencySwapData= and then writes
+  =trade_type_code = "Swap"= for both; the reverse mapper always emits
+  =<TradeType>Swap</TradeType>=. A cross-currency swap round trips as an
+  ordinary swap.
+- *Several products' own columns are never populated.*
+  =swaption_instruments.long_short= and =.settlement_type=,
+  =balance_guaranteed_swap_instruments.lockout_days=,
+  =inflation_swap_instruments.inflation_index_code=, =.base_cpi= and
+  =.lag_convention=, and =rpa_instruments.participation_rate= and
+  =.protection_fee= all exist as columns and are never written by any
+  mapper. FRA's =long_short= is hardcoded to =Long= in both directions,
+  and CapFloor's is hardcoded on the reverse.
+- *Leg direction has nowhere to go.* =legData/Payer= is required by the
+  schema, and =ores_trading_swap_legs_tbl= has no payer column. A fixed
+  leg and a floating leg are stored with the same direction. The leg's
+  amortisations, payment dates, payment lag, last-period day counter and
+  settlement data have no destination either.
+
+The corpus that exercises this is large: 229 of the 1623 example
+documents contain a rates trade, and across the whole examples tree the
+trade counts are Swap 1352, Swaption 376, CapFloor 77, ForwardRateAgreement
+60, FlexiSwap 12, InflationSwap 8, CrossCurrencySwap 6,
+RiskParticipationAgreement 5, CallableSwap 4, BalanceGuaranteedSwap 3 and
+KnockOutSwap 3. The three unrouted types have ORE types and elements but
+no document at all.
+
+*** The programming surface
+
+The nine models carry =:has_batch_read: true= and generate their api,
+core and service layers through the =trading-instrument= profile; each
+entity is a fixed set of generated files (domain type, json and table io,
+event, generator, protocol, handler, registrar, repository entity,
+mapper, repository, service, history field mapper, service event
+registrar and the SQL pair). The =rpa_instrument= model is the exception
+in its SQL section: it declares no =:routed_by:= and no
+=:routed_column:=, so no =trade_type_code= column and no coverage check
+are generated for it.
+
+The *family aggregation* around those generated leaves is hand-written,
+and it is where the family's shape leaks:
+
+- =registrar_rates.cpp:36-102= is the hand-written rates registrar. It
+  calls the generated per-entity registrars, one line each, in a fixed
+  order. =registrar_detail.hpp:45-48= declares it and
+  =registrar.cpp:139= appends it to the composition root.
+- The shared children are not registered there. =registrar_bond.cpp:130-169=
+  registers =instrument_schedule=, =instrument_schedule_date=,
+  =instrument_option=, =instrument_option_premium=,
+  =instrument_option_exercise_fee=, =instrument_option_payment_date= and
+  =instrument_strike= — the shapes the rates family is meant to share.
+  =callable_swap_call_dates= is registered by the rates registrar instead.
+- =instrument_payload.cpp= is a hand-written wire codec that duplicates
+  what the generated per-entity protocols express: a leaf-name list, a
+  =swap_leaf_payload= struct, and hand-written =encode_swap_leaf=,
+  =decode_swap= and a rates branch of the instrument decoder. It sits
+  beside =rates_instrument_variant.hpp=, =instrument.hpp= and
+  =trade_instrument.hpp=, three hand-written variants.
+- =trade_export_service.cpp= carries two hand-written copies of the
+  routing the generator already produces: a switch that buckets trade ids
+  per table (=:115-206=) and a per-rates-type service dispatch
+  (=:331-377=), in a file that also calls the generated
+  =instrument_table_for= at =:109=.
+- The ORE side is hand-written throughout: =swap_instrument_mapper.cpp=
+  holds a forward mapper per rates product, and =exporter.cpp:132-158=
+  routes the reverse direction by trade type string.
+
+*** Test coverage
+
+The rates family is thin on tests. Generated shell command tests exist
+for the nine instruments and =swap_leg= (17 cases each, 19 for
+=swap_leg=). Beyond those:
+
+- No generated eventing integration test exists for any of the nine
+  instruments. =swap_leg_eventing_integration_tests.cpp= is the only rate
+  entity that has one.
+- No repository or service test exists for any rates entity. The
+  repository tests that do exist cover =equity_*=, =fx_*=, =activity_type=,
+  =bond_leg_amount= and =trade_type= only.
+- The wire codec's behaviour is covered by
+  =domain_instrument_payload_tests.cpp= (6 cases, hand-written) and
+  =messaging_export_portfolio_codec_tests.cpp= (4 cases, hand-written).
+- The round trip is covered in ores.ore by the IR, swaption, exotic,
+  credit and conventions golden suites.
+
+** Findings for the family
+
+Each finding names its evidence. R1 to R7 are the schema's divergences
+from the rule, R8 to R10 are the family's routing and ownership gaps, and
+R11 to R20 are what the programming surface does to the family's data. A
+reader who wants the reason this story is worth doing should read R15.
+
+| # | Finding | Evidence |
+|---+---------+----------|
+| R1 | One product has no coverage at all. =rpa_instruments= has no =trade_type_code= column and no check, so nothing states which codes it accepts. It is the one table of the nine without a check. | =trading_rpa_instruments_create.sql:33-58=; =rpa_instrument.org= SQL Flags only =tablename= |
+| R2 | RPA's model contradicts itself. It binds =instrument_identity=, whose group declares =trade_type_code=, yet generates no such column; and =protection_fee= is =:nullable: false= with =:cpp_type: std::optional<double>= and =:default_value: std::nullopt=. | =rpa_instrument.org:231= and =:135-137=; =instrument_identity_field_group.org:48-51= |
+| R3 | Three generator defaults name codes the catalogue does not hold: =FRA= against =ForwardRateAgreement=, =EuropeanSwaption= against =Swaption=, and =ZeroCouponInflationSwap= against =InflationSwap=. None of the three strings occurs in the trade-types seed or in any rates create script. | =fra_instrument.org:43=, =swaption_instrument.org:44=, =inflation_swap_instrument.org:43= |
+| R4 | The legs table cannot hold a leg whose notional amortises or whose rate steps. One =notional=, one =fixed_rate= and one =spread= are the whole economics of a leg, and the boundary flattens the rest. | =trading_swap_legs_create.sql:57-78= |
+| R5 | The option block holds dates and collections as text: =premium_amount=, =premium_currency=, =premium_pay_date=, =exercise_prices= and =settlement_fixing_date= are all =text=, and =instrument_option_exercise_fees.start_date= is =text=. | =trading_instrument_options_create.sql:51-92=; =trading_instrument_option_exercise_fees_create.sql:39-47= |
+| R6 | There is no family header. Every product table repeats =start_date=, =maturity_date= and =description=; nothing owns the family's rows, so no delete cascade closes a rates trade's legs, schedules and option rows with it. The rates delete rule closes its own row only, where the bond header's calls a family cascade function. | the nine create scripts; =trading_vanilla_swap_instruments_create.sql= delete rule against =trading_bond_instruments_create.sql= delete rule |
+| R7 | No rates instrument row is pinned to its trade's type and party. =bond_instruments= is not either, but the rule asks for it: the anchor declares unique indexes on =(tenant_id, id, party_id)= and =(tenant_id, id, counterparty_id)= only, so no composite foreign key that includes =trade_type= can be declared yet. | =trading_trades_create.sql=; =trades_id_party_idx= |
+| R8 | =RiskParticipationAgreement= is in three-way disagreement. The generated routing sends it to =rpa_instruments=; the ORE importer writes it to =credit_instruments=; the credit table's own check excludes the code; and =rpa_instruments= has no routing column that could accept it. | =trade_type_routing.hpp:98-99=; =trade_mapper.cpp:151-152=; =trading_credit_instruments_create.sql:88=; =trading_rpa_instruments_create.sql= |
+| R9 | The blotter has no common-date view. Each product states its dates under its own name — =start_date=, =maturity_date=, =expiry_date=, =end_date= — so a deal grid cannot read one date column across the family. | the nine create scripts; =trade_blotter.org= |
+| R10 | The export path drops three products. =exporter.cpp= has no reverse mapper for =InflationSwap=, =BalanceGuaranteedSwap= or =FlexiSwap= and falls through to "No reverse mapper for swap type"; =swap_instrument_mapper.cpp= likewise has no reverse for those three. | =exporter.cpp:132-158=, =:155-157=; =swap_instrument_mapper.cpp:734-1024= |
+| R11 | The shared children are registered by the bond family's composition root, not the rates one. =registrar_bond.cpp= registers the schedule, option and strike registrars the rates family is meant to share; =callable_swap_call_date= is registered by the rates registrar instead. | =registrar_bond.cpp:130-169=; =registrar_rates.cpp:74= |
+| R12 | The rates routing is duplicated by hand beside the generated one. =trade_export_service.cpp= buckets trade ids per table in a switch and dispatches per rates type, in the same file that already calls the generated =instrument_table_for=. | =trade_export_service.cpp:109=, =:115-206=, =:331-377= |
+| R13 | The wire carries rates through hand-written artefacts: a rates variant, a swap carrier, a trade-instrument variant and a codec that encodes and decodes the leaves by hand, next to the generated per-entity protocols. | =rates_instrument_variant.hpp:36-44=; =instrument.hpp:64-68=; =trade_instrument.hpp:43-51=; =instrument_payload.cpp:41-49,110-124,200-206,330= |
+| R14 | Eight of the nine products have no reverse mapper and no coverage in the export direction, and the family has no eventing integration test, repository test or service test: =swap_leg_eventing_integration_tests.cpp= is the only rates entity with one. | =swap_instrument_mapper.cpp=; =core/tests/=; =core/tests/swap_leg_eventing_integration_tests.cpp= |
+| R15 | The legs never reach the database. =map_leg= fills the legs for every swap-shaped product and the import handler never reads them; no file under =projects/ores.ore/= sends a leg request. The export reads legs back from the database, so a stored swap exports with no legs. The two legs of an IRS are the instrument. | =instrument.hpp:64-68=; =swap_instrument_mapper.cpp:410-445=; =ore_import_execute_handler.cpp:2014-2172= |
+| R16 | A cross-currency swap is flattened onto the vanilla swap table and its type is overwritten. =forward_swap= writes =trade_type_code = "Swap"= for both =SwapData= and =CrossCurrencySwapData=, and the reverse always emits =Swap=. It round trips as an ordinary swap. | =swap_instrument_mapper.cpp:454-462=, =:738-745= |
+| R17 | Seven columns that exist are never written by any mapper: swaption =long_short= and =settlement_type=, =lockout_days=, =inflation_index_code=, =base_cpi=, =lag_convention=, and RPA =participation_rate= and =protection_fee=. | =swap_instrument_mapper.cpp:881-928=, =:1097-1127=, =:533-563=; =credit_instrument_mapper.cpp:249-264= |
+| R18 | Direction is lost for the whole family. =legData/Payer= is required by ORE, =swap_legs= has no payer column, FRA hardcodes =Long= in both directions, and CapFloor hardcodes it on the reverse. | =instruments.xsd:932=; =trading_swap_legs_create.sql:57-78=; =swap_instrument_mapper.cpp:595=, =:819=, =:838= |
+| R19 | RPA imports into =credit_instruments=, whose check excludes the code and which therefore rejects it, and exports as a bare envelope, because the export reads the =rpa_instruments= table the import never writes. | =ore_import_execute_handler.cpp:2331-2358=; =trading_credit_instruments_create.sql:88=; =trade_export_service.cpp:194-195=, =:374-376= |
+| R20 | The three unrouted codes have ORE types and elements but no table and no mapper branch: =map_instrument= falls through to =std::monostate= and the importer saves no instrument. | =instruments.xsd:289=, =:1561=, =:4610=; =trade_mapper.cpp:346=; =ore_import_execute_handler.cpp:2012-2013= |
+
+** The proposed entity-relationship model
+
+The model keeps the nine tables' trade-keyed identity and adds the one
+level the rule asks for. The guiding decomposition:
+
+- The fields every rates product shares become the *family header*. For
+  this family the shared set is thin — =description= plus the dates the
+  products that have them agree on — and the header's real work is to
+  carry the family's coverage check and to own the family's rows for the
+  delete cascade.
+- The fields a product states of its own become that product's *fact
+  table*, keyed by the same trade, with a check on its own codes.
+- The rows a product states as a list — a leg, a schedule, a strike, an
+  option — become rows in the *shared children*, keyed by the trade, an
+  ordinal and a role code.
+- The rates family has *no security level*. Nothing is keyed by a
+  reference datum, because a swap has no issuer.
+
+The model in one picture, drawn in the repo's PlantUML ER conventions:
+
+#+caption: The proposed relational model for the rates family
+[[proj:doc/agile/versions/v0/sprint_27/instruments-rates/design_er.png]]
+
+Regenerate the PNG from =design_er.puml=, the source beside this
+document, with the file's =compile-command=.
+
+The entities:
+
+| Entity | Table | Key | Holds |
+|--------+-------+-----+-------|
+| Rates instrument (header) | =ores_trading_rate_instruments_tbl= | (tenant_id, trade_id) + SCD2 | version, party_id, trade_type_code (coverage check over the family's codes), trade_activity_id, start_date, maturity_date, description, audit spine |
+| Swap leg | =ores_trading_swap_legs_tbl= (re-keyed) | (tenant_id, trade_id, leg_number) + SCD2 | leg_type_code, the convention codes, floating_index_code, fixed_rate, spread, notional, currency |
+| Leg amount | =ores_trading_swap_leg_amounts_tbl= | (tenant_id, trade_id, leg_number, sequence_number) + SCD2 | one notional of an amortising or accreting leg |
+| Leg rate | =ores_trading_swap_leg_rates_tbl= | the same | one fixed rate or spread of a stepping leg |
+| FRA facts | =ores_trading_fra_instruments_tbl= | (tenant_id, trade_id) + SCD2 | end_date, currency, rate_index, long_short, strike, notional |
+| Cap/floor facts | =ores_trading_cap_floor_instruments_tbl= | the same | the product's own fields; strikes and schedules as shared children |
+| Swaption facts | =ores_trading_swaption_instruments_tbl= | the same | expiry_date, exercise_type, settlement_type, long_short, the underlying swap's start and maturity |
+| Balance-guaranteed facts | =ores_trading_balance_guaranteed_swap_instruments_tbl= | the same | lockout_days |
+| Callable-swap facts | =ores_trading_callable_swap_instruments_tbl= | the same | no fields today; call dates as the =callable_swap_call_dates= child |
+| Knock-out facts | =ores_trading_knock_out_swap_instruments_tbl= | the same | barrier_start_date, barrier_level, barrier_type |
+| Shared option block | =ores_trading_instrument_options_tbl= and its four children | trade (+ ordinal) | the swaption's option data, with its text dates and collections retyped |
+| Shared schedules | =ores_trading_instrument_schedules_tbl= and =instrument_schedule_dates= | trade, owner_role, owner_number, schedule_role, sequence_number | the cap/floor and swap-variant schedules |
+| Shared strikes | =ores_trading_instrument_strikes_tbl= | trade | the cap/floor and swaption strikes |
+
+The relationships, stated as keys:
+
+- Every rates row — the header row included — is keyed by =(tenant_id,
+  trade_id)= and pins to the anchor with a composite foreign key on
+  =(tenant_id, trade_id, party_id, trade_type)=. The anchor gains the
+  unique index that key needs; that is a change to the trade model, not
+  to this family.
+- The product fact tables and the shared children name the same trade as
+  the header. They are joined by the trade key, not by a declared foreign
+  key, exactly as the bond family's facts join =bond_instruments=.
+- The header declares the rows it owns in a =* Delete cascade= section,
+  so the generated delete rule closes the family's legs, children and
+  facts with it. This is finding R6's repair.
+- =swap_leg= keeps =leg_number= as the ordinal and =leg_type_code= as the
+  discriminator, and drops the surrogate =id=: the trade identifies the
+  instrument and the ordinal identifies the leg, as =bond_legs= does with
+  its =(trade_id, leg_role, leg_number)= key. This is finding R4's repair.
+- =swap_leg_amount= and =swap_leg_rate= hang off the leg and carry the
+  amortisation schedule and the rate steps the single columns cannot.
+- The option block, schedules and strikes keep the shared shapes the bond
+  pilot built. The rates family writes to them; it does not widen them.
+  The one exception is =instrument_schedules.owner_role=, whose current
+  check lists =trs_funding=, =repo=, =ascot_swap=, =option= and =trs=:
+  the rates family's own owner roles are added to that list when the
+  first rates schedule lands.
+
+The alternatives, rejected:
+
+- *Keep the nine tables as they are.* Each product table already carries
+  its own check and its trade key, and the products share no economics,
+  so a header looks redundant. It is rejected because nothing then owns
+  the family: a delete leaves the legs and the children behind, and the
+  blotter has no one row per rates trade to read. The header is a
+  coverage and ownership device first, a field container second.
+- *One table per distinct full shape.* It repeats the shared columns in
+  every product table and still has no owner; it is the current design
+  with the sparse columns moved.
+- *A security level for rates.* There is no issuer and no ISIN. An
+  =rate_issue= table would have no producer.
+- *Fold the family into the trade anchor.* The anchor is immutable and
+  its columns are fixed; the economics amend and the anchor must not.
+
+** The blotter's common-date view
+
+The rates story is where the blotter's common-date view lands (finding
+R9). The view maps each product's date columns to one set of names —
+trade date, start, expiry, maturity — so a deal grid reads one date
+column across the family and each later family adds its own mapping.
+The view is generated, not hand-written, because the mapping is a
+property of the models.
+
+** Mapping the current model onto the target
+
+| Current | Target |
+|---------+--------|
+| =vanilla_swap_instruments= (header and facts in one) | the header's swap rows; =settlement_lag= to the header, =netting_set_id= out to the booking, no fact table |
+| =fra_instruments= | header row + =fra_instruments= facts |
+| =cap_floor_instruments= | header row + =cap_floor_instruments= facts + strikes and schedules as children |
+| =swaption_instruments= | header row + =swaption_instruments= facts + the shared option block |
+| =balance_guaranteed_swap_instruments= | header row + facts |
+| =callable_swap_instruments= | header row + =callable_swap_call_dates= child |
+| =knock_out_swap_instruments= | header row + facts |
+| =inflation_swap_instruments= | leaves the family for inflation |
+| =rpa_instruments= | leaves the family for credit |
+| =swap_legs= (surrogate key) | re-keyed to (trade_id, leg_number) + amount and rate children |
+
+The audit spine, the SCD2 overlap exclusion, the version uniqueness
+index, the tenant isolation policy and the trade-activity foreign key
+carry over unchanged.
+
+** What each surface must change
+
+- *Models.* Author the header model; re-key =swap_leg=; add
+  =swap_leg_amount= and =swap_leg_rate=; give the header the
+  =* Delete cascade= section; add =:routed_column:= and the
+  =trade_type_code= column to the tables that lack it; retype the option
+  block's text dates and collections; fix the three generator defaults;
+  add the rates owner roles to =instrument_schedules=.
+- *SQL.* Regenerated from the models. The migration script moves the rows
+  of the nine tables into the header and the facts, which is the one
+  hand-written artefact.
+- *The catalogue.* Move =RiskParticipationAgreement= to
+  =credit_instrument=, so the generated routing stops disagreeing with the
+  importer and the credit table's check (finding R8). =InflationSwap=
+  leaves for an inflation family when that family is scaffolded; until
+  then its route stands and the reason is recorded. The three unrouted
+  codes are recorded as products with no table.
+- *The ORE mapping.* This is the family's largest repair, not a
+  follow-up. Make the import write the legs it already builds (finding
+  R15); keep a cross-currency swap's type instead of overwriting it to
+  =Swap= (finding R16); populate the seven columns that exist and are
+  never written, or drop them and record why (finding R17); give a leg
+  its direction (finding R18); point each product's import at the header
+  and its fact table; and add the missing reverse mappers for
+  =InflationSwap=, =BalanceGuaranteedSwap= and =FlexiSwap= (finding R10).
+- *The wire.* Replace the hand-written rates variant, carrier and codec
+  with the generated per-entity protocols, or record why the carrier must
+  stay hand-written — the three variants and =instrument_payload.cpp= are
+  the family's largest hand-written surface (finding R13).
+- *The composition roots.* Move the shared children out of
+  =registrar_bond.cpp= into the root that owns them, and let the family
+  registrars follow the generated shape rather than being hand-listed
+  (findings R11, R12).
+- *The service and the shell.* Regenerated for the header; the rates units
+  follow the header's commands. The export service's hand-written switch
+  and per-type dispatch collapse onto the generated routing it already
+  calls (finding R12).
+- *Tests.* Generate the eventing integration test for the nine
+  instruments, and add repository and service coverage where the family
+  has none (finding R14). Re-run the round trip over the family's corpus
+  at the new shape.
+
+** Staging
+
+Each unit ends in a state a reviewer can verify on its own.
+
+1. The routing repairs: RPA leaves for credit, the three generator
+   defaults are fixed, and the coverage gap R1 closes. No table is
+   reshaped. This is the smallest unit and it removes the two taxonomies'
+   disagreement from the family's diff.
+2. The legs: re-key =swap_legs=, give the leg its direction, add the
+   amount and rate children, and make the import write the legs it
+   already builds. This is the unit that makes a stored swap an
+   instrument rather than a row (findings R4, R15, R18).
+3. The header and the fact tables: author =rate_instruments=, move each
+   product's shared fields to it, give it the cascade, populate the
+   seven columns that exist and are empty, and stop overwriting the
+   cross-currency type (findings R6, R16, R17).
+4. The shared children: move the cap/floor strikes and schedules and the
+   swaption option block onto the shapes the bond pilot built, and move
+   their registration to the right root (finding R11).
+5. The composite anchor key: add the anchor's unique index and the
+   instruments' composite foreign key (finding R7).
+6. The wire and the export path: the missing reverse mappers, and the
+   hand-written codec's disposition (findings R10, R13).
+7. The blotter's common-date view (finding R9).
+8. The round trip over the family's corpus, the migration script, and the
+   missing tests (findings R9, R14).
+
+* Decisions
+
+- *D1, the family boundary.* The family is the =interest_rates= asset
+  class, not the catalogue's =product_type= value. =RiskParticipationAgreement=
+  and =InflationSwap= are credit and inflation products and leave. Reason:
+  the refdata taxonomy is the single source for the class
+  ([[id:4043DE4C-5CDB-455E-B208-5AFF69AA76AE][asset_class_catalogue]]) and the two
+  domain notes state the classes independently; =product_type= is defect
+  10's misnamed column.
+- *D2, the header's name.* =rate_instruments=, after =bond_instruments=.
+  =swap_instruments= was rejected because the family's own legs table is
+  already called =swap_legs= and the header is the family's, not the
+  swap's.
+- *D3, the header's content.* The header holds the coverage check, the
+  trade-activity key, =description= and the dates the products agree on,
+  and owns the family's cascade. It is a coverage and ownership device
+  first; a field every product does not share does not move to it.
+- *D4, the security level.* None. A rates trade's economics belong to the
+  trade, so there is no master entity to normalise them onto.
+- *D5, netting_set_id.* It leaves the instrument. =trade_booking= already
+  holds =netting_set_id=, and holds it as a =uuid= foreign key into
+  =ores_refdata_netting_sets_tbl=, where the instrument's copy is a bare
+  =text= column checked against nothing. Keeping both would leave two
+  columns for one fact with two types.
+
+* Out of scope
+
+- The credit and inflation families' own reworks, which own
+  =rpa_instruments= and =inflation_swap_instruments= once they leave.
+- The reference tables that turn the family's soft code references into
+  real foreign keys. They are the shared reference-data work the
+  trade-model investigation names, not this family's.
+- The three unrouted codes' products, which need ORE importer support
+  before a table can hold them.
+
+* See also
+
+- [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] — the story this design serves.
+- [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]] — section 14 is the rule.
+- [[id:9ABB181D-2582-4084-8FFB-A0CE4114B171][A relational data model for the bond family]] — the pilot this follows.
+- [[id:0DC1BAC7-DDAE-4F64-B800-49FBF8D723C1][Clean ores.trading to the component clean standard]] — the decisions the family joins.

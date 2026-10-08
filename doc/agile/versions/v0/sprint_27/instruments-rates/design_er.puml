@@ -1,0 +1,364 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Rates family — proposed relational model (target)
+
+hide circle
+skinparam linetype ortho
+
+package "The anchor" {
+  entity ores_trading_trades_tbl #E8E8E8 {
+    * tenant_id : uuid <<PK>>
+    * id : uuid <<PK>>
+    --
+    * party_id : uuid
+      counterparty_id : uuid
+    * trade_type : text
+    * counterparty_scope : text
+    * booking_nature : text
+    * entry_channel : text
+  }
+}
+
+package "Proposed family tables" {
+  entity ores_trading_rate_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK, FK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * party_id : uuid <<FK>>
+    * trade_type_code : text
+    * trade_activity_id : uuid <<FK>>
+      start_date : date
+      maturity_date : date
+      description : text
+    * modified_by : text
+    * performed_by : text
+    * change_reason_code : text
+    * change_commentary : text
+  }
+
+  entity ores_trading_swap_legs_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK, FK>>
+    * trade_id : uuid <<PK, FK>>
+    * leg_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * party_id : uuid
+    * trade_activity_id : uuid <<FK>>
+    * leg_type_code : text
+    * day_count_fraction_code : text
+    * business_day_convention_code : text
+    * payment_frequency_code : text
+      floating_index_code : text
+      fixed_rate : numeric
+      spread : numeric
+    * notional : numeric
+    * currency : text
+  }
+
+  entity ores_trading_swap_leg_amounts_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * leg_number : int <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * start_date : date
+    * end_date : date
+    * amount : numeric
+  }
+
+  entity ores_trading_swap_leg_rates_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * leg_number : int <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * start_date : date
+    * end_date : date
+      fixed_rate : numeric
+      spread : numeric
+  }
+
+  entity ores_trading_fra_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * end_date : date
+    * currency : text
+    * rate_index : text
+    * long_short : text
+    * strike : numeric
+    * notional : numeric
+  }
+
+  entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * long_short : text
+  }
+
+  entity ores_trading_swaption_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * expiry_date : date
+    * exercise_type : text
+    * settlement_type : text
+    * long_short : text
+      underlying_start_date : date
+      underlying_maturity_date : date
+  }
+
+  entity ores_trading_balance_guaranteed_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+      lockout_days : int
+  }
+
+  entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+  }
+
+  entity ores_trading_knock_out_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * barrier_start_date : date
+    * barrier_level : numeric
+    * barrier_type : text
+  }
+}
+
+package "Shared children (built by the bond pilot)" {
+  entity ores_trading_callable_swap_call_dates_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * call_date : date
+  }
+
+  entity ores_trading_instrument_schedules_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * owner_role : text <<PK>>
+    * owner_number : int <<PK>>
+    * schedule_role : text <<PK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * schedule_kind : text
+      start_date : date
+      end_date : date
+      tenor : text
+      calendar : text
+      convention : text
+      rule : text
+      first_date : date
+      last_date : date
+  }
+
+  entity ores_trading_instrument_schedule_dates_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * owner_role : text <<PK>>
+    * owner_number : int <<PK>>
+    * schedule_role : text <<PK>>
+    * schedule_sequence_number : int <<PK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * schedule_date : date
+  }
+
+  entity ores_trading_instrument_options_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * long_short : text
+      option_type : text
+      payoff_type : text
+      payoff_type_2 : text
+      style : text
+      exercise_date : date
+      exercise_price : numeric
+      automatic_exercise : text
+      has_exercise_data : boolean
+      has_payment_data : boolean
+      has_settlement_data : boolean
+  }
+
+  entity ores_trading_instrument_option_premiums_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * amount : numeric
+    * currency : text
+    * pay_date : date
+  }
+
+  entity ores_trading_instrument_option_exercise_fees_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * amount : numeric
+      type : text
+      start_date : date
+      currency : text
+  }
+
+  entity ores_trading_instrument_option_payment_dates_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+    * payment_date : date
+  }
+
+  entity ores_trading_instrument_strikes_tbl <<temporal>> #D8E4F0 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK, FK>>
+    * valid_from : timestamptz <<PK>>
+    * valid_to : timestamptz <<PK>>
+    --
+    * version : int
+    * trade_activity_id : uuid <<FK>>
+      price_value : numeric
+      price_currency : text
+      yield_value : numeric
+      yield_compounding : text
+      bare_value : numeric
+      bare_currency : text
+  }
+}
+
+note right of ores_trading_rate_instruments_tbl
+  The family header. One row per rates trade,
+  carrying the coverage check over the family's
+  codes and owning the family's rows for the
+  delete cascade. The fields every product shares
+  are thin because a rates trade has no security:
+  a swap's economics are its own, not an issuer's.
+end note
+
+note right of ores_trading_swap_legs_tbl
+  Re-keyed from a surrogate id to (trade_id,
+  leg_number), as bond_legs is keyed by
+  (trade_id, leg_role, leg_number). The leg type
+  stays data in leg_type_code.
+end note
+
+note bottom of ores_trading_swap_leg_amounts_tbl
+  The amortisation and step schedules the single
+  notional, fixed_rate and spread columns cannot
+  hold today.
+end note
+
+ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "is the instrument of"
+ores_trading_rate_instruments_tbl ||--o{ ores_trading_swap_legs_tbl : "legs"
+ores_trading_swap_legs_tbl ||--o{ ores_trading_swap_leg_amounts_tbl : "notional schedule"
+ores_trading_swap_legs_tbl ||--o{ ores_trading_swap_leg_rates_tbl : "rate schedule"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_fra_instruments_tbl : "FRA facts"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_cap_floor_instruments_tbl : "CapFloor facts"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_swaption_instruments_tbl : "Swaption facts"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_balance_guaranteed_swap_instruments_tbl : "BalanceGuaranteedSwap facts"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_callable_swap_instruments_tbl : "CallableSwap facts"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_knock_out_swap_instruments_tbl : "KnockOutSwap facts"
+ores_trading_callable_swap_instruments_tbl ||--o{ ores_trading_callable_swap_call_dates_tbl : "call dates"
+ores_trading_rate_instruments_tbl ||--o{ ores_trading_instrument_schedules_tbl : "schedule rules"
+ores_trading_instrument_schedules_tbl ||--o{ ores_trading_instrument_schedule_dates_tbl : "schedule dates"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_instrument_options_tbl : "option block"
+ores_trading_instrument_options_tbl ||--o{ ores_trading_instrument_option_premiums_tbl : "premiums"
+ores_trading_instrument_options_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "exercise fees"
+ores_trading_instrument_options_tbl ||--o{ ores_trading_instrument_option_payment_dates_tbl : "payment dates"
+ores_trading_rate_instruments_tbl ||--o| ores_trading_instrument_strikes_tbl : "strikes"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar design_er.puml"
+' End:
+@enduml

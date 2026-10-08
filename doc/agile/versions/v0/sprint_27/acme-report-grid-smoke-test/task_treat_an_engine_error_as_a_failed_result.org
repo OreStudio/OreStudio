@@ -7,41 +7,83 @@
 #+level: s1
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/treat-an-engine-error-as-a-failed-result
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-08
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The wrapper reports a job's outcome from the engine's exit code alone. ORE
+writes its errors to its own log and still exits 0, so a run that produced no
+analytics is packed, uploaded and recorded as Success. A report run then looks
+complete and nothing downstream can tell that nothing was priced.
+
+Decide a job by the engine's own verdict as well as by its exit code, so a run
+that produced no analytics is a failed result carrying the engine's error.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented. The verdict is a pure function in =ores.ore.core=, the wrapper judges every zero-exit run by it, and seven cases cover it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | The hourly validation, then a run that fails so the refusal is seen live. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
--
+- A job whose engine reports an error and writes no analytics is recorded as a
+  failed result, not as Success.
+- The engine's own error reaches the result, so a reader learns what went wrong
+  without fetching the log blob.
+- A job whose engine succeeds and writes the analytics it was asked for is
+  still Success. The change must not turn a working run into a failure.
+- An output directory holding no analytics is not uploaded as a result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Where it is.* =projects/ores.compute/wrapper/src/app/application.cpp=. The
+engine's exit code is read at =engine_proc.exit_code()= and branches: non-zero
+becomes =ClientError= with ORE's =Output/log.txt= tail appended to the message,
+zero packs =Output/= and reports =Success=.
+
+*Why the exit code is not the verdict.* ORE is a Java process that logs its own
+errors. It printed =Error: Error in ORE analytics: error opening file
+Input/market_20160205_flat.txt= and exited 0, so the wrapper took the success
+branch. The evidence the run failed was in =Output/log.txt=, which the failure
+branch already knows how to read (=tail_file=) and the success branch never
+looks at.
+
+*Two defects, not one.* The empty-output case is the same defect seen from the
+other side: when =Output/= is absent or empty the wrapper logs a warning and
+still reports Success, so it uploads nothing and calls that a job well done.
+
+*The decision to take first.* There are two ways to judge the engine, and they
+differ in what the wrapper has to know.
+
+- *A negative criterion:* read =Output/log.txt= in the success branch too, and
+  refuse when it carries ORE's error marker. The wrapper already opens that
+  file, so this costs no new dependency. It is a text scan, so it is only as
+  good as ORE's spelling staying put.
+- *A positive criterion:* require the analytics the run was asked for. That is
+  the stronger statement — a run that produces none of what it asked for failed,
+  whatever it printed — but it needs the run document, and parsing ORE's run
+  document in the wrapper would duplicate =ores.ore='s knowledge of the schema
+  in a component that deliberately does not depend on it.
+
+The plan is the negative criterion as the check, with the error text carried
+onto the result, and the empty-output case made a failure. The positive
+criterion is recorded here as the better statement if the run document ever
+reaches the wrapper some other way.
 
 * Measurements
 
@@ -83,3 +125,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed at both ends, with the verdict as a pure function so it is testable
+without running ORE.
+
+- =ores.ore.core/log/engine_run_verdict.hpp= adds =judge_engine_run=: given the
+  file names in the engine's output directory and the engine's own log, it says
+  whether the run produced analytics and, when it did not, why. The log is not
+  evidence that anything was computed, so a directory holding only =log.txt= is
+  a run that produced nothing.
+- The verdict reads ORE's own =ERROR= lines through =parse_ore_log_line=, the
+  parser this repository already keeps for ORE's log format, rather than through
+  a marker string of our own. The Plan preferred the negative criterion while
+  doubting it, because it looked like a text scan. It is not: the wrapper
+  already links =ores.ore.core=, so the spelling of ORE's errors stays in one
+  place with its own tests.
+- =ores.compute.wrapper/src/app/application.cpp= no longer reports Success on a
+  zero exit code alone. It lists the output, judges the run, and on a refusal
+  sets =ClientError= carrying the engine's errors. The empty-output warning is
+  gone, because a directory holding no analytics is the same failure seen from
+  the other side.
+
+*All four acceptance bullets are met.* A run that wrote analytics and also
+logged an error is still Success, which is the bullet that guards against
+turning a working run into a failed one; a run that wrote nothing is a failure
+with the engine's error on the result; and no output directory holding no
+analytics is uploaded.
+
+*The gap.* =ores.compute.wrapper= has no test target, so nothing covers the
+integration — that the wrapper hands the verdict what it needs. The verdict
+itself has seven cases in =ores.ore.core.tests=. A wrapper test target is build
+infrastructure this branch did not invent while unable to build it, and it is
+the natural next task if the wrapper is to be covered at all.
+
+*Not verified.* No build and no test run: the hourly validation owns them.

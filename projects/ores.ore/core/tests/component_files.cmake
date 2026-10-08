@@ -26,6 +26,7 @@ set(files
     "curve_configuration_database_roundtrip_tests.cpp"
     "domain_currency_mapper_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
+    "log_engine_run_verdict_tests.cpp"
     "log_ore_log_parser_tests.cpp"
     "main.cpp"
     "market_fx_quote_convention_checker_tests.cpp"

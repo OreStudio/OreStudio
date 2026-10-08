@@ -9,6 +9,14 @@
 #+created: 2026-09-29
 #+updated: 2026-09-29
 
+#+begin_export html
+<table class="prototype-links" style="position:sticky;top:0;z-index:100;width:100%;border-collapse:collapse;margin:0;font:500 13px/1.6 Inter,system-ui,sans-serif;color:var(--text-primary,#e3e3e6);background:var(--bg-secondary,#1a1a1e);border-bottom:1px solid var(--border-color,#30363d)">
+<tr><th style="text-align:left;padding:.45rem .9rem;font-weight:600;white-space:nowrap;background:var(--bg-accent,#26262b);border-right:1px solid var(--border-color,#30363d);width:1%">Prototype</th><td style="padding:.45rem .9rem"><a href="registration-door/index.html" style="color:var(--accent,#58a6ff)">this prototype</a></td></tr>
+<tr><th style="text-align:left;padding:.45rem .9rem;font-weight:600;white-space:nowrap;background:var(--bg-accent,#26262b);border-right:1px solid var(--border-color,#30363d);width:1%;border-top:1px solid var(--border-color,#30363d)">Gemini review</th><td class="prototype-review" style="padding:.45rem .9rem;border-top:1px solid var(--border-color,#30363d)">none</td></tr>
+</table>
+#+end_export
+
+
 * Summary
 
 The registration door prototype argues what the [[id:33B0C287-8262-4C2A-9F7B-3F74C06586AE][Sign up]] screen should look

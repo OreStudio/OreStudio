@@ -26,11 +26,11 @@ Make a durable JetStream consumer heal itself after a subject rename: when the c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Implemented and verified against a planted stale durable. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Fix the protocol-twin regression this run found on main. |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -77,14 +77,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Local checks | 30 of 34 pass; build, db and ctest pass | =./compass.sh check= | =053b2e81ab= |
-| Failing checks | =format= (fixed), =subject-conformance=, =protocol-twins=, =codegen-tests= | =./compass.sh check= | =053b2e81ab= |
+| Local checks | 34 of 34 pass | =./compass.sh check=, then =--only db= with the fleet stopped | =7aa7178911= |
 | Fleet | 25 running, 0 failed | =./compass.sh services status= | =053b2e81ab= |
 | Healed durable filter | =...workflow.v1.ops.step_completed= | =nats consumer info ores_dev_festive_dijkstra_workflow workflow-engine-step-completed= | =053b2e81ab= |
 
-=format= is fixed in this branch. The other three fail on =origin/main=
-without this branch: =iam.v1.storage_capabilities.mint= landed outside the
-grammar and its model opts the TypeScript protocol facet out.
+The first full run on this branch found four failures. One was ours: =format=,
+now fixed. Three belonged to =origin/main=: =iam.v1.storage_capabilities.mint=
+landed outside the grammar and its model opted the TypeScript protocol facet
+out, so =subject-conformance=, =protocol-twins= and =codegen-tests= were red on
+a clean trunk. Fixed on trunk by the storage capability hotfix, task
+[[id:85C844D3-A63B-49FC-81B2-5CFF40A6C2E2][Bring the storage capability subject
+onto the protocol]], which this branch then rebased onto.
+
+The =db= check needs the fleet stopped. With it running, =db recreate --kill=
+terminates the service backends and they reconnect before the recount, so the
+check fails on four live connections. =ctest= does not care.
 
 * Notes
 
@@ -139,10 +146,17 @@ The workflow engine and the compute wrapper name theirs. A durable planted on
 the pre-rename filter was replaced on the next service start and the service
 came up running, so a subject rename no longer strands a consumer.
 
-The full check suite found three failures that belong to =origin/main=, not to
-this branch: =iam.v1.storage_capabilities.mint= is outside the entity protocol
-and its model opts the TypeScript protocol facet out, so =subject-conformance=,
-=protocol-twins= and =codegen-tests= fail on a clean trunk. They are recorded
-here and need their own task: the subject wants the ops namespace, and the
-TypeScript twin wants a projection for =ores::security::jwt::storage_grant=,
-which today is hand-written C++ with no org model.
+The full check suite is green: 34 of 34 pass, including =build=, =db= and
+=ctest=.
+
+That run also found three failures that belonged to =origin/main=, not to this
+branch: =iam.v1.storage_capabilities.mint= was outside the entity protocol and
+its model opted the TypeScript protocol facet out, so =subject-conformance=,
+=protocol-twins= and =codegen-tests= were red on a clean trunk. The storage
+capability hotfix fixed them on trunk, and this branch rebased onto it.
+
+Two limits remain, both recorded above rather than fixed here. The =db= check
+needs the fleet stopped, because =db recreate --kill= loses the race with
+services that reconnect. And the local runner is still something a person has
+to remember to run: the storage capability regression reached trunk within
+hours of the PR gates coming out, and nothing saw it until this branch did.

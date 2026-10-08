@@ -49,7 +49,6 @@ TEST_CASE("create_host_with_valid_fields", tags) {
     sut.cpu_count = 32;
     sut.ram_mb = 65536;
     sut.gpu_type = "A100";
-    sut.last_rpc_time = std::chrono::system_clock::now();
     sut.credit_total = 1234.5;
 
     BOOST_LOG_SEV(lg, info) << "Host: " << sut;
@@ -76,7 +75,6 @@ TEST_CASE("create_host_without_gpu", tags) {
     sut.cpu_count = 16;
     sut.ram_mb = 32768;
     sut.gpu_type = "";
-    sut.last_rpc_time = std::chrono::system_clock::now();
     sut.credit_total = 0.0;
 
     BOOST_LOG_SEV(lg, info) << "Host: " << sut;
@@ -101,7 +99,6 @@ TEST_CASE("create_host_with_specific_uuid", tags) {
     sut.cpu_count = 64;
     sut.ram_mb = 131072;
     sut.gpu_type = "H100";
-    sut.last_rpc_time = std::chrono::system_clock::now();
     sut.credit_total = 9999.99;
 
     BOOST_LOG_SEV(lg, info) << "Host: " << sut;
@@ -122,7 +119,6 @@ TEST_CASE("host_insertion_operator", tags) {
     sut.cpu_count = 8;
     sut.ram_mb = 16384;
     sut.gpu_type = "";
-    sut.last_rpc_time = std::chrono::system_clock::now();
     sut.credit_total = 0.0;
 
     std::ostringstream os;
@@ -147,7 +143,6 @@ TEST_CASE("host_convert_single_to_table", tags) {
     h.cpu_count = 32;
     h.ram_mb = 65536;
     h.gpu_type = "A100";
-    h.last_rpc_time = std::chrono::system_clock::now();
     h.credit_total = 1234.5;
 
     std::vector<host> hosts = {h};
@@ -173,7 +168,6 @@ TEST_CASE("host_convert_multiple_to_table", tags) {
         h.cpu_count = 8 * (i + 1);
         h.ram_mb = 8192 * (i + 1);
         h.gpu_type = "";
-        h.last_rpc_time = std::chrono::system_clock::now();
         h.credit_total = static_cast<double>(i * 100);
         hosts.push_back(h);
     }
@@ -213,7 +207,6 @@ TEST_CASE("create_host_with_faker", tags) {
     sut.cpu_count = faker::number::integer(4, 128);
     sut.ram_mb = faker::number::integer(8192, 131072);
     sut.gpu_type = "";
-    sut.last_rpc_time = std::chrono::system_clock::now();
     sut.credit_total = static_cast<double>(faker::number::integer(0, 100000));
 
     BOOST_LOG_SEV(lg, info) << "Host: " << sut;
@@ -241,7 +234,6 @@ TEST_CASE("host_table_with_faker_data", tags) {
         h.cpu_count = faker::number::integer(4, 128);
         h.ram_mb = faker::number::integer(8192, 131072);
         h.gpu_type = "";
-        h.last_rpc_time = std::chrono::system_clock::now();
         h.credit_total = static_cast<double>(faker::number::integer(0, 100000));
         hosts.push_back(h);
     }

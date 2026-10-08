@@ -51,6 +51,24 @@ import { subjects as businessCentreSubjects } from './generated/refdata/protocol
 import { subjects as countrySubjects } from './generated/refdata/protocol/country_protocol.js';
 import { subjects as imageSubjects } from './generated/assets/protocol/image_protocol.js';
 import {
+    subjects as serviceSampleSubjects,
+    type GetServiceRosterRequest,
+    type GetServiceRosterResponse,
+    type ServiceRosterSlot,
+} from './generated/telemetry/protocol/service_samples_protocol.js';
+import {
+    subjects as computeTelemetrySubjects,
+    type GetGridStatsRequest,
+    type GetGridStatsResponse,
+    type NodeStatsSummary,
+} from './generated/compute/protocol/telemetry_protocol.js';
+import {
+    subjects as hostSubjects,
+    type ListHostsRequest,
+    type ListHostsResponse,
+} from './generated/compute/protocol/host_protocol.js';
+import type { Host } from './generated/compute/domain/host.js';
+import {
     subjects as workflowSubjects,
     type GetWorkflowStepsRequest,
     type GetWorkflowStepsResponse,
@@ -80,6 +98,9 @@ export const SUBJECTS = {
     listAccounts: 'iam.v1.accounts.list',
     listChangeReasons: 'dq.v1.change_reasons.list',
     listImages: imageSubjects.list_images_request,
+    serviceRoster: serviceSampleSubjects.get_service_roster_request,
+    gridStats: computeTelemetrySubjects.get_grid_stats_request,
+    listHosts: hostSubjects.list_hosts_request,
     bootstrapStatus: bootstrapSubjects.bootstrap_status_request,
     createInitialAdmin: bootstrapSubjects.create_initial_admin_request,
     httpInfo: httpInfoSubjects.get_http_info_request,
@@ -1544,3 +1565,188 @@ export function toSignupOutcome(reply: z.infer<typeof signupReplySchema>): Signu
         roleId: reply.role_id,
     };
 }
+
+/**
+ * The services roster: every expected instance, and the last it reported.
+ *
+ * The roster read answers one slot per expected instance, ordered by service
+ * name and then slot, so a service that never reported keeps its rows and its
+ * state word rather than leaving the list. The request carries no fields, and
+ * the schema is strict, so a caller that sends one is refused rather than
+ * having it silently stripped.
+ */
+export const serviceRosterRequestSchema = z
+    .object({})
+    .strict() satisfies z.ZodType<GetServiceRosterRequest>;
+
+/** One expected instance as the roster read answers it. */
+export const serviceRosterSlotSchema = z.object({
+    service_name: z.string(),
+    display_name: text,
+    description: text,
+    service_account: z.string().nullable().default(null),
+    /* No default: two omitted slots would collide on a list key. */
+    slot: z.int().nonnegative(),
+    /*
+     * Running, lost or missing, in the read's own words. It stays a string
+     * here: which words are the installation's is the screen's question, and
+     * a word the read gains reaches the screen rather than failing the parse.
+     * It has no default either, because an omitted state renders as an empty
+     * tag that states nothing.
+     */
+    state: z.string(),
+    instance_id: z.string().nullable().default(null),
+    host_id: z.string().nullable().default(null),
+    version: z.string().nullable().default(null),
+    sampled_at: z.string().nullable().default(null),
+}) satisfies z.ZodType<ServiceRosterSlot>;
+
+/** `get_service_roster_response`, before the rows are dated. */
+export const serviceRosterReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    slots: z.array(serviceRosterSlotSchema).default([]),
+}) satisfies z.ZodType<GetServiceRosterResponse>;
+
+/**
+ * One roster row as the browser reads it: the expected instance, and how long
+ * ago it last reported.
+ *
+ * The age is marked by the BFF, which holds the same clock the samples were
+ * stored against; a browser that subtracted from its own clock would state an
+ * age the deployment never measured.
+ */
+export const serviceRosterRowSchema = serviceRosterSlotSchema.extend({
+    age_seconds: z.int().nonnegative().nullable().default(null),
+});
+
+export type ServiceRosterRow = z.infer<typeof serviceRosterRowSchema>;
+
+/** The body of the browser's services read. */
+export const serviceRosterViewSchema = z.object({
+    rows: z.array(serviceRosterRowSchema).default([]),
+});
+
+export type ServiceRosterView = z.infer<typeof serviceRosterViewSchema>;
+
+/**
+ * The compute grid: the stored summary, one row per node, and the wrappers.
+ *
+ * The grid read takes no fields, because the caller's session decides what the
+ * summary covers, and it carries the newest stored sample rather than a live
+ * count. The node rows name their host by `host_id`; the host registry joined
+ * onto them supplies the hostname a person reads, and a node the registry does
+ * not know keeps its row with no name.
+ */
+export const gridStatsRequestSchema = z
+    .object({})
+    .strict() satisfies z.ZodType<GetGridStatsRequest>;
+
+/** One node's measurements, as the grid read answers them. */
+export const nodeSummarySchema = z.object({
+    host_id: z.string(),
+    tasks_completed: z.int().nonnegative().default(0),
+    tasks_failed: z.int().nonnegative().default(0),
+    tasks_since_last: z.int().nonnegative().default(0),
+    avg_task_duration_ms: z.int().nonnegative().default(0),
+    max_task_duration_ms: z.int().nonnegative().default(0),
+    input_bytes_fetched: z.int().nonnegative().default(0),
+    output_bytes_uploaded: z.int().nonnegative().default(0),
+    seconds_since_hb: z.int().nonnegative().default(0),
+}) satisfies z.ZodType<NodeStatsSummary>;
+
+/** `get_grid_stats_response`: the counters and the newest sample of every node. */
+export const gridStatsReplySchema = z.object({
+    success: z.boolean().default(false),
+    message: text,
+    total_hosts: z.int().nonnegative().default(0),
+    online_hosts: z.int().nonnegative().default(0),
+    idle_hosts: z.int().nonnegative().default(0),
+    results_inactive: z.int().nonnegative().default(0),
+    results_unsent: z.int().nonnegative().default(0),
+    results_in_progress: z.int().nonnegative().default(0),
+    results_done: z.int().nonnegative().default(0),
+    total_workunits: z.int().nonnegative().default(0),
+    total_batches: z.int().nonnegative().default(0),
+    active_batches: z.int().nonnegative().default(0),
+    outcomes_success: z.int().nonnegative().default(0),
+    outcomes_client_error: z.int().nonnegative().default(0),
+    outcomes_no_reply: z.int().nonnegative().default(0),
+    sampled_at: text,
+    node_summaries: z.array(nodeSummarySchema).default([]),
+}) satisfies z.ZodType<GetGridStatsResponse>;
+
+export type GridStatsReply = z.infer<typeof gridStatsReplySchema>;
+
+/** One host as the registry answers it. */
+const hostSchema = z.object({
+    version: z.int().nonnegative().default(0),
+    tenant_id: z.string(),
+    id: z.string(),
+    external_id: text,
+    location: text,
+    cpu_count: z.int().nonnegative().default(0),
+    ram_mb: z.int().nonnegative().default(0),
+    gpu_type: text,
+    display_name: text,
+    credit_total: z.number().default(0),
+    modified_by: text,
+    performed_by: text,
+    change_reason_code: text,
+    change_commentary: text,
+    recorded_at: text,
+}) satisfies z.ZodType<Host>;
+
+/** `list_hosts_request`, sent on `compute.v1.hosts.list`. */
+export const listHostsRequestSchema = z.object({
+    offset: z.int().nonnegative().default(0),
+    limit: z.int().positive().max(1000).default(1000),
+    order: orderSchema.default({ field: '', descending: false }),
+    filter: z
+        .object({ id_one_of: z.array(z.string()).nullable() })
+        .nullable()
+        .default(null),
+    as_of: z.string().nullable().default(null),
+}) satisfies z.ZodType<ListHostsRequest>;
+
+/** `list_hosts_response`: one page of the host registry. */
+export const listHostsReplySchema = z.object({
+    result: decidedResultSchema,
+    hosts: z.array(hostSchema).default([]),
+    total: z.int().nonnegative().default(0),
+}) satisfies z.ZodType<ListHostsResponse>;
+
+/**
+ * One node row as the browser reads it: the measurements, the hostname, and the
+ * runner that reports for the node.
+ *
+ * The runner fields are folded onto the node rather than listed beside it,
+ * because one runner runs on each machine, so a second table would restate the
+ * node rows in another order. A node whose slot no instance fills keeps its row
+ * with the missing state and no instance or version.
+ */
+export const gridNodeRowSchema = nodeSummarySchema.extend({
+    host: text.nullable().default(null),
+    instance_id: z.string().nullable().default(null),
+    state: z.string().default('missing'),
+    version: z.string().nullable().default(null),
+});
+
+export type GridNodeRow = z.infer<typeof gridNodeRowSchema>;
+
+/** The body of the browser's grid read. */
+export const gridViewSchema = z.object({
+    sampled_at: text.nullable().default(null),
+    total_hosts: z.int().nonnegative().default(0),
+    online_hosts: z.int().nonnegative().default(0),
+    idle_hosts: z.int().nonnegative().default(0),
+    total_workunits: z.int().nonnegative().default(0),
+    total_batches: z.int().nonnegative().default(0),
+    active_batches: z.int().nonnegative().default(0),
+    outcomes_success: z.int().nonnegative().default(0),
+    outcomes_client_error: z.int().nonnegative().default(0),
+    outcomes_no_reply: z.int().nonnegative().default(0),
+    nodes: z.array(gridNodeRowSchema).default([]),
+});
+
+export type GridView = z.infer<typeof gridViewSchema>;

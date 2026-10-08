@@ -20,6 +20,8 @@
  */
 
 import type { ListPartiesRequest } from './generated/refdata/protocol/party_protocol.js';
+import type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
+import type { Host } from './generated/compute/domain/host.js';
 import { z } from 'zod';
 import type { WireFormat } from './codec.js';
 import { WireCodec } from './codec.js';
@@ -79,9 +81,16 @@ import {
     toRetryWorkflowInstanceResult,
     passwordPolicyReplySchema,
     toPasswordPolicy,
+    serviceRosterReplySchema,
+    serviceRosterRequestSchema,
+    gridStatsReplySchema,
+    gridStatsRequestSchema,
+    listHostsReplySchema,
+    listHostsRequestSchema,
     registrationPolicyRequestSchema,
     registrationPolicyReplySchema,
     toRegistrationPolicy,
+    resultEnvelopeSchema,
     signupCommandSchema,
     signupReplySchema,
     toSignupOutcome,
@@ -101,8 +110,11 @@ import {
     type SeedProfileChoice,
     type WireAccountPage,
     type WorkflowProgress,
+    type GridStatsReply,
 } from './operations.js';
 import { subjects as bootstrapSubjects } from './generated/iam/protocol/bootstrap_protocol.js';
+import { subjects as variabilityOperationSubjects } from './generated/variability/protocol/operations_protocol.js';
+import { subjects as systemSettingSubjects } from './generated/variability/protocol/system_setting_protocol.js';
 import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
@@ -212,6 +224,28 @@ interface SessionState {
     sessionId: string;
     refreshInFlight: Promise<string> | undefined;
 }
+
+/** The setting a completed first-run installation states. */
+const ONBOARDING_SYSTEM_SETTING = 'onboarding.system';
+
+const completeSystemOnboardingReplySchema = z.object({
+    result: resultEnvelopeSchema,
+});
+
+/**
+ * A settings read, reduced to the one field an onboarding gate needs.
+ *
+ * A setting that is absent is not an error here: the gate it feeds treats a
+ * missing flag as unfinished, which is the state the deployment is in before
+ * anybody completes the wizard.
+ */
+const systemSettingReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    system_setting: z
+        .object({ value: z.string().default('false') })
+        .nullable()
+        .default(null),
+});
 
 /**
  * The typed client for the ORE Studio bus.
@@ -324,6 +358,49 @@ export class OresClient {
             accountId: reply.account_id,
             tenantId: reply.tenant_id,
         };
+    }
+
+    /**
+     * Records that the first-run journey finished, for the caller's tenant.
+     *
+     * It is an operation rather than an ordinary settings write because it
+     * marks a platform milestone: a first-run installation that keeps only the
+     * system tenant has no other deployed fact that says the wizard finished,
+     * and the interface would otherwise hold it on the setup screen. The tenant
+     * is the token's, so the request carries nothing.
+     */
+    async completeSystemOnboarding(): Promise<void> {
+        const reply = await this.#authenticatedCall(
+            variabilityOperationSubjects.complete_system_onboarding_request,
+            {},
+            completeSystemOnboardingReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(
+                variabilityOperationSubjects.complete_system_onboarding_request,
+                reply.result.message,
+            );
+        }
+    }
+
+    /**
+     * Whether the system provisioner wizard has completed, read from the
+     * settings the deployment holds.
+     *
+     * A missing flag reads as false, which is the state before the wizard runs.
+     * A read that cannot be made at all throws, and the caller decides what a
+     * refusal means; the one caller here treats it as false, because holding an
+     * installation on its setup screen is the safe direction.
+     */
+    async onboardingSystemComplete(): Promise<boolean> {
+        const reply = await this.#authenticatedCall(
+            systemSettingSubjects.get_system_setting_request,
+            { key: { name: ONBOARDING_SYSTEM_SETTING } },
+            systemSettingReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        return reply.system_setting?.value === 'true';
     }
 
     /**
@@ -895,6 +972,69 @@ export class OresClient {
             accountPageSchema,
             { timeoutMs: this.#timeouts.fastMs },
         );
+    }
+
+    /**
+     * The services roster: every expected instance and its last report.
+     *
+     * The reply is one slot per expected instance, ordered by service name and
+     * then slot, so a caller renders it as it arrives. A refusal the read
+     * states in its body is an error rather than an empty list: an empty list
+     * would read as an installation with no services.
+     */
+    async serviceRoster(): Promise<readonly ServiceRosterSlot[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.serviceRoster,
+            serviceRosterRequestSchema.parse({}),
+            serviceRosterReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.serviceRoster, reply.message);
+        }
+        return reply.slots;
+    }
+
+    /**
+     * The newest stored grid sample, and the most recent sample of every node.
+     *
+     * The read takes no fields, because the caller's session decides what the
+     * summary covers, and it carries the counters as they were stored rather
+     * than computing a live count. A refusal the read states in its body is an
+     * error rather than a zeroed summary: zeros would read as an idle grid.
+     */
+    async gridStats(): Promise<GridStatsReply> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.gridStats,
+            gridStatsRequestSchema.parse({}),
+            gridStatsReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (!reply.success) {
+            throw new OperationFailedError(SUBJECTS.gridStats, reply.message);
+        }
+        return reply;
+    }
+
+    /**
+     * The host registry, one page of every host.
+     *
+     * The grid joins this page onto its node rows to name them: a node sample
+     * carries a host id and no hostname, so the name a person reads arrives
+     * from here. A page result that did not end ok is an error rather than an
+     * empty page, because an empty page would name no node at all.
+     */
+    async listHosts(): Promise<readonly Host[]> {
+        const reply = await this.#authenticatedCall(
+            SUBJECTS.listHosts,
+            listHostsRequestSchema.parse({}),
+            listHostsReplySchema,
+            { timeoutMs: this.#timeouts.fastMs },
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw new OperationFailedError(SUBJECTS.listHosts, reply.result.message);
+        }
+        return reply.hosts;
     }
 
     /**

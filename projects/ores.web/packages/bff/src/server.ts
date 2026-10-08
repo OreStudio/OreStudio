@@ -30,6 +30,7 @@ import { z } from 'zod';
 import { ChangeEventRegistry, type Watch } from './change-events.js';
 import { registerClassificationRoutes } from './classifications.js';
 import { registerInboxRoutes } from './inbox.js';
+import { registerOperationsRoutes } from './operations.js';
 import { registerRecordRoutes } from './records.js';
 import {
     NatsTransport,
@@ -312,6 +313,29 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         return session;
     }
 
+    /**
+     * Whether the system provisioner wizard recorded that it finished.
+     *
+     * The settings table is not readable without a session, and the status
+     * route is unauthenticated, so the read goes through the session the browser
+     * presents when it has one. A browser with no session, or a read the server
+     * refuses, answers false: an installation that cannot prove the wizard
+     * finished stays where it is, which is what a deployment that never ran it
+     * does today.
+     */
+    async function onboardingComplete(request: FastifyRequest): Promise<boolean> {
+        const id = readSessionId(request);
+        const session = id === undefined ? undefined : sessions.get(id);
+        if (session === undefined) {
+            return false;
+        }
+        try {
+            return await session.client.onboardingSystemComplete();
+        } catch {
+            return false;
+        }
+    }
+
     function sessionResponse(session: LiveSession): unknown {
         return sessionViewSchema.parse({
             username: session.username,
@@ -401,7 +425,8 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/health', async () => ({ status: 'ok' }));
 
     /**
-     * Whether the deployment still needs its first administrator.
+     * Whether the deployment still needs its first administrator, and whether
+     * the setup job is finished.
      *
      * Unauthenticated on purpose: the interface has to decide what to render
      * before it can offer a sign-in, and a deployment in bootstrap mode has
@@ -409,14 +434,26 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * this is what lets the interface not offer the form at all rather than
      * answer a credential with a refusal.
      *
-     * One connection per request, closed in both paths. It carries no session,
-     * so there is nothing to keep alive.
+     * The setup answer is composed here from two sources: IAM says whether the
+     * first administrator exists and whether the deployment has a tenant of its
+     * own, and a variability settings read says whether the system provisioner
+     * wizard recorded that it finished. A first-run installation may keep only
+     * the system tenant, so the wizard's flag is the fact that lets it leave the
+     * setup screen. One connection per request, closed in both paths. It
+     * carries no session, so there is nothing to keep alive.
      */
-    server.get('/api/bootstrap', async () => {
+    server.get('/api/bootstrap', async (request) => {
         const { client, connect } = createClient();
         try {
             await connect();
-            return bootstrapStatusSchema.parse(await client.bootstrapStatus());
+            const status = await client.bootstrapStatus();
+            return bootstrapStatusSchema.parse({
+                isInBootstrapMode: status.isInBootstrapMode,
+                hasTenant: status.hasTenant,
+                onboardingComplete: await onboardingComplete(request),
+                message: status.message,
+                version: status.version,
+            });
         } finally {
             await client.close().catch(() => undefined);
         }
@@ -459,6 +496,23 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         } finally {
             await client.close().catch(() => undefined);
         }
+    });
+
+    /**
+     * Records that the first-run journey finished.
+     *
+     * The journey runs signed in, and it completes the setup job for the tenant
+     * it is working in, so the session is the whole context and the route takes
+     * no body. It exists for the installation that keeps only the system tenant:
+     * the status read above would otherwise hold the browser on the setup rail
+     * forever, because that installation has no tenant of its own. The
+     * variability operation behind it is the component's, and its reply carries
+     * a result the client turns into the same refusal every other write uses.
+     */
+    server.post('/api/bootstrap/complete', async (request) => {
+        const session = requireSession(request);
+        await session.client.completeSystemOnboarding();
+        return { success: true };
     });
 
     /**
@@ -2115,6 +2169,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerClassificationRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);
+    registerOperationsRoutes(server, requireSession);
 
     /**
      * The reasons a write may carry.

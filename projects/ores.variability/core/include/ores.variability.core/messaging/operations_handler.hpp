@@ -46,19 +46,19 @@ inline auto& operations_handler_lg() {
 /**
  * @brief Serves the component's own operations, which are not entity verbs.
  *
- * Neither operation is a write of one setting. Clearing bootstrap mode ends a
- * tenant's bootstrap window by changing two settings at once, and completing a
- * party's onboarding names a party that is not the caller's own. Neither can be
- * an ordinary entity write, so both are domain operations and both live in the
- * reserved =ops= namespace.
+ * None of these is a write of one setting. Clearing bootstrap mode ends a
+ * tenant's bootstrap window by changing two settings at once, completing a
+ * party's onboarding names a party that is not the caller's own, and completing
+ * system onboarding records a platform milestone that loads the interface after
+ * the wizard. None can be an ordinary entity write, so all are domain
+ * operations and all live in the reserved =ops= namespace.
  *
- * Neither checks a permission, deliberately. Clearing bootstrap mode has to
- * work for the tenant that is activating whether or not the activating account
- * holds the permission an ordinary settings write needs, and completing a
- * party's onboarding has the same trust model. Authentication is still
- * required: the tenant comes from the validated token below and never from the
- * request, so an operation can only ever affect a party inside the caller's own
- * tenant.
+ * None checks a permission, deliberately. Clearing bootstrap mode has to work
+ * for the tenant that is activating whether or not the activating account holds
+ * the permission an ordinary settings write needs, and the other two have the
+ * same trust model. Authentication is still required: the tenant comes from the
+ * validated token below and never from the request, so an operation can only
+ * ever affect a party inside the caller's own tenant.
  */
 class operations_handler {
 public:
@@ -99,6 +99,36 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
             clear_bootstrap_mode_response resp;
+            resp.result.outcome = ores::utility::domain::outcome::failed;
+            resp.result.code = "operation_failed";
+            resp.result.message = e.what();
+            ores::service::messaging::reply(nats_, msg, resp);
+        }
+    }
+
+    void complete_system_onboarding(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(operations_handler_lg(), debug) << "Handling " << msg.subject;
+
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            ores::service::messaging::error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+
+        const auto& ctx = *ctx_expected;
+        try {
+            service::system_settings_service svc(ctx, ctx.tenant_id().to_string());
+            svc.refresh();
+            svc.set_onboarding_system_complete(
+                true,
+                ctx.service_account(),
+                std::string(ores::dq::domain::change_reason_constants::codes::new_record),
+                "System onboarding completed on system provisioner wizard completion");
+            ores::service::messaging::reply(nats_, msg, complete_system_onboarding_response{});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(operations_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            complete_system_onboarding_response resp;
             resp.result.outcome = ores::utility::domain::outcome::failed;
             resp.result.code = "operation_failed";
             resp.result.message = e.what();

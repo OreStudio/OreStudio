@@ -101,7 +101,6 @@ domain::host to_domain(const messaging::host_write& write) {
     v.ram_mb = write.ram_mb;
     v.gpu_type = write.gpu_type;
     v.display_name = write.display_name;
-    v.last_rpc_time = write.last_rpc_time;
     v.credit_total = write.credit_total;
     return v;
 }

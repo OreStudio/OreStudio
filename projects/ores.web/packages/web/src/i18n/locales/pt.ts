@@ -76,6 +76,7 @@ const pt: SourceCatalogue = {
             home: 'Início',
             accounts: 'Contas',
             tenants: 'Inquilinos',
+            operations: 'Operações',
             parties: 'Partes',
             rescue: 'Recuperar acesso',
             audit: 'Entradas',
@@ -836,6 +837,9 @@ const pt: SourceCatalogue = {
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
             audit: 'Entradas',
             auditBody: 'Quem está ligado agora, e as entradas que falharam.',
+            versions: 'Versões e base de dados',
+            versionsBody:
+                'O que este navegador executa, o que a instalação executa e o que a base de dados guarda.',
             security: 'A sua palavra-passe e entradas',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
         },
@@ -853,6 +857,220 @@ const pt: SourceCatalogue = {
             reportingBody: 'Relatórios de risco e de P&L para as suas carteiras.',
             security: 'A sua palavra-passe e entradas',
             securityBody: 'Mude a sua palavra-passe e veja onde tem sessão iniciada.',
+        },
+    },
+
+    operations: {
+        back: 'Voltar às operações',
+        instance: {
+            olderBuild: 'versão mais antiga',
+            state: {
+                running: 'em execução',
+                lost: 'perdido',
+                missing: 'em falta',
+            },
+        },
+        hub: {
+            title: 'Operações',
+            description:
+                'A instalação tal como está a correr: do que é feita, o que guarda e o que fez.',
+            notBuilt: 'Ainda não construído',
+        },
+        screens: {
+            versions: 'Versões e base de dados',
+            versionsBody:
+                'A versão do cliente, a versão da instalação e a impressão digital da base de dados.',
+            services: 'Serviços em execução',
+            servicesBody:
+                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam.',
+            grid: 'Grelha de cálculo',
+            gridBody: 'Os nós, o trabalho que estão a fazer e o que já terminaram.',
+            bus: 'Barramento de mensagens',
+            busBody: 'Os contadores que o servidor NATS e os seus fluxos reportam.',
+            logs: 'Registos de telemetria',
+            logsBody: 'As linhas escritas pelos serviços, as mais recentes primeiro.',
+        },
+        services: {
+            title: 'Operações: serviços',
+            description:
+                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os executores de cálculo pertencem ao ecrã da grelha.',
+            updated: 'Atualizado às {at}',
+            refresh: 'Atualizar',
+            skew: 'Desvio de versão: {services} executam {versions} enquanto o resto executa {newest}. A comparação é entre versões, porque um batimento indica a versão e não a compilação.',
+            instances: {
+                title: 'Instâncias',
+                reported:
+                    '{running} de {total} instâncias anunciaram-se nos últimos {minutes} minutos',
+                lost: '{count} perdidas',
+                missing: '{count} em falta',
+            },
+            columns: {
+                service: 'Serviço',
+                instances: 'Instâncias',
+                instance: 'Instância',
+                status: 'Estado',
+                version: 'Versão',
+                lastHeartbeat: 'Último batimento',
+            },
+            count: '{reported} de {expected}',
+            ago: 'há {age}',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            hint: 'Apenas de leitura. Uma linha por instância esperada, quer se anuncie quer não. O identificador da instância é um UUID que o publicador de batimentos gera no arranque; a coluna mostra os primeiros oito caracteres.',
+            gap: {
+                quiet: {
+                    title: 'Porque uma instância ficou em silêncio',
+                    body: 'Uma instância que se anunciou e depois ficou em silêncio lê-se «perdida», porque um batimento não distingue um serviço que alguém parou de um que caiu — a enumeração de estado usa «perdido» exatamente por essa razão. Distingui-los é «Registar inícios e paragens de serviço», que ainda está em BACKLOG e registaria um início e uma paragem graciosa através do ciclo de vida partilhado dos serviços.',
+                },
+                release: {
+                    title: 'O batimento indica a versão, não a compilação',
+                    body: 'Cada serviço envia a sua cadeia ORES_VERSION, por isso duas compilações da mesma versão ficam idênticas aqui, e uma recompilação sem subida de versão é invisível. O candidato é o batimento transportar a cadeia de versão completa — a que a resposta de início de sessão já indica.',
+                },
+                uptime: {
+                    title: 'Sem tempo de atividade',
+                    body: 'Nada diz quando uma instância arrancou, por isso o ecrã não distingue uma instância que acabou de reiniciar de uma que corre há semanas; a idade de um batimento não responde a nenhuma das perguntas. Os candidatos são uma hora de arranque e um contador de reinícios no batimento.',
+                },
+            },
+        },
+        grid: {
+            title: 'Operações: grelha de cálculo',
+            description:
+                'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
+            updated: 'Atualizado às {at}',
+            refresh: 'Atualizar',
+            units: {
+                gib: '{value} GiB',
+                mib: '{value} MiB',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            summary: {
+                title: 'Resumo da grelha',
+                sampled: 'amostrado às {at}',
+                hosts: 'Anfitriões',
+                online: 'Em linha {count}',
+                idle: 'Inativos {count}',
+                work: 'Trabalho',
+                workunits: '{workunits} unidades de trabalho · {batches} lotes',
+                active: 'Ativos {count}',
+                outcomes: 'Resultados',
+                success: '{count} sucesso',
+                clientError: '{count} erro do cliente',
+                noReply: '{count} sem resposta',
+                oneTenant:
+                    'Estes contadores são calculados para um único locatário, não para a instalação: cada contagem — anfitriões, resultados, unidades de trabalho e lotes — é filtrada pelo locatário sob o qual o coletor correu. A tabela de nós abaixo é a de toda a instalação.',
+                noSample:
+                    'Ainda sem amostra. A instalação não guarda qualquer resumo da grelha, por isso os contadores não podem ser desenhados; a tabela de nós abaixo fica sozinha.',
+            },
+            nodes: {
+                title: 'Nós',
+                rows: '{count} linhas',
+                reported:
+                    '{running} de {total} executores anunciaram-se nos últimos {minutes} minutos',
+                lost: '{count} perdidos',
+                missing: '{count} em falta',
+                columns: {
+                    node: 'Nó',
+                    status: 'Estado',
+                    version: 'Versão',
+                    instance: 'Instância',
+                    tasksCompleted: 'Tarefas concluídas',
+                    tasksFailed: 'Falhas',
+                    tasksSinceLast: 'Desde a última',
+                    meanTime: 'Tempo médio',
+                    slowest: 'A mais lenta',
+                    fetched: 'Transferido',
+                    uploaded: 'Carregado',
+                    sinceHeartbeat: 'Desde o batimento',
+                },
+                noHost: 'nenhum anfitrião o nomeia',
+                hint: 'Apenas de leitura. A tabela de nós é a de toda a instalação, e um nó mantém a sua linha enquanto está silencioso. As colunas do executor indicam o processo de cálculo que se anuncia pelo nó; um nó cujo executor nunca se anunciou diz «em falta». A última coluna é a idade da amostra mais recente do nó; um nó cuja última coluna cresce é o que deve ser observado.',
+                open: 'Abrir o nó',
+                openHint:
+                    'Aguarda os percursos de cálculo, que possuem os ecrãs dos anfitriões e das unidades de trabalho.',
+            },
+            gap: {
+                history: {
+                    title: 'Sem histórico',
+                    body: 'A leitura responde apenas com a amostra guardada mais recente, por isso o ecrã não pode mostrar uma tendência, e o progresso de um lote ao longo do tempo não é visível. O coletor continua a escrever amostras que nenhuma leitura devolve. O candidato é uma leitura das amostras da grelha num intervalo de tempo.',
+                },
+                noHost: {
+                    title: 'Um nó sem linha de anfitrião',
+                    body: 'A junção resolve o caso comum, e um nó que o registo de anfitriões não conhece mostra um identificador despido. O ecrã deve dizer que nenhum anfitrião nomeia o nó, em vez de imprimir o identificador como se fosse um nome.',
+                },
+                oneTenant: {
+                    title: 'Os contadores do resumo são de um único locatário',
+                    body: 'A tabela de nós é a da instalação, mas os contadores acima não o são. São calculados por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem — anfitriões, resultados, unidades de trabalho e lotes — pelo locatário que lhe é entregue, e o coletor entrega-lhe o seu próprio locatário de sessão. A leitura que os tornaria o uso próprio da instalação é o registo que «Contabilizar o uso da grelha» constrói, e não está construído. Até estar, o ecrã indica que os contadores são calculados para um único locatário em vez de os apresentar como o trabalho de todos os locatários.',
+                },
+            },
+        },
+        versions: {
+            title: 'Operações: versões e base de dados',
+            description:
+                'O que este navegador executa, o que a instalação executa e o que a instalação guarda.',
+            unknown: 'desconhecido',
+            client: {
+                title: 'Cliente',
+                lead: 'o que este navegador executa',
+                version: 'Versão',
+                commit: 'Commit',
+                checkout: 'Árvore de trabalho',
+                checkoutUnknown: 'desconhecido',
+                dirty: 'Alterações não registadas',
+                clean: 'Limpa',
+                hint: 'Gravado no pacote quando foi construído; não pode mudar enquanto o separador estiver aberto.',
+            },
+            server: {
+                title: 'Servidor',
+                lead: 'o que a instalação executa',
+                version: 'Versão',
+                address: 'Endereço',
+                hint: 'A resposta de início de sessão indicou esta versão por completo, e a sessão guarda-a; o rodapé lê o mesmo valor.',
+            },
+            database: {
+                title: 'Base de dados',
+                lead: 'o que a instalação guarda',
+                fingerprint: 'Impressão digital',
+                environment: 'Ambiente',
+                commit: 'Commit',
+                created: 'Criada',
+                hint: 'Lida na resposta de início de sessão que abriu a sessão, por isso este painel não faz qualquer pedido.',
+            },
+            gap: {
+                shape: {
+                    title: 'As cadeias do cliente e do servidor não têm a mesma forma',
+                    body: 'O cliente indica uma versão e um commit; o servidor acrescenta a plataforma e as informações de compilação numa composição diferente. O ecrã mostra-as lado a lado; só o olho as pode comparar.',
+                },
+                releases: {
+                    title: 'As versões por instância são apenas versões',
+                    body: 'Cada serviço reporta a sua cadeia de versão com o batimento, por isso duas compilações da mesma versão também não se distinguem no ecrã dos serviços.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Ainda não neste ecrã',
+            lead: 'cada lacuna nomeia o percurso que a regista',
+            recordedBy: 'Registado por {journey}',
+        },
+        related: {
+            title: 'Percursos relacionados',
+            lead: 'para onde esta questão leva a seguir',
+            notBuilt: 'Ainda não construído',
+        },
+        journeys: {
+            services: 'Ver os serviços em execução',
+            logs: 'Ler os registos de telemetria',
+            grid: 'Vigiar a grelha de cálculo',
+            bus: 'Vigiar o barramento de mensagens',
+            audit: 'Auditar as entradas',
+            versions: 'Verificar as versões e a base de dados',
         },
     },
 
@@ -1041,8 +1259,19 @@ const pt: SourceCatalogue = {
 
         welcome: {
             title: 'Bem-vindo ao ORE Studio',
-            lead: 'Esta instalação está vazia. Configure-a em três etapas. A lista à esquerda indica cada passo.',
+            lead: 'Configure uma nova instalação: crie o administrador que a possui e depois escolha com o que a instalação fica.',
             start: 'Começar',
+            choiceLabel: 'Com o que a instalação fica',
+            choice: {
+                'first-tenant': {
+                    title: 'Criar o primeiro inquilino',
+                    body: 'Dê um nome a um inquilino e ao seu administrador. A instalação fica com um inquilino próprio.',
+                },
+                'system-only': {
+                    title: 'Manter apenas o inquilino de sistema',
+                    body: 'Não crie nenhum inquilino. A instalação fica apenas com o inquilino de sistema, o que é útil para testes.',
+                },
+            },
             stage: {
                 admin: 'Criar o administrador',
                 adminBody: 'A conta proprietária desta instalação.',
@@ -1052,6 +1281,8 @@ const pt: SourceCatalogue = {
                 signIn: 'Iniciar sessão',
                 signInBody:
                     'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
+                systemSignInBody:
+                    'O primeiro início de sessão do administrador, com a palavra-passe que o percurso guarda.',
             },
         },
 
@@ -1166,6 +1397,9 @@ const pt: SourceCatalogue = {
         signIn: {
             title: 'Primeiro início de sessão',
             lead: 'O administrador do inquilino inicia sessão pela primeira vez.',
+            systemLead: 'O administrador da instalação inicia sessão, e a instalação fica pronta.',
+            administrator:
+                'A conta que inicia sessão é {principal}, o administrador que esta instalação acabou de receber.',
             username: 'Nome de utilizador',
             password: 'Palavra-passe',
             submit: 'Iniciar sessão',

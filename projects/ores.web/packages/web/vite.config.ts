@@ -48,26 +48,38 @@ import { resolve } from 'node:path';
  * place the number is written. A checkout without git, or a shallow one, still
  * builds: the commit is then simply absent.
  */
-function buildVersion(checkout: string): string {
+interface BuildStamp {
+    readonly release: string;
+    readonly commit: string;
+    readonly dirty: boolean;
+}
+
+function buildStamp(checkout: string): BuildStamp {
     const cmake = readFileSync(resolve(checkout, 'CMakeLists.txt'), 'utf8');
     const release = /project\(\s*\w+\s+VERSION\s+([0-9.]+)/.exec(cmake)?.[1] ?? 'unknown';
-    let commit = '';
+    const version = `v${release}`;
     try {
-        commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
+        const commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], {
             cwd: checkout,
             encoding: 'utf8',
         }).trim();
-        const dirty = execFileSync('git', ['status', '--porcelain'], {
-            cwd: checkout,
-            encoding: 'utf8',
-        }).trim();
-        if (dirty.length > 0) {
-            commit = `${commit}-dirty`;
-        }
+        const dirty =
+            execFileSync('git', ['status', '--porcelain'], {
+                cwd: checkout,
+                encoding: 'utf8',
+            }).trim().length > 0;
+        return { release: version, commit, dirty };
     } catch {
-        commit = '';
+        return { release: version, commit: '', dirty: false };
     }
-    return commit === '' ? `v${release}` : `v${release} (${commit})`;
+}
+
+/** The stamp as the one line the footer states. */
+function buildVersion(stamp: BuildStamp): string {
+    if (stamp.commit === '') {
+        return stamp.release;
+    }
+    return `${stamp.release} (${stamp.commit}${stamp.dirty ? '-dirty' : ''})`;
 }
 
 export default defineConfig(({ mode }) => {
@@ -86,11 +98,15 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, checkout, '');
     const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
     const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
+    const stamp = buildStamp(checkout);
 
     return {
         plugins: [react(), tailwindcss()],
         define: {
-            __BUILD_VERSION__: JSON.stringify(buildVersion(checkout)),
+            __BUILD_VERSION__: JSON.stringify(buildVersion(stamp)),
+            __BUILD_RELEASE__: JSON.stringify(stamp.release),
+            __BUILD_COMMIT__: JSON.stringify(stamp.commit),
+            __BUILD_DIRTY__: JSON.stringify(stamp.dirty),
         },
         server: {
             port: WEB_PORT,

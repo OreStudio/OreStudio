@@ -40,7 +40,6 @@ export interface HostWrite {
     ram_mb: number;
     gpu_type: string;
     display_name: string;
-    last_rpc_time: string;
     credit_total: number;
 }
 

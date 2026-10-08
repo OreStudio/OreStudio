@@ -158,16 +158,19 @@ export type LoginResult = z.infer<typeof loginResultSchema>;
  *
  * The interface asks this before it offers a sign-in, because a deployment in
  * bootstrap mode has no accounts to sign in with and a rejected credential
- * would send somebody hunting for a password that cannot exist. It asks the
- * tenant question with it, because an installation is set up when it has an
- * administrator *and* a tenant of its own, and a browser that closed between
- * the two comes back to the screen that finishes the job. The message is the
- * server's; the interface may state the situation in its own words.
+ * would send somebody hunting for a password that cannot exist. Two further
+ * facts say whether the setup job is finished: whether the deployment has a
+ * tenant of its own, and whether the system provisioner wizard recorded that it
+ * finished. A first-run installation may keep only the system tenant, so the
+ * tenant answer alone would hold it on the setup screen forever. The message is
+ * the server's; the interface may state the situation in its own words.
  */
 export const bootstrapStatusSchema = z.object({
     isInBootstrapMode: z.boolean(),
     /** Whether the deployment has a tenant of its own, the system one aside. */
     hasTenant: z.boolean(),
+    /** Whether the system provisioner wizard recorded that it finished. */
+    onboardingComplete: z.boolean(),
     message: z.string(),
     /** The build the deployment runs, as the deployment states it. */
     version: z.string(),

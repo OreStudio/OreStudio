@@ -55,7 +55,7 @@ publishes on a timer, and the read changes no state.
    expected instances reported, as *four of four* or *four of five*. Each
    instance row gives the instance id, a state word, the version, and how long
    ago the instance last reported. The state words are the installation's own:
-   *running*, *stopped*, *missing*. A stopped instance keeps its row, so the
+   *running*, *lost*, *missing*. A lost instance keeps its row, so the
    absence of a row is never the answer.
 3. *Spot a version that lags behind.* The version column exists for
    comparison: after a rollout, instances on different builds show different
@@ -69,11 +69,12 @@ publishes on a timer, and the read changes no state.
    *missing*, and the summary says that nothing reported — rather than an
    empty table, which would read as an installation with no services.
 5. *A service that went quiet.* A service that stops reporting keeps its row,
-   and the age in its last column grows. This is the case the screen cannot
-   fully show today: *running* is read from the five-minute window, and the
-   states *stopped* and *missing* have no read of their own. The screen can
-   state that an instance has not reported; it cannot say why. The gap and its
-   candidates are in *What is missing*.
+   and the age in its last column grows. The roster read states it as *lost*:
+   an instance that reported within the running window is *running*, one that
+   reported earlier is *lost*, and a slot nothing fills is *missing*. The
+   screen can state that an instance went quiet; it cannot say why, because a
+   heartbeat cannot tell a service somebody stopped from one that fell over.
+   The remaining gap is in *What is missing*.
 6. *Refresh, or watch.* The list is a point-in-time read, and heartbeats keep
    arriving while the screen is open. The administrator refreshes, or leaves
    the screen polling, so the ages in the last column move and a service that
@@ -106,21 +107,22 @@ shape: one row per expected instance, grouped under its service.
 - Open :: =/OreStudio/doc/prototypes/operations/services/= once the site is built, or the file directly
 - Design record :: [[id:BFE393CC-15F5-4A35-BFF6-A5CFB817F0A7][Task: Prototype the operations journeys]]
 
-The prototype settled the roster. A stopped instance never leaves the list:
+The prototype settled the roster. A lost instance never leaves the list:
 the row stays, the state changes, and the instance count reads *four of five*
 in the warning tone. The states use the installation's own words with the
-shell's colours — running in the accent tone, stopped muted, missing in the
+shell's colours — running in the accent tone, lost muted, missing in the
 warning tone. A version that lags behind is marked on its row and named in a
 notice above the table when it touches a service. The list sorts by service
-name, then instance, because the read orders nothing. The compute wrappers
-left this screen for the grid screen, where the nodes they run on are.
+name, then slot, which the roster read orders once for every reader. The
+compute wrappers left this screen for the grid screen, where the nodes they
+run on are.
 
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =service_sample= | State, instance id, version and last heartbeat; one row per reporting instance | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
+| =service_sample= | State, instance id, host id, version and last heartbeat; one row per reporting instance | [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][ores.telemetry.service_samples]] |
 | =service_registry= | The expected roster: which services exist and how many replicas each runs | [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] |
 
 The row is the instance's latest sample, joined to the roster the registry
@@ -128,9 +130,10 @@ states. The samples serve "who is running"; the registry serves "who should
 be". Neither alone is the screen: samples without the roster cannot show a
 service that never reported, and the roster without samples cannot show a
 version or an age. The registry is a code-generation model for the deployment
-tooling, and no operation serves it yet — see *What is missing*. The sample
-also says nothing about the host the instance runs on, so the screen cannot
-say where an instance is.
+tooling, and codegen renders its expected services into
+=ores_telemetry_expected_services_tbl=, which the roster read serves. The
+heartbeat carries a host id, so a row can say which machine the instance runs
+on.
 
 * Operations and messages
 
@@ -139,75 +142,84 @@ say where an instance is.
 |------+-----------+---------+--------|
 | Before the screen: every service reports on a timer | Publish that an instance is alive | =telemetry.v1.ops.service_heartbeat= | exists |
 | Open the screen | List the latest sample of every reporting instance | =telemetry.v1.services.list= | exists |
-| Read the roster | Read the services the installation expects and their replica counts | — | missing |
-| Read the rows | Read state, instance, version and sample time per expected instance | carried by the reads above | partial |
-| A service that went quiet | Read an instance that stopped reporting, or never reported | — | missing |
-| An installation with none | Answer one missing row per expected instance | carried by both reads | partial |
+| Read the roster | Read the services the installation expects and their replica counts | =telemetry.v1.ops.get_service_roster= | exists |
+| Read the rows | Read state, instance, version and sample time per expected instance | carried by =telemetry.v1.ops.get_service_roster= | exists |
+| A service that went quiet | Read an instance that went quiet, or never reported | carried by =telemetry.v1.ops.get_service_roster= | exists |
+| An installation with none | Answer one missing row per expected instance | carried by =telemetry.v1.ops.get_service_roster= | exists |
 | Refresh, or watch | Read the list again | =telemetry.v1.services.list= | exists |
 
 =telemetry.v1.ops.service_heartbeat= is ingested. Every service that embeds the
 =ores.service= heartbeat publisher sends it on a timer with its name, its
-instance id and its version, and the telemetry service timestamps the receipt
-and stores it. The message is declared with auth =none=, because the heartbeat
-carries no token.
+instance id, its version and its host id, and the telemetry service timestamps
+the receipt and stores it. The message is declared with auth =none=, because
+the heartbeat carries no token.
 
-=telemetry.v1.services.list= is served by the [[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][service_samples model]].
-Its request carries no fields, because the reply covers every service the
-caller may see. Its reply carries =success=, =message= and one sample per
-reporting instance, in no particular order. The read keeps the latest sample
-per =(service_name, instance_id)= among the rows of the last five minutes, so
-it answers *active instances*, not *all instances*. The screen joins the reply
-to the registry's roster: an expected instance with no sample reads *missing*,
-and the instance count reads how many of the expected instances reported.
+=telemetry.v1.ops.get_service_roster= is served by the
+[[id:34CDC835-C72C-44F1-A0E2-B163014E0D74][service_samples model]]. Its
+request carries no fields, because the reply covers the whole installation.
+Its reply carries =success=, =message= and one slot per expected instance,
+ordered by service name, then slot. Each slot carries the instance id, the
+host id, the version and when the instance last reported, at any age, with its
+state: *running* when it reported within the running window, *lost* when it
+reported earlier, and *missing* when no instance fills the slot.
+
+=telemetry.v1.services.list= remains the read of the samples themselves. Its
+request carries no fields, and its reply carries =success=, =message= and one
+sample per reporting instance. The read keeps the latest sample per
+=(service_name, instance_id)= among the rows of the last five minutes, so it
+answers *active instances*, not *all instances*.
 
 The browser reads it through a hand-written BFF route, on the
 [[id:6A63AAC7-4869-493A-97E7-55B919874784][journey runtime]]. No route serves
 the operations screens yet; the prototype adds =GET /api/operations/services=,
 which reads the list and marks each row's age. The handler authenticates the
-caller's token and then checks no dedicated permission — see *What is missing*.
+caller's token and then checks =telemetry::samples:read=.
 
 * What is missing
 
-1. *The roster has no read.* The registry that states which services exist
-   and how many replicas each expects is a code-generation model for the
-   deployment tooling, and no operation serves it
-   ([[id:B7B53CD1-4A11-403E-8844-13177864F0E7][The services roster has no read]]).
-   Until a read exists, the screen can only draw the rows it can infer, so a
-   service that never reports cannot be shown as missing — only as absent.
-2. *The state comes from absence, not from a read.* *Running* means "reported
-   in the last five minutes"; *stopped* and *missing* have no source at all.
-   Nothing serves the service manager's state — the one =compass services
-   status= asks — to a screen, so a reader cannot tell a service somebody
-   stopped from one that fell over. The candidates are the latest sample per
-   instance at any age with its age stated, and a state read the manager owns.
-   Until one exists, the screen states which instances are expected and which
-   have reported, and marks the rest *missing*.
-3. *The heartbeat states the release, not the build.* Each service sends its
+1. *The roster has a read.* Closed by
+   [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]]: the
+   expected services come from the registry, codegen renders them into
+   =ores_telemetry_expected_services_tbl= with their replica counts, and
+   =telemetry.v1.ops.get_service_roster= answers one slot per expected
+   instance. A service that never reports now shows as *missing* rather than
+   absent.
+2. *The states have a read.* Closed by
+   [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]]: the
+   roster read supplies *running*, *lost* and *missing*, each with the last
+   report at any age, so nothing is inferred from absence any more.
+3. *Why an instance went quiet.* An instance that reported and then fell quiet
+   reads *lost*, because a heartbeat cannot tell a service somebody stopped
+   from one that fell over — the state enum uses *lost* for exactly that
+   reason. Telling the two apart is
+   [[id:6585F9F0-881B-46FC-B247-37E5E6252FDF][Record service starts and stops]],
+   which is still BACKLOG and would record a start and a graceful stop through
+   the shared service lifecycle.
+4. *The heartbeat states the release, not the build.* Each service sends its
    =ORES_VERSION= string, so two builds cut from one release look identical
    here, and a rebuild without a release bump is invisible. The candidate is
    for the heartbeat to carry the full version string — the one the login
    answer already states.
-4. *The heartbeat carries no host.* Each heartbeat names the service, the
-   instance and the release, and no host; the node samples name the host and
-   no release. Nothing joins an instance to the machine it runs on, so the
-   screen cannot say where an instance is, and the grid screen cannot place a
-   compute wrapper on its node
-   ([[id:A1D7FC12-4105-41F7-8885-CCE07120034C][The service heartbeat carries no host]]).
-   The candidate is a host id on the heartbeat — one field that joins both.
-5. *No uptime.* Nothing says when an instance started, so the screen cannot
+5. *The heartbeat carries a host.* Closed by
+   [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]]:
+   =host_id= sits on the heartbeat and on the stored sample, so a row can say
+   which machine the instance runs on, and the grid's wrapper panel can place
+   each wrapper on its node.
+6. *No uptime.* Nothing says when an instance started, so the screen cannot
    tell an instance that just restarted from one that has run for weeks; the
    age of a heartbeat answers neither question. The candidates are a start
    time and a restart count on the heartbeat.
-6. *The reply is unordered.* The samples come back in no particular order, so
-   the screen sorts them, and every reader must sort them the same way. The
-   prototype sorts by service name, then instance. A stable order from the
-   read — service name, then instance — would settle it once.
-7. *The read checks no permission.* The handler authenticates the token and
-   then serves any signed-in account. The candidate is a dedicated permission
-   the model guards, as the tenant reads guard =iam::tenants:read=. The gap
-   is not this read's alone: every hand-written operation handler can ship
-   with no check at all
-   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]]).
+7. *The reply is ordered.* Closed by
+   [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]]: the
+   roster read orders its slots by service name, then slot, so the screen no
+   longer sorts a reply that arrives in no particular order.
+8. *The read checks a permission.* Closed by
+   [[id:D495FB06-E711-4DCB-A4C6-2E4722FF973F][Serve the services roster]]:
+   =telemetry.v1.ops.get_service_roster= is gated on
+   =telemetry::samples:read=, the permission the hand-written handler checks.
+   The tree-wide gap the original item named
+   ([[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]])
+   is not this read's alone.
 
 * Related journeys
 

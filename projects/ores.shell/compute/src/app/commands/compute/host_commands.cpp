@@ -142,7 +142,7 @@ void host_commands::register_commands(cli::Menu& root_menu, nats_client& session
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> "
-        "<last_rpc_time> <credit_total> <reason> <commentary>");
+        "<credit_total> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void host_commands::register_commands(cli::Menu& root_menu, nats_client& session
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> <display_name> "
-        "<last_rpc_time> <credit_total> <reason> <commentary> [--version <n>]");
+        "<credit_total> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -158,7 +158,7 @@ void host_commands::register_commands(cli::Menu& root_menu, nats_client& session
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <external_id> <location> <cpu_count> <ram_mb> <gpu_type> "
-        "<display_name> <last_rpc_time> <credit_total> <reason> <commentary>");
+        "<display_name> <credit_total> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +353,8 @@ void host_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -365,7 +365,6 @@ void host_commands::process_add(std::ostream& out,
         read_token(req.change.write.ram_mb, parsed->positionals[next++], "ram_mb");
         read_token(req.change.write.gpu_type, parsed->positionals[next++], "gpu_type");
         read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.last_rpc_time, parsed->positionals[next++], "last_rpc_time");
         read_token(req.change.write.credit_total, parsed->positionals[next++], "credit_total");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -409,8 +408,8 @@ void host_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -421,7 +420,6 @@ void host_commands::process_set(std::ostream& out,
         read_token(req.change.write.ram_mb, parsed->positionals[next++], "ram_mb");
         read_token(req.change.write.gpu_type, parsed->positionals[next++], "gpu_type");
         read_token(req.change.write.display_name, parsed->positionals[next++], "display_name");
-        read_token(req.change.write.last_rpc_time, parsed->positionals[next++], "last_rpc_time");
         read_token(req.change.write.credit_total, parsed->positionals[next++], "credit_total");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -477,8 +475,8 @@ void host_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 8 + 2) {
+            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -491,7 +489,6 @@ void host_commands::process_put_many(std::ostream& out,
             read_token(change.write.ram_mb, parsed->positionals[next++], "ram_mb");
             read_token(change.write.gpu_type, parsed->positionals[next++], "gpu_type");
             read_token(change.write.display_name, parsed->positionals[next++], "display_name");
-            read_token(change.write.last_rpc_time, parsed->positionals[next++], "last_rpc_time");
             read_token(change.write.credit_total, parsed->positionals[next++], "credit_total");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

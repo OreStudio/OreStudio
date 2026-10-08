@@ -40,7 +40,6 @@ export interface Host {
     ram_mb: number;
     gpu_type: string;
     display_name: string;
-    last_rpc_time: string;
     credit_total: number;
     modified_by: string;
     performed_by: string;

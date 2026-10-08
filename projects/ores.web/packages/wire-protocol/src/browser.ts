@@ -134,6 +134,11 @@ export type {
     SignupResult,
 } from './contracts.js';
 
+// One expected service instance and its last report, which the operations
+// screens read. It is a generated protocol shape, and the browser surface
+// states it rather than making a screen reach through the transport.
+export type { ServiceRosterSlot } from './generated/telemetry/protocol/service_samples_protocol.js';
+
 // Subjects, so a browser-side module can name one without importing the
 // transport that would know how to reach it.
 export { SUBJECTS } from './operations.js';
@@ -201,6 +206,18 @@ export type {
 // the sign-in screen is where they are shown.
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
+
+// The services roster the operations screen reads, as the BFF serves it: one
+// row per expected instance, each with the age the BFF marked. The browser
+// parses what the BFF served with the definition the BFF wrote it from.
+export { serviceRosterViewSchema } from './operations.js';
+export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
+
+// The compute grid the operations screen reads, as the BFF serves it: the
+// stored counters with their sample time, and one row per node carrying its
+// hostname and the runner that reports for it.
+export { gridViewSchema, gridNodeRowSchema } from './operations.js';
+export type { GridNodeRow, GridView } from './operations.js';
 
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.

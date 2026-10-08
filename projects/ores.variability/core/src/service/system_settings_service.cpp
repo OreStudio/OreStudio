@@ -237,6 +237,10 @@ bool system_settings_service::is_onboarding_party_complete() const {
     return get_bool("onboarding.party");
 }
 
+bool system_settings_service::is_onboarding_system_complete() const {
+    return get_bool("onboarding.system");
+}
+
 void system_settings_service::set_onboarding_tenant_complete(bool complete,
                                                              std::string_view modified_by,
                                                              std::string_view change_reason_code,
@@ -251,6 +255,14 @@ void system_settings_service::set_onboarding_party_complete(bool complete,
                                                             std::string_view change_commentary) {
     set_bool_setting(
         "onboarding.party", complete, modified_by, change_reason_code, change_commentary);
+}
+
+void system_settings_service::set_onboarding_system_complete(bool complete,
+                                                             std::string_view modified_by,
+                                                             std::string_view change_reason_code,
+                                                             std::string_view change_commentary) {
+    set_bool_setting(
+        "onboarding.system", complete, modified_by, change_reason_code, change_commentary);
 }
 
 }

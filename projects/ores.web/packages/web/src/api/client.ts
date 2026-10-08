@@ -74,6 +74,8 @@ import {
     deploymentOverviewSchema,
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
+    serviceRosterViewSchema,
+    gridViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -93,6 +95,8 @@ import {
     type RegistrationPolicyView,
     type RetryWorkflowInstanceResult,
     type SeedProfileChoice,
+    type ServiceRosterRow,
+    type GridView,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -203,6 +207,22 @@ export const api = {
             body: JSON.stringify(request_),
         });
         return initialAdministratorSchema.parse(payload);
+    },
+
+    /**
+     * Records that the first-run journey finished.
+     *
+     * The session names the tenant the write lands in, so the request carries
+     * nothing. The setup screen calls it as its last act, so the gate sees a
+     * finished installation on its next read even when the installation keeps no
+     * tenant of its own.
+     */
+    async completeSystemOnboarding(): Promise<void> {
+        await request('/api/bootstrap/complete', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({}),
+        });
     },
 
     async login(credentials: Credentials): Promise<LoginResult> {
@@ -1054,6 +1074,31 @@ export const api = {
             await request('/api/tenant-types', { method: 'GET' }),
         );
         return payload.types;
+    },
+
+    /**
+     * The services roster: every expected instance and when it last reported.
+     *
+     * The BFF marks each row's age from the deployment's clock, so a row's age
+     * is the deployment's measurement rather than this browser's subtraction.
+     */
+    async services(): Promise<readonly ServiceRosterRow[]> {
+        const payload = serviceRosterViewSchema.parse(
+            await request('/api/operations/services', { method: 'GET' }),
+        );
+        return payload.rows;
+    },
+
+    /**
+     * The compute grid: the stored counters and the nodes, each with its runner.
+     *
+     * The BFF joins the host registry onto the node rows and folds each node's
+     * runner onto them, so a name and a runner state are the deployment's answer
+     * rather than joins this browser makes from pages it would have had to read
+     * itself.
+     */
+    async grid(): Promise<GridView> {
+        return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
     },
 
     /**

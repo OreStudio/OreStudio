@@ -51,6 +51,14 @@ export type BootstrapState =
            * finishes the job is the same screen in both cases.
            */
           readonly hasTenant: boolean;
+          /**
+           * Whether the system provisioner wizard recorded that it finished.
+           *
+           * A first-run installation may keep only the system tenant, so this
+           * is the fact that lets it leave the setup screen; hasTenant alone
+           * would hold it there forever.
+           */
+          readonly onboardingComplete: boolean;
           readonly message: string;
           /** The build the deployment answered with, which every shell states. */
           readonly version: string;
@@ -109,6 +117,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 status: 'ready',
                 inBootstrapMode: data.isInBootstrapMode,
                 hasTenant: data.hasTenant,
+                onboardingComplete: data.onboardingComplete,
                 message: data.message,
                 version: data.version,
             },

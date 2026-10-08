@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: AFFDE0FC-E1E6-4A74-9908-49AD5AD615D4
+:END:
+#+title: The host row still carries a dead last-seen column
+#+description: The host row still carries last_rpc_time and nothing writes it. The heartbeat used to bump it, which added a bitemporal version per heartbeat and grew the host table by thousands of rows a day; that write is gone and the grid summary judges liveness from the node samples instead. The column remains in the model, the table, the generated entity, the wire protocol and the browser types, and its name promises a value nothing maintains.
+#+type: capture
+#+level: cross
+#+filetags: :compute:database:defect:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_compute_hosts_tbl= carries =last_rpc_time=, described as the time of the
+last heartbeat received from the node. Nothing writes it any more. The
+heartbeat handler used to load the host row, set the column, and save, which on
+a bitemporal table adds a version: with five nodes heartbeating every thirty
+seconds the table grew by about fourteen thousand rows a day, all of them
+differing only in that timestamp. The write is removed, and the grid summary's
+online count now comes from the node samples instead.
+
+The column itself is still there, in the model, the table, the generated
+entity and mapper, the wire protocol, the browser types and the hand-written
+host domain tests. Its name promises a value that nothing maintains, so a
+reader has no way to tell that it stopped meaning anything.
+
+* Why
+
+A dead column that reads like a live one is the same defect as a dead
+environment variable or a stale gap statement: it costs whoever reads it next
+the time to work out that it is not what it says. It is also in the way of the
+work that replaces it, because liveness is becoming a series.
+
+Removing it is not a one-line change. It means editing the model, regenerating
+the compute addresses so the generated entity, mapper, table and JSON I/O, the
+protocol and the browser types all lose the field, updating the hand-written
+domain tests that set it, migrating the existing table, and rebuilding. That is
+why it did not travel with the change that stopped writing it.
+
+It belongs with the time-series work that gives the grid its charts
+([[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]] and
+the node-sample series), because that is the work that owns liveness and will
+decide what the host row still needs to state.
+
+* References
+
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the heartbeat paragraph.
+- [[id:05BA3A23-3596-4881-BFB6-D4E3438FD9AC][ores.compute.telemetry]] — the node sample series that carries liveness now.
+
+* See also
+
+- [[id:84345A75-CCE4-4C6B-80EA-A5857E01730B][Account for the grid's usage]] — the ledger that replaces the summary's counters.

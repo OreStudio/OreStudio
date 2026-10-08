@@ -36,6 +36,10 @@ import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
+import { OperationsArea } from './operations/OperationsArea.js';
+import { GridPage } from './operations/GridPage.js';
+import { ServicesPage } from './operations/ServicesPage.js';
+import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
@@ -75,9 +79,12 @@ import type { Account, SessionView } from '@ores/wire-protocol/browser';
  * renders the first run journey rather than redirecting to a setup path: there
  * is nothing else to be at, and a redirect leaves a URL somebody can share that
  * leads nowhere. Creating the administrator closes that question but not the
- * job, so the gate carries two further reasons to stay: the deployment has no
- * tenant of its own, which is the state the journey exists to leave behind, and
- * the journey has begun in this browser, which holds the rail after the tenant
+ * job, so the gate carries two further reasons to stay. The first is that the
+ * deployment has no tenant of its own *and* the system provisioner wizard has
+ * not recorded that it finished: an installation may keep only the system
+ * tenant, so "no tenant" alone would hold it on the setup screen forever, and
+ * the flag is what the wizard writes as its last act. The second is that the
+ * journey has begun in this browser, which holds the rail after the tenant
  * exists until the person finishes. The deployment's own state is what survives
  * a reload; the tab's memory only outlives the tenant.
  */
@@ -160,7 +167,11 @@ export function AppRoutes({
         );
     }
 
-    if (gate.inBootstrapMode || !gate.hasTenant || journeyInProgress) {
+    if (
+        gate.inBootstrapMode ||
+        (!gate.hasTenant && !gate.onboardingComplete) ||
+        journeyInProgress
+    ) {
         return (
             <Routes>
                 <Route
@@ -271,6 +282,59 @@ export function AppRoutes({
                 path="/audit"
                 element={signedIn(gate.version, session, shell, () => (
                     <AuditPage />
+                ))}
+            />
+            {/*
+             * The operations area: its hub, the versions screen the prototype
+             * established, and the services and grid screens. No route here is
+             * gated: any signed-in person who knows the URL reaches them, and
+             * the menus decide only what is offered, not who may look. The
+             * services and grid reads are refused by their BFF routes unless
+             * the session acts on the deployment, so that reachability is
+             * enforced where the data is. The hub, the roster and the grid are
+             * grids, so they take the width; the versions panels are a column
+             * of detail, so they keep the default.
+             */}
+            <Route
+                path="/operations"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <OperationsArea />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/services"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ServicesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/grid"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <GridPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/versions"
+                element={signedIn(gate.version, session, shell, (view, serverVersion) => (
+                    <VersionsPage session={view} serverVersion={serverVersion} />
                 ))}
             />
             <Route
@@ -653,7 +717,7 @@ function signedIn(
     serverVersion: string,
     session: SessionState,
     shell: ShellActions,
-    screen: (session: SessionView) => ReactNode,
+    screen: (session: SessionView, serverVersion: string) => ReactNode,
     width: ShellWidth = 'column',
 ): ReactNode {
     if (session.status !== 'authenticated') {
@@ -663,7 +727,8 @@ function signedIn(
     /*
      * The session states the build it was opened against, which is newer than
      * the deployment's first answer; that answer is what a screen has before
-     * anybody signs in.
+     * anybody signs in. The screen and the footer both get this resolved value,
+     * so the versions panel cannot state a build the footer disagrees with.
      */
     const version = view.version !== '' ? view.version : serverVersion;
     return (
@@ -677,7 +742,7 @@ function signedIn(
             onSignOut={shell.onSignOut}
             self={shell.self}
         >
-            {screen(view)}
+            {screen(view, version)}
         </AppShell>
     );
 }

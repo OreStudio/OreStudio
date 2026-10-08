@@ -71,6 +71,7 @@ const fr: SourceCatalogue = {
             home: 'Accueil',
             accounts: 'Comptes',
             tenants: 'Locataires',
+            operations: 'Opérations',
             parties: 'Parties',
             rescue: 'Rétablir un accès',
             audit: 'Connexions',
@@ -841,6 +842,9 @@ const fr: SourceCatalogue = {
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
             audit: 'Connexions',
             auditBody: 'Qui est connecté maintenant, et les connexions qui ont échoué.',
+            versions: 'Versions et base de données',
+            versionsBody:
+                'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que la base de données stocke.',
             security: 'Votre mot de passe et vos connexions',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
         },
@@ -859,6 +863,220 @@ const fr: SourceCatalogue = {
             reportingBody: 'Rapports de risque et de P&L pour vos portefeuilles.',
             security: 'Votre mot de passe et vos connexions',
             securityBody: 'Changez votre mot de passe et voyez où vous êtes connecté.',
+        },
+    },
+
+    operations: {
+        back: 'Retour aux opérations',
+        instance: {
+            olderBuild: 'version plus ancienne',
+            state: {
+                running: 'en cours',
+                lost: 'perdu',
+                missing: 'manquant',
+            },
+        },
+        hub: {
+            title: 'Opérations',
+            description:
+                'L’installation telle qu’elle tourne : ce qui la compose, ce qu’elle stocke et ce qu’elle a fait.',
+            notBuilt: 'Pas encore construit',
+        },
+        screens: {
+            versions: 'Versions et base de données',
+            versionsBody:
+                'La version du client, la version du déploiement et l’empreinte de la base de données.',
+            services: 'Services en cours',
+            servicesBody:
+                'Chaque service attendu par le registre, confronté aux instances qui se signalent.',
+            grid: 'Grille de calcul',
+            gridBody: 'Les nœuds, le travail en cours et ce qui est terminé.',
+            bus: 'Bus de messages',
+            busBody: 'Les compteurs rapportés par le serveur NATS et ses flux.',
+            logs: 'Journaux de télémétrie',
+            logsBody: 'Les lignes écrites par les services, les plus récentes en premier.',
+        },
+        services: {
+            title: 'Opérations : services',
+            description:
+                'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
+            updated: 'Mis à jour à {at}',
+            refresh: 'Actualiser',
+            skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
+            instances: {
+                title: 'Instances',
+                reported:
+                    '{running} instances sur {total} se sont signalées au cours des {minutes} dernières minutes',
+                lost: '{count} perdues',
+                missing: '{count} manquantes',
+            },
+            columns: {
+                service: 'Service',
+                instances: 'Instances',
+                instance: 'Instance',
+                status: 'État',
+                version: 'Version',
+                lastHeartbeat: 'Dernier battement',
+            },
+            count: '{reported} sur {expected}',
+            ago: 'il y a {age}',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            hint: 'Lecture seule. Une ligne par instance attendue, qu’elle se signale ou non. L’identifiant d’instance est un UUID que le publicateur de battements génère au démarrage ; la colonne montre ses huit premiers caractères.',
+            gap: {
+                quiet: {
+                    title: 'Pourquoi une instance s’est tue',
+                    body: 'Une instance qui s’est signalée puis s’est tue se lit « perdue », car un battement ne peut pas distinguer un service que quelqu’un a arrêté d’un service qui est tombé — l’énumération d’état utilise « perdu » pour exactement cette raison. Les distinguer est « Enregistrer les démarrages et arrêts de service », qui est encore BACKLOG et enregistrerait un démarrage et un arrêt propre via le cycle de vie partagé des services.',
+                },
+                release: {
+                    title: 'Le battement énonce la version, pas la construction',
+                    body: 'Chaque service envoie sa chaîne ORES_VERSION, donc deux constructions issues d’une même version sont identiques ici, et une reconstruction sans changement de version est invisible. Le candidat est que le battement porte la chaîne de version complète — celle que la réponse de connexion énonce déjà.',
+                },
+                uptime: {
+                    title: 'Aucune durée de fonctionnement',
+                    body: 'Rien n’indique quand une instance a démarré, donc l’écran ne peut pas distinguer une instance qui vient de redémarrer d’une instance qui tourne depuis des semaines ; l’âge d’un battement ne répond à aucune des deux questions. Les candidats sont une heure de démarrage et un compteur de redémarrages sur le battement.',
+                },
+            },
+        },
+        grid: {
+            title: 'Opérations : grille de calcul',
+            description:
+                'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
+            updated: 'Mis à jour à {at}',
+            refresh: 'Actualiser',
+            units: {
+                gib: '{value} Gio',
+                mib: '{value} Mio',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} min {seconds} s',
+                hoursMinutes: '{hours} h {minutes} min',
+            },
+            summary: {
+                title: 'Résumé de la grille',
+                sampled: 'échantillonné à {at}',
+                hosts: 'Hôtes',
+                online: 'En ligne {count}',
+                idle: 'Inactifs {count}',
+                work: 'Travail',
+                workunits: '{workunits} unités de travail · {batches} lots',
+                active: 'Actifs {count}',
+                outcomes: 'Résultats',
+                success: '{count} succès',
+                clientError: '{count} erreur client',
+                noReply: '{count} sans réponse',
+                oneTenant:
+                    'Ces compteurs sont calculés pour un seul locataire, pas pour l’installation : chaque comptage — hôtes, résultats, unités de travail et lots — est filtré par le locataire sous lequel le collecteur a tourné. Le tableau des nœuds ci-dessous est celui de toute l’installation.',
+                noSample:
+                    'Aucun échantillon pour l’instant. Le déploiement ne stocke aucun résumé de grille, donc les compteurs ne peuvent pas être dessinés ; le tableau des nœuds ci-dessous tient seul.',
+            },
+            nodes: {
+                title: 'Nœuds',
+                rows: '{count} lignes',
+                reported:
+                    '{running} exécutants sur {total} se sont signalés au cours des {minutes} dernières minutes',
+                lost: '{count} perdus',
+                missing: '{count} manquants',
+                columns: {
+                    node: 'Nœud',
+                    status: 'État',
+                    version: 'Version',
+                    instance: 'Instance',
+                    tasksCompleted: 'Tâches terminées',
+                    tasksFailed: 'Échecs',
+                    tasksSinceLast: 'Depuis le dernier',
+                    meanTime: 'Temps moyen',
+                    slowest: 'Le plus lent',
+                    fetched: 'Téléchargé',
+                    uploaded: 'Téléversé',
+                    sinceHeartbeat: 'Depuis le battement',
+                },
+                noHost: 'aucun hôte ne le nomme',
+                hint: 'Lecture seule. Le tableau des nœuds est celui de toute l’installation, et un nœud garde sa ligne tant qu’il est silencieux. Les colonnes de l’exécutant indiquent le processus de calcul qui se signale pour le nœud ; un nœud dont l’exécutant ne s’est jamais signalé indique « manquant ». La dernière colonne est l’âge du plus récent échantillon du nœud ; un nœud dont la dernière colonne grandit est celui qu’il faut regarder.',
+                open: 'Ouvrir le nœud',
+                openHint:
+                    'En attente des parcours de calcul, qui possèdent les écrans des hôtes et des unités de travail.',
+            },
+            gap: {
+                history: {
+                    title: 'Aucun historique',
+                    body: 'La lecture ne répond qu’avec l’échantillon stocké le plus récent, donc l’écran ne peut pas montrer de tendance, et la progression d’un lot dans le temps n’est pas visible. Le collecteur continue d’écrire des échantillons qu’aucune lecture ne renvoie. Le candidat est une lecture des échantillons de grille sur une plage de temps.',
+                },
+                noHost: {
+                    title: 'Un nœud sans ligne d’hôte',
+                    body: 'La jointure règle le cas courant, et un nœud que le registre des hôtes ne connaît pas montre un identifiant nu. L’écran doit dire qu’aucun hôte ne nomme le nœud, plutôt que d’afficher l’identifiant comme s’il était un nom.',
+                },
+                oneTenant: {
+                    title: 'Les compteurs du résumé sont ceux d’un seul locataire',
+                    body: 'Le tableau des nœuds est celui de l’installation, mais les compteurs au-dessus ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque comptage — hôtes, résultats, unités de travail et lots — par le locataire qui lui est transmis, et le collecteur lui transmet son propre locataire de session. La lecture qui en ferait l’usage propre de l’installation est le grand livre que construit « Rendre compte de l’usage de la grille », et il n’est pas construit. Tant qu’il ne l’est pas, l’écran énonce que les compteurs sont calculés pour un seul locataire plutôt que de les présenter comme le travail de tous les locataires.',
+                },
+            },
+        },
+        versions: {
+            title: 'Opérations : versions et base de données',
+            description:
+                'Ce que ce navigateur exécute, ce que le déploiement exécute et ce que le déploiement stocke.',
+            unknown: 'inconnu',
+            client: {
+                title: 'Client',
+                lead: 'ce que ce navigateur exécute',
+                version: 'Version',
+                commit: 'Commit',
+                checkout: 'Arbre de travail',
+                checkoutUnknown: 'inconnu',
+                dirty: 'Modifications non validées',
+                clean: 'Propre',
+                hint: 'Gravé dans le paquet au moment de sa construction ; il ne peut pas changer tant que l’onglet est ouvert.',
+            },
+            server: {
+                title: 'Serveur',
+                lead: 'ce que le déploiement exécute',
+                version: 'Version',
+                address: 'Adresse',
+                hint: 'La réponse de connexion a énoncé cette version en entier, et la session la conserve ; le pied de page lit la même valeur.',
+            },
+            database: {
+                title: 'Base de données',
+                lead: 'ce que le déploiement stocke',
+                fingerprint: 'Empreinte',
+                environment: 'Environnement',
+                commit: 'Commit',
+                created: 'Créée',
+                hint: 'Lue dans la réponse de connexion qui a ouvert la session ; ce panneau ne fait donc aucune requête.',
+            },
+            gap: {
+                shape: {
+                    title: 'Les chaînes du client et du serveur n’ont pas la même forme',
+                    body: 'Le client énonce une version et un commit ; le serveur ajoute la plateforme et les informations de construction dans une composition différente. L’écran les montre côte à côte ; seul l’œil peut les comparer.',
+                },
+                releases: {
+                    title: 'Les versions par instance ne sont que des versions',
+                    body: 'Chaque service rapporte sa chaîne de version avec son battement de cœur, donc deux constructions d’une même version ne peuvent pas non plus être distinguées sur l’écran des services.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Pas encore sur cet écran',
+            lead: 'chaque manque nomme le parcours qui le consigne',
+            recordedBy: 'Consigné par {journey}',
+        },
+        related: {
+            title: 'Parcours liés',
+            lead: 'où mène ensuite cette question',
+            notBuilt: 'Pas encore construit',
+        },
+        journeys: {
+            services: 'Voir les services en cours',
+            logs: 'Lire les journaux de télémétrie',
+            grid: 'Surveiller la grille de calcul',
+            bus: 'Surveiller le bus de messages',
+            audit: 'Auditer les connexions',
+            versions: 'Vérifier les versions et la base de données',
         },
     },
 
@@ -1047,8 +1265,19 @@ const fr: SourceCatalogue = {
 
         welcome: {
             title: 'Bienvenue dans ORE Studio',
-            lead: 'Cette installation est vide. Configurez-la en trois étapes. La liste de gauche nomme chaque étape.',
+            lead: "Configurez une nouvelle installation : créez l'administrateur qui la possède, puis choisissez ce que l'installation conserve.",
             start: 'Commencer',
+            choiceLabel: "Ce que l'installation conserve",
+            choice: {
+                'first-tenant': {
+                    title: 'Créer le premier locataire',
+                    body: "Nommez un locataire et son administrateur. L'installation finit avec un locataire qui lui est propre.",
+                },
+                'system-only': {
+                    title: 'Garder le locataire système seul',
+                    body: "Ne créez aucun locataire. L'installation finit avec le seul locataire système, ce qui est utile pour les tests.",
+                },
+            },
             stage: {
                 admin: "Créer l'administrateur",
                 adminBody: 'Le compte propriétaire de cette installation.',
@@ -1058,6 +1287,8 @@ const fr: SourceCatalogue = {
                 signIn: 'Se connecter',
                 signInBody:
                     "La première connexion de l'administrateur du locataire, avec son propre mot de passe.",
+                systemSignInBody:
+                    "La première connexion de l'administrateur, avec le mot de passe que le parcours détient.",
             },
         },
 
@@ -1172,6 +1403,10 @@ const fr: SourceCatalogue = {
         signIn: {
             title: 'Première connexion',
             lead: "L'administrateur du locataire se connecte pour la première fois.",
+            systemLead:
+                "L'administrateur de l'installation se connecte, et l'installation est prête.",
+            administrator:
+                "Le compte qui se connecte est {principal}, l'administrateur que cette installation vient de recevoir.",
             username: "Nom d'utilisateur",
             password: 'Mot de passe',
             submit: 'Se connecter',

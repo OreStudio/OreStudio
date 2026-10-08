@@ -87,7 +87,6 @@ namespace ores #F2F2F2 {
                 +cpu_count : int
                 +ram_mb : int64_t
                 +gpu_type : string
-                +last_rpc_time : chrono::system_clock::time_point
                 +credit_total : double
                 +modified_by : string
                 +performed_by : string

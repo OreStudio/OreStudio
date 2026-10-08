@@ -190,7 +190,7 @@ record is the use-case analysis on
 | =batch= | The container the job belongs to: =external_ref= and =status= | [[id:E9ACBB66-33D0-4EC4-A3B0-E701BDCAD157][ores.compute.batch]] |
 | =workunit= | The job: =batch_id=, =app_version_id=, =input_uri=, =config_uri=, =priority=, =target_redundancy= and =canonical_result_id= | [[id:2A6D37BD-EA76-4BAE-AD20-53E04DD48EFE][ores.compute.workunit]] |
 | =result= | One run of the job: =workunit_id=, =host_id=, =server_state=, =outcome=, =output_uri=, =error_message= and =received_at= | [[id:4A441171-D5FB-4942-B406-F0B9F7D32B87][ores.compute.result]] |
-| =host= | The node a run ran on: =external_id=, =display_name=, =cpu_count=, =ram_mb=, =gpu_type= and =last_rpc_time= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
+| =host= | The node a run ran on: =external_id=, =display_name=, =cpu_count=, =ram_mb= and =gpu_type= | [[id:0739BC05-3713-4695-8B7B-04D9DBA1AEE0][ores.compute.host]] |
 | =app_version= | The wrapper and engine build the job used: =wrapper_version= and =engine_version= | [[id:1E563104-6F89-4858-9395-D869A7E817A6][ores.compute.app_version]] |
 | =report_definition= | The report whose run submitted the batch: =scheduler_job_id= | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
 | =report_instance= | One run of that definition: =definition_id= and =trigger_run_id= | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |

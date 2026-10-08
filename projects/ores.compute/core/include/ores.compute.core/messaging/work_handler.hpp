@@ -22,6 +22,7 @@
 
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/service/host_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
@@ -40,6 +41,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
@@ -53,10 +55,13 @@ inline auto& work_handler_lg() {
 }
 
 /**
- * @brief Generates a whimsical adjective-animal display name from a UUID.
+ * @brief Generates a whimsical adjective-animal display name with a
+ * hexadecimal discriminator, from a UUID.
  *
- * Uses the first four bytes of the UUID as a seed so the name is
- * deterministic for a given host ID (same name every restart).
+ * The first four bytes of the UUID seed the adjective and the animal; the
+ * next four bytes are appended as eight hexadecimal digits to separate names
+ * that would otherwise collide. Every part comes from the host id alone, so
+ * the name is deterministic: the same host id always produces the same name.
  */
 inline std::string make_display_name(const boost::uuids::uuid& id) {
     static constexpr std::array adjectives = {
@@ -69,12 +74,26 @@ inline std::string make_display_name(const boost::uuids::uuid& id) {
         "ermine",    "falcon",  "gecko",  "hamster",  "iguana",  "jackal",  "koala",      "lemur",
         "marmot",    "narwhal", "orca",   "pangolin", "quokka",  "raccoon", "salamander", "tapir",
         "uakari",    "viper",   "walrus", "xerus",    "yak",     "zorilla"};
+    static constexpr char hex_digits[] = "0123456789abcdef";
     const std::uint32_t seed = (static_cast<std::uint32_t>(id.data[0]) << 24) |
                                (static_cast<std::uint32_t>(id.data[1]) << 16) |
                                (static_cast<std::uint32_t>(id.data[2]) << 8) |
                                static_cast<std::uint32_t>(id.data[3]);
-    return std::string(adjectives[seed % adjectives.size()]) + "-" +
-           std::string(animals[(seed >> 8) % animals.size()]);
+    const std::uint32_t discriminator = (static_cast<std::uint32_t>(id.data[4]) << 24) |
+                                        (static_cast<std::uint32_t>(id.data[5]) << 16) |
+                                        (static_cast<std::uint32_t>(id.data[6]) << 8) |
+                                        static_cast<std::uint32_t>(id.data[7]);
+    std::string name = std::string(adjectives[seed % adjectives.size()]) + "-" +
+                       std::string(animals[(seed >> 8) % animals.size()]) + "-";
+    name += hex_digits[(discriminator >> 28) & 0x0F];
+    name += hex_digits[(discriminator >> 24) & 0x0F];
+    name += hex_digits[(discriminator >> 20) & 0x0F];
+    name += hex_digits[(discriminator >> 16) & 0x0F];
+    name += hex_digits[(discriminator >> 12) & 0x0F];
+    name += hex_digits[(discriminator >> 8) & 0x0F];
+    name += hex_digits[(discriminator >> 4) & 0x0F];
+    name += hex_digits[discriminator & 0x0F];
+    return name;
 }
 
 } // namespace
@@ -175,17 +194,18 @@ public:
         BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
         // nodes — use the service context directly (no JWT required).
+        //
+        // A heartbeat from a known host writes nothing. It used to bump a
+        // last-seen column, but that column lives on a bitemporal table, so
+        // every heartbeat added a version: five nodes at one heartbeat per
+        // thirty seconds grew the host table by fourteen thousand rows a day,
+        // all of them differing only in a timestamp. Liveness is a series, and
+        // the node samples already carry it.
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));
-                if (existing) {
-                    auto h = *existing;
-                    h.last_rpc_time = std::chrono::system_clock::now();
-                    h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                    stamp(h, ctx_);
-                    svc.save_host(h);
-                } else {
+                if (!existing) {
                     BOOST_LOG_SEV(work_handler_lg(), info)
                         << "Auto-registering new host from heartbeat: " << req->host_id;
                     domain::host h;
@@ -199,7 +219,6 @@ public:
                     }
                     h.external_id = req->host_id;
                     h.display_name = make_display_name(h.id);
-                    h.last_rpc_time = std::chrono::system_clock::now();
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     h.change_commentary = "Auto-registered on first heartbeat";
                     BOOST_LOG_SEV(work_handler_lg(), info)
@@ -223,7 +242,12 @@ public:
         static constexpr auto stale_threshold = std::chrono::minutes(5);
         try {
             service::result_service result_svc(ctx_);
-            service::host_service host_svc(ctx_);
+            repository::compute_telemetry_repository telemetry;
+            // A node's liveness is its newest sample; the host row no longer
+            // carries a last-seen column.
+            std::map<boost::uuids::uuid, std::chrono::system_clock::time_point> last_sample;
+            for (const auto& s : telemetry.latest_node_samples(ctx_))
+                last_sample[s.host_id] = s.sampled_at;
             // InProgress.
             auto in_progress = result_svc.list_by_state(4);
             int reaped = 0;
@@ -233,14 +257,10 @@ public:
                 if (r.host_id == boost::uuids::uuid{})
                     continue;
                 const auto host_id_str = boost::uuids::to_string(r.host_id);
-                const auto host_opt = host_svc.get_host(r.host_id);
-                if (!host_opt)
+                const auto sample = last_sample.find(r.host_id);
+                if (sample == last_sample.end())
                     continue;
-
-                const auto& last_seen = host_opt->last_rpc_time;
-                if (last_seen == std::chrono::system_clock::time_point{})
-                    continue;
-                if (now - last_seen <= stale_threshold)
+                if (now - sample->second <= stale_threshold)
                     continue;
 
                 r.host_id = boost::uuids::uuid{};

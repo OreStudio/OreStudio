@@ -36,5 +36,11 @@ declare module '*.png' {
 /**
  * The build this bundle came from, stamped in by `vite.config.ts` at build
  * time: the release and the commit, not a value the server could answer with.
+ *
+ * The versions screen states the three parts of the stamp on their own, so
+ * they travel beside the single line the footer shows.
  */
 declare const __BUILD_VERSION__: string;
+declare const __BUILD_RELEASE__: string;
+declare const __BUILD_COMMIT__: string;
+declare const __BUILD_DIRTY__: boolean;

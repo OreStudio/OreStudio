@@ -42,14 +42,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_system_setting_handlers(nats, ctx, verifier));
 
     // The component's own operations, which are not entity verbs: clearing a
-    // tenant's bootstrap window, completing one party's onboarding, and
-    // answering a component that asks for one setting by name.
+    // tenant's bootstrap window, completing one party's onboarding, recording
+    // that the system provisioner wizard finished, and answering a component
+    // that asks for one setting by name.
     {
         auto ops = std::make_shared<operations_handler>(nats, std::move(ctx), verifier);
         subs.push_back(nats.queue_subscribe(
             std::string(clear_bootstrap_mode_request::nats_subject),
             "ores.variability.service",
             [ops](ores::nats::message msg) { ops->clear_bootstrap_mode(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            std::string(complete_system_onboarding_request::nats_subject),
+            "ores.variability.service",
+            [ops](ores::nats::message msg) { ops->complete_system_onboarding(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
             std::string(complete_party_onboarding_request::nats_subject),
             "ores.variability.service",

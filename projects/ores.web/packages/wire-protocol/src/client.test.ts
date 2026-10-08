@@ -139,6 +139,84 @@ describe('OresClient bootstrap status', () => {
     });
 });
 
+describe('OresClient system onboarding', () => {
+    it('records the finish under the op subject, with no request body', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.ops.complete_system_onboarding': [
+                { body: { result: { outcome: 'ok', code: '', message: '' } } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await client.completeSystemOnboarding();
+
+        expect(transport.calls[1]?.subject).toBe('variability.v1.ops.complete_system_onboarding');
+        expect(transport.decodeCall(1)).toEqual({});
+    });
+
+    it('refuses a finish the server did not record', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.ops.complete_system_onboarding': [
+                {
+                    body: {
+                        result: {
+                            outcome: 'failed',
+                            code: 'operation_failed',
+                            message: 'no write',
+                        },
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.completeSystemOnboarding()).rejects.toBeInstanceOf(
+            OperationFailedError,
+        );
+    });
+
+    it('reads the wizard flag by name through the settings read', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'ok', code: '', message: '' },
+                        system_setting: { value: 'true' },
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingSystemComplete()).toBe(true);
+        expect(transport.decodeCall(1)).toEqual({ key: { name: 'onboarding.system' } });
+    });
+
+    it('reads a missing flag as unfinished rather than as an error', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'variability.v1.system_settings.get': [
+                {
+                    body: {
+                        result: { outcome: 'missing', code: 'not_found', message: '' },
+                        system_setting: null,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        expect(await client.onboardingSystemComplete()).toBe(false);
+    });
+});
+
 describe('OresClient login', () => {
     it('sends the credential in the principal field', async () => {
         const transport = new ScriptedTransport({ 'iam.v1.ops.login': [{ body: loginReply() }] });
@@ -257,6 +335,198 @@ describe('OresClient authenticated calls', () => {
             as_of: null,
             filter: null,
         });
+    });
+
+    it('reads the services roster, and sends the empty request it declares', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.ops.get_service_roster': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        slots: [
+                            {
+                                service_name: 'ores.iam.service',
+                                state: 'running',
+                                slot: 1,
+                                instance_id: '91b0f33d-4b32-4f65-8809-2d3e4f506172',
+                                version: 'v0.0.25',
+                                sampled_at: '2026-10-04 14:32:00Z',
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const slots = await client.serviceRoster();
+
+        expect(transport.calls[1]?.subject).toBe('telemetry.v1.ops.get_service_roster');
+        expect(transport.decodeCall(1)).toEqual({});
+        // A field the reply left out is stated as nothing rather than invented,
+        // so a slot no instance fills cannot read as a reporting one.
+        expect(slots).toEqual([
+            {
+                service_name: 'ores.iam.service',
+                display_name: '',
+                description: '',
+                service_account: null,
+                slot: 1,
+                state: 'running',
+                instance_id: '91b0f33d-4b32-4f65-8809-2d3e4f506172',
+                host_id: null,
+                version: 'v0.0.25',
+                sampled_at: '2026-10-04 14:32:00Z',
+            },
+        ]);
+    });
+
+    it('refuses a roster the server did not read, rather than reading it as empty', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.ops.get_service_roster': [
+                { body: { success: false, message: 'denied', slots: [] } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.serviceRoster()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    it('reads the grid summary and the node rows, and sends the empty request it declares', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_stats': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        total_hosts: 2,
+                        online_hosts: 1,
+                        idle_hosts: 0,
+                        total_workunits: 3,
+                        total_batches: 1,
+                        active_batches: 1,
+                        outcomes_success: 4,
+                        outcomes_client_error: 1,
+                        outcomes_no_reply: 0,
+                        sampled_at: '2026-10-04 14:31:02Z',
+                        node_summaries: [
+                            {
+                                host_id: '9e0f33aa-0000-4000-8000-000000000001',
+                                tasks_completed: 1284,
+                                tasks_failed: 2,
+                                tasks_since_last: 12,
+                                avg_task_duration_ms: 42_000,
+                                max_task_duration_ms: 51_000,
+                                input_bytes_fetched: 1_288_490_188,
+                                output_bytes_uploaded: 230_686_720,
+                                seconds_since_hb: 8,
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const stats = await client.gridStats();
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.ops.get_grid_stats');
+        expect(transport.decodeCall(1)).toEqual({});
+        // A counter the reply left out states zero rather than a made-up count.
+        expect(stats.results_done).toBe(0);
+        expect(stats.sampled_at).toBe('2026-10-04 14:31:02Z');
+        // The failures and the slowest task travel on the node summary now.
+        expect(stats.node_summaries[0]?.tasks_failed).toBe(2);
+        expect(stats.node_summaries[0]?.max_task_duration_ms).toBe(51_000);
+    });
+
+    it('refuses a grid read the server did not produce, rather than reading it as idle', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.ops.get_grid_stats': [{ body: { success: false, message: 'denied' } }],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.gridStats()).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    it('reads the host registry page, and names the nodes by their external id', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.hosts.list': [
+                {
+                    body: {
+                        result: { outcome: 'ok', code: '', message: '', fields: [] },
+                        hosts: [
+                            {
+                                version: 1,
+                                tenant_id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+                                id: '9e0f33aa-0000-4000-8000-000000000001',
+                                external_id: 'grid-01.example.com',
+                                display_name: 'Grid 01',
+                                location: 'ldn',
+                                cpu_count: 8,
+                                ram_mb: 32768,
+                                gpu_type: '',
+                                credit_total: 100,
+                                modified_by: 'probe',
+                                performed_by: 'probe',
+                                change_reason_code: 'new',
+                                change_commentary: '',
+                                recorded_at: '2026-10-04 14:31:02Z',
+                            },
+                        ],
+                        total: 1,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const hosts = await client.listHosts();
+
+        expect(transport.calls[1]?.subject).toBe('compute.v1.hosts.list');
+        expect(transport.decodeCall(1)).toEqual({
+            offset: 0,
+            limit: 1000,
+            order: { field: '', descending: false },
+            filter: null,
+            as_of: null,
+        });
+        expect(hosts.map((host) => host.external_id)).toEqual(['grid-01.example.com']);
+    });
+
+    it('refuses a host page that did not end ok, rather than reading it as no hosts', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'compute.v1.hosts.list': [
+                {
+                    body: {
+                        result: {
+                            outcome: 'denied',
+                            code: 'forbidden',
+                            message: 'denied',
+                            fields: [],
+                        },
+                        hosts: [],
+                        total: 0,
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(client.listHosts()).rejects.toBeInstanceOf(OperationFailedError);
     });
 
     it('refreshes once and retries when the server reports an expired token', async () => {

@@ -77,6 +77,7 @@ export const en: SourceCatalogue = {
             home: 'Home',
             accounts: 'Accounts',
             tenants: 'Tenants',
+            operations: 'Operations',
             parties: 'Parties',
             rescue: 'Rescue access',
             audit: 'Sign-ins',
@@ -830,6 +831,9 @@ export const en: SourceCatalogue = {
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
             audit: 'Sign-ins',
             auditBody: 'Who is signed in now, and the sign-ins that failed.',
+            versions: 'Versions and the database',
+            versionsBody:
+                'What this browser runs, what the deployment runs, and what the database stores.',
             security: 'Your password and sign-ins',
             securityBody: 'Change your password and see where you are signed in.',
         },
@@ -847,6 +851,222 @@ export const en: SourceCatalogue = {
             reportingBody: 'Risk and P&L reports for your books.',
             security: 'Your password and sign-ins',
             securityBody: 'Change your password and see where you are signed in.',
+        },
+    },
+
+    /*
+     * The operations area: the screens that answer what the installation is
+     * doing. The versions screen belongs to every session, so it is offered
+     * from Home as well as from this area's hub.
+     */
+    operations: {
+        back: 'Back to operations',
+        instance: {
+            olderBuild: 'older build',
+            state: {
+                running: 'running',
+                lost: 'lost',
+                missing: 'missing',
+            },
+        },
+        hub: {
+            title: 'Operations',
+            description:
+                'The installation as it is running: what it is made of, what it stores, and what it did.',
+            notBuilt: 'Not built yet',
+        },
+        screens: {
+            versions: 'Versions and the database',
+            versionsBody:
+                'The client build, the deployment build, and the fingerprint of the database.',
+            services: 'Running services',
+            servicesBody: 'Every service the registry expects, met by the instances that report.',
+            grid: 'Compute grid',
+            gridBody: 'The nodes, the work they are doing, and what they have finished.',
+            bus: 'Message bus',
+            busBody: 'The counters the NATS server and its streams report.',
+            logs: 'Telemetry logs',
+            logsBody: 'The lines the services wrote, newest first.',
+        },
+        services: {
+            title: 'Operations: services',
+            description:
+                'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
+            updated: 'Updated {at}',
+            refresh: 'Refresh',
+            skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
+            instances: {
+                title: 'Instances',
+                reported: '{running} of {total} instances reported in the last {minutes} minutes',
+                lost: '{count} lost',
+                missing: '{count} missing',
+            },
+            columns: {
+                service: 'Service',
+                instances: 'Instances',
+                instance: 'Instance',
+                status: 'Status',
+                version: 'Version',
+                lastHeartbeat: 'Last heartbeat',
+            },
+            count: '{reported} of {expected}',
+            ago: '{age} ago',
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} m {seconds} s',
+                hoursMinutes: '{hours} h {minutes} m',
+            },
+            hint: 'Read-only. One row per expected instance, whether it reports or not. The instance id is a UUID the heartbeat publisher generates at startup; the column shows its first eight characters.',
+            gap: {
+                quiet: {
+                    title: 'Why an instance went quiet',
+                    body: 'An instance that reported and then fell quiet reads lost, because a heartbeat cannot tell a service somebody stopped from one that fell over — the state enum uses lost for exactly that reason. Telling the two apart is Record service starts and stops, which is still BACKLOG and would record a start and a graceful stop through the shared service lifecycle.',
+                },
+                release: {
+                    title: 'The heartbeat states the release, not the build',
+                    body: 'Each service sends its ORES_VERSION string, so two builds cut from one release look identical here, and a rebuild without a release bump is invisible. The candidate is for the heartbeat to carry the full version string — the one the login answer already states.',
+                },
+                uptime: {
+                    title: 'No uptime',
+                    body: 'Nothing says when an instance started, so the screen cannot tell an instance that just restarted from one that has run for weeks; the age of a heartbeat answers neither question. The candidates are a start time and a restart count on the heartbeat.',
+                },
+            },
+        },
+        grid: {
+            title: 'Operations: compute grid',
+            description:
+                "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
+            updated: 'Updated {at}',
+            refresh: 'Refresh',
+            units: {
+                gib: '{value} GiB',
+                mib: '{value} MiB',
+                seconds: '{seconds} s',
+            },
+            age: {
+                seconds: '{seconds} s',
+                minutesSeconds: '{minutes} m {seconds} s',
+                hoursMinutes: '{hours} h {minutes} m',
+            },
+            summary: {
+                title: 'Grid summary',
+                sampled: 'sampled {at}',
+                hosts: 'Hosts',
+                online: 'Online {count}',
+                idle: 'Idle {count}',
+                work: 'Work',
+                workunits: '{workunits} workunits · {batches} batches',
+                active: 'Active {count}',
+                outcomes: 'Outcomes',
+                success: '{count} success',
+                clientError: '{count} client error',
+                noReply: '{count} no reply',
+                oneTenant:
+                    'These counters are computed for one tenant, not for the installation: every count — hosts, results, workunits and batches — is filtered by the tenant the poller ran as. The node table below is the whole installation’s.',
+                noSample:
+                    'No sample yet. The deployment stores no grid summary, so the counters cannot be drawn; the node table below stands alone.',
+            },
+            nodes: {
+                title: 'Nodes',
+                rows: '{count} rows',
+                reported: '{running} of {total} runners reported in the last {minutes} minutes',
+                lost: '{count} lost',
+                missing: '{count} missing',
+                columns: {
+                    node: 'Node',
+                    status: 'Status',
+                    version: 'Version',
+                    instance: 'Instance',
+                    tasksCompleted: 'Tasks done',
+                    tasksFailed: 'Failed',
+                    tasksSinceLast: 'Since last',
+                    meanTime: 'Mean time',
+                    slowest: 'Slowest',
+                    fetched: 'Fetched',
+                    uploaded: 'Uploaded',
+                    sinceHeartbeat: 'Since heartbeat',
+                },
+                noHost: 'no host names it',
+                hint: "Read-only. The node table is the whole installation's, and a node keeps its row while it is quiet. The runner columns state the compute process that reports for the node; a node whose runner never reported says missing. The last column is the age of the node's newest sample; a node whose last column grows is the one to look at.",
+                open: 'Open the node',
+                openHint:
+                    'Waits for the compute journeys, which own the host and workunit screens.',
+            },
+            gap: {
+                history: {
+                    title: 'No history',
+                    body: "The read answers with the newest stored sample only, so the screen cannot show a trend, and a batch's progress over time is not visible. The poller keeps writing samples that no read returns. The candidate is a read over grid samples in a time range.",
+                },
+                noHost: {
+                    title: 'A node with no host row',
+                    body: 'The join fixes the common case, and a node the host registry does not know shows a bare id. The screen must say that no host names the node, rather than printing the id as if it were a name.',
+                },
+                oneTenant: {
+                    title: "The summary's counters are one tenant's",
+                    body: "The node table is the installation's, but the counters above it are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count — hosts, results, workunits and batches — by the tenant it is handed, and the poller hands it its own session tenant. The read that would make them the installation's own usage is the ledger Account for the grid's usage builds, and it is not built. Until it is, the screen states that the counters are computed for one tenant rather than presenting them as every tenant's work.",
+                },
+            },
+        },
+        versions: {
+            title: 'Operations: versions and the database',
+            description:
+                'What this browser runs, what the deployment runs, and what the deployment stores.',
+            unknown: 'unknown',
+            client: {
+                title: 'Client',
+                lead: 'what this browser runs',
+                version: 'Version',
+                commit: 'Commit',
+                checkout: 'Checkout',
+                checkoutUnknown: 'unknown',
+                dirty: 'Uncommitted changes',
+                clean: 'Clean',
+                hint: 'Stamped into the bundle when it was built; it cannot change while the tab is open.',
+            },
+            server: {
+                title: 'Server',
+                lead: 'what the deployment runs',
+                version: 'Version',
+                address: 'Address',
+                hint: 'The login answer stated this build in full, and the session keeps it; the footer reads the same value.',
+            },
+            database: {
+                title: 'Database',
+                lead: 'what the deployment stores',
+                fingerprint: 'Fingerprint',
+                environment: 'Environment',
+                commit: 'Commit',
+                created: 'Created',
+                hint: 'Read from the login answer that opened the session, so this panel makes no request of its own.',
+            },
+            gap: {
+                shape: {
+                    title: 'The client and the server strings do not share a shape',
+                    body: 'The client states a release and a commit; the server adds the platform and the build information in a different composition. The screen shows them side by side; only an eye can compare them.',
+                },
+                releases: {
+                    title: 'The per-instance versions are releases only',
+                    body: 'Each service reports its release string with its heartbeat, so two builds of one release cannot be told apart on the services screen either.',
+                },
+            },
+        },
+        gaps: {
+            title: 'Not on this screen yet',
+            lead: 'each gap names the journey that records it',
+            recordedBy: 'Recorded by {journey}',
+        },
+        related: {
+            title: 'Related journeys',
+            lead: 'where this question leads next',
+            notBuilt: 'Not built yet',
+        },
+        journeys: {
+            services: 'See the running services',
+            logs: 'Read the telemetry logs',
+            grid: 'Watch the compute grid',
+            bus: 'Watch the message bus',
+            audit: 'Audit sign-ins',
+            versions: 'Check the versions and the database',
         },
     },
 
@@ -1029,8 +1249,19 @@ export const en: SourceCatalogue = {
 
         welcome: {
             title: 'Welcome to ORE Studio',
-            lead: "Set up a new installation: the administrator that owns it, the first tenant, and the tenant administrator's first sign-in.",
+            lead: 'Set up a new installation: create the administrator that owns it, then choose what the installation is left with.',
             start: 'Get started',
+            choiceLabel: 'What the installation is left with',
+            choice: {
+                'first-tenant': {
+                    title: 'Create the first tenant',
+                    body: 'Name a tenant and its administrator. The installation ends with a tenant of its own.',
+                },
+                'system-only': {
+                    title: 'Keep the system tenant alone',
+                    body: 'Create no tenant. The installation ends with only the system tenant, which is useful for testing.',
+                },
+            },
             stage: {
                 admin: 'Create the administrator',
                 adminBody: 'The account that owns this installation.',
@@ -1039,6 +1270,8 @@ export const en: SourceCatalogue = {
                 signIn: 'Sign in',
                 signInBody:
                     "The tenant administrator's first sign-in, with a password of their own.",
+                systemSignInBody:
+                    "The administrator's first sign-in, with the password the journey holds.",
             },
         },
 
@@ -1152,6 +1385,9 @@ export const en: SourceCatalogue = {
         signIn: {
             title: 'First sign-in',
             lead: 'The tenant administrator signs in for the first time.',
+            systemLead: 'The installation administrator signs in, and the installation is ready.',
+            administrator:
+                'The account that signs in is {principal}, the administrator this installation was just given.',
             username: 'Username',
             password: 'Password',
             submit: 'Sign in',

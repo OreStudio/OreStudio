@@ -24,7 +24,6 @@ import secrets
 import string
 import subprocess
 import sys
-import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -66,10 +65,6 @@ _PW_ALPHABET = string.ascii_letters + string.digits
 def _gen_password() -> str:
     """32-char alphanumeric secret (matches the shell generator's shape)."""
     return "".join(secrets.choice(_PW_ALPHABET) for _ in range(32))
-
-
-def _gen_uuid() -> str:
-    return str(uuid.uuid4())
 
 
 def _read_env(env_file: Path) -> dict:
@@ -192,11 +187,6 @@ def _env_value(existing: dict, key: str, fallback: str) -> str:
     which environment a command touches, so a stale exported value can point
     a command at another worktree's database."""
     return existing.get(key) or os.environ.get(key) or fallback
-
-
-def _get_or_gen_uuid(existing: dict, key: str) -> str:
-    val = existing.get(key)
-    return val if val else _gen_uuid()
 
 
 def _busctl_setting(existing: dict, flag: bool | None) -> str:
@@ -716,8 +706,6 @@ def run(argv, project_root: Path) -> int:
 
     service_pw = {c: _get_or_gen(existing, f"ORES_{_upper(c)}_SERVICE_DB_PASSWORD")
                   for c in service_components}
-    grid_node_ids = [_get_or_gen_uuid(existing, f"ORES_GRID_NODE_{n}_HOST_ID")
-                     for n in range(1, 6)]
     print("All credentials resolved.")
 
     # PEM as a single line with literal \n separators (awk '{printf "%s\\n",$0}').
@@ -986,15 +974,7 @@ ORES_DB_COMPUTE_WRAPPER_USER={compute_wrapper_user}
 # Note: excluded from GITHUB_ENV export since services don't run in CI.
 # ---------------------------------------------------------------------------
 ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
-
-# ---------------------------------------------------------------------------
-# Compute wrapper node host IDs (one per test node)
-# Each ID must match a host record in the compute.hosts table.
-# Re-run compass db recreate after regenerating to keep IDs in sync.
-# ---------------------------------------------------------------------------
 """)
-    for i, gid in enumerate(grid_node_ids, start=1):
-        out.append(f"ORES_GRID_NODE_{i}_HOST_ID={gid}\n")
 
     # Preserve any previously-set logging vars.
     print("Checking for existing logging configuration...")

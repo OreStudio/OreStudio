@@ -47,7 +47,6 @@ struct host_write {
     std::int64_t ram_mb;
     std::string gpu_type;
     std::string display_name;
-    std::chrono::system_clock::time_point last_rpc_time;
     double credit_total;
 };
 

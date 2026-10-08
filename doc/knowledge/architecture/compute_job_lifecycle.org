@@ -45,7 +45,7 @@ describe what runs where.
 | =batch= | A set of identical jobs submitted together, with an operator-chosen =external_ref=. | =status=: =open= → =dispatched= → =closed= |
 | =workunit= | One job of a batch. Carries the shared input bundle and the redundancy target. | =canonical_result_id= empty until a result is accepted; =target_redundancy= (1 for shell dispatch) |
 | =result= | One execution attempt of a workunit on one host. | =server_state=: 1 Inactive, 2 Unsent, 4 InProgress, 5 Done; =outcome=: 1 Success, 3 ClientError, 4 NoReply |
-| =host= | A wrapper node. Registers itself on its first heartbeat and gets a generated display name. | =last_rpc_time=, bumped by each heartbeat; judged online from heartbeat recency |
+| =host= | A wrapper node. Registers itself on its first heartbeat and gets a generated display name. | =display_name=, =credit_total=; judged online from the recency of its node samples |
 
 The =batch= statuses and the result =server_state= transitions are
 shown in [[./compute_job_lifecycle_states.puml][=compute_job_lifecycle_states.puml=]]:
@@ -271,8 +271,11 @@ job survives a node that dies mid-run.
 Every =heartbeat_interval= (30 seconds by default) the node publishes
 =compute.v1.ops.heartbeat= with its host id. The first heartbeat
 auto-registers the host row and gives it a deterministic
-adjective-animal display name (e.g. =clever-echidna=); later ones bump
-=last_rpc_time=, which is what the grid uses to judge the host online.
+adjective-animal display name carrying an eight-hex-digit discriminator from
+the same id (e.g. =clever-echidna-4f2a9c31=), so two nodes are unlikely to
+share a name by drawing the same words. A heartbeat from a known host writes
+nothing: liveness is a series, and the grid judges a host online from the
+recency of its newest node sample.
 When telemetry is enabled the node additionally publishes node samples
 on =compute.v1.ops.node_sample=.
 

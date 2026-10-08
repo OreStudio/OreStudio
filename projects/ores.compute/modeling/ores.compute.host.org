@@ -91,22 +91,13 @@ GPU model identifier, e.g. 'A100' or NULL if no GPU.
 :nullable: true
 :END:
 
-Whimsical adjective+animal display name assigned on first registration.
-Display-only; never used as a key.
+Whimsical adjective-animal display name with an eight-hex-digit discriminator
+taken from the host id, assigned on first registration. Display-only; never
+used as a key.
 
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "-host-" + std::to_string(idx)
 #+end_src
-
-** last_rpc_time
-:PROPERTIES:
-:type:     timestamp with time zone
-:cpp_type: std::chrono::system_clock::time_point
-:nullable: true
-:default_value: {}
-:END:
-
-Timestamp of the last heartbeat received from this node.
 
 ** credit_total
 :PROPERTIES:
@@ -165,7 +156,6 @@ Accumulated work units successfully processed by this host.
 | cpu_count     | CPU Count     |
 | ram_mb        | RAM (MB)      |
 | gpu_type      | GPU Type      |
-| last_rpc_time | Last RPC Time |
 | credit_total  | Credit Total  |
 | modified_by   | Modified By   |
 | recorded_at   | Recorded At   |

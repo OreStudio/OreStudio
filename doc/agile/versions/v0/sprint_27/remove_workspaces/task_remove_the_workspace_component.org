@@ -8,7 +8,7 @@
 #+filetags: :remove_workspaces:sprint_27:v0:
 #+owner: marco
 #+branch: feature/remove-the-workspace-component
-#+pr:
+#+pr: 2816
 #+blocked_on: 21D83315-FD24-423E-9882-A9067CB38582
 #+blocked_since:
 #+created: 2026-10-05
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2816][#2816]] | [workspace,shell,sql,web,utility] Remove the ores.workspace component |
 
 * Review
 

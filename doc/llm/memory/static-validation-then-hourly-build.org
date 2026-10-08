@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B3111837-34FC-4E27-AD18-D4A838D32DA7
+:END:
+#+title: Memory: Validate statically, and let the hourly build prove it
+#+description: Feature agents validate statically and never build or run tests; one hourly validation agent builds latest main and runs the suites over every pull request since its last check.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A feature agent validates its change statically and does not build or run tests. It reads the code, runs the local checks, and proves the change by inspection. One hourly validation agent builds the latest main and runs the suites over every pull request committed since its last check. The feature agent's job is to land the pull request; the build is the hourly agent's.
+
+*Why:* A full rebuild and the nineteen-minute corpus suite cost more than a small wire-additive change, and they serialise every environment behind one link step. The rule was set on 2026-10-08, after a task that took over two hours mostly to build.
+
+*How to apply:* When implementing a task, run the local checks and read the result, then open and merge the pull request. Do not run compass build, ctest or compass db recreate, and do not start one as a background job, unless the user asks. Record in the task's Result that nothing was compiled, and name the gaps that leaves: a compile error, a broken suite, and a schema change that needs the database recreated. That last one matters, because adding or changing a table moves the schema fingerprint and the test binaries refuse to start until compass db recreate runs.

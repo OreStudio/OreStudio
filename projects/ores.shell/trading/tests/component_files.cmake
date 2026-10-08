@@ -69,6 +69,7 @@ set(files
     "rpa_instrument_commands_tests.cpp"
     "scripted_instrument_commands_tests.cpp"
     "settlement_type_commands_tests.cpp"
+    "structure_commands_tests.cpp"
     "structure_kind_commands_tests.cpp"
     "structure_template_commands_tests.cpp"
     "structure_template_role_commands_tests.cpp"

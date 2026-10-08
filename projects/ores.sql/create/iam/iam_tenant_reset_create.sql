@@ -107,15 +107,16 @@ declare
 
         -- The reporting configuration chain: the risk report config each
         -- definition resolves, its scope, the definition-to-configuration
-        -- bindings, and the ORE documents `ore import-run` wrote. All of it
-        -- hangs off the definitions wiped above, so leaving any of it behind
-        -- leaves a config that names a definition the tenant no longer has.
-        -- Re-provisioning seeds the definitions, and re-running the import
-        -- rebuilds the documents and their bindings.
+        -- bindings, the ORE documents `ore import-run` wrote and each
+        -- document's parameters. All of it hangs off the definitions wiped
+        -- above, so leaving any of it behind leaves a config that names a
+        -- definition the tenant no longer has. Re-provisioning seeds the
+        -- definitions, and re-running the import rebuilds the rest.
         'ores_reporting_risk_report_config_books_tbl',
         'ores_reporting_risk_report_config_portfolios_tbl',
         'ores_reporting_risk_report_configs_tbl',
         'ores_reporting_report_configurations_tbl',
+        'ores_reporting_configuration_parameters_tbl',
         'ores_reporting_configurations_tbl'
     ];
 begin

@@ -8,7 +8,7 @@
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
 #+branch: feature/treat-an-engine-error-as-a-failed-result
-#+pr:
+#+pr: 2890
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -35,7 +35,7 @@ that produced no analytics is a failed result carrying the engine's error.
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
 | Now          | Implemented. The verdict is a pure function in =ores.ore.core=, the wrapper judges every zero-exit run by it, and seven cases cover it. |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The hourly validation build, then a run that fails, so the refusal is seen live. |
 | Next         | The hourly validation, then a run that fails so the refusal is seen live. |
 | Last touched | 2026-10-08                               |
 
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2890 | [compute,ore] Judge an engine run by what it left behind, not by its exit code |
 
 * Review
 

@@ -122,11 +122,13 @@ public:
     approval_operations_handler(ores::nats::service::client& nats,
                                 ores::database::context ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                                std::chrono::seconds answered_window)
+                                std::chrono::seconds answered_window,
+                                std::chrono::seconds reminder_window)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
-        , answered_window_(answered_window) {}
+        , answered_window_(answered_window)
+        , reminder_window_(reminder_window) {}
 
     void raise(ores::nats::message msg) {
         using ores::utility::domain::outcome;
@@ -565,6 +567,38 @@ public:
      * publish that carries no token, so the service's own context is what
      * holds the work: there is no session to read one from.
      */
+    /**
+     * @brief Warns the deciders of every request close to its deadline.
+     *
+     * The scheduler fires this, so it acts as the service rather than as a
+     * person and reaches requests no tenant-scoped caller could read. Each
+     * request is warned about once: the notice already raised names it, so a
+     * repeated call finds nothing new.
+     */
+    void remind_expiring(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        try {
+            service::approval_lifecycle lifecycle(ctx_);
+            const auto expiring = lifecycle.remind_expiring(reminder_window_);
+            std::vector<std::string> ids;
+            ids.reserve(expiring.size());
+            for (const auto& e : expiring)
+                ids.push_back(e.request_id);
+            reply(nats_,
+                  msg,
+                  remind_expiring_approvals_response{
+                      .result = approval_result(outcome::ok, "", ""),
+                      .reminded = std::move(ids)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error warning the deciders of requests close to their deadline: " << e.what();
+            reply(nats_,
+                  msg,
+                  remind_expiring_approvals_response{
+                      .result = approval_result(outcome::failed, "remind_failed", e.what())});
+        }
+    }
+
     void expire_overdue(ores::nats::message msg) {
         using ores::utility::domain::outcome;
         try {
@@ -664,6 +698,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::chrono::seconds answered_window_;
+    std::chrono::seconds reminder_window_;
 };
 
 }

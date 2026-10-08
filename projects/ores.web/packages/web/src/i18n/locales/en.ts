@@ -327,6 +327,9 @@ export const en: SourceCatalogue = {
     'notification.inbox.approval_expired':
         'Your request for {kind} expired before anybody answered it. Ask again if you still need it.',
 
+    'notification.inbox.approval_expiring':
+        'A request for {kind} is due by {deadline} and nobody has answered it.',
+
     signIns: {
         title: 'Sign-ins',
         kind: 'Kind',

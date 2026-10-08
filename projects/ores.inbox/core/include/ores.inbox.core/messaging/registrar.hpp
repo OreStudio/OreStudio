@@ -46,7 +46,8 @@ public:
         ores::nats::service::client& nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        std::chrono::seconds answered_window);
+        std::chrono::seconds answered_window,
+        std::chrono::seconds reminder_window);
 };
 
 }

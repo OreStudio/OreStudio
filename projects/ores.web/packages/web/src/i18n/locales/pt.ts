@@ -323,6 +323,9 @@ const pt: SourceCatalogue = {
     'notification.inbox.approval_expired':
         'O seu pedido de {kind} expirou antes de alguém responder. Peça de novo se ainda precisar dele.',
 
+    'notification.inbox.approval_expiring':
+        'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
+
     signIns: {
         title: 'Inícios de sessão',
         kind: 'Tipo',

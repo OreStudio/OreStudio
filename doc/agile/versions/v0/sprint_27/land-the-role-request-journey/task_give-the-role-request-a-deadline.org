@@ -198,8 +198,8 @@ notice's raiser is resolved in the system tenant, because that is where service
 accounts live; and =raised_by= admits a system-tenant account, stated in the
 notification model so the generated SQL and the intent cannot drift apart.
 
-The journey's gap 7 is closed. Gap 4, the reminder *before* the deadline, is
-not built here and is captured instead --
-[[id:BF4009D1-1254-43F9-A8A3-BE9374DB5F30][nobody reminds a decider that a
-request is about to lapse]].
+The journey's gap 7 is half closed here: the reminder *before* the deadline was
+not built with the deadline, and was captured then. It has since been built, as
+its own sweep on its own schedule, and is described with the deadline in
+[[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]].
 

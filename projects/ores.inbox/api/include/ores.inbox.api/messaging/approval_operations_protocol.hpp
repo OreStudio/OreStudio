@@ -276,6 +276,48 @@ struct expire_overdue_approvals_response {
 };
 
 /**
+ * @brief Warns the deciders of every open request whose deadline is close.
+ *
+ * The other half of the deadline. The sweep that closes what nobody answered
+ * keeps the queue moving, but a decider who never looked learns afterwards;
+ * this gives them the chance the deadline was there to give.
+ *
+ * It has its own schedule and its own window, because warning somebody is a
+ * nudge with its own timing and its own audience, while closing a queue that
+ * has stopped moving is housekeeping. The window is the variability setting
+ * =inbox.approval_expiry.reminder_window_seconds=.
+ *
+ * A request is warned about once, and the notice is what says so: a reminder
+ * already raised names the request, so there is no second mark to keep in step
+ * with the first. A request answered before its deadline passes stops matching,
+ * and the one the sweep closed is left out by the close.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only reads requests that are already close
+ * to a deadline their kind set.
+ */
+struct remind_expiring_approvals_request {
+    using response_type = struct remind_expiring_approvals_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.remind_expiring_approvals";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = false;
+};
+
+struct remind_expiring_approvals_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The requests complained about, as UUID strings, nearest deadline
+     * first.
+     */
+    std::vector<std::string> reminded;
+};
+
+/**
  * @brief One field of a request at one version, as a screen names and draws it.
  *
  * The value is text whatever its type: the renderer that fills this in is the

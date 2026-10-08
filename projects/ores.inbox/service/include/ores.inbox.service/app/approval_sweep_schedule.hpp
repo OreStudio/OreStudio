@@ -30,23 +30,39 @@
 namespace ores::inbox::service::app {
 
 /**
- * @brief Puts the recurring approval expiry sweep into the scheduler.
+ * @brief One recurring sweep, named by the setting it is scheduled from.
  *
- * The component declares that expiry recurs; the installation says how often,
- * as the variability system setting =inbox.approval_expiry.schedule=. This
- * reads that setting over the wire and registers the job that publishes
- * =inbox.v1.ops.expire_overdue_approvals=.
+ * The component declares that the sweep recurs; the installation says how
+ * often, as a variability system setting. Everything the scheduler holds the
+ * job under is here, because a component that could not name its own job could
+ * not recognise the one it registered last time and would add a second on
+ * every restart.
+ */
+struct sweep {
+    std::string setting_name;
+    std::string job_name;
+    std::string subject;
+    std::string description;
+};
+
+/**
+ * @brief Puts a recurring approval sweep into the scheduler.
+ *
+ * The component declares that the sweep recurs; the installation says how
+ * often, as the variability system setting the sweep names. This reads that
+ * setting over the wire and registers the job that publishes the sweep's
+ * subject.
  *
  * Registering is part of starting rather than something that happens later.
- * A service that cannot register its expiry job throws, and the process
- * refuses to start rather than run with requests nobody will ever close.
+ * A service that cannot register its job throws, and the process refuses to
+ * start rather than run with work that will never happen.
  */
-class approval_expiry_schedule final {
+class approval_sweep_schedule final {
 public:
-    explicit approval_expiry_schedule(ores::nats::service::nats_client svc_nats);
+    approval_sweep_schedule(ores::nats::service::nats_client svc_nats, sweep described);
 
-    approval_expiry_schedule(const approval_expiry_schedule&) = delete;
-    approval_expiry_schedule& operator=(const approval_expiry_schedule&) = delete;
+    approval_sweep_schedule(const approval_sweep_schedule&) = delete;
+    approval_sweep_schedule& operator=(const approval_sweep_schedule&) = delete;
 
     /**
      * @brief Registers the job, retrying while a dependency is unreachable.
@@ -56,7 +72,7 @@ public:
     boost::asio::awaitable<void> register_job();
 
 private:
-    inline static std::string_view logger_name = "ores.inbox.service.app.approval_expiry_schedule";
+    inline static std::string_view logger_name = "ores.inbox.service.app.approval_sweep_schedule";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -81,6 +97,7 @@ private:
     std::expected<void, failure> try_register_once();
 
     ores::nats::service::nats_client svc_nats_;
+    sweep described_;
 };
 
 }

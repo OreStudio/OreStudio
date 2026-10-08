@@ -522,6 +522,21 @@ std::string client::make_stream_name(std::string_view logical_suffix) const {
     return name;
 }
 
+std::string client::subjects_below(std::string_view subject) const {
+    return make_subject(subject) + ".>";
+}
+
+std::vector<std::string>
+client::covering_subjects(std::initializer_list<std::string_view> subjects) const {
+    std::vector<std::string> filters;
+    filters.reserve(subjects.size() * 2);
+    for (const auto subject : subjects) {
+        filters.push_back(make_subject(subject));
+        filters.push_back(subjects_below(subject));
+    }
+    return filters;
+}
+
 void client::publish(std::string_view subject,
                      std::span<const std::byte> data,
                      std::unordered_map<std::string, std::string> headers) {

@@ -87,9 +87,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         auto admin = nats.make_admin();
         admin.ensure_stream(
             nats.make_stream_name("synthetic_ticks"),
-            {nats.make_subject(ores::marketdata::domain::synthetic_tick_wildcard())});
-        admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
-                            {nats.make_subject(ores::marketdata::domain::market_tick_wildcard())});
+            nats.covering_subjects({ores::marketdata::domain::synthetic_tick_subject}));
+        admin.ensure_stream(
+            nats.make_stream_name("marketdata_ticks"),
+            nats.covering_subjects({ores::marketdata::messaging::market_tick::nats_subject}));
         BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();

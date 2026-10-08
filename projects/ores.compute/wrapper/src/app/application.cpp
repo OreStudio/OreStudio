@@ -652,9 +652,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     try {
         const auto stream_name = nats.make_stream_name("compute_assignments");
         auto admin = nats.make_admin();
-        const std::string assignment_stream =
-            std::string(compute::messaging::work_assignment_event::nats_subject) + ".>";
-        admin.ensure_stream(stream_name, {nats.make_subject(assignment_stream)});
+        admin.ensure_stream(
+            stream_name,
+            nats.covering_subjects({compute::messaging::work_assignment_event::nats_subject}));
         BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();

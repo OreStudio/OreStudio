@@ -57,7 +57,7 @@ feed_ingest_loop::~feed_ingest_loop() {
 }
 
 void feed_ingest_loop::start() {
-    const auto wildcard = domain::synthetic_tick_wildcard();
+    const auto wildcard = nats_.subjects_below(domain::synthetic_tick_subject);
     BOOST_LOG_SEV(lg(), info) << "Starting feed ingest loop: subscribing to '" << wildcard << "'";
     refresh();
     tick_sub_ = nats_.subscribe(wildcard, [this](ores::nats::message msg) { on_tick(msg); });

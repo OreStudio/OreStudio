@@ -73,8 +73,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         const auto stream_name = nats.make_stream_name("workflow");
         auto admin = nats.make_admin();
         admin.ensure_stream(stream_name,
-                            {nats.make_subject(start_workflow_message::nats_subject),
-                             nats.make_subject(step_completed_event::nats_subject)});
+                            nats.covering_subjects({start_workflow_message::nats_subject,
+                                                    step_completed_event::nats_subject}));
         BOOST_LOG_SEV(lg(), info) << "Workflow JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure workflow stream: " << e.what();

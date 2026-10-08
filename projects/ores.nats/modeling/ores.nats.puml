@@ -118,6 +118,8 @@ class ores::nats::service::client {
     +drain() : void
     +make_subject(relative : string_view) : string
     +make_stream_name(logical_suffix : string_view) : string
+    +subjects_below(subject : string_view) : string
+    +covering_subjects(subjects : initializer_list<string_view>) : vector<string>
 }
 note right of "ores.nats::service::client"
 The surface every caller uses. It owns the cnats connection

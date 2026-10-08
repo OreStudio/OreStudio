@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
-#+branch:
+#+branch: feature/batch-a-trade-population
 #+pr:
 #+blocked_on: The trade group and its membership ([[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] in [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]]), which is what records a batch's sets against its run. That story parks itself pending a pilot process. The partitioning itself is not blocked: a set derived from a trade's book needs no table, and the book key already exists on the booking. The fan-in condition is unblocked too, since [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] is DONE.
 #+blocked_since:
@@ -34,11 +34,11 @@ rest of the run reads.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
-| Now          | Not started. The partitioning half is ready to build; the recording half waits on the trade group. |
+| Now          | The partitioning landed: the strategy interface, batch by book, the bounded-set strategy, composition, the batch key and the partition invariants. The recording half is not built. |
 | Waiting on   | The trade group and its membership, [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], for the acceptance bullet that records the sets against the run. |
-| Next         | Build the partitioning: the strategy interface, batch by book, the batch key and the as-of, and the composition the requirements demand. |
+| Next         | Wire the batcher to the run once the group exists, and load a strategy's parameters from tables rather than from the caller. |
 | Last touched | 2026-10-07                               |
 
 
@@ -161,3 +161,50 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Landed: the partitioning.* =ores.trading.core/service/trade_batcher.hpp= holds
+the vocabulary and the walk.
+
+- =trade_population= is what a report asks to be partitioned: its name, the
+  as-of, and every trade in scope with the book its current booking names.
+- =trade_set= is what comes out: a name, an as-of and the trades. The name is
+  the batch key and it is opaque downstream.
+- =trade_batching_strategy= is the seam. A strategy splits the sets it is given
+  and leaves the ones it cannot split unchanged, so composition is a sequence
+  rather than a switch, and grid knowledge stays out of the report path.
+- =batch_by_book= is the first strategy. It is the derived set: it reads the
+  book from the population's trade and stores nothing.
+- =at_most_trades= bounds a set's size. With =batch_by_book= it makes the first
+  real batching — "batch by book and at most a thousand trades" — two
+  strategies composed rather than a third that reimplements both.
+- =composite_strategy= applies its members in order, and =trade_batcher= runs
+  one over the population.
+
+*The invariants are the batcher's, not each strategy's.* A partition covers the
+population exactly once and gives no two sets the same batch key. A strategy
+that loses a trade, puts one in two sets, or names two sets alike would price a
+population nobody asked for, so the batcher refuses it rather than handing it
+on. The cases assert both refusals.
+
+* Acceptance, bullet by bullet.
+
+1. A batcher partitions a population and a strategy decides how -- done.
+2. Batch by book is the first strategy, behind an interface -- done.
+3. A set carries a name and an as-of, the key being
+   =REPORT_NAME:BOOK_ID:ASOF= -- done.
+4. The batcher records the sets against the run -- **not done**. That is a
+   [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]], which is
+   [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]].
+5. A later strategy partitions differently without a producer changing -- the
+   seam is in, and a case exercises a strategy that partitions on something
+   other than the book.
+
+*What the design still owes.* The requirements recorded here say a strategy's
+parameters are configured in tables, so that changing one is not a deploy, and
+that a strategy may be marked default for a report that states none. Neither is
+built: a strategy takes its parameters as a value, which is the shape a table
+can supply, but no table supplies them yet. That and the run wiring need the
+group, so they travel together.
+
+*Not verified.* No build and no test run: the hourly validation owns them. The
+cases are written and the component file lists are regenerated, nothing more.

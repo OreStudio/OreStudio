@@ -141,23 +141,21 @@ void trade_party_role_commands::register_commands(cli::Menu& root_menu, nats_cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <role> <trade_activity_id> <counterparty_id> <reason> <commentary>");
+        "add <role> <trade_activity_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <role> <trade_activity_id> <counterparty_id> <reason> <commentary> "
-        "[--version <n>]");
+        "set <trade_id> <role> <trade_activity_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <role> <trade_activity_id> <counterparty_id> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <role> <trade_activity_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -353,8 +351,8 @@ void trade_party_role_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 2 + 2) {
+            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -362,8 +360,6 @@ void trade_party_role_commands::process_add(std::ostream& out,
         read_token(req.change.write.role, parsed->positionals[next++], "role");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
-            req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -406,8 +402,8 @@ void trade_party_role_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 3 + 2) {
+            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -415,8 +411,6 @@ void trade_party_role_commands::process_set(std::ostream& out,
         read_token(req.change.write.role, parsed->positionals[next++], "role");
         read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
-            req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -471,8 +465,8 @@ void trade_party_role_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 3 + 2) {
+            fail(out) << "Expected " << (change_count * 3 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -482,8 +476,6 @@ void trade_party_role_commands::process_put_many(std::ostream& out,
             read_token(change.write.role, parsed->positionals[next++], "role");
             read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(
-                change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

@@ -69,32 +69,6 @@ The role the other party plays (a party role type code).
 std::string("CalculationAgent")
 #+end_src
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The trade's party, copied from the anchor.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
-** counterparty_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The counterparty playing the role.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
 * SQL
 
 ** Flags
@@ -110,12 +84,6 @@ The counterparty the firm faces is on the anchor, not a role.
 | expression               |
 |--------------------------|
 | "role" <> 'Counterparty' |
-
-** Pinned keys
-
-| name         | columns            | table                          | target_columns | error_message                                               |
-|--------------+--------------------+--------------------------------+----------------+-------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The role's party must be the trade's. |
 
 ** Indexes
 
@@ -168,15 +136,6 @@ is immutable.
 :END:
 
 The role catalogue is system reference data.
-
-** counterparty_id
-:PROPERTIES:
-:table:         ores_refdata_counterparties_tbl
-:nullable:      false
-:error_message: Invalid counterparty_id: %. Counterparty must exist for tenant.
-:END:
-
-The counterparty playing the role. Temporal, so a trigger check.
 
 * C++
 

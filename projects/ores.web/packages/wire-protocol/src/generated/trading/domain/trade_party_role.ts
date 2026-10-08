@@ -36,8 +36,6 @@ export interface TradePartyRole {
     trade_id: string;
     role: string;
     trade_activity_id: string;
-    party_id: string;
-    counterparty_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

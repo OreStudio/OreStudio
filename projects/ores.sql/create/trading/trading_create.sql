@@ -332,6 +332,8 @@
 
 -- Trade components (depend on the trade)
 \ir ./trading_trade_components_functions_create.sql
+
+\ir ./trading_party_visibility_functions_create.sql
 \ir ./trading_trade_bookings_create.sql
 \ir ./trading_trade_bookings_notify_trigger_create.sql
 \ir ./trading_trade_states_create.sql

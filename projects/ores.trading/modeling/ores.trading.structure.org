@@ -130,14 +130,10 @@ ctx.generate_uuid()
 
 ** Indexes
 
-The two unique keys are what a member pins its copied party and counterparty
-to: a database pin can only name a key, and the primary key =(tenant_id, id)=
-carries neither column.
+The two indexes answer a lookup by party or by counterparty.
 
 | name            | columns                        | unique | current_only | where_extra |
 |-----------------+--------------------------------+--------+--------------+-------------|
-| id_party        | tenant_id, id, party_id        | true   | false        |             |
-| id_counterparty | tenant_id, id, counterparty_id | true   | false        |             |
 
 ** Extra drops
 

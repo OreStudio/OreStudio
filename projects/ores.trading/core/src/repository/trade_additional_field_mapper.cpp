@@ -50,7 +50,6 @@ trade_additional_field_mapper::map(const trade_additional_field_entity& v) {
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
     r.value = v.value;
     r.modified_by = v.modified_by;
@@ -73,7 +72,6 @@ trade_additional_field_mapper::map(const domain::trade_additional_field& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
     r.value = v.value;
     r.modified_by = v.modified_by;

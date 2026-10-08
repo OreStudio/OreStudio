@@ -37,7 +37,6 @@ export interface TradeLink {
     to_trade_id: string;
     link_type: string;
     trade_activity_id: string;
-    party_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

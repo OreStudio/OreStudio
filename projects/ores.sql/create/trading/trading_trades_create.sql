@@ -86,12 +86,6 @@ on "ores_trading_trades_tbl" (tenant_id, party_id);
 create index if not exists trades_counterparty_idx
 on "ores_trading_trades_tbl" (tenant_id, counterparty_id);
 
-create unique index if not exists trades_id_party_idx
-on "ores_trading_trades_tbl" (tenant_id, id, party_id);
-
-create unique index if not exists trades_id_counterparty_idx
-on "ores_trading_trades_tbl" (tenant_id, id, counterparty_id);
-
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$
 declare

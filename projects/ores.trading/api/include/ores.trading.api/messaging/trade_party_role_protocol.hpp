@@ -44,7 +44,6 @@ struct trade_party_role_write {
     boost::uuids::uuid trade_id;
     std::string role;
     boost::uuids::uuid trade_activity_id;
-    boost::uuids::uuid counterparty_id;
 };
 
 struct trade_party_role_change {

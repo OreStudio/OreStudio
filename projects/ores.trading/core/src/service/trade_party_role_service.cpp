@@ -103,7 +103,6 @@ domain::trade_party_role to_domain(const messaging::trade_party_role_write& writ
     v.trade_id = write.trade_id;
     v.role = write.role;
     v.trade_activity_id = write.trade_activity_id;
-    v.counterparty_id = write.counterparty_id;
     return v;
 }
 

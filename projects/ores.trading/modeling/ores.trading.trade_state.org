@@ -61,19 +61,6 @@ ctx.generate_uuid()
 
 The activity that wrote this version.
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The trade's party, copied from the anchor.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
 ** status_id
 :PROPERTIES:
 :type:     uuid
@@ -97,12 +84,6 @@ boost::uuids::uuid{}
 :tablename: ores_trading_trade_states_tbl
 :END:
 
-** Pinned keys
-
-| name         | columns            | table                          | target_columns | error_message                                                |
-|--------------+--------------------+--------------------------------+----------------+--------------------------------------------------------------|
-| anchor_party | trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid trade_id: %. The state's party must be the trade's. |
-
 ** Status transition
 
 The guard is the wide trade's, keyed by the trade id. A status other than
@@ -121,7 +102,7 @@ activity that wrote this version.
 #+begin_src cpp :name amend_activity
         {
             auto amendment = ores::trading::generators::generate_synthetic_trade_activity(ctx);
-            amendment.party_id = v.party_id;
+            amendment.party_id = *party_ctx.party_id();
             amendment.activity_type_code = "amendment";
             ores::trading::repository::trade_activity_repository().write(crud_ctx, amendment);
             v.trade_activity_id = amendment.id;
@@ -231,7 +212,6 @@ A database foreign key: the anchor is immutable.
         ores::trading::repository::trade_repository().write(party_ctx, anchor);
 
         v.trade_id = anchor.id;
-        v.party_id = party_id;
     }
 #+end_src
 

@@ -37,8 +37,6 @@ export interface StructureMember {
     structure_id: string;
     role: string;
     sequence_number: number;
-    party_id: string;
-    counterparty_id: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -74,11 +74,6 @@ struct trade_identifier final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The trade's party, copied from the anchor.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
      * @brief The identifier value under the scheme.
      */
     std::string id_value;

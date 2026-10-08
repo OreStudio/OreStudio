@@ -91,33 +91,6 @@ The leg's ordinal within its role, counting from one.
 1
 #+end_src
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The structure's party, copied so the row stands on its own and pinned so the
-copy cannot drift from the deal.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
-** counterparty_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The structure's counterparty, copied and pinned the same way.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
 * SQL
 
 ** Flags
@@ -133,16 +106,6 @@ An ordinal counts from one.
 | expression              |
 |-------------------------|
 | "sequence_number" >= 1  |
-
-** Pinned keys
-
-The party and the counterparty are copied from the structure, and the pins
-hold the copies to their source.
-
-| name                   | columns                        | table                      | target_columns       | error_message                                                                  |
-|------------------------+--------------------------------+----------------------------+----------------------+--------------------------------------------------------------------------------|
-| structure_party        | structure_id, party_id         | ores_trading_structures_tbl | id, party_id         | Invalid structure_id: %. The member's party must be the structure's.           |
-| structure_counterparty | structure_id, counterparty_id  | ores_trading_structures_tbl | id, counterparty_id  | Invalid structure_id: %. The member's counterparty must be the structure's.    |
 
 ** Extra drops
 

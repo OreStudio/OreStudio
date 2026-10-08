@@ -49,7 +49,6 @@ domain::trade_portfolio trade_portfolio_mapper::map(const trade_portfolio_entity
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.portfolio_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,7 +69,6 @@ trade_portfolio_entity trade_portfolio_mapper::map(const domain::trade_portfolio
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
     r.portfolio_id = boost::uuids::to_string(v.portfolio_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

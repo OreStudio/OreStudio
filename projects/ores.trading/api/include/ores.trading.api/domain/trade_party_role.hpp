@@ -73,16 +73,6 @@ struct trade_party_role final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief The trade's party, copied from the anchor.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief The counterparty playing the role.
-     */
-    boost::uuids::uuid counterparty_id;
-
-    /**
      * @brief Username of the person who last modified this trade party role.
      */
     std::string modified_by;

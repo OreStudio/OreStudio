@@ -45,8 +45,6 @@ create table if not exists "ores_trading_structure_members_tbl" (
     "structure_id" uuid not null,
     "role" text not null,
     "sequence_number" integer not null,
-    "party_id" uuid not null,
-    "counterparty_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -104,30 +102,6 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid structure_id: %. No active structure found with this id.', NEW.structure_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the structure_party pin to ores_trading_structures_tbl
-    if NEW.structure_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_trading_structures_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.structure_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid structure_id: %. The member''s party must be the structure''s.', NEW.structure_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the structure_counterparty pin to ores_trading_structures_tbl
-    if NEW.structure_id is not null and NEW.counterparty_id is not null and not exists (
-        select 1 from ores_trading_structures_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.structure_id
-          and counterparty_id = NEW.counterparty_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid structure_id: %. The member''s counterparty must be the structure''s.', NEW.structure_id
             using errcode = '23503';
     end if;
 

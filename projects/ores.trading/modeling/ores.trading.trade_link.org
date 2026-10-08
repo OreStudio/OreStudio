@@ -94,19 +94,6 @@ The activity that made the link.
 ctx.generate_uuid()
 #+end_src
 
-** party_id
-:PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
-:END:
-
-The party of the from end, copied so row level security sees it.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
 * SQL
 
 ** Flags
@@ -122,16 +109,6 @@ A link joins two trades, so it cannot join one to itself.
 | expression                                 |
 |--------------------------------------------|
 | "from_trade_id" <> "to_trade_id" |
-
-** Pinned keys
-
-The party is copied from the from end, and the pin is what holds the copy
-to its source: without it a link could name any party, and row level
-security would hide the row from the tenant that owns both trades.
-
-| name         | columns                 | table                   | target_columns | error_message                                                          |
-|--------------+-------------------------+-------------------------+----------------+------------------------------------------------------------------------|
-| anchor_party | from_trade_id, party_id | ores_trading_trades_tbl | id, party_id   | Invalid from_trade_id: %. The link's party must be the from trade's. |
 
 ** Extra drops
 

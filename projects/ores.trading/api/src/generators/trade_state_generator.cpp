@@ -45,7 +45,6 @@ domain::trade_state generate_synthetic_trade_state(utility::generation::generati
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.status_id = boost::uuids::uuid{};
     r.modified_by = modified_by;
     r.performed_by = modified_by;

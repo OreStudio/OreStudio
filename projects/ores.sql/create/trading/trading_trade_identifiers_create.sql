@@ -42,7 +42,6 @@ create table if not exists "ores_trading_trade_identifiers_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
     "id_value" text not null,
     "issuing_party_id" uuid null,
     "modified_by" text not null,
@@ -119,18 +118,6 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid id_type: %. No active trade id type found with this code.', NEW.id_type
-            using errcode = '23503';
-    end if;
-
-    -- Validate the anchor_party pin to ores_trading_trades_tbl
-    if NEW.trade_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid trade_id: %. The identifier''s party must be the trade''s.', NEW.trade_id
             using errcode = '23503';
     end if;
 

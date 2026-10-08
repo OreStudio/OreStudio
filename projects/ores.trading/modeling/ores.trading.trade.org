@@ -231,8 +231,6 @@ counterparty to: a database pin can only name a key, and the primary key
 |--------------------+--------------------------------+--------+--------------+-------------|
 | party              | tenant_id, party_id            | false  | false        |             |
 | counterparty       | tenant_id, counterparty_id     | false  | false        |             |
-| id_party           | tenant_id, id, party_id        | true   | false        |             |
-| id_counterparty    | tenant_id, id, counterparty_id | true   | false        |             |
 
 * C++
 

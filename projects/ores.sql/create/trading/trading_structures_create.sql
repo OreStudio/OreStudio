@@ -77,12 +77,6 @@ create index if not exists structures_tenant_idx
 on "ores_trading_structures_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists structures_id_party_idx
-on "ores_trading_structures_tbl" (tenant_id, id, party_id);
-
-create unique index if not exists structures_id_counterparty_idx
-on "ores_trading_structures_tbl" (tenant_id, id, counterparty_id);
-
 create or replace function ores_trading_structures_insert_fn()
 returns trigger as $$
 declare

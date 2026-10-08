@@ -49,7 +49,6 @@ domain::trade_link trade_link_mapper::map(const trade_link_entity& v) {
     r.to_trade_id = boost::lexical_cast<boost::uuids::uuid>(v.to_trade_id.value());
     r.link_type = v.link_type.value();
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -70,7 +69,6 @@ trade_link_entity trade_link_mapper::map(const domain::trade_link& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
-    r.party_id = boost::uuids::to_string(v.party_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

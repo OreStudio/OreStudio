@@ -44,7 +44,6 @@ create table if not exists "ores_trading_trade_portfolios_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
-    "party_id" uuid not null,
     "portfolio_id" uuid not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -119,30 +118,6 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid portfolio_id: %. No active portfolio found with this id.', NEW.portfolio_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the anchor_party pin to ores_trading_trades_tbl
-    if NEW.trade_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_trading_trades_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.trade_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid trade_id: %. The portfolio row''s party must be the trade''s.', NEW.trade_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate the portfolio_party pin to ores_refdata_portfolios_tbl
-    if NEW.portfolio_id is not null and NEW.party_id is not null and not exists (
-        select 1 from ores_refdata_portfolios_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.portfolio_id
-          and party_id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid portfolio_id: %. The portfolio must be the trade''s party''s.', NEW.portfolio_id
             using errcode = '23503';
     end if;
 

@@ -41,7 +41,6 @@ render_trade_identifier_fields(const domain::trade_identifier& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "ID Value", .value = v.id_value});
     fields.push_back({.name = "Issuing Party ID",
                       .value = v.issuing_party_id ? boost::uuids::to_string(*v.issuing_party_id) :

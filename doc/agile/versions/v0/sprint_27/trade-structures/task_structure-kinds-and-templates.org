@@ -8,7 +8,7 @@
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
 #+branch: feature/structure-kinds-and-templates
-#+pr:
+#+pr: 2822
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2822][#2822]] | [trading] Add the structure kinds and templates |
 
 * Review
 

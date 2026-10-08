@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story and its seven tasks are on trunk. The three component tasks are
+deliberately one component per change, because each carries a generated sweep
+of its own and a reviewer needs to see one at a time.

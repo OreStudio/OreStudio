@@ -8,7 +8,7 @@
 #+filetags: :the_chrono_include_never_reached_the_trading_instruments:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-chrono-include-never-reached-the-trading-instruments
-#+pr:
+#+pr: 2893
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2893][#2893]] | [trading] Regenerate the six instrument headers the chrono gate never reached |
 
 * Review
 

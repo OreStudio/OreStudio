@@ -299,6 +299,31 @@ struct get_party_composite_as_of_response {
 };
 
 /**
+ * @brief Writes a party and the children a confirmed review staged, in one
+ * transaction. A refusal or a failure leaves none of them behind.
+ */
+struct put_party_composite_request {
+    using response_type = struct put_party_composite_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.put_party_composite";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ores::utility::domain::change_intent intent;
+    ores::refdata::domain::party party;
+    std::vector<ores::refdata::domain::party_identifier> identifiers;
+    std::vector<ores::refdata::domain::party_contact_information> contacts;
+};
+
+struct put_party_composite_response {
+    ores::utility::domain::result result;
+    ores::refdata::domain::party party;
+};
+
+/**
  * @brief The subjects this resource's changes are announced on.
  *
  * An event reports what happened and no caller asked for it, so its last

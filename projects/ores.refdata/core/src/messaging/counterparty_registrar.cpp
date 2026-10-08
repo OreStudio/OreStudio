@@ -88,6 +88,10 @@ register_counterparty_handlers(ores::nats::service::client& nats,
         nats.queue_subscribe(get_counterparty_composite_as_of_request::nats_subject,
                              queue_group,
                              [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_counterparty_composite_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->put_composite(std::move(msg)); }));
     return subs;
 }
 

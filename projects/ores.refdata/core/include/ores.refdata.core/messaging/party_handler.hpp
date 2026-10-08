@@ -26,6 +26,7 @@
 #define ORES_REFDATA_CORE_MESSAGING_PARTY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -613,6 +614,80 @@ public:
             reply(nats_,
                   msg,
                   get_party_composite_as_of_response{.success = false, .message = e.what()});
+        }
+    }
+
+    void put_composite(ores::nats::message msg) {
+        BOOST_LOG_SEV(party_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "refdata::parties:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<put_party_composite_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            // One transaction over every row the confirm staged. The unit of
+            // work rolls back when it is destroyed uncommitted, so a refusal
+            // anywhere leaves none of the writes behind. Each service is built
+            // on the unit of work's context, which is what makes its repository
+            // calls join the transaction rather than open their own.
+            ores::database::repository::unit_of_work uow(req_ctx);
+            const auto& uctx = uow.ctx();
+            const auto reason =
+                req->intent.reason_code.empty() ?
+                    std::string(ores::service::messaging::change_reasons::new_record) :
+                    req->intent.reason_code;
+            const auto apply_intent = [&](auto& row) {
+                if (row.change_reason_code.empty())
+                    row.change_reason_code = reason;
+                row.change_commentary = req->intent.commentary;
+            };
+
+            auto party = req->party;
+            apply_intent(party);
+            service::party_service parties(uctx);
+            parties.save_party(party);
+
+            auto identifiers = req->identifiers;
+            for (auto& row : identifiers)
+                apply_intent(row);
+            service::party_identifier_service identifier_service(uctx);
+            identifier_service.save_party_identifiers(identifiers);
+
+            auto contacts = req->contacts;
+            for (auto& row : contacts)
+                apply_intent(row);
+            service::party_contact_information_service contact_service(uctx);
+            contact_service.save_party_contact_informations(contacts);
+
+            uow.commit();
+
+            // Read the row back from the committed transaction, so the reply
+            // carries the version and the audit stamps the store gave it.
+            service::party_service reader(req_ctx);
+            auto written = reader.find_party(party.id);
+            BOOST_LOG_SEV(party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  put_party_composite_response{
+                      .result = {}, .party = written ? std::move(*written) : std::move(party)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(party_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            put_party_composite_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
         }
     }
 

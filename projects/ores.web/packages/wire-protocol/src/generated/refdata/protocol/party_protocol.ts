@@ -201,6 +201,22 @@ export interface GetPartyCompositeAsOfResponse {
     contacts: PartyContactInformation[];
 }
 
+/**
+ * @brief Writes a party and the children a confirmed review staged, in one
+ * transaction. A refusal or a failure leaves none of them behind.
+ */
+export interface PutPartyCompositeRequest {
+    intent: ChangeIntent;
+    party: Party;
+    identifiers: PartyIdentifier[];
+    contacts: PartyContactInformation[];
+}
+
+export interface PutPartyCompositeResponse {
+    result: Result;
+    party: Party;
+}
+
 export const subjects = {
     list_parties_request: 'refdata.v1.parties.list',
     get_party_request: 'refdata.v1.parties.get',
@@ -212,6 +228,7 @@ export const subjects = {
     list_party_versions_request: 'refdata.v1.parties_versions.list',
     get_party_version_request: 'refdata.v1.parties_versions.get',
     get_party_composite_as_of_request: 'refdata.v1.ops.get_party_composite_as_of',
+    put_party_composite_request: 'refdata.v1.ops.put_party_composite',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -229,6 +246,7 @@ export const requiresSession = {
     list_party_versions_request: true,
     get_party_version_request: true,
     get_party_composite_as_of_request: true,
+    put_party_composite_request: true,
 } as const;
 
 /**

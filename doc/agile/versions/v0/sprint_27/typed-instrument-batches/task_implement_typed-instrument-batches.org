@@ -8,7 +8,7 @@
 #+filetags: :typed-instrument-batches:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-typed-instrument-batches
-#+pr:
+#+pr: 2838
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -155,7 +155,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2838][#2838]] | [codegen,trading,ore] Carry the export's instruments as typed batches |
 
 * Review
 

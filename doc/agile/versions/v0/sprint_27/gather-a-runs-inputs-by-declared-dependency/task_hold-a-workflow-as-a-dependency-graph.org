@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
 #+branch: feature/hold-a-workflow-as-a-dependency-graph
-#+pr:
+#+pr: 2783
 #+blocked_on: Declare what a step consumes and produces: a graph needs inputs to put edges on.
 #+blocked_since:
 #+created: 2026-10-07
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2783][2783]] | Hold a run's steps as a graph and dispatch on its answer |
 
 * Review
 

@@ -73,8 +73,7 @@ struct storage_paths {
      * @return true when the path begins with the prefix and names a bucket and
      *         a non-empty key.
      */
-    static bool
-    split_object_path(std::string_view path, std::string& bucket, std::string& key) {
+    static bool split_object_path(std::string_view path, std::string& bucket, std::string& key) {
         if (!path.starts_with(prefix))
             return false;
         auto rest = path.substr(prefix.size());

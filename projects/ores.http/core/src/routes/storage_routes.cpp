@@ -229,9 +229,8 @@ storage_routes::check_auth(const http_request& req,
     if (!req.authenticated_user->storage_grants.empty()) {
         if (capability_allows(*req.authenticated_user, grant_op, bucket, key))
             return auth_result{};
-        BOOST_LOG_SEV(lg(), warn)
-            << operation_name << " denied: the capability does not name " << grant_op << " on "
-            << bucket << "/" << key;
+        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: the capability does not name "
+                                  << grant_op << " on " << bucket << "/" << key;
         return std::unexpected(http_response::forbidden("Outside the capability's scope"));
     }
 

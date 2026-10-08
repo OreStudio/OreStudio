@@ -435,18 +435,15 @@ public:
                 ids.push_back(e.request_id);
             reply(nats_,
                   msg,
-                  expire_overdue_approvals_response{
-                      .result = approval_result(outcome::ok, "", ""),
-                      .expired = std::move(ids)});
+                  expire_overdue_approvals_response{.result = approval_result(outcome::ok, "", ""),
+                                                    .expired = std::move(ids)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error closing the requests nobody answered: " << e.what();
             reply(nats_,
                   msg,
-                  expire_overdue_approvals_response{.result = approval_result(
-                                                        outcome::failed,
-                                                        "expire_failed",
-                                                        e.what())});
+                  expire_overdue_approvals_response{
+                      .result = approval_result(outcome::failed, "expire_failed", e.what())});
         }
     }
 

@@ -42,8 +42,8 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <catch2/catch_test_macros.hpp>
 #include <atomic>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -86,7 +86,8 @@ boost::uuids::uuid uuid_of(const std::string& s) {
 // A stub IFeed: the stand-in for a third asset class's producer.
 class stub_feed final : public ores::marketdata::domain::IFeed {
 public:
-    explicit stub_feed(std::string source) : source_(std::move(source)) {}
+    explicit stub_feed(std::string source)
+        : source_(std::move(source)) {}
 
     const std::string& source_name() const override {
         return source_;
@@ -159,9 +160,8 @@ ores::synthetic::feed::feed_factory stub_factory() {
 
 // One stub config row. The first sits inside the folder and starts; the second
 // sits outside it, so the cascade's subtree filter is observable.
-ores::synthetic::service::feed_kind_candidate stub_candidate(const std::string& id,
-                                                             const std::string& source,
-                                                             const std::string& folder) {
+ores::synthetic::service::feed_kind_candidate
+stub_candidate(const std::string& id, const std::string& source, const std::string& folder) {
     ores::synthetic::service::feed_kind_candidate c;
     c.container_id = uuid_of(stub_container);
     c.feed_config_id = id;
@@ -181,8 +181,9 @@ ores::synthetic::service::feed_kind_candidate stub_candidate(const std::string& 
     };
     c.build_input = [](ores::synthetic::domain::binding_mode) {
         return ores::synthetic::service::feed_build_outcome{
-            .input = ores::synthetic::feed::feed_build_input{
-                ores::synthetic::feed::fx_spot_feed_build_input{}},
+            .input =
+                ores::synthetic::feed::feed_build_input{
+                    ores::synthetic::feed::fx_spot_feed_build_input{}},
             .skip_reason = {}};
     };
     return c;
@@ -205,17 +206,15 @@ ores::synthetic::service::feed_kind stub_kind(const std::string& permission) {
     k.simulate_subject = "ores.test.stub.simulate_paths";
     k.decode_simulate = [](const ores::nats::message&) {
         return ores::synthetic::service::feed_simulate_envelope{
-            .num_ticks = 3,
-            .num_paths = 2,
-            .seed = 7,
-            .make_process = [](std::uint32_t) {
+            .num_ticks = 3, .num_paths = 2, .seed = 7, .make_process = [](std::uint32_t) {
                 return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
                     std::make_unique<stub_process>());
             }};
     };
     k.reply_simulate = [](ores::nats::service::client&,
                           const ores::nats::message&,
-                          const ores::synthetic::service::feed_simulation_result&) {};
+                          const ores::synthetic::service::feed_simulation_result&) {
+    };
     return k;
 }
 
@@ -236,26 +235,28 @@ make_stub_registry(const ores::synthetic::feed::feed_factory& factory) {
     auto registry = std::make_shared<ores::synthetic::service::feed_kind_registry>(
         ores::synthetic::service::feed_kind_registry::deps{
             .factory = &factory,
-            .folder_subtree = [](const ores::database::context&, const boost::uuids::uuid& root) {
-                std::set<boost::uuids::uuid> ids;
-                ids.insert(root);
-                return ids;
-            },
+            .folder_subtree =
+                [](const ores::database::context&, const boost::uuids::uuid& root) {
+                    std::set<boost::uuids::uuid> ids;
+                    ids.insert(root);
+                    return ids;
+                },
             .container_by_id =
                 [](const ores::database::context&, const boost::uuids::uuid& id) {
                     const auto it = containers.find(id);
-                    return it == containers.end()
-                               ? std::nullopt
-                               : std::optional<
-                                     ores::synthetic::domain::market_data_generation_config>(
-                                     it->second);
+                    return it == containers.end() ?
+                               std::nullopt :
+                               std::optional<
+                                   ores::synthetic::domain::market_data_generation_config>(
+                                   it->second);
                 },
-            .containers = [](const ores::database::context&) {
-                std::vector<ores::synthetic::domain::market_data_generation_config> out;
-                for (const auto& [_, c] : containers)
-                    out.push_back(c);
-                return out;
-            }});
+            .containers =
+                [](const ores::database::context&) {
+                    std::vector<ores::synthetic::domain::market_data_generation_config> out;
+                    for (const auto& [_, c] : containers)
+                        out.push_back(c);
+                    return out;
+                }});
     registry->register_kind(stub_kind(stub_permission));
     return registry;
 }
@@ -381,9 +382,7 @@ TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations", tags
     const auto verifier = ores::security::jwt::jwt_authenticator::create_hs256(
         test_secret, test_issuer, test_audience);
     const auto ctx_with = ores::service::service::make_request_context(
-        f.ctx,
-        request_message(list_feeds_request{}, mint_token({stub_permission})),
-        verifier);
+        f.ctx, request_message(list_feeds_request{}, mint_token({stub_permission})), verifier);
     const auto ctx_without = ores::service::service::make_request_context(
         f.ctx,
         request_message(list_feeds_request{}, mint_token({"synthetic::other:read"})),
@@ -447,10 +446,7 @@ TEST_CASE("registry_resolve_and_rows_walk_the_registered_kinds", tags) {
 
 TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
     const feed_simulate_envelope env{
-        .num_ticks = 3,
-        .num_paths = 2,
-        .seed = 7,
-        .make_process = [](std::uint32_t) {
+        .num_ticks = 3, .num_paths = 2, .seed = 7, .make_process = [](std::uint32_t) {
             return std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess>(
                 std::make_unique<stub_process>());
         }};
@@ -485,8 +481,8 @@ TEST_CASE("run_simulate_paths_owns_the_envelope_for_every_kind", tags) {
 
     // A process that throws is reported, not propagated.
     auto throwing = env;
-    throwing.make_process = [](std::uint32_t) -> std::unique_ptr<
-                                       ores::analytics::quant::domain::IStochasticProcess> {
+    throwing.make_process =
+        [](std::uint32_t) -> std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> {
         throw std::runtime_error("no process");
     };
     const auto failed = ores::synthetic::service::run_simulate_paths(throwing);
@@ -502,8 +498,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     // controller.
     stub_builds = 0;
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier,
-                              *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(stub_builds == 1);
@@ -512,16 +507,14 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
 
     // A config id the stub kind does not claim starts nothing.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier,
-                              *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
         h.start(request_message(start_feed_request{.config_id = "not-a-config-id"}, f.token));
     }
     CHECK(f.ctrl->running_count() == 1);
 
     // stop: the verb resolves the config id through the same registry.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier,
-                              *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(f.ctrl->running_count() == 0);
@@ -529,18 +522,16 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     // folder start: the cascade loops the registered kinds, filters by the
     // subtree the registry supplies, and tallies under the registered kind.
     {
-        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx,
-                                      f.verifier, *f.registry);
-        h.start(request_message(
-            start_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
+        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx, f.verifier, *f.registry);
+        h.start(
+            request_message(start_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
     CHECK(f.ctrl->running_count() == 1);
     CHECK(f.ctrl->list() == std::vector<std::string>{stub_source});
 
     // folder stop: the same walk, over rows rather than targets.
     {
-        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx,
-                                      f.verifier, *f.registry);
+        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
     CHECK(f.ctrl->running_count() == 0);
@@ -550,8 +541,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     // itself fails (there is no marketdata here), so this asserts the verb
     // reaches the stub rather than the outcome of a live read.
     {
-        vintage_validity_handler h(f.nats, f.auth_nats, f.ctx, f.verifier,
-                                   *f.registry);
+        vintage_validity_handler h(f.nats, f.auth_nats, f.ctx, f.verifier, *f.registry);
         h.list(request_message(get_vintage_validity_request{}, f.token));
     }
 
@@ -559,8 +549,9 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     // replies with the shared envelope. The registry's own kind lookup is the
     // dispatch, so the verb needs no literal.
     CHECK(f.registry->find(stub_kind_name)->simulate_subject == "ores.test.stub.simulate_paths");
-    const auto env = f.registry->find(stub_kind_name)->decode_simulate(
-        request_message(simulate_fx_spot_paths_request{}, f.token));
+    const auto env =
+        f.registry->find(stub_kind_name)
+            ->decode_simulate(request_message(simulate_fx_spot_paths_request{}, f.token));
     REQUIRE(env.has_value());
     const auto simulated = ores::synthetic::service::run_simulate_paths(*env);
     REQUIRE(simulated.success);

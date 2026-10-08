@@ -230,11 +230,11 @@ struct ir_curve_generation_config final {
     /**
      * @brief Stable source name carried as provenance of published ticks/observations (e.g.
      * "synthetic.realistic.usdsofr") and as the NATS subject suffix
-     * (synthetic.v1.ops.tick.ir_curve.<source_name>) -- mirrors fx_spot_generation_config.source_name
-     * exactly: namespaced by collection only (so two collections' same currency+index never
-     * collide), editable, defaulting to a derived value at publish/save time rather than parsed
-     * back out of currency_code/index_family/tenor at every consumer (the earlier approach,
-     * replaced by this column).
+     * (synthetic.v1.ops.tick.ir_curve.<source_name>) -- mirrors
+     * fx_spot_generation_config.source_name exactly: namespaced by collection only (so two
+     * collections' same currency+index never collide), editable, defaulting to a derived value at
+     * publish/save time rather than parsed back out of currency_code/index_family/tenor at every
+     * consumer (the earlier approach, replaced by this column).
      */
     std::string source_name;
 

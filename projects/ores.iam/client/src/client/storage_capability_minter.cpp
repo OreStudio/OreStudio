@@ -31,8 +31,7 @@ using ores::security::jwt::storage_grant;
 namespace {
 
 auto& lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.iam.client.storage_capability_minter");
+    static auto instance = ores::logging::make_logger("ores.iam.client.storage_capability_minter");
     return instance;
 }
 

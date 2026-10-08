@@ -508,8 +508,8 @@ std::optional<std::string> jwt_authenticator::create_token(const jwt_claims& cla
                 entry["op"] = grant.op;
                 grants.push_back(std::move(entry));
             }
-            token = token.set_payload_claim("storage_grants",
-                                            ::jwt::basic_claim<json_traits>(grants));
+            token =
+                token.set_payload_claim("storage_grants", ::jwt::basic_claim<json_traits>(grants));
         }
 
         std::string signed_token;

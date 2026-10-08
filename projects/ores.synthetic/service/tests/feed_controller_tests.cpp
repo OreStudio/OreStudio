@@ -145,7 +145,8 @@ struct producer_kinds {
 }
 
 TEST_CASE("producer_subject: bound publishes on the source's tick subject, for every kind", tags) {
-    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) == "synthetic.v1.ops.tick.EUR_USD_GBM");
+    CHECK(producer_subject("EUR_USD_GBM", binding_mode::bound) ==
+          "synthetic.v1.ops.tick.EUR_USD_GBM");
     CHECK(producer_subject("usd.sofr", binding_mode::bound) == "synthetic.v1.ops.tick.usd.sofr");
 }
 

@@ -203,36 +203,35 @@ struct fixture {
      * it does not contain, or one that comes after it, and watch the engine
      * refuse it.
      */
-    void register_chain(
-        const std::string& type,
-        const std::vector<std::pair<std::string, std::vector<std::string>>>& steps) {
+    void
+    register_chain(const std::string& type,
+                   const std::vector<std::pair<std::string, std::vector<std::string>>>& steps) {
         workflow_definition def;
         def.type_name = type;
         def.description = "engine fixture";
         def.on_failure = failure_policy::compensate;
-        def.build_steps = [steps](const std::string& request,
-                                  const std::string&,
-                                  const std::string&) {
-            std::vector<workflow_step_def> built;
-            built.reserve(steps.size());
-            for (const auto& [name, consumes] : steps) {
-                workflow_step_def s;
-                s.name = name;
-                s.description = name;
-                s.command_subject = step_subject;
-                s.timeout = write_step_timeout;
-                s.compensation_subject = compensation_subject;
-                s.consumes = consumes;
-                s.build_command = [request](const std::string&, const workflow_step_results&) {
-                    return request;
-                };
-                s.build_compensation = [](const std::string& command, const std::string&) {
-                    return command;
-                };
-                built.push_back(std::move(s));
-            }
-            return built;
-        };
+        def.build_steps =
+            [steps](const std::string& request, const std::string&, const std::string&) {
+                std::vector<workflow_step_def> built;
+                built.reserve(steps.size());
+                for (const auto& [name, consumes] : steps) {
+                    workflow_step_def s;
+                    s.name = name;
+                    s.description = name;
+                    s.command_subject = step_subject;
+                    s.timeout = write_step_timeout;
+                    s.compensation_subject = compensation_subject;
+                    s.consumes = consumes;
+                    s.build_command = [request](const std::string&, const workflow_step_results&) {
+                        return request;
+                    };
+                    s.build_compensation = [](const std::string& command, const std::string&) {
+                        return command;
+                    };
+                    built.push_back(std::move(s));
+                }
+                return built;
+            };
         registry->register_definition(std::move(def));
     }
 };

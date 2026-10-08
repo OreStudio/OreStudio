@@ -20,10 +20,10 @@
 #include "feed_kind_registry.hpp"
 #include "ir_curve_preview_process.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -122,8 +122,8 @@ feed_kind make_fx_spot_kind() {
                     return {.input = std::nullopt,
                             .skip_reason = "Feed config has no GMM components: " +
                                            boost::uuids::to_string(fx.id)};
-                return {.input = feed::feed_build_input{
-                            fx_spot_feed_build_input{fx, std::move(components), mode}},
+                return {.input = feed::feed_build_input{fx_spot_feed_build_input{
+                            fx, std::move(components), mode}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -281,13 +281,13 @@ feed_kind make_ir_curve_kind() {
                             .skip_reason = "Tenor convention not found: " +
                                            feed::ir_curve_tenor_convention_code(
                                                feed::ir_curve_qualifier(cfg))};
-                return {.input = feed::feed_build_input{
-                            ir_curve_feed_build_input{cfg,
-                                                      std::move(entries),
-                                                      std::move(values),
-                                                      read_definition_catalogue(ctx),
-                                                      *refctx,
-                                                      mode}},
+                return {.input = feed::feed_build_input{ir_curve_feed_build_input{
+                            cfg,
+                            std::move(entries),
+                            std::move(values),
+                            read_definition_catalogue(ctx),
+                            *refctx,
+                            mode}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));
@@ -315,8 +315,7 @@ feed_kind make_ir_curve_kind() {
         ores::service::messaging::reply(nats,
                                         m,
                                         msg::simulate_ir_curve_paths_response{.success = r.success,
-                                                                              .message =
-                                                                                  r.message,
+                                                                              .message = r.message,
                                                                               .paths = r.paths});
     };
     return k;
@@ -338,19 +337,20 @@ feed_kind_registry::feed_kind_registry()
             .container_by_id =
                 [](const ores::database::context& ctx, const boost::uuids::uuid& id) {
                     namespace repo = ores::synthetic::repository;
-                    const auto rows =
-                        repo::market_data_generation_config_repository().read_latest(
-                            ctx, boost::uuids::to_string(id));
-                    return rows.empty() ? std::nullopt
-                                        : std::optional<domain::market_data_generation_config>(
-                                              rows.front());
+                    const auto rows = repo::market_data_generation_config_repository().read_latest(
+                        ctx, boost::uuids::to_string(id));
+                    return rows.empty() ?
+                               std::nullopt :
+                               std::optional<domain::market_data_generation_config>(rows.front());
                 },
-            .containers = [](const ores::database::context& ctx) {
-                namespace repo = ores::synthetic::repository;
-                return repo::market_data_generation_config_repository().read_latest(ctx);
-            }} {}
+            .containers =
+                [](const ores::database::context& ctx) {
+                    namespace repo = ores::synthetic::repository;
+                    return repo::market_data_generation_config_repository().read_latest(ctx);
+                }} {}
 
-feed_kind_registry::feed_kind_registry(deps d) : deps_(std::move(d)) {}
+feed_kind_registry::feed_kind_registry(deps d)
+    : deps_(std::move(d)) {}
 
 void feed_kind_registry::register_kind(feed_kind k) {
     if (k.kind.empty())
@@ -401,7 +401,7 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
     const feed_kind& k,
     feed_kind_candidate c,
     const std::map<boost::uuids::uuid, domain::market_data_generation_config>* containers_by_id)
-        const {
+    const {
     feed_start_target target;
     target.row = feed_kind_row{&k, std::move(c)};
     const auto found = containers_by_id->find(target.row.candidate.container_id);
@@ -453,9 +453,8 @@ feed_kind_registry::folder_subtree(const ores::database::context& ctx,
     return deps_.folder_subtree(ctx, root_id);
 }
 
-feed_start_attempt
-feed_kind_registry::make_feed(const feed_start_target& target,
-                              const feed::feed_build_context& bctx) const {
+feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target,
+                                                 const feed::feed_build_context& bctx) const {
     if (!target.startable())
         return {.feed = {},
                 .failure = "Feed config is not enabled: " + target.row.candidate.feed_config_id};
@@ -473,13 +472,15 @@ void feed_kind_registry::reply_unknown_kind(ores::nats::service::client& nats,
     if (kinds_.empty())
         return;
     kinds_.begin()->second.reply_simulate(
-        nats, msg, feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
+        nats,
+        msg,
+        feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
 }
 
-ores::marketdata::messaging::vintage_validity_entry feed_kind_registry::check_vintage(
-    const feed_kind_row& row,
-    ores::nats::service::nats_client& auth_nats,
-    const std::string& caller_bearer_token) const {
+ores::marketdata::messaging::vintage_validity_entry
+feed_kind_registry::check_vintage(const feed_kind_row& row,
+                                  ores::nats::service::nats_client& auth_nats,
+                                  const std::string& caller_bearer_token) const {
     ores::marketdata::messaging::vintage_validity_entry e;
     e.config_id = row.candidate.feed_config_id;
     e.kind = row.kind->kind;

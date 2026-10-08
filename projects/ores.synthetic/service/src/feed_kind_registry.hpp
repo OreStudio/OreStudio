@@ -166,9 +166,8 @@ struct feed_kind final {
     std::function<std::optional<feed_simulate_envelope>(const ores::nats::message&)>
         decode_simulate;
     /** Replies with this kind's own typed simulate response. */
-    std::function<void(ores::nats::service::client&,
-                       const ores::nats::message&,
-                       const feed_simulation_result&)>
+    std::function<void(
+        ores::nats::service::client&, const ores::nats::message&, const feed_simulation_result&)>
         reply_simulate;
 };
 
@@ -242,12 +241,11 @@ public:
     [[nodiscard]] std::vector<feed_kind_row> rows(const ores::database::context& ctx) const;
 
     /** Every config row of every kind, each with its container resolved. */
-    [[nodiscard]] std::vector<feed_start_target>
-    targets(const ores::database::context& ctx) const;
+    [[nodiscard]] std::vector<feed_start_target> targets(const ores::database::context& ctx) const;
 
     /** The one row the caller named, with its container resolved. */
-    [[nodiscard]] std::optional<feed_start_target>
-    resolve(const ores::database::context& ctx, const std::string& feed_config_id) const;
+    [[nodiscard]] std::optional<feed_start_target> resolve(const ores::database::context& ctx,
+                                                           const std::string& feed_config_id) const;
 
     /** Every folder id in the subtree rooted at root_id, root_id included. */
     [[nodiscard]] std::set<boost::uuids::uuid>

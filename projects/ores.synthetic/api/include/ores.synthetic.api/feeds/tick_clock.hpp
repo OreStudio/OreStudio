@@ -46,7 +46,8 @@ namespace ores::synthetic::feed {
  */
 class tick_clock final {
 public:
-    explicit tick_clock(double ticks_per_hour) : ticks_per_hour_(ticks_per_hour) {}
+    explicit tick_clock(double ticks_per_hour)
+        : ticks_per_hour_(ticks_per_hour) {}
 
     /// @brief Emits one tick and returns a short summary of it for the log line.
     using tick_body = std::function<std::string()>;
@@ -59,9 +60,8 @@ public:
      * @p on_published receives the 1-based count of successful ticks; a throw
      * from @p body is passed to @p on_failed and the tick is skipped.
      */
-    void run(const tick_body& body,
-             const published_hook& on_published,
-             const failure_hook& on_failed) {
+    void
+    run(const tick_body& body, const published_hook& on_published, const failure_hook& on_failed) {
         using namespace std::chrono;
 
         const auto period_us =
@@ -76,8 +76,7 @@ public:
         while (!stop_flag_.load(std::memory_order_relaxed)) {
             auto remaining = duration_cast<microseconds>(period_us);
             while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
-                const auto nap =
-                    remaining < slice ? remaining : duration_cast<microseconds>(slice);
+                const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);
                 std::this_thread::sleep_for(nap);
                 remaining -= nap;
             }

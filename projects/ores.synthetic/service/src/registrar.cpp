@@ -42,35 +42,29 @@ registrar::register_handlers(ores::nats::service::client& nats,
     using namespace ores::marketdata::messaging;
     using namespace ores::synthetic::messaging;
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(start_feed_request::nats_subject),
-                             queue,
-                             [&nats, &auth_nats, ctrl, ctx, verifier, &registry](
-                                 ores::nats::message msg) {
-                                 feed_config_handler h(
-                                     nats, auth_nats, ctrl, ctx, verifier, registry);
-                                 h.start(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(start_feed_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry);
+            h.start(std::move(msg));
+        }));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(stop_feed_request::nats_subject),
-                             queue,
-                             [&nats, &auth_nats, ctrl, ctx, verifier, &registry](
-                                 ores::nats::message msg) {
-                                 feed_config_handler h(
-                                     nats, auth_nats, ctrl, ctx, verifier, registry);
-                                 h.stop(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(stop_feed_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry);
+            h.stop(std::move(msg));
+        }));
 
-    subs.push_back(
-        nats.queue_subscribe(std::string(list_feeds_request::nats_subject),
-                             queue,
-                             [&nats, &auth_nats, ctrl, ctx, verifier, &registry](
-                                 ores::nats::message msg) {
-                                 feed_config_handler h(
-                                     nats, auth_nats, ctrl, ctx, verifier, registry);
-                                 h.list(std::move(msg));
-                             }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(list_feeds_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry);
+            h.list(std::move(msg));
+        }));
 
     // One simulate subscription per registered kind: the subject and the
     // kind string both come from the registration, so a new kind needs no
@@ -78,14 +72,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (const auto* k : registry.all()) {
         const std::string subject = k->simulate_subject;
         const std::string kind = k->kind;
-        subs.push_back(nats.queue_subscribe(subject,
-                                            queue,
-                                            [&nats, ctx, verifier, &registry, kind](
-                                                ores::nats::message msg) {
-                                                simulate_handler h(
-                                                    nats, ctx, verifier, registry);
-                                                h.simulate(std::move(msg), kind);
-                                            }));
+        subs.push_back(nats.queue_subscribe(
+            subject, queue, [&nats, ctx, verifier, &registry, kind](ores::nats::message msg) {
+                simulate_handler h(nats, ctx, verifier, registry);
+                h.simulate(std::move(msg), kind);
+            }));
     }
 
     subs.push_back(nats.queue_subscribe(
@@ -104,24 +95,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.stop(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(std::string(get_vintage_validity_request::nats_subject),
-                                        queue,
-                                        [&nats, &auth_nats, ctx, verifier, &registry](
-                                            ores::nats::message msg) {
-                                            vintage_validity_handler h(
-                                                nats, auth_nats, ctx, verifier, registry);
-                                            h.list(std::move(msg));
-                                        }));
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_vintage_validity_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctx, verifier, &registry](ores::nats::message msg) {
+            vintage_validity_handler h(nats, auth_nats, ctx, verifier, registry);
+            h.list(std::move(msg));
+        }));
 
     // preview_shape is IR-only: there is no FX analogue, and the verb takes
     // its kind and its permission from that one registration.
-    subs.push_back(nats.queue_subscribe(
-        std::string(preview_ir_curve_shape_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier, &registry](ores::nats::message msg) {
-            ir_curve_preview_handler h(nats, ctx, verifier, registry);
-            h.preview_shape(std::move(msg), "ir_curve");
-        }));
+    subs.push_back(nats.queue_subscribe(std::string(preview_ir_curve_shape_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier, &registry](ores::nats::message msg) {
+                                            ir_curve_preview_handler h(
+                                                nats, ctx, verifier, registry);
+                                            h.preview_shape(std::move(msg), "ir_curve");
+                                        }));
 
     return subs;
 }

@@ -77,14 +77,14 @@ TEST_CASE("the_error_names_the_refusal_and_the_subject", "[nats][refusal]") {
 }
 
 TEST_CASE("a_refusal_is_thrown_so_no_caller_decodes_it", "[nats][refusal]") {
-    CHECK_THROWS_AS(ores::nats::service::throw_if_refused(with_x_error("forbidden"),
-                                                          "iam.v1.accounts.list"),
-                    ores::nats::service::request_refused_error);
+    CHECK_THROWS_AS(
+        ores::nats::service::throw_if_refused(with_x_error("forbidden"), "iam.v1.accounts.list"),
+        ores::nats::service::request_refused_error);
 }
 
 TEST_CASE("a_successful_reply_is_not_thrown", "[nats][refusal]") {
-    CHECK_NOTHROW(ores::nats::service::throw_if_refused(ores::nats::message{},
-                                                        "iam.v1.accounts.list"));
+    CHECK_NOTHROW(
+        ores::nats::service::throw_if_refused(ores::nats::message{}, "iam.v1.accounts.list"));
 }
 
 TEST_CASE("an_expired_token_is_left_to_the_caller", "[nats][refusal]") {

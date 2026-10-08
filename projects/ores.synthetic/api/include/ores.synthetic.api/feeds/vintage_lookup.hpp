@@ -78,8 +78,7 @@ find_vintage_observation(ores::nats::service::nats_client& auth_nats,
 
     auto series = md_client.find_series_by_uri(series_uri, party_id);
     if (!series)
-        return std::unexpected("Failed to look up series for '" + label +
-                               "': " + series.error());
+        return std::unexpected("Failed to look up series for '" + label + "': " + series.error());
     if (!series->has_value())
         return std::unexpected(missing_message);
 

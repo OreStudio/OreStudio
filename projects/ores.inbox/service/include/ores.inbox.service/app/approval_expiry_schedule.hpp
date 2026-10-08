@@ -56,8 +56,7 @@ public:
     boost::asio::awaitable<void> register_job();
 
 private:
-    inline static std::string_view logger_name =
-        "ores.inbox.service.app.approval_expiry_schedule";
+    inline static std::string_view logger_name = "ores.inbox.service.app.approval_expiry_schedule";
 
     static auto& lg() {
         using namespace ores::logging;

@@ -23,6 +23,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import type { InboxRequestView } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { AccountPicture } from '../ui/Images.js';
 import { Button, Dialog, Field, Notice } from '../ui/Primitives.js';
@@ -45,7 +46,7 @@ const PAGE = 50;
  * the reason beneath it says what was asked for.
  */
 export function MyRequests(): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [withdrawing, setWithdrawing] = useState<InboxRequestView | null>(null);
     const requests = useQuery({
         queryKey: ['my-requests'],
@@ -75,7 +76,7 @@ export function MyRequests(): ReactNode {
                                 <RequestStateChip stateCode={request.stateCode} />
                                 <span className="text-xs text-ink-faint">
                                     {t('inbox.mine.asked', {
-                                        date: request.requestedAt.slice(0, 10),
+                                        date: formatDateTime(request.requestedAt, language),
                                     })}
                                 </span>
                             </div>

@@ -57,6 +57,26 @@
 \ir ./trading_trade_link_types_create.sql
 \ir ./trading_trade_link_types_notify_trigger_create.sql
 
+-- The structure reference data: the rungs of the composition ladder, the
+-- templates that shape a rung, and the roles each template allows. The roles
+-- name their template and the templates name their kind, so the order is
+-- kinds, templates, roles.
+\ir ./trading_structure_kinds_create.sql
+\ir ./trading_structure_kinds_notify_trigger_create.sql
+\ir ./trading_structure_templates_create.sql
+\ir ./trading_structure_templates_notify_trigger_create.sql
+\ir ./trading_structure_template_roles_create.sql
+\ir ./trading_structure_template_roles_notify_trigger_create.sql
+
+-- Structures (depend on the kind and template catalogues above, and on
+-- themselves for the parent)
+\ir ./trading_structures_create.sql
+\ir ./trading_structures_notify_trigger_create.sql
+
+-- Structure members (depend on the structure and on the trade the leg is)
+\ir ./trading_structure_members_create.sql
+\ir ./trading_structure_members_notify_trigger_create.sql
+
 -- Closed-set reference data. Each set is the ORE simple type of the same
 -- name, so the spellings round-trip through the ORE XML unchanged. The
 -- instrument tables reference them, so they load before the instruments.
@@ -111,9 +131,10 @@
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
 
+-- A swap leg's notionals and its rates or spreads are child rows, so they
+-- come after the leg they belong to.
 \ir ./trading_swap_leg_amounts_create.sql
 \ir ./trading_swap_leg_amounts_notify_trigger_create.sql
-
 \ir ./trading_swap_leg_rates_create.sql
 \ir ./trading_swap_leg_rates_notify_trigger_create.sql
 

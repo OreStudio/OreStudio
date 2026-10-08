@@ -26,6 +26,7 @@
 #include "ores.inbox.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -62,6 +63,17 @@ struct expired_request {
     std::string tenant_id;
     std::string kind_code;
     std::string requested_by;
+};
+
+/**
+ * @brief A request whose deadline is close, and the people who may answer it.
+ */
+struct expiring_request {
+    std::string request_id;
+    std::string tenant_id;
+    std::string kind_code;
+    std::string requested_by;
+    std::string expires_at;
 };
 
 /**
@@ -131,6 +143,23 @@ public:
                        int limit);
 
     /**
+     * @brief The requests of the given kinds, not raised by an account, that
+     * were answered within a window, newest answer first.
+     *
+     * A request leaves the open queue the moment it is answered, so the person
+     * who answered it has nothing to look at when a notice links back to what
+     * happened. This is the tail that keeps it in view.
+     *
+     * The answer is the moment the request's current version was written,
+     * which for an answered request is the moment of the answer. A window of
+     * zero answers nothing.
+     */
+    std::vector<domain::approval_request>
+    recently_answered(const std::vector<std::string>& kind_codes,
+                      const boost::uuids::uuid& excluding,
+                      std::chrono::seconds window);
+
+    /**
      * @brief The requests an account raised, newest first.
      */
     request_page raised_by(const boost::uuids::uuid& account_id, int offset, int limit);
@@ -146,6 +175,17 @@ public:
      */
     std::vector<expired_request> expire_overdue();
 
+    /**
+     * @brief Warns the deciders of every open request whose deadline falls
+     * inside a window, across every tenant.
+     *
+     * The other half of the deadline: the sweep that closes what nobody
+     * answered keeps the queue moving, and this gives the person who may answer
+     * the chance the deadline was there to give. A request is warned about
+     * once, and the notice already raised is what says so.
+     */
+    std::vector<expiring_request> remind_expiring(std::chrono::seconds window);
+
 private:
     /**
      * @brief Tells the person who asked that their request ran out of time.
@@ -154,6 +194,17 @@ private:
      * one told and not closed, so a failure here is logged and swallowed.
      */
     void tell_expired(const expired_request& expired);
+
+    /**
+     * @brief Tells the people who may answer that a request is close to its
+     * deadline.
+     *
+     * Warning is never the sweep: a request warned about and not warned about
+     * again is better than one the sweep failed on. A request with nobody left
+     * to warn is not a failure either, and a failure here is logged and
+     * swallowed.
+     */
+    void tell_expiring(const expiring_request& expiring);
 
     ores::database::context ctx_;
 };

@@ -100,10 +100,20 @@ export interface DecideApprovalRequestResponse {
 }
 
 /**
- * @brief Reads the open requests the signed-in person may decide.
+ * @brief Reads the open requests the signed-in person may decide, and the ones
+ * answered within the installation's window.
  *
  * Open means waiting or held. A request is in the queue when the person holds
  * its kind's decide permission and did not raise it. Oldest first.
+ *
+ * A request leaves the queue the moment it is answered, which leaves the person
+ * who answered it nothing to look at: the notice that says what happened links
+ * to a request the queue no longer holds. So the answer carries the requests
+ * answered recently beside the open ones, newest answer first, for as long as
+ * the installation says. How long is the variability system setting
+ * =inbox.approval_queue.answered_window_seconds=; the read falls back to an
+ * empty tail when that setting cannot be read, because the open queue is the
+ * read's reason to exist and it is not.
  */
 export interface ListApprovalQueueRequest {
     offset: number;
@@ -114,9 +124,15 @@ export interface ListApprovalQueueResponse {
     result: Result;
     requests: ApprovalRequest[];
     /**
-     * @brief How many requests the whole queue holds, for paging.
+     * @brief How many open requests the whole queue holds, for paging. The answered
+     * tail is bounded by the window and is not part of this count.
      */
     total: number;
+    /**
+     * @brief The requests answered within the window, newest answer first. Bounded,
+     * and not paged: nobody acts on them.
+     */
+    answered: ApprovalRequest[];
 }
 
 /**
@@ -131,6 +147,36 @@ export interface ListMyApprovalRequestsResponse {
     result: Result;
     requests: ApprovalRequest[];
     total: number;
+}
+
+/**
+ * @brief Reads the one request an identifier names.
+ *
+ * A notice a person is given carries the request it is about, so the notice
+ * has to be able to open it. The queue cannot answer that: it holds what is
+ * waiting, and a notice is usually read after the request stopped waiting.
+ * The request a person may open is therefore read on its own, and the caller
+ * states which request they mean rather than reading a list to find it.
+ *
+ * What the caller may open is the store's to decide: the person who asked,
+ * and whoever may decide a request of that kind. A stranger is answered as if
+ * the request did not exist, so the read tells nobody that a request they may
+ * not see is there.
+ */
+export interface GetApprovalRequest {
+    request_id: string;
+}
+
+export interface GetApprovalResponse {
+    result: Result;
+    /**
+     * @brief The request, present when the caller may open it.
+     *
+     * Absent means one thing to the caller and two things to the store: no such
+     * request, or a request this caller may not see. Telling them apart would
+     * tell a stranger that a request exists.
+     */
+    request: ApprovalRequest | null;
 }
 
 /**
@@ -157,13 +203,107 @@ export interface ExpireOverdueApprovalsResponse {
     expired: string[];
 }
 
+/**
+ * @brief Warns the deciders of every open request whose deadline is close.
+ *
+ * The other half of the deadline. The sweep that closes what nobody answered
+ * keeps the queue moving, but a decider who never looked learns afterwards;
+ * this gives them the chance the deadline was there to give.
+ *
+ * It has its own schedule and its own window, because warning somebody is a
+ * nudge with its own timing and its own audience, while closing a queue that
+ * has stopped moving is housekeeping. The window is the variability setting
+ * =inbox.approval_expiry.reminder_window_seconds=.
+ *
+ * A request is warned about once, and the notice is what says so: a reminder
+ * already raised names the request, so there is no second mark to keep in step
+ * with the first. A request answered before its deadline passes stops matching,
+ * and the one the sweep closed is left out by the close.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only reads requests that are already close
+ * to a deadline their kind set.
+ */
+export interface RemindExpiringApprovalsRequest {}
+
+export interface RemindExpiringApprovalsResponse {
+    result: Result;
+    /**
+     * @brief The requests complained about, as UUID strings, nearest deadline
+     * first.
+     */
+    reminded: string[];
+}
+
+/**
+ * @brief One field of a request at one version, as a screen names and draws it.
+ *
+ * The value is text whatever its type: the renderer that fills this in is the
+ * same one the record screens' history panel reads, so a story and a panel
+ * draw the same request the same way.
+ */
+export interface ApprovalRequestField {
+    name: string;
+    value: string;
+}
+
+/**
+ * @brief One version of a request, with who wrote it, when, and every field it
+ * held.
+ *
+ * The oldest version is the request as it was raised. Each later one is a
+ * decision that moved it, so this is the request's own half of its story. The
+ * screen pairs each version with the one before it to draw what changed.
+ */
+export interface ApprovalRequestVersion {
+    version: number;
+    /**
+     * @brief The person or service that wrote this version.
+     */
+    modified_by: string;
+    performed_by: string;
+    /**
+     * @brief When this version was written, which for an answered request is the
+     * moment of the answer.
+     */
+    recorded_at: string;
+    change_reason_code: string;
+    change_commentary: string;
+    fields: ApprovalRequestField[];
+}
+
+/**
+ * @brief Reads every version of one request, newest first.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * approval requests. Answered as not found otherwise, so a caller learns
+ * nothing about a request they may not read.
+ *
+ * The entity read of approval requests and the generic history read both gate
+ * on the administrator's permission, so neither can answer the person who
+ * raised the request with their own request's versions. This is the read that
+ * can, and it is why the story of a request is an operation rather than a
+ * composition of the reads that already exist.
+ */
+export interface GetApprovalHistoryRequest {
+    request_id: string;
+}
+
+export interface GetApprovalHistoryResponse {
+    result: Result;
+    versions: ApprovalRequestVersion[];
+}
+
 export const subjects = {
     raise_approval_request_request: 'inbox.v1.ops.raise_approval',
     withdraw_approval_request_request: 'inbox.v1.ops.withdraw_approval',
     decide_approval_request_request: 'inbox.v1.ops.decide_approval',
     list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
+    get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
+    remind_expiring_approvals_request: 'inbox.v1.ops.remind_expiring_approvals',
+    get_approval_history_request: 'inbox.v1.ops.get_approval_history',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -176,5 +316,8 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
+    get_approval_request: true,
     expire_overdue_approvals_request: false,
+    remind_expiring_approvals_request: false,
+    get_approval_history_request: true,
 } as const;

@@ -68,6 +68,13 @@ public:
     static void process_ask_for_roles(std::ostream& out,
                                       ores::nats::service::nats_client& session,
                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief get-request-roles <request_id>
+     */
+    static void process_get_request_roles(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          const std::vector<std::string>& args);
 };
 
 }

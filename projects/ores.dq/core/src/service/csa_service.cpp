@@ -24,6 +24,7 @@
  */
 #include "ores.dq.core/service/csa_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.dq.api/domain/csa.hpp"
 #include "ores.dq.api/messaging/csa_protocol.hpp"
 #include "ores.dq.core/repository/csa_repository.hpp"
@@ -39,6 +40,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::dq::service {
 
@@ -71,18 +77,14 @@ messaging::list_csas_response csa_service::list_csas(const messaging::list_csas_
     messaging::list_csas_response response;
     if (!request.order.field.empty() &&
         !repository::csa_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of csas cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "csas", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->netting_set_code_one_of &&
         request.filter->netting_set_code_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message =
-            "The filter lists more than 1000 values in netting_set_code_one_of.";
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "netting_set_code_one_of", .limit = "1000"});
         return response;
     }
     response.csas =
@@ -95,8 +97,7 @@ messaging::get_csa_response csa_service::get_csa(const messaging::get_csa_reques
     messaging::get_csa_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "csa"});
         return response;
     }
     response.csa = std::move(found.front());

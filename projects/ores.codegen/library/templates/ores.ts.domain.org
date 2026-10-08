@@ -35,7 +35,7 @@ then the audit tail.
 * What the facet emits, and what it does not
 
 The interface mirrors the C++ domain class's member list: the audited
-identity prelude (=version=, =tenant_id=, =workspace_id= when the model
+identity prelude (=version= and =tenant_id= when the model
 sets the flags), the primary key, the natural keys, the model's own
 columns, and the flat audit fields. A member whose C++ type has no
 TypeScript projection refuses the model rather than emit

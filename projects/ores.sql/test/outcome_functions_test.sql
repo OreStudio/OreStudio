@@ -52,18 +52,18 @@ select is(
 -- Test: each store outcome composes its own sentence
 -- =============================================================================
 
--- Test 2: The version-conflict sentence names the record, the field and both versions.
+-- Test 2: The version-conflict sentence names the entity, the field and both versions.
 select is(
-    ores_outcome_version_conflict_fn('currency', 'iso_code', 'GBP', '3', '4'),
-    'The currency with iso_code ''GBP'' is at version 4, and this write states version 3.',
-    'the version-conflict sentence names the record, the field and both versions'
+    ores_outcome_version_conflict_fn('currency', 'iso_code', '3', '4'),
+    'The currency for iso_code is at version 4, and this write states version 3.',
+    'the version-conflict sentence names the entity, the field and both versions'
 );
 
--- Test 3: The already-exists sentence names the record.
+-- Test 3: The already-exists sentence names the entity and the field.
 select is(
-    ores_outcome_already_exists_fn('currency', 'iso_code', 'GBP'),
-    'The currency with iso_code ''GBP'' already exists. State the version you read to replace it, or ask for a version replace.',
-    'the already-exists sentence names the record and the field'
+    ores_outcome_already_exists_fn('currency', 'iso_code'),
+    'The currency already exists for that iso_code. State the version you read to replace it, or ask for a version replace.',
+    'the already-exists sentence names the entity and the field'
 );
 
 -- Test 4: The missing-field sentence names the entity.
@@ -80,17 +80,17 @@ select is(
 
 -- Test 5
 select throws_ok(
-    $$select ores_outcome_raise_fn('version_conflict', 'currency', 'iso_code', 'GBP', '3', '4')$$,
+    $$select ores_outcome_raise_fn('version_conflict', 'currency', 'iso_code', '3', '4')$$,
     'P0002',
-    'The currency with iso_code ''GBP'' is at version 4, and this write states version 3.',
+    'The currency for iso_code is at version 4, and this write states version 3.',
     'the raiser raises P0002 for version_conflict and composes its sentence'
 );
 
 -- Test 6
 select throws_ok(
-    $$select ores_outcome_raise_fn('already_exists', 'currency', 'iso_code', 'GBP')$$,
+    $$select ores_outcome_raise_fn('already_exists', 'currency', 'iso_code')$$,
     '23505',
-    'The currency with iso_code ''GBP'' already exists. State the version you read to replace it, or ask for a version replace.',
+    'The currency already exists for that iso_code. State the version you read to replace it, or ask for a version replace.',
     'the raiser raises 23505 for already_exists and composes its sentence'
 );
 

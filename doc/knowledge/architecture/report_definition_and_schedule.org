@@ -29,7 +29,7 @@ between them.
 ** The definition
 
 A definition is a bitemporal row in =ores_reporting_report_definitions_tbl=,
-owned by a party and scoped to a tenant and a workspace. It carries a name, a
+owned by a party and scoped to a tenant. It carries a name, a
 description, the report type, a concurrency policy, a cron schedule expression,
 the identifier of the scheduler job that holds its schedule, the run
 configuration described below, and the audit envelope every entity carries.

@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-08T18:01:53.355512Z
+' Generated: 2026-10-08T18:04:31.936281Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -2382,6 +2382,7 @@ package "refdata" #FFF3E0 {
         * id_scheme : text
         * id_value : text
           description : text
+        * is_authoritative : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4930,6 +4931,7 @@ package "refdata" #FFF3E0 {
           phone : text
           email : text
           web_page : text
+        * is_primary : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -11064,6 +11066,122 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_structure_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * confirms_as_whole : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Kind Table
+    Reference data table defining the rungs of the composition ladder. A kind
+    says how strongly the structure binds its legs, and the one consequence
+    that follows for the customer: whether the deal is confirmed as one
+    document or trade by trade.
+    Examples: 'Strategy', 'Typed', 'Dynamic', 'Package'.
+    end note
+
+    entity ores_trading_structure_template_roles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * template_code : text <<PK>>
+        * role : text <<PK>>
+        --
+        * version : integer
+        * min_legs : integer
+        * max_legs : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_template_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Template Role Table
+    The roles a structure template allows, each with the number of legs it
+    holds. The table is what makes a template a mould: a straddle allows one
+    role holding exactly two legs, a butterfly allows a body of one and wings
+    of two.
+    The row is keyed by its template and its role, because a template states
+    each role once. The leg counts are inclusive at both ends, and a role that
+    holds any number of legs states a maximum of zero meaning no upper bound.
+    Examples: 'Straddle' / 'leg' / 2 to 2, 'Butterfly' / 'wing' / 2 to 2.
+    end note
+
+    entity ores_trading_structure_templates_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * kind : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_structure_templates_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Template Table
+    Reference data table defining the shapes a structure of a given kind may
+    take. A template states which roles its legs may play and how many legs
+    each role holds, so that a strategy is a mould rather than a convention.
+    The roles themselves are the child table, because a template has several
+    and each carries its own leg counts.
+    Examples: 'Straddle', 'RiskReversal', 'Butterfly', 'CallableSwap'.
+    end note
+
+    entity ores_trading_structures_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+        * kind : text
+          template_code : text
+          parent_structure_id : uuid <<FK>>
+    }
+
+    note right of ores_trading_structures_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Structure Table
+    The immutable identity of a deal assembled from several trades. It holds
+    what never changes for the deal's life: the party, the counterparty, the
+    kind of binding, the template it was shaped by, and its parent when it is
+    itself a leg of a larger deal.
+    It is the anchor of the composition ladder. The legs are not owned
+    children: a trade points at the structure that holds it, so the same trade
+    can be unlinked from one deal and linked to another without being
+    rewritten. The economics live on the legs, and the structure's internal
+    version is read from them rather than stored beside them.
+    A structure nests one level at most, because a deal inside a deal inside a
+    deal has no confirmation to hang on. The insert trigger enforces it.
+    end note
+
     entity ores_trading_swap_leg_amounts_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -13181,6 +13299,85 @@ package "marketdata" #E3F2FD {
     relationship is a junction.
     end note
 
+    entity ores_marketdata_market_series_identity_tbl  #F7E5FF {
+        * series_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * identity_kind : text
+          asset_class : text
+          instrument_type : text
+          quote_type : text
+          atm : text
+          cap_floor : text
+          ccy : text
+          cds_index_name : text
+          commodity_name : text
+          contract : text
+          contract_name : text
+          curve_id : text <<FK>>
+          day_counter : text
+          doc_clause : text
+          dst : text
+          eq_name : text
+          fixed_ccy : text
+          fixed_tenor : text
+          flat_ccy : text
+          flat_term : text
+          float_ccy : text
+          float_tenor : text
+          future_contract : text
+          fwd_start : text
+          identifier : text
+          index : text
+          index1 : text
+          index2 : text
+          index_name : text
+          index_tenor : text
+          index_term : text
+          offset : text
+          option_type : text
+          payer_receiver : text
+          qualifier : text
+          quote_name : text
+          quote_tag : text
+          rating_name : text
+          relative : text
+          running_spread : text
+          seasonality_type : text
+          security_id : text <<FK>>
+          seniority : text
+          side : text
+          tenor : text
+          term : text
+          time_unit : text
+          underlying_name : text
+          unit_ccy : text
+    }
+
+    note right of ores_marketdata_market_series_identity_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Series Identity Table
+    A projection of market_series.oresmd_uri, one row per series, so a query can
+    join on the series and filter on a real column. The URI stays the only spelling
+    the system writes and the codec stays the only thing that reads it; this table is
+    written from that parse, never read back to rebuild a URI.
+    The column set is the identity fields ores.marketdata declares in its codec
+    schema, one column per field the schema marks field_role::identity, plus the
+    columns that say which kind of identity the row carries. A field the type's
+    schema row does not declare is empty, because the row holds only the columns its
+    own type fills. A column is text, not a typed relational form, because the codec
+    keeps every value as the key spelled it and a projection that reinterpreted it
+    would be a second spelling of the same identity.
+    The table is a current state, not a history: the series row is already temporal
+    and the identity does not change under it, so one row per series is enough and
+    the primary key is the series. The column list is checked against the codec
+    schema by build/scripts/check_marketdata_identity_columns.py, so the two cannot
+    drift.
+    end note
+
     entity ores_marketdata_market_series_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -13980,74 +14177,6 @@ package "analytics" #E8F5E9 {
     SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
     once, so key_value_2 carries the second. SwapIndexCurves is the only
     collection whose entry nests, and discounting carries its one child.
-    end note
-
-}
-
-'
-' ==================== workspace (Workspace — Isolated Data Contexts) ====================
-'
-package "workspace" #E8F5E9 {
-    entity ores_workspace_trade_scope_tbl  #F7E5FF {
-        * workspace_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        --
-    }
-
-    note right of ores_workspace_trade_scope_tbl
-    Trade scope whitelist (references workspace UUID, not integer).
-    end note
-
-    entity ores_workspaces_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * name : text
-        * party_id : uuid <<FK>>
-        * owner_id : uuid <<FK>>
-        * description : text
-          source_path : text
-          parent_workspace_id : uuid <<FK>>
-          scope_portfolio_id : uuid <<FK>>
-        * status_code : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_workspaces_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Workspace Table
-    A named, isolated data context. Data a workspace does not carry is
-    resolved from its parent chain, up to the Live workspace
-    (ores_utility_live_workspace_id_fn()).
-    The table is bi-temporal and audited (see
-    projects/ores.sql/create/workspace/workspace_create.sql): it carries
-    version, the four audit columns and the valid_from/valid_to pair
-    with the GIST exclusion and the delete rule, so the model takes the
-    ordinary audited shape and needs no shape flag.
-    A workspace belongs to one tenant and one party, and its name is unique
-    within that pair. party_id is a natural key beside name for that
-    reason: two parties in one tenant may each hold a workspace named prod.
-    Only an active workspace holds its name, so the uniqueness index covers
-    the active rows and an archived name is free to be taken again.
-    parent_workspace_id is a self-referencing soft foreign key, so the model
-    binds self-referencing-hierarchy for its UUID surrogate key, its tenant
-    scope and its self-reference. The same profile generates the recursive
-    subtree read over parent_workspace_id.
-    scope_portfolio_id optionally narrows a workspace to one portfolio. It is
-    a soft foreign key with no declared target, because ores.refdata is
-    created after this component.
-    The component's row-level security stays hand-written in
-    create/workspace/workspace_rls_policies_create.sql: the live fleet creates
-    this table before the iam section that defines
-    ores_iam_current_tenant_id_fn, so an inline policy cannot be emitted here.
     end note
 
 }

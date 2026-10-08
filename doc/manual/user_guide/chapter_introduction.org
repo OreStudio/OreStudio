@@ -106,7 +106,7 @@ This manual is written for several kinds of reader:
   and risk measures without writing code.
 
 - *LLM-based agents and coding assistants* that interact with ORE Studio on a
-  user's behalf, help configure workspaces, interpret results, or draft
+  user's behalf, help configure sandboxes, interpret results, or draft
   analytical reports. Multimodal models — those capable of processing both text
   and images — are preferred, as the manual makes extensive use of screenshots
   to describe the user interface.

@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <stdexcept>
 
 namespace ores::inbox::service {
@@ -36,6 +37,15 @@ using namespace ores::logging;
 namespace {
 
 constexpr int max_page = 500;
+
+/**
+ * @brief How many answered requests the tail carries at most.
+ *
+ * The window says how far back the tail reaches; this says how wide it is. A
+ * busy tenant answers more in a day than anybody reads, and nobody acts on an
+ * answered request, so the tail is a glance and not a list.
+ */
+constexpr int answered_tail_limit = 20;
 
 int clamp_limit(int limit) {
     return std::clamp(limit, 1, max_page);
@@ -173,6 +183,61 @@ request_page approval_lifecycle::queue(const std::vector<std::string>& kind_code
     return page;
 }
 
+std::vector<domain::approval_request>
+approval_lifecycle::recently_answered(const std::vector<std::string>& kind_codes,
+                                      const boost::uuids::uuid& excluding,
+                                      std::chrono::seconds window) {
+    if (kind_codes.empty() || window <= std::chrono::seconds::zero())
+        return {};
+
+    /*
+     * The two arrays are comma-joined rather than passed as PostgreSQL array
+     * literals: both hold codes the model itself declares, so neither can hold
+     * the separator.
+     */
+    std::string kinds;
+    for (const auto& code : kind_codes) {
+        if (!kinds.empty())
+            kinds += ',';
+        kinds += code;
+    }
+    const std::string open = "waiting,held";
+
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select r.id::text"
+        " from ores_inbox_approval_requests_tbl r"
+        " where r.valid_to = ores_utility_infinity_timestamp_fn()"
+        " and r.kind_code = any(string_to_array($1::text, ','))"
+        " and r.state_code <> all(string_to_array($2::text, ','))"
+        " and r.requested_by <> $3::uuid"
+        " and r.valid_from >= clock_timestamp() - make_interval(secs => $4::double precision)"
+        " order by r.valid_from desc"
+        " limit $5::int",
+        {kinds,
+         open,
+         boost::uuids::to_string(excluding),
+         std::to_string(window.count()),
+         std::to_string(answered_tail_limit)},
+        lg(),
+        "Reading the approval requests answered recently");
+
+    std::vector<std::string> ids;
+    ids.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (!row.empty() && row.front())
+            ids.push_back(*row.front());
+    }
+    if (ids.empty())
+        return {};
+
+    repository::approval_request_repository repo;
+    auto answered = repo.read_latest(ctx_, ids);
+    // The store orders a read by key, so the answer's own order is put back.
+    std::ranges::sort(answered, std::greater{}, &domain::approval_request::recorded_at);
+    return answered;
+}
+
 request_page
 approval_lifecycle::raised_by(const boost::uuids::uuid& account_id, int offset, int limit) {
     messaging::approval_requests_filter mine;
@@ -218,6 +283,86 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
         expired.push_back(std::move(e));
     }
     return expired;
+}
+
+std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::seconds window) {
+    if (window <= std::chrono::seconds::zero())
+        return {};
+
+    // The sweep runs from the scheduler, so no person is asking. The read
+    // crosses every tenant and touches no row, so it needs no actor; the notice
+    // it raises needs one, and the service that ran the sweep is the honest
+    // answer.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
+        " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double precision)",
+        {std::to_string(window.count())},
+        lg(),
+        "Reading the approval requests close to their deadline");
+
+    std::vector<expiring_request> expiring;
+    expiring.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() != 5)
+            continue;
+        expiring_request e{.request_id = row[0].value_or(""),
+                           .tenant_id = row[1].value_or(""),
+                           .kind_code = row[2].value_or(""),
+                           .requested_by = row[3].value_or(""),
+                           .expires_at = row[4].value_or("")};
+        BOOST_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
+                                  << ") is close to its deadline at " << e.expires_at << ".";
+        tell_expiring(e);
+        expiring.push_back(std::move(e));
+    }
+    return expiring;
+}
+
+void approval_lifecycle::tell_expiring(const expiring_request& expiring) {
+    try {
+        const auto tenant = utility::uuid::tenant_id::from_string(expiring.tenant_id);
+        if (!tenant)
+            throw std::runtime_error("bad tenant " + expiring.tenant_id);
+        const auto k = kind(expiring.kind_code);
+        if (!k)
+            throw std::runtime_error("no such kind " + expiring.kind_code);
+
+        // The sweep runs as a service account that lives in the system tenant,
+        // while the people to warn live in the request's tenant. The deciders
+        // are resolved where they are and the notice is raised there, so
+        // warning one tenant's deciders does not need the service to hold their
+        // permission.
+        const auto system_ctx =
+            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
+        const auto raiser = notification_center(system_ctx).actor_account_id();
+        if (!raiser)
+            throw std::runtime_error("the service account was not found");
+
+        notification_center center(ctx_.with_tenant(*tenant, ctx_.service_account()));
+        auto deciders = center.holders_of(k->decide_permission_code);
+        // A person never decides their own request, and the warning is that
+        // somebody should, so the one person it must not reach is the asker.
+        std::erase(deciders, expiring.requested_by);
+        if (deciders.empty())
+            return;
+
+        // The message names the kind as a person reads it, which is a name and
+        // not the code the row carries.
+        messaging::raise_notification_request n{
+            .kind_code = "inbox.approval_expiring",
+            .link_route = "requests",
+            .link_id = expiring.request_id,
+            .arguments = {{.name = "kind", .value = k->name},
+                          {.name = "deadline", .value = expiring.expires_at}},
+            .account_ids = {},
+            .audience_permission_code = k->decide_permission_code};
+        center.raise(n, deciders, *raiser);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Request " << expiring.request_id
+                                  << " is close to its deadline, but its deciders were not told: "
+                                  << e.what();
+    }
 }
 
 void approval_lifecycle::tell_expired(const expired_request& expired) {

@@ -290,6 +290,7 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
     execute_write_query(ctx, {{entity_singular}}_mapper::map(t),
         lg(), "Writing {{entity_singular_words}} to database.");
 {{/current_state}}
+<<paste:2C8F029A-9D8A-44E0-A06E-F9EA637ED581>>
 }
 
 void {{entity_singular}}_repository::write(
@@ -314,6 +315,7 @@ void {{entity_singular}}_repository::write(
     execute_write_query(ctx, {{entity_singular}}_mapper::map(batch),
         lg(), "Writing {{entity_plural_words}} to database.");
 {{/current_state}}
+<<paste:40393605-A998-4295-B69F-9FB035FFBC92>>
 }
 
 std::vector<domain::{{entity_singular}}>

@@ -1202,9 +1202,43 @@ namespace ores #F2F2F2 {
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class instrument_payload <<struct>> {
-                +type : string
-                +body : string
+            class instrument_batch <<struct>> {
+                +balance_guaranteed_swap_instruments : vector<balance_guaranteed_swap_instrument>
+                +bond_instruments : vector<bond_instrument_data>
+                +callable_swap_instruments : vector<callable_swap_instrument>
+                +cap_floor_instruments : vector<cap_floor_instrument>
+                +commodity_instruments : vector<commodity_instrument>
+                +composite_instruments : vector<composite_instrument>
+                +credit_instruments : vector<credit_instrument>
+                +equity_accumulator_instruments : vector<equity_accumulator_instrument>
+                +equity_asian_option_instruments : vector<equity_asian_option_instrument>
+                +equity_barrier_option_instruments : vector<equity_barrier_option_instrument>
+                +equity_digital_option_instruments : vector<equity_digital_option_instrument>
+                +equity_forward_instruments : vector<equity_forward_instrument>
+                +equity_option_instruments : vector<equity_option_instrument>
+                +equity_position_instruments : vector<equity_position_instrument>
+                +equity_swap_instruments : vector<equity_swap_instrument>
+                +equity_variance_swap_instruments : vector<equity_variance_swap_instrument>
+                +fra_instruments : vector<fra_instrument>
+                +fx_accumulator_instruments : vector<fx_accumulator_instrument>
+                +fx_asian_forward_instruments : vector<fx_asian_forward_instrument>
+                +fx_barrier_option_instruments : vector<fx_barrier_option_instrument>
+                +fx_digital_option_instruments : vector<fx_digital_option_instrument>
+                +fx_forward_instruments : vector<fx_forward_instrument>
+                +fx_vanilla_option_instruments : vector<fx_vanilla_option_instrument>
+                +fx_variance_swap_instruments : vector<fx_variance_swap_instrument>
+                +inflation_swap_instruments : vector<inflation_swap_instrument>
+                +knock_out_swap_instruments : vector<knock_out_swap_instrument>
+                +scripted_instruments : vector<scripted_instrument>
+                +swaption_instruments : vector<swaption_instrument>
+                +vanilla_swap_instruments : vector<vanilla_swap_instrument>
+                +callable_swap_call_dates : vector<callable_swap_call_date>
+                +commodity_basket_constituents : vector<commodity_basket_constituent>
+                +composite_legs : vector<composite_leg>
+                +equity_position_option_underlyings : vector<equity_position_option_underlying>
+                +swap_legs : vector<swap_leg>
+                +swap_leg_amounts : vector<swap_leg_amount>
+                +swap_leg_rates : vector<swap_leg_rate>
             }
             class instrument_schedule <<struct>> {
                 +version : int
@@ -11479,7 +11513,7 @@ namespace ores #F2F2F2 {
             namespace trade_event_subjects #F2F2F2 {
                 class trade_export_item <<struct>> {
                     +trade : ores::trading::domain::trade
-                    +instrument : ores::trading::domain::instrument_payload
+                    +instruments : ores::trading::domain::instrument_batch
                     +envelope : optional<ores::trading::domain::trade_envelope_data>
                 }
                 class get_trade_instrument_request <<struct>> {

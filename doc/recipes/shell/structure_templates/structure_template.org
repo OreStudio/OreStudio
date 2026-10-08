@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 2FF212E5-A560-58B1-8E40-2E0233276081
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the structure_templates commands from the shell?
+#+description: Every command the structure_templates submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:structure_templates:
+
+This file documents the structure_templates resource at the shell, one section per command. Every command is a subcommand of =structure_templates=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: BB3E4846-7C96-5508-AA69-90D04367E45B
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.list=.
+
+#+name: structure_templates-list
+#+begin_src ores-shell :tangle structure_templates-list.ores :exports none
+structure_templates list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D65FD19F-26BF-5449-8A93-D330740892D0
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates get <code>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.get=.
+
+#+name: structure_templates-get
+#+begin_src ores-shell :tangle structure_templates-get.ores :exports none
+structure_templates get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 85D086B1-0B41-5B51-942A-DCAEC2F70B94
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates get-many <code>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.get_many=.
+
+#+name: structure_templates-get-many
+#+begin_src ores-shell :tangle structure_templates-get-many.ores :exports none
+structure_templates get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: A205C6FD-52F3-5955-9A3B-92D136BDBD66
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates add <code> <description> <kind> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.put=.
+
+#+name: structure_templates-add
+#+begin_src ores-shell :tangle structure_templates-add.ores :exports none
+structure_templates add __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 8BB7620C-9C97-5344-BDB2-3096CB8E316C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates set <code> <description> <kind> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.put=.
+
+#+name: structure_templates-set
+#+begin_src ores-shell :tangle structure_templates-set.ores :exports none
+structure_templates set __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 348699CD-8688-5929-A1A8-0D4D1F55F682
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates put-many --count <n> <code> <description> <kind> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.put_many=.
+
+#+name: structure_templates-put-many
+#+begin_src ores-shell :tangle structure_templates-put-many.ores :exports none
+structure_templates put-many --count 1 __none__ __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: AF764AB3-A91B-56DE-B123-A37715F0D582
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.delete=.
+
+#+name: structure_templates-delete
+#+begin_src ores-shell :tangle structure_templates-delete.ores :exports none
+structure_templates delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: E72CB88A-951F-5EF7-8825-F4D7CD17CF98
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates.delete_many=.
+
+#+name: structure_templates-delete-many
+#+begin_src ores-shell :tangle structure_templates-delete-many.ores :exports none
+structure_templates delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 47B4EEB5-3119-518B-9778-783DE059DC0F
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.structure_templates_versions.list=.
+
+#+name: structure_templates-versions
+#+begin_src ores-shell :tangle structure_templates-versions.ores :exports none
+structure_templates versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 90C4EA0A-6A09-553B-834A-EC2931D4365A
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+structure_templates version <code> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.structure_templates_versions.get=.
+
+#+name: structure_templates-version
+#+begin_src ores-shell :tangle structure_templates-version.ores :exports none
+structure_templates version __none__ --version 1
+#+end_src
+

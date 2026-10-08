@@ -57,6 +57,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 26 | 2026-09-27 | Removed ORES_HTTP_SERVER_JWT_SECRET; the gateway verifies sessions with IAM's key alone, so the variable has no reader and the unregistered name stops ores.http.server at startup |
 | 27 | 2026-10-05 | Added the ORES_INBOX_SERVICE_DB_* block; ores.inbox.service is a new service that owns the approval request and notification tables and needs a database identity |
 | 28 | 2026-10-08 | Removed the ORES_GRID_NODE_1..5_HOST_ID variables; nothing read them, and the compute wrapper's host id is the UUIDv5 value systemd_generate.py computes from {hostname}:{replica}. |
+| 29 | 2026-10-08 | Removed ORES_WORKSPACE_SERVICE_DB_* now the workspace service is gone. |
 
 * See also
 

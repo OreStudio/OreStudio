@@ -22,9 +22,9 @@
 /**
  * The operations area: the screens that answer what the installation is doing.
  *
- * The area is entered from the system administration menu. A screen that is not
- * built yet is listed rather than left out, so the area states its own shape;
- * it carries no link, because a link that leads nowhere reads as a fault.
+ * The area is entered from the system administration menu. Every screen the
+ * area names exists, so each one carries its link; the last, the telemetry
+ * logs, was added by the fifth unit.
  *
  * The versions screen belongs to every session rather than to this area alone,
  * so it is also offered from Home.
@@ -51,10 +51,12 @@ export function OperationsArea(): ReactNode {
         {
             title: t('operations.screens.bus'),
             body: t('operations.screens.busBody'),
+            to: '/operations/bus',
         },
         {
             title: t('operations.screens.logs'),
             body: t('operations.screens.logsBody'),
+            to: '/operations/logs',
         },
         {
             title: t('operations.screens.versions'),

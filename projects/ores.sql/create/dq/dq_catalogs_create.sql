@@ -102,15 +102,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'catalog',
-                    'name',
-                    NEW.name::text);
+                    'name');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'catalog',
                 'name',
-                NEW.name::text,
                 NEW.version::text,
                 current_version::text);
         end if;

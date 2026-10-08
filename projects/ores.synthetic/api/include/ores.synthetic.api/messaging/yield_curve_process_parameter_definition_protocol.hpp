@@ -70,6 +70,10 @@ struct yield_curve_process_parameter_definition_lookup {
         yield_curve_process_parameter_definition;
 };
 
+struct yield_curve_process_parameter_definitions_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct yield_curve_process_parameter_definition_event {
     boost::uuids::uuid event_id;
     yield_curve_process_parameter_definition_key key;
@@ -104,6 +108,8 @@ struct list_yield_curve_process_parameter_definitions_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<yield_curve_process_parameter_definitions_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_yield_curve_process_parameter_definitions_response {

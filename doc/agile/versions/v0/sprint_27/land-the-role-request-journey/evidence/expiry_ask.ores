@@ -1,6 +1,6 @@
 logout
 login ashley.moore@acme_corporation Ashley-Pass-123
-role_request_operations ask-for-roles 993dffc5-cb15-40c7-a700-1c3da1a64dfd "I cover the trading desk next week"
+role_request_operations ask-for-roles 34a84cfe-d565-491a-9c1f-b9ceb650a073 "I cover the trading desk next week"
 approval_operations list-my-approval-requests
 logout
 exit

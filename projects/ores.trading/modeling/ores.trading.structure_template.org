@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 10A8794B-2EAF-4435-9E59-A579E8E4C680
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.structure_template
+#+description: Codegen entity model for the trading =structure_template= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The roles and leg counts a strategy or typed product allows.
+#+entity_singular: structure_template
+#+entity_plural: structure_templates
+#+entity_title: Structure Template
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Reference data table defining the shapes a structure of a given kind may
+take. A template states which roles its legs may play and how many legs
+each role holds, so that a strategy is a mould rather than a convention.
+
+The roles themselves are the child table, because a template has several
+and each carries its own leg counts.
+
+Examples: 'Straddle', 'RiskReversal', 'Butterfly', 'CallableSwap'.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The template code.
+
+Examples: 'Straddle', 'Butterfly'.
+
+#+begin_src cpp :name generator
+std::string("Straddle")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the template shapes, and which product family it belongs to.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The kind of structure the template shapes. A strategy template shapes a
+strategy, and a typed template shapes a typed product.
+
+#+begin_src cpp :name generator
+std::string("Strategy")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_structure_templates_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_structure_template_fn;
+#+end_src
+* Foreign keys
+
+** kind
+:PROPERTIES:
+:table:             ores_trading_structure_kinds_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid kind: %. No active structure kind found with this code.
+:END:
+
+The kind catalogue is system reference data.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: structure_template
+:entity_plural_short:   structure_templates
+:entity_singular_words: structure template
+:entity_plural_words:   structure templates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: st
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| kind        | Kind        |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the ladder and the rules a template encodes.

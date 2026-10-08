@@ -694,15 +694,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     '{{domain_entity.entity_singular}}',
-                    '{{domain_entity.primary_key.column}}',
-                    NEW.{{domain_entity.primary_key.column}}::text);
+                    '{{domain_entity.primary_key.column}}');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 '{{domain_entity.entity_singular}}',
                 '{{domain_entity.primary_key.column}}',
-                NEW.{{domain_entity.primary_key.column}}::text,
                 NEW.version::text,
                 current_version::text);
         end if;

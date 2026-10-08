@@ -24,7 +24,9 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
-#include "ores.inbox.service/app/approval_expiry_schedule.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.inbox.service/app/approval_sweep_schedule.hpp"
+#include "ores.inbox.service/app/approval_windows.hpp"
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
@@ -114,21 +116,45 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
-    // Expiry is the scheduler's to fire, so the service puts its job in before
-    // it serves anything. The job closes what nobody answered, including what
-    // ran out while this service was down, which is why a service that cannot
-    // register it refuses to start rather than run without one.
-    approval_expiry_schedule expiry_schedule(svc_nats);
-    co_await expiry_schedule.register_job();
+    // The two sweeps are the scheduler's to fire, so the service puts their jobs
+    // in before it serves anything. One closes what nobody answered, including
+    // what ran out while this service was down; the other warns the deciders of
+    // what is close to running out, which is the chance the deadline was there
+    // to give. Warning is not closing, so they run on their own schedules and
+    // are registered as two: a service that cannot register either refuses to
+    // start rather than run without one.
+    const sweep expiry_sweep{
+        .setting_name = "inbox.approval_expiry.schedule",
+        .job_name = "ores.inbox.approval_expiry",
+        .subject =
+            std::string(ores::inbox::messaging::expire_overdue_approvals_request::nats_subject),
+        .description = "Close the approval requests nobody answered and tell the person who asked"};
+    const sweep reminder_sweep{
+        .setting_name = "inbox.approval_expiry.reminder_schedule",
+        .job_name = "ores.inbox.approval_reminder",
+        .subject =
+            std::string(ores::inbox::messaging::remind_expiring_approvals_request::nats_subject),
+        .description = "Warn the deciders of the approval requests close to their deadline"};
+
+    approval_sweep_schedule expiry(svc_nats, expiry_sweep);
+    co_await expiry.register_job();
+    approval_sweep_schedule reminder(svc_nats, reminder_sweep);
+    co_await reminder.register_job();
+
+    // Both windows are the installation's to set, so they are read once from the
+    // settings and a service that cannot read one still serves: a window of zero
+    // answers no tail and warns nobody.
+    const auto answered_window = answered_window_seconds(svc_nats);
+    const auto reminder_window = reminder_window_seconds(svc_nats);
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         "ores.inbox.service",
-        [](auto& n, auto c, auto v) {
+        [answered_window, reminder_window](auto& n, auto c, auto v) {
             return ores::inbox::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), std::move(v), answered_window, reminder_window);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

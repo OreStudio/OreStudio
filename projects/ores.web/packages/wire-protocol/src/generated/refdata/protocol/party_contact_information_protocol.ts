@@ -46,6 +46,7 @@ export interface PartyContactInformationWrite {
     phone: string;
     email: string;
     web_page: string;
+    is_primary: boolean;
 }
 
 export interface PartyContactInformationChange {

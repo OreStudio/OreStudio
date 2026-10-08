@@ -3,22 +3,31 @@
 :ID: 925723B7-6F2C-40D6-81FF-FC913A723685
 :END:
 #+title: ores.iam.role_request_operations
-#+description: Codegen operation model for asking for roles: a person raises an iam.role_grant approval request and IAM records the roles it asks for, rendered to C++ and TypeScript from one source.
+#+description: Codegen operation model for asking for roles: a person raises an iam.role_grant approval request, IAM records the roles it asks for, and the person reads them back, rendered to C++ and TypeScript from one source.
 #+type: ores.codegen.operation
 #+component: iam
 #+subcomponent: api
 #+entity_singular: role_request_operations
 #+namespace: ores::iam::messaging
-#+brief: Asking for roles through an approval request.
+#+brief: Asking for roles through an approval request, and reading back what was asked.
 #+filetags: :model:operation:iam:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-08
 
 How a person asks for roles beyond the ones they hold. One call does it all:
 IAM raises an =iam.role_grant= request in the inbox as the person, then records
 which account would hold which roles, keyed by the request. If the record cannot
 be written, IAM withdraws the request it raised, so a person never leaves a
 request in the queue that names nothing.
+
+A role the request asked for is read back with the request's own record of it:
+when the ask wrote it and when IAM applied it. The roles are read through a
+second operation, and not through the
+generated read of =iam.role_grant_request_roles=. That read is gated by a
+tenant-wide permission, and IAM isolates those rows by tenant alone. Granting
+it to a member would let them read what every other member asked for. The read
+here is entitled to the person who asked, so a member sees the roles on their
+own request and no others.
 
 The request is decided in the inbox like any other. When it is approved, IAM
 grants each role the account does not already hold.
@@ -41,7 +50,10 @@ shell session signed in as a member asks for a role as they would.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.iam.api/domain/role.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 #+end_src
@@ -105,6 +117,101 @@ shell session signed in as a member asks for a role as they would.
  * @brief The approval request raised, when the outcome is ok.
  */
 #+end_src
+
+** get_request_roles_request
+:PROPERTIES:
+:subject:  iam.v1.ops.get_request_roles
+:response: get_request_roles_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the roles one approval request asks for.
+ *
+ * Answered when the caller raised the request, and when the caller may read
+ * the roles of role grant requests. Answered as not found otherwise, so a
+ * caller learns nothing about a request they may not read.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approval request to read the roles of, as a UUID string.
+ */
+#+end_src
+
+** requested_role
+
+#+begin_src cpp :name comment
+/**
+ * @brief One role a request asks for, with the request's own record of it.
+ *
+ * The role is the catalogue row, whole, so a screen draws it without a second
+ * read. The tail is the junction row the ask wrote: when it was written, and
+ * when IAM applied it afterwards and on whose authority. It is what the
+ * request's story needs to say that a role was given, and the only place that
+ * fact is kept.
+ */
+#+end_src
+
+*** role
+:PROPERTIES:
+:cpp_type: ores::iam::domain::role
+:END:
+
+*** asked_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the request recorded the role, which is when the person asked.
+ */
+#+end_src
+
+*** applied_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When IAM applied the role after the request was approved, or empty
+ * until it has. A role the person already held is marked applied without a
+ * grant, so this says the request was dealt with rather than that a role moved.
+ */
+#+end_src
+
+*** applied_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Who applied it, or empty until somebody has.
+ */
+#+end_src
+
+** get_request_roles_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** roles
+:PROPERTIES:
+:cpp_type: std::vector<requested_role>
+:END:
 
 * See also
 

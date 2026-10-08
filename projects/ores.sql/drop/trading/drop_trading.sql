@@ -35,9 +35,33 @@
 \ir ./trading_trade_identifiers_notify_trigger_drop.sql
 \ir ./trading_trade_identifiers_drop.sql
 
--- Swap leg children (drop before the leg they belong to)
+-- Structures and links, and a swap leg's child rows. Each names a table that
+-- is dropped further down, so they go first: a template role before its
+-- template, a template before its kind, a leg's rows before the leg.
+\ir ./trading_structure_template_roles_notify_trigger_drop.sql
+\ir ./trading_structure_template_roles_drop.sql
+
+\ir ./trading_structure_members_notify_trigger_drop.sql
+\ir ./trading_structure_members_drop.sql
+
+\ir ./trading_structures_notify_trigger_drop.sql
+\ir ./trading_structures_drop.sql
+
+\ir ./trading_structure_templates_notify_trigger_drop.sql
+\ir ./trading_structure_templates_drop.sql
+
+\ir ./trading_structure_kinds_notify_trigger_drop.sql
+\ir ./trading_structure_kinds_drop.sql
+
+\ir ./trading_trade_links_notify_trigger_drop.sql
+\ir ./trading_trade_links_drop.sql
+
+\ir ./trading_trade_link_types_notify_trigger_drop.sql
+\ir ./trading_trade_link_types_drop.sql
+
 \ir ./trading_swap_leg_amounts_notify_trigger_drop.sql
 \ir ./trading_swap_leg_amounts_drop.sql
+
 \ir ./trading_swap_leg_rates_notify_trigger_drop.sql
 \ir ./trading_swap_leg_rates_drop.sql
 
@@ -198,12 +222,6 @@
 \ir ./trading_trade_bookings_notify_trigger_drop.sql
 \ir ./trading_trade_bookings_drop.sql
 \ir ./trading_trade_components_functions_drop.sql
-
--- Trade links (drop before the trades and the types they reference)
-\ir ./trading_trade_links_notify_trigger_drop.sql
-\ir ./trading_trade_links_drop.sql
-\ir ./trading_trade_link_types_notify_trigger_drop.sql
-\ir ./trading_trade_link_types_drop.sql
 
 -- Trades (drop before the classification lookups they reference)
 \ir ./trading_trades_notify_trigger_drop.sql

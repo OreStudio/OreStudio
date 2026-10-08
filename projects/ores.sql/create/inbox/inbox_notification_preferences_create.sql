@@ -140,15 +140,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'notification_preference',
-                    'account_id',
-                    NEW.account_id::text);
+                    'account_id');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'notification_preference',
                 'account_id',
-                NEW.account_id::text,
                 NEW.version::text,
                 current_version::text);
         end if;

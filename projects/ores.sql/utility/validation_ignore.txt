@@ -425,22 +425,6 @@ RLS_002 ores_marketdata_crm_enabled_derived_pairs_tbl
 
 
 # =============================================================================
-# Workspace tables.
-#
-# ores_workspaces_tbl needs no entry: it carries tenant_id, version,
-# modified_by and change_reason_code, and workspace_rls_policies_create.sql
-# turns on row level security for it.
-#
-# ores_workspace_trade_scope_tbl is a plain two-column whitelist: it has no
-# tenant, no version and no audit columns, and takes its isolation from the
-# workspace row it names.
-# =============================================================================
-TENANT_001 ores_workspace_trade_scope_tbl
-TEMPORAL_004 ores_workspace_trade_scope_tbl
-TEMPORAL_005 ores_workspace_trade_scope_tbl
-TEMPORAL_006 ores_workspace_trade_scope_tbl
-
-# =============================================================================
 # Synthetic market data generation configs - tenant_id/party_id nullable by
 # design (same rationale as scheduler_job_definitions_tbl above): scope column
 # spans system/tenant/party, system-scope rows have both null, tenant-scope

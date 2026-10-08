@@ -1,0 +1,265 @@
+:PROPERTIES:
+:ID: B0DACA4C-5A13-412D-92FB-5B97FAF400C4
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.structure_member
+#+description: Codegen entity model for the trading =structure_member= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The place one trade holds inside a structure.
+#+entity_singular: structure_member
+#+entity_plural: structure_members
+#+entity_title: Structure Member
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The link between a structure and one of its legs. The trade is not owned by
+the deal: it points at it, so the same trade can be unlinked from one
+structure and linked to another without being rewritten.
+
+The row is keyed by the trade and is temporal, which says the rule directly: a
+trade sits in at most one structure at a time, and unlinking closes the row
+rather than deleting it. The history of what a trade belonged to survives.
+
+The member copies the party and the counterparty from its structure, and the
+pins hold the copies to their source, so a leg cannot disagree with the deal
+it belongs to. The insert trigger holds a leg to the roles its template
+allows, and to the number of legs the template states for that role.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade that is a leg of the deal. Keying the table on it is the rule that
+a trade belongs to one structure at a time.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** structure_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The deal the trade is a leg of.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** role
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The part the leg plays, which the structure's template must allow: the body
+of a butterfly, the wing of a risk reversal, the premium leg.
+
+#+begin_src cpp :name generator
+std::string("leg")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The leg's ordinal within its role, counting from one.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The structure's party, copied so the row stands on its own and pinned so the
+copy cannot drift from the deal.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The structure's counterparty, copied and pinned the same way.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_structure_members_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+An ordinal counts from one.
+
+| expression              |
+|-------------------------|
+| "sequence_number" >= 1  |
+
+** Pinned keys
+
+The party and the counterparty are copied from the structure, and the pins
+hold the copies to their source.
+
+| name                   | columns                        | table                      | target_columns       | error_message                                                                  |
+|------------------------+--------------------------------+----------------------------+----------------------+--------------------------------------------------------------------------------|
+| structure_party        | structure_id, party_id         | ores_trading_structures_tbl | id, party_id         | Invalid structure_id: %. The member's party must be the structure's.           |
+| structure_counterparty | structure_id, counterparty_id  | ores_trading_structures_tbl | id, counterparty_id  | Invalid structure_id: %. The member's counterparty must be the structure's.    |
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_structure_member_fn;
+#+end_src
+* Insert trigger
+
+#+begin_src sql :name template_roles :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- A leg fills a role its template allows, and no more legs than the
+    -- template states for that role. A package rests on no template, so it
+    -- constrains nothing and any role is allowed.
+    declare
+        v_template text;
+        v_max      integer;
+        v_used     integer;
+    begin
+        select template_code into v_template
+        from ores_trading_structures_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.structure_id;
+
+        if v_template is not null then
+            select max_legs into v_max
+            from ores_trading_structure_template_roles_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and template_code = v_template
+              and role = NEW.role
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if not found then
+                raise exception 'Invalid role: %. The template % does not allow this role.',
+                    NEW.role, v_template
+                    using errcode = '23514';
+            end if;
+
+            -- A maximum of zero means the role states no upper bound.
+            if v_max > 0 then
+                select count(*) into v_used
+                from ores_trading_structure_members_tbl
+                where tenant_id = NEW.tenant_id
+                  and structure_id = NEW.structure_id
+                  and role = NEW.role
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+
+                if v_used >= v_max then
+                    raise exception 'Invalid role: %. The template % allows % of that role and the structure holds %.',
+                        NEW.role, v_template, v_max, v_used
+                        using errcode = '23514';
+                end if;
+            end if;
+        end if;
+    end;
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:    ores_trading_trades_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the anchor is immutable.
+
+** structure_id
+:PROPERTIES:
+:table:    ores_trading_structures_tbl
+:enforce:  true
+:nullable: false
+:END:
+
+A database foreign key: the structure is immutable.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: member
+:entity_plural_short:   members
+:entity_singular_words: structure member
+:entity_plural_words:   structure members
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sm
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| trade_id        | Trade       |
+| structure_id    | Structure   |
+| role            | Role        |
+| sequence_number | Sequence    |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — why a leg references the deal rather than being owned by it.
+- [[id:09D7A25C-D2CB-4B60-AF3B-D7E0FA72D053][ores.trading.structure]] — the deal this row belongs to.
+- [[id:7354AE40-FF6F-4769-80CD-EA2BADF8CA83][ores.trading.structure_template_role]] — the roles and leg counts the insert trigger enforces.

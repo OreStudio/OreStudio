@@ -96,25 +96,6 @@
 # it named here.
 - ores_assets_get_template_image_
 
-* ores.workspace.service
-:PROPERTIES:
-:psql_var:    workspace_service
-:env_key:     WORKSPACE_SERVICE
-:iam_role:    WorkspaceService
-:description: Workspace
-:display_name: Workspace Service
-:summary:     Serves each person's workspaces and the layout preferences saved with them.
-:email:       workspace_service@system.ores
-:replicas:    1
-:enabled:     true
-:depends_on:  ores.iam.service
-:END:
-
-** DML prefixes
-
-- ores_workspaces_
-- ores_workspace_
-
 * ores.dq.service
 :PROPERTIES:
 :psql_var:    dq_service
@@ -509,11 +490,14 @@ hold the permission.
 
 ** Execute prefixes
 
-# Security-definer sweep that closes, across every tenant, the approval
+# Security-definer sweeps that read across every tenant: one closes the approval
 # requests nobody answered before their kind's deadline (see
-# ores_inbox_expire_approval_requests_fn). The inbox owns the requests, so it
-# is the service that runs it.
+# ores_inbox_expire_approval_requests_fn) and one answers the requests close to
+# running out so the service can warn their deciders (see
+# ores_inbox_remind_expiring_approval_requests_fn). The inbox owns the requests,
+# so it is the service that runs both.
 - ores_inbox_expire_approval_requests_
+- ores_inbox_remind_expiring_approval_requests_
 
 * ores.compute.wrapper
 :PROPERTIES:

@@ -46,12 +46,17 @@ import {
     historyVersionSchema,
     inboxNotificationPageSchema,
     inboxRequestPageSchema,
+    inboxRequestQueueSchema,
+    inboxRequestStorySchema,
+    inboxRequestViewSchema,
     type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
     type HistoryVersion,
     type InboxNotificationView,
     type InboxPage,
+    type InboxRequestQueue,
+    type InboxRequestStory,
     type InboxRequestView,
     type AccountAccess,
     type PermissionEntry,
@@ -77,6 +82,8 @@ import {
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
     gridViewSchema,
+    busViewSchema,
+    logsViewSchema,
     workflowProgressSchema,
     loginInfoSchema,
     sessionSchema,
@@ -98,6 +105,8 @@ import {
     type SeedProfileChoice,
     type ServiceRosterRow,
     type GridView,
+    type BusView,
+    type LogsView,
     type SessionView,
     type SignupRequest,
     type SignupResult,
@@ -124,6 +133,36 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 export interface Credentials {
     readonly username: string;
     readonly password: string;
+}
+
+/**
+ * The range presets the operations screens offer, which the BFF turns into a
+ * window on the deployment's clock.
+ */
+export type BusRange = '15m' | '1h' | '6h';
+
+/**
+ * The range presets the logs screen offers, which the BFF turns into a window
+ * on the deployment's clock.
+ */
+export type LogsRange = '15m' | '1h' | '6h' | '24h';
+
+/**
+ * The filters the logs screen sends, already applied.
+ *
+ * An empty level or source means the filter is not applied rather than a value
+ * to match, because the read's fields are optional and combine with AND. The
+ * component, tag and message are the text the person searched for.
+ */
+export interface LogsQuery {
+    readonly range: LogsRange;
+    readonly level: string;
+    readonly source: string;
+    readonly component: string;
+    readonly tag: string;
+    readonly message: string;
+    readonly offset: number;
+    readonly limit: number;
 }
 
 /** A page's offset and limit as a query string. */
@@ -529,13 +568,46 @@ export const api = {
         });
     },
 
-    /** The requests waiting to be decided, oldest first. */
+    /**
+     * The requests waiting to be decided, oldest first, and the ones answered
+     * within the installation's window, newest answer first.
+     */
     async requestQueue(page: {
         readonly offset: number;
         readonly limit: number;
-    }): Promise<InboxPage<InboxRequestView>> {
-        return inboxRequestPageSchema.parse(
+    }): Promise<InboxRequestQueue> {
+        return inboxRequestQueueSchema.parse(
             await request(`/api/requests?${pageQuery(page)}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * The one request an identifier names, when the signed-in person may open
+     * it.
+     *
+     * A notice carries the request it is about, and is read after the request
+     * stopped waiting, so this is a read of its own rather than a lookup in
+     * the queue. Null means the request is not there, or that the server will
+     * not say that it is.
+     */
+    async request(id: string): Promise<InboxRequestView | null> {
+        const body = await request(`/api/requests/${encodeURIComponent(id)}`, {
+            method: 'GET',
+        });
+        return body === null ? null : inboxRequestViewSchema.parse(body);
+    },
+
+    /**
+     * The whole story of one request, newest first.
+     *
+     * Every row any component wrote for it, merged by the server: the request's
+     * versions, the answers given on it, the roles it asked for and what became
+     * of them, and the notices this person was given. A request they may not
+     * open answers empty, which is what opening it answers too.
+     */
+    async requestStory(id: string): Promise<InboxRequestStory> {
+        return inboxRequestStorySchema.parse(
+            await request(`/api/requests/${encodeURIComponent(id)}/story`, { method: 'GET' }),
         );
     },
 
@@ -1113,6 +1185,58 @@ export const api = {
      */
     async grid(): Promise<GridView> {
         return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));
+    },
+
+    /**
+     * The message bus: the NATS server samples over the chosen range, and one
+     * row per stream.
+     *
+     * The range travels as a preset rather than as two instants, because the
+     * window is the deployment's to compute: a browser that sent its own times
+     * would state a window the deployment never measured, and the read's range
+     * is start-inclusive and end-exclusive.
+     */
+    async bus(range: BusRange): Promise<BusView> {
+        const query = new URLSearchParams({ range });
+        return busViewSchema.parse(
+            await request(`/api/operations/bus?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * One page of the telemetry logs a filter selects, and the total it matches.
+     *
+     * The range travels as a preset rather than as two instants, for the same
+     * reason the bus range does: the window is the deployment's to compute.
+     * Every other filter travels only when the person set it, because an empty
+     * one means the filter is off and a value the store cannot match is worse
+     * than no filter at all. The source is offered as `server` alone, the one
+     * word the store stamps today.
+     */
+    async logs(query: LogsQuery): Promise<LogsView> {
+        const params = new URLSearchParams({
+            range: query.range,
+            offset: String(query.offset),
+            limit: String(query.limit),
+        });
+        if (query.level !== '') {
+            params.set('level', query.level);
+        }
+        if (query.source !== '') {
+            params.set('source', query.source);
+        }
+        if (query.component !== '') {
+            params.set('component', query.component);
+        }
+        if (query.tag !== '') {
+            params.set('tag', query.tag);
+        }
+        if (query.message !== '') {
+            params.set('message', query.message);
+        }
+        return logsViewSchema.parse(
+            await request(`/api/operations/logs?${params.toString()}`, { method: 'GET' }),
+        );
     },
 
     /**

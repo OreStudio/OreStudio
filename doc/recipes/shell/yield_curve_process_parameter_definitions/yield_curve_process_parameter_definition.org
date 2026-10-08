@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 6657CEBD-B7F6-5626-BF3D-8A277B46E591
 :END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
 #+title: How do I run the yield_curve_process_parameter_definitions commands from the shell?
 #+description: Every command the yield_curve_process_parameter_definitions submenu answers, with the script each one exports into the shell's script library.
 #+type: recipe
@@ -92,7 +93,7 @@ It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put=.
 
 #+name: yield_curve_process_parameter_definitions-add
 #+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-add.ores :exports none
-yield_curve_process_parameter_definitions add __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+yield_curve_process_parameter_definitions add __none__ __none__ __none__ - __none__ __none__ __none__ 0 - - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -113,7 +114,7 @@ It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put=.
 
 #+name: yield_curve_process_parameter_definitions-set
 #+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-set.ores :exports none
-yield_curve_process_parameter_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+yield_curve_process_parameter_definitions set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ __none__ 0 - - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -134,7 +135,7 @@ It is addressed at =synthetic.v1.yield_curve_process_parameter_definitions.put_m
 
 #+name: yield_curve_process_parameter_definitions-put-many
 #+begin_src ores-shell :tangle yield_curve_process_parameter_definitions-put-many.ores :exports none
-yield_curve_process_parameter_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ 0 __none__ __none__ 0 system.new_record generated_script
+yield_curve_process_parameter_definitions put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ - __none__ __none__ __none__ 0 - - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/market_data_generation_configs/market_data_generation_config.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-market_data_generation_configs add __none__ __none__ __none__ __none__ false __none__ system.new_record generated_script
+market_data_generation_configs add __none__ __none__ __none__ __none__ false - system.new_record generated_script

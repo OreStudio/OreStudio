@@ -110,6 +110,31 @@ Free text description providing additional context.
 std::string("Test identifier")
 #+end_src
 
+** is_authoritative
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether this is the identifier the tenant resolves the counterparty by. At most
+one live identifier per counterparty may hold it.
+
+A counterparty carries identifiers under several schemes, and nothing in them
+says which one decides who the counterparty is. A screen that needs one applies
+a precedence of its own, LEI first and then BIC. Once the tenant can state the
+choice, that precedence is what it starts from.
+
+#+begin_src cpp :name generator
+// The first row a batch generates carries the LEI scheme, which is the
+// precedence a screen applied while the column did not exist. Ten schemes
+// rotate per counterparty, so at most one of its rows is marked.
+[idx]{
+    return idx % 10 == 0;
+}()
+#+end_src
+
 * SQL
 
 ** Flags
@@ -127,6 +152,11 @@ counterparty only. Other schemes keep the per-counterparty key above.
 | name      | columns                        | unique | current_only | where_extra       |
 |-----------+--------------------------------+--------+--------------+-------------------|
 | ore_alias | tenant_id, id_scheme, id_value | true   | true         | id_scheme = 'ORE' |
+| authoritative_identifier_uniq | counterparty_id | true | false | is_authoritative and valid_to = ores_utility_infinity_timestamp_fn() |
+
+A second identifier cannot claim the mark while the first holds it. The write
+is refused rather than quietly leaving two rows that both say they are
+authoritative.
 
 * Foreign keys
 

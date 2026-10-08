@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4
+:END:
+#+title: Story: Make a series identity joinable in the database
+#+description: A series is named by its oresmd URI, so the database holds its identity as one string and cannot join or filter on the fields inside it. Project that identity into one column per field, written from the same codec parse that writes the URI, so a query joins on the series and filters on real columns.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:oresmd:identity:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the identity of a market series queryable in the database. Today the identity lives only inside the oresmd_uri string on the market_series row, so a query cannot join on it and cannot filter on a field such as the currency. A caller that wants the FX vol surface for a currency pair either matches on a string or reads every series and parses it. Project the identity into typed columns, written from the same codec parse that writes the URI, so a query filters and joins on identity fields, the codec stays the one source of truth for what those fields mean, and the projection cannot disagree with the URI it came from.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Done. The projection table, the writer, the check, the backfill and the asset-class views have landed. |
+| Waiting on    | Nothing.                               |
+| Next          | The identity read of the typed-identity slice consumes the projection. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- Every series row has a projected identity row, written in the same transaction as the series itself, so the projection cannot drift from the URI.
+- A query filters and joins on typed identity columns instead of matching a URI string, and the plan shows the index on those columns is used.
+- The set of identity columns is derived from the declared field specs in the codec schema, not restated by hand, and a check fails when the two disagree.
+- An asset-class view exposes the identity without a table per asset class.
+- Any writer that creates a series projects its identity, or the build refuses the write.
+- The URI stays the only spelling the system writes: the projection is derived from it and is never read back to rebuild it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:326FB65A-5133-487A-BCDF-EB289384DC51][Project the series identity into typed columns]] | DONE | 2026-10-08 | 2026-10-08 | Add a projection table keyed by the series id with one column per identity field the codec schema declares, written from the same codec parse that writes the URI and in the same transaction as the series row, so a query filters and joins on identity fields. |
+| [[id:0A1AB9D4-AA89-490A-AC1D-44B0AF3BA90D][Backfill the projection and read it by asset class]] | DONE | 2026-10-08 | 2026-10-08 | Seed the projection for the series rows that predate it, and give each asset class a view of the identity, so a caller reads the columns its class uses without knowing which ones its instrument type fills. |
+
+* Decisions
+
+** One wide projection table, keyed by the series, rather than a table per asset class
+
+Chosen 2026-10-08, before the first task started.
+
+Five representations were weighed. The record of each and why it lost:
+
+- *One projection table keyed by the series id, one column per identity field,
+  with an asset-class view for each asset class.* Chosen. The columns are a
+  finite set the codec already declares, one row per series is a key lookup, and
+  the table joins to anything the series id joins to. A view per asset class
+  shows the columns that class uses without a second table to keep in step.
+- *One table per asset class.* Rejected. It forks the same schema eleven ways,
+  and the fork has to be maintained by hand whenever the codec gains a field.
+  The synthetic control plane just deleted exactly this pattern for the same
+  reason.
+- *Keep the URI and index a generated projection of it.* Rejected. It makes SQL
+  restate the grammar, and the expression differs by instrument type, so no one
+  index can serve every asset class. That is the approach the typed-identity
+  slice reached for first and abandoned.
+- *Decompose the URI and drop the string.* Rejected for now. It gives the best
+  joins, but the URI is the one spelling every reader and every engine export
+  already uses, and removing it is a migration of its own. This is the end state
+  if the projection earns it, not the first step.
+- *One row per field, key and value.* Rejected. It cannot be joined without a
+  self-join per field, which is what the projection exists to avoid.
+
+** The projection is current-only, and the URI is the only spelling
+
+Chosen 2026-10-08. The table holds one row per series, the current identity, and
+carries no history of its own. The series row is already bitemporal and holds
+the history that matters. The projection is derived, so it is written from the
+URI and never read back to rebuild one. Nothing writes a URI from the projection;
+the codec stays the only writer of both.
+
+** The writer sits where the series row is written
+
+Chosen 2026-10-08. The projection is written in the same transaction as the
+series row, in the one place that writes series. A writer that bypassed it would
+leave a series with no identity to join on, so the write path is the seam rather
+than an after-the-fact sweep. A one-off backfill seeds the rows that already
+exist; it is not the mechanism that keeps them true.
+
+** Every asset-class view is security_invoker
+
+Chosen 2026-10-08, with the second task. A view over a row-level-secured table
+runs as its owner by default, which would read every tenant's rows and hand them
+to a session the policy meant to exclude. Each view therefore states
+=security_invoker = true=, so the policy on the table decides what the reading
+session sees. The views also filter on their instrument types rather than on the
+asset class, because the instrument index is the one the planner can use.
+
+** The backfill repairs rather than re-projects
+
+Chosen 2026-10-08, with the second task. It reads the projection that exists,
+inverts that set and writes only what is missing, so it is safe to run at any
+time and reports nothing to do when there is nothing. Re-projecting every series
+on each run would be simpler and would rewrite rows that are already correct.
+
+* Out of scope
+
+- The index (fixing) grammar. A series named by an index URI gets a projection
+  row that records the kind and no field values, so it stays findable and is
+  never mistaken for a series. Projecting the index fields is its own task if a
+  query needs it.
+- Replacing the URI. The URI stays the identity. The projection is a second,
+  derived representation beside it, not a replacement.

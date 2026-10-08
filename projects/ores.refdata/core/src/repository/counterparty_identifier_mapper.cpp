@@ -57,6 +57,7 @@ counterparty_identifier_mapper::map(const counterparty_identifier_entity& v) {
     r.id_value = v.id_value;
 
     r.description = v.description.value_or("");
+    r.is_authoritative = v.is_authoritative;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -84,6 +85,7 @@ counterparty_identifier_mapper::map(const domain::counterparty_identifier& v) {
     r.id_value = v.id_value;
 
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.is_authoritative = v.is_authoritative;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

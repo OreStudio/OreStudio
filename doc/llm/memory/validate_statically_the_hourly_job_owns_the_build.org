@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 153DA8FE-BDF5-4B82-829A-525503BC7812
+:END:
+#+title: Validate statically; the hourly job owns the build
+#+description: A task's author validates the change statically and merges it. Building and testing happens on a roughly hourly cadence in one environment, swift curie, against the latest main. The merge queue is never gated on a build.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :ci:process:verification:memory:feedback:
+#+created: 2026-10-01
+#+updated: 2026-10-08
+
+Validate statically and merge. Do not build, run the tests or start a service
+while implementing a task. Run the checks that need no compiler — the codegen
+drift gate, the component file lists, the physical-space inventories,
+clang-format, the codegen suite, the documentation checks — read the code for
+what a compiler would have caught, raise the pull request and merge it.
+
+*Why:* A C++ change costs a full build, a database recreate and every test
+suite, which is an hour or more on one workstation. Paying that per task makes
+the build the slowest part of the day and holds the merge queue behind it, for
+a verdict the same suite produces on the hour anyway. One environment, swift
+curie, builds the latest main and tests the pull requests merged since the last
+round, so a defect lands within the hour with a report naming it. This replaces
+the earlier position that the author must build and run ctest before raising a
+pull request; that position predates the hourly cadence and the report.
+
+*How to apply:* When you finish a task, run the static checks — see
+`merge_without_waiting_for_the_checks` for the cadence and the report — then
+raise the pull request with the static evidence in its Testing section and
+merge it. Say in the pull request that the build and the tests are the hourly
+job's, so an empty build-evidence section does not read as an omission. Do not
+run `compass build`, `compass test run` or a service start. If the hourly
+report names a defect in your change, fix it in a follow-up task.

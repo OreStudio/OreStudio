@@ -38,7 +38,9 @@ import { PublicShell } from './components/PublicShell.js';
 import { AuditPage } from './pages/AuditPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { OperationsArea } from './operations/OperationsArea.js';
+import { BusPage } from './operations/BusPage.js';
 import { GridPage } from './operations/GridPage.js';
+import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
@@ -49,6 +51,7 @@ import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
 import { RolesPage } from './access/RolesPage.js';
 import { RequestDetailPage } from './inbox/RequestDetailPage.js';
+import { RequestStoryPage } from './inbox/RequestStoryPage.js';
 import { RequestsPage } from './inbox/RequestsPage.js';
 import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
@@ -297,14 +300,15 @@ export function AppRoutes({
             />
             {/*
              * The operations area: its hub, the versions screen the prototype
-             * established, and the services and grid screens. No route here is
-             * gated: any signed-in person who knows the URL reaches them, and
-             * the menus decide only what is offered, not who may look. The
-             * services and grid reads are refused by their BFF routes unless
-             * the session acts on the deployment, so that reachability is
-             * enforced where the data is. The hub, the roster and the grid are
-             * grids, so they take the width; the versions panels are a column
-             * of detail, so they keep the default.
+             * established, and the services, grid, bus and logs screens. No
+             * route here is gated: any signed-in person who knows the URL
+             * reaches them, and the menus decide only what is offered, not who
+             * may look. The services, grid, bus and logs reads are refused by
+             * their BFF routes unless the session acts on the deployment, so
+             * that reachability is enforced where the data is. The hub, the
+             * roster, the grid, the bus and the logs are grids, so they take
+             * the width; the versions panels are a column of detail, so they
+             * keep the default.
              */}
             <Route
                 path="/operations"
@@ -338,6 +342,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <GridPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/bus"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <BusPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/operations/logs"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <LogsPage />
                     ),
                     'workspace',
                 )}
@@ -621,6 +649,16 @@ export function AppRoutes({
                     (view) => (
                         <RequestDetailPage me={view.username} />
                     ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/requests/:id/story"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => <RequestStoryPage me={view.username} />,
                     'workspace',
                 )}
             />

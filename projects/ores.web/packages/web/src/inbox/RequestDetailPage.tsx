@@ -38,9 +38,10 @@ import { askedFor, stateLabel } from './words.js';
  * One request, and the answer to it.
  *
  * What the role would let the person do is the whole point of the screen: the
- * administrator decides on the bundle, not on the role's name. There is no
- * single-request read, so the queue is read and the row is found in it; the
- * queue carries the roles the person may not read for themselves.
+ * administrator decides on the bundle, not on the role's name. The request is
+ * read on its own, so a notice that names a request already answered still
+ * opens it; the roles it asks for arrive with it, through the read IAM keeps
+ * for the person who asked.
  *
  * The role request kind cannot be held, so the two answers offered are yes and
  * no. A refusal needs a reason the person will read, so the control stays
@@ -49,21 +50,24 @@ import { askedFor, stateLabel } from './words.js';
 export function RequestDetailPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
-    const queue = useQuery({
-        queryKey: ['request-queue'],
-        queryFn: () => api.requestQueue({ offset: 0, limit: 100 }),
+    // The request is read on its own rather than looked up in the queue: a
+    // notice carries the request it is about, and a notice is read after the
+    // request stopped waiting, so the queue would not hold it.
+    const detail = useQuery({
+        queryKey: ['request', id],
+        queryFn: () => api.request(id),
     });
     const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
 
-    if (queue.isError) {
-        return <Notice tone="error">{queue.error.message}</Notice>;
+    if (detail.isError) {
+        return <Notice tone="error">{detail.error.message}</Notice>;
     }
-    if (queue.isPending) {
+    if (detail.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    const request = queue.data.items.find((candidate) => candidate.id === id);
-    if (request === undefined) {
+    const request = detail.data;
+    if (request === null || request === undefined) {
         return <Notice tone="warn">{t('inbox.request.notFound')}</Notice>;
     }
     return (
@@ -105,7 +109,6 @@ function Request({
                 roles.find((candidate) => candidate.id === role.roleId)?.permissionCodes ?? [],
         ),
     );
-    const named = request.roles[0];
     const self = request.requestedBy === me;
     const open = request.stateCode === 'waiting' || request.stateCode === 'held';
     const refusedWithoutReason = comment.trim() === '';
@@ -126,25 +129,33 @@ function Request({
     return (
         <div className="space-y-6">
             <nav className="flex items-center gap-2 text-sm text-ink-muted">
-                <Link to="/requests" className="hover:text-ink">
-                    {t('inbox.queue.title')}
+                {/* Back to where this reader works. A member has no queue and
+                    an empty one would send them nowhere, so their own request
+                    goes back to the screen that lists their own requests. */}
+                <Link to={self ? '/access' : '/requests'} className="hover:text-ink">
+                    {self ? t('shell.menu.access') : t('inbox.queue.title')}
                 </Link>
-                <span aria-hidden>/</span>
-                <span className="text-ink">
-                    {named === undefined ? request.requestedBy : named.name}
-                </span>
+                {/* The whole story of this request, which is the same request
+                    read across every table it wrote rather than one at a time. */}
+                <Link
+                    to={`/requests/${encodeURIComponent(request.id)}/story`}
+                    className="ml-auto hover:text-ink"
+                >
+                    {t('inbox.story.request')}
+                </Link>
             </nav>
 
             <PageHeader
-                title={t('inbox.request.title', {
-                    who: request.requestedBy,
-                    role: askedFor(t, request),
-                })}
+                title={t('inbox.request.title', { role: askedFor(t, request) })}
                 description={t('inbox.request.lead', {
                     state: stateLabel(t, request.stateCode),
                     date: formatDateTime(request.requestedAt, language),
                 })}
             />
+            {/* The identifier is here for the person who has to quote it, and
+                nowhere else on the page: what the request is about is the
+                title, and the identifier is not what anybody reads it for. */}
+            <p className="-mt-4 text-xs text-ink-faint">{t('inbox.request.id', { id: request.id })}</p>
 
             {decide.isError && <Notice tone="error">{decide.error.message}</Notice>}
 
@@ -156,16 +167,22 @@ function Request({
                 />
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                        {request.requestedBy}
+                        {self ? t('inbox.request.you') : request.requestedBy}
                         <RequestStateChip stateCode={request.stateCode} />
                     </div>
-                    <div className="text-xs text-ink-muted">
-                        {request.expiresAt === ''
-                            ? t('inbox.request.noDeadline')
-                            : t('inbox.request.expires', {
-                                  at: formatDateTime(request.expiresAt, language),
-                              })}
-                    </div>
+                    {/* A deadline only means something while the request is
+                        still waiting. Once it has an answer the deadline has
+                        passed out of the story, and showing it says the
+                        opposite: that the request is still running. */}
+                    {open && (
+                        <div className="text-xs text-ink-muted">
+                            {request.expiresAt === ''
+                                ? t('inbox.request.noDeadline')
+                                : t('inbox.request.expires', {
+                                      at: formatDateTime(request.expiresAt, language),
+                                  })}
+                        </div>
+                    )}
                 </div>
             </section>
 

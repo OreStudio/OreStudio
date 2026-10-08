@@ -210,7 +210,6 @@ const fr: SourceCatalogue = {
             marketdata: 'Données de marché',
             synthetic: 'Données synthétiques',
             assets: 'Ressources',
-            workspace: 'Espaces de travail',
             workflow: 'Flux de travail',
             variability: 'Indicateurs de fonctionnalité',
             telemetry: 'Télémétrie',
@@ -224,7 +223,7 @@ const fr: SourceCatalogue = {
         state: {
             waiting: 'En attente',
             held: 'En suspens',
-            approved: 'Accordé',
+            approved: 'Approuvé',
             refused: 'Refusé',
             withdrawn: 'Retiré',
             expired: 'Expiré',
@@ -274,8 +273,31 @@ const fr: SourceCatalogue = {
             answered: 'Répondues',
             by: 'par {decider}',
         },
+        story: {
+            title: "L'histoire de {role}",
+            lead: '{state}, demandé le {date}. Chaque ligne écrite par la demande, la plus récente en premier.',
+            request: 'La demande',
+            answerNotShown:
+                "Cette demande a une réponse, et la réponse n'est pas à vous. Les étapes de celui qui a répondu ne sont pas montrées.",
+            source: {
+                'ores.inbox.approval_request': 'la demande',
+                'ores.inbox.approval_decision': 'la réponse',
+                'ores.inbox.notification': 'la notification',
+                'ores.iam.role_grant_request_role': 'le rôle',
+            },
+            kind: {
+                raised: 'Créée',
+                changed: 'Déplacée',
+                asked: 'Demandé',
+                told: 'Notifié',
+                decided: 'Répondu',
+                granted: 'Accordé',
+            },
+        },
         request: {
-            title: '{who} demande {role}',
+            title: 'Demande {role}',
+            id: 'Demande {id}',
+            you: 'Vous',
             lead: '{state}, demandé le {date}.',
             noDeadline: 'Aucune échéance.',
             expires: 'Expire le {at}.',
@@ -289,7 +311,7 @@ const fr: SourceCatalogue = {
             give: 'Accorder {role}',
             refuse: 'Refuser',
             decided: 'Décidée',
-            notFound: "Cette demande n'est pas dans la file. Elle a peut-être déjà été tranchée.",
+            notFound: "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
         },
     },
 
@@ -299,6 +321,9 @@ const fr: SourceCatalogue = {
         'Votre demande de {kind} est {state}. {decider} a écrit : {comment}',
     'notification.inbox.approval_expired':
         'Votre demande de {kind} a expiré avant que quiconque y réponde. Demandez-la de nouveau si vous en avez encore besoin.',
+
+    'notification.inbox.approval_expiring':
+        'Une demande de {kind} est due avant le {deadline} et personne n\'y a répondu.',
 
     signIns: {
         title: 'Connexions',
@@ -1015,6 +1040,154 @@ const fr: SourceCatalogue = {
                 oneTenant: {
                     title: 'Les compteurs du résumé sont ceux d’un seul locataire',
                     body: 'Le tableau des nœuds est celui de l’installation, mais les compteurs au-dessus ne le sont pas. Ils sont calculés par ores_compute_grid_stats_fn(p_tenant_id), qui filtre chaque comptage — hôtes, résultats, unités de travail et lots — par le locataire qui lui est transmis, et le collecteur lui transmet son propre locataire de session. La lecture qui en ferait l’usage propre de l’installation est le grand livre que construit « Rendre compte de l’usage de la grille », et il n’est pas construit. Tant qu’il ne l’est pas, l’écran énonce que les compteurs sont calculés pour un seul locataire plutôt que de les présenter comme le travail de tous les locataires.',
+                },
+            },
+        },
+        bus: {
+            title: 'Opérations : bus de messages',
+            description: 'Les signes vitaux du serveur NATS et une ligne par flux.',
+            range: {
+                label: 'Plage',
+                apply: 'Appliquer',
+                '15m': '15 dernières minutes',
+                '1h': 'Dernière heure',
+                '6h': '6 dernières heures',
+            },
+            units: {
+                mib: '{value} Mo',
+            },
+            vitals: {
+                title: 'Serveur NATS',
+                newestSample: 'échantillon le plus récent {at}',
+                connections: 'Connexions',
+                memory: 'Mémoire',
+                slowConsumers: 'Consommateurs lents',
+                totals: 'Totaux depuis le démarrage',
+                totalsValue: '{inMsgs} entrant · {outMsgs} sortant',
+                movement:
+                    'Sur {from}–{to} : +{inMsgs} messages entrants, +{outMsgs} sortants, {inBytes} entrants et {outBytes} sortants. Les totaux eux-mêmes sont des totaux cumulés depuis le démarrage du serveur NATS.',
+                noSamples:
+                    'La plage ne contient aucun échantillon. Le service de télémétrie prend un échantillon toutes les 30 secondes ; une plage vide renvoie d’abord à son collecteur.',
+            },
+            streams: {
+                title: 'Flux',
+                count: '{count} flux',
+                noSamples: 'aucun échantillon dans la plage',
+                empty: 'Aucun échantillon de flux dans la plage. L’écran dessine une ligne pour chaque flux qu’il lit ; aucune lecture ne liste les flux qui ont des échantillons, donc un flux hors de cette liste n’est pas montré.',
+                columns: {
+                    stream: 'Flux',
+                    messages: 'Messages stockés',
+                    bytes: 'Octets stockés',
+                    consumers: 'Consommateurs',
+                },
+            },
+            trend: {
+                title: 'Tendance',
+                lead: 'messages entrants, sur la plage',
+                caption: 'Messages entrants sur la plage, d’après la série d’échantillons.',
+                note: 'Tracée à partir des échantillons que la plage renvoie. L’écran calcule lui-même le mouvement : les compteurs sont des totaux cumulés, et aucune opération n’envoie de taux.',
+            },
+            gap: {
+                names: {
+                    title: 'Rien ne liste les flux',
+                    body: 'La lecture de flux nomme un seul flux, et aucune lecture ne dit quels flux existent ou ont des échantillons, donc le tableau dépend de noms venus d’ailleurs. Le candidat est une lecture des noms de flux présents dans la plage, pour que l’écran dessine son propre tableau.',
+                },
+                rates: {
+                    title: 'Les taux sont laissés au lecteur',
+                    body: 'Chaque champ de message et d’octet est un total cumulé depuis le démarrage du serveur, donc chaque lecteur soustrait deux échantillons pour obtenir un taux, et chaque lecteur doit soustraire de la même façon. Le candidat est que la lecture réponde des deltas ou des taux sur la plage à côté des totaux.',
+                },
+                limit: {
+                    title: 'La limite tronque en silence',
+                    body: 'La requête porte une limite — 1000 par défaut — et ni décalage ni total. À l’intervalle de collecte de 30 secondes, la limite couvre environ huit heures, donc une plage d’une semaine répond les 1000 échantillons les plus récents et ne dit rien du reste. Les candidats sont la pagination, un total sur la réponse, ou un énoncé explicite que la réponse est plafonnée.',
+                },
+                slowConsumer: {
+                    title: 'Un compteur de consommateurs lents ne peut pas nommer le consommateur',
+                    body: 'L’échantillon conserve un comptage cumulé, et l’API de supervision sait quelle connexion est lente. L’écran peut montrer que des consommateurs lents existent, pas lesquels. Le candidat est un détail par connexion sur l’échantillon, ou un comptage courant à côté du total.',
+                },
+                permission: {
+                    title: 'Les lectures ne vérifient aucune permission',
+                    body: 'Les gestionnaires authentifient le jeton puis servent tout compte connecté. Le candidat est une permission dédiée que le modèle garde, comme les lectures de locataire gardent iam::tenants:read. Le manque n’est pas propre à ces lectures (Rien ne garde un gestionnaire d’opération écrit à la main).',
+                },
+            },
+        },
+        logs: {
+            title: 'Opérations : journaux de télémétrie',
+            description:
+                'Les lignes derrière un symptôme, trouvées par heure, niveau, source, composant, étiquette ou message.',
+            readAt: 'Lu à {at}',
+            range: {
+                label: 'Plage',
+                '15m': '15 dernières minutes',
+                '1h': 'Dernière heure',
+                '6h': '6 dernières heures',
+                '24h': '24 dernières heures',
+            },
+            level: {
+                label: 'Niveau',
+                any: 'Tous les niveaux',
+            },
+            source: {
+                label: 'Source',
+                any: 'Toutes les sources',
+            },
+            component: {
+                label: 'Composant',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Étiquette',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Message',
+                placeholder: 'Rechercher dans le message',
+            },
+            search: 'Rechercher',
+            columns: {
+                time: 'Heure',
+                level: 'Niveau',
+                source: 'Source',
+                name: 'Nom',
+                component: 'Composant',
+                message: 'Message',
+            },
+            entries: {
+                title: 'Entrées',
+                count: '{shown} sur {total}',
+                showing: 'Affichage de {from}–{to} sur {total} entrées',
+                previous: 'Précédent',
+                next: 'Suivant',
+                paging:
+                    'La lecture répond une page à la fois ; le total est tout ce que le filtre correspond.',
+                nothingMatches: 'Aucune correspondance',
+                empty: 'Aucune entrée ne correspond au filtre dans cette plage. Élargissez la plage ou retirez un filtre.',
+                emptyHint:
+                    'Les filtres se combinent avec AND, chacun réduit donc la réponse, et le magasin ne contient aujourd’hui que des lignes serveur.',
+            },
+            gap: {
+                client: {
+                    title: 'Le magasin ne contient aucune ligne client',
+                    body: 'La requête filtre par source, et le seul éditeur est le wrapper de calcul, dont le service marque les lots comme entrées serveur. Rien ne publie d’entrées client aujourd’hui, bien que l’énumération et le filtre les prennent tous deux en charge. Tant qu’un éditeur client n’existe pas, l’écran ne doit pas offrir une valeur de filtre qui ne peut jamais correspondre.',
+                },
+                and: {
+                    title: 'Les filtres ne sont que AND',
+                    body: 'Il n’existe aucun moyen de demander un niveau ou un autre, ni d’exclure un composant. Le candidat est un moyen d’exprimer une disjonction dans la requête par ailleurs conjonctive.',
+                },
+                suggest: {
+                    title: 'Rien ne suggère les valeurs de filtre',
+                    body: 'Le composant, l’étiquette, le nom de source et le niveau se saisissent de mémoire, et une faute de frappe répond une page vide qui ressemble à un système calme. Le candidat est une lecture des valeurs présentes dans la plage, pour que l’écran offre les vrais composants et étiquettes.',
+                },
+                sql: {
+                    title: 'Les filtres message et composant sont construits comme du texte SQL',
+                    body: 'La requête interpole ces deux filtres dans des motifs LIKE avec un échappeur écrit à la main, alors que tous les autres dépôts lient leurs valeurs (The telemetry log query escapes SQL by hand). C’est un défaut sous la lecture, pas une fonctionnalité manquante : liez les valeurs avant qu’un écran ne s’appuie sur elles.',
+                },
+                stats: {
+                    title: 'Les agrégats stockés n’ont pas de sujet',
+                    body: 'La base de données calcule déjà des statistiques horaires, quotidiennes et par session, et aucune lecture ne les sert (Expose the telemetry stats surface). Un graphique du nombre de lignes dans le temps — « quand les erreurs ont-elles commencé » — est la première chose qu’un opérateur demande après le tableau.',
+                },
+                permission: {
+                    title: 'La lecture ne vérifie aucune permission',
+                    body: 'Le gestionnaire authentifie le jeton puis sert n’importe quel compte connecté. Le candidat est une permission dédiée que le modèle garde, comme les lectures de locataires gardent iam::tenants:read. Le manque n’est pas propre à cette lecture (Nothing gates a hand-written operation handler).',
                 },
             },
         },

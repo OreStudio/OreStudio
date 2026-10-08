@@ -63,14 +63,20 @@ export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
         to: '/operations/services',
     },
     // Read the telemetry logs.
-    '57C4B9A6-DA79-403E-984E-50D2561352B3': { titleKey: 'operations.journeys.logs' },
+    '57C4B9A6-DA79-403E-984E-50D2561352B3': {
+        titleKey: 'operations.journeys.logs',
+        to: '/operations/logs',
+    },
     // Watch the compute grid.
     '7B820710-161C-4926-B5AA-5EF2772A3652': {
         titleKey: 'operations.journeys.grid',
         to: '/operations/grid',
     },
     // Watch the message bus.
-    'EE26E58C-F389-4E82-BF96-EC5324F9F795': { titleKey: 'operations.journeys.bus' },
+    'EE26E58C-F389-4E82-BF96-EC5324F9F795': {
+        titleKey: 'operations.journeys.bus',
+        to: '/operations/bus',
+    },
     // Check the versions and the database.
     'C3D59907-9D6A-448C-9A61-9E750755BBFB': {
         titleKey: 'operations.journeys.versions',

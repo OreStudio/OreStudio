@@ -111,7 +111,6 @@ begin
                 'version_conflict',
                 'badge_mappings',
                 'code_domain_code',
-                new.code_domain_code::text,
                 new.version::text,
                 current_version::text);
         end if;

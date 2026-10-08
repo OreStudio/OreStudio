@@ -25,11 +25,37 @@
 #include "ores.synthetic.core/repository/yield_curve_process_type_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
+#include "ores.database/repository/stated_order.hpp"
+#include "ores.database/repository/valid_at.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_type.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_type_entity.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_type_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <sqlgen/postgres.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <optional>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
+#include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
+#include <sqlgen/limit.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/offset.hpp>
+#include <sqlgen/order_by.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::synthetic::repository {
 
@@ -40,6 +66,49 @@ using namespace ores::database::repository;
 
 std::string yield_curve_process_type_repository::sql() {
     return generate_create_table_sql<yield_curve_process_type_entity>(lg());
+}
+
+bool yield_curve_process_type_repository::is_sortable(std::string_view field) {
+    const std::initializer_list<std::string_view> sortable = {};
+    return std::ranges::find(sortable, field) != sortable.end();
+}
+
+namespace {
+
+/*
+ * The order a page is read in. An empty field is the default order, which
+ * the stated direction reverses; any other field must be sortable, because
+ * the service refuses the rest before it reaches the store.
+ */
+sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+                                    std::initializer_list<std::string> default_columns,
+                                    bool default_descending) {
+    if (order.field.empty())
+        return make_order(default_columns, default_descending != order.descending, {"code"});
+    if (!yield_curve_process_type_repository::is_sortable(order.field))
+        throw std::invalid_argument("A list of yield curve process types cannot be ordered by " +
+                                    order.field + ".");
+    return make_order({order.field}, order.descending, {"code"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::yield_curve_process_types_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("code", std::move(values)));
+    }
+    return all_of(std::move(r));
+}
+
 }
 
 ores::utility::domain::precondition
@@ -229,42 +298,45 @@ void yield_curve_process_type_repository::remove(context ctx, const std::string&
 }
 
 std::vector<domain::yield_curve_process_type> yield_curve_process_type_repository::read_latest(
-    context ctx, std::uint32_t offset, std::uint32_t limit) {
+    context ctx,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::yield_curve_process_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest yield curve process types with offset: " << offset
                                << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<yield_curve_process_type_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       where("tenant_id"_c == tid) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<yield_curve_process_type_entity, domain::yield_curve_process_type>(
+    return execute_ordered_read_query<yield_curve_process_type_entity,
+                                      domain::yield_curve_process_type>(
         ctx,
         query,
+        list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return yield_curve_process_type_mapper::map(entities); },
         lg(),
         "Reading latest yield curve process types with pagination.");
 }
 
-std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(context ctx) {
+std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(
+    context ctx,
+    const std::optional<messaging::yield_curve_process_types_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active yield curve process type count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::select_from<yield_curve_process_type_entity>(sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+        sqlgen::read<std::vector<yield_curve_process_type_entity>> | where("tenant_id"_c == tid);
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active yield curve process type count: " << count;
-    return count;
+    return execute_count_query<yield_curve_process_type_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting yield curve process types");
 }
 
 std::vector<domain::yield_curve_process_type>

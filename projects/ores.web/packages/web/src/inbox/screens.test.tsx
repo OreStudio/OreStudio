@@ -31,6 +31,7 @@ import { AppShell } from '../components/AppShell.js';
 import { AskForRoleDialog } from './AskForRoleDialog.js';
 import { NotificationBell, notificationRoute } from './NotificationBell.js';
 import { RequestDetailPage } from './RequestDetailPage.js';
+import { RequestStoryPage } from './RequestStoryPage.js';
 import { RequestsPage } from './RequestsPage.js';
 
 /**
@@ -50,7 +51,7 @@ const CATALOGUE = [
     { code: 'refdata::currencies:read', description: 'View currencies' },
 ];
 
-/** A member's own request: no roles, because the join behind them is unreadable. */
+/** A request, as the person who raised it reads it: the roles they asked for. */
 function mine(overrides: Partial<InboxRequestView> = {}): InboxRequestView {
     return {
         id: REQUEST,
@@ -129,7 +130,8 @@ describe('a person’s own requests', () => {
         );
 
         expect(html).toContain('Your requests');
-        // The member's own row carries no roles, so the kind names it.
+        // A row that names no role falls back to the kind, which is what a
+        // request whose roles the reader may not read is drawn as.
         expect(html).toContain('Role request');
         expect(html).toContain('Waiting');
         // The moment is drawn with its time, not only its date: a clock
@@ -262,7 +264,7 @@ describe('the request queue', () => {
     it('names who asked, what for and why, and opens the request from the row', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1 });
+                client.setQueryData(['request-queue'], { items: [queued()], total: 1, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -279,7 +281,7 @@ describe('the request queue', () => {
     it('says nothing is waiting rather than drawing an empty table', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [], total: 0 });
+                client.setQueryData(['request-queue'], { items: [], total: 0, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -292,7 +294,9 @@ describe('the request queue', () => {
         const html = render(
             (client) => {
                 client.setQueryData(['request-queue'], {
-                    items: [
+                    items: [],
+                    total: 0,
+                    answered: [
                         queued({
                             stateCode: 'approved',
                             decision: {
@@ -303,17 +307,35 @@ describe('the request queue', () => {
                             },
                         }),
                     ],
-                    total: 1,
                 });
             },
             <RequestsPage />,
             '/requests',
         );
 
+        expect(html).toContain('Nothing is waiting.');
         expect(html).toContain('Answered');
-        expect(html).toContain('Given');
+        expect(html).toContain('Approved');
         expect(html).toContain('by priya');
         expect(html).toContain('Induction done.');
+    });
+
+    it('keeps a held request in the table, because nobody has answered it', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['request-queue'], {
+                    items: [queued({ stateCode: 'held' })],
+                    total: 1,
+                    answered: [],
+                });
+            },
+            <RequestsPage />,
+            '/requests',
+        );
+
+        expect(html).toContain('daniel');
+        expect(html).toContain('Held');
+        expect(html).not.toContain('Nothing is waiting.');
     });
 });
 
@@ -321,7 +343,7 @@ describe('answering one request', () => {
     function detail(me: string): string {
         return render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1 });
+                client.setQueryData(['request', REQUEST], queued());
                 client.setQueryData(
                     ['roles'],
                     [
@@ -347,7 +369,8 @@ describe('answering one request', () => {
     it('shows the requester, the role and what the role would let them do', () => {
         const html = detail('priya');
 
-        expect(html).toContain('daniel asks for Trading');
+        expect(html).toContain('Asks for Trading');
+        expect(html).toContain('daniel');
         expect(html).toContain('Trading desk access');
         expect(html).toContain('What Trading would let them do');
         expect(html).toContain('I price the FX book and cannot read currencies.');
@@ -459,5 +482,119 @@ describe('the requests menu item', () => {
 
     it('is left out of the menu for somebody who may not', () => {
         expect(shell(['refdata::currencies:read'])).not.toContain('href="/requests"');
+    });
+});
+
+/*
+ * The story of one request is the same request read across every table that
+ * wrote a row for it. What the screen promises is the order, the change each
+ * event made, and that a reader who may not read the answer is told so rather
+ * than shown a request that appears to have answered itself.
+ */
+describe('the story of one request', () => {
+    /** The request's own versions, newest first, as the server orders them. */
+    function versions(): readonly Record<string, unknown>[] {
+        return [
+            {
+                entityType: 'ores.inbox.approval_request',
+                entityId: REQUEST,
+                kind: 'changed',
+                at: '2026-10-05 10:00:00Z',
+                actor: 'priya',
+                version: 2,
+                reasonCode: 'system.update',
+                commentary: 'Decision: approve',
+                fields: [
+                    { name: 'State Code', value: 'approved' },
+                    { name: 'Reason', value: 'I price the FX book.' },
+                ],
+            },
+            {
+                entityType: 'ores.inbox.approval_request',
+                entityId: REQUEST,
+                kind: 'raised',
+                at: '2026-10-04 09:00:00Z',
+                actor: 'daniel',
+                version: 1,
+                reasonCode: 'system.new_record',
+                commentary: '',
+                fields: [
+                    { name: 'State Code', value: 'waiting' },
+                    { name: 'Reason', value: 'I price the FX book.' },
+                ],
+            },
+        ];
+    }
+
+    function story(
+        events: readonly Record<string, unknown>[],
+        stateCode = 'approved',
+        me = 'priya',
+        requestedBy = 'daniel',
+    ): string {
+        return render(
+            (client) => {
+                client.setQueryData(['request', REQUEST], queued({ stateCode, requestedBy }));
+                client.setQueryData(['request-story', REQUEST], { requestId: REQUEST, events });
+            },
+            <RequestStoryPage me={me} />,
+            `/requests/${REQUEST}/story`,
+            '/requests/:id/story',
+        );
+    }
+
+    it('draws every version of the request, newest first, with what each changed', () => {
+        const html = story(versions());
+
+        expect(html).toContain('priya');
+        expect(html).toContain('daniel');
+        expect(html).toContain('Decision: approve');
+        // A field that moved is drawn as it was and as it is, so both values
+        // are on the page; a field that did not move is drawn once.
+        expect(html).toContain('waiting');
+        expect(html).toContain('approved');
+        expect(html.match(/I price the FX book\./g)).toHaveLength(1);
+        expect(html).toContain('Raised');
+        expect(html).toContain('Moved');
+    });
+
+    it('names the answer when the reader may read it', () => {
+        const html = story([
+            ...versions(),
+            {
+                entityType: 'ores.inbox.approval_decision',
+                entityId: REQUEST,
+                kind: 'decided',
+                at: '2026-10-05 10:00:00Z',
+                actor: 'priya',
+                version: 1,
+                reasonCode: '',
+                commentary: '',
+                fields: [
+                    { name: 'Decision', value: 'approve' },
+                    { name: 'Comment', value: 'Induction done.' },
+                ],
+            },
+        ]);
+
+        expect(html).toContain('Answered');
+        expect(html).toContain('Induction done.');
+        expect(html).not.toContain('the answer is not yours to read');
+    });
+
+    it('says that the answer is not the reader to read, rather than hiding the hole', () => {
+        const html = story(versions());
+
+        expect(html).not.toContain('Answered');
+        expect(html).toContain('the answer is not yours to read');
+    });
+
+    it('sends a member back to their own access, not to a queue they do not have', () => {
+        const member = story(versions(), 'approved', 'daniel', 'daniel');
+        expect(member).toContain('href="/access"');
+        expect(member).toContain('My access');
+
+        const administrator = story(versions());
+        expect(administrator).toContain('href="/requests"');
     });
 });

@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 88A9FB9C-8F9D-4EEC-A57A-B5139F5F834C
+:END:
+#+title: Task: Configure every report ACME seeds
+#+description: ACME is seeded with report definitions and no configurations, so no seeded report can run. Walk every definition ACME carries, build the configuration its run needs from the external/ore examples, and scope each to the root portfolio. Where a root portfolio does not apply, record why. Add the SQL function that returns every book under a root portfolio, which is the population the run reads.
+#+type: task
+#+level: s1
+#+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
+#+owner: marco
+#+branch: feature/configure-the-reports-acme-seeds
+#+pr: 2847
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every report definition ACME carries resolves a report configuration, each scoped to the ACME root portfolio and shaped after the matching external/ore example, and a SQL function returns every book under a root portfolio for the run to read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- Every report definition provisioned to ACME resolves a configuration, so no run fails with 'risk_report_config not found'.
+- Each configuration is scoped to a root portfolio, or records why the root portfolio does not apply.
+- The configuration values follow the matching external/ore example under external/ore/examples.
+- A SQL function returns every book under a given root portfolio, and the report run reads the population from it.
+
+* Plan
+
+The inventory first, because the numbers decide the shape.
+
+- The seed profile =acme_demo= publishes the =risk_management= and
+  =party_essentials= bundles, and =ore.report_definitions= rides both. The
+  dataset carries 31 definitions, not the 30 its own docstring claims. The
+  publish runs per party, and provisioning publishes to the system party and
+  to each ACME company, which is where the 155 comes from.
+- Every definition is report type =risk=, and that type requires four
+  configuration types: =pricing_engines=, =todays_market=,
+  =curve_configuration= and =conventions=.
+- The run resolves a =risk_report_config= by definition id. No seed writes
+  =ores_reporting_report_configurations_tbl=, the risk config or its scope,
+  so every seeded definition is unrunnable.
+- The root portfolios are =Group Treasury Portfolio=, =Global Portfolio=,
+  =Regulatory Capital=, =ACME Corporation US Inc Global Markets= and
+  =ACME Corporation HK Ltd Global Markets=.
+- The SQL method that returns the books under a root already exists:
+  =ores_trading_get_book_ids_by_portfolio_fn= walks the portfolio subtree,
+  and =ores_reporting_resolve_book_ids_for_config_fn= already calls it for a
+  config scoped by portfolio. This task reuses both rather than adding a
+  third.
+
+Work, in order. The configuration is a standard dataset, so it arrives the
+way every other ACME datum does.
+
+1. Done in PR #2845, but in the wrong shape. =ores_reporting_seed_report_configurations_fn=
+   creates the risk report config and the root portfolio scope, and
+   =ores_reporting_analytic_flags_fn= maps each seeded report name to the
+   analytics it turns on. Both stay, but the seeder becomes the dataset's
+   publish function rather than something a caller invokes by hand.
+2. Outstanding. The artefact table. The scaffold
+   =projects/ores.dq/modeling/ores.dq.risk_report_config.org= exists and
+   needs its columns, its flags and its physical spaces, modelled on
+   =ores.dq.report_definition.org=. Regenerate to produce
+   =dq_risk_report_configs_artefact_tbl= and its C++ staging entity.
+3. Outstanding. Register the artefact type row in
+   =dq_artefact_types_populate.sql=, mirroring =report_definitions=:
+   artefact table =dq_risk_report_configs_artefact_tbl=, target table
+   =reporting_risk_report_configs_tbl=, target subject
+   =reporting.v1.ops.publish_risk_report_configs_from_dq=.
+4. Outstanding. Register the dataset and its dependencies. The dataset
+   carries the artefact type above; it depends on =ore.report_definitions=
+   for the definitions it configures, on the ORE run configuration for the
+   four documents it binds, and on the organisation datasets for the root
+   portfolio it scopes to. Declare each with a role, the way
+   =acme_dataset_dependency_populate.sql= does.
+5. Outstanding. Reshape the publish function to read the artefact table,
+   resolve each row's report definition by name for the target party, and
+   write the risk config and its scope.
+6. Outstanding. Seed the artefact rows for the 27 available reports and add
+   the dataset to the bundles.
+7. Outstanding. Extend =ores_iam_reset_tenant_fn= to wipe the configuration
+   tables, so a reset leaves a tenant in the seeded state rather than with
+   orphaned configurations.
+
+The split matters. =ores.ore= owns the run document and the four
+configuration documents, through =ore import-run=. =ores.reporting= owns the
+risk report config, the analytics and the scope, and =ores.dq= stages the
+rows that become them. An earlier draft of the seeder also wrote the
+bindings, which would have duplicated what the import already writes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Report definitions ACME is seeded with | 31, not the 30 the file's docstring says | =grep -c "^     'risk'," projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql= | 04c8a52944 |
+| Report types, so the set of required config types | 1, =risk=, which requires =pricing_engines=, =todays_market=, =curve_configuration= and =conventions= | =projects/ores.sql/populate/reporting/reporting_report_type_configuration_types_populate.sql= | 04c8a52944 |
+| Reports with every config available today | 27 unconditional, 4 conditional on a parametric VaR | investigation | 04c8a52944 |
+| ORE configuration types with no saver | 5: =simm_calibration=, =historical_return=, =basel_traffic_light=, =reference_data=, =ibor_fallback= | =projects/ores.ore/core/tests/configuration_type_seed_tests.cpp:117-121= | 04c8a52944 |
+
+* Notes
+
+The per-report analysis is
+[[id:07FC58A2-A6AB-4444-8F96-ADCA9B2985C6][What each ACME report needs to run]].
+It names the ORE files each of the 31 reports reads and which of them can be
+stored today.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2847][#2847]] | [agile,codegen] Plan the report configuration dataset |
+| [[https://github.com/OreStudio/OreStudio/pull/2846][#2846]] | [agile] Record how the report configuration work splits |
+| [[https://github.com/OreStudio/OreStudio/pull/2845][#2845]] | [reporting] Seed the report configurations a party's definitions need |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

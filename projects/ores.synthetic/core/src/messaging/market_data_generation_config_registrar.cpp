@@ -23,9 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/messaging/market_data_generation_config_registrar.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.synthetic.core/messaging/market_data_generation_config_handler.hpp"
 #include <memory>
+#include <optional>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::synthetic::messaging {
 

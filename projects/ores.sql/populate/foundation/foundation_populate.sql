@@ -175,14 +175,6 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_system_party_populate.sql
 
 -- =============================================================================
--- Workspace (Live root workspace — must come after change control and IAM)
--- =============================================================================
-
-\echo ''
-\echo '--- Workspace ---'
-\ir ../workspace/workspace_live_populate.sql
-
--- =============================================================================
 -- System Configuration (Feature Flags)
 -- =============================================================================
 

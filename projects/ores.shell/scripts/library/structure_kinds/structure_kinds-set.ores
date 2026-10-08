@@ -1,0 +1,6 @@
+# =set=
+#
+# GENERATED from doc/recipes/shell/structure_kinds/structure_kind.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+structure_kinds set __none__ __none__ false system.new_record generated_script

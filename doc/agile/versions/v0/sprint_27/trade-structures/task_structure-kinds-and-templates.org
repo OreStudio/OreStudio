@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/structure-kinds-and-templates
+#+pr: 2822
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The kinds of structure and the templates that constrain their legs are reference
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| static checks on this branch | 5 of 5 pass | =compass check --only handler-permissions --only create-reachability --only model-drift --only sql-hygiene --only populate-refs= | 62a88df679 |
+| create files the reachability check reports unreachable | 0 | =check_sql_create_reachability.py= | 62a88df679 |
+| permission codes the handler check reports unseeded | 0, from 15 | =check_handler_permissions.py= | 62a88df679 |
 
 * Notes
 
@@ -75,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2822][#2822]] | [trading] Add the structure kinds and templates |
 
 * Review
 
@@ -84,3 +86,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=structure_kind= states the four rungs of the composition ladder and which of
+them confirms as a whole. =structure_template= names its kind from that
+catalogue, and =structure_template_role= states each role's leg counts, with
+the counts checked and a maximum of zero meaning no upper bound.
+
+The seed carries the four rungs, the four common strategies the composition
+page names plus one typed product, and nine role rows. The nine handler
+permissions are seeded too, which the previous task's entities were missing.
+
+The task closed on static validation alone, with its nine pgTAP cases written
+and never executed, and the seed data verified only by inspection. A follow-up
+ran them against a rebuilt database: all nine pass, so the seed and the
+template and role constraints are now proven by execution.
+
+No build and no ctest ran on this task. The hourly build and test on main
+belongs to swift curie.

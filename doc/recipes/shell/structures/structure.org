@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 4057A3D8-11A2-5981-9A3E-B63433EF9653
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the structures commands from the shell?
+#+description: Every command the structures submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:structures:
+
+This file documents the structures resource at the shell, one section per command. Every command is a subcommand of =structures=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 42329792-D417-5831-81F1-864B3233A803
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+structures list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.structures.list=.
+
+#+name: structures-list
+#+begin_src ores-shell :tangle structures-list.ores :exports none
+structures list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 8A174011-2452-51DE-A11F-A46657D8A495
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+structures get <id>
+#+end_example
+
+It is addressed at =trading.v1.structures.get=.
+
+#+name: structures-get
+#+begin_src ores-shell :tangle structures-get.ores :exports none
+structures get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1329754B-CF25-57B8-BDD8-16F3057D4ADD
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+structures get-many <id>
+#+end_example
+
+It is addressed at =trading.v1.structures.get_many=.
+
+#+name: structures-get-many
+#+begin_src ores-shell :tangle structures-get-many.ores :exports none
+structures get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where requests live prototype — Access journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+ *{box-sizing:border-box}[hidden]{display:none!important}
+ html,body{background:var(--bg);color:var(--ink)}
+ body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+ h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+ p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+ .mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+ .wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+ .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+ .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+ .panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+ .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+ .notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+ .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+ .tag.ok{color:var(--ok);border-color:#1f4d29}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.acc{color:var(--accent);border-color:#1f3d5c}
+ .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+ .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+ .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+ .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+ .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+ /* the application shell, drawn small: the rail on the left, the screen right */
+ .shell{display:grid;grid-template-columns:15rem 1fr;gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+ .rail{background:#151519;border-right:1px solid var(--line);padding:10px 8px;display:grid;gap:2px;align-content:start}
+ .rail .brand{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);padding:4px 8px 10px}
+ .nav{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;color:var(--ink-dim);font-size:.86rem}
+ .nav:hover{background:var(--panel-2);color:var(--ink)}
+ .nav.on{background:var(--accent-dim);color:var(--ink)}
+ .nav .n{margin-left:auto;font-size:.7rem;border:1px solid var(--line);border-radius:999px;padding:0 6px;color:var(--ink-faint)}
+ .nav.sub{padding-left:22px;font-size:.82rem}
+ .nav.group{padding:10px 10px 2px;color:var(--ink-faint);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}
+ .nav.group:hover{background:none;color:var(--ink-faint)}
+ .screen{padding:16px;display:grid;gap:12px;align-content:start;min-height:22rem}
+ .screen h3{font-size:1rem}
+ .screen .lead{color:var(--ink-dim);font-size:.86rem}
+ .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:12px}
+ .card{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:6px;text-align:left}
+ .card:hover{border-color:var(--accent)}
+ .card .title{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink)}
+ .card .why{color:var(--ink-dim);font-size:.82rem}
+ .card .quiet{color:var(--ink-faint);font-size:.78rem}
+ .table{width:100%;border-collapse:collapse;font-size:.86rem}
+ .table th,.table td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+ .table th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The question: the tenant's menu says "Requests", which reads as "my requests"
+  and is actually "requests waiting for me to answer". A member never sees the
+  word at all, because the door is gated on the permission that decides one, and
+  their own requests are inside My access under no name.
+
+  Variants with ?variant=a|b|c, and ?who=admin|member for the two menus:
+  a keeps the top-level item and names it for what it is;
+  b puts requests inside Access, beside Roles, so a request reads as a role act;
+  c gives Requests a landing page of its own, with a card per kind of request.
+  Nothing here calls a service.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const who = params.get('who') || 'admin';
+
+/*
+ * The two menus as they stand, with what each door actually opens. The counts
+ * are mock: one request waits, and it is a role request raised by ashley.moore.
+ */
+const HERE = 'requests';
+
+/* Variant A: the item stays where it is and says what it holds. */
+function railA(){
+  const items = who === 'admin'
+    ? [{label:'Home'},{label:'Parties'},{label:'People'},
+       {label:'Role requests', key:HERE, count:1, tag:'renamed'},
+       {label:'Roles'},{label:'Reference data'},{label:'Rescue access'},{label:'Sign-ins'}]
+    : [{label:'Home'},{label:'People'},{label:'Reference data'},{label:'My access', key:'access'}];
+  return `<nav class="rail">
+    <div class="brand">Acme Corporation</div>
+    ${items.map(renderItem).join('')}
+  </nav>`;
+}
+
+/* Variant B: requests become part of Access, beside Roles. */
+function railB(){
+  const admin = [
+    {label:'Home'},{label:'Parties'},{label:'People'},
+    {label:'Access', group:true},
+    {label:'Roles', sub:true},
+    {label:'Role requests', sub:true, key:HERE, count:1},
+    {label:'Who has access', sub:true},
+    {label:'Reference data'},{label:'Rescue access'},{label:'Sign-ins'}
+  ];
+  const member = [
+    {label:'Home'},{label:'People'},{label:'Reference data'},
+    {label:'Access', group:true},
+    {label:'My access', sub:true, key:'access'},
+    {label:'My requests', sub:true, key:HERE}
+  ];
+  const items = who === 'admin' ? admin : member;
+  return `<nav class="rail">
+    <div class="brand">Acme Corporation</div>
+    ${items.map(renderItem).join('')}
+  </nav>`;
+}
+
+/* Variant C: Requests is a place of its own, with a card per kind. */
+function railC(){
+  const items = who === 'admin'
+    ? [{label:'Home'},{label:'Parties'},{label:'People'},
+       {label:'Requests', key:HERE, count:1},
+       {label:'Roles'},{label:'Reference data'},{label:'Rescue access'},{label:'Sign-ins'}]
+    : [{label:'Home'},{label:'People'},{label:'Reference data'},
+       {label:'Requests', key:HERE},
+       {label:'My access', key:'access'}];
+  return `<nav class="rail">
+    <div class="brand">Acme Corporation</div>
+    ${items.map(renderItem).join('')}
+  </nav>`;
+}
+
+function renderItem(i){
+  if (i.group) return `<span class="nav group">${i.label}</span>`;
+  const on = i.key === HERE ? ' on' : '';
+  const sub = i.sub ? ' sub' : '';
+  const n = i.count ? `<span class="n">${i.count}</span>` : '';
+  return `<a class="nav${sub}${on}" href="#">${i.label}${n}</a>`;
+}
+
+/* --- the screens ------------------------------------------------------- */
+
+/* The member never answers a request, so their door opens their own list. It is
+   the same word and a different screen, and a variant that gave both readers the
+   queue would be drawing a screen half of them cannot have. */
+function myScreen(lead){
+  return `<h3>Your requests</h3>
+    <p class="lead">${lead}</p>
+    <table class="table">
+      <thead><tr><th>Asked for</th><th>Why you asked</th><th>State</th><th>Answered by</th></tr></thead>
+      <tbody>
+        <tr><td>Trading</td><td>Covers the FX desk</td><td><span class="tag warn">waiting</span></td><td class="faint">nobody yet</td></tr>
+        <tr><td>ReportRun</td><td>Runs the morning report</td><td><span class="tag ok">approved</span></td><td>priya.nair</td></tr>
+      </tbody>
+    </table>`;
+}
+
+function queueScreen(lead){
+  return `<h3>The role requests waiting for an answer</h3>
+    <p class="lead">${lead}</p>
+    ${queueTable()}`;
+}
+
+function forReader(adminSlide, memberLead){
+  return who === 'admin' ? adminSlide : myScreen(memberLead);
+}
+
+const SCREENS = {
+  a: forReader(queueScreen(`The item is still top level, and it now says what it opens. A
+      person who reads the menu without knowing the system cannot mistake it for their own
+      list.`),
+      `The same word, and the person's own list behind it. Today this lives inside My access,
+      under no heading of its own.`),
+  b: forReader(queueScreen(`Requests sit under Access, beside Roles, so a request reads as
+      what it is: an act on a role.`),
+      `Requests sit under Access, so what a person asked for reads as an act on a role, beside
+      the roles they already hold.`),
+  c: `<h3>Requests</h3>
+      <p class="lead">A landing page rather than a queue: one card per kind of request this
+      person may act on, and their own underneath.</p>
+      <div class="cards">
+        <a class="card" href="#">
+          <span class="title">Role requests <span class="tag warn">1 waiting</span></span>
+          <span class="why">A person asks for a role beyond the one they hold; a tenant
+          administrator answers.</span>
+          <span class="quiet">The only kind the system raises today</span>
+        </a>
+        <a class="card" href="#">
+          <span class="title">Publish approvals <span class="tag">none yet</span></span>
+          <span class="why">A curve or surface is published to the tenant only after somebody
+          else agrees.</span>
+          <span class="quiet">Designed, not built</span>
+        </a>
+        <a class="card" href="#">
+          <span class="title">My requests <span class="tag ok">2</span></span>
+          <span class="why">What you have asked for, and what came of it.</span>
+          <span class="quiet">Already exists, inside My access</span>
+        </a>
+      </div>
+      <div class="notice">One card is thin. The question this variant answers is whether the
+      system is heading for several kinds of request, and whether the landing page is worth
+      building before the second one exists.</div>`,
+};
+
+function queueTable(){
+  return `
+    <table class="table">
+      <thead><tr><th>Who</th><th>Asked for</th><th>Why</th><th>Waiting</th></tr></thead>
+      <tbody>
+        <tr><td>ashley.moore</td><td>Trading</td><td>Covers the FX desk</td><td class="mono">2 days</td></tr>
+      </tbody>
+    </table>`;
+}
+
+function header(){
+  return `
+  <div class="top">
+    <h1>Where requests live</h1>
+    ${who === 'admin' ? '<span class="tag">tenant administrator</span>' : '<span class="tag">member</span>'}
+    <span class="faint" style="margin-left:auto">variant ${variant.toUpperCase()}</span>
+  </div>
+  <div class="panel">
+    <h2>What the word has to do</h2>
+    <div class="row">
+      <div style="flex:1;min-width:16rem" class="notice">An administrator reads <em>Requests</em>
+      and hears <em>my requests</em>. It is the opposite: what other people have asked them to
+      answer. A member never sees the word at all, so the thing they raised has no name of its
+      own outside My access.</div>
+      <div style="flex:1;min-width:16rem" class="notice">The door is gated on
+      <span class="mono">iam::roles:assign</span>, which is the permission that <em>decides</em>
+      a role request. A system administration tenant has no such door, and never will.</div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const rail_ = variant === 'b' ? railB() : variant === 'c' ? railC() : railA();
+  const screen = `<section class="screen">${SCREENS[variant]}</section>`;
+  document.getElementById('app').innerHTML =
+    header() + `<div class="shell">${rail_}${screen}</div>` +
+    `<div class="notice">Mock data. The menus, their order and the permission that gates the
+    door are the ones the shell declares today.</div>`;
+  document.getElementById('note').textContent =
+    `Prototype \u00b7 where requests live \u00b7 variant ${variant.toUpperCase()} \u00b7 reading as the ${who} \u00b7 mock data, no service is called`;
+  document.getElementById('bar').innerHTML =
+    `<span class="label">Variant</span>` +
+    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
+    `<span class="sep">|</span><span class="label">Menu</span>` +
+    ['admin','member'].map(s => `<button data-s="${s}" class="${s===who?'on':''}">${s}</button>`).join('');
+  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
+  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('who', b.dataset.s));
+}
+function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+render();
+</script>
+</body>
+</html>

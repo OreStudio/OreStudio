@@ -39,6 +39,7 @@ export interface CounterpartyIdentifierWrite {
     id_scheme: string;
     id_value: string;
     description: string;
+    is_authoritative: boolean;
 }
 
 export interface CounterpartyIdentifierChange {

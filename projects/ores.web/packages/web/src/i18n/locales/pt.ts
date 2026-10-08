@@ -213,7 +213,6 @@ const pt: SourceCatalogue = {
             marketdata: 'Dados de mercado',
             synthetic: 'Dados sintéticos',
             assets: 'Recursos',
-            workspace: 'Espaços de trabalho',
             workflow: 'Fluxos de trabalho',
             variability: 'Sinalizadores de funcionalidade',
             telemetry: 'Telemetria',
@@ -227,7 +226,7 @@ const pt: SourceCatalogue = {
         state: {
             waiting: 'À espera',
             held: 'Suspenso',
-            approved: 'Concedido',
+            approved: 'Aprovado',
             refused: 'Recusado',
             withdrawn: 'Retirado',
             expired: 'Expirado',
@@ -276,8 +275,31 @@ const pt: SourceCatalogue = {
             answered: 'Respondidos',
             by: 'por {decider}',
         },
+        story: {
+            title: 'A história de {role}',
+            lead: '{state}, pedido em {date}. Cada linha escrita pelo pedido, a mais recente primeiro.',
+            request: 'O pedido',
+            answerNotShown:
+                'Este pedido tem resposta, e a resposta não é sua para ler. Os passos de quem respondeu não são mostrados.',
+            source: {
+                'ores.inbox.approval_request': 'o pedido',
+                'ores.inbox.approval_decision': 'a resposta',
+                'ores.inbox.notification': 'a notificação',
+                'ores.iam.role_grant_request_role': 'a função',
+            },
+            kind: {
+                raised: 'Criado',
+                changed: 'Movido',
+                asked: 'Pedido',
+                told: 'Notificado',
+                decided: 'Respondido',
+                granted: 'Concedido',
+            },
+        },
         request: {
-            title: '{who} pede {role}',
+            title: 'Pede {role}',
+            id: 'Pedido {id}',
+            you: 'Você',
             lead: '{state}, pedido a {date}.',
             noDeadline: 'Sem prazo.',
             expires: 'Expira a {at}.',
@@ -290,7 +312,7 @@ const pt: SourceCatalogue = {
             give: 'Conceder {role}',
             refuse: 'Recusar',
             decided: 'Decidido',
-            notFound: 'Este pedido não está na fila. Pode já ter sido respondido.',
+            notFound: 'Este pedido não está aqui. Pode ter sido retirado, ou pode não ser seu.',
         },
     },
 
@@ -300,6 +322,9 @@ const pt: SourceCatalogue = {
         'O seu pedido de {kind} está {state}. {decider} escreveu: {comment}',
     'notification.inbox.approval_expired':
         'O seu pedido de {kind} expirou antes de alguém responder. Peça de novo se ainda precisar dele.',
+
+    'notification.inbox.approval_expiring':
+        'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
 
     signIns: {
         title: 'Inícios de sessão',
@@ -1008,6 +1033,154 @@ const pt: SourceCatalogue = {
                 oneTenant: {
                     title: 'Os contadores do resumo são de um único locatário',
                     body: 'A tabela de nós é a da instalação, mas os contadores acima não o são. São calculados por ores_compute_grid_stats_fn(p_tenant_id), que filtra cada contagem — anfitriões, resultados, unidades de trabalho e lotes — pelo locatário que lhe é entregue, e o coletor entrega-lhe o seu próprio locatário de sessão. A leitura que os tornaria o uso próprio da instalação é o registo que «Contabilizar o uso da grelha» constrói, e não está construído. Até estar, o ecrã indica que os contadores são calculados para um único locatário em vez de os apresentar como o trabalho de todos os locatários.',
+                },
+            },
+        },
+        bus: {
+            title: 'Operações: barramento de mensagens',
+            description: 'Os sinais vitais do servidor NATS e uma linha por fluxo.',
+            range: {
+                label: 'Intervalo',
+                apply: 'Aplicar',
+                '15m': 'Últimos 15 minutos',
+                '1h': 'Última hora',
+                '6h': 'Últimas 6 horas',
+            },
+            units: {
+                mib: '{value} MB',
+            },
+            vitals: {
+                title: 'Servidor NATS',
+                newestSample: 'amostra mais recente {at}',
+                connections: 'Ligações',
+                memory: 'Memória',
+                slowConsumers: 'Consumidores lentos',
+                totals: 'Totais desde o arranque',
+                totalsValue: '{inMsgs} entrada · {outMsgs} saída',
+                movement:
+                    'Entre {from}–{to}: +{inMsgs} mensagens de entrada, +{outMsgs} de saída, {inBytes} de entrada e {outBytes} de saída. Os próprios totais são totais acumulados desde o arranque do servidor NATS.',
+                noSamples:
+                    'O intervalo não contém amostras. O serviço de telemetria recolhe uma amostra a cada 30 segundos; um intervalo vazio aponta primeiro para o seu coletor.',
+            },
+            streams: {
+                title: 'Fluxos',
+                count: '{count} fluxos',
+                noSamples: 'sem amostras no intervalo',
+                empty: 'Nenhuma amostra de fluxo no intervalo. O ecrã desenha uma linha por cada fluxo que lê; nenhuma leitura lista os fluxos que têm amostras, por isso um fluxo fora dessa lista não é mostrado.',
+                columns: {
+                    stream: 'Fluxo',
+                    messages: 'Mensagens guardadas',
+                    bytes: 'Bytes guardados',
+                    consumers: 'Consumidores',
+                },
+            },
+            trend: {
+                title: 'Tendência',
+                lead: 'mensagens de entrada, ao longo do intervalo',
+                caption: 'Mensagens de entrada ao longo do intervalo, a partir da série de amostras.',
+                note: 'Desenhada a partir das amostras que o intervalo devolve. O ecrã calcula o movimento sozinho: os contadores são totais acumulados, e nenhuma operação envia uma taxa.',
+            },
+            gap: {
+                names: {
+                    title: 'Nada lista os fluxos',
+                    body: 'A leitura de fluxos nomeia um fluxo, e nenhuma leitura diz que fluxos existem ou têm amostras, por isso a tabela depende de nomes vindos de outro sítio. O candidato é uma leitura dos nomes de fluxos presentes no intervalo, para o ecrã desenhar a sua própria tabela.',
+                },
+                rates: {
+                    title: 'As taxas ficam para o leitor',
+                    body: 'Cada campo de mensagem e de bytes é um total acumulado desde o arranque do servidor, por isso cada leitor subtrai duas amostras para obter uma taxa, e cada leitor tem de subtrair da mesma forma. O candidato é a leitura responder deltas ou taxas sobre o intervalo ao lado dos totais.',
+                },
+                limit: {
+                    title: 'O limite trunca em silêncio',
+                    body: 'A consulta tem um limite — 1000 por predefinição — e nem deslocamento nem total. Ao intervalo de recolha de 30 segundos, o limite cobre cerca de oito horas, por isso um intervalo de uma semana responde as 1000 amostras mais recentes e nada diz sobre o resto. Os candidatos são a paginação, um total na resposta, ou uma declaração explícita de que a resposta está limitada.',
+                },
+                slowConsumer: {
+                    title: 'Um contador de consumidores lentos não nomeia o consumidor',
+                    body: 'A amostra guarda uma contagem acumulada, e a API de monitorização sabe qual ligação está lenta. O ecrã pode mostrar que existem consumidores lentos, não quais. O candidato é detalhe por ligação na amostra, ou uma contagem atual ao lado do total.',
+                },
+                permission: {
+                    title: 'As leituras não verificam qualquer permissão',
+                    body: 'Os gestores autenticam o token e depois servem qualquer conta com sessão. O candidato é uma permissão dedicada que o modelo guarda, como as leituras de locatário guardam iam::tenants:read. A lacuna não é só destas leituras (Nada guarda um gestor de operação escrito à mão).',
+                },
+            },
+        },
+        logs: {
+            title: 'Operações: registos de telemetria',
+            description:
+                'As linhas por trás de um sintoma, encontradas por hora, nível, origem, componente, etiqueta ou mensagem.',
+            readAt: 'Lido às {at}',
+            range: {
+                label: 'Intervalo',
+                '15m': 'Últimos 15 minutos',
+                '1h': 'Última hora',
+                '6h': 'Últimas 6 horas',
+                '24h': 'Últimas 24 horas',
+            },
+            level: {
+                label: 'Nível',
+                any: 'Qualquer nível',
+            },
+            source: {
+                label: 'Origem',
+                any: 'Qualquer origem',
+            },
+            component: {
+                label: 'Componente',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Etiqueta',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Mensagem',
+                placeholder: 'Pesquisar na mensagem',
+            },
+            search: 'Pesquisar',
+            columns: {
+                time: 'Hora',
+                level: 'Nível',
+                source: 'Origem',
+                name: 'Nome',
+                component: 'Componente',
+                message: 'Mensagem',
+            },
+            entries: {
+                title: 'Entradas',
+                count: '{shown} de {total}',
+                showing: 'A mostrar {from}–{to} de {total} entradas',
+                previous: 'Anterior',
+                next: 'Seguinte',
+                paging:
+                    'A leitura responde uma página de cada vez; o total é tudo o que o filtro corresponde.',
+                nothingMatches: 'Nada corresponde',
+                empty: 'Nenhuma entrada corresponde ao filtro neste intervalo. Alargue o intervalo ou remova um filtro.',
+                emptyHint:
+                    'Os filtros combinam com AND, por isso cada um reduz a resposta, e o armazém contém hoje apenas linhas de servidor.',
+            },
+            gap: {
+                client: {
+                    title: 'O armazém não contém linhas de cliente',
+                    body: 'A consulta filtra por origem, e o único publicador é o wrapper de cálculo, cujos lotes o serviço marca como entradas de servidor. Nada publica entradas de cliente hoje, embora a enumeração e o filtro suportem ambas. Enquanto não existir um publicador de cliente, o ecrã não deve oferecer um valor de filtro que nunca pode corresponder.',
+                },
+                and: {
+                    title: 'Os filtros são apenas AND',
+                    body: 'Não há forma de pedir um nível ou outro, nem de excluir um componente. O candidato é uma forma de exprimir uma disjunção dentro da consulta, de resto conjuntiva.',
+                },
+                suggest: {
+                    title: 'Nada sugere os valores de filtro',
+                    body: 'O componente, a etiqueta, o nome da origem e o nível escrevem-se de memória, e um erro de escrita responde uma página vazia que parece um sistema calmo. O candidato é uma leitura dos valores presentes no intervalo, para o ecrã oferecer os componentes e etiquetas reais.',
+                },
+                sql: {
+                    title: 'Os filtros de mensagem e componente são construídos como texto SQL',
+                    body: 'A consulta interpola esses dois filtros em padrões LIKE com um escape escrito à mão, quando todos os outros repositórios vinculam os seus valores (The telemetry log query escapes SQL by hand). Isto é um defeito sob a leitura, não uma funcionalidade em falta: vincule os valores antes que um ecrã se apoie neles.',
+                },
+                stats: {
+                    title: 'Os agregados armazenados não têm sujeito',
+                    body: 'A base de dados já calcula estatísticas horárias, diárias e por sessão, e nenhuma leitura as serve (Expose the telemetry stats surface). Um gráfico da contagem de linhas ao longo do tempo — «quando começaram os erros» — é a primeira coisa que um operador pede depois da tabela.',
+                },
+                permission: {
+                    title: 'A leitura não verifica qualquer permissão',
+                    body: 'O gestor autentica o token e depois serve qualquer conta com sessão. O candidato é uma permissão dedicada que o modelo guarda, como as leituras de locatário guardam iam::tenants:read. A lacuna não é só desta leitura (Nothing gates a hand-written operation handler).',
                 },
             },
         },

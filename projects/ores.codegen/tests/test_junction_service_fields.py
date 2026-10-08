@@ -151,7 +151,8 @@ def _render_scoped_service(tmp_path):
 
 def test_an_unstated_scoped_relation_is_refused(tmp_path):
     rendered = _render_scoped_service(tmp_path)
-    assert 'response.result.code = "relation_required";' in rendered
+    assert "refuse(outcome_code::relation_required" in rendered
+    assert '{.entity = "tenor schedules", .field = "calendar_code"}' in rendered
     assert "const auto relation = *request.calendar_code;" in rendered
 
 

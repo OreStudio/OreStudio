@@ -116,7 +116,7 @@ export const en: SourceCatalogue = {
             roles: 'Roles you hold',
             noRoles: 'You hold no role yet. Ask your tenant administrator.',
             canI: 'Can I…?',
-            canIHint: 'Try: delete currencies, workspaces, reset password',
+            canIHint: 'Try: delete currencies, reset password',
             yesThrough: 'Yes, through {roles}',
             no: 'No',
             whatTheyAllow: 'What your roles let you do',
@@ -214,7 +214,6 @@ export const en: SourceCatalogue = {
             marketdata: 'Market data',
             synthetic: 'Synthetic data',
             assets: 'Assets',
-            workspace: 'Workspaces',
             workflow: 'Workflow',
             variability: 'Feature flags',
             telemetry: 'Telemetry',
@@ -228,7 +227,7 @@ export const en: SourceCatalogue = {
         state: {
             waiting: 'Waiting',
             held: 'Held',
-            approved: 'Given',
+            approved: 'Approved',
             refused: 'Refused',
             withdrawn: 'Withdrawn',
             expired: 'Expired',
@@ -277,8 +276,31 @@ export const en: SourceCatalogue = {
             answered: 'Answered',
             by: 'by {decider}',
         },
+        story: {
+            title: 'The story of {role}',
+            lead: '{state}, asked {date}. Every row the request wrote, newest first.',
+            request: 'The request',
+            answerNotShown:
+                'This request has an answer, and the answer is not yours to read. The steps taken by whoever answered it are not shown.',
+            source: {
+                'ores.inbox.approval_request': 'the request',
+                'ores.inbox.approval_decision': 'the answer',
+                'ores.inbox.notification': 'the notice',
+                'ores.iam.role_grant_request_role': 'the role',
+            },
+            kind: {
+                raised: 'Raised',
+                changed: 'Moved',
+                asked: 'Asked for',
+                told: 'Told',
+                decided: 'Answered',
+                granted: 'Granted',
+            },
+        },
         request: {
-            title: '{who} asks for {role}',
+            title: 'Asks for {role}',
+            id: 'Request {id}',
+            you: 'You',
             lead: '{state}, asked {date}.',
             noDeadline: 'No deadline.',
             expires: 'Expires {at}.',
@@ -291,7 +313,7 @@ export const en: SourceCatalogue = {
             give: 'Give {role}',
             refuse: 'Refuse',
             decided: 'Decided',
-            notFound: 'This request is not in the queue. It may have been answered already.',
+            notFound: 'This request is not here. It may have been taken away, or it may not be yours to see.',
         },
     },
 
@@ -304,6 +326,9 @@ export const en: SourceCatalogue = {
         'Your request for {kind} is {state}. {decider} wrote: {comment}',
     'notification.inbox.approval_expired':
         'Your request for {kind} expired before anybody answered it. Ask again if you still need it.',
+
+    'notification.inbox.approval_expiring':
+        'A request for {kind} is due by {deadline} and nobody has answered it.',
 
     signIns: {
         title: 'Sign-ins',
@@ -1004,6 +1029,154 @@ export const en: SourceCatalogue = {
                 oneTenant: {
                     title: "The summary's counters are one tenant's",
                     body: "The node table is the installation's, but the counters above it are not. They are computed by ores_compute_grid_stats_fn(p_tenant_id), which filters every count — hosts, results, workunits and batches — by the tenant it is handed, and the poller hands it its own session tenant. The read that would make them the installation's own usage is the ledger Account for the grid's usage builds, and it is not built. Until it is, the screen states that the counters are computed for one tenant rather than presenting them as every tenant's work.",
+                },
+            },
+        },
+        bus: {
+            title: 'Operations: message bus',
+            description: "The NATS server's vitals and one row per stream.",
+            range: {
+                label: 'Range',
+                apply: 'Apply',
+                '15m': 'Last 15 minutes',
+                '1h': 'Last hour',
+                '6h': 'Last 6 hours',
+            },
+            units: {
+                mib: '{value} MB',
+            },
+            vitals: {
+                title: 'NATS server',
+                newestSample: 'newest sample {at}',
+                connections: 'Connections',
+                memory: 'Memory',
+                slowConsumers: 'Slow consumers',
+                totals: 'Totals since start',
+                totalsValue: '{inMsgs} in · {outMsgs} out',
+                movement:
+                    'Over {from}–{to}: +{inMsgs} messages in, +{outMsgs} out, {inBytes} in and {outBytes} out. The totals themselves are running totals since the NATS server started.',
+                noSamples:
+                    'The range holds no samples. The telemetry service takes one sample every 30 seconds; an empty range points at its poller first.',
+            },
+            streams: {
+                title: 'Streams',
+                count: '{count} streams',
+                noSamples: 'no samples in the range',
+                empty: 'No stream sample in the range. The screen draws a row for each stream it reads; no read lists the streams that have samples, so a stream outside that list is not shown.',
+                columns: {
+                    stream: 'Stream',
+                    messages: 'Messages stored',
+                    bytes: 'Bytes stored',
+                    consumers: 'Consumers',
+                },
+            },
+            trend: {
+                title: 'Trend',
+                lead: 'messages in, over the range',
+                caption: 'Messages in over the range, from the sample series.',
+                note: 'Drawn from the samples the range returns. The screen computes the movement itself: the counters are running totals, and no operation sends a rate.',
+            },
+            gap: {
+                names: {
+                    title: 'Nothing lists the streams',
+                    body: 'The stream read names one stream, and no read says which streams exist or have samples, so the table depends on names from somewhere else. The candidate is a read of the stream names present in the range, so the screen draws its own table.',
+                },
+                rates: {
+                    title: 'Rates are left to the reader',
+                    body: 'Every message and byte field is a running total since the server started, so each reader subtracts two samples to get a rate, and every reader must subtract the same way. The candidate is for the read to answer deltas or rates over the range beside the totals.',
+                },
+                limit: {
+                    title: 'The limit truncates in silence',
+                    body: 'The query carries a limit — 1000 by default — and no offset and no total. At the 30-second poll interval the limit covers about eight hours, so a week-long range answers the newest 1000 samples and says nothing about the rest. The candidates are paging, a total on the reply, or an explicit statement that the reply is capped.',
+                },
+                slowConsumer: {
+                    title: 'A slow-consumer count cannot name the consumer',
+                    body: 'The sample keeps a running count, and the monitoring API knows which connection is slow. The screen can show that slow consumers exist, not which ones. The candidate is per-connection detail on the sample, or a current count beside the total.',
+                },
+                permission: {
+                    title: 'The reads check no permission',
+                    body: 'The handlers authenticate the token and then serve any signed-in account. The candidate is a dedicated permission the model guards, as the tenant reads guard iam::tenants:read. The gap is not these reads’ alone (Nothing gates a hand-written operation handler).',
+                },
+            },
+        },
+        logs: {
+            title: 'Operations: telemetry logs',
+            description:
+                'The lines behind a symptom, found by time, level, source, component, tag or message.',
+            readAt: 'Read at {at}',
+            range: {
+                label: 'Range',
+                '15m': 'Last 15 minutes',
+                '1h': 'Last hour',
+                '6h': 'Last 6 hours',
+                '24h': 'Last 24 hours',
+            },
+            level: {
+                label: 'Level',
+                any: 'Any level',
+            },
+            source: {
+                label: 'Source',
+                any: 'Any source',
+            },
+            component: {
+                label: 'Component',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Tag',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Message',
+                placeholder: 'Search the message',
+            },
+            search: 'Search',
+            columns: {
+                time: 'Time',
+                level: 'Level',
+                source: 'Source',
+                name: 'Name',
+                component: 'Component',
+                message: 'Message',
+            },
+            entries: {
+                title: 'Entries',
+                count: '{shown} of {total}',
+                showing: 'Showing {from}–{to} of {total} entries',
+                previous: 'Previous',
+                next: 'Next',
+                paging:
+                    'The read answers one page at a time; the total is everything the filter matches.',
+                nothingMatches: 'Nothing matches',
+                empty: 'No entry matches the filter in this range. Widen the range or drop a filter.',
+                emptyHint:
+                    'Filters combine with AND, so each one narrows the answer, and the store holds server lines today.',
+            },
+            gap: {
+                client: {
+                    title: 'The store holds no client lines',
+                    body: 'The query filters by source, and the only publisher is the compute wrapper, whose batches the service stamps as server entries. Nothing publishes client entries today, although the enum and the filter both support them. Until a client publisher exists, the screen must not offer a filter value that can never match.',
+                },
+                and: {
+                    title: 'The filters are AND-only',
+                    body: 'There is no way to ask for one level or another, and no way to exclude a component. The candidate is a way to express a disjunction inside the otherwise conjunctive query.',
+                },
+                suggest: {
+                    title: 'Nothing suggests filter values',
+                    body: 'The component, tag, source name and level are typed from memory, and a typo answers an empty page that looks like a quiet system. The candidate is a read of the values present in the range, so the screen offers the real components and tags.',
+                },
+                sql: {
+                    title: 'The message and component filters are built as SQL text',
+                    body: 'The query interpolates those two filters into LIKE patterns with a hand-written escaper, where every other repository binds its values (The telemetry log query escapes SQL by hand). This is a defect under the read, not a missing feature: bind the values before a screen leans on them.',
+                },
+                stats: {
+                    title: 'The stored aggregates have no subject',
+                    body: 'The database already computes hourly, daily and per-session statistics, and no read serves them (Expose the telemetry stats surface). A chart of line counts over time — "when did the errors start" — is the first thing an operator asks after the table.',
+                },
+                permission: {
+                    title: 'The read checks no permission',
+                    body: 'The handler authenticates the token and then serves any signed-in account. The candidate is a dedicated permission the model guards, as the tenant reads guard iam::tenants:read. The gap is not this read’s alone (Nothing gates a hand-written operation handler).',
                 },
             },
         },

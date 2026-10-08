@@ -40,7 +40,7 @@ scaffold's Flags/SQL/Presentation sections with that shape's knobs already
 set correctly,
 sampled from a real, proven-correct reference entity — omit =--shape=
 only to get the old bare, unknobbed skeleton. Individual
-=--entity-<knob>= flags (e.g. =--entity-has-workspace-id false=)
+=--entity-<knob>= flags (e.g. =--entity-has-tenant-id false=)
 override any preset value. Anything a shape can't derive (actual
 columns, foreign-key targets, display fields, ...) is left as a
 visible, one-line =TODO= in the output — never silently omitted. See

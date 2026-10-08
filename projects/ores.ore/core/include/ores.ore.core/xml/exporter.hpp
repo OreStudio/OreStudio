@@ -54,14 +54,17 @@ public:
     static std::string export_conventions(const ores::refdata::messaging::conventions_document& mc);
 
     /**
-     * @brief Reconstructs an ORE portfolio XML from a vector of
-     * (trade, instrument) pairs returned by export_portfolio_response.
+     * @brief Reconstructs an ORE portfolio XML from the trades and the
+     * instrument batch an export_portfolio_response carries.
      *
-     * Each item is reverse-mapped through the appropriate instrument mapper.
-     * Items with monostate instruments (unmapped trade types) are skipped.
+     * Each item's instrument is rebuilt from the batch by its trade id and
+     * reverse-mapped through the appropriate instrument mapper. Items whose
+     * trade has no instrument row, or whose type no reverse mapper handles,
+     * are written as their type and envelope alone.
      */
     static std::string
-    export_portfolio(const std::vector<trading::messaging::trade_export_item>& items);
+    export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
+                     const trading::domain::instrument_batch& instruments);
 };
 
 }

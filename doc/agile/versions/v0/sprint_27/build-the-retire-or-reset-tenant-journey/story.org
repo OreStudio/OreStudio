@@ -8,7 +8,7 @@
 #+filetags: :iam:web:journeys:tenancy:sprint_27:v0:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -25,7 +25,7 @@ not built.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | The journey document is written; nothing is built. |
 | Waiting on    | Nothing.                               |
@@ -48,6 +48,7 @@ not built.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:63EB45DE-FCF8-433A-B680-5DE24A392581][Land the retire and reset operations]] | BACKLOG | | | Build the server path behind the Retire or reset a tenant journey: a suspend operation with its subject, subjects for terminate, deprovision and purge, a subject for the party-level reset, and the roster's row menu item. |
+| [[id:88A9FB9C-8F9D-4EEC-A57A-B5139F5F834C][Configure every report ACME seeds]] | STARTED | 2026-10-08 | | ACME is seeded with report definitions and no configurations, so no seeded report can run. Walk every definition ACME carries, build the configuration its run needs from the external/ore examples, and scope each to the root portfolio. Where a root portfolio does not apply, record why. Add the SQL function that returns every book under a root portfolio, which is the population the run reads. |
 
 * Decisions
 

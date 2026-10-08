@@ -52,6 +52,7 @@ struct party_contact_information_write {
     std::string phone;
     std::string email;
     std::string web_page;
+    bool is_primary;
 };
 
 struct party_contact_information_change {

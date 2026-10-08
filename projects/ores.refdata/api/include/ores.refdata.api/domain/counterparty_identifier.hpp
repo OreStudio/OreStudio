@@ -89,6 +89,17 @@ struct counterparty_identifier final {
     std::string description;
 
     /**
+     * @brief Whether this is the identifier the tenant resolves the counterparty by. At most one
+     * live identifier per counterparty may hold it.
+     *
+     * A counterparty carries identifiers under several schemes, and nothing in them says which one
+     * decides who the counterparty is. A screen that needs one applies a precedence of its own, LEI
+     * first and then BIC. Once the tenant can state the choice, that precedence is what it starts
+     * from.
+     */
+    bool is_authoritative = false;
+
+    /**
      * @brief Username of the person who last modified this counterparty identifier.
      */
     std::string modified_by;

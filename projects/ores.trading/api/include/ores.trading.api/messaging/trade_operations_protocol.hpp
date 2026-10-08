@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_API_MESSAGING_TRADE_OPERATIONS_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_TRADE_OPERATIONS_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/instrument_payload.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_booking.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
@@ -87,13 +87,13 @@ struct book_trade_response {
 };
 
 /**
- * @brief One trade with its resolved instrument and envelope, as an export
- * writes it.
+ * @brief One trade's anchor, its ORE identifier and its envelope, as an
+ * export writes it.
  *
- * The instrument is carried as a payload rather than as a trade_instrument
- * variant: reflect-cpp cannot name the active alternative of that variant
- * (see instrument_payload). The payload's type is empty when the trade has no
- * instrument.
+ * The trade's instrument is not here. The export carries it in the batch's
+ * typed array for the table the trade type routes to, and every element of
+ * that array names the trade id this item states, so a reader joins the two
+ * without an element tag.
  */
 struct trade_export_item {
     /**
@@ -104,10 +104,6 @@ struct trade_export_item {
      * @brief The trade's ORE identifier, or its id when it has none.
      */
     std::string ore_id;
-    /**
-     * @brief The trade's instrument, encoded.
-     */
-    ores::trading::domain::instrument_payload instrument;
     /**
      * @brief The names the trade's source used: counterparty, netting set, portfolios and
      * additional fields. Absent when the trade has none.
@@ -161,6 +157,17 @@ struct export_portfolio_response {
      * @brief The trades, in trade id order.
      */
     std::vector<trade_export_item> items;
+    /**
+     * @brief The trades' instruments, one typed array per instrument entity and
+     * per child table, every element keyed by its trade id.
+     *
+     * An instrument is not a field of the item above: a std::variant cannot cross
+     * the wire, because reflect-cpp names no alternative, and an encoded payload
+     * would be an untyped field. So the tag sits on the container: a reader takes
+     * the trade's type from the anchor, routes it with instrument_table_for, and
+     * joins the array that table names by the trade id.
+     */
+    ores::trading::domain::instrument_batch instruments;
 };
 
 /**

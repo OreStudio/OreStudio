@@ -62,6 +62,10 @@ struct ir_curve_generation_config_process_parameter_value_lookup {
         ir_curve_generation_config_process_parameter_value;
 };
 
+struct ir_curve_generation_config_process_parameter_values_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct ir_curve_generation_config_process_parameter_value_event {
     boost::uuids::uuid event_id;
     ir_curve_generation_config_process_parameter_value_key key;
@@ -97,6 +101,8 @@ struct list_ir_curve_generation_config_process_parameter_values_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ir_curve_generation_config_process_parameter_values_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_ir_curve_generation_config_process_parameter_values_response {

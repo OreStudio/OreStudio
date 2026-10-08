@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 9F7C1DA9-F187-4BDB-8C80-ADCB53897084
+:END:
+#+title: Task: Repair the avatars script and the stale docs
+#+description: Initial task for: Mop up after the workspace removal
+#+type: task
+#+level: s1
+#+filetags: :mop_up_after_the_workspace_removal:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-mop-up-after-the-workspace-removal
+#+pr: 2824
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1716A3FE-59C1-4E34-875E-A259D5E6131F][Mop up after the workspace removal]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The database recreates from the schema and populate scripts, and no knowledge or manual page describes the deleted workspace component.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1716A3FE-59C1-4E34-875E-A259D5E6131F][Mop up after the workspace removal]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The database recreates cleanly.
+- The eventing worked example uses a surviving entity.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2824][#2824]] | [sql,docs,eventing] Mop up after the workspace removal |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The avatars populate script is repaired, so the database recreates cleanly. The eventing worked example uses ores.compute.host. The knowledge, recipe and manual pages that named the deleted workspace table, feature flag, headers and permission codes are repointed.

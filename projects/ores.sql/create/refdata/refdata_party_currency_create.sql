@@ -97,7 +97,6 @@ begin
                 'version_conflict',
                 'party_currencies',
                 'party_id',
-                new.party_id::text,
                 new.version::text,
                 current_version::text);
         end if;

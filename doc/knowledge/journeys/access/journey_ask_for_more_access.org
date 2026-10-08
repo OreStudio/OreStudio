@@ -113,8 +113,11 @@ The member's rail is not resumable across a reload — only the request is.
    request closes as approved. A refusal writes the reason the member will read,
    and the request closes as refused. An administrator who is the requester is
    refused: four eyes means the answer comes from somebody else.
-10. *Leave.* The queue no longer lists the request. The grant takes effect at the
-    member's next sign-in, as every assignment does.
+10. *Leave.* The request leaves the waiting list. The grant takes effect at the
+    member's next sign-in, as every assignment does. The request does not
+    disappear: it stays in the queue's answered tail for as long as the
+    installation says, so the administrator sees what they answered, and the
+    notice that links back to it opens.
 
 The ask and the decision are final steps: there is no Back past a request that
 has been made, or past a decision that has been given. A member who needs the
@@ -136,6 +139,13 @@ The administrator's screen is the queue. It shows the requests waiting in the
 tenant, the selected request in full, and the decision. The decision is one
 panel because the administrator reads the reason and answers at once; a request
 that needs research is left in the queue rather than half-answered.
+
+An answered request leaves the waiting list, but it does not leave the screen.
+The notice that says what happened links back to the request, and a request
+that vanished would give the administrator nothing to look at, so the queue
+carries the requests answered within a window below the waiting ones. How long
+that window is, is the installation's, as the variability system setting
+=inbox.approval_queue.answered_window_seconds=.
 
 #+caption: Answer a request: the tenant's waiting requests, the selected request with what the role grants, and the decision.
 #+attr_html: :width 100%
@@ -198,17 +208,38 @@ needs any of them.
 | Ask for the role | Ask for the roles named | =iam.v1.ops.ask_for_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
 | Ask for the role | Raise the request the ask makes | =inbox.v1.ops.raise_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Wait | Read my own requests and their answers | =inbox.v1.ops.list_my_approval_requests= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Wait | Read the roles my request asks for, and what became of them | =iam.v1.ops.get_request_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
+| Read the story | Read every version my request wrote | =inbox.v1.ops.get_approval_history= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Wait | Withdraw my request | =inbox.v1.ops.withdraw_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Read the answer | Read what I have been told | =inbox.v1.ops.list_my_notifications= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
-| Read the queue | List the requests waiting in the tenant | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Read the queue | List the requests waiting in the tenant, and the ones answered recently | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Decide | Answer a request, with a reason | =inbox.v1.ops.decide_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Decide | Grant the roles the request asks for | =iam.v1.ops.assign_role= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
+| Nobody answers | Warn the deciders of the requests close to their deadline | =inbox.v1.ops.remind_expiring_approvals= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Nobody answers | Close the requests past their deadline | =inbox.v1.ops.expire_overdue_approvals= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 
 The ask is two subjects because two components own a part of it. IAM owns the
 question "may this role be asked for", so =iam.v1.ops.ask_for_roles= is IAM's;
 the inbox owns waiting, so the request it raises is the inbox's. Nothing
 suspends, so nothing follows a run's steps.
+
+The story of a request is read through an operation of its own for the same
+reason the roles are. The entity read of approval requests and the generic
+history read both gate on the administrator's permission, so the person who
+raised a request cannot read their own request's versions through either; and
+the only place a granted role is tied to the request that asked for it is the
+junction row IAM marks applied. =inbox.v1.ops.get_approval_history= is entitled
+to the person who raised the request, so a member reads their own trail and a
+request they did not raise is answered as absent.
+
+The roles a request asks for are read through an operation rather than through
+the generated read of =role_grant_request_role=. That read is gated on
+=iam::role_grant_request_roles:read= and IAM isolates those rows by tenant
+alone, so granting it would let any member read what every other member asked
+for. =iam.v1.ops.get_request_roles= is entitled to the person who raised the
+request and to whoever may read the roles of any, so one read serves the
+member's own screen and the administrator's queue, and a caller entitled to
+neither is told the request does not exist.
 
 =iam.v1.ops.assign_role= checks =iam::roles:assign= before it writes, so the
 administrator's decision carries the check the member's ask must not.
@@ -234,14 +265,15 @@ building what the gap asked for.
 | 4 | Nothing says which roles may be asked for | closed | =is_requestable= on the role row, in the shape =is_registration_default= already had. IAM refuses a role the tenant has not put on offer. |
 | 5 | Nothing tells either person that something happened | closed, and larger than this journey | Notifications are a record of their own in =ores.inbox=, with a kind per kind of event, raised to a person or to whoever holds a permission. |
 | 6 | No query returns a request as a row | closed, by design | The request became a table, so the queue is a read of it rather than a projection over an instance's payload. |
-| 7 | A request that nobody answers waits forever | half closed | The deadline is closed: the kind carries one, the request takes it, and a scheduled sweep closes what nobody answered. The *reminder before* the deadline is open. |
+| 7 | A request that nobody answers waits forever | closed | The kind carries a deadline, the request takes it, and a scheduled sweep closes what nobody answered. A second sweep, on its own schedule and its own window, warns the people who may answer a request that is close to running out. |
 
-The reminder is the one piece of this journey still unbuilt. It is captured as
-[[id:BF4009D1-1254-43F9-A8A3-BE9374DB5F30][nobody reminds a decider that a
-request is about to lapse]], because it is a different behaviour from the
-deadline: closing a queue that has stopped moving is housekeeping, and warning
-somebody that it is about to stop moving is a nudge with its own timing and its
-own audience.
+The deadline and its warning are two behaviours, and they are built as two: the
+sweep that closes a queue that stopped moving is housekeeping, and the sweep
+that warns somebody it is about to stop moving is a nudge with its own timing
+and its own audience. Both are the installation's to schedule, and both are
+described in [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request
+expiry]]. The warning is raised once per request, and
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][the notice]] is what says so.
 
 * Related journeys
 
@@ -271,6 +303,7 @@ own audience.
 - [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] — the codes a role bundles
 - [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — where a request waits, and what answered the workflow question
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, its kinds, and the rule that answers one
-- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, and the scheduled sweep that closes what nobody answered
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, the sweep that closes what nobody answered, and the sweep that warns the deciders before it does
 - [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Task: Create the role-request journey]] — the task this document answers
+- [[id:5DCAE331-205B-4343-85FB-F9004972FD5F][See the story of a request prototype]] — the whole journey drawn as one request's story, and what each of the two readers may open
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

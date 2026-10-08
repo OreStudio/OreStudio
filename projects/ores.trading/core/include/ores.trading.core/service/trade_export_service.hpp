@@ -56,20 +56,32 @@ public:
     /**
      * @brief The trades booked under a book, a portfolio or a business unit,
      * or every live trade of the tenant when the node is empty.
+     *
+     * The trades' instruments are appended to @p instruments, whose arrays
+     * cover the page's trades only.
      */
     std::vector<messaging::trade_export_item>
-    export_node(const std::string& node_id, std::uint32_t offset, std::uint32_t limit) const;
+    export_node(const std::string& node_id,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                domain::instrument_batch& instruments) const;
 
     /**
      * @brief The trades booked in a set of books.
+     *
+     * The trades' instruments are appended to @p instruments, whose arrays
+     * cover the page's trades only.
      */
-    std::vector<messaging::trade_export_item> export_books(const std::vector<std::string>& book_ids,
-                                                           std::uint32_t offset,
-                                                           std::uint32_t limit) const;
+    std::vector<messaging::trade_export_item>
+    export_books(const std::vector<std::string>& book_ids,
+                 std::uint32_t offset,
+                 std::uint32_t limit,
+                 domain::instrument_batch& instruments) const;
 
 private:
     std::vector<messaging::trade_export_item>
-    export_trades(const std::vector<std::string>& trade_ids) const;
+    export_trades(const std::vector<std::string>& trade_ids,
+                  domain::instrument_batch& instruments) const;
 
     context ctx_;
 };

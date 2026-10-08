@@ -102,7 +102,6 @@ All trigger functions use =SECURITY DEFINER SET search_path = public, pg_temp=.
 | Version uniqueness       | =<prefix>_version_uniq_idx=                         | =market_series_version_uniq_idx=                    |
 | UUID current-row         | =<prefix>_id_uniq_idx=                              | =market_series_id_uniq_idx=                         |
 | Tenant lookup            | =<prefix>_tenant_idx=                               | =market_series_tenant_idx=                          |
-| Workspace lookup         | =<prefix>_workspace_idx=                            | =market_series_workspace_idx=                       |
 | Custom (from model)      | =<prefix>_<name>_idx=                               | =market_observations_observations_current_uniq_idx= |
 
 ** Validation functions

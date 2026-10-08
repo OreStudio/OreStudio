@@ -38,6 +38,7 @@ export interface CounterpartyIdentifier {
     id_scheme: string;
     id_value: string;
     description: string;
+    is_authoritative: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

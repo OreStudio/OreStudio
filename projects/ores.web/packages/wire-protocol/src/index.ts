@@ -345,6 +345,32 @@ export {
 } from './operations.js';
 export type { GridStatsReply, GridView } from './operations.js';
 
+// The message bus the operations screen reads: the two sample queries, their
+// replies, and the view the BFF serves the browser.
+export {
+    busViewSchema,
+    natsServerSampleSchema,
+    natsServerSamplesQuerySchema,
+    natsServerSamplesReplySchema,
+    natsServerSamplesRequestSchema,
+    natsStreamSampleSchema,
+    natsStreamSamplesQuerySchema,
+    natsStreamSamplesReplySchema,
+    natsStreamSamplesRequestSchema,
+} from './operations.js';
+export type { BusView } from './operations.js';
+
+// The telemetry logs the operations screen reads: the filter query, the entry
+// rows, the reply carrying the count, and the view the BFF serves the browser.
+export {
+    logsListReplySchema,
+    logsListRequestSchema,
+    logsViewSchema,
+    telemetryLogEntrySchema,
+    telemetryLogQuerySchema,
+} from './operations.js';
+export type { LogsListReply, LogsView } from './operations.js';
+
 // The door: what the deployment offers somebody who is not in it yet, and the
 // registration that acts on that answer.
 export {
@@ -488,12 +514,18 @@ export {
     inboxPageSchema,
     inboxRequestDecisionViewSchema,
     inboxRequestPageSchema,
+    inboxRequestQueueSchema,
     inboxRequestRoleViewSchema,
+    inboxRequestStorySchema,
     inboxRequestViewSchema,
+    inboxStoryEventSchema,
+    inboxStoryFieldSchema,
     markNotificationsRead,
     readMyNotifications,
     readMyRequests,
+    readRequest,
     readRequestQueue,
+    readRequestStory,
     readUnreadNotificationCount,
     withdrawRequest,
 } from './inbox.js';
@@ -501,6 +533,12 @@ export type {
     InboxNotificationView,
     InboxPage,
     InboxRequestDecisionView,
+    InboxRequestQueue,
+    InboxRequestedRole,
     InboxRequestRoleView,
+    InboxRequestStory,
     InboxRequestView,
+    InboxStoryEvent,
+    InboxStoryField,
+    RequestViewer,
 } from './inbox.js';

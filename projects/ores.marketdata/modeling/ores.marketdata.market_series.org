@@ -296,6 +296,119 @@ market_series_repository::read_latest_by_uri(context ctx, const std::string& ore
 }
 #+end_src
 
+*** project_identity_after_write
+:PROPERTIES:
+:ID: 8B2F4C71-5D3E-4A96-9E18-7C4B1A6D2F03
+:END:
+
+Projects the identity of every series the generated write path writes, so a
+series is never committed without the row a query joins on.
+
+The hook sits where the row is written rather than at each call site, because
+every writer of a series reaches this method: the ingest loop, the curve
+republish, the import and the service. The projector reads the URI through the
+codec, so the projection cannot disagree with the identity the ticks land under,
+and the write joins the transaction the context already carries.
+
+A repository of another entity collapses these markers, so the hook costs every
+other entity nothing.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#+end_src
+
+#+begin_src cpp :name project_one :implements 2C8F029A-9D8A-44E0-A06E-F9EA637ED581
+    market_series_identity_projector::project(ctx, std::vector<domain::market_series>{t});
+#+end_src
+
+#+begin_src cpp :name project_batch :implements 40393605-A998-4295-B69F-9FB035FFBC92
+    market_series_identity_projector::project(ctx, batch);
+#+end_src
+
+** Handler: backfill_series_identity
+:PROPERTIES:
+:ID: 7A007A31-3E87-462F-9100-9C476C69EA8B
+:END:
+
+Handles =backfill_series_identity_request=: projects the identity of every
+series the tenant holds that has none, so a series written before the
+projection existed becomes joinable.
+
+This is the repair for rows the write path never saw, a database restored from
+a dump or a series written before the projection landed. It reads what is
+already projected rather than re-projecting everything, so a second call finds
+nothing to do and says so.
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <set>
+#include <string>
+#include <vector>
+#+end_src
+
+#+begin_src cpp :name backfill_identity :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    void backfill_identity(ores::nats::message msg) {
+        BOOST_LOG_SEV(market_series_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::market_series:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<backfill_series_identity_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_series_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        backfill_series_identity_response resp;
+        try {
+            auto series = repository::market_series_repository{}.read_latest(req_ctx);
+            if (!req->party_id.empty())
+                std::erase_if(series, [&](const ores::marketdata::domain::market_series& s) {
+                    return boost::uuids::to_string(s.party_id) != req->party_id;
+                });
+
+            // The projection keeps one row per series, so what is already
+            // there is what a writer has seen. Only the rest are projected.
+            std::set<std::string> projected;
+            for (const auto& row :
+                 repository::market_series_identity_repository{}.read_latest(req_ctx))
+                projected.insert(boost::uuids::to_string(row.series_id));
+
+            std::vector<ores::marketdata::domain::market_series> missing;
+            for (const auto& s : series) {
+                if (!projected.contains(boost::uuids::to_string(s.id)))
+                    missing.push_back(s);
+            }
+            const auto unreadable =
+                repository::market_series_identity_projector::project(req_ctx, missing);
+
+            resp.projected_count = static_cast<int>(missing.size());
+            resp.already_projected_count = static_cast<int>(series.size() - missing.size());
+            resp.unreadable_count = static_cast<int>(unreadable);
+            resp.success = true;
+            resp.message = "Projected " + std::to_string(missing.size()) + " of " +
+                           std::to_string(series.size()) + " series, " +
+                           std::to_string(unreadable) + " with an unreadable URI.";
+            BOOST_LOG_SEV(market_series_handler_lg(), info) << msg.subject << ": " << resp.message;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(market_series_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

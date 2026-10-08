@@ -24,6 +24,7 @@
  */
 #include "ores.trading.core/service/trade_type_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -43,6 +44,11 @@
 #include <vector>
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::trading::service {
 
@@ -105,17 +111,14 @@ trade_type_service::list_trade_types(const messaging::list_trade_types_request& 
     messaging::list_trade_types_response response;
     if (!request.order.field.empty() &&
         !repository::trade_type_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of trade types cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "trade types", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->code_one_of &&
         request.filter->code_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in code_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "code_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -125,9 +128,7 @@ trade_type_service::list_trade_types(const messaging::list_trade_types_request& 
     if (request.as_of) {
         as_of = ores::database::repository::parse_as_of(*request.as_of);
         if (!as_of) {
-            response.result.outcome = ores::utility::domain::outcome::invalid;
-            response.result.code = "as_of_invalid";
-            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
             return response;
         }
     }
@@ -142,8 +143,7 @@ trade_type_service::get_trade_type(const messaging::get_trade_type_request& requ
     messaging::get_trade_type_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "trade_type"});
         return response;
     }
     response.trade_type = std::move(found.front());
@@ -220,17 +220,13 @@ trade_type_service::delete_trade_type(const messaging::delete_trade_type_request
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
-        response.result.outcome = outcome::invalid;
-        response.result.code = "precondition_not_supported";
-        response.result.message = "A removal cannot require that a row is absent.";
+        response.result = refuse(outcome_code::precondition_not_supported);
         return response;
     }
     std::optional<std::uint32_t> expected;
     if (request.removal.precondition.kind == precondition_kind::must_match_version) {
         if (!request.removal.precondition.version) {
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_incomplete";
-            response.result.message = "A versioned removal must state the version it expects.";
+            response.result = refuse(outcome_code::precondition_incomplete);
             return response;
         }
         expected = request.removal.precondition.version;
@@ -239,17 +235,23 @@ trade_type_service::delete_trade_type(const messaging::delete_trade_type_request
         case repository::trade_type_repository::remove_status::removed:
             break;
         case repository::trade_type_repository::remove_status::missing:
-            response.result.outcome = outcome::missing;
-            response.result.code = "not_found";
+            response.result = refuse(outcome_code::not_found, {.entity = "trade_type"});
             break;
-        case repository::trade_type_repository::remove_status::conflicting:
-            response.result.outcome = outcome::conflict;
-            response.result.code = "version_conflict";
+        case repository::trade_type_repository::remove_status::conflicting: {
+            // A conflicting removal states the version it expected but not the one
+            // the row now holds, and the sentence wants both. The row is read only
+            // on the refusal path.
+            const auto live = read_one(repo_, ctx_, request.removal.key);
+            response.result = refuse(
+                outcome_code::version_conflict,
+                {.entity = "trade_type",
+                 .field = "code",
+                 .expected = expected ? std::to_string(*expected) : std::string{},
+                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
             break;
+        }
         case repository::trade_type_repository::remove_status::unsupported:
-            response.result.outcome = outcome::invalid;
-            response.result.code = "precondition_not_supported";
-            response.result.message = "This resource keeps no version to match.";
+            response.result = refuse(outcome_code::precondition_not_supported);
             break;
     }
     return response;
@@ -266,11 +268,7 @@ messaging::delete_many_trade_types_response trade_type_service::delete_many_trad
             // per-row version. Refusing is the only answer that keeps the
             // batch atomic: serving it as a sequence of single removals would
             // leave a partial batch behind as soon as one row had moved on.
-            response.result.outcome = outcome::invalid;
-            response.result.code = "batch_removal_is_unconditional";
-            response.result.message =
-                "A batch removal is unconditional; remove the rows one at a time "
-                "to state a version.";
+            response.result = refuse(outcome_code::batch_removal_is_unconditional);
             return response;
         }
     }
@@ -288,16 +286,12 @@ messaging::list_trade_type_versions_response trade_type_service::list_trade_type
     const messaging::list_trade_type_versions_request& request) {
     messaging::list_trade_type_versions_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "trade types", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result = refuse(outcome_code::filter_not_supported, {.entity = "trade types"});
         return response;
     }
     auto all = repo_.read_all(ctx_, request.key.code);
@@ -317,8 +311,7 @@ messaging::get_trade_type_version_response trade_type_service::get_trade_type_ve
     messaging::get_trade_type_version_response response;
     auto found = repo_.read_at_version(ctx_, request.key.trade_type.code, request.key.version);
     if (!found) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "trade_type"});
         return response;
     }
     response.version = std::move(*found);
@@ -336,26 +329,25 @@ trade_type_service::prepare_change(const messaging::trade_type_change& change,
     const auto current = read_one(repo_, ctx_, key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
-            if (!current.empty()) {
-                result.outcome = outcome::conflict;
-                result.code = "already_exists";
-                return result;
-            }
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "trade_type", .field = "code"});
             break;
         case precondition_kind::must_match_version:
-            if (current.empty()) {
-                result.outcome = outcome::missing;
-                result.code = "not_found";
-                return result;
-            }
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "trade_type"});
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
                 static_cast<std::uint32_t>(current.front().version) !=
                     *change.precondition.version) {
-                result.outcome = outcome::conflict;
-                result.code = "version_conflict";
-                return result;
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "trade_type",
+                               .field = "code",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
             }
             break;
         case precondition_kind::any:

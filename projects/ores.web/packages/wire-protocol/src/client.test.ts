@@ -529,6 +529,246 @@ describe('OresClient authenticated calls', () => {
         await expect(client.listHosts()).rejects.toBeInstanceOf(OperationFailedError);
     });
 
+    it('reads the NATS server samples, and sends both bounds of the range', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.nats_server_samples.list': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        samples: [
+                            {
+                                sampled_at: '2026-10-04 14:31:45Z',
+                                in_msgs: 1_240_512,
+                                out_msgs: 3_410_882,
+                                in_bytes: 220_200_960,
+                                out_bytes: 1_181_167_616,
+                                connections: 23,
+                                mem_bytes: 88_080_384,
+                                slow_consumers: 0,
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const samples = await client.natsServerSamples({
+            startTime: '2026-10-04 13:31:45Z',
+            endTime: '2026-10-04 14:31:45Z',
+        });
+
+        expect(transport.calls[1]?.subject).toBe('telemetry.v1.nats_server_samples.list');
+        expect(transport.decodeCall(1)).toEqual({
+            query: {
+                start_time: '2026-10-04 13:31:45Z',
+                end_time: '2026-10-04 14:31:45Z',
+                limit: 1000,
+            },
+        });
+        // A counter the reply left out states zero rather than a made-up count.
+        expect(samples[0]?.in_msgs).toBe(1_240_512);
+        expect(samples[0]?.out_bytes).toBe(1_181_167_616);
+    });
+
+    it('refuses a server sample read the server did not produce', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.nats_server_samples.list': [
+                { body: { success: false, message: 'denied', samples: [] } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(
+            client.natsServerSamples({
+                startTime: '2026-10-04 13:31:45Z',
+                endTime: '2026-10-04 14:31:45Z',
+            }),
+        ).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    it('reads one stream’s samples, naming the stream and the range', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.nats_stream_samples.list': [
+                {
+                    body: {
+                        success: true,
+                        message: '',
+                        samples: [
+                            {
+                                sampled_at: '2026-10-04 14:31:45Z',
+                                stream_name: 'ores_dev_test_workflow',
+                                messages: 12_004,
+                                bytes: 88_080_384,
+                                consumer_count: 2,
+                            },
+                        ],
+                    },
+                },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const samples = await client.natsStreamSamples({
+            streamName: 'ores_dev_test_workflow',
+            startTime: '2026-10-04 13:31:45Z',
+            endTime: '2026-10-04 14:31:45Z',
+            limit: 100,
+        });
+
+        expect(transport.calls[1]?.subject).toBe('telemetry.v1.nats_stream_samples.list');
+        expect(transport.decodeCall(1)).toEqual({
+            query: {
+                stream_name: 'ores_dev_test_workflow',
+                start_time: '2026-10-04 13:31:45Z',
+                end_time: '2026-10-04 14:31:45Z',
+                limit: 100,
+            },
+        });
+        expect(samples[0]?.stream_name).toBe('ores_dev_test_workflow');
+        expect(samples[0]?.consumer_count).toBe(2);
+    });
+
+    it('refuses a stream sample read the server did not produce', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.nats_stream_samples.list': [
+                { body: { success: false, message: 'denied', samples: [] } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(
+            client.natsStreamSamples({
+                streamName: 'ores_dev_test_workflow',
+                startTime: '2026-10-04 13:31:45Z',
+                endTime: '2026-10-04 14:31:45Z',
+            }),
+        ).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
+    /** One log entry as the read answers it. */
+    const logEntry = {
+        id: '11111111-1111-4111-8111-111111111111',
+        timestamp: '2026-10-04 14:31:02Z',
+        source: 'server',
+        source_name: 'ores.compute.service',
+        session_id: null,
+        account_id: null,
+        level: 'error',
+        component: 'ores.compute.poller',
+        message: 'fetch failed, retrying',
+        tag: 'compute.fetch',
+        recorded_at: '2026-10-04 14:31:03Z',
+    };
+
+    it('reads the log entries a filter selects, and sends every query field', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.logs.list': [
+                { body: { success: true, message: '', entries: [logEntry], total_count: 2431 } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        const page = await client.listLogs({
+            startTime: '2026-10-04 13:31:02Z',
+            endTime: '2026-10-04 14:31:02Z',
+            source: 'server',
+            level: 'error',
+            component: 'ores.compute.poller',
+            tag: 'compute.fetch',
+            messageContains: 'fetch',
+            offset: 100,
+            limit: 50,
+        });
+
+        expect(transport.calls[1]?.subject).toBe('telemetry.v1.logs.list');
+        // The filters combine with AND in one request, and every declared field
+        // is written: the server applies no defaults to a field left out.
+        expect(transport.decodeCall(1)).toEqual({
+            query: {
+                start_time: '2026-10-04 13:31:02Z',
+                end_time: '2026-10-04 14:31:02Z',
+                source: 'server',
+                source_name: null,
+                session_id: null,
+                account_id: null,
+                level: 'error',
+                min_level: null,
+                component: 'ores.compute.poller',
+                tag: 'compute.fetch',
+                message_contains: 'fetch',
+                limit: 50,
+                offset: 100,
+            },
+        });
+        // The total is the whole set, not the page.
+        expect(page.totalCount).toBe(2431);
+        expect(page.entries).toEqual([logEntry]);
+    });
+
+    it('turns a filter the caller left off into nothing rather than an empty match', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.logs.list': [
+                { body: { success: true, message: '', entries: [], total_count: 0 } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await client.listLogs({
+            startTime: '2026-10-04 14:16:02Z',
+            endTime: '2026-10-04 14:31:02Z',
+        });
+
+        expect(transport.decodeCall(1)).toEqual({
+            query: {
+                start_time: '2026-10-04 14:16:02Z',
+                end_time: '2026-10-04 14:31:02Z',
+                source: null,
+                source_name: null,
+                session_id: null,
+                account_id: null,
+                level: null,
+                min_level: null,
+                component: null,
+                tag: null,
+                message_contains: null,
+                limit: 100,
+                offset: 0,
+            },
+        });
+    });
+
+    it('refuses a logs reply the server did not read', async () => {
+        const transport = new ScriptedTransport({
+            'iam.v1.ops.login': [{ body: loginReply() }],
+            'telemetry.v1.logs.list': [
+                { body: { success: false, message: 'denied', entries: [], total_count: 0 } },
+            ],
+        });
+        const client = new OresClient({ transport });
+        await client.login({ principal: 'probe', password: 'secret' });
+
+        await expect(
+            client.listLogs({
+                startTime: '2026-10-04 14:16:02Z',
+                endTime: '2026-10-04 14:31:02Z',
+            }),
+        ).rejects.toBeInstanceOf(OperationFailedError);
+    });
+
     it('refreshes once and retries when the server reports an expired token', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],

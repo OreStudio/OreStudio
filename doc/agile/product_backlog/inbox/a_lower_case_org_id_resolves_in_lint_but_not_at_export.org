@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2D3DAEF6-0A2A-44B3-8462-458FED477EB6
+:END:
+#+title: A lower-case org id passes lint and stops the site build
+#+description: compass lint reports every org id link as resolving, and org export refuses the same link. An id spelled in lower case is accepted by the lint and unresolvable by the exporter, which aborts the whole site build on the page that carries it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:docs:site:lint:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the dangling-id check in =compass lint= resolve ids the way org export
+resolves them, so a link the exporter will refuse fails the lint instead of
+starting a fifteen-minute build that dies near the end of it.
+
+The check already claims this ground: its own help says it validates "dangling
+id links (every =[[id:...]]= resolves)". It resolves them
+case-insensitively. The exporter does not. A link written in lower case is
+therefore reported as resolving and is then refused at export with =Unable to
+resolve link=, which aborts the whole site build rather than the one page.
+
+* Why
+
+=compass lint= passing is the signal that the documentation is sound, and the
+site build is the thing everybody else relies on. The two disagree, and the
+disagreement is one-directional and silent: the lint says yes, the build says no,
+and the build has already spent its time publishing thousands of pages before it
+reaches the page that stops it.
+
+The corpus has exactly two such links today, both in
+=doc/agile/versions/v0/sprint_27/instruments-rates/design.org=, both on the
+=ores.refdata.asset_class_catalogue= model, whose id is declared in upper case.
+They block every site build for every branch, and the fix is a case change that
+nobody would think to look for, because the tool that promises to find it says
+there is nothing to find.
+
+A lint that resolves more leniently than the exporter is worse than no lint on
+this point: it spends the credibility of the check on a claim it does not keep.
+Either make it strict, or have it report case differences as a distinct, named
+problem so the message says what to do.
+
+* References
+
+- =projects/ores.compass/src/compass.py= — the lint's dangling-id check, which
+  resolves case-insensitively.
+- =projects/ores.lisp/src/ores-build-site.el= — the export that refuses it, and
+  the point in the build where the refusal lands.
+- =doc/agile/versions/v0/sprint_27/instruments-rates/design.org= — the two links
+  that hit it, since upper-cased.
+- =projects/ores.refdata/modeling/ores.refdata.asset_class_catalogue.org= — the
+  model whose id they misspell.
+
+* See also
+
+- [[id:37BD8780-1818-4E24-BBC8-EAF7CD73022B][An operation named get_<entity> silently shadows the entity verb's type]] —
+  the other defect found by a gate that reads a narrower surface than the
+  toolchain it stands in for.

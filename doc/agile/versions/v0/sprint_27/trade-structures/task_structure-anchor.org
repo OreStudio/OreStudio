@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/structure-anchor
+#+pr: 2830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A structure is an immutable row with its own identity, parties, kind and templat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| static checks on this branch | 6 of 6 pass | =compass check --only handler-permissions --only create-reachability --only model-drift --only cmake-sources --only sql-hygiene --only populate-refs= | feature/structure-anchor |
+| pgTAP cases written for the structure | 6, never executed | =pg_prove test/trading_structures_test.sql= | feature/structure-anchor |
 
 * Notes
 
@@ -75,7 +76,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2830][#2830]] | [trading] Prove the structure tables by execution |
+| [[https://github.com/OreStudio/OreStudio/pull/2826][#2826]] | [trading] Add the immutable structure |
 
 * Review
 
@@ -84,3 +86,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=structure= is the immutable anchor of a composed deal: party, counterparty,
+kind, an optional template and an optional parent, with no audit tail. The
+parent is a database foreign key to the table itself, because the parent is
+immutable too, and the insert trigger refuses a leg of a leg and a structure
+that is its own parent — one level of nesting, no more.
+
+Ten pgTAP cases cover that rule, the two catalogue references, the nullable
+template a package rests on, and the refusal of every update and delete.
+
+The task closed on static validation alone, with the cases written and never
+executed. A follow-up ran them against a rebuilt database: all ten pass, so
+the nesting rule is now proven by execution rather than by reading the
+generated trigger. Update and delete are refused with 55000, the state rather
+than a value, which is the immutability rule itself.
+
+No build and no ctest ran on this task. The hourly build and test on main
+belongs to swift curie.

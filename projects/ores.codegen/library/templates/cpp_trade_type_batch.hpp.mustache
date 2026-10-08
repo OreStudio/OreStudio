@@ -1,0 +1,90 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.trade_type.batch.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
+#define ORES_TRADING_API_DOMAIN_INSTRUMENT_BATCH_HPP
+
+{{#trade_type_catalogue}}
+{{#batch}}
+#include "ores.{{component}}.api/domain/{{cpp_type}}.hpp"
+{{/batch}}
+#include <boost/uuid/uuid.hpp>
+#include <utility>
+#include <vector>
+
+namespace ores::trading::domain {
+
+/**
+ * @brief Every instrument and instrument child an export carries, one typed
+ * array per entity.
+ *
+ * Generated from ores.trading.trade_type_catalogue. A std::variant cannot
+ * cross the wire, because rfl names no alternative, and neither can a payload
+ * that encodes one in a string. The tag therefore lives on the container
+ * instead of on every element: each element carries the trade id it belongs
+ * to, and the array it sits in states its type. A receiver joins an array to a
+ * trade by that id, so no element needs a discriminator.
+ */
+struct instrument_batch {
+{{#batch}}
+    /**
+     * @brief The {{cpp_type}} rows, keyed by trade id.
+     */
+    std::vector<{{cpp_type}}> {{name}};
+{{/batch}}
+};
+
+/**
+ * @brief The trade id a batch member is keyed by.
+ *
+ * A generated entity nests its key in an identity group, a document container
+ * holds the entity that does, and a flat child states it directly. The reader
+ * picks the shape the member has, so no member needs its own accessor and a
+ * model that gains or loses the group needs no change here.
+ */
+template <typename T>
+[[nodiscard]] boost::uuids::uuid trade_id_of(const T& v) {
+    if constexpr (requires { v.identity.trade_id; })
+        return v.identity.trade_id;
+    else if constexpr (requires { v.instrument.identity.trade_id; })
+        return v.instrument.identity.trade_id;
+    else
+        return v.trade_id;
+}
+
+{{#batch}}
+/**
+ * @brief Adds one {{cpp_type}} to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, {{cpp_type}} v) {
+    batch.{{name}}.push_back(std::move(v));
+}
+
+{{/batch}}
+/**
+ * @brief The member of an array that belongs to the trade, or null.
+ */
+template <typename T>
+[[nodiscard]] const T* find(const std::vector<T>& members, boost::uuids::uuid trade_id) {
+    for (const auto& member : members)
+        if (trade_id_of(member) == trade_id)
+            return &member;
+    return nullptr;
+}
+
+/**
+ * @brief Every member of an array that belongs to the trade, in array order.
+ */
+template <typename T>
+[[nodiscard]] std::vector<T>
+find_all(const std::vector<T>& members, boost::uuids::uuid trade_id) {
+    std::vector<T> found;
+    for (const auto& member : members)
+        if (trade_id_of(member) == trade_id)
+            found.push_back(member);
+    return found;
+}
+
+}
+
+#endif
+{{/trade_type_catalogue}}

@@ -100,15 +100,16 @@ function wireRequest(id: string, requestedBy: string) {
  */
 function joins() {
     return {
-        'iam.v1.role_grant_request_roles.list_by_request_id': {
+        'iam.v1.ops.get_request_roles': {
             result: OK,
-            role_grant_request_roles: [{ request_id: REQUEST, role_id: TRADING }],
-            total: 1,
-        },
-        'iam.v1.roles.list': {
-            result: OK,
-            roles: [{ id: TRADING, name: 'Trading', description: 'Trading role' }],
-            total: 1,
+            roles: [
+                {
+                    role: { id: TRADING, name: 'Trading', description: 'Trading role' },
+                    asked_at: '2026-10-04 09:00:00Z',
+                    applied_at: null,
+                    applied_by: '',
+                },
+            ],
         },
         'iam.v1.role_grant_requests.list': {
             result: OK,
@@ -120,6 +121,7 @@ function joins() {
             accounts: [{ id: DANIEL, username: 'daniel' }],
             total: 1,
         },
+        'inbox.v1.approval_decisions.list': { result: OK, decisions: [], total: 0 },
     };
 }
 
@@ -176,6 +178,170 @@ function buildTestServer(answers: Record<string, Answer>) {
     });
     return { server, cookies: { [SESSION_COOKIE]: session.id }, calls };
 }
+
+describe('the story of one request', () => {
+    /** The request's own versions, as the entitled history read answers them. */
+    const history = {
+        result: OK,
+        versions: [
+            {
+                version: 2,
+                modified_by: 'priya',
+                performed_by: 'ores.inbox.service',
+                recorded_at: '2026-10-05 10:00:00Z',
+                change_reason_code: 'system.update',
+                change_commentary: 'Decision: approve',
+                fields: [
+                    { name: 'State Code', value: 'approved' },
+                    { name: 'Reason', value: 'I need the desk role' },
+                ],
+            },
+            {
+                version: 1,
+                modified_by: 'daniel',
+                performed_by: 'ores.inbox.service',
+                recorded_at: '2026-10-04 09:00:00Z',
+                change_reason_code: 'system.new_record',
+                change_commentary: '',
+                fields: [
+                    { name: 'State Code', value: 'waiting' },
+                    { name: 'Reason', value: 'I need the desk role' },
+                ],
+            },
+        ],
+    };
+
+    /** The role the request asked for, and what IAM did with it. */
+    const roles = {
+        result: OK,
+        roles: [
+            {
+                role: { id: TRADING, name: 'Trading', description: 'Trading role' },
+                asked_at: '2026-10-04 09:00:00Z',
+                applied_at: '2026-10-05 10:00:00Z',
+                applied_by: 'priya',
+            },
+        ],
+    };
+
+    const decision = {
+        result: OK,
+        decisions: [
+            {
+                request_id: REQUEST,
+                decision_code: 'approve',
+                decided_by: PRIYA,
+                decided_at: '2026-10-05 10:00:00Z',
+                comment: 'Desk needs it',
+            },
+        ],
+        total: 1,
+    };
+
+    /** Two notices: one about this request, one about something else. */
+    const notices = {
+        result: OK,
+        notifications: [
+            {
+                id: NOTICE,
+                kind_code: 'inbox.approval_waiting',
+                message_key: 'notification.inbox.approval_waiting',
+                raised_by: 'ores.inbox.service',
+                raised_at: '2026-10-04 09:00:01Z',
+                link_route: 'requests',
+                link_id: REQUEST,
+                arguments: [{ name: 'requester', value: 'daniel' }],
+                read_at: '',
+            },
+            {
+                id: PRIYA,
+                kind_code: 'inbox.approval_waiting',
+                message_key: 'notification.inbox.approval_waiting',
+                raised_by: 'ores.inbox.service',
+                raised_at: '2026-10-04 09:00:02Z',
+                link_route: 'requests',
+                link_id: PRIYA,
+                arguments: [],
+                read_at: '',
+            },
+        ],
+        total: 2,
+    };
+
+    async function storyOf(answers: Record<string, unknown>) {
+        const { server, cookies } = buildTestServer(answers);
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${REQUEST}/story`,
+            cookies,
+        });
+        await server.close();
+        return response;
+    }
+
+    it('merges every row the request wrote into one stream, newest first', async () => {
+        const response = await storyOf({
+            'inbox.v1.ops.get_approval_history': history,
+            'inbox.v1.ops.get_request_roles': roles,
+            'inbox.v1.approval_decisions.list': decision,
+            'inbox.v1.ops.list_my_notifications': notices,
+            // The decision names the decider by account id, and the story
+            // resolves it rather than showing a UUID beside people's names.
+            'iam.v1.accounts.list': {
+                result: OK,
+                accounts: [{ id: PRIYA, username: 'priya' }],
+                total: 1,
+            },
+        });
+
+        expect(response.statusCode).toBe(200);
+        const story = response.json();
+        expect(story.requestId).toBe(REQUEST);
+        const decided = story.events.find(
+            (event: { kind: string }) => event.kind === 'decided',
+        );
+        expect(decided.actor).toBe('priya');
+        expect(story.events.map((event: { kind: string }) => event.kind)).toEqual([
+            'granted',
+            'decided',
+            'changed',
+            'told',
+            'asked',
+            'raised',
+        ]);
+        const told = story.events.filter(
+            (event: { entityType: string }) =>
+                event.entityType === 'ores.inbox.notification',
+        );
+        expect(told).toHaveLength(1);
+        expect(told[0].entityId).toBe(NOTICE);
+    });
+
+    it('leaves the answer out of a story whose reader may not read it', async () => {
+        const response = await storyOf({
+            'inbox.v1.ops.get_approval_history': history,
+            'inbox.v1.ops.get_request_roles': roles,
+            'inbox.v1.approval_decisions.list': { result: DENIED },
+            'inbox.v1.ops.list_my_notifications': notices,
+        });
+
+        expect(response.statusCode).toBe(200);
+        const kinds = response.json().events.map((event: { kind: string }) => event.kind);
+        // The request closed, so somebody answered it; the answer is simply not
+        // this reader's to see, and the story says so by leaving it out.
+        expect(kinds).not.toContain('decided');
+        expect(kinds).toContain('changed');
+    });
+
+    it('answers a request the reader may not open as absent', async () => {
+        const response = await storyOf({
+            'inbox.v1.ops.get_approval_history': { result: { outcome: 'missing' } },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ requestId: REQUEST, events: [] });
+    });
+});
 
 describe('inbox routes', () => {
     it('answers the signed-in person own requests with the roles asked for and the decider name', async () => {
@@ -236,7 +402,7 @@ describe('inbox routes', () => {
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
             },
-            'iam.v1.role_grant_request_roles.list_by_request_id': { result: DENIED },
+            'iam.v1.ops.get_request_roles': { result: DENIED },
             'iam.v1.role_grant_requests.list': { result: DENIED },
             'inbox.v1.approval_decisions.list': { result: DENIED },
         });
@@ -264,14 +430,15 @@ describe('inbox routes', () => {
         });
     });
 
-    it('gives up the whole roles join when the first read of it is refused', async () => {
+    it('reads the roles of each request, once each, through the entitled operation', async () => {
+        const SECOND = '99999999-9999-4999-8999-999999999999';
         const { server, cookies, calls } = buildTestServer({
             'inbox.v1.ops.list_my_approval_requests': {
                 result: OK,
-                requests: [wireRequest(REQUEST, DANIEL)],
-                total: 1,
+                requests: [wireRequest(REQUEST, PRIYA), wireRequest(SECOND, PRIYA)],
+                total: 2,
             },
-            'iam.v1.role_grant_request_roles.list_by_request_id': { result: DENIED },
+            'iam.v1.ops.get_request_roles': { result: DENIED },
             'iam.v1.role_grant_requests.list': { result: DENIED },
             'inbox.v1.approval_decisions.list': { result: DENIED },
         });
@@ -280,10 +447,11 @@ describe('inbox routes', () => {
         await server.close();
 
         expect(response.statusCode).toBe(200);
-        expect(
-            calls.filter((c) => c.subject === 'iam.v1.role_grant_request_roles.list_by_request_id'),
-        ).toHaveLength(1);
-        expect(calls.filter((c) => c.subject === 'iam.v1.roles.list')).toHaveLength(0);
+        const reads = calls.filter((call) => call.subject === 'iam.v1.ops.get_request_roles');
+        expect(reads.map((call) => (call.body as { request_id: string }).request_id)).toEqual([
+            REQUEST,
+            SECOND,
+        ]);
     });
 
     it('sends the page the screen asked for', async () => {
@@ -406,12 +574,13 @@ describe('inbox routes', () => {
         expect(calls).toHaveLength(0);
     });
 
-    it('answers the queue the server picked, with no decision looked for', async () => {
-        const { server, cookies, calls } = buildTestServer({
+    it('answers the queue the server picked, and the answered tail it carried', async () => {
+        const { server, cookies } = buildTestServer({
             'inbox.v1.ops.list_approval_queue': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
+                answered: [],
             },
             ...joins(),
         });
@@ -436,10 +605,59 @@ describe('inbox routes', () => {
                 },
             ],
             total: 1,
+            answered: [],
         });
-        expect(calls.filter((c) => c.subject === 'inbox.v1.approval_decisions.list')).toHaveLength(
-            0,
-        );
+    });
+
+    it('answers the requests just answered, with what was decided on them', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [],
+                total: 0,
+                answered: [wireRequest(REQUEST, DANIEL)],
+            },
+            ...joins(),
+            'inbox.v1.approval_decisions.list': {
+                result: OK,
+                decisions: [
+                    {
+                        request_id: REQUEST,
+                        decision_code: 'approve',
+                        decided_by: PRIYA,
+                        decided_at: '2026-10-05 10:00:00Z',
+                        comment: 'Desk needs it',
+                    },
+                ],
+                total: 1,
+            },
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.items).toEqual([]);
+        expect(body.answered).toEqual([
+            {
+                id: REQUEST,
+                version: 3,
+                kindCode: 'iam.role_grant',
+                stateCode: 'waiting',
+                requestedBy: 'daniel',
+                requestedAt: '2026-10-04 09:00:00Z',
+                reason: 'I need the desk role',
+                expiresAt: '',
+                roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
+                decision: {
+                    decisionCode: 'approve',
+                    decidedBy: PRIYA,
+                    decidedAt: '2026-10-05 10:00:00Z',
+                    comment: 'Desk needs it',
+                },
+            },
+        ]);
     });
 
     it('decides a request against the version read, in the server own words', async () => {

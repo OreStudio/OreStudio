@@ -139,15 +139,13 @@ begin
                 perform ores_outcome_raise_fn(
                     'already_exists',
                     'series_classification_rule',
-                    'series_type',
-                    NEW.series_type::text);
+                    'series_type');
             end if;
         elsif NEW.version != current_version then
             perform ores_outcome_raise_fn(
                 'version_conflict',
                 'series_classification_rule',
                 'series_type',
-                NEW.series_type::text,
                 NEW.version::text,
                 current_version::text);
         end if;

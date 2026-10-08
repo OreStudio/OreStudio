@@ -160,7 +160,7 @@ TEST_CASE("party_contact_information_commands_process_add_requires_a_session", t
     std::ostringstream out;
 
     command_feedback::reset();
-    party_contact_information_commands::process_add(out, session, tokens(12));
+    party_contact_information_commands::process_add(out, session, tokens(13));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -194,7 +194,7 @@ TEST_CASE("party_contact_information_commands_process_set_requires_a_session", t
     std::ostringstream out;
 
     command_feedback::reset();
-    party_contact_information_commands::process_set(out, session, tokens(12));
+    party_contact_information_commands::process_set(out, session, tokens(13));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -228,7 +228,7 @@ TEST_CASE("party_contact_information_commands_process_put_many_requires_a_sessio
     std::ostringstream out;
 
     command_feedback::reset();
-    party_contact_information_commands::process_put_many(out, session, tokens(12));
+    party_contact_information_commands::process_put_many(out, session, tokens(13));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

@@ -72,3 +72,4 @@
 \ir ./reporting_in_flight_instance_fn_create.sql
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_publish_from_dq_create.sql
+\ir ./reporting_seed_report_configurations_create.sql

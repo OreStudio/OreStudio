@@ -21,7 +21,8 @@
 # To modify, update the template and regenerate.
 set(files
     "app/application.cpp"
-    "app/approval_expiry_schedule.cpp"
+    "app/approval_sweep_schedule.cpp"
+    "app/approval_windows.cpp"
     "app/host.cpp"
     "config/options.cpp"
     "config/parser.cpp"
@@ -43,7 +44,8 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/application_exception.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/approval_expiry_schedule.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/approval_sweep_schedule.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/approval_windows.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/app/host.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.inbox.service/config/parser.hpp"

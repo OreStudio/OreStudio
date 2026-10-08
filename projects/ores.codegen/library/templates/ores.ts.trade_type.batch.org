@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 00894ce9-2bfa-4b52-ab08-4fade4cc2ff2
+:END:
+#+title: ores.ts.trade_type.batch
+#+description: The export's typed instrument arrays as TypeScript interfaces.
+#+type: archetype
+#+output: projects/ores.web/packages/wire-protocol/src/generated/trading/instrument_batch.ts
+#+facet: ores.ts.trade_type
+#+model_types: trade_type_catalogue
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The TypeScript twin of [[id:4c843ca3-122a-4fe0-875d-149bd5aea924][ores.cpp.trade_type.batch]]: one interface whose members
+are the batch's arrays. Both read the same trade-type catalogue, so a member
+added to one appears in the other.
+
+Each member's element type is the interface =ores.ts.domain= emits for that
+type, imported from the domain module beside it. Field names stay in the C++
+spelling, because they are the JSON keys =rfl::json= writes.
+
+* Template
+
+#+begin_src mustache :tangle ts_trade_type_batch.ts.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.ts.trade_type.batch.org. Edit the org source. }}
+{{{ts_license}}}
+{{#trade_type_catalogue}}
+{{#batch}}
+import type { {{ts_pascal}} } from '{{ts_module}}';
+{{/batch}}
+
+/**
+ * Every instrument and instrument child an export carries, one typed array per
+ * entity.
+ *
+ * Field names are the C++ member names, because they are the keys rfl::json
+ * writes. Each element carries the trade id it belongs to, so a client joins an
+ * array to its trade by that id, and the array states the element's type.
+ */
+export interface InstrumentBatch {
+{{#batch}}
+    {{name}}: {{ts_pascal}}[];
+{{/batch}}
+}
+{{/trade_type_catalogue}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:a3572ff3-ecfd-430e-864b-5af4b90f2fcb][ores.ts.trade_type]]

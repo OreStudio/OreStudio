@@ -196,6 +196,30 @@ declare their own includes block; the C++ compiler de-duplicates
 =#include= directives at preprocessing time regardless, so no need
 to worry about collisions between them.
 
+** After a single write
+:PROPERTIES:
+:ID: 2C8F029A-9D8A-44E0-A06E-F9EA637ED581
+:END:
+
+Code inserted at the end of the generated =write(context, value, claim)=,
+after the row is written. The value the write stored is in scope as =t=, and
+the context is the caller's, so the block joins the caller's transaction and
+commits with the generated write.
+
+This is the point for a second table that is derived from the one just
+written and must not be able to disagree with it. Nothing else is in scope,
+so a block here needs an include of its own.
+
+** After a batch write
+:PROPERTIES:
+:ID: 40393605-A998-4295-B69F-9FB035FFBC92
+:END:
+
+The same point at the end of the generated
+=write(context, values, claims)=, with the values written in scope as
+=batch=. A block here usually extracts the rows it needs and calls the same
+thing the single-write block calls.
+
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.

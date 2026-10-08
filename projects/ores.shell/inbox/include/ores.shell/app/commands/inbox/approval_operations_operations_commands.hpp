@@ -98,11 +98,32 @@ public:
                                                   const std::vector<std::string>& args);
 
     /**
+     * @brief get-approval <request_id>
+     */
+    static void process_get_approval(std::ostream& out,
+                                     ores::nats::service::nats_client& session,
+                                     const std::vector<std::string>& args);
+
+    /**
      * @brief expire-overdue-approvals
      */
     static void process_expire_overdue_approvals(std::ostream& out,
                                                  ores::nats::service::nats_client& session,
                                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief remind-expiring-approvals
+     */
+    static void process_remind_expiring_approvals(std::ostream& out,
+                                                  ores::nats::service::nats_client& session,
+                                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief get-approval-history <request_id>
+     */
+    static void process_get_approval_history(std::ostream& out,
+                                             ores::nats::service::nats_client& session,
+                                             const std::vector<std::string>& args);
 };
 
 }

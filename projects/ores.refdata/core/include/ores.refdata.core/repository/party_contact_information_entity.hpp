@@ -59,6 +59,7 @@ struct party_contact_information_entity {
     std::optional<std::string> phone;
     std::optional<std::string> email;
     std::optional<std::string> web_page;
+    bool is_primary = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

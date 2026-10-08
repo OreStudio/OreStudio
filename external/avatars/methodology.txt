@@ -19,7 +19,6 @@ super_admin_avatar        Person Star
 tenant_admin_avatar       Person Shield
 ores_iam_service          Person Key
 ores_refdata_service      Book Database
-ores_workspace_service    Board
 ores_dq_service           Shield Checkmark
 ores_variability_service  Settings
 ores_assets_service       Image Multiple

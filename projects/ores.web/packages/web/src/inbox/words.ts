@@ -30,14 +30,18 @@ import type { InboxRequestView } from '@ores/wire-protocol/browser';
  * request nobody can name is still a request somebody has to answer.
  */
 
-export type Tone = 'neutral' | 'accent' | 'warn' | 'muted';
+export type Tone = 'neutral' | 'accent' | 'warn' | 'muted' | 'up' | 'down';
 
 /** The six states a request may be in, each with the chip the prototype draws. */
+// A state is painted by what it means to the person reading it. Waiting is
+// the thing to look at, a grant is the outcome that went their way, a refusal
+// is the one that did not, and the rest are neither: a withdrawn or lapsed
+// request is simply over.
 const STATE_TONES: Readonly<Record<string, Tone>> = {
     waiting: 'warn',
     held: 'accent',
-    approved: 'neutral',
-    refused: 'muted',
+    approved: 'up',
+    refused: 'down',
     withdrawn: 'muted',
     expired: 'muted',
 };
@@ -61,11 +65,25 @@ export function kindLabel(t: (key: string) => string, kindCode: string): string 
 }
 
 /**
+ * The table an event of a story came from, as a person reads it.
+ *
+ * A model's name is not a word anybody says. The story names the source by what
+ * it contributed -- the request, the answer, the notice, the role -- and falls
+ * back to the model's own name for a source this build does not know, because a
+ * step nobody can name is still a step somebody has to read.
+ */
+export function sourceLabel(t: (key: string) => string, entityType: string): string {
+    const key = `inbox.story.source.${entityType}`;
+    const label = t(key);
+    return label === key ? entityType : label;
+}
+
+/**
  * What a request asks for, as a row names it.
  *
- * The server resolves the roles from the account list, which a member may not
- * read, so a person's own requests come back with no roles and their reason is
- * the only thing that says what they asked for. The kind's label stands in.
+ * A person's own requests name the roles they asked for, because IAM answers
+ * the read that asks for them. A request the reader may not read the roles of
+ * says nothing about what it asks for, and the kind's label stands in.
  */
 export function askedFor(
     t: (key: string) => string,

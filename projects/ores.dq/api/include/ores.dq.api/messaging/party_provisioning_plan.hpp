@@ -53,7 +53,7 @@ struct party_bundle_publish_step {
  * cascade a start across themes for exactly that reason): a freshly
  * provisioned party can immediately test either current-regime pricing
  * (2026) or legacy ORE Samples pricing (2016) without a re-provision,
- * once feed-starting and workspace-scoped ORE Samples pricing land.
+ * once feed-starting and ORE Samples pricing land.
  * synthetic_uniform_demo is not included by default -- it's a deliberately
  * minimal demo/exercise archetype, not something every party needs out of
  * the box; publish it separately (e.g. via ores.shell) when wanted.

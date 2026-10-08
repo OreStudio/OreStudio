@@ -276,7 +276,7 @@ is actually up and speaking TLS.
 
 After a rebase the local schema can drift from the code it now sits
 next to (the DB was seeded from an older commit), surfacing as
-repository errors such as =column "workspace_id" does not exist= or
+repository errors such as =column "tenant_id" does not exist= or
 =Invalid concurrency_policy: skip=. Check with =compass db status= and,
 only when it reports drift, recreate:
 

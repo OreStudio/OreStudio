@@ -1436,8 +1436,8 @@ private:
     // context (a security boundary). Sources already bound for the party
     // are skipped, so the step is re-runnable: a party that already holds
     // every source returns true without writing, and a party that holds
-    // some of them writes only the rest. Workspace defaults to the
-    // Live sentinel. IR sources are deliberately not bound: IR producers
+    // some of them writes only the rest. IR sources are deliberately not
+    // bound: IR producers
     // publish on synthetic.v1.curve_family.<source>, a subject the ingest
     // loop never listens to -- binding them would claim ingestion for a
     // stream that never arrives. Best-effort, like

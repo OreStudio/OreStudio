@@ -106,7 +106,6 @@ begin
                 'version_conflict',
                 'calendar_dates',
                 'calendar_code',
-                new.calendar_code::text,
                 new.version::text,
                 current_version::text);
         end if;

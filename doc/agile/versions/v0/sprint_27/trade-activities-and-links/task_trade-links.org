@@ -8,7 +8,7 @@
 #+filetags: :trade-activities-and-links:sprint_27:v0:
 #+owner: marco
 #+branch: feature/trade-links
-#+pr: 2807
+#+pr: 2820
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2820][#2820]] | [trading] Unbreak main after the link work |
 | [[https://github.com/OreStudio/OreStudio/pull/2807][#2807]] | [doc] Close the trade activities and trade links story |
 | [[https://github.com/OreStudio/OreStudio/pull/2806][#2806]] | [trading] Join trades with typed links |
 

@@ -20,6 +20,7 @@
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/messaging/approval_decision_history_provider_registrar.hpp"
@@ -56,6 +57,11 @@ namespace ores::inbox::messaging {
 
 namespace {
 
+auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.inbox.messaging.registrar");
+    return instance;
+}
+
 constexpr std::string_view queue_group = "ores.inbox.service";
 
 // The registry must outlive the history.v1.get subscription, and
@@ -70,7 +76,9 @@ ores::history::service::dispatch_registry& history_registry() {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
-                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             std::chrono::seconds answered_window,
+                             std::chrono::seconds reminder_window) {
 
     std::vector<ores::nats::service::subscription> subs;
     const auto add = [&subs](std::vector<ores::nats::service::subscription> more) {
@@ -98,7 +106,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // withdrawing and deciding apply the lifecycle rules, and the queue and
     // one's own requests are reads a person works from.
     {
-        auto h = std::make_shared<approval_operations_handler>(nats, ctx, verifier);
+        auto h = std::make_shared<approval_operations_handler>(
+            nats, ctx, verifier, answered_window, reminder_window);
         subs.push_back(
             nats.queue_subscribe(raise_approval_request_request::nats_subject,
                                  queue_group,
@@ -115,14 +124,30 @@ registrar::register_handlers(ores::nats::service::client& nats,
             list_approval_queue_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->queue(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            get_approval_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->get_request(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(get_approval_history_request::nats_subject,
+                                            queue_group,
+                                            [h](ores::nats::message msg) {
+                                                h->get_history(std::move(msg));
+                                            }));
         subs.push_back(
             nats.queue_subscribe(list_my_approval_requests_request::nats_subject,
                                  queue_group,
                                  [h](ores::nats::message msg) { h->mine(std::move(msg)); }));
         subs.push_back(nats.queue_subscribe(
+            remind_expiring_approvals_request::nats_subject,
+            queue_group,
+            [h](ores::nats::message msg) { h->remind_expiring(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
             expire_overdue_approvals_request::nats_subject,
             queue_group,
             [h](ores::nats::message msg) { h->expire_overdue(std::move(msg)); }));
+        BOOST_LOG_SEV(lg(), info) << "inbox registrar: approval operations subscribed, "
+                                  << "including get_approval at "
+                                  << get_approval_request::nats_subject;
     }
 
     // Notifications: a component raises one, and a person reads, marks and
@@ -167,6 +192,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(ores::history::messaging::register_history_handlers(
             nats, hist_registry, "inbox", queue_group, ctx, verifier));
     }
+
+    BOOST_LOG_SEV(lg(), info) << "inbox registrar: registered " << subs.size()
+                              << " subscription(s).";
 
     return subs;
 }

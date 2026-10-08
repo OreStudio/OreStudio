@@ -263,6 +263,11 @@ select ores_utility_allow_version_replace_fn();
 \ir compute/compute_platforms_seed.sql
 \ir compute/compute_ore_app_seed.sql
 
+-- The scheduler's own job definition. The compute seed above writes compute's
+-- job; this one writes the message queue metrics scrape, and both are named in
+-- the scheduler's job definition model.
+\ir scheduler/scheduler_populate.sql
+
 -- =============================================================================
 -- Analytics Layer
 -- =============================================================================
@@ -362,10 +367,6 @@ from ores_compute_platforms_tbl where valid_to = ores_utility_infinity_timestamp
 union all
 select 'Analytics: Pricing Engine Types', count(*)
 from ores_analytics_pricing_engine_types_tbl where valid_to = ores_utility_infinity_timestamp_fn()
--- Workspaces (Live = id 0 is seeded at schema creation, not here)
-union all
-select 'Workspace: Workspaces', count(*)
-from ores_workspaces_tbl
 order by entity;
 
 commit;

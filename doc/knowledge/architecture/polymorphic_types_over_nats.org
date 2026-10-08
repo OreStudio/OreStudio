@@ -87,8 +87,17 @@ by hand, and the body was the =rfl= JSON of the concrete type. The tag
 duplicated =trade_type=, which the same message already carried on the trade
 anchor and which the trade type catalogue already maps to the concrete type.
 
-It is being removed in favour of typed arrays. See the component's own
-overview for the current export message shape.
+Both the header and its codec are deleted. The export carries an
+=instrument_batch= instead: one typed array per routed instrument entity and
+one per child table, every element keyed by its trade id, generated from
+=ores.trading.trade_type_catalogue= by =ores.cpp.trade_type.batch= and its
+TypeScript twin. A reader routes a trade with =instrument_table_for= and joins
+that array by the id; no element carries a discriminator.
+
+The batch's members must all be generated types, because a hand-written
+aggregate of typed arrays is the same hand-written second type system under
+another name. That is why the bond family's document container was modelled as
+=field_group= models before the batch was written.
 
 * What the deprecated pattern got right
 
@@ -101,7 +110,7 @@ is gone:
   longer needs a tag on the payload to use it, because the batch it reads from
   is already typed.
 - *A raw JSON blob is never acceptable.* The page said this and it was right.
-  It is the reason =instrument_payload= is being removed rather than extended.
+  It is the reason =instrument_payload= was removed rather than extended.
 
 * Historical example: trading instruments
 

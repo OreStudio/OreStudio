@@ -135,6 +135,16 @@ struct party_contact_information final {
     std::string web_page;
 
     /**
+     * @brief Whether this is the contact to call. At most one live contact row per party may hold
+     * it.
+     *
+     * A party holds one row per contact_type, so the rows are (Legal, Operations, Settlement,
+     * Billing) and nothing in them says which one a person should ring. The mark lives on the row
+     * so that it survives a reload, rather than in the session that set it.
+     */
+    bool is_primary = false;
+
+    /**
      * @brief Username of the person who last modified this party contact information.
      */
     std::string modified_by;

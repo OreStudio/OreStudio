@@ -27,7 +27,6 @@
 SERVICE_NAMES=(
     iam
     refdata
-    workspace
     dq
     variability
     assets

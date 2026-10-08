@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/folder.hpp"
+#include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.utility/domain/hierarchy.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -37,6 +38,7 @@
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::repository {
@@ -125,19 +127,38 @@ public:
 
 
     /**
+     * @brief Whether a list of folders can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
      * @brief Reads latest folders with pagination support.
      * @param ctx Repository context with database connection
      * @param offset Number of records to skip
      * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::folder> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::folder>
+    read_latest(context ctx,
+                std::uint32_t offset,
+                std::uint32_t limit,
+                const ores::utility::domain::order& order = {},
+                const std::optional<messaging::folders_filter>& filter = std::nullopt,
+                const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Gets the total count of active folders.
      * @param ctx Repository context with database connection
      * @return Total number of active folders
      */
-    std::uint32_t get_total_folder_count(context ctx);
+    std::uint32_t
+    get_total_folder_count(context ctx,
+                           const std::optional<messaging::folders_filter>& filter = std::nullopt,
+                           const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a folder by closing its temporal validity.

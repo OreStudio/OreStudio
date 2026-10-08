@@ -40,6 +40,7 @@
 // Log lines stream uuids with uuid_io's operator<<, which the include check
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -47,6 +48,11 @@
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
+// Every refusal names its outcome; the catalogue supplies the code and the
+// sentence, so a service states what happened and nothing about how to say it.
+using ores::database::domain::outcome_args;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace ores::iam::service {
 
@@ -80,23 +86,19 @@ messaging::list_account_credentials_response account_credential_service::list_ac
     messaging::list_account_credentials_response response;
     if (!request.order.field.empty() &&
         !repository::account_credential_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of account credentials cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "account credentials", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->account_id_one_of &&
         request.filter->account_id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "account_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -106,9 +108,7 @@ messaging::list_account_credentials_response account_credential_service::list_ac
     if (request.as_of) {
         as_of = ores::database::repository::parse_as_of(*request.as_of);
         if (!as_of) {
-            response.result.outcome = ores::utility::domain::outcome::invalid;
-            response.result.code = "as_of_invalid";
-            response.result.message = "as_of is not a UTC timestamp: " + *request.as_of;
+            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
             return response;
         }
     }
@@ -124,29 +124,24 @@ account_credential_service::list_by_account_id_account_credentials(
     messaging::list_by_account_id_account_credentials_response response;
     if (!request.order.field.empty() &&
         !repository::account_credential_repository::is_sortable(request.order.field)) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "A list of account credentials cannot be ordered by " + request.order.field + ".";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "account credentials", .field = request.order.field});
         return response;
     }
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->account_id_one_of &&
         request.filter->account_id_one_of->size() > 1000) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_too_large";
-        response.result.message = "The filter lists more than 1000 values in account_id_one_of.";
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "account_id_one_of", .limit = "1000"});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "scope_not_supported";
-        response.result.message = "This resource reads its direct members; it has no subtree.";
+        response.result =
+            refuse(outcome_code::scope_not_supported, {.entity = "account credentials"});
         return response;
     }
     const auto relation = boost::uuids::to_string(request.account_id);
@@ -162,8 +157,7 @@ messaging::get_account_credential_response account_credential_service::get_accou
     messaging::get_account_credential_response response;
     auto found = read_one(repo_, ctx_, request.key);
     if (found.empty()) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account_credential"});
         return response;
     }
     response.account_credential = std::move(found.front());
@@ -194,16 +188,13 @@ account_credential_service::list_account_credential_versions(
     const messaging::list_account_credential_versions_request& request) {
     messaging::list_account_credential_versions_response response;
     if (!request.order.field.empty() || request.order.descending) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "order_not_supported";
-        response.result.message =
-            "This store pages in key order and cannot order by a stated field.";
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "account credentials", .field = request.order.field});
         return response;
     }
     if (request.filter) {
-        response.result.outcome = ores::utility::domain::outcome::invalid;
-        response.result.code = "filter_not_supported";
-        response.result.message = "Filtering is not served for this resource yet.";
+        response.result =
+            refuse(outcome_code::filter_not_supported, {.entity = "account credentials"});
         return response;
     }
     auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
@@ -225,8 +216,7 @@ account_credential_service::get_account_credential_version(
     auto found = repo_.read_at_version(
         ctx_, boost::uuids::to_string(request.key.account_credential.id), request.key.version);
     if (!found) {
-        response.result.outcome = ores::utility::domain::outcome::missing;
-        response.result.code = "not_found";
+        response.result = refuse(outcome_code::not_found, {.entity = "account_credential"});
         return response;
     }
     response.version = std::move(*found);

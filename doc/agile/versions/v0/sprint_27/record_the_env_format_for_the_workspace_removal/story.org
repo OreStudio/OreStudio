@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: C91714D3-17DD-4E7B-A94F-8C05C60791EE
+:END:
+#+title: Story: Record the env format change for the workspace removal
+#+description: The workspace service variables left the env format when the service was removed. Record the new format version in the env log.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The env format log records version 29 as the removal of ORES_WORKSPACE_SERVICE_DB_*, so older checkouts can upgrade.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The env format log names version 29 and what it removed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7757BF9D-A1D9-4A79-9A8C-0001C4FF367E][Scaffold story: Record the env format change for the workspace removal]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:84361355-EBEA-4379-AE13-491023D1A9E8][Record the env format version]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Record the env format change for the workspace removal |
+
+* Decisions
+
+* Out of scope
+
+- The service removal itself, which landed in PR #2816.
+
+* Result
+
+Removing the workspace service took its variables out of the env format. The format log now records version 29, and this checkout's .env is regenerated at that version with no ORES_WORKSPACE_SERVICE_DB_* line left.

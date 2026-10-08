@@ -28,9 +28,9 @@ encoded it as JSON text is deleted.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The relation is deprecated and the replacement is designed; the code is not started. |
+| Now           | The replacement is implemented: the batch is generated, the export carries it, and the payload is deleted. |
 | Waiting on    | Nothing.                               |
-| Next          | Generate the instrument batch, replace the export message field, and delete instrument_payload. |
+| Next          | Raise and merge the implementation PR; the hourly validation job builds and tests it. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -53,7 +53,7 @@ encoded it as JSON text is deleted.
 |------+-------+-------+-----+-------------|
 | [[id:979838DB-DEDC-4ABC-AC8F-A7A988C561F6][Scaffold story: Carry every trading instrument as a typed batch]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:8C89C69C-4B08-4334-9649-39A1EEF83572][Deprecate the polymorphic payload and design its replacement]] | DONE | 2026-10-08 | 2026-10-08 | Record the wire rule in the knowledge base, deprecate the polymorphic-payload page, and write the replacement shape into this story. No code. |
-| [[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]] | STARTED | 2026-10-08 | | Generate the instrument batch, replace the export message's instrument field, append on the producer and look up on the exporter, delete instrument_payload and its codec, and update the codec and exporter tests. |
+| [[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]] | DONE | 2026-10-08 | 2026-10-08 | Generate the instrument batch, replace the export message's instrument field, append on the producer and look up on the exporter, delete instrument_payload and its codec, and update the codec and exporter tests. |
 | [[id:7399D6CA-8FF5-497B-94AA-7172DCF31E60][Model the bond document container]] | DONE | 2026-10-08 | 2026-10-08 | Replace the hand-written bond document structs (bond_instrument_data and the 22 types beside it in bond_schedule_data.hpp) with codegen field_group models, so the export batch can carry the bond family as a generated type. Field groups already generate both the C++ domain header and the TypeScript interface; the only codegen gap is that a field group cannot import the types its members reference. |
 
 * Decisions

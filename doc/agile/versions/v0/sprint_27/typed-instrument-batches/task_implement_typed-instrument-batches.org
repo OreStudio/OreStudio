@@ -20,42 +20,67 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The export carries each trade's instrument as a typed array, not as an encoded
+payload. =export_portfolio_response= holds one array per instrument entity and
+one per child table, every element keyed by its trade id, all of it generated
+from the trade-type catalogue. =instrument_payload= and its codec are deleted.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
-| Now          | Not yet started.                       |
+| Now          | Complete. The wire carries generated typed arrays and the payload is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and merge.                |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
 
--
+- =instrument_payload=, its codec and its test are deleted. No message in
+  ores.trading declares a =std::variant= field or a =std::string= field that
+  holds an encoded value.
+- =export_portfolio_response= carries =instrument_batch=: one typed array per
+  routed instrument entity and per child table, every element keyed by its
+  trade id, beside the trade anchors.
+- The batch type, its =append= overloads, =find=, =find_all=, =merge= and its
+  TypeScript twin are generated from =ores.trading.trade_type_catalogue=, not
+  hand-written. Every batch member is a generated type.
+- The producer appends typed rows and the exporter rebuilds the in-memory
+  instrument by trade id, so the exporter's dispatch is unchanged.
+- The polymorphic-payload page records that the pattern is removed, not merely
+  deprecated.
 
 * Plan
 
-1. Generate an instrument batch: one typed array per concrete instrument
-   entity and one per child entity. The trade-type routing generator already
-   knows every instrument table and emits the include list, so it is the hook.
-2. Replace =trade_export_item.instrument= with the batch on
-   =export_portfolio_response=, and add the generated append and lookup
-   helpers.
-3. The producer appends each decoded variant arm into the batch; the exporter
-   looks the instrument up by trade id and rebuilds the in-memory variant, so
-   its existing dispatch is unchanged.
-4. Delete =instrument_payload=, its codec, the leaf-name registry and the
-   wrapper structs.
-5. Update =messaging_export_portfolio_codec_tests.cpp= and
-   =xml_exporter_tests.cpp=, and run the ORE mapper round-trip suite, which is
-   the byte-level check that the export still rebuilds its documents.
-
-The layout is fixed by the constraint in the deprecated page: it must be flat
-at the leaf level, because a nested =std::variant= cannot be encoded either.
+1. =ores.trading.trade_type_catalogue= gains a =* Batch= section: the child
+   tables the export carries, and an instrument-type table for the one family
+   whose document shape is a container over its rows (bond crosses as
+   =bond_instrument_data=). The loader turns that into the member list, deriving
+   each member's name from the entity's declared plural and each TypeScript
+   interface and module from its element type, and it refuses an override that
+   names no routed instrument or a child that no model declares.
+2. Two archetypes render the batch: =ores.cpp.trade_type.batch= emits
+   =instrument_batch.hpp= with the arrays and the readers (=trade_id_of=,
+   =append=, =find=, =find_all=, =merge=), and =ores.ts.trade_type.batch= emits
+   the TypeScript twin from the same model.
+3. A hand-written =instrument_batch_mapper= holds the two conversions between
+   the batch and the in-memory carrier: =append_instrument= for the import path
+   and the tests, and =rebuild_instrument= for the exporter.
+4. The protocol model drops =trade_export_item.instrument= and adds
+   =export_portfolio_response.instruments=. The storage export stores the
+   response itself, so the blob carries the same two arrays a live caller
+   receives.
+5. The producer is rewritten to append typed rows straight into the page's
+   batch: no intermediate map, no variant, and no per-trade pairing, because
+   every row already carries its trade id.
+6. =rpa_instrument= leaves =rates_instrument_variant=. No trade type routes to
+   it since RPA became a credit product, so it could never be produced; the
+   dead branch in the ORE import handler and the two stale references go with
+   it.
+7. The two test suites that built an export item from a payload now build a
+   batch, and the payload's own test is deleted.
 
 * Measurements
 
@@ -69,9 +94,51 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Batch members generated | 36 (29 instruments + 7 child tables) | org_loader.load_org_trade_type_catalogue_model | worktree |
+| Instrument-type overrides | 1 (=bond_instrument= crosses as =bond_instrument_data=) | same | worktree |
+| Messages in ores.trading with a variant or encoded-string field | 0 | grep for instrument_payload, encode_instrument, decode_instrument | worktree |
+| Generated output matches the tree, all components | no drift | check_component_drift.py --all --dry-run | worktree |
+| component_files.cmake lists | all up to date | regenerate_cmake_component_files.py --all --check | worktree |
+| Physical-space inventories | 50 tables up to date | regenerate_physical_space_inventories.py --check | worktree |
+| clang-format on the changed C++ | clean | clang-format --dry-run --Werror | worktree |
+| Codegen suite | 1268 passed, 8 failed | pytest projects/ores.codegen/tests -q | worktree |
+| Build, tests | not run | by policy; swift curie's hourly job owns them | worktree |
+
+The eight codegen failures are pre-existing and unrelated to this task: six in
+=test_provision_step_words= (translations) and two in
+=test_handler_permissions=, which reports =trading::trade_links:*= and
+=trading::trade_link_types:* as checked but never seeded. The same run also
+reports three unrelated checks red: =handler-permissions=, =create-reachability=
+(the =swap_leg_amounts= and =swap_leg_rates= create files are not wired into
+=trading_create.sql=) and =er-diagram= (the same two tables have =tenant_id=
+without row level security).
 
 * Notes
+
+- The batch is generated from the catalogue rather than from the entity facet
+  list, because the catalogue already knows which table holds each trade type
+  and the batch's membership follows the routing exactly: 29 instrument arrays
+  for the 29 routed tables, plus the 7 child tables the export carries.
+- =trade_id_of= reads the key shape a member has rather than each member
+  carrying an accessor: a generated entity nests its key in an identity group,
+  a document container holds the entity that does (=bond_instrument_data=), and
+  a flat child states it directly. A model that gains or loses the group needs
+  no change to the generated header.
+- The producer never builds a variant. It pushes the typed rows each service
+  returns straight into the page's batch, so the intermediate map, the copy per
+  item and the phase that paired rows with items are all gone.
+- The storage export stores the response itself rather than a vector of items,
+  so the blob carries the same two arrays a live caller receives.
+- =rpa_instrument= was removed from =rates_instrument_variant=: no trade type
+  routes to it since RPA became a credit product, so no array could hold it and
+  =append_instrument= would have had an arm it could only drop. What is left of
+  the generated =rpa_instrument= entity (its table, service and protocol) is
+  untouched and belongs to the recorded retirement capture.
+- The regeneration also refreshed three eventing integration tests and one
+  component file list that trunk had left stale: the templates render
+  =event_subject_wildcard=, while the committed files still spelled the subject
+  prefix out by hand. They are generated files, so the gate demands the
+  regenerated form.
 
 * Test Scenarios
 
@@ -97,3 +164,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=instrument_payload=, its codec and its test are deleted. =export_portfolio_response=
+carries =instrument_batch=: 36 generated arrays, one per routed instrument
+entity and per child table, every element keyed by its trade id. The batch type,
+its readers and its TypeScript twin are generated from the trade-type catalogue.
+A trade's instrument is rebuilt by the exporter from the array its table names,
+so its reverse-mapper dispatch is unchanged.
+
+Build and tests are not run on this branch: the hourly validation job owns them
+and this task's validation is static, as the current process asks.

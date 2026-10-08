@@ -8,7 +8,7 @@
 #+filetags: :repair_the_drifted_artefacts:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/repair-the-drifted-artefacts
-#+pr:
+#+pr: 2800
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2800][#2800]] | [web] Format the access page |
 
 * Review
 

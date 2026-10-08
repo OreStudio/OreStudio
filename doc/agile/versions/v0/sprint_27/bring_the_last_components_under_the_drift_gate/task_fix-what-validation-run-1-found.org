@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch:
-#+pr: 2854
+#+pr: 2861
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2861][#2861]] | [sql] Drop the duplicate swap leg RLS policies |
 | [[https://github.com/OreStudio/OreStudio/pull/2854][#2854]] | [sql,codegen] Close the swap leg RLS gap and the locator bug |
 
 * Review

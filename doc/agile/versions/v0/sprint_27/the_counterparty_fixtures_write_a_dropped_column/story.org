@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 30C1FE4E-D671-4128-ACDE-C98E400B8009
+:END:
+#+title: Story: Hotfix: the counterparty fixtures write a dropped column
+#+description: 0d9dd1a899 replaced the counterparty's business_center_code column with a business centres junction, but a C++ generator test still asserts the member and nine pgTAP fixtures still insert it, so the build stops at 81% and no fixture can run against a recreated database.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:refdata:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let ores.refdata.api compile and let the counterparty fixtures load.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The member is gone from the code and from nine fixtures; the scans find no other consumer. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- No code names counterparty.business_center_code.
+- No fixture inserts business_center_code into the counterparties table.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CEF77AF3-77C0-4232-9DF2-9DBDDE60A6DB][Scaffold story: Hotfix: the counterparty fixtures write a dropped column]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A1D34D94-FAC6-4282-B51A-22C8A4A1B23A][Implement Hotfix: the counterparty fixtures write a dropped column]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the counterparty fixtures write a dropped column |
+
+* Decisions
+
+- *Only the counterparty's column went; the party's stays.* Both entities have
+  a =business_center_code=, and only the counterparty's was replaced. Every
+  other occurrence -- the party generator test, =auth_handler=,
+  =tenant_provisioning_handler=, the BFF and the wire protocol -- was read
+  before being left alone.
+- *Fix the fixtures, not the schema.* The column is gone by design and a pgTAP
+  test asserts it is gone. A fixture that still writes it is stale, not a
+  reason to put it back.
+
+* Out of scope
+
+- The counterparty's service and shell surfaces, if any read the centre. The
+  scan for the member covers the whole tree and reports none.
+
+* See also
+
+- [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] — the
+  work that replaced the column with the junction.

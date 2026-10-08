@@ -68,6 +68,9 @@ class Check:
     phase: int = CHECKS
     cwd: str = "."
     timeout: int = 900
+    # Checks this one must follow, by id. The catalogue order is the default;
+    # this states the dependencies that order must not be allowed to break.
+    after: tuple[str, ...] = ()
 
     def command(self, base: str, preset: str) -> list[str]:
         return [a.replace("{base}", base).replace("{preset}", preset) for a in self.argv]
@@ -82,6 +85,47 @@ class Check:
             for path in changed
             for pattern in self.paths
         )
+
+
+def in_dependency_order(group: list[Check], known: set[str]) -> list[Check]:
+    """One phase's checks, ordered so a deriving writer follows its source.
+
+    The catalogue order is the default, and a check that names nothing keeps
+    its place. A check that reads what another writes states that with
+    `after`, because two writers over the same artefacts must not be ordered
+    by where they happen to sit in the file. `tangle-shell` tangles the
+    recipes `component-drift` writes: run first, it tangles the previous
+    revision, so the run re-tangles a tree the same run is about to change and
+    the scripts are stale again the moment the recipes are committed.
+
+    A name that is no check at all is a typo and raises. A name in an earlier
+    phase is already satisfied by the phase order, so it is ignored here. A
+    cycle raises rather than looping.
+    """
+    ids = {check.id for check in group}
+    for check in group:
+        for dependency in check.after:
+            if dependency not in known:
+                raise ValueError(
+                    f"check {check.id!r} runs after {dependency!r}, "
+                    "which is not a check")
+    ordered: list[Check] = []
+    placed: set[str] = set()
+    remaining = list(group)
+    while remaining:
+        # One at a time, first in catalogue order, so a check that names no
+        # dependency never moves and only the deriving writer is deferred.
+        for check in remaining:
+            if all(d not in ids or d in placed for d in check.after):
+                ordered.append(check)
+                placed.add(check.id)
+                remaining.remove(check)
+                break
+        else:
+            raise ValueError(
+                "checks depend on each other in a cycle: "
+                + ", ".join(c.id for c in remaining))
+    return ordered
 
 
 # --------------------------------------------------------------------------
@@ -226,6 +270,7 @@ CATALOGUE: tuple[Check, ...] = (
         paths=("doc/recipes/shell/*",
                "projects/ores.lisp/src/ores-build-recipe-scripts.el",
                "projects/ores.shell/scripts/library/*"),
+        after=("component-drift",),
         phase=PREPARE,
         fix="Commit the regenerated scripts under projects/ores.shell/scripts/library.",
     ),
@@ -243,6 +288,7 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("modeling", "codegen"),
         paths=("doc/recipes/http/*",
                "projects/ores.lisp/src/ores-build-http-recipes.el"),
+        after=("component-drift",),
         phase=PREPARE,
         fix="Commit the regenerated files under doc/recipes/http and"
             " projects/ores.http/scripts/library.",
@@ -252,6 +298,7 @@ CATALOGUE: tuple[Check, ...] = (
         title="The changed pages build and their links resolve",
         argv=("./compass.sh", "site", "page"),
         classes=("docs",),
+        after=("component-drift",),
         phase=PREPARE,
         fix="Fix the page the report names, then run compass site page again.",
     ),
@@ -335,6 +382,7 @@ CATALOGUE: tuple[Check, ...] = (
         title="Every component has an overview and a diagram",
         argv=("bash", "projects/ores.codegen/validate_docs.sh"),
         classes=("modeling", "codegen"),
+        after=("component-drift",),
         phase=PREPARE,
     ),
     Check(
@@ -342,6 +390,7 @@ CATALOGUE: tuple[Check, ...] = (
         title="Every component_files.cmake list matches the tree",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/regenerate_cmake_component_files.py", "--all", "--check"),
         classes=("codegen", "modeling", "cpp", "sql", "services"),
+        after=("component-drift",),
         phase=PREPARE,
         fix="Run the same command with --all to regenerate, then commit.",
     ),
@@ -461,6 +510,7 @@ CATALOGUE: tuple[Check, ...] = (
         ),
         classes=("modeling", "codegen", "docs"),
         paths=("doc/recipes/shell/*", "doc/recipes/http/*"),
+        after=("component-drift",),
         phase=PREPARE,
     ),
     Check(
@@ -468,6 +518,7 @@ CATALOGUE: tuple[Check, ...] = (
         title="The physical-space inventories match the templates",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/regenerate_physical_space_inventories.py", "--check"),
         classes=("modeling", "codegen"),
+        after=("component-drift",),
         phase=PREPARE,
         fix="Run the same command without --check, then commit the inventories.",
     ),
@@ -772,8 +823,9 @@ def run_all(selected: list[Check], base: str, preset: str, jobs: int) -> list[Re
     for check in selected:
         by_phase.setdefault(check.phase, []).append(check)
 
+    known = {check.id for check in selected}
     for phase in sorted(by_phase):
-        group = by_phase[phase]
+        group = in_dependency_order(by_phase[phase], known)
         print(f"\n▶  {PHASE_NAMES.get(phase, phase)} ({len(group)})", flush=True)
         if phase == CHECKS and jobs > 1:
             with ThreadPoolExecutor(max_workers=jobs) as pool:

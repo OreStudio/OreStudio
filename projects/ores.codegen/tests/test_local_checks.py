@@ -211,3 +211,67 @@ def test_an_unknown_check_id_is_an_error(capsys):
 def test_a_plan_lists_the_reasons(path, capsys):
     assert local_checks.main(["--plan", "--paths", path]) == 0
     assert "Why these checks" in capsys.readouterr().out
+
+
+# -- the order within a phase -----------------------------------------------
+
+
+def phase_order(phase):
+    known = {check.id for check in local_checks.CATALOGUE}
+    group = [check for check in local_checks.CATALOGUE if check.phase == phase]
+    return [check.id for check in local_checks.in_dependency_order(group, known)]
+
+
+def test_the_tangle_follows_the_generation_it_reads():
+    # tangle-shell copies the recipe's tangle block into the script library,
+    # and component-drift is what writes the recipe. Tangle first and it
+    # copies the previous revision, so the run leaves the scripts stale
+    # against the recipes it is about to commit.
+    order = phase_order(local_checks.PREPARE)
+    assert order.index("component-drift") < order.index("tangle-shell")
+    assert order.index("component-drift") < order.index("tangle-http")
+
+
+def test_every_writer_that_derives_from_generated_output_follows_the_generator():
+    order = phase_order(local_checks.PREPARE)
+    generated = order.index("component-drift")
+    for check in local_checks.CATALOGUE:
+        if "component-drift" in check.after:
+            assert order.index(check.id) > generated, check.id
+
+
+def test_only_the_generator_moves_and_the_rest_keeps_its_catalogue_place():
+    # The point of ordering rather than reordering: component-drift is pulled
+    # forward to just before the first check that names it, and every other
+    # check keeps the relative position the catalogue gives it.
+    catalogue = [check.id for check in local_checks.CATALOGUE
+                 if check.phase == local_checks.PREPARE]
+    order = phase_order(local_checks.PREPARE)
+    without = [cid for cid in order if cid != "component-drift"]
+    assert without == [cid for cid in catalogue if cid != "component-drift"]
+    dependents = [cid for cid in order
+                  if cid in {c.id for c in local_checks.CATALOGUE
+                             if "component-drift" in c.after}]
+    # Pulled forward to immediately before the first check that names it, not
+    # further and not to the front.
+    assert order.index("component-drift") == min(
+        order.index(cid) for cid in dependents) - 1
+
+
+def test_a_dependency_that_is_not_a_check_is_an_error():
+    bogus = local_checks.Check(
+        id="x", title="x", argv=("true",), classes=("docs",),
+        phase=local_checks.PREPARE, after=("no-such-check",))
+    with pytest.raises(ValueError, match="which is not a check"):
+        local_checks.in_dependency_order([bogus], {bogus.id})
+
+
+def test_checks_that_depend_on_each_other_are_an_error():
+    a = local_checks.Check(id="a", title="a", argv=("true",),
+                           classes=("docs",), phase=local_checks.PREPARE,
+                           after=("b",))
+    b = local_checks.Check(id="b", title="b", argv=("true",),
+                           classes=("docs",), phase=local_checks.PREPARE,
+                           after=("a",))
+    with pytest.raises(ValueError, match="cycle"):
+        local_checks.in_dependency_order([a, b], {"a", "b"})

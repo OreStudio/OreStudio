@@ -20,8 +20,14 @@ one top page naming the groups, one page per group listing its prototypes, and
 one folder per group holding them. A Gemini review, where one exists, sits at
 doc/prototypes/<group>/<name>/review/, beside the prototype it reviews.
 
-This gate keeps the second way from growing back, and keeps the group pages
-the only inventory a reader can trust.
+A prototype is a design record, so it is published exactly as it was written
+and carries nothing the site adds: a page that the site decorates is no longer
+the page that was agreed. The group page is where a reader is told what a
+prototype argues and whether anyone has reviewed it, and its review cell says
+none for a prototype nobody has reviewed, so the unreviewed set is one grep.
+
+This gate keeps the second way from growing back, and keeps the group pages the
+only inventory a reader can trust.
 
 How it checks
 -------------
@@ -29,15 +35,11 @@ How it checks
 - Every doc/prototypes/<group>/<name>/index.html has a row on
   doc/prototypes/<group>/index.org.
 - Every row on a group page names a real prototype directory.
-- Every group that holds a prototype has a group page.
-- Every group page is linked from doc/prototypes/index.org.
-- Every review directory holds an index.html and is named on its group page.
-- Every page that presents a prototype — the prototype page, and the design
-  note beside it that the group page's title opens — heads itself with a links
-  table naming the prototype and its review, and says =none= in the review row
-  when there is no review, so an unreviewed prototype can be found with one
-  grep. Every review page carries the same table, pointing back at the
-  prototype it reviews.
+- A row whose prototype has a review links it, and a row whose prototype has
+  none says none.
+- Every review directory holds an index.html.
+- Every group that holds a prototype has a group page, and the top page links
+  it.
 - The site build discovers the prototypes rather than naming them, so a new
   prototype needs no change there.
 - The React prototype tree and its route table are gone.
@@ -55,33 +57,18 @@ import pathlib
 import re
 import sys
 
-# A group page opens a prototype with [[file:<name>/][...]], and a review with
+# A group page opens a prototype with [[file:<name>/][...]] and a review with
 # [[file:<name>/review/][...]].
 PROTOTYPE_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/")
-REVIEW_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/review/")
-
-# Every prototype page heads itself with a links table whose review row opens
-# the review, or says "none" so the unreviewed prototypes can be found at once.
-REVIEW_CELL_RE = re.compile(r'class="prototype-review"[^>]*>(.*?)</td>', re.S)
-NO_REVIEW = "none"
-REVIEW_HREF = "review/index.html"
-# A review page opens the prototype it reviews, one directory up.
-REVIEW_PROTOTYPE_HREF = "../index.html"
-# ... and the review index in its own directory.
-REVIEW_SELF_HREF = "index.html"
-
-# Each kind of page reaches its group page by a different path.
-PROTOTYPE_CELL_RE = re.compile(r'class="prototype-open"[^>]*>\s*<a href="([^"]+)"')
-GROUP_CELL_RE = re.compile(r'class="prototype-group"[^>]*>\s*<a href="([^"]+)"')
-PROTOTYPE_GROUP_HREF = "../"
-NOTE_GROUP_HREF = "./"
-REVIEW_GROUP_HREF = "../../"
 
 # The top page opens a group page with [[file:<group>/][...]].
 GROUP_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9_]*)/")
 
 # The site build deploys every prototype it finds under the group folders.
 DISCOVERY_CALL = "ores-deploy-prototypes"
+
+# A prototype nobody has reviewed says so in the review cell of its row.
+NO_REVIEW = "none"
 
 # The React prototype tree is retired; its presence is the drift this gate
 # exists to catch.
@@ -121,8 +108,8 @@ def _read(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8") if path.is_file() else ""
 
 
-def listed_on_group_pages(root: pathlib.Path) -> set[tuple[str, str]]:
-    """Every (group, prototype) a group page links."""
+def listed(root: pathlib.Path) -> set[tuple[str, str]]:
+    """Every (group, prototype) a group page lists."""
     found: set[tuple[str, str]] = set()
     for group in group_pages(root):
         page = root / "doc" / "prototypes" / group / "index.org"
@@ -130,12 +117,14 @@ def listed_on_group_pages(root: pathlib.Path) -> set[tuple[str, str]]:
     return found
 
 
-def reviews_on_group_pages(root: pathlib.Path) -> set[tuple[str, str]]:
-    """Every (group, prototype) whose group page names a review."""
-    found: set[tuple[str, str]] = set()
+def rows(root: pathlib.Path) -> dict[tuple[str, str], str]:
+    """The row a group page writes for each prototype, keyed by (group, name)."""
+    found: dict[tuple[str, str], str] = {}
     for group in group_pages(root):
         page = root / "doc" / "prototypes" / group / "index.org"
-        found |= {(group, name) for name in REVIEW_RE.findall(_read(page))}
+        for line in _read(page).splitlines():
+            for name in PROTOTYPE_RE.findall(line):
+                found[(group, name)] = line
     return found
 
 
@@ -150,53 +139,6 @@ def site_build_discovers(root: pathlib.Path) -> bool:
     return DISCOVERY_CALL in _read(site)
 
 
-def check_review_row(problems, label, text, has_review, href):
-    """The review row must open the review, or say none when there is none."""
-    match = REVIEW_CELL_RE.search(text)
-    if match is None:
-        problems.append(
-            f"{label} has no links table: the page must name the prototype and "
-            "its review"
-        )
-        return
-    cell = match.group(1).strip()
-    if has_review and f'href="{href}"' not in cell:
-        problems.append(f"{label} has a review, but its links table does not open it")
-    if not has_review and cell != NO_REVIEW:
-        problems.append(
-            f"{label} has no review, so its links table must say {NO_REVIEW}: an "
-            "unreviewed prototype is found by that row"
-        )
-
-
-def check_prototype_row(problems, label, text, expected):
-    """The prototype row must open the prototype the page presents."""
-    match = PROTOTYPE_CELL_RE.search(text)
-    if match is None:
-        problems.append(
-            f"{label} has no prototype row in its links table: the page must open "
-            "the prototype it presents"
-        )
-    elif match.group(1) != expected:
-        problems.append(
-            f"{label} opens the prototype as {match.group(1)!r}, not {expected!r}"
-        )
-
-
-def check_group_row(problems, label, text, expected):
-    """The group row must open the prototype's group page."""
-    match = GROUP_CELL_RE.search(text)
-    if match is None:
-        problems.append(
-            f"{label} has no group row in its links table: a reader needs the way "
-            "back to the group"
-        )
-    elif match.group(1) != expected:
-        problems.append(
-            f"{label} opens the group as {match.group(1)!r}, not {expected!r}"
-        )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=".", help="repository root")
@@ -205,18 +147,18 @@ def main() -> int:
 
     present = prototypes(root)
     pages = group_pages(root)
-    listed = listed_on_group_pages(root)
+    listed_rows = listed(root)
     reviewed = reviews(root)
-    named = reviews_on_group_pages(root)
+    page_rows = rows(root)
     groups_linked = linked_groups(root)
     problems: list[str] = []
 
-    for group, name in sorted(present - listed):
+    for group, name in sorted(present - listed_rows):
         problems.append(
             f"doc/prototypes/{group}/{name}/index.html is not listed on "
             f"doc/prototypes/{group}/index.org"
         )
-    for group, name in sorted(listed - present):
+    for group, name in sorted(listed_rows - present):
         problems.append(
             f"doc/prototypes/{group}/index.org lists {name}, but "
             f"doc/prototypes/{group}/{name}/index.html does not exist"
@@ -244,46 +186,25 @@ def main() -> int:
                 f"doc/prototypes/{group}/{name}/review/ has no index.html: a "
                 "review lists its screens on one page"
             )
-    for group, name in sorted(reviewed - named):
-        problems.append(
-            f"doc/prototypes/{group}/{name}/review/ is not named on "
-            f"doc/prototypes/{group}/index.org: the group page must say which "
-            "prototypes carry a review"
-        )
-    for group, name in sorted(named - reviewed):
-        problems.append(
-            f"doc/prototypes/{group}/index.org names a review for {name}, but "
-            f"doc/prototypes/{group}/{name}/review/ does not exist"
-        )
-    # Every page that presents a prototype heads itself with the links table:
-    # the prototype page, the design note beside it that the group page's title
-    # opens, and every page of its review. Each row is checked against the tree,
-    # so the table cannot promise a review that is not there, or leave the
-    # reader with no way back to the group.
+    # The review cell of a row is the only place a reader is told whether a
+    # prototype has been reviewed, and the only place the unreviewed set can be
+    # counted, so it must agree with the review directory.
     for group, name in sorted(present):
-        has_review = (group, name) in reviewed
-        for label, text, hrefs in (
-            (f"doc/prototypes/{group}/{name}/index.html",
-             _read(root / "doc" / "prototypes" / group / name / "index.html"),
-             ('index.html', REVIEW_HREF, PROTOTYPE_GROUP_HREF)),
-            (f"doc/prototypes/{group}/{name}.org",
-             _read(root / "doc" / "prototypes" / group / f"{name}.org"),
-             (f'{name}/index.html', f'{name}/review/index.html',
-              NOTE_GROUP_HREF)),
-        ):
-            if label.endswith('.org') and not (root / label).is_file():
-                continue
-            check_prototype_row(problems, label, text, hrefs[0])
-            check_review_row(problems, label, text, has_review, hrefs[1])
-            check_group_row(problems, label, text, hrefs[2])
-    for group, name in sorted(reviewed):
-        for page in sorted((root / "doc" / "prototypes" / group / name
-                            / "review").glob("*.html")):
-            label = f"doc/prototypes/{group}/{name}/review/{page.name}"
-            text = _read(page)
-            check_prototype_row(problems, label, text, REVIEW_PROTOTYPE_HREF)
-            check_review_row(problems, label, text, True, REVIEW_SELF_HREF)
-            check_group_row(problems, label, text, REVIEW_GROUP_HREF)
+        row = page_rows.get((group, name))
+        if row is None:
+            continue
+        if (group, name) in reviewed:
+            if f"[[file:{name}/review/" not in row:
+                problems.append(
+                    f"doc/prototypes/{group}/index.org lists {name} without its "
+                    "review, though the review directory exists"
+                )
+        elif not row.rstrip().endswith(f"| {NO_REVIEW} |"):
+            problems.append(
+                f"doc/prototypes/{group}/index.org lists {name} without a review, "
+                f"so its review cell must say {NO_REVIEW}: an unreviewed prototype "
+                "is found by that row"
+            )
     if not site_build_discovers(root):
         problems.append(
             f"the site build does not call {DISCOVERY_CALL}: the prototypes "
@@ -303,8 +224,8 @@ def main() -> int:
 
     print(
         f"Prototype inventory: {len(present)} prototype(s) in {len(pages)} "
-        f"group(s), all listed and published; {len(reviewed)} Gemini review(s); "
-        "no React prototype tree."
+        f"group(s), all listed and published; {len(reviewed)} Gemini review(s), "
+        f"{len(present) - len(reviewed)} unreviewed; no React prototype tree."
     )
     return 0
 

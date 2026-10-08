@@ -23,9 +23,9 @@ Make ores.marketdata.core compile again on main.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The fix is written; the build is unblocked once it merges. |
-| Waiting on    | Nothing.                               |
-| Next          | Open the PR and merge it.              |
+| Now           | The fix is merged in PR #2879 and awaits the hourly validation build. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Close the story once that build is green. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -37,8 +37,8 @@ Make ores.marketdata.core compile again on main.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B9B27793-7A06-4896-AD0E-C9C3038A5030][Scaffold story: Hotfix: the oresmd codec does not compile]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0B0CC14C-373C-41F3-8B87-A370796193B3][Implement Hotfix: the oresmd codec does not compile]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the oresmd codec does not compile |
+| [[id:B9B27793-7A06-4896-AD0E-C9C3038A5030][Scaffold story: Hotfix: the oresmd codec does not compile]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0B0CC14C-373C-41F3-8B87-A370796193B3][Implement Hotfix: the oresmd codec does not compile]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the oresmd codec does not compile |
 
 * Decisions
 

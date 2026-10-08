@@ -26,11 +26,11 @@ Make ores.marketdata.core compile again on main.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D6BEBC3-A56A-4A00-B9B0-B7A7B364A616][Hotfix: the oresmd codec does not compile]] |
-| Now          | Root cause found; the fix is written and inspected. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -104,3 +104,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2879. The four call sites name =oresmd_uri_codec=, so the two
+errors clang reported are gone and the reader and the writer reach the same
+spelling.
+
+The compile is verified by inspection only. No build ran in this worktree: the
+current workflow has the hourly validation build compile =main=, and that run is
+the confirmation. If it fails here, the fix was wrong and the story is still
+open to say so.

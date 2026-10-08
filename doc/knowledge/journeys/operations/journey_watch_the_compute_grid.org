@@ -187,8 +187,9 @@ does, and reads the wrapper samples.
 2. *A wrapper sits on its node.* Closed by
    [[id:BAE5860D-49CF-4063-A63A-76DA8AFAB166][Carry the host on the heartbeat]]:
    =host_id= sits on the heartbeat beside the release and on the stored sample,
-   so the panel joins each wrapper to the node it runs on, and each node row
-   can state the release it runs.
+   so the panel joins each wrapper to the node it runs on. The screen states the
+   release on the wrapper row; a node row could state it from the same join, and
+   the accepted design leaves it where the prototype drew it.
 3. *The failures reach the screen.* Closed by
    [[id:4DC1AFB6-F687-4314-A5B3-C7A786A93F57][Keep the failure fields on the node summary]]:
    =tasks_failed= and =max_task_duration_ms= sit on =node_stats_summary=, and

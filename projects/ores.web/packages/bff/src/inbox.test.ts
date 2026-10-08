@@ -285,11 +285,22 @@ describe('the story of one request', () => {
             'inbox.v1.ops.get_request_roles': roles,
             'inbox.v1.approval_decisions.list': decision,
             'inbox.v1.ops.list_my_notifications': notices,
+            // The decision names the decider by account id, and the story
+            // resolves it rather than showing a UUID beside people's names.
+            'iam.v1.accounts.list': {
+                result: OK,
+                accounts: [{ id: PRIYA, username: 'priya' }],
+                total: 1,
+            },
         });
 
         expect(response.statusCode).toBe(200);
         const story = response.json();
         expect(story.requestId).toBe(REQUEST);
+        const decided = story.events.find(
+            (event: { kind: string }) => event.kind === 'decided',
+        );
+        expect(decided.actor).toBe('priya');
         expect(story.events.map((event: { kind: string }) => event.kind)).toEqual([
             'granted',
             'decided',

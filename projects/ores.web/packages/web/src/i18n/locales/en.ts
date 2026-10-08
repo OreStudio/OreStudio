@@ -280,7 +280,6 @@ export const en: SourceCatalogue = {
             title: 'The story of {role}',
             lead: '{state}, asked {date}. Every row the request wrote, newest first.',
             request: 'The request',
-            noActor: 'a service',
             answerNotShown:
                 'This request has an answer, and the answer is not yours to read. The steps taken by whoever answered it are not shown.',
             kind: {

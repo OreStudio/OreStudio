@@ -569,7 +569,6 @@ async function readRequesters(
     requestIds: readonly string[],
 ): Promise<{ accountByRequest: Map<string, string>; usernameByAccount: Map<string, string> }> {
     const accountByRequest = new Map<string, string>();
-    const usernameByAccount = new Map<string, string>();
     const request: ListRoleGrantRequestsRequest = {
         offset: 0,
         limit: JOIN_PAGE,
@@ -590,16 +589,33 @@ async function readRequesters(
     for (const grant of grants?.role_grant_requests ?? []) {
         accountByRequest.set(grant.request_id, grant.account_id);
     }
-    if (accountByRequest.size === 0) return { accountByRequest, usernameByAccount };
+    // The helper answers an empty map for no accounts, so a page of requests
+    // that named none costs no read.
+    const usernameByAccount = await readUsernames(caller, [...accountByRequest.values()]);
+    return { accountByRequest, usernameByAccount };
+}
+
+/**
+ * The username of each account named, in one read.
+ *
+ * A refusal answers nothing rather than throwing, because naming a person is a
+ * nicety and the row that names them is not: a member may not read the account
+ * list, and a story that refused to draw itself for want of a username would be
+ * worse than one that names the account by its id.
+ */
+async function readUsernames(
+    caller: AuthenticatedCaller,
+    accountIds: readonly string[],
+): Promise<Map<string, string>> {
+    const usernameByAccount = new Map<string, string>();
+    const wanted = [...new Set(accountIds)].slice(0, JOIN_PAGE);
+    if (wanted.length === 0) return usernameByAccount;
 
     const accounts: ListAccountsRequest = {
         offset: 0,
         limit: JOIN_PAGE,
         order: UNORDERED,
-        filter: {
-            id_one_of: [...new Set(accountByRequest.values())].slice(0, JOIN_PAGE),
-            search: null,
-        },
+        filter: { id_one_of: wanted, search: null },
         as_of: null,
     };
     const found = await readJoin(
@@ -611,7 +627,7 @@ async function readRequesters(
     for (const account of found?.accounts ?? []) {
         usernameByAccount.set(account.id, account.username);
     }
-    return { accountByRequest, usernameByAccount };
+    return usernameByAccount;
 }
 
 /**
@@ -932,13 +948,16 @@ async function readDecisionsAbout(
     const byRequest = await readDecisionsByRequest(caller, [requestId]);
     const decision = byRequest.get(requestId);
     if (decision === undefined) return [];
+    // The decision names the decider by account id. Every other event in the
+    // story names a person, so the id is resolved rather than shown.
+    const named = await readUsernames(caller, [decision.decidedBy]);
     return [
         {
             entityType: DECISION_ENTITY,
             entityId: requestId,
             kind: 'decided',
             at: decision.decidedAt,
-            actor: decision.decidedBy,
+            actor: named.get(decision.decidedBy) ?? decision.decidedBy,
             version: 1,
             reasonCode: '',
             commentary: '',

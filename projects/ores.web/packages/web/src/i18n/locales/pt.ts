@@ -279,7 +279,6 @@ const pt: SourceCatalogue = {
             title: 'A história de {role}',
             lead: '{state}, pedido em {date}. Cada linha escrita pelo pedido, a mais recente primeiro.',
             request: 'O pedido',
-            noActor: 'um serviço',
             answerNotShown:
                 'Este pedido tem resposta, e a resposta não é sua para ler. Os passos de quem respondeu não são mostrados.',
             kind: {

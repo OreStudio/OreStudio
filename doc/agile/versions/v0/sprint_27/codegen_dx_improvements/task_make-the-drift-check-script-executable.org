@@ -81,6 +81,7 @@ task and name that file in the Command column.
 | Literal-path run reaches the check | Ran =compute-cpp= to completion and reported the one drifted file, which was this script's own uncommitted edit | =projects/ores.codegen/scripts/check_component_drift.py --component compute-cpp= | e8310961e8 |
 | Callers that execute the path directly | 0 of 4; every caller hands the path to an interpreter | =grep -rn "check_component_drift" .github/ build/scripts/ projects/*/scripts/= | e8310961e8 |
 | Modules importing the script | 5; none of them may be re-exec'd | =grep -rn "import check_component_drift" projects/ores.codegen/= | e8310961e8 |
+| The whole gate by its literal path | =No drift: regenerated output matches the checked-in tree.=, exit 0, and the tree clean afterwards | =projects/ores.codegen/scripts/check_component_drift.py --all= | bc15ab1771 |
 
 The value column of the first three rows is a fact about the tree, and the
 commit column names the commit it was measured at. An earlier draft of this
@@ -176,3 +177,8 @@ neither workflow was ever broken by the absent checkout virtualenv. They are
 unaffected by this change rather than repaired by it. The re-exec exists for a
 bare local =python3=, which has no requirements installed and no virtualenv to
 find them in.
+
+The whole gate was run again by its literal path once the guard was corrected,
+because the evidence above it predates that correction: at =bc15ab1771= it
+printed =No drift: regenerated output matches the checked-in tree.=, exit 0,
+leaving the tree clean.

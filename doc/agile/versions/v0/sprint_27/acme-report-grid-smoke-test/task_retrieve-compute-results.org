@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-10-08
+#+updated: 2026-10-09
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ collect_compute_results completes without downloading anything, and ores.reporti
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Scoped. Two things it needs are not in place: =collect_results= is still the pass-through, and the instance has no field to record an output location in. |
-| Waiting on   | The decision on where the output location is recorded, because a new column would have to be modelled and migrated before the rest can be written. |
-| Next         | Settle the location field, then the two reads from compute and the download. |
-| Last touched | 2026-10-08                               |
+| Now          | Implemented. =collect_results= reads the batch from compute as the run, fails the run on a failed result, and keeps the output under the component's own key. |
+| Waiting on   | The hourly validation, then a run with a finished compute job, to exercise the retrieval live. |
+| Next         | A live run, and the retrieval's own test target if the handler is to be covered rather than only the plan. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
@@ -122,3 +122,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The step is implemented, and both acceptance bullets are met in code.
+
+- *The reads.* =collect_results= asks compute for the batch's workunits and then
+  for each workunit's results, over the bus with the run token, which is how
+  every other step in this arc reaches an owner's data. No new protocol was
+  needed: =compute.v1.workunits.list_by_batch_id= and
+  =compute.v1.results.list_by_workunit_id= already existed, and the Plan's
+  first reading, that this needed a new subject with its own tests, was wrong.
+- *The failed job is distinguishable.* A result whose =outcome= is not Success
+  fails the run and carries the wrapper's own =error_message=. A batch whose
+  results name no output is a failure too, rather than a run that quietly
+  retrieves nothing.
+- *The output is fetched and its landing recorded.* The object the result names
+  is read from there and kept under this component's own key,
+  =reporting/runs/{instance}/output.tar.gz=, so the instance names an object
+  reporting owns rather than another component's, and the instance records that
+  key in =output_storage_key=.
+
+=storage_paths::split_object_path= turns the result's path back into the bucket
+and key it names, so reporting reads the object the owner named instead of
+reconstructing compute's key layout in a second place.
+
+=ores.reporting.core= gains =ores.compute.api= and a =run_token= helper: an owner
+is reached over the bus, where the token rides as a delegation, while storage is
+reached over HTTP, which takes it as a bearer.
+
+*Verified by building and running.* =ores.reporting.core.lib=,
+=ores.reporting.service.exe= and =ores.reporting.core.tests= all build. The
+storage-plan cases pass, 14 assertions in 5 cases, including the new
+=output_storage_key= case.
+
+*The gap.* The handler itself has no test: =collect_results= talks to compute
+and storage, so covering it needs those stood up, and nothing in
+=ores.reporting.core.tests= does that today. The plan's key and the object-path
+split are the seams that are covered.

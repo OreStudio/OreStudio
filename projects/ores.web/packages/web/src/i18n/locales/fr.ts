@@ -288,7 +288,7 @@ const fr: SourceCatalogue = {
             give: 'Accorder {role}',
             refuse: 'Refuser',
             decided: 'Décidée',
-            notFound: "Cette demande n'est pas dans la file. Elle a peut-être déjà été tranchée.",
+            notFound: "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
         },
     },
 

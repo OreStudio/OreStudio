@@ -134,6 +134,36 @@ export interface ListMyApprovalRequestsResponse {
 }
 
 /**
+ * @brief Reads the one request an identifier names.
+ *
+ * A notice a person is given carries the request it is about, so the notice
+ * has to be able to open it. The queue cannot answer that: it holds what is
+ * waiting, and a notice is usually read after the request stopped waiting.
+ * The request a person may open is therefore read on its own, and the caller
+ * states which request they mean rather than reading a list to find it.
+ *
+ * What the caller may open is the store's to decide: the person who asked,
+ * and whoever may decide a request of that kind. A stranger is answered as if
+ * the request did not exist, so the read tells nobody that a request they may
+ * not see is there.
+ */
+export interface GetApprovalRequestRequest {
+    request_id: string;
+}
+
+export interface GetApprovalRequestResponse {
+    result: Result;
+    /**
+     * @brief The request, present when the caller may open it.
+     *
+     * Absent means one thing to the caller and two things to the store: no such
+     * request, or a request this caller may not see. Telling them apart would
+     * tell a stranger that a request exists.
+     */
+    request: ApprovalRequest | null;
+}
+
+/**
  * @brief Closes every open request past its kind's deadline, across every
  * tenant.
  *
@@ -163,6 +193,7 @@ export const subjects = {
     decide_approval_request_request: 'inbox.v1.ops.decide_approval',
     list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
+    get_approval_request_request: 'inbox.v1.ops.get_approval_request',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
 } as const;
 /**
@@ -176,5 +207,6 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
+    get_approval_request_request: true,
     expire_overdue_approvals_request: false,
 } as const;

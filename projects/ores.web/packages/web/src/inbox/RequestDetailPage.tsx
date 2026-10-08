@@ -49,21 +49,24 @@ import { askedFor, stateLabel } from './words.js';
 export function RequestDetailPage({ me }: { readonly me: string }): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
-    const queue = useQuery({
-        queryKey: ['request-queue'],
-        queryFn: () => api.requestQueue({ offset: 0, limit: 100 }),
+    // The request is read on its own rather than looked up in the queue: a
+    // notice carries the request it is about, and a notice is read after the
+    // request stopped waiting, so the queue would not hold it.
+    const detail = useQuery({
+        queryKey: ['request', id],
+        queryFn: () => api.request(id),
     });
     const roles = useQuery({ queryKey: ['roles'], queryFn: api.roles });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
 
-    if (queue.isError) {
-        return <Notice tone="error">{queue.error.message}</Notice>;
+    if (detail.isError) {
+        return <Notice tone="error">{detail.error.message}</Notice>;
     }
-    if (queue.isPending) {
+    if (detail.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    const request = queue.data.items.find((candidate) => candidate.id === id);
-    if (request === undefined) {
+    const request = detail.data;
+    if (request === null || request === undefined) {
         return <Notice tone="warn">{t('inbox.request.notFound')}</Notice>;
     }
     return (

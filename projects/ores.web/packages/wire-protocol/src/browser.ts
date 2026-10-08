@@ -250,6 +250,7 @@ export {
     markNotificationsRead,
     readMyNotifications,
     readMyRequests,
+    readRequest,
     readRequestQueue,
     readUnreadNotificationCount,
     withdrawRequest,

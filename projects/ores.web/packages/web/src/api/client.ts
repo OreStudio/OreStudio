@@ -46,6 +46,7 @@ import {
     historyVersionSchema,
     inboxNotificationPageSchema,
     inboxRequestPageSchema,
+    inboxRequestViewSchema,
     type BadgePresentation,
     type ClassificationList,
     type ClassificationRow,
@@ -537,6 +538,22 @@ export const api = {
         return inboxRequestPageSchema.parse(
             await request(`/api/requests?${pageQuery(page)}`, { method: 'GET' }),
         );
+    },
+
+    /**
+     * The one request an identifier names, when the signed-in person may open
+     * it.
+     *
+     * A notice carries the request it is about, and is read after the request
+     * stopped waiting, so this is a read of its own rather than a lookup in
+     * the queue. Null means the request is not there, or that the server will
+     * not say that it is.
+     */
+    async request(id: string): Promise<InboxRequestView | null> {
+        const body = await request(`/api/requests/${encodeURIComponent(id)}`, {
+            method: 'GET',
+        });
+        return body === null ? null : inboxRequestViewSchema.parse(body);
     },
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

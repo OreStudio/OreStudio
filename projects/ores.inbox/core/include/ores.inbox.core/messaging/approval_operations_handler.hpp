@@ -373,6 +373,67 @@ public:
         }
     }
 
+    /**
+     * @brief Reads the one request an identifier names, if the caller may open
+     * it.
+     *
+     * A notice carries the request it is about, and a notice is usually read
+     * after the request stopped waiting, so the queue cannot answer this. What
+     * the caller may open is the person who asked, or whoever may decide a
+     * request of that kind. A request the caller may not see is answered as
+     * absent rather than refused, so the reply says nothing about a request
+     * the caller has no business knowing about.
+     */
+    void get_request(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        auto req = decode<get_approval_request_request>(msg);
+        if (!req) {
+            reply(nats_,
+                  msg,
+                  get_approval_request_response{
+                      .result = approval_result(
+                          outcome::invalid, "bad_request", "The request could not be read.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle lifecycle(*ctx);
+            const auto found = lifecycle.request(req->request_id);
+            if (!found) {
+                reply(nats_,
+                      msg,
+                      get_approval_request_response{
+                          .result = approval_result(outcome::missing, "not_found", "")});
+                return;
+            }
+            const auto me = lifecycle.actor_account_id();
+            const auto kind = lifecycle.kind(found->kind_code);
+            const auto may_open = (me && found->requested_by == *me) ||
+                                  (kind && has_permission(*ctx, kind->decide_permission_code)) ||
+                                  has_permission(*ctx, "inbox::approval_requests:read");
+            if (!may_open) {
+                reply(nats_,
+                      msg,
+                      get_approval_request_response{
+                          .result = approval_result(outcome::missing, "not_found", "")});
+                return;
+            }
+            reply(nats_,
+                  msg,
+                  get_approval_request_response{.result = approval_result(outcome::ok, "", ""),
+                                                .request = *found});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading approval request " << req->request_id << ": " << e.what();
+            reply(nats_,
+                  msg,
+                  get_approval_request_response{.result = approval_result(
+                                                    outcome::failed, "read_failed", e.what())});
+        }
+    }
+
     void mine(ores::nats::message msg) {
         using ores::utility::domain::outcome;
         auto ctx = context_for(msg);

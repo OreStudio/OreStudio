@@ -289,7 +289,7 @@ const pt: SourceCatalogue = {
             give: 'Conceder {role}',
             refuse: 'Recusar',
             decided: 'Decidido',
-            notFound: 'Este pedido não está na fila. Pode já ter sido respondido.',
+            notFound: 'Este pedido não está aqui. Pode ter sido retirado, ou pode não ser seu.',
         },
     },
 

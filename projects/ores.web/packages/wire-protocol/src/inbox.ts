@@ -30,6 +30,7 @@ import {
 import {
     subjects as approvalSubjects,
     type DecideApprovalRequestRequest,
+    type GetApprovalRequestRequest,
     type ListApprovalQueueRequest,
     type ListMyApprovalRequestsRequest,
     type WithdrawApprovalRequestRequest,
@@ -80,6 +81,7 @@ export const INBOX_SUBJECTS = {
     askForRoles: roleRequestSubjects.ask_for_roles_request,
     mine: approvalSubjects.list_my_approval_requests_request,
     queue: approvalSubjects.list_approval_queue_request,
+    getRequest: approvalSubjects.get_approval_request_request,
     withdraw: approvalSubjects.withdraw_approval_request_request,
     decide: approvalSubjects.decide_approval_request_request,
     myNotifications: notificationSubjects.list_my_notifications_request,
@@ -178,6 +180,11 @@ const requestsReplySchema = z.object({
     result: resultEnvelopeSchema,
     requests: z.array(wireApprovalRequestSchema).default([]),
     total: z.int().nonnegative().default(0),
+});
+
+const requestReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    request: wireApprovalRequestSchema.nullable().default(null),
 });
 
 const decisionsReplySchema = z.object({
@@ -664,6 +671,32 @@ export async function readMyRequests(
         items: reply.requests.map((raised) => toRequestView(raised, join)),
         total: reply.total,
     };
+}
+
+/**
+ * The one request an identifier names, when the caller may open it.
+ *
+ * A notice carries the request it is about, so opening a notice needs a read
+ * that does not depend on the request still being in a queue. A request the
+ * caller may not open answers null, and the caller shows that as the request
+ * not being there, because telling a stranger it exists is the thing the
+ * server refuses to do.
+ */
+export async function readRequest(
+    caller: AuthenticatedCaller,
+    requestId: string,
+): Promise<InboxRequestView | null> {
+    const request: GetApprovalRequestRequest = { request_id: requestId };
+    const reply = await caller.callAuthenticated(
+        INBOX_SUBJECTS.getRequest,
+        request,
+        requestReplySchema,
+    );
+    if (reply.result.outcome === 'missing') return null;
+    ok(INBOX_SUBJECTS.getRequest, reply.result);
+    if (reply.request === null) return null;
+    const join = await joinRequests(caller, [reply.request.id], true);
+    return toRequestView(reply.request, join);
 }
 
 /**

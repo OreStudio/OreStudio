@@ -28,6 +28,7 @@ import {
     markNotificationsRead,
     readMyNotifications,
     readMyRequests,
+    readRequest,
     readRequestQueue,
     readUnreadNotificationCount,
     withdrawRequest,
@@ -168,6 +169,20 @@ export function registerInboxRoutes(
         const session = requireSession(request);
         const page = pageOf(request.query);
         return await readRequestQueue(session.client, page);
+    });
+
+    /**
+     * The one request an identifier names, when the signed-in person may open
+     * it.
+     *
+     * A notice carries the request it is about, and a notice is read after the
+     * request stopped waiting, so a queue read cannot answer this. The server
+     * decides who may open it; a request this person may not see is answered
+     * as not found, which is also what a request that does not exist answers.
+     */
+    server.get('/api/requests/:id', async (request) => {
+        const session = requireSession(request);
+        return await readRequest(session.client, requestIdOf(request));
     });
 
     /** Approves, refuses, holds or resumes a request, against the version read. */

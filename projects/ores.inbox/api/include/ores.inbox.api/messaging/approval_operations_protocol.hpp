@@ -186,6 +186,45 @@ struct list_my_approval_requests_response {
 };
 
 /**
+ * @brief Reads the one request an identifier names.
+ *
+ * A notice a person is given carries the request it is about, so the notice
+ * has to be able to open it. The queue cannot answer that: it holds what is
+ * waiting, and a notice is usually read after the request stopped waiting.
+ * The request a person may open is therefore read on its own, and the caller
+ * states which request they mean rather than reading a list to find it.
+ *
+ * What the caller may open is the store's to decide: the person who asked,
+ * and whoever may decide a request of that kind. A stranger is answered as if
+ * the request did not exist, so the read tells nobody that a request they may
+ * not see is there.
+ */
+struct get_approval_request_request {
+    using response_type = struct get_approval_request_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.get_approval_request";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string request_id;
+};
+
+struct get_approval_request_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The request, present when the caller may open it.
+     *
+     * Absent means one thing to the caller and two things to the store: no such
+     * request, or a request this caller may not see. Telling them apart would
+     * tell a stranger that a request exists.
+     */
+    std::optional<ores::inbox::domain::approval_request> request;
+};
+
+/**
  * @brief Closes every open request past its kind's deadline, across every
  * tenant.
  *

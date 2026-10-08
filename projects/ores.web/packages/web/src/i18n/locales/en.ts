@@ -290,7 +290,7 @@ export const en: SourceCatalogue = {
             give: 'Give {role}',
             refuse: 'Refuse',
             decided: 'Decided',
-            notFound: 'This request is not in the queue. It may have been answered already.',
+            notFound: 'This request is not here. It may have been taken away, or it may not be yours to see.',
         },
     },
 

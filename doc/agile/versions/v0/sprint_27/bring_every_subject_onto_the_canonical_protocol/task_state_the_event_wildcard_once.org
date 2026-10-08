@@ -81,6 +81,17 @@ drifted from the current templates while no gate was looking. They are reverted
 here, because this task is the wildcard and not that backlog. The gate gap is
 the real finding: three components generate C++ that nothing checks.
 
+The run also found two more trunk artefacts, both fixed here because they were
+blocking this branch and neither is a judgement call:
+
+- =cmake-sources= was red: a rename left =component_files.cmake= listing
+  =approval_expiry_sweeper.cpp= after the file became
+  =approval_expiry_schedule.cpp=.
+- =site-page= was red: the rates design page cites
+  =ores.refdata.asset_class_catalogue='s org id in upper case, and the note
+  declares it lower case, so the HTML exporter could not resolve the link and
+  aborted the page.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -120,3 +131,10 @@ Two things the task exposed, neither of them the wildcard:
 - Regenerating those three by hand surfaced 195 files whose committed output
   had drifted from the templates while nothing was checking. They are recorded
   here and left for their own task.
+
+And three things the run found on trunk, all fixed here because they blocked
+the branch: a stale cmake file list, an upper-case org id the exporter could
+not resolve, and -- in the run before this one -- a stale ER diagram.
+
+That is five trunk artefacts found by two runs of the local gate, none of them
+by a person looking. The gate works; the gap is that nothing runs it.

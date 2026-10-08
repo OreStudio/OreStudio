@@ -144,7 +144,10 @@ def views() -> dict[str, tuple[list[str], set[str]]]:
                 f"FAIL: {VIEWS_SQL.relative_to(REPO_ROOT)} defines '{name}', which does not "
                 "follow ores_marketdata_series_identity_<class>_vw."
             )
-        columns = [c.strip() for c in columns_text.split(",") if c.strip()]
+        # A field whose name is a SQL word is quoted in the view, as offset is.
+        # The schema names the field bare, so the quotes come off here or the
+        # same column reads as both an extra and a missing one.
+        columns = [c.strip().strip('"') for c in columns_text.split(",") if c.strip()]
         types = set(re.findall(r"'(\w+)'", types_text))
         found[m.group(1)] = (columns, types)
     if not found:

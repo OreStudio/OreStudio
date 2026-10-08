@@ -360,6 +360,17 @@ export {
 } from './operations.js';
 export type { BusView } from './operations.js';
 
+// The telemetry logs the operations screen reads: the filter query, the entry
+// rows, the reply carrying the count, and the view the BFF serves the browser.
+export {
+    logsListReplySchema,
+    logsListRequestSchema,
+    logsViewSchema,
+    telemetryLogEntrySchema,
+    telemetryLogQuerySchema,
+} from './operations.js';
+export type { LogsListReply, LogsView } from './operations.js';
+
 // The door: what the deployment offers somebody who is not in it yet, and the
 // registration that acts on that answer.
 export {

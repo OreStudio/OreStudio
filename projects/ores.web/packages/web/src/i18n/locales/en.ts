@@ -1090,6 +1090,87 @@ export const en: SourceCatalogue = {
                 },
             },
         },
+        logs: {
+            title: 'Operations: telemetry logs',
+            description:
+                'The lines behind a symptom, found by time, level, source, component, tag or message.',
+            readAt: 'Read at {at}',
+            range: {
+                label: 'Range',
+                '15m': 'Last 15 minutes',
+                '1h': 'Last hour',
+                '6h': 'Last 6 hours',
+                '24h': 'Last 24 hours',
+            },
+            level: {
+                label: 'Level',
+                any: 'Any level',
+            },
+            source: {
+                label: 'Source',
+                any: 'Any source',
+            },
+            component: {
+                label: 'Component',
+                placeholder: 'ores.compute.poller',
+            },
+            tag: {
+                label: 'Tag',
+                placeholder: 'compute.fetch',
+            },
+            message: {
+                label: 'Message',
+                placeholder: 'Search the message',
+            },
+            search: 'Search',
+            columns: {
+                time: 'Time',
+                level: 'Level',
+                source: 'Source',
+                name: 'Name',
+                component: 'Component',
+                message: 'Message',
+            },
+            entries: {
+                title: 'Entries',
+                count: '{shown} of {total}',
+                showing: 'Showing {from}–{to} of {total} entries',
+                previous: 'Previous',
+                next: 'Next',
+                paging:
+                    'The read answers one page at a time; the total is everything the filter matches.',
+                nothingMatches: 'Nothing matches',
+                empty: 'No entry matches the filter in this range. Widen the range or drop a filter.',
+                emptyHint:
+                    'Filters combine with AND, so each one narrows the answer, and the store holds server lines today.',
+            },
+            gap: {
+                client: {
+                    title: 'The store holds no client lines',
+                    body: 'The query filters by source, and the only publisher is the compute wrapper, whose batches the service stamps as server entries. Nothing publishes client entries today, although the enum and the filter both support them. Until a client publisher exists, the screen must not offer a filter value that can never match.',
+                },
+                and: {
+                    title: 'The filters are AND-only',
+                    body: 'There is no way to ask for one level or another, and no way to exclude a component. The candidate is a way to express a disjunction inside the otherwise conjunctive query.',
+                },
+                suggest: {
+                    title: 'Nothing suggests filter values',
+                    body: 'The component, tag, source name and level are typed from memory, and a typo answers an empty page that looks like a quiet system. The candidate is a read of the values present in the range, so the screen offers the real components and tags.',
+                },
+                sql: {
+                    title: 'The message and component filters are built as SQL text',
+                    body: 'The query interpolates those two filters into LIKE patterns with a hand-written escaper, where every other repository binds its values (The telemetry log query escapes SQL by hand). This is a defect under the read, not a missing feature: bind the values before a screen leans on them.',
+                },
+                stats: {
+                    title: 'The stored aggregates have no subject',
+                    body: 'The database already computes hourly, daily and per-session statistics, and no read serves them (Expose the telemetry stats surface). A chart of line counts over time — "when did the errors start" — is the first thing an operator asks after the table.',
+                },
+                permission: {
+                    title: 'The read checks no permission',
+                    body: 'The handler authenticates the token and then serves any signed-in account. The candidate is a dedicated permission the model guards, as the tenant reads guard iam::tenants:read. The gap is not this read’s alone (Nothing gates a hand-written operation handler).',
+                },
+            },
+        },
         versions: {
             title: 'Operations: versions and the database',
             description:

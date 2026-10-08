@@ -21,6 +21,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <stdexcept>
@@ -60,13 +61,14 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 
             std::vector<trading::messaging::trade_export_item> export_items;
+            trading::domain::instrument_batch instruments;
             export_items.reserve(items.size());
             for (const auto& item : items) {
                 trading::messaging::trade_export_item export_item;
                 export_item.anchor = item.anchor;
                 export_item.ore_id = item.ore_id;
-                export_item.instrument = trading::domain::encode_instrument(item.instrument);
                 export_item.envelope = item.envelope;
+                trading::domain::append_instrument(instruments, item.instrument);
                 if (std::holds_alternative<std::monostate>(item.instrument))
                     ++summary.trades_passthrough;
                 else
@@ -75,7 +77,7 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             }
 
             const auto t1 = clock_type::now();
-            auto xml = exporter::export_portfolio(export_items);
+            auto xml = exporter::export_portfolio(export_items, instruments);
             summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
             return xml;
         }

@@ -163,6 +163,39 @@ absent: it is a placeholder, not a product.
 | EuropeanOptionBarrier               | European Option with Barrier                 | scripted     | false       | false         |                                    |
 | PerformanceOption_01                | Performance Option (variant 01)              | scripted     | false       | false         | scripted_instrument                |
 
+* Batch
+
+The export carries every trade's instrument as a typed array per entity, so a
+receiver joins an array to its trade by the trade id every element carries and
+no element needs a tag. There is one array per routed instrument entity and one
+per child table below, and a member's name is the entity's declared plural.
+
+** Instrument types
+
+The element type of a routed instrument's array. An instrument absent from this
+table crosses as its own entity type; a row here is the exception, a family
+whose document shape is a container over its rows rather than a single row.
+
+| instrument      | cpp_type            |
+|-----------------+---------------------|
+| bond_instrument | bond_instrument_data |
+
+** Children
+
+The child tables the export carries beside the instruments, one array each. A
+child's elements are keyed by the same trade id, so a reader gathers one
+trade's rows from the array with no second lookup structure.
+
+| child                             |
+|-----------------------------------|
+| callable_swap_call_date           |
+| commodity_basket_constituent      |
+| composite_leg                     |
+| equity_position_option_underlying |
+| swap_leg                          |
+| swap_leg_amount                   |
+| swap_leg_rate                     |
+
 * See also
 
 - [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][ores.trading.trade_type]] — the entity the seed populates.

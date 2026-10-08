@@ -41,6 +41,7 @@ do not edit by hand.
 |-------+------------+-------------|
 | [[id:AA24D1D3-60B0-4650-900A-57B496BE1657][ores.ts.domain]] | 1 | Per-entity and per-junction domain interfaces: the TypeScript shape of the object the C++ domain class declares. |
 | [[id:2A21711B-E107-43FE-95A1-A05BFC4B52E1][ores.ts.protocol]] | 1 | Wire payload interfaces and NATS subject constants. |
+| [[id:a3572ff3-ecfd-430e-864b-5af4b90f2fcb][ores.ts.trade_type]] | 1 | TypeScript projection of the trade-type catalogue: the export's typed instrument arrays. |
 
 * See also
 

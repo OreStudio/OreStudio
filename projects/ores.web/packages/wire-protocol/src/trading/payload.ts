@@ -28,17 +28,6 @@
  */
 
 /**
- * A trade's instrument, encoded so the wire names its type.
- *
- * `type` names the instrument alternative and is empty when the trade has no
- * instrument. `body` is that alternative's JSON.
- */
-export interface InstrumentPayload {
-    type: string;
-    body: string;
-}
-
-/**
  * One AdditionalFields entry of an ORE trade envelope, in document order.
  */
 export interface TradeEnvelopeField {

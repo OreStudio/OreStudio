@@ -346,7 +346,7 @@ void ore_commands::process_export(std::ostream& out,
         return;
     }
 
-    const auto xml = ores::ore::xml::exporter::export_portfolio(result->items);
+    const auto xml = ores::ore::xml::exporter::export_portfolio(result->items, result->instruments);
 
     std::ofstream out_file(output_file, std::ios::binary | std::ios::trunc);
     if (!out_file) {

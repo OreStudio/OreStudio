@@ -135,7 +135,8 @@ public:
                 service::trade_export_service svc(*ctx_expected);
                 resp.items = svc.export_node(req->node_id,
                                              static_cast<std::uint32_t>(req->offset),
-                                             static_cast<std::uint32_t>(req->limit));
+                                             static_cast<std::uint32_t>(req->limit),
+                                             resp.instruments);
                 resp.success = true;
             } else {
                 resp.message = "Invalid export_portfolio_request.";
@@ -178,28 +179,34 @@ public:
             }
 
             service::trade_export_service svc(*ctx_expected);
-            std::vector<trade_export_item> all_items;
+            // The stored blob is the export response itself: the trades and
+            // their instruments travel together, so a reader of the blob has
+            // the same two arrays a live caller of the operation receives.
+            export_portfolio_response payload;
+            payload.success = true;
             constexpr std::uint32_t page_size = 1000;
             for (std::uint32_t offset = 0;; offset += page_size) {
-                auto page = svc.export_books(req->book_ids, offset, page_size);
+                auto page = svc.export_books(req->book_ids, offset, page_size, payload.instruments);
                 const auto n = page.size();
-                all_items.insert(all_items.end(),
-                                 std::make_move_iterator(page.begin()),
-                                 std::make_move_iterator(page.end()));
+                payload.items.insert(payload.items.end(),
+                                     std::make_move_iterator(page.begin()),
+                                     std::make_move_iterator(page.end()));
                 if (n < page_size)
                     break;
             }
+            const auto trade_count = static_cast<int>(payload.items.size());
+            payload.message = "Exported " + std::to_string(trade_count) + " trades.";
 
-            const auto blob = rfl::msgpack::write(all_items);
+            const auto blob = rfl::msgpack::write(payload);
             ores::storage::net::storage_transfer transfer(http_base_url_, extract_bearer(msg));
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 
             resp.success = true;
-            resp.trade_count = static_cast<int>(all_items.size());
+            resp.trade_count = trade_count;
             resp.storage_key = req->storage_key;
-            resp.message = "Exported " + std::to_string(all_items.size()) + " trades to storage.";
+            resp.message = "Exported " + std::to_string(trade_count) + " trades to storage.";
             BOOST_LOG_SEV(trade_operations_handler_lg(), info)
-                << "export_trades_to_storage: exported " << all_items.size() << " trades, "
+                << "export_trades_to_storage: exported " << trade_count << " trades, "
                 << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
                 << req->storage_key;
         } catch (const std::exception& e) {

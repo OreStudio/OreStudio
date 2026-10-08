@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -200,7 +201,7 @@ TEST_CASE("export_all_rounding_types", tags) {
 TEST_CASE("export_portfolio_empty_items_produces_valid_xml", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto xml = exporter::export_portfolio({});
+    const auto xml = exporter::export_portfolio({}, {});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
@@ -215,15 +216,16 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     REQUIRE(imported.size() == 1);
 
     std::vector<trade_export_item> items;
+    ores::trading::domain::instrument_batch instruments;
     for (const auto& src : imported) {
         trade_export_item item;
         item.anchor = src.anchor;
         item.ore_id = src.ore_id;
-        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
+        ores::trading::domain::append_instrument(instruments, src.instrument);
         items.push_back(std::move(item));
     }
 
-    const auto xml = exporter::export_portfolio(items);
+    const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
@@ -240,15 +242,16 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     REQUIRE(imported.size() == 1);
 
     std::vector<trade_export_item> items;
+    ores::trading::domain::instrument_batch instruments;
     for (const auto& src : imported) {
         trade_export_item item;
         item.anchor = src.anchor;
         item.ore_id = src.ore_id;
-        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
+        ores::trading::domain::append_instrument(instruments, src.instrument);
         items.push_back(std::move(item));
     }
 
-    const auto xml = exporter::export_portfolio(items);
+    const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
@@ -264,15 +267,16 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     REQUIRE(imported.size() == 3);
 
     std::vector<trade_export_item> items;
+    ores::trading::domain::instrument_batch instruments;
     for (const auto& src : imported) {
         trade_export_item item;
         item.anchor = src.anchor;
         item.ore_id = src.ore_id;
-        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
+        ores::trading::domain::append_instrument(instruments, src.instrument);
         items.push_back(std::move(item));
     }
 
-    const auto xml = exporter::export_portfolio(items);
+    const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
@@ -305,12 +309,13 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     const auto r = trade_mapper::map_bond_instrument(p.Trade.front());
     REQUIRE(r.has_value());
 
+    ores::trading::domain::instrument_batch instruments;
     trade_export_item item;
     item.ore_id = "RoundtripBondFuture001";
     item.anchor.trade_type = "BondFuture";
-    item.instrument = ores::trading::domain::encode_instrument(*r);
+    ores::trading::domain::append_instrument(instruments, *r);
 
-    const auto xml = exporter::export_portfolio({item});
+    const auto xml = exporter::export_portfolio({item}, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     CHECK(!xml.empty());
@@ -332,7 +337,7 @@ TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", tags) {
     env.netting_set_id = "NS";
     item.envelope = env;
 
-    const auto xml = exporter::export_portfolio({item});
+    const auto xml = exporter::export_portfolio({item}, {});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     // The schema makes the product data optional, so the trade goes out as
@@ -352,7 +357,7 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
     item.anchor.trade_type = "UnknownType";
     // instrument left as monostate
 
-    const auto xml = exporter::export_portfolio({item});
+    const auto xml = exporter::export_portfolio({item}, {});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
     // A type the schema does not name leaves no valid document to write.

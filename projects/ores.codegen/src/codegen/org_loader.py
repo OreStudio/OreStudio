@@ -1076,10 +1076,11 @@ def _entity_org_by_table(projects_dir: Path) -> dict[str, dict[str, Any]]:
     """Map every SQL ``:tablename:`` to its entity's modeling org.
 
     Raw-text scan (no org parse), cached per process: only the SQL Flags
-    drawer's ``:tablename:`` and the frontmatter ``#+entity_singular:`` are
-    read from each file under ``projects_dir/*/modeling/``. Called from
-    generate_from_model's FK enrichment, which runs once per rendered
-    unit, so the whole-tree scan must stay cheap.
+    drawer's ``:tablename:`` and the frontmatter ``#+entity_singular:`` and
+    ``#+entity_plural:`` are read from each file under
+    ``projects_dir/*/modeling/``. Called from generate_from_model's FK
+    enrichment, which runs once per rendered unit, so the whole-tree scan must
+    stay cheap.
     """
     out: dict[str, dict[str, Any]] = {}
     for org in sorted(projects_dir.glob("*/modeling/*.org")):
@@ -1097,7 +1098,14 @@ def _entity_org_by_table(projects_dir: Path) -> dict[str, dict[str, Any]]:
         m = re.search(r":tablename:\s+([a-z][a-z0-9_]*_tbl)", text)
         if not m:
             continue
-        out[m.group(1)] = {"org": org, "entity_singular": sm.group(1)}
+        pm = re.search(r"^#\+entity_plural:\s*(\S+)", text, re.M)
+        out[m.group(1)] = {
+            "org": org,
+            "entity_singular": sm.group(1),
+            # A plural the model does not state is the singular with an s, so
+            # a caller that needs a collection name never reads None.
+            "entity_plural": pm.group(1) if pm else f"{sm.group(1)}s",
+        }
     return out
 
 
@@ -2491,8 +2499,10 @@ _TS_DOMAIN_TYPE_RE = re.compile(
 #
 # Most are ``ores::utility::*`` -- the shared protocol records. The diff engine's
 # payloads are the other kind: a component with an engine but no entity models,
-# whose types still travel in a history response. The trading export item's
-# instrument payload and envelope are hand-written structs of the same kind.
+# whose types still travel in a history response. The trading envelope is a
+# hand-written struct of the same kind, and the export's instrument batch is
+# generated from the trade-type catalogue rather than from an entity model, so
+# its interface lives in a generated module of its own.
 _TS_UTILITY_DOMAIN_TYPES = {
     "ores::utility::domain::hierarchy_node": ("HierarchyNode", "utility/hierarchy"),
     "ores::utility::domain::result": ("Result", "utility/protocol"),
@@ -2504,7 +2514,8 @@ _TS_UTILITY_DOMAIN_TYPES = {
     "ores::diff::domain::diff_span": ("DiffSpan", "diff/protocol"),
     "ores::diff::domain::diff_entry": ("DiffEntry", "diff/protocol"),
     "ores::diff::domain::diff_result": ("DiffResult", "diff/protocol"),
-    "ores::trading::domain::instrument_payload": ("InstrumentPayload", "trading/payload"),
+    "ores::trading::domain::instrument_batch": (
+        "InstrumentBatch", "generated/trading/instrument_batch"),
     "ores::trading::domain::trade_envelope_data": ("TradeEnvelopeData", "trading/payload"),
     "ores::security::jwt::storage_grant": ("StorageGrant", "security/payload"),
 }
@@ -5955,6 +5966,14 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     entity they are routed to, for the routing header. Each instrument must
     be an entity some model in the catalogue's component declares, so a typo
     fails codegen rather than routing a trade to a table that does not exist.
+
+    ``batch`` is the export's typed arrays: one per routed instrument entity
+    and one per child table the ``* Batch`` section names. A member's element
+    type is the entity itself, unless the ``* Batch/Instrument types`` table
+    names another type for it, which is how a family whose document shape is a
+    container over its rows crosses as the container. The member name is the
+    entity's declared plural, so a reader joins an array to a trade by the
+    trade id every element carries.
     """
     path = Path(path)
     doc = parse_org(path.read_text(encoding="utf-8"))
@@ -5964,9 +5983,11 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         raise ValueError(f"{path.name}: no * Trade types table.")
     raw = _parse_org_table_rows(section)
 
-    known_entities = {
-        info["entity_singular"]
-        for info in _entity_org_by_table(path.parents[2]).values()
+    entities_by_table = _entity_org_by_table(path.parents[2])
+    known_entities = {info["entity_singular"] for info in entities_by_table.values()}
+    plural_of = {
+        info["entity_singular"]: info["entity_plural"]
+        for info in entities_by_table.values()
     }
     rows: list[dict[str, Any]] = []
     for r in raw:
@@ -6018,10 +6039,13 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         entry["comma"] = "" if index == len(instruments) - 1 else ","
     routes = [row for row in rows if row["instrument"]]
 
+    batch = _trade_type_batch(path, doc, instruments, known_entities, plural_of)
+
     catalogue: dict[str, Any] = {
         key: fm[key] for key in ("component", "brief") if key in fm}
     catalogue["rows"] = rows
     catalogue["instruments"] = instruments
+    catalogue["batch"] = batch
     catalogue["routes"] = [
         {"code": row["code"], "instrument": row["instrument"]} for row in routes]
     return {"trade_type_catalogue": catalogue}
@@ -6037,6 +6061,97 @@ def trade_type_catalogue_codes(catalogue_path: Path, entity: str) -> list[str]:
 @lru_cache(maxsize=None)
 def _load_trade_type_catalogue_cached(path: Path) -> dict[str, Any]:
     return load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+
+def _trade_type_batch(
+    path: Path,
+    doc: Any,
+    instruments: list[dict[str, Any]],
+    known_entities: set[str],
+    plural_of: dict[str, str],
+) -> list[dict[str, Any]]:
+    """The export batch's members: one typed array per instrument and child.
+
+    The ``* Batch/Instrument types`` table overrides the element type of a
+    routed instrument, which is how a family whose document shape is a
+    container over its rows crosses as the container rather than as the
+    entity. ``* Batch/Children`` names the child tables the batch carries
+    beside the instruments.
+
+    Every override must name a routed instrument and every child an entity
+    some model declares, so a typo fails codegen rather than emitting an array
+    nothing fills. Each member carries the header its element type is declared
+    in, the interface name its TypeScript twin emits and the module that twin
+    imports from.
+
+    A catalogue with no ``* Batch`` section declares no batch, and returns an
+    empty list: the batch is what the export archetypes read, and a catalogue
+    that drives only routing has nothing for them to carry.
+    """
+    section = _section(doc.root, "Batch")
+    if not section:
+        return []
+
+    overrides: dict[str, str] = {}
+    types_section = _section(section, "Instrument types")
+    if types_section:
+        for r in _parse_org_table_rows(types_section):
+            instrument = (r.get("instrument") or "").strip()
+            cpp_type = (r.get("cpp_type") or "").strip()
+            if not instrument and not cpp_type:
+                continue
+            if not instrument or not cpp_type:
+                raise ValueError(
+                    f"{path.name}: a * Batch/Instrument types row states "
+                    f"{instrument!r} and {cpp_type!r}; both are required.")
+            overrides[instrument] = cpp_type
+
+    routed = {entry["name"] for entry in instruments}
+    unknown = sorted(set(overrides) - routed)
+    if unknown:
+        raise ValueError(
+            f"{path.name}: * Batch/Instrument types overrides "
+            f"{', '.join(unknown)}, which no routed trade type names.")
+
+    children: list[str] = []
+    children_section = _section(section, "Children")
+    if children_section:
+        for r in _parse_org_table_rows(children_section):
+            child = (r.get("child") or "").strip()
+            if not child:
+                continue
+            if child not in known_entities:
+                raise ValueError(
+                    f"{path.name}: * Batch/Children names {child}, which no "
+                    "entity model declares.")
+            children.append(child)
+
+    members: list[dict[str, Any]] = []
+    for entry in instruments:
+        entity = entry["name"]
+        members.append({
+            "entity": entity,
+            "name": plural_of[entity],
+            "cpp_type": overrides.get(entity, entity),
+        })
+    for child in children:
+        members.append({
+            "entity": child,
+            "name": plural_of[child],
+            "cpp_type": child,
+        })
+
+    names = [member["name"] for member in members]
+    repeated = sorted({name for name in names if names.count(name) > 1})
+    if repeated:
+        raise ValueError(
+            f"{path.name}: duplicate * Batch member(s): {', '.join(repeated)}")
+
+    for index, member in enumerate(members):
+        member["comma"] = "" if index == len(members) - 1 else ","
+        member["ts_pascal"] = _to_pascal_case(member["cpp_type"])
+        member["ts_module"] = f"./domain/{member['cpp_type']}.js"
+    return members
 
 
 def load_org_dataset_model(path: Path | str) -> dict[str, Any]:

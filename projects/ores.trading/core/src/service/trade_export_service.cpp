@@ -55,7 +55,6 @@
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
-#include "ores.trading.core/service/rpa_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
@@ -63,6 +62,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <iterator>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -84,25 +84,25 @@ std::string to_uuid_array(const std::vector<std::string>& ids) {
 }
 
 /**
- * Resolves a page of trades to their instrument payloads and envelopes: bucket
- * the trade ids by the table the trade-type catalogue routes each type to,
- * read each table in one batch, then read the envelopes for the whole page.
+ * Resolves a page of trades to their instruments and envelopes: bucket the
+ * trade ids by the table the trade-type catalogue routes each type to, read
+ * each table in one batch, and append what it returns to the page's batch.
+ * Every element carries the trade id its instrument does, so nothing here
+ * pairs a row with the item it belongs to.
  */
 template <typename Ctx>
-void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_item>& items) {
+void populate_instruments_for_trades(const Ctx& ctx,
+                                     std::vector<trade_export_item>& items,
+                                     domain::instrument_batch& batch) {
     using ores::trading::domain::instrument_table;
     using ores::trading::domain::instrument_table_for;
-    using ores::trading::domain::trade_instrument;
-    using ores::trading::domain::swap_instrument_data;
-    using ores::trading::domain::commodity_instrument_data;
-    using ores::trading::domain::composite_instrument_data;
 
     // Phase 1: bucket instrument IDs by the table that holds them
     std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
         fra_ids, vswap_ids, capfloor_ids, swaption_ids, bgs_ids, callable_ids, koswap_ids, infl_ids,
-        fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
-        eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
-        eq_acc_ids, eq_pos_ids;
+        fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids, eq_opt_ids,
+        eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids, eq_acc_ids,
+        eq_pos_ids;
 
     for (const auto& item : items) {
         const auto& t = item.anchor;
@@ -205,15 +205,15 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
         }
     }
 
-    // Phase 2: batch-fetch legs (one call covers all swap types)
-    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg>> legs_map;
-    // A rates leg states its notionals and its rates as rows of their own, so
-    // they are fetched beside the legs and only for the instruments that
-    // state one.
-    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg_amount>>
-        leg_amounts_map;
-    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg_rate>>
-        leg_rates_map;
+    // Moves every row of a read into the batch array that holds its type.
+    auto take = []<typename Rows>(Rows& rows, auto& members) {
+        members.insert(members.end(),
+                       std::make_move_iterator(rows.begin()),
+                       std::make_move_iterator(rows.end()));
+    };
+
+    // Phase 2: the children, one read per table over the whole page. A child
+    // carries the trade id its instrument does, so the reads need no pairing.
     {
         std::vector<std::string> all_swap;
         for (auto* v : {&fra_ids,
@@ -227,289 +227,192 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
             all_swap.insert(all_swap.end(), v->begin(), v->end());
         if (!all_swap.empty()) {
             repository::swap_leg_repository leg_repo;
-            for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
-                legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(std::move(leg));
+            auto legs = leg_repo.read_by_instruments_batch(ctx, all_swap);
+            take(legs, batch.swap_legs);
             repository::swap_leg_amount_repository amount_repo;
-            for (auto& amount : amount_repo.read_by_instruments_batch(ctx, all_swap))
-                leg_amounts_map[boost::uuids::to_string(amount.trade_id)].push_back(
-                    std::move(amount));
+            auto amounts = amount_repo.read_by_instruments_batch(ctx, all_swap);
+            take(amounts, batch.swap_leg_amounts);
             repository::swap_leg_rate_repository rate_repo;
-            for (auto& rate : rate_repo.read_by_instruments_batch(ctx, all_swap))
-                leg_rates_map[boost::uuids::to_string(rate.trade_id)].push_back(
-                    std::move(rate));
+            auto rates = rate_repo.read_by_instruments_batch(ctx, all_swap);
+            take(rates, batch.swap_leg_rates);
         }
     }
-    std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
-        comp_legs_map;
     if (!composite_ids.empty()) {
         repository::composite_leg_repository comp_leg_repo;
         const std::unordered_set<std::string> wanted(composite_ids.begin(), composite_ids.end());
         for (auto& leg : comp_leg_repo.read_latest(ctx)) {
             const auto key = boost::uuids::to_string(leg.identity.trade_id);
             if (wanted.contains(key))
-                comp_legs_map[key].push_back(std::move(leg));
+                batch.composite_legs.push_back(std::move(leg));
         }
     }
-
-    // The callable swap's exercise schedule is a collection of its own,
-    // so it is fetched beside the legs and only for the instruments
-    // that state one.
-    std::unordered_map<std::string, std::vector<ores::trading::domain::callable_swap_call_date>>
-        call_dates_map;
     if (!callable_ids.empty()) {
         repository::callable_swap_call_date_repository call_date_repo;
-        for (auto& call_date : call_date_repo.read_by_instruments_batch(ctx, callable_ids))
-            call_dates_map[boost::uuids::to_string(call_date.trade_id)].push_back(
-                std::move(call_date));
+        auto dates = call_date_repo.read_by_instruments_batch(ctx, callable_ids);
+        take(dates, batch.callable_swap_call_dates);
     }
-
-    // Phase 3: batch-fetch instruments, build lookup map
-    std::unordered_map<std::string, trade_instrument> imap;
-
-    auto take_legs = [&](const std::string& id) {
-        auto it = legs_map.find(id);
-        return it != legs_map.end() ? std::move(it->second) :
-                                      std::vector<ores::trading::domain::swap_leg>{};
-    };
-
-    auto take_leg_amounts = [&](const std::string& id) {
-        auto it = leg_amounts_map.find(id);
-        return it != leg_amounts_map.end() ?
-                   std::move(it->second) :
-                   std::vector<ores::trading::domain::swap_leg_amount>{};
-    };
-
-    auto take_leg_rates = [&](const std::string& id) {
-        auto it = leg_rates_map.find(id);
-        return it != leg_rates_map.end() ?
-                   std::move(it->second) :
-                   std::vector<ores::trading::domain::swap_leg_rate>{};
-    };
-
-    auto take_call_dates = [&](const std::string& id) {
-        auto it = call_dates_map.find(id);
-        return it != call_dates_map.end() ?
-                   std::move(it->second) :
-                   std::vector<ores::trading::domain::callable_swap_call_date>{};
-    };
-
-    // A commodity basket's constituents are a collection of their own, so
-    // they are fetched beside the instrument and only for the instruments
-    // that state one.
-    std::unordered_map<std::string,
-                       std::vector<ores::trading::domain::commodity_basket_constituent>>
-        constituents_map;
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;
-        for (auto& constituent : constituent_repo.read_by_instruments_batch(ctx, commodity_ids))
-            constituents_map[boost::uuids::to_string(constituent.trade_id)].push_back(
-                std::move(constituent));
+        auto constituents = constituent_repo.read_by_instruments_batch(ctx, commodity_ids);
+        take(constituents, batch.commodity_basket_constituents);
+    }
+    if (!eq_pos_ids.empty()) {
+        repository::equity_position_option_underlying_repository underlying_repo;
+        auto underlyings = underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids);
+        take(underlyings, batch.equity_position_option_underlyings);
     }
 
-    auto take_constituents = [&](const std::string& id) {
-        auto it = constituents_map.find(id);
-        return it != constituents_map.end() ?
-                   std::move(it->second) :
-                   std::vector<ores::trading::domain::commodity_basket_constituent>{};
-    };
-
-    // Single-table types (credit, scripted).
-    auto add_flat = [&](auto&& results) {
-        for (auto& v : results)
-            imap[boost::uuids::to_string(v.identity.trade_id)] = std::move(v);
-    };
-
+    // Phase 3: the instruments themselves.
     if (!bond_ids.empty()) {
         service::bond_instrument_reader reader(ctx);
         for (auto& [id, data] : reader.read_instruments(bond_ids))
-            imap[id] = std::move(data);
+            batch.bond_instruments.push_back(std::move(data));
     }
     if (!credit_ids.empty()) {
         service::credit_instrument_service svc(ctx);
-        add_flat(svc.get_credit_instruments(credit_ids));
+        auto rows = svc.get_credit_instruments(credit_ids);
+        take(rows, batch.credit_instruments);
     }
     if (!commodity_ids.empty()) {
         service::commodity_instrument_service svc(ctx);
-        for (auto& v : svc.get_commodity_instruments(commodity_ids)) {
-            const auto id = boost::uuids::to_string(v.identity.trade_id);
-            commodity_instrument_data data;
-            data.instrument = std::move(v);
-            data.constituents = take_constituents(id);
-            imap[id] = std::move(data);
-        }
+        auto rows = svc.get_commodity_instruments(commodity_ids);
+        take(rows, batch.commodity_instruments);
     }
     if (!scripted_ids.empty()) {
         service::scripted_instrument_service svc(ctx);
-        add_flat(svc.get_scripted_instruments(scripted_ids));
+        auto rows = svc.get_scripted_instruments(scripted_ids);
+        take(rows, batch.scripted_instruments);
     }
     if (!composite_ids.empty()) {
         service::composite_instrument_service svc(ctx);
-        for (auto& v : svc.get_composite_instruments(composite_ids)) {
-            const auto id = boost::uuids::to_string(v.identity.trade_id);
-            composite_instrument_data data;
-            data.instrument = std::move(v);
-            auto it = comp_legs_map.find(id);
-            if (it != comp_legs_map.end())
-                data.legs = std::move(it->second);
-            imap[id] = std::move(data);
-        }
+        auto rows = svc.get_composite_instruments(composite_ids);
+        take(rows, batch.composite_instruments);
     }
 
-    // Rates / swap types (9 sub-types, all share swap_legs table)
-    auto add_swap = [&](auto&& results) {
-        for (auto& v : results) {
-            const auto id = boost::uuids::to_string(v.identity.trade_id);
-            swap_instrument_data data;
-            data.instrument = std::move(v);
-            data.legs = take_legs(id);
-            data.leg_amounts = take_leg_amounts(id);
-            data.leg_rates = take_leg_rates(id);
-            data.call_dates = take_call_dates(id);
-            imap[id] = std::move(data);
-        }
-    };
+    // The rates family: eight sub-types over one shared legs table.
     if (!fra_ids.empty()) {
         service::fra_instrument_service svc(ctx);
-        add_swap(svc.get_fra_instruments(fra_ids));
+        auto rows = svc.get_fra_instruments(fra_ids);
+        take(rows, batch.fra_instruments);
     }
     if (!vswap_ids.empty()) {
         service::vanilla_swap_instrument_service svc(ctx);
-        add_swap(svc.get_vanilla_swap_instruments(vswap_ids));
+        auto rows = svc.get_vanilla_swap_instruments(vswap_ids);
+        take(rows, batch.vanilla_swap_instruments);
     }
     if (!capfloor_ids.empty()) {
         service::cap_floor_instrument_service svc(ctx);
-        add_swap(svc.get_cap_floor_instruments(capfloor_ids));
+        auto rows = svc.get_cap_floor_instruments(capfloor_ids);
+        take(rows, batch.cap_floor_instruments);
     }
     if (!swaption_ids.empty()) {
         service::swaption_instrument_service svc(ctx);
-        add_swap(svc.get_swaption_instruments(swaption_ids));
+        auto rows = svc.get_swaption_instruments(swaption_ids);
+        take(rows, batch.swaption_instruments);
     }
     if (!bgs_ids.empty()) {
         service::balance_guaranteed_swap_instrument_service svc(ctx);
-        add_swap(svc.get_balance_guaranteed_swap_instruments(bgs_ids));
+        auto rows = svc.get_balance_guaranteed_swap_instruments(bgs_ids);
+        take(rows, batch.balance_guaranteed_swap_instruments);
     }
     if (!callable_ids.empty()) {
         service::callable_swap_instrument_service svc(ctx);
-        add_swap(svc.get_callable_swap_instruments(callable_ids));
+        auto rows = svc.get_callable_swap_instruments(callable_ids);
+        take(rows, batch.callable_swap_instruments);
     }
     if (!koswap_ids.empty()) {
         service::knock_out_swap_instrument_service svc(ctx);
-        add_swap(svc.get_knock_out_swap_instruments(koswap_ids));
+        auto rows = svc.get_knock_out_swap_instruments(koswap_ids);
+        take(rows, batch.knock_out_swap_instruments);
     }
     if (!infl_ids.empty()) {
         service::inflation_swap_instrument_service svc(ctx);
-        add_swap(svc.get_inflation_swap_instruments(infl_ids));
+        auto rows = svc.get_inflation_swap_instruments(infl_ids);
+        take(rows, batch.inflation_swap_instruments);
     }
 
-    // FX types
-    auto add_fx = [&](auto&& results) {
-        for (auto& v : results)
-            imap[boost::uuids::to_string(v.identity.trade_id)] =
-                ores::trading::domain::fx_instrument_variant{std::move(v)};
-    };
+    // The FX family.
     if (!fxfwd_ids.empty()) {
         service::fx_forward_instrument_service svc(ctx);
-        add_fx(svc.get_fx_forward_instruments(fxfwd_ids));
+        auto rows = svc.get_fx_forward_instruments(fxfwd_ids);
+        take(rows, batch.fx_forward_instruments);
     }
     if (!fxopt_ids.empty()) {
         service::fx_vanilla_option_instrument_service svc(ctx);
-        add_fx(svc.get_fx_vanilla_option_instruments(fxopt_ids));
+        auto rows = svc.get_fx_vanilla_option_instruments(fxopt_ids);
+        take(rows, batch.fx_vanilla_option_instruments);
     }
     if (!fxbar_ids.empty()) {
         service::fx_barrier_option_instrument_service svc(ctx);
-        add_fx(svc.get_fx_barrier_option_instruments(fxbar_ids));
+        auto rows = svc.get_fx_barrier_option_instruments(fxbar_ids);
+        take(rows, batch.fx_barrier_option_instruments);
     }
     if (!fxdig_ids.empty()) {
         service::fx_digital_option_instrument_service svc(ctx);
-        add_fx(svc.get_fx_digital_option_instruments(fxdig_ids));
+        auto rows = svc.get_fx_digital_option_instruments(fxdig_ids);
+        take(rows, batch.fx_digital_option_instruments);
     }
     if (!fxasn_ids.empty()) {
         service::fx_asian_forward_instrument_service svc(ctx);
-        add_fx(svc.get_fx_asian_forward_instruments(fxasn_ids));
+        auto rows = svc.get_fx_asian_forward_instruments(fxasn_ids);
+        take(rows, batch.fx_asian_forward_instruments);
     }
     if (!fxacc_ids.empty()) {
         service::fx_accumulator_instrument_service svc(ctx);
-        add_fx(svc.get_fx_accumulator_instruments(fxacc_ids));
+        auto rows = svc.get_fx_accumulator_instruments(fxacc_ids);
+        take(rows, batch.fx_accumulator_instruments);
     }
     if (!fxvar_ids.empty()) {
         service::fx_variance_swap_instrument_service svc(ctx);
-        add_fx(svc.get_fx_variance_swap_instruments(fxvar_ids));
+        auto rows = svc.get_fx_variance_swap_instruments(fxvar_ids);
+        take(rows, batch.fx_variance_swap_instruments);
     }
 
-    // Equity types. An equity option position states its entries as rows
-    // of their own, so they are fetched beside the instrument and only
-    // for the positions that state one.
-    std::unordered_map<std::string,
-                       std::vector<ores::trading::domain::equity_position_option_underlying>>
-        equity_underlyings_map;
-    if (!eq_pos_ids.empty()) {
-        repository::equity_position_option_underlying_repository underlying_repo;
-        for (auto& underlying : underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids))
-            equity_underlyings_map[boost::uuids::to_string(underlying.trade_id)].push_back(
-                std::move(underlying));
-    }
-
-    auto take_equity_underlyings = [&](const std::string& id) {
-        auto it = equity_underlyings_map.find(id);
-        return it != equity_underlyings_map.end() ?
-                   std::move(it->second) :
-                   std::vector<ores::trading::domain::equity_position_option_underlying>{};
-    };
-
-    auto add_eq = [&](auto&& results) {
-        for (auto& v : results) {
-            const auto id = boost::uuids::to_string(v.identity.trade_id);
-            ores::trading::domain::equity_instrument_data data;
-            data.instrument = ores::trading::domain::equity_instrument_variant{std::move(v)};
-            data.underlyings = take_equity_underlyings(id);
-            imap[id] = std::move(data);
-        }
-    };
+    // The equity family.
     if (!eq_opt_ids.empty()) {
         service::equity_option_instrument_service svc(ctx);
-        add_eq(svc.get_equity_option_instruments(eq_opt_ids));
+        auto rows = svc.get_equity_option_instruments(eq_opt_ids);
+        take(rows, batch.equity_option_instruments);
     }
     if (!eq_fwd_ids.empty()) {
         service::equity_forward_instrument_service svc(ctx);
-        add_eq(svc.get_equity_forward_instruments(eq_fwd_ids));
+        auto rows = svc.get_equity_forward_instruments(eq_fwd_ids);
+        take(rows, batch.equity_forward_instruments);
     }
     if (!eq_swp_ids.empty()) {
         service::equity_swap_instrument_service svc(ctx);
-        add_eq(svc.get_equity_swap_instruments(eq_swp_ids));
+        auto rows = svc.get_equity_swap_instruments(eq_swp_ids);
+        take(rows, batch.equity_swap_instruments);
     }
     if (!eq_var_ids.empty()) {
         service::equity_variance_swap_instrument_service svc(ctx);
-        add_eq(svc.get_equity_variance_swap_instruments(eq_var_ids));
+        auto rows = svc.get_equity_variance_swap_instruments(eq_var_ids);
+        take(rows, batch.equity_variance_swap_instruments);
     }
     if (!eq_bar_ids.empty()) {
         service::equity_barrier_option_instrument_service svc(ctx);
-        add_eq(svc.get_equity_barrier_option_instruments(eq_bar_ids));
+        auto rows = svc.get_equity_barrier_option_instruments(eq_bar_ids);
+        take(rows, batch.equity_barrier_option_instruments);
     }
     if (!eq_asn_ids.empty()) {
         service::equity_asian_option_instrument_service svc(ctx);
-        add_eq(svc.get_equity_asian_option_instruments(eq_asn_ids));
+        auto rows = svc.get_equity_asian_option_instruments(eq_asn_ids);
+        take(rows, batch.equity_asian_option_instruments);
     }
     if (!eq_dig_ids.empty()) {
         service::equity_digital_option_instrument_service svc(ctx);
-        add_eq(svc.get_equity_digital_option_instruments(eq_dig_ids));
+        auto rows = svc.get_equity_digital_option_instruments(eq_dig_ids);
+        take(rows, batch.equity_digital_option_instruments);
     }
     if (!eq_acc_ids.empty()) {
         service::equity_accumulator_instrument_service svc(ctx);
-        add_eq(svc.get_equity_accumulator_instruments(eq_acc_ids));
+        auto rows = svc.get_equity_accumulator_instruments(eq_acc_ids);
+        take(rows, batch.equity_accumulator_instruments);
     }
     if (!eq_pos_ids.empty()) {
         service::equity_position_instrument_service svc(ctx);
-        add_eq(svc.get_equity_position_instruments(eq_pos_ids));
-    }
-
-    // Phase 4: fill items from lookup map (copy — multiple items may share an instrument)
-    for (auto& item : items) {
-        const auto& t = item.anchor;
-        // The instrument is keyed by the trade it belongs to, so the
-        // trade's own id is the key the product tables are read by.
-        const auto id = boost::uuids::to_string(t.id);
-        if (auto it = imap.find(id); it != imap.end())
-            item.instrument = encode_instrument(it->second);
+        auto rows = svc.get_equity_position_instruments(eq_pos_ids);
+        take(rows, batch.equity_position_instruments);
     }
 
     // Phase 5: fill the trade-level envelope, which is keyed by the
@@ -533,9 +436,11 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
 trade_export_service::trade_export_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<trade_export_item> trade_export_service::export_node(const std::string& node_id,
-                                                                 std::uint32_t offset,
-                                                                 std::uint32_t limit) const {
+std::vector<trade_export_item>
+trade_export_service::export_node(const std::string& node_id,
+                                  std::uint32_t offset,
+                                  std::uint32_t limit,
+                                  domain::instrument_batch& instruments) const {
     using database::repository::execute_parameterized_string_query;
     const auto trade_ids = execute_parameterized_string_query(
         ctx_,
@@ -549,11 +454,14 @@ std::vector<trade_export_item> trade_export_service::export_node(const std::stri
         {ctx_.tenant_id().to_string(), node_id, std::to_string(offset), std::to_string(limit)},
         lg(),
         "Reading the trades booked under a node.");
-    return export_trades(trade_ids);
+    return export_trades(trade_ids, instruments);
 }
 
-std::vector<trade_export_item> trade_export_service::export_books(
-    const std::vector<std::string>& book_ids, std::uint32_t offset, std::uint32_t limit) const {
+std::vector<trade_export_item>
+trade_export_service::export_books(const std::vector<std::string>& book_ids,
+                                   std::uint32_t offset,
+                                   std::uint32_t limit,
+                                   domain::instrument_batch& instruments) const {
     using database::repository::execute_parameterized_string_query;
     if (book_ids.empty())
         return {};
@@ -570,11 +478,12 @@ std::vector<trade_export_item> trade_export_service::export_books(
          std::to_string(limit)},
         lg(),
         "Reading the trades booked in a set of books.");
-    return export_trades(trade_ids);
+    return export_trades(trade_ids, instruments);
 }
 
 std::vector<trade_export_item>
-trade_export_service::export_trades(const std::vector<std::string>& trade_ids) const {
+trade_export_service::export_trades(const std::vector<std::string>& trade_ids,
+                                    domain::instrument_batch& instruments) const {
     using database::repository::execute_parameterized_multi_column_query;
     if (trade_ids.empty())
         return {};
@@ -602,7 +511,7 @@ trade_export_service::export_trades(const std::vector<std::string>& trade_ids) c
         items.push_back(
             {.anchor = std::move(anchor), .ore_id = ore_id != ore_ids.end() ? ore_id->second : id});
     }
-    populate_instruments_for_trades(ctx_, items);
+    populate_instruments_for_trades(ctx_, items, instruments);
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
     return items;
 }

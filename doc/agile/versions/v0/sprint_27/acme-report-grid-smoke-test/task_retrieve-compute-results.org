@@ -28,9 +28,9 @@ collect_compute_results completes without downloading anything, and ores.reporti
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Scoped, not implemented. =collect_results= is still the pass-through, and the request carries no location to download from. |
-| Waiting on   | Nothing.                               |
-| Next         | The compute operation that answers for a batch, then the download and the record. |
+| Now          | Scoped. Two things it needs are not in place: =collect_results= is still the pass-through, and the instance has no field to record an output location in. |
+| Waiting on   | The decision on where the output location is recorded, because a new column would have to be modelled and migrated before the rest can be written. |
+| Next         | Settle the location field, then the two reads from compute and the download. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -60,10 +60,12 @@ compute's tables.
 *The decision to take first.* Two ways to get the location here, differing in
 who owns the knowledge.
 
-- *Reporting asks compute.* A compute operation answers for a batch: its
-  outcome and its =output_uri=. Reporting then downloads the object and records
-  where it landed. This is the arc's pattern, it needs a new subject with its
-  own tests, and compute's schema stays in compute.
+- *Reporting asks compute.* Compute already answers this, so nothing new is
+  needed: =compute.v1.workunits.list_by_batch_id= gives the batch's workunits
+  and =compute.v1.results.list_by_workunit_id= gives each one's results, and a
+  result carries =outcome=, =error_message= and =output_uri=. Reporting then
+  downloads the object and records where it landed. This is the arc's pattern,
+  and compute's schema stays in compute.
 - *The workflow carries the location.* The step's request gains the output URI,
   because the engine already dispatches with the batch. Smaller, but the engine
   is the caller, so it has to have read the location from somewhere — the same
@@ -72,10 +74,24 @@ who owns the knowledge.
 The plan is the first. The second is recorded because it is the cheaper move,
 and it is what a reader will think of.
 
+*Correction to the first reading of this Plan.* It said the arc's pattern
+"needs a new subject with its own tests". It does not: the two operations above
+already exist, so this task adds a caller rather than a protocol.
+
 *The failed-job half.* The acceptance asks that a run whose compute job failed
-be distinguishable from one that produced output, so the operation answers the
-outcome as well as the location. A batch whose job failed is a failure of the
-run, not a run with no output.
+be distinguishable from one that produced output, and a result already carries
+the =outcome= and the wrapper's =error_message=, so the distinction is a read
+rather than a new concept. A batch with a failed result is a failure of the run,
+not a run with no output.
+
+*The schema decision, which comes first.* The acceptance says "the instance
+records the output location", and =ores.reporting.report_instance= has no field
+for one: it carries =output_message=, =started_at= and =completed_at=, and
+nothing naming an object. Either the instance gains a column, or the location is
+recorded somewhere that already exists and the acceptance is read that way. A
+column would have to be modelled, generated, migrated and given its row-level
+security before any of the above can be written, which is why this task is
+larger than its Goal suggests.
 
 *Out of scope.* Parsing what the output holds. This task brings the bytes back
 and records where they are.

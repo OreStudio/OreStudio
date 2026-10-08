@@ -8,7 +8,7 @@
 #+filetags: :land-the-role-request-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/describe-the-design-the-journey-landed
-#+pr:
+#+pr: 2785
 #+created: 2026-10-07
 #+updated: 2026-10-08
 #+environment: eager_maxwell
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2785][#2785]] | [doc] Describe the design the role request journey landed |
 
 * Review
 

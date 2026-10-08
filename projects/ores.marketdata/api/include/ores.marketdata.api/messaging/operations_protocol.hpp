@@ -248,7 +248,7 @@ struct get_curve_snapshot_response {
      * point belongs to, which is what decides whether a drawn curve is one market
      * read or a stitching of several. Zero for an empty snapshot.
      */
-    std::int64_t oldest_age_seconds;
+    std::int64_t oldest_age_seconds = 0;
     /**
      * @brief The spread between the oldest and the newest point, in seconds.
      *
@@ -257,7 +257,7 @@ struct get_curve_snapshot_response {
      * market horizons does not. A point whose instant is after the snapshot
      * instant carries no age at all, and one exactly at it is age zero and counts.
      */
-    std::int64_t spread_seconds;
+    std::int64_t spread_seconds = 0;
     /**
      * @brief Whether the snapshot is mixed enough that a view must not draw it
      * silently.

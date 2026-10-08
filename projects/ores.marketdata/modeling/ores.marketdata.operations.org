@@ -462,6 +462,7 @@ row carries that row's own record time, not the time of the value it replaced.
 *** oldest_age_seconds
 :PROPERTIES:
 :cpp_type: std::int64_t
+:default: 0
 :END:
 
 The age of the oldest point of the snapshot, in seconds: the snapshot instant
@@ -481,6 +482,7 @@ and so mixes nothing.
 *** spread_seconds
 :PROPERTIES:
 :cpp_type: std::int64_t
+:default: 0
 :END:
 
 The oldest point's age minus the newest point's age, in seconds. This is the

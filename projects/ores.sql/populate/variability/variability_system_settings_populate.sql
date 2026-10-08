@@ -125,6 +125,27 @@ BEGIN
         'Cron expression for the job that closes approval requests past their kind''s deadline. Default is every five minutes.'
     );
 
+    -- The inbox declares the job that warns the deciders of a request that is
+    -- close to running out. It is its own job rather than part of the sweep
+    -- above, because warning somebody is a nudge and closing a queue is
+    -- housekeeping: the two want different cadences.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'inbox.approval_expiry.reminder_schedule',
+        '0 8 * * *',
+        'string',
+        'Cron expression for the job that warns the deciders of approval requests close to their deadline. Default is once a day at eight.'
+    );
+
+    -- How far ahead of its deadline a request is warned about. The window says
+    -- what 'close' means, and an installation with a longer queue or slower
+    -- administrators sets it longer.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'inbox.approval_expiry.reminder_window_seconds',
+        '172800',
+        'integer',
+        'How far ahead of its deadline an approval request is warned about, in seconds. Default is 172800 (two days).'
+    );
+
     -- -----------------------------------------------------------------------------
     -- Inbox queue settings
     -- -----------------------------------------------------------------------------

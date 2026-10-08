@@ -204,6 +204,38 @@ export interface ExpireOverdueApprovalsResponse {
 }
 
 /**
+ * @brief Warns the deciders of every open request whose deadline is close.
+ *
+ * The other half of the deadline. The sweep that closes what nobody answered
+ * keeps the queue moving, but a decider who never looked learns afterwards;
+ * this gives them the chance the deadline was there to give.
+ *
+ * It has its own schedule and its own window, because warning somebody is a
+ * nudge with its own timing and its own audience, while closing a queue that
+ * has stopped moving is housekeeping. The window is the variability setting
+ * =inbox.approval_expiry.reminder_window_seconds=.
+ *
+ * A request is warned about once, and the notice is what says so: a reminder
+ * already raised names the request, so there is no second mark to keep in step
+ * with the first. A request answered before its deadline passes stops matching,
+ * and the one the sweep closed is left out by the close.
+ *
+ * A scheduler firing is a plain publish with no token, so this carries no
+ * session: it takes no input, and it only reads requests that are already close
+ * to a deadline their kind set.
+ */
+export interface RemindExpiringApprovalsRequest {}
+
+export interface RemindExpiringApprovalsResponse {
+    result: Result;
+    /**
+     * @brief The requests complained about, as UUID strings, nearest deadline
+     * first.
+     */
+    reminded: string[];
+}
+
+/**
  * @brief One field of a request at one version, as a screen names and draws it.
  *
  * The value is text whatever its type: the renderer that fills this in is the
@@ -270,6 +302,7 @@ export const subjects = {
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
     get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
+    remind_expiring_approvals_request: 'inbox.v1.ops.remind_expiring_approvals',
     get_approval_history_request: 'inbox.v1.ops.get_approval_history',
 } as const;
 /**
@@ -285,5 +318,6 @@ export const requiresSession = {
     list_my_approval_requests_request: true,
     get_approval_request: true,
     expire_overdue_approvals_request: false,
+    remind_expiring_approvals_request: false,
     get_approval_history_request: true,
 } as const;

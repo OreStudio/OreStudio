@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.inbox.service/app/approval_queue_window.hpp"
+#include "ores.inbox.service/app/approval_windows.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -31,24 +31,35 @@ namespace ores::inbox::service::app {
 
 namespace {
 
-/**
- * @brief The setting the window comes from.
- */
-constexpr std::string_view window_setting_name = "inbox.approval_queue.answered_window_seconds";
+constexpr std::string_view answered_setting_name =
+    "inbox.approval_queue.answered_window_seconds";
+constexpr std::string_view reminder_setting_name =
+    "inbox.approval_expiry.reminder_window_seconds";
 
 auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.inbox.service.app.approval_queue_window");
+    static auto instance = ores::logging::make_logger("ores.inbox.service.app.approval_windows");
     return instance;
 }
 
-}
-
-std::chrono::seconds answered_window_seconds(ores::nats::service::nats_client& svc_nats) {
+/**
+ * @brief One window, read from the setting that holds it.
+ *
+ * The window is the installation's to set, so it is read from the settings
+ * rather than compiled in. It is read once, when the service starts, which is
+ * how the sweep's own schedule is read: all three are installation policy, and
+ * all three take a restart to change.
+ *
+ * A setting that cannot be read is not a service that cannot start. A window of
+ * zero is the safe answer in both cases it is asked: no answered tail, and
+ * nobody warned. The read says so in the log.
+ */
+std::chrono::seconds read_window(ores::nats::service::nats_client& svc_nats,
+                                 std::string_view setting_name) {
     using namespace ores::logging;
     using ores::utility::domain::outcome;
 
     ores::variability::messaging::get_setting_request request;
-    request.name = std::string(window_setting_name);
+    request.name = std::string(setting_name);
 
     try {
         const auto& codec = ores::nats::default_wire_codec();
@@ -66,18 +77,28 @@ std::chrono::seconds answered_window_seconds(ores::nats::service::nats_client& s
                                                                     : answer->result.message);
 
         const auto seconds = std::stoll(answer->value);
-        if (seconds <= 0)
+        if (seconds < 0)
             throw std::runtime_error("the setting is " + answer->value +
                                      ", which is not a length of time");
-        BOOST_LOG_SEV(lg(), info) << "The answered queue tail reaches back " << seconds
-                                  << " seconds, from " << window_setting_name << ".";
+        BOOST_LOG_SEV(lg(), info) << "The window " << setting_name << " is " << seconds
+                                  << " seconds.";
         return std::chrono::seconds(seconds);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn)
-            << "Could not read " << window_setting_name << " (" << e.what()
-            << "), so the queue will answer no answered tail. The open queue is unaffected.";
+            << "Could not read " << setting_name << " (" << e.what()
+            << "), so its window is zero. Everything else the inbox does is unaffected.";
         return std::chrono::seconds::zero();
     }
+}
+
+}
+
+std::chrono::seconds answered_window_seconds(ores::nats::service::nats_client& svc_nats) {
+    return read_window(svc_nats, answered_setting_name);
+}
+
+std::chrono::seconds reminder_window_seconds(ores::nats::service::nats_client& svc_nats) {
+    return read_window(svc_nats, reminder_setting_name);
 }
 
 }

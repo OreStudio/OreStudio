@@ -285,6 +285,86 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
     return expired;
 }
 
+std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::seconds window) {
+    if (window <= std::chrono::seconds::zero())
+        return {};
+
+    // The sweep runs from the scheduler, so no person is asking. The read
+    // crosses every tenant and touches no row, so it needs no actor; the notice
+    // it raises needs one, and the service that ran the sweep is the honest
+    // answer.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
+        " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double precision)",
+        {std::to_string(window.count())},
+        lg(),
+        "Reading the approval requests close to their deadline");
+
+    std::vector<expiring_request> expiring;
+    expiring.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() != 5)
+            continue;
+        expiring_request e{.request_id = row[0].value_or(""),
+                           .tenant_id = row[1].value_or(""),
+                           .kind_code = row[2].value_or(""),
+                           .requested_by = row[3].value_or(""),
+                           .expires_at = row[4].value_or("")};
+        BOOST_LOG_SEV(lg(), info) << "Request " << e.request_id << " (" << e.kind_code
+                                  << ") is close to its deadline at " << e.expires_at << ".";
+        tell_expiring(e);
+        expiring.push_back(std::move(e));
+    }
+    return expiring;
+}
+
+void approval_lifecycle::tell_expiring(const expiring_request& expiring) {
+    try {
+        const auto tenant = utility::uuid::tenant_id::from_string(expiring.tenant_id);
+        if (!tenant)
+            throw std::runtime_error("bad tenant " + expiring.tenant_id);
+        const auto k = kind(expiring.kind_code);
+        if (!k)
+            throw std::runtime_error("no such kind " + expiring.kind_code);
+
+        // The sweep runs as a service account that lives in the system tenant,
+        // while the people to warn live in the request's tenant. The deciders
+        // are resolved where they are and the notice is raised there, so
+        // warning one tenant's deciders does not need the service to hold their
+        // permission.
+        const auto system_ctx =
+            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
+        const auto raiser = notification_center(system_ctx).actor_account_id();
+        if (!raiser)
+            throw std::runtime_error("the service account was not found");
+
+        notification_center center(ctx_.with_tenant(*tenant, ctx_.service_account()));
+        auto deciders = center.holders_of(k->decide_permission_code);
+        // A person never decides their own request, and the warning is that
+        // somebody should, so the one person it must not reach is the asker.
+        std::erase(deciders, expiring.requested_by);
+        if (deciders.empty())
+            return;
+
+        // The message names the kind as a person reads it, which is a name and
+        // not the code the row carries.
+        messaging::raise_notification_request n{
+            .kind_code = "inbox.approval_expiring",
+            .link_route = "requests",
+            .link_id = expiring.request_id,
+            .arguments = {{.name = "kind", .value = k->name},
+                          {.name = "deadline", .value = expiring.expires_at}},
+            .account_ids = {},
+            .audience_permission_code = k->decide_permission_code};
+        center.raise(n, deciders, *raiser);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Request " << expiring.request_id
+                                  << " is close to its deadline, but its deciders were not told: "
+                                  << e.what();
+    }
+}
+
 void approval_lifecycle::tell_expired(const expired_request& expired) {
     try {
         const auto tenant = utility::uuid::tenant_id::from_string(expired.tenant_id);

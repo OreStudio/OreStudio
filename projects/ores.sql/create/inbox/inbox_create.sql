@@ -73,3 +73,7 @@
 
 -- Raising a notification and a person's read state, each in one statement
 \ir ./inbox_notification_fn_create.sql
+
+-- The requests about to run out, read after the notifications they are told by,
+-- because a reminder already raised is what says not to raise it again
+\ir ./inbox_approval_remind_fn_create.sql

@@ -22,11 +22,14 @@
  * Notification Kinds Population Script
  *
  * Seeds the kinds of notification the inbox raises itself: a request waits, a
- * request is decided, and a request ran out of time. An expiry is its own kind
- * rather than a decision, because nobody decided it and a message that named a
- * decider would be telling the member something untrue. A component that
- * raises its own kinds seeds them in its own populate script. This script is
- * idempotent.
+ * request is decided, a request is about to run out, and a request ran out of
+ * time. An expiry is its own kind rather than a decision, because nobody
+ * decided it and a message that named a decider would be telling the member
+ * something untrue; an expiring request is its own kind again, because it goes
+ * to the deciders rather than to the person who asked, and a message that said
+ * the member had been told something would be telling them something untrue.
+ * A component that raises its own kinds seeds them in its own populate script.
+ * This script is idempotent.
  */
 
 \echo '--- Notification Kinds ---'
@@ -47,6 +50,10 @@ insert into ores_inbox_notification_kinds_tbl (
     (ores_utility_system_tenant_id_fn(), 'inbox.approval_expired', 0,
      'Request expired', 'A request the person asked for ran out of time undecided',
      'notification.inbox.approval_expired', true, 30,
+     current_user, current_user, 'system.initial_load', 'Initial population of notification kinds'),
+    (ores_utility_system_tenant_id_fn(), 'inbox.approval_expiring', 0,
+     'Request about to expire', 'A request waiting in the queue is close to its deadline',
+     'notification.inbox.approval_expiring', true, 40,
      current_user, current_user, 'system.initial_load', 'Initial population of notification kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

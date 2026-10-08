@@ -322,6 +322,9 @@ const fr: SourceCatalogue = {
     'notification.inbox.approval_expired':
         'Votre demande de {kind} a expiré avant que quiconque y réponde. Demandez-la de nouveau si vous en avez encore besoin.',
 
+    'notification.inbox.approval_expiring':
+        'Une demande de {kind} est due avant le {deadline} et personne n\'y a répondu.',
+
     signIns: {
         title: 'Connexions',
         kind: 'Type',

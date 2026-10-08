@@ -159,6 +159,27 @@ It is addressed at =inbox.v1.ops.expire_overdue_approvals=.
 approval_operations expire-overdue-approvals
 #+end_src
 
+** =remind-expiring-approvals=
+:PROPERTIES:
+:ID: 21FB372C-BAC4-5B59-BC13-5C2109668355
+:END:
+
+Sends =remind_expiring_approvals_request= and prints =remind_expiring_approvals_response=, so the shape is the protocol's and the meaning is the service's. A caller runs it before it has a session, so the command presents no token and refuses none.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations remind-expiring-approvals
+#+end_example
+
+It is addressed at =inbox.v1.ops.remind_expiring_approvals=.
+
+#+name: approval_operations-remind-expiring-approvals
+#+begin_src ores-shell :tangle approval_operations-remind-expiring-approvals.ores :exports none
+approval_operations remind-expiring-approvals
+#+end_src
+
 ** =get-approval-history=
 :PROPERTIES:
 :ID: D87D27AF-9905-5D4B-A634-FD285F3C12A6

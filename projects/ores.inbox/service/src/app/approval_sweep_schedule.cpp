@@ -17,8 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.inbox.service/app/approval_expiry_schedule.hpp"
-#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
+#include "ores.inbox.service/app/approval_sweep_schedule.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -47,22 +46,12 @@ using ores::utility::domain::outcome;
 namespace {
 
 /**
- * @brief The setting that says how often the sweep runs, and the job it names.
+ * @brief What the scheduler publishes when a sweep fires.
  *
- * The setting is the installation's to set; the job is the component's. A
- * component that could not name its own job could not recognise the one it
- * registered last time and would add a second on every restart.
- */
-constexpr std::string_view schedule_setting_name = "inbox.approval_expiry.schedule";
-constexpr std::string_view expiry_job_name = "ores.inbox.approval_expiry";
-
-/**
- * @brief What the scheduler publishes when the expiry job fires.
- *
- * Only the subject is read: the operation takes no input, so the body the
+ * Only the subject is read: the operations take no input, so the body the
  * scheduler adds around it is ignored at the other end.
  */
-struct expiry_action_payload {
+struct sweep_action_payload {
     std::string subject;
 };
 
@@ -95,10 +84,12 @@ call(ores::nats::service::nats_client& nats, const Request& request) {
 
 }
 
-approval_expiry_schedule::approval_expiry_schedule(ores::nats::service::nats_client svc_nats)
-    : svc_nats_(std::move(svc_nats)) {}
+approval_sweep_schedule::approval_sweep_schedule(ores::nats::service::nats_client svc_nats,
+                                                 sweep described)
+    : svc_nats_(std::move(svc_nats))
+    , described_(std::move(described)) {}
 
-boost::asio::awaitable<void> approval_expiry_schedule::register_job() {
+boost::asio::awaitable<void> approval_sweep_schedule::register_job() {
     // The scheduler may not be listening yet when this service starts, so an
     // unreachable dependency is waited out rather than treated as a
     // misconfiguration. A refusal is not waited out: it will refuse again.
@@ -110,18 +101,18 @@ boost::asio::awaitable<void> approval_expiry_schedule::register_job() {
 
     for (int attempt = 1;; ++attempt) {
         if (auto attempt_result = try_register_once(); attempt_result) {
-            BOOST_LOG_SEV(lg(), info) << "Registered the approval expiry job '" << expiry_job_name
-                                      << "' from " << schedule_setting_name << ".";
+            BOOST_LOG_SEV(lg(), info) << "Registered the sweep job '" << described_.job_name
+                                      << "' from " << described_.setting_name << ".";
             co_return;
         } else if (!attempt_result.error().retryable) {
             throw application_exception(attempt_result.error().message);
         } else if (attempt == max_attempts) {
-            throw application_exception("Could not register the approval expiry job after " +
+            throw application_exception("Could not register the sweep job after " +
                                         std::to_string(max_attempts) +
                                         " attempts: " + attempt_result.error().message);
         } else {
             BOOST_LOG_SEV(lg(), warn)
-                << "Could not register the approval expiry job (attempt " << attempt << " of "
+                << "Could not register the sweep job (attempt " << attempt << " of "
                 << max_attempts << "): " << attempt_result.error().message;
         }
 
@@ -130,31 +121,31 @@ boost::asio::awaitable<void> approval_expiry_schedule::register_job() {
     }
 }
 
-std::expected<void, approval_expiry_schedule::failure>
-approval_expiry_schedule::try_register_once() {
+std::expected<void, approval_sweep_schedule::failure>
+approval_sweep_schedule::try_register_once() {
     using ores::scheduler::messaging::job_definition_change;
     using ores::scheduler::messaging::list_job_definitions_request;
     using ores::scheduler::messaging::put_job_definition_request;
 
     ores::variability::messaging::get_setting_request setting_request;
-    setting_request.name = std::string(schedule_setting_name);
+    setting_request.name = std::string(described_.setting_name);
 
     const auto setting = call(svc_nats_, setting_request);
     if (!setting)
         return std::unexpected(failure{.retryable = true, .message = setting.error()});
     if (setting->result.outcome != outcome::ok)
         return std::unexpected(
-            failure{.message = "The setting " + std::string(schedule_setting_name) +
+            failure{.message = "The setting " + std::string(described_.setting_name) +
                                " could not be read: " + setting->result.message});
     if (setting->value.empty())
         return std::unexpected(
-            failure{.message = "The setting " + std::string(schedule_setting_name) +
+            failure{.message = "The setting " + std::string(described_.setting_name) +
                                " is empty, so there is no schedule to register."});
 
     const auto cron = ores::scheduler::domain::cron_expression::from_string(setting->value);
     if (!cron)
         return std::unexpected(failure{.message = "The setting " +
-                                                  std::string(schedule_setting_name) +
+                                                  std::string(described_.setting_name) +
                                                   " is not a cron expression: " + cron.error()});
 
     // The job is recognised by name, because that is the key the store holds
@@ -172,7 +163,7 @@ approval_expiry_schedule::try_register_once() {
                                                   jobs->result.message});
 
     const auto held = std::ranges::find_if(
-        jobs->definitions, [](const auto& j) { return j.job_name == expiry_job_name; });
+        jobs->definitions, [](const auto& j) { return j.job_name == described_.job_name; });
 
     if (held != jobs->definitions.end() &&
         held->schedule_expression.to_string() == cron->to_string() && held->is_active &&
@@ -182,15 +173,13 @@ approval_expiry_schedule::try_register_once() {
     job_definition_change change;
     change.write.id =
         held != jobs->definitions.end() ? held->id : boost::uuids::random_generator()();
-    change.write.job_name = std::string(expiry_job_name);
-    change.write.description =
-        "Close the approval requests nobody answered and tell the person who asked";
+    change.write.job_name = std::string(described_.job_name);
+    change.write.description = described_.description;
     change.write.command = "";
     change.write.schedule_expression = *cron;
     change.write.action_type = "nats_publish";
-    change.write.action_payload = rfl::json::write(expiry_action_payload{
-        .subject =
-            std::string(ores::inbox::messaging::expire_overdue_approvals_request::nats_subject)});
+    change.write.action_payload =
+        rfl::json::write(sweep_action_payload{.subject = described_.subject});
     change.write.is_active = true;
     // The component owns the job's identity and replaces whatever holds it,
     // because this runs again on every restart.
@@ -200,14 +189,14 @@ approval_expiry_schedule::try_register_once() {
         .change = std::move(change),
         .intent = {.reason_code = std::string(ores::service::messaging::change_reasons::new_record),
                    .commentary = "Registered by the inbox service from " +
-                                 std::string(schedule_setting_name) + "."}};
+                                 std::string(described_.setting_name) + "."}};
 
     const auto put = call(svc_nats_, put_request);
     if (!put)
         return std::unexpected(failure{.retryable = true, .message = put.error()});
     if (put->result.outcome != outcome::ok)
         return std::unexpected(
-            failure{.message = "The scheduler refused the expiry job: " + put->result.message});
+            failure{.message = "The scheduler refused the job: " + put->result.message});
     return {};
 }
 

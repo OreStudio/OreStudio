@@ -21,6 +21,15 @@ then raises one notice for each person who asked. The inbox declares the job
 and registers it at start; how often it fires is a system setting, so an
 installation tunes the sweep without a build.
 
+The other half of a deadline is the warning. A second sweep, on its own
+schedule and its own window, reads the open requests whose deadline is close
+and warns the people who may answer them, so a decider learns before the
+request runs out rather than after. It is a separate job because warning
+somebody is a nudge and closing a queue is housekeeping, and the two want
+different cadences. A request is warned about once, and the notice is what says
+so: a reminder already raised names the request, so there is no second mark to
+keep in step with the first.
+
 * Detail
 
 ** The deadline is the kind's, not the request's
@@ -149,6 +158,34 @@ expiry would name somebody who did nothing. So the expiry has its own
 notification kind, =inbox.approval_expired=, whose sentence says the request
 ran out of time. See
 [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]].
+
+** The warning is its own sweep, and the notice is its mark
+
+A request about to run out is read by
+=ores_inbox_remind_expiring_approval_requests_fn=, which answers every open
+request whose =expires_at= falls between now and now plus the window. The
+service then warns the holders of the kind's decide permission in the request's
+own tenant, leaving out the person who asked, because a person never decides
+their own request.
+
+Warning once is what makes it a warning rather than a nuisance, and the mark is
+the notice itself: the function leaves out any request a
+=inbox.approval_expiring= notification already names. A column on the request
+was the obvious alternative and was not taken. It would be a second record of
+the same fact, it would have to be cleared wherever the notice is cleared, and
+the two could then disagree about whether anybody had been told. Asking the
+notice costs one =not exists= and cannot disagree with itself.
+
+The window is the setting =inbox.approval_expiry.reminder_window_seconds= and
+the cadence is =inbox.approval_expiry.reminder_schedule=, so an installation
+sets both without a build. A window of zero warns nobody, which is what an
+installation that cannot read the setting gets: a warning nobody receives is
+better than a service that refuses to start over one.
+
+The reminder does not close anything and the close does not warn. A request
+answered before its deadline stops matching the warning, and a request the
+close reaches is no longer open for the warning to find; the two sweeps can run
+in either order and in any number of repetitions.
 
 ** The sweep is idempotent, and it races safely
 

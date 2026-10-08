@@ -62,6 +62,10 @@ struct folder_lookup {
     std::optional<ores::synthetic::domain::folder> folder;
 };
 
+struct folders_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct folder_event {
     boost::uuids::uuid event_id;
     folder_key key;
@@ -95,6 +99,8 @@ struct list_folders_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<folders_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_folders_response {

@@ -24,9 +24,15 @@
  */
 #include "ores.synthetic.core/repository/gmm_component_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/gmm_component_json_io.hpp" // IWYU pragma: keep.
+#include "ores.synthetic.core/repository/gmm_component_entity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::synthetic::repository {
 

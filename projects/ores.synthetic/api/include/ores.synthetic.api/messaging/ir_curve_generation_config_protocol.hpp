@@ -76,6 +76,10 @@ struct ir_curve_generation_config_lookup {
     std::optional<ores::synthetic::domain::ir_curve_generation_config> ir_curve_generation_config;
 };
 
+struct ir_curve_generation_configs_filter {
+    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+};
+
 struct ir_curve_generation_config_event {
     boost::uuids::uuid event_id;
     ir_curve_generation_config_key key;
@@ -110,6 +114,8 @@ struct list_ir_curve_generation_configs_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<ir_curve_generation_configs_filter> filter;
+    std::optional<std::string> as_of;
 };
 
 struct list_ir_curve_generation_configs_response {

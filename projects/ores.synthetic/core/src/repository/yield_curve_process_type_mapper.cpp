@@ -24,7 +24,12 @@
  */
 #include "ores.synthetic.core/repository/yield_curve_process_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_type.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.synthetic.core/repository/yield_curve_process_type_entity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::synthetic::repository {
 

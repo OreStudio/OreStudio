@@ -8,7 +8,7 @@
 #+filetags: :typed-instrument-batches:sprint_27:v0:
 #+owner: marco
 #+branch: feature/typed-instrument-batches
-#+pr:
+#+pr: 2803
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2803][#2803]] | [doc,agile] Deprecate the polymorphic payload and plan its replacement |
 
 * Review
 

@@ -596,7 +596,6 @@ namespace ores #F2F2F2 {
                 +rate : optional<bond_leg_rate_data>
                 +payment_schedule : bond_schedule_data
                 +settlement : optional<bond_settlement_data>
-                +is_empty() : bool
             }
             class bond_forward_settlement <<struct>> {
                 +forward_maturity_date : string

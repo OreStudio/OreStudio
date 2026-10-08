@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 08FA2BF0-5DB1-4F53-8C93-980CE96BC1B9
+:END:
+#+title: ores.trading.bond_stub_interpolation
+#+description: The two indices a stub interpolates between, and the rounding.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_stub_interpolation
+#+namespace: ores::trading::domain
+#+brief: The two indices a stub interpolates between, and the rounding.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <cstdint>
+#+end_src
+
+* Fields
+
+** short_index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The index at the short end of the interpolation.
+
+** long_index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The index at the long end of the interpolation.
+
+** rounding_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The rounding the interpolated rate takes, when the document states one.
+
+** rounding_precision
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+The number of decimal places the rounding keeps, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

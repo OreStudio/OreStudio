@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: BF23574B-397C-401B-A4DC-FA707E1ACD7E
+:END:
+#+title: ores.trading.bond_schedule_rules
+#+description: A bond document schedule stated as a tenor expanded against a calendar.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_schedule_rules
+#+namespace: ores::trading::domain
+#+brief: A schedule the document states as a tenor expanded against a calendar.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A schedule the ORE document states as a rule block rather than as a date
+list: a start date and a tenor, expanded against a calendar under a date
+rule. The generated code mirrors the schema's choice between the two
+spellings as two lists on bond_schedule_data, and this type is the rule
+arm, so the mapping between the document and the two lists needs no case
+analysis.
+
+The codes (calendar, convention, term convention, rule and the two
+end-of-month members) are the canonical spellings the ORE schema uses. A
+member the schema declares optional is an optional here, so an element the
+document states empty stays distinct from one it omits.
+
+Two members are flags the schema types as its own boolean rather than as
+the XML boolean. That type enumerates thirteen spellings, including the
+empty one, and the writer emits the spelling the reader stored, so the two
+carry the document's text: the corpus writes these elements empty for the
+on state. The two remove flags are XML booleans and stay boolean.
+
+The nine bond tables carry no schedule column. The exporter re-emits the
+document's own statement, so the container holds this whole rather than
+projecting it onto a table that does not exist.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** start_date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the schedule starts from, as ISO 8601 text.
+
+** end_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the schedule ends on, when the document states one.
+
+** adjust_end_date_to_previous_month_end
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the flag that pulls the end date back to the previous month end.
+
+** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The period the schedule steps by, in ORE's tenor spelling.
+
+** calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day calendar the dates are adjusted against (soft FK to ores_refdata_calendars_tbl).
+
+** convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Business day convention code the dates are adjusted under (soft FK to ores_refdata_business_day_convention_types_tbl).
+
+** term_convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Convention applied at the schedule's end, when the document states one.
+
+** rule
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Date rule the tenor is expanded under, such as Forward or Backward.
+
+** end_of_month
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the end-of-month flag.
+
+** end_of_month_convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Convention applied when the end-of-month flag is on.
+
+** first_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The schedule's first date, when the document states it outright.
+
+** last_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The schedule's last date, when the document states it outright.
+
+** remove_first_date
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the document asks for the first date to be dropped.
+
+** remove_last_date
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the document asks for the last date to be dropped.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

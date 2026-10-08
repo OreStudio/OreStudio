@@ -1,0 +1,220 @@
+:PROPERTIES:
+:ID: 327EA360-28FF-4317-BF48-AB269EEC10FE
+:END:
+#+title: ores.trading.bond_option_data
+#+description: The option block, shared by every product that states one.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_data
+#+namespace: ores::trading::domain
+#+brief: The option block, shared by every product that states one.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+bondOptionData and AscotData hold the same optionData element, and the equity,
+FX and commodity products hold it too. The nine tables carry no option column
+beyond the type and the strike, so the container holds the block whole and
+export re-emits it.
+
+The schema requires the long and short flag and makes every other member
+optional, so a member the document omits stays absent. The premium amount and
+the exercise price list are text in the schema, not numbers, and stay text
+here, and the automatic exercise flag carries the document's own spelling of
+the schema's bool type.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <vector>
+#include <string>
+#include "ores.trading.api/domain/bond_option_exercise.hpp"
+#include "ores.trading.api/domain/bond_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/bond_option_payment_data.hpp"
+#include "ores.trading.api/domain/bond_option_premium.hpp"
+#include "ores.trading.api/domain/bond_option_settlement.hpp"
+#+end_src
+
+* Fields
+
+** long_short
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The document's own spelling of the long or short flag.
+
+** option_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The kind of option the document states.
+
+** payoff_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The payoff the option takes.
+
+** payoff_type_2
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The second payoff the option takes, when the document states one.
+
+** style
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The exercise style, such as European or American.
+
+** notice_period
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+How much notice an exercise needs, in ORE's tenor spelling.
+
+** notice_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day calendar the notice dates are adjusted against.
+
+** notice_convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day convention the notice dates are adjusted under.
+
+** mid_coupon_exercise
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+True when the holder may exercise mid-coupon.
+
+** settlement
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The settlement the option takes.
+
+** settlement_method
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+How the option settles, such as Cash or Physical.
+
+** pay_off_at_expiry
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+True when the payoff lands at expiry.
+
+** premium_amount
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The premium amount, as the document spells it.
+
+** premium_currency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The currency the premium pays in.
+
+** premium_pay_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the premium pays on.
+
+** premiums
+:PROPERTIES:
+:cpp_type: std::vector<bond_option_premium>
+:END:
+
+The premium list the document states, in document order.
+
+** exercise_prices
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The exercise prices, as the document spells them.
+
+** exercise_fees
+:PROPERTIES:
+:cpp_type: std::vector<bond_option_exercise_fee>
+:END:
+
+The exercise fees the document states, in document order.
+
+** exercise_fee_settlement_period
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The settlement period an exercise fee pays after.
+
+** exercise_fee_settlement_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day calendar the fee settlement dates are adjusted against.
+
+** exercise_fee_settlement_convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day convention the fee settlement dates are adjusted under.
+
+** automatic_exercise
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the automatic exercise flag.
+
+** exercise_data
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_exercise>
+:END:
+
+The exercise the document states outright, when it states one.
+
+** payment_data
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_payment_data>
+:END:
+
+The option's payment dates, when the document states them.
+
+** settlement_data
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_settlement>
+:END:
+
+The settlement terms the option pays under, when the document states them.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

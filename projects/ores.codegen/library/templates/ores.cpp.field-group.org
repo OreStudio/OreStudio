@@ -2,7 +2,7 @@
 :ID: EF08BD8A-21CD-4D5F-A574-5C850722DE16
 :END:
 #+title: ores.cpp.field-group
-#+description: C++ field-group headers.
+#+description: C++ field-group headers: column blocks composed into entities, and document-only structs that no table holds.
 #+type: facet
 #+model_types: field_group
 #+level: cross
@@ -19,9 +19,11 @@ table to them.
 
 * Summary
 
-One template: the field-group struct — a reusable column block
-composed into entities (nested instrument decomposition), rendered
-from its own field-group org-model. =field-group= profile.
+One template: the field-group struct, rendered from its own field-group
+org-model. A group is either a reusable column block composed into an
+entity (nested instrument decomposition) or a document-only struct that no
+table holds and that crosses the wire as its own object. =field-group=
+profile.
 
 * The ores.cpp.field-group facet
 
@@ -34,7 +36,7 @@ Sibling to [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]].
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:8E7101A1-64D5-4F5B-9A7F-D39EA03849FD][ores.cpp.field-group.field_group_header]] | Reusable column block as a struct, composed into entities (nested instrument decomposition). =field-group= profile. |
+| [[id:8E7101A1-64D5-4F5B-9A7F-D39EA03849FD][ores.cpp.field-group.field_group_header]] | A plain struct with no table behind it: a column block composed into an entity, or a document-only struct that crosses the wire whole. =field-group= profile. |
 
 * See also
 

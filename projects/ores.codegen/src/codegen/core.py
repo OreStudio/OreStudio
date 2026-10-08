@@ -5809,13 +5809,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The TypeScript domain twin renders the group as its own interface,
         # so it needs the interface name and a wire type per field, the same
         # way an entity's columns are mapped.
-        from .org_loader import _to_pascal_case, _ts_domain_type
+        from .org_loader import (
+            _to_pascal_case, _ts_domain_type, field_group_ts_imports)
 
         fg['entity_pascal'] = _to_pascal_case(fg.get('entity_singular', ''))
         for _field in fg.get('fields') or []:
             _mapped = _ts_domain_type(_field.get('cpp_type'))
             if _mapped:
                 _field['ts_type'] = _mapped
+        # A member's type is named in the interface, so the module that
+        # declares it is imported. Without this the interface names a type
+        # it cannot resolve.
+        fg['ts_imports'] = field_group_ts_imports(fg)
         data['field_group'] = fg
 
     if is_operation and isinstance(model, dict) and 'operation' in model:

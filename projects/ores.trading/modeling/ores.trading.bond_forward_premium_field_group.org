@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 3C23AC62-0868-49CB-82D2-F7DCFCA9D0B3
+:END:
+#+title: ores.trading.bond_forward_premium
+#+description: A forward bond's premium: the amount and the date it pays.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_forward_premium
+#+namespace: ores::trading::domain
+#+brief: A forward bond's premium: the amount and the date it pays.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+Both members are required strings, and the schema spells the amount as text
+rather than as a number.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Fields
+
+** amount
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The premium amount, as the document spells it.
+
+** date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the premium pays on, as ISO 8601 text.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

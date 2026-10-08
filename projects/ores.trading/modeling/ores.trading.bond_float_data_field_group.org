@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: A103F73B-F3D0-4075-9A29-D453CA9C4AFD
+:END:
+#+title: ores.trading.bond_float_data
+#+description: A number the document states with an optional start date.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_float_data
+#+namespace: ores::trading::domain
+#+brief: A number the document states with an optional start date.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The fixed rates, the spreads, the caps, the floors and the gearings all carry
+this shape, and so does a notional. The value is required in the schema, so an
+unengaged start date is the only presence question here.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** value
+:PROPERTIES:
+:cpp_type: double
+:default_value: {}
+:END:
+
+The number the document states.
+
+** start_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the number applies from, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

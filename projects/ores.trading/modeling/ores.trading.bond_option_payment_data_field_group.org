@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 9EA6824D-01C5-442D-845F-AD2E7BD2A169
+:END:
+#+title: ores.trading.bond_option_payment_data
+#+description: An option's payment dates, stated either as a list or as a rule.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_payment_data
+#+namespace: ores::trading::domain
+#+brief: An option's payment dates, stated either as a list or as a rule.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <vector>
+#include <string>
+#include "ores.trading.api/domain/bond_option_payment_rules.hpp"
+#+end_src
+
+* Fields
+
+** dates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The payment dates the document states outright, in document order.
+
+** rules
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_payment_rules>
+:END:
+
+The rule the payment dates are derived from, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

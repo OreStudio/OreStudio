@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: E0B16F86-C77E-46DE-8C4B-ECE6C5D34A62
+:END:
+#+title: ores.trading.bond_fixed_leg_data
+#+description: A fixed leg's rate terms.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_fixed_leg_data
+#+namespace: ores::trading::domain
+#+brief: A fixed leg's rate terms.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <vector>
+#include "ores.trading.api/domain/bond_float_data.hpp"
+#+end_src
+
+* Fields
+
+** rates
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The fixed rates the document states, one bond_float_data row each.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

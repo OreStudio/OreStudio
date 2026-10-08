@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 
-#include "ores.trading.api/domain/bond_instrument_data.hpp"
+#include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"

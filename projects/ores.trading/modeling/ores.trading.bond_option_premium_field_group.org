@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 199455B5-AE40-4146-BE1B-02E65034846A
+:END:
+#+title: ores.trading.bond_option_premium
+#+description: One entry of an option's premium list.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_premium
+#+namespace: ores::trading::domain
+#+brief: One entry of an option's premium list.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The amount, the currency and the pay date are required, and the settlement
+block beside them is optional.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "ores.trading.api/domain/bond_option_settlement.hpp"
+#+end_src
+
+* Fields
+
+** amount
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+The premium amount.
+
+** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The currency the premium pays in.
+
+** pay_date
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The date the premium pays on.
+
+** settlement
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_settlement>
+:END:
+
+The settlement terms the premium pays under, when the document states them.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

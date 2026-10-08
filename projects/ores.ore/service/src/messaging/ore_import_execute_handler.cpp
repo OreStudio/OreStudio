@@ -34,6 +34,7 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_forward_protocol.hpp"
@@ -623,7 +624,7 @@ std::string save_leg(Nats& nats,
     using ores::trading::messaging::put_bond_leg_rate_request;
     using ores::trading::messaging::put_bond_leg_request;
 
-    if (leg.is_empty())
+    if (is_empty(leg))
         return {};
 
     std::string error;
@@ -953,7 +954,7 @@ std::string save_issue_leg(Nats& nats,
     using ores::trading::messaging::put_bond_issue_leg_rate_request;
     using ores::trading::messaging::put_bond_issue_leg_request;
 
-    if (leg.is_empty())
+    if (is_empty(leg))
         return {};
 
     std::string error;

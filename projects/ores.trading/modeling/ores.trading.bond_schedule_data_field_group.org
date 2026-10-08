@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 2A836172-C47A-48B6-A548-A28129C28B88
+:END:
+#+title: ores.trading.bond_schedule_data
+#+description: A bond document schedule, stated as a rule block or as a date list.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_schedule_data
+#+namespace: ores::trading::domain
+#+brief: A document schedule that no column of the nine bond tables holds.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The ORE schema states a schedule as a choice between a rule block
+(bond_schedule_rules) and a date list (bond_schedule_dates). This type
+mirrors that choice as two lists, so the mapping between the document and
+the two is total and needs no case analysis: a document states one arm or
+the other, and the other list is empty.
+
+The nine bond tables carry no schedule column. The org models record the
+destination as the shared instrument-keyed schedule tables, and until those
+land the container carries the structure whole so that export re-emits what
+the document held.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <vector>
+#include "ores.trading.api/domain/bond_schedule_dates.hpp"
+#include "ores.trading.api/domain/bond_schedule_rules.hpp"
+#+end_src
+
+* Fields
+
+** rules
+:PROPERTIES:
+:cpp_type: std::vector<bond_schedule_rules>
+:END:
+
+The rule blocks the document states, in document order. Empty for a schedule the document states as a date list.
+
+** dates
+:PROPERTIES:
+:cpp_type: std::vector<bond_schedule_dates>
+:END:
+
+The date lists the document states, in document order. Empty for a schedule the document states as a rule block.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

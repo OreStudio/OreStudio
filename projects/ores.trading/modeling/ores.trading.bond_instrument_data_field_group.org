@@ -1,0 +1,250 @@
+:PROPERTIES:
+:ID: DCF13DDB-49F2-424F-B42A-010582728835
+:END:
+#+title: ores.trading.bond_instrument_data
+#+description: The assembled bond instrument: the header row, its issue row and the product's fact row.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_instrument_data
+#+namespace: ores::trading::domain
+#+brief: The assembled bond instrument: the header row, its issue row and the product's fact row.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The assembled bond instrument: the container the variant =trade_instrument=
+carries between import and export. It holds every row the export path needs:
+the slim instrument header (identity with the ten-code =trade_type_code=,
+=issue_id=), the issue row with the bond terms =map_bond_data= reads, the
+product's fact row (option, trs, repo, future or ascot), and the issue's child
+rows (call dates, conversion targets). The =instrument.issue_id= member pins
+=issue.issue_id=: the mapper looks the issue up by security id and mints one
+only when the lookup misses. Every bond-level member of the document reaches
+the issue row, so the container holds no second copy of one.
+
+The remainder members carry what the nine bond tables cannot store, so that
+export re-emits what the document held. Each one is a recorded scope limit of
+the fidelity work. The exercise dates and the four leg schedules go to the
+shared instrument-keyed schedule tables; the leg payer flags and the total
+return price type have no column anywhere; and the tables carry no option
+column beyond the type and the strike, so the option block is held whole.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <vector>
+#include <string>
+#include "ores.trading.api/domain/ascot.hpp"
+#include "ores.trading.api/domain/bond_forward_premium.hpp"
+#include "ores.trading.api/domain/bond_forward_settlement.hpp"
+#include "ores.trading.api/domain/bond_future.hpp"
+#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_leg_data.hpp"
+#include "ores.trading.api/domain/bond_option.hpp"
+#include "ores.trading.api/domain/bond_option_data.hpp"
+#include "ores.trading.api/domain/bond_repo.hpp"
+#include "ores.trading.api/domain/bond_schedule_data.hpp"
+#include "ores.trading.api/domain/bond_strike_data.hpp"
+#include "ores.trading.api/domain/bond_trs.hpp"
+#+end_src
+
+* Fields
+
+** instrument
+:PROPERTIES:
+:cpp_type: bond_instrument
+:END:
+
+The instrument header row: identity, issue_id and audit.
+
+** issue
+:PROPERTIES:
+:cpp_type: bond_issue
+:END:
+
+The issue row holding the bond terms of this trade's security.
+
+** call_dates
+:PROPERTIES:
+:cpp_type: std::vector<bond_issue_call_date>
+:END:
+
+The issue's call dates, one row per date the call schedule names.
+
+** conversion_targets
+:PROPERTIES:
+:cpp_type: std::vector<bond_issue_conversion_target>
+:END:
+
+The issue's conversion targets, one row per conversion ratio.
+
+** option
+:PROPERTIES:
+:cpp_type: std::optional<bond_option>
+:END:
+
+The bond_option fact row, engaged for BondOption products.
+
+** trs
+:PROPERTIES:
+:cpp_type: std::optional<bond_trs>
+:END:
+
+The bond_trs fact row, engaged for BondTRS products.
+
+** repo
+:PROPERTIES:
+:cpp_type: std::optional<bond_repo>
+:END:
+
+The bond_repo fact row, engaged for BondRepo products.
+
+** future
+:PROPERTIES:
+:cpp_type: std::optional<bond_future>
+:END:
+
+The bond_future fact row, engaged for BondFuture products.
+
+** ascot_row
+:PROPERTIES:
+:cpp_type: std::optional<ascot>
+:END:
+
+The ascot fact row, engaged for Ascot products.
+
+** option_exercise_dates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Every exercise date the option's schedule lists, in document order.
+
+** option_data
+:PROPERTIES:
+:cpp_type: std::optional<bond_option_data>
+:END:
+
+The option block no row holds, when the document states one.
+
+** strike_data
+:PROPERTIES:
+:cpp_type: std::optional<bond_strike_data>
+:END:
+
+The strike group, when the document states a price or a yield.
+
+** option_exercise_schedule
+:PROPERTIES:
+:cpp_type: std::optional<bond_schedule_data>
+:END:
+
+The schedule the option's exercise dates are generated from, when the document states one.
+
+** option_redemption
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The redemption code the document states beside the option block.
+
+** option_price_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The price type the document states beside the option block.
+
+** option_knocks_out
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the knock-out flag.
+
+** trs_price_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The total return price type the document states (Dirty or Clean).
+
+** forward_long_in_forward
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the long-in-forward flag.
+
+** forward_settlement
+:PROPERTIES:
+:cpp_type: std::optional<bond_forward_settlement>
+:END:
+
+The forward's settlement block, when the document states one.
+
+** forward_premium
+:PROPERTIES:
+:cpp_type: std::optional<bond_forward_premium>
+:END:
+
+The forward's premium, when the document states one.
+
+** trs_payer
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The document's own spelling of the TRS payer flag.
+
+** trs_initial_price
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The TRS initial price, when the document states one.
+
+** trs_schedule
+:PROPERTIES:
+:cpp_type: bond_schedule_data
+:END:
+
+The schedule the TRS total return follows.
+
+** bond_legs
+:PROPERTIES:
+:cpp_type: std::vector<bond_leg_data>
+:END:
+
+The bond's own coupon legs, re-emitted whole and in order.
+
+** trs_funding_leg
+:PROPERTIES:
+:cpp_type: bond_leg_data
+:END:
+
+The TRS funding leg's payer flag and schedule, re-emitted whole.
+
+** repo_leg
+:PROPERTIES:
+:cpp_type: bond_leg_data
+:END:
+
+The repo leg's payer flag and schedule, re-emitted whole.
+
+** ascot_swap_leg
+:PROPERTIES:
+:cpp_type: bond_leg_data
+:END:
+
+The ascot reference swap's payer flag and schedule, re-emitted whole.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

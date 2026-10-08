@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 272643E4-3666-4B51-A092-A7ED53C4D5B9
+:END:
+#+title: ores.trading.bond_amortization_data
+#+description: One row of an amortization block.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_amortization_data
+#+namespace: ores::trading::domain
+#+brief: One row of an amortization block.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The kind of amortization step the row states, such as Constant or Floating.
+
+** value
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The amount the step moves the notional by, when the document states one.
+
+** start_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the step starts on, when the document states one.
+
+** end_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the step ends on, when the document states one.
+
+** frequency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+How often the step repeats over its window, in ORE's tenor spelling.
+
+** underflow
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the document allows the notional to fall below zero.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

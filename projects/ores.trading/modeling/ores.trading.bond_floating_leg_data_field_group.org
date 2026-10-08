@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: B3CAACD1-4697-46D9-BA63-EE864AC9F6CB
+:END:
+#+title: ores.trading.bond_floating_leg_data
+#+description: A floating leg's rate terms.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_floating_leg_data
+#+namespace: ores::trading::domain
+#+brief: A floating leg's rate terms.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The three lists of numbers (spreads, caps, floors, gearings) all carry the
+bond_float_data shape. The two schedules are schedules the document states on
+the leg itself rather than on the leg's outer block.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <vector>
+#include <string>
+#include <cstdint>
+#include "ores.trading.api/domain/bond_float_data.hpp"
+#include "ores.trading.api/domain/bond_schedule_data.hpp"
+#include "ores.trading.api/domain/bond_stub_interpolation.hpp"
+#+end_src
+
+* Fields
+
+** index
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The index the leg's coupon resets against.
+
+** is_in_arrears
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the coupon fixes after the accrual period ends.
+
+** last_recent_period
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The most recent period the document states specially, when it states one.
+
+** last_recent_period_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The calendar that resolves the special period, when the document states one.
+
+** fixing_days
+:PROPERTIES:
+:cpp_type: std::optional<std::uint64_t>
+:END:
+
+How many days before the period end the index fixes.
+
+** lookback
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The backward-looking window the index averages over, in ORE's tenor spelling.
+
+** rate_cutoff
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+How many days before the period end the rate is cut off.
+
+** is_averaged
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the coupon averages the index over the period.
+
+** has_sub_periods
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the period splits into several fixing sub-periods.
+
+** include_spread
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the spread is added to the averaged index.
+
+** is_not_resetting_xccy
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the cross-currency reset is switched off.
+
+** spreads
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The spreads the document states, one bond_float_data row each.
+
+** caps
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The caps the document states, one bond_float_data row each.
+
+** floors
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The floors the document states, one bond_float_data row each.
+
+** gearings
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The gearings the document states, one bond_float_data row each.
+
+** naked_option
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the leg's cap or floor stands alone.
+
+** local_cap_floor
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the cap or floor applies to the leg only.
+
+** fixing_schedule
+:PROPERTIES:
+:cpp_type: bond_schedule_data
+:END:
+
+The schedule the coupon's fixings follow.
+
+** reset_schedule
+:PROPERTIES:
+:cpp_type: bond_schedule_data
+:END:
+
+The schedule the coupon's resets follow.
+
+** front_stub_interpolation
+:PROPERTIES:
+:cpp_type: std::optional<bond_stub_interpolation>
+:END:
+
+The indices the front stub interpolates between, when the document states them.
+
+** back_stub_interpolation
+:PROPERTIES:
+:cpp_type: std::optional<bond_stub_interpolation>
+:END:
+
+The indices the back stub interpolates between, when the document states them.
+
+** stub_use_original_curve
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when a stub discounts on the original curve.
+
+** observation_shift
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when an observation shift moves the fixing dates.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

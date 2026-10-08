@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 2430F492-0057-40AD-9D0C-51400F0ABEB0
+:END:
+#+title: ores.trading.bond_strike_data
+#+description: The strike, stated as a price, as a yield or as a bare number.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_strike_data
+#+namespace: ores::trading::domain
+#+brief: The strike, stated as a price, as a yield or as a bare number.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A strike the document states as a bare element reaches the option fact row.
+The schema states the element form as a choice of three: a price with its
+currency, a yield with its compounding, or a number with an optional currency.
+Each alternative is a pair here, and the three are mutually exclusive in a
+document.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** price_value
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The strike as a price, when the document states one.
+
+** price_currency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The currency the price strike is stated in.
+
+** yield_value
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The strike as a yield, when the document states one.
+
+** yield_compounding
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The compounding the yield strike is stated under.
+
+** bare_value
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The strike as a bare number, when the document states one.
+
+** bare_currency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The currency the bare strike is stated in, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

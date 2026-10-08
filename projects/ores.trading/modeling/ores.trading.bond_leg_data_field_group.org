@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 2EC9EABC-9E88-46E0-963C-DC834CEB2429
+:END:
+#+title: ores.trading.bond_leg_data
+#+description: A leg as the document states it, member by member.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_leg_data
+#+namespace: ores::trading::domain
+#+brief: A leg as the document states it, member by member.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The fact rows hold the leg's rate and its index. Everything else the leg
+states is either a member here or a term on the issue row, and the two
+directions are:
+
+- currency and day_counter have issue columns, so the mapper mirrors them
+  there and this type carries the document's own statement. On export the
+  document wins and the row is the fallback, which matters when the container
+  came from a row set rather than a document.
+- payer, leg_type and the payment terms have no column: the payer and the leg
+  type are document flags, and the payment terms, the payment calendar and the
+  two lag members are the destination of the shared instrument-keyed tables
+  the parent story describes.
+- the schedules and the three lists of rows go to those same tables.
+
+Every member is an optional, so a member the document states and this
+container does not hold stays distinguishable from one the document omits. A
+member the schema declares required is engaged by every document, and an
+unengaged one then means the container came from a row set.
+
+A bond states one leg per coupon, and the schema declares the element
+unbounded, so the instrument holds a list of these and not one.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <vector>
+#include <string>
+#include <cstdint>
+#include "ores.trading.api/domain/bond_amortization_data.hpp"
+#include "ores.trading.api/domain/bond_float_data.hpp"
+#include "ores.trading.api/domain/bond_leg_rate_data.hpp"
+#include "ores.trading.api/domain/bond_schedule_data.hpp"
+#include "ores.trading.api/domain/bond_settlement_data.hpp"
+#+end_src
+
+* Fields
+
+** payer
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the leg's holder pays, and false when it receives.
+
+** leg_type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The kind of leg the document states, such as Fixed or Floating.
+
+** currency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The currency the leg pays in.
+
+** payment_convention
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day convention the payment dates are adjusted under.
+
+** payment_lag
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+How long after each period end the payment falls, in ORE's tenor spelling.
+
+** payment_calendar
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Business day calendar the payment dates are adjusted against.
+
+** day_counter
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Day count convention the leg accrues under.
+
+** last_period_day_counter
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Day count convention the final period accrues under, when the document states one.
+
+** notional_payment_lag
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+How many days after each period end the notional payment falls.
+
+** strict_notional_dates
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the notional payments keep the leg's own dates.
+
+** schedule
+:PROPERTIES:
+:cpp_type: bond_schedule_data
+:END:
+
+The schedule the leg's accrual periods follow.
+
+** amortizations
+:PROPERTIES:
+:cpp_type: std::vector<bond_amortization_data>
+:END:
+
+The amortization rows the document states, in document order.
+
+** notionals
+:PROPERTIES:
+:cpp_type: std::vector<bond_float_data>
+:END:
+
+The notional steps the document states, one bond_float_data row each.
+
+** payment_dates
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The payment dates the document states outright, in document order.
+
+** indexings_from_asset_leg
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+True when the leg takes its indexings from the asset leg.
+
+** rate
+:PROPERTIES:
+:cpp_type: std::optional<bond_leg_rate_data>
+:END:
+
+The leg's rate group, when the document states one.
+
+** payment_schedule
+:PROPERTIES:
+:cpp_type: bond_schedule_data
+:END:
+
+The schedule the leg's payment dates follow.
+
+** settlement
+:PROPERTIES:
+:cpp_type: std::optional<bond_settlement_data>
+:END:
+
+The leg's settlement block, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: FF543C14-59CB-49BB-B3EE-0F072C7B47E0
+:END:
+#+title: ores.trading.bond_option_exercise_fee
+#+description: One exercise fee: an amount with three optional attributes.
+#+type: ores.codegen.field_group
+#+component: trading
+#+subcomponent: api
+#+product: ores
+#+entity_singular: bond_option_exercise_fee
+#+namespace: ores::trading::domain
+#+brief: One exercise fee: an amount with three optional attributes.
+#+filetags: :model:field_group:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The schema states the amount as text with the attributes on the same element,
+so the container keeps the number and the attributes apart.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** amount
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+The fee amount.
+
+** type
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The kind of fee the document states, when it states one.
+
+** start_date
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The date the fee starts applying from, when the document states one.
+
+** currency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The currency the fee pays in, when the document states one.
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

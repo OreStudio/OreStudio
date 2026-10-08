@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :bring_every_subject_onto_the_canonical_protocol:sprint_27:v0:
 #+owner: marco
-#+branch: feature/bring-every-subject-onto-the-canonical-protocol
+#+branch: feature/state-the-stream-wildcard-once
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-08
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,40 @@ One way to state the subjects below a prefix, used at every stream-provisioning 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | Not yet started.                       |
+| Now          | One helper landed; the four sites use it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Run the suite, then close the story.   |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
-- One helper states the prefix and its children, and the market data, synthetic, compute wrapper and workflow services all use it
-- The literal synthetic.v1.tick.> that duplicates synthetic_tick_wildcard() is gone
+- One helper states the subject and its children, and the market data, synthetic, compute wrapper and workflow services all use it
+- No site appends a literal =".>"= or a =">"= to a subject, and no helper returns a bare wildcard string
 - A test that provisions a stream and then publishes through the ingest loop finds a stream, from an empty JetStream
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Put the fact where every caller already reaches for it: =ores.nats::client=,
+which owns both =make_subject= and =make_stream_name= and therefore the only
+place that knows the deployment prefix.
+
+1. =subjects_below(subject)= states the one thing no constant states -- the
+   subjects below a base -- and prepends the prefix. A subscription that wants
+   the family asks for this instead of appending =">"= by hand.
+2. =covering_subjects({subjects})= states what a stream's filter needs: each
+   prefixed subject and its wildcard, so a stream cannot be provisioned on the
+   bare constant alone.
+3. Every stream site passes =covering_subjects=, including the workflow
+   service's two leaf subjects: a leaf is the base of an empty family, and one
+   idiom is worth two inert filters that make the next subject below them free.
+4. The marketdata domain keeps only the *base* constants, with the trailing dot
+   gone, and =synthetic_tick_subject_for(source)= builds a producer's subject
+   from one. The two wildcard helpers go: the client states that now.
+
+The =marketdata.v1.tick= rename this task also carried landed with the subject
+migration.
 
 * Measurements
 
@@ -57,40 +73,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Literal ">" appended to a subject outside ores.nats | 0 | =grep -rn '"\.>"' projects/ --include=*.cpp= | local tree |
+| Stream sites passing a bare subject constant | 0 | =grep -rn "ensure_stream" projects/ --include=*.cpp= | local tree |
+| Local checks | 35 of 35 pass | =./compass.sh check= | local tree |
 
 * Notes
 
-A =nats_subject= constant names a prefix. A JetStream stream and a
-subscription need the prefix *and its children*, which is a different
-string, and nothing in the tree says so. Four sites need that string and
-spell it three ways:
+A =nats_subject= constant names one subject. A JetStream stream and a
+subscription need the subject *and everything below it*, which is a different
+string, and nothing in the tree said so. The four sites spelled it three ways:
 
-| Site | Subject passed to =ensure_stream= | Spelling |
-|------+-----------------------------------+----------|
+| Site | Filter, before | Spelling |
+|------+----------------+----------|
 | =marketdata/service/app/application.cpp= | =market_tick_wildcard()=, =synthetic_tick_wildcard()= | named helper |
-| =synthetic/service/app/application.cpp= | ="synthetic.v1.tick.>"=, ="synthetic.v1.sandbox.tick.>"= | hardcoded literal, and the first duplicates the helper above |
+| =synthetic/service/app/application.cpp= | ="synthetic.v1.ops.tick.>"=, ="synthetic.v1.ops.sandbox_tick.>"= | hardcoded literal, the first duplicating the helper above |
 | =compute/wrapper/app/application.cpp= | =work_assignment_event::nats_subject + ".>"= | inline concatenation |
-| =workflow/service/app/application.cpp= | two exact leaf subjects | no wildcard needed, nothing publishes below them |
+| =workflow/service/app/application.cpp= | two exact leaf subjects | no wildcard; nothing publishes below them |
 
-The bare constant sitting beside the wildcard is what makes the mistake
-easy, and it is not hypothetical: the ingest loop test at
+All four now call =nats.covering_subjects(...)=, and the ingest loop subscribes
+with =nats_.subjects_below(domain::synthetic_tick_subject)=.
+
+The bare constant sitting beside the wildcard is what made the mistake easy,
+and it was not hypothetical: the ingest loop test at
 =marketdata/service/tests/app_feed_ingest_loop_tests.cpp= passed the bare
-=market_tick::nats_subject= to =ensure_stream=. A stream on a prefix
-matches none of its children, so the republish to
-=marketdata.v1.tick.<tenant>.<party>.<key>= found no stream and threw
-=No responders available for request=. Fixed in PR 2735.
+=market_tick::nats_subject= to =ensure_stream=. A stream on a prefix matches
+none of its children, so the republish to
+=marketdata.v1.ops.market_tick.<tenant>.<party>.<key>= found no stream and
+threw =No responders available for request=. Fixed in PR 2735.
 
-That test passed on a developer machine for a reason worth keeping: the
-service had provisioned the stream correctly weeks earlier, and
-=ensure_stream= returns early when the stream already exists, so the
-fixture's narrower subject was never applied. The defect only appears
-against an empty JetStream, which is what CI starts from.
-
-This task also carries the =marketdata.v1.tick= rename that the census
-lists as one of the five three-segment subjects. The prefix appears in the
-stream name, the consumer subject, both wildcard helpers and both market
-data test files, so the rename and the idiom should land together.
+That test passed on a developer machine for a reason worth keeping: the service
+had provisioned the stream correctly weeks earlier, and =ensure_stream= returns
+early when the stream already exists, so the fixture's narrower subject was
+never applied. The defect only appears against an empty JetStream, which is what
+CI starts from -- and what the hotfix that removed CI must not lose.
 
 * Test Scenarios
 

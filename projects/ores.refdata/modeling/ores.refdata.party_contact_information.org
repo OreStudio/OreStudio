@@ -232,12 +232,45 @@ Contact web page address.
 std::string("https://example.com")
 #+end_src
 
+** is_primary
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether this is the contact to call. At most one live contact row per party may
+hold it.
+
+A party holds one row per =contact_type=, so the rows are (Legal, Operations,
+Settlement, Billing) and nothing in them says which one a person should ring.
+The mark lives on the row so that it survives a reload, rather than in the
+session that set it.
+
+#+begin_src cpp :name generator
+// The first row a batch generates is the primary one, and four contact types
+// rotate per party, so at most one of a party's rows is marked.
+[idx]{
+    return idx % 4 == 0;
+}()
+#+end_src
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_party_contact_informations_tbl
 :END:
+
+** Indexes
+
+A second contact cannot claim the mark while the first holds it. The write is
+refused rather than quietly leaving two rows that both say they are primary.
+
+| name                       | columns  | unique | current_only | where_extra |
+|----------------------------+----------+--------+--------------+-------------|
+| primary_party_contact_uniq | party_id | true   | false        | is_primary and valid_to = ores_utility_infinity_timestamp_fn() |
 
 * Foreign keys
 

@@ -540,6 +540,51 @@ struct export_market_data_to_storage_response {
 };
 
 /**
+ * @brief Projects the identity of every series that has none.
+ *
+ * The projection is written by the series write path, so only rows that
+ * predate it or that were written outside it are missing. This finds those
+ * and writes them, and touches nothing that already has a row.
+ */
+struct backfill_series_identity_request {
+    using response_type = struct backfill_series_identity_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.backfill_series_identity";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The owning party to narrow to, or empty for every party the caller
+     * can see.
+     */
+    std::string party_id;
+};
+
+struct backfill_series_identity_response {
+    bool success = false;
+    std::string message;
+    /**
+     * @brief How many series were projected by this call.
+     */
+    int projected_count = 0;
+    /**
+     * @brief How many current series already carried a projection.
+     */
+    int already_projected_count = 0;
+    /**
+     * @brief How many of the projected series carried a URI neither codec reads.
+     *
+     * Their rows are written with their kind and no field value, so the series is
+     * findable and never mistaken for one whose identity was read. The count is
+     * what says how many identities the database could not state.
+     */
+    int unreadable_count = 0;
+};
+
+/**
  * @brief Request to write the tenant's market data back out as ORE text.
  *
  * Takes no arguments: the export is the whole tenant's, because that is the

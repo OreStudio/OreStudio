@@ -45,6 +45,7 @@ struct counterparty_identifier_write {
     std::string id_scheme;
     std::string id_value;
     std::string description;
+    bool is_authoritative;
 };
 
 struct counterparty_identifier_change {

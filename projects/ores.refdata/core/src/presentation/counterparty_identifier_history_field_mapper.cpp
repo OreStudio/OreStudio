@@ -43,6 +43,7 @@ render_counterparty_identifier_fields(const domain::counterparty_identifier& v) 
     fields.push_back({.name = "ID Scheme", .value = v.id_scheme});
     fields.push_back({.name = "ID Value", .value = v.id_value});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Is Authoritative", .value = v.is_authoritative ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

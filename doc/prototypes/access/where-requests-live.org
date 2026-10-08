@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 5952034A-2FDA-4FA9-8499-D937E0273FBC
+:END:
+#+title: Where requests live prototype
+#+description: The tenant's menu says Requests and an administrator hears my requests, while a member never sees the word at all. Three ways to put the word where it means what it says.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:access:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+The tenant's menu carries an item called *Requests*. An administrator reads it
+and hears *my requests*; it is the opposite, the requests other people have
+asked them to answer. A member never sees the word at all, because the door is
+gated on =iam::roles:assign=, which is the permission that *decides* a role
+request, so the thing they raised has no name of its own outside *My access*.
+
+Three ways to put the word where it means what it says are drawn side by side,
+for both readers. Nothing is decided yet: this is the question the journey
+opened when it said the item is misleading, and it belongs to somebody looking
+at the menus.
+
+It is one file of mock HTML, CSS and JavaScript. It calls no service, needs no
+build and no session, and switches variant and reader as query parameters.
+
+* Detail
+
+** The question
+
+The menu is the client's structure and not a decision, so this is not about
+entitlement: the server checks on every call whatever the menu offers. It is
+about whether a person can tell, from one word, which of the two things they
+are looking at — what they asked for, or what they are being asked to answer.
+
+Three answers are drawn:
+
+- *A, named for what it is*: the item stays top level and becomes *Role
+  requests*. The smallest change, and it answers the complaint directly.
+- *B, inside Access*: requests move under *Access*, beside *Roles*, so a request
+  reads as what it is, an act on a role. The member's menu gains the same word
+  for their own.
+- *C, a landing page*: *Requests* becomes a place with a card per kind the
+  person may act on, and the reader's own list under it.
+
+** What it argues
+
+| The menu today | This prototype | Why |
+|----------------+----------------+-----|
+| One word for two things | The word names who asked, or who answers | An administrator reading *my requests* has it backwards |
+| A door only a decider has | The reader's own list has a name too | A member's requests live under no heading today |
+| One queue, because one kind exists | A card per kind, or one item, chosen knowingly | The system is heading for several kinds, and the answer should be chosen rather than arrived at |
+| A flat menu | A group, where the version drawn uses one | A request is an act on a role, and the menu can say so |
+
+The third variant carries the cost of the first two honestly: with one kind of
+request in the system, a landing page has one card, and a card that is alone is
+worse than a menu item. Its value is that the second kind adds a card rather
+than a menu item, and the question it asks is whether the landing page is worth
+building before the second kind exists.
+
+** What is real and what is not
+
+The menus, their order and the permission that gates the door are the ones
+=projects/ores.web/packages/web/src/shell/areas.ts= declares today. The counts,
+the requests and the people are mock. The second and third cards of variant C
+name kinds the system does not raise yet: a publish approval is designed in the
+market-data journeys and is not built.
+
+** Where the code lives
+
+=doc/prototypes/access/where-requests-live/index.html=: one file, plain HTML,
+CSS and JavaScript, no framework and no build step. The site build copies the
+directory through =ores-deploy-prototypes=, beside the other prototypes.
+
+Open it with =where-requests-live/?variant=a&who=admin=; the bar along the
+bottom switches both.
+
+- Variants :: =a= named for what it is, =b= inside Access, =c= a landing page
+- Readers :: =admin=, who answers requests, and =member=, who raises them
+
+* See also
+
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the journey whose requests this menu has to name.
+- [[id:5DCAE331-205B-4343-85FB-F9004972FD5F][See the story of a request prototype]] — the screen the request's story was built as, reached from the same door.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

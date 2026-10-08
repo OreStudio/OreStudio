@@ -93,6 +93,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.export_to_storage(std::move(msg), http_base_url);
         }));
 
+    // The identity backfill: repairs the projection for series the write path
+    // never saw, such as rows restored from a dump or written before the
+    // projection existed.
+    subs.push_back(nats.queue_subscribe(std::string(backfill_series_identity_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            market_series_handler h(nats, ctx, verifier);
+                                            h.backfill_identity(std::move(msg));
+                                        }));
+
     // Curve snapshots (as-of / as-of-buckets, for curve/grid viewers)
     subs.push_back(nats.queue_subscribe(std::string(get_curve_snapshot_request::nats_subject),
                                         queue,

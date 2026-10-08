@@ -45,6 +45,7 @@ export interface PartyContactInformation {
     phone: string;
     email: string;
     web_page: string;
+    is_primary: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -218,23 +218,31 @@ void assign(domain::market_series_identity& row, field f, const std::string& tex
     }
 }
 
-/// The projection of one series, read from its URI.
-domain::market_series_identity project_one(ores::database::context& ctx,
-                                           const domain::market_series& series) {
+/// The projection of one series, and whether the codec could state it at all.
+struct projection {
     domain::market_series_identity row;
+    bool understood;
+};
+
+/// The projection of one series, read from its URI.
+projection project_one(ores::database::context& ctx, const domain::market_series& series) {
+    projection p{};
+    auto& row = p.row;
+    p.understood = false;
     row.tenant_id = ctx.tenant_id();
     row.series_id = series.id;
     row.party_id = series.party_id;
     row.identity_kind = std::string(kind_unknown);
 
     if (const auto d = datum::oresmd_uri_codec::read(series.oresmd_uri); d && d->is_series()) {
+        p.understood = true;
         row.identity_kind = std::string(kind_series);
         row.asset_class = std::string(datum::name_of(datum::schema_of(d->type()).asset));
         row.instrument_type = datum::oresmd_uri_codec::instrument_spelling(d->type());
         row.quote_type = datum::oresmd_uri_codec::quote_spelling(d->quote());
         for (const auto& fv : d->fields())
             assign(row, fv.name, datum::text_of(fv.held));
-        return row;
+        return p;
     }
 
     // An index URI names a fixing rather than one of the composite objects this
@@ -242,23 +250,31 @@ domain::market_series_identity project_one(ores::database::context& ctx,
     // records the kind and the asset class and no field value: the identity is
     // findable, and nothing is invented for it.
     if (const auto ix = datum::oresmd_uri_codec::read_index(series.oresmd_uri); ix) {
+        p.understood = true;
         row.identity_kind = std::string(kind_index);
         row.asset_class = std::string(datum::name_of(datum::index_row_of(ix->family()).asset));
     }
-    return row;
+    return p;
 }
 
 }
 
-void market_series_identity_projector::project(ores::database::context ctx,
-                                               const std::vector<domain::market_series>& series) {
+std::size_t
+market_series_identity_projector::project(ores::database::context ctx,
+                                          const std::vector<domain::market_series>& series) {
     if (series.empty())
-        return;
+        return 0;
     std::vector<domain::market_series_identity> rows;
     rows.reserve(series.size());
-    for (const auto& s : series)
-        rows.push_back(project_one(ctx, s));
+    std::size_t unknown = 0;
+    for (const auto& s : series) {
+        auto p = project_one(ctx, s);
+        if (!p.understood)
+            ++unknown;
+        rows.push_back(std::move(p.row));
+    }
     market_series_identity_repository{}.write(ctx, rows);
+    return unknown;
 }
 
 }

@@ -37,6 +37,7 @@ create table if not exists "ores_refdata_counterparty_identifiers_tbl" (
     "id_scheme" text not null,
     "id_value" text not null,
     "description" text null,
+    "is_authoritative" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -75,6 +76,10 @@ create unique index if not exists counterparty_identifiers_ore_alias_idx
 on "ores_refdata_counterparty_identifiers_tbl" (tenant_id, id_scheme, id_value)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and id_scheme = 'ORE';
+
+create unique index if not exists counterparty_identifiers_authoritative_identifier_uniq_idx
+on "ores_refdata_counterparty_identifiers_tbl" (counterparty_id)
+where is_authoritative and valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_refdata_counterparty_identifiers_insert_fn()
 returns trigger as $$

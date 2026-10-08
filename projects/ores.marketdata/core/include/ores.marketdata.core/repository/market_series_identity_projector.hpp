@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <cstddef>
 #include <vector>
 
 namespace ores::marketdata::repository {
@@ -45,10 +46,17 @@ namespace ores::marketdata::repository {
  */
 class ORES_MARKETDATA_CORE_EXPORT market_series_identity_projector final {
 public:
-    /// Projects @p series, replacing the identity of any series already
-    /// projected.
-    static void project(ores::database::context ctx,
-                        const std::vector<domain::market_series>& series);
+    /**
+     * @brief Projects @p series, replacing the identity of any series already
+     * projected.
+     *
+     * @return How many of @p series carried a URI neither codec reads. Their
+     * rows are still written, with their kind and no field value, so the count
+     * says how many identities the codec could not state rather than how many
+     * were dropped -- a write path ignores it, and the backfill reports it.
+     */
+    static std::size_t project(ores::database::context ctx,
+                               const std::vector<domain::market_series>& series);
 };
 
 }

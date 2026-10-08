@@ -36,7 +36,8 @@ How it checks
   note beside it that the group page's title opens — heads itself with a links
   table naming the prototype and its review, and says =none= in the review row
   when there is no review, so an unreviewed prototype can be found with one
-  grep.
+  grep. Every review page carries the same table, pointing back at the
+  prototype it reviews.
 - The site build discovers the prototypes rather than naming them, so a new
   prototype needs no change there.
 - The React prototype tree and its route table are gone.
@@ -64,6 +65,8 @@ REVIEW_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9-]*)/review/")
 REVIEW_CELL_RE = re.compile(r'class="prototype-review"[^>]*>(.*?)</td>', re.S)
 NO_REVIEW = "none"
 REVIEW_HREF = 'href="review/index.html"'
+# A review page opens the prototype it reviews, one directory up.
+REVIEW_PROTOTYPE_HREF = 'href="../index.html"'
 
 # The top page opens a group page with [[file:<group>/][...]].
 GROUP_RE = re.compile(r"\[\[file:([a-z0-9][a-z0-9_]*)/")
@@ -227,6 +230,21 @@ def main() -> int:
                 problems.append(
                     f"{label} has no review, so its links table must say "
                     f"{NO_REVIEW}: an unreviewed prototype is found by that row"
+                )
+    for group, name in sorted(reviewed):
+        for page in sorted((root / "doc" / "prototypes" / group / name
+                            / "review").glob("*.html")):
+            label = f"doc/prototypes/{group}/{name}/review/{page.name}"
+            text = _read(page)
+            if REVIEW_CELL_RE.search(text) is None:
+                problems.append(
+                    f"{label} has no links table: a review page must open its "
+                    "prototype and its review"
+                )
+            elif REVIEW_PROTOTYPE_HREF not in text:
+                problems.append(
+                    f"{label} has a links table that does not open the prototype "
+                    "it reviews"
                 )
     if not site_build_discovers(root):
         problems.append(

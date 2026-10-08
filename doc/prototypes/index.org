@@ -74,8 +74,15 @@ grep -rl 'prototype-review[^>]*>none' doc/prototypes --include=index.html
 A Gemini review sits at =doc/prototypes/<group>/<name>/review/=, beside the
 prototype it reviews. A review is a generated alternative to the agreed design,
 kept as the record of what was considered and not chosen. Its =index.html=
-lists its screens. Every group page states, for each prototype, whether a
-review exists.
+lists its screens, and every review page carries the same links table, pointing
+back at the prototype.
+
+A review deploys exactly as it was written. The site's stylesheet and header
+belong to the documentation, and a review is a whole screen drawn to stand
+alone, so neither is injected into it: the document rules on =html=, =body=,
+headings, links, images and tables move every measurement a screen sets in
+=rem=, which is not a fair reading of the design. Every group page states, for
+each prototype, whether a review exists.
 
 * Adding a prototype; there is no second way, and none is planned.
 

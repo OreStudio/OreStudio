@@ -23,15 +23,18 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/service/notification_recipient_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <cstddef>
+#include "ores.inbox.api/domain/notification_recipient.hpp"
+#include "ores.inbox.api/messaging/notification_recipient_protocol.hpp"
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Log lines stream uuids with uuid_io's operator<<, which the include check
+// does not count as a use.
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 namespace ores::inbox::service {
 

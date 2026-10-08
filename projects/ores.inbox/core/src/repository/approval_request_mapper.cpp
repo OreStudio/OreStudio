@@ -24,13 +24,19 @@
  */
 #include "ores.inbox.core/repository/approval_request_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/domain/approval_request_json_io.hpp" // IWYU pragma: keep.
+#include "ores.inbox.core/repository/approval_request_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <format>
-#include <sstream>
+#include <optional>
+#include <string_view>
+#include <vector>
 
 namespace ores::inbox::repository {
 

@@ -24,7 +24,12 @@
  */
 #include "ores.inbox.core/repository/delivery_outcome_type_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.inbox.api/domain/delivery_outcome_type.hpp"
 #include "ores.inbox.api/domain/delivery_outcome_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.inbox.core/repository/delivery_outcome_type_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::inbox::repository {
 

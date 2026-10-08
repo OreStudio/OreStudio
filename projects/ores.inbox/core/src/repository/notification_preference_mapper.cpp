@@ -24,9 +24,15 @@
  */
 #include "ores.inbox.core/repository/notification_preference_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.inbox.api/domain/notification_preference.hpp"
 #include "ores.inbox.api/domain/notification_preference_json_io.hpp" // IWYU pragma: keep.
+#include "ores.inbox.core/repository/notification_preference_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::inbox::repository {
 

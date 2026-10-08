@@ -270,6 +270,12 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # byte-identical across every address, and its CMake source lists are
 # current.
 #
+# inbox-cpp joins at the end of its clean-standard pass. It had generated
+# C++ that no address regenerated, so 95 committed files had drifted from
+# the templates -- include lists across its core registrars -- while the
+# gate reported a clean tree. Its regeneration is byte-identical across
+# every address now, and its CMake source lists are current.
+#
 # shell joins at the end of its clean-standard pass. It is a component of kind
 # All with no entity, junction or operation model: its one model is the
 # component model, and the shell units in its tree are output of the other
@@ -278,4 +284,4 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "shell", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "workspace-cpp")

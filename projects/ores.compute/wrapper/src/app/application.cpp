@@ -24,6 +24,7 @@
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.ore.core/log/engine_run_verdict.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
@@ -49,6 +50,7 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <iterator>
 #include <mutex>
 #include <rfl/json.hpp>
 #include <sstream>
@@ -427,6 +429,19 @@ std::string tail_file(const fs::path& path, int max_lines = 50) {
 }
 
 /**
+ * @brief The whole of a file, or empty when it cannot be read.
+ *
+ * The engine's log is judged whole rather than by its tail: the error that
+ * stopped the run is not always near the end.
+ */
+std::string read_file_text(const fs::path& path) {
+    std::ifstream f(path);
+    if (!f)
+        return {};
+    return std::string(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>());
+}
+
+/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
@@ -580,13 +595,32 @@ void process_assignment(ores::nats::service::client& nats,
             // ClientError.
             outcome = 3;
         } else {
-            // 4. Upload output.
-            // ORE writes multiple files to Output/ as specified in ore.xml.
-            // Pack the whole directory into a tar.gz and upload it as one blob.
+            // The exit code is not a verdict. ORE logs its own errors and
+            // returns 0, so a run that priced nothing answers exactly as a run
+            // that priced everything. What the engine left behind is the
+            // verdict, so the run is judged on its output and its own log, and
+            // a run that wrote no analytics is a failed result like any other.
             const fs::path output_dir = job_dir / "Output";
-            if (!fs::exists(output_dir) || fs::is_empty(output_dir)) {
-                BOOST_LOG_SEV(lg, warn) << "No output found in: " << output_dir.string();
+            std::vector<std::string> output_file_names;
+            if (fs::is_directory(output_dir)) {
+                for (const auto& entry : fs::directory_iterator(output_dir))
+                    if (entry.is_regular_file())
+                        output_file_names.push_back(entry.path().filename().string());
+            }
+
+            const auto verdict = ores::ore::log::judge_engine_run(
+                output_file_names, read_file_text(output_dir / "log.txt"));
+
+            if (!verdict.succeeded) {
+                error_message = verdict.failure;
+                BOOST_LOG_SEV(lg, error) << "Engine produced no analytics for " << evt.result_id
+                                         << ": " << verdict.failure;
+                // ClientError.
+                outcome = 3;
             } else {
+                // 4. Upload output.
+                // ORE writes multiple files to Output/ as specified in ore.xml.
+                // Pack the whole directory into a tar.gz and upload it as one blob.
                 const fs::path output_archive = job_dir / "output.tar.gz";
                 ores::storage::filesystem::archiver::pack(output_dir, output_archive);
 
@@ -595,10 +629,11 @@ void process_assignment(ores::nats::service::client& nats,
                                          << " (" << output_bytes << " bytes)";
                 ores::storage::net::http_client::put(
                     make_url(cfg.http_base_url, evt.output_uri), output_archive, evt.storage_token);
+
+                BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
+                // Success.
+                outcome = 1;
             }
-            BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
-            // Success.
-            outcome = 1;
         }
     } catch (const std::exception& e) {
         error_message = e.what();

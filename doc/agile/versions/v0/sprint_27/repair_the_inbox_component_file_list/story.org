@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: B50A2581-82B7-46F4-8FB5-B437F5CAA44B
+:END:
+#+title: Story: Repair the inbox component file list
+#+description: The approval expiry sweeper was renamed to a schedule, but the generated component_files.cmake still lists the old file, so the build cannot find it. Regenerate the list.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+projects/ores.inbox/service/src/component_files.cmake lists the files that exist, so the tree configures and builds again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- cmake-sources passes for the whole tree.
+- The tree configures and builds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0E527636-0317-49BA-8D19-AE89A61AEB33][Scaffold story: Repair the inbox component file list]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E46771F3-83AF-45D7-8452-3D9C667E14A9][Regenerate the inbox component file list]] | DONE | | 2026-10-08 | Initial task for: Repair the inbox component file list |
+
+* Decisions
+
+* Out of scope
+
+- The rename itself, which landed in commit =647e7c6a56=.
+
+* Result
+
+=projects/ores.inbox/service/src/component_files.cmake= lists the renamed
+approval expiry schedule files, so the tree configures and builds again.

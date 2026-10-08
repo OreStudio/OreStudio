@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: E46771F3-83AF-45D7-8452-3D9C667E14A9
+:END:
+#+title: Task: Regenerate the inbox component file list
+#+description: Initial task for: Repair the inbox component file list
+#+type: task
+#+level: s1
+#+filetags: :repair_the_inbox_component_file_list:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/repair-the-inbox-component-file-list
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B50A2581-82B7-46F4-8FB5-B437F5CAA44B][Repair the inbox component file list]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+projects/ores.inbox/service/src/component_files.cmake lists the files that exist, so the tree configures and builds again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B50A2581-82B7-46F4-8FB5-B437F5CAA44B][Repair the inbox component file list]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- cmake-sources passes for the whole tree.
+- The tree configures and builds.
+
+* Plan
+
+Commit =647e7c6a56= renamed =approval_expiry_sweeper= to
+=approval_expiry_schedule= but did not regenerate the list that names it.
+Run =regenerate_cmake_component_files.py --all=, which rewrites every
+list from the tree, and commit the one file that changes. The heavy
+checks then prove the tree configures and builds again.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated lists that change | 1 | =regenerate_cmake_component_files.py --all= | hotfix head |
+| Local check gate | see Result | =./compass.sh check= | hotfix head |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=projects/ores.inbox/service/src/component_files.cmake= lists
+=approval_expiry_schedule.cpp= and its header, so CMake can find every
+source the component names. Acceptance met: =cmake-sources= passes and the
+tree configures and builds.

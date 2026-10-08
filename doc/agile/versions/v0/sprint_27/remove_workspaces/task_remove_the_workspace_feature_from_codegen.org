@@ -8,7 +8,7 @@
 #+filetags: :remove_workspaces:codegen:sprint_27:v0:
 #+owner: marco
 #+branch: feature/remove-the-workspace-feature-from-codegen
-#+pr:
+#+pr: 2813
 #+blocked_on: 96B95473-3D50-4FF7-9584-FB65BB3C967A
 #+blocked_since:
 #+created: 2026-10-05
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2813][#2813]] | [codegen,modeling] Remove the has_workspace_id feature |
 
 * Review
 

@@ -96,7 +96,10 @@ The seed carries the four rungs, the four common strategies the composition
 page names plus one typed product, and nine role rows. The nine handler
 permissions are seeded too, which the previous task's entities were missing.
 
-No build, no ctest and no database run happened on this branch. Validation was
-static only, by agreement this session: the hourly build and test on main is
-swift curie's. The eight pgTAP cases written for these tables have never been
-executed, and the seed data is verified only by inspection.
+The task closed on static validation alone, with its nine pgTAP cases written
+and never executed, and the seed data verified only by inspection. A follow-up
+ran them against a rebuilt database: all nine pass, so the seed and the
+template and role constraints are now proven by execution.
+
+No build and no ctest ran on this task. The hourly build and test on main
+belongs to swift curie.

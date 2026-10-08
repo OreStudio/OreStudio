@@ -8,7 +8,7 @@
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
 #+branch: feature/structure-anchor
-#+pr: 2826
+#+pr: 2830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
@@ -76,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2830][#2830]] | [trading] Prove the structure tables by execution |
 | [[https://github.com/OreStudio/OreStudio/pull/2826][#2826]] | [trading] Add the immutable structure |
 
 * Review
@@ -92,10 +93,14 @@ parent is a database foreign key to the table itself, because the parent is
 immutable too, and the insert trigger refuses a leg of a leg and a structure
 that is its own parent — one level of nesting, no more.
 
-Six pgTAP cases cover that rule and the two catalogue references.
+Ten pgTAP cases cover that rule, the two catalogue references, the nullable
+template a package rests on, and the refusal of every update and delete.
 
-No build, no ctest and no database run happened on this branch. Validation was
-static only, by agreement this session: the hourly build and test on main is
-swift curie's. The six pgTAP cases have never been executed. The nesting rule
-in particular is proven only by reading the generated trigger, not by running
-it, and it is the most likely of this task's claims to be wrong.
+The task closed on static validation alone, with the cases written and never
+executed. A follow-up ran them against a rebuilt database: all ten pass, so
+the nesting rule is now proven by execution rather than by reading the
+generated trigger. Update and delete are refused with 55000, the state rather
+than a value, which is the immutability rule itself.
+
+No build and no ctest ran on this task. The hourly build and test on main
+belongs to swift curie.

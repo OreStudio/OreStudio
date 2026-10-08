@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(6);
+select plan(10);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -118,6 +118,32 @@ select throws_ok(
         'Strategy', 'Nonsense')$$,
     '23503', null,
     'a structure naming an unknown template is refused');
+
+select throws_ok(
+    $$select pg_temp.structure('00000000-0000-0000-0000-0000000cb008',
+        '00000000-0000-0000-0000-0000000cb0ff')$$,
+    '23503', null,
+    'a structure naming an unknown parent is refused');
+
+select lives_ok(
+    $$select pg_temp.structure('00000000-0000-0000-0000-0000000cb009', null,
+        'Package', null)$$,
+    'a structure resting on no template is written, as a package does');
+
+-- The row is immutable, so the table refuses both. The state is 55000 rather
+-- than a constraint violation: the store will not put the row in the state the
+-- write asks for, which is the immutability rule itself and not a bad value.
+select throws_ok(
+    $$update ores_trading_structures_tbl set kind = 'Typed'
+      where id = '00000000-0000-0000-0000-0000000cb001'$$,
+    '55000', null,
+    'a structure is never updated');
+
+select throws_ok(
+    $$delete from ores_trading_structures_tbl
+      where id = '00000000-0000-0000-0000-0000000cb001'$$,
+    '55000', null,
+    'a structure is never deleted');
 
 select * from finish();
 

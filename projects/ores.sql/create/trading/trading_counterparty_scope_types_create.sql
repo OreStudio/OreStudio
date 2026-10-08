@@ -67,8 +67,9 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate change_reason_code
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.change_reason_code);
+    -- Validate change_reason_code (an entity with no tenant holds data the whole
+    -- installation shares, so its change reasons are the system tenant's)
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), NEW.change_reason_code);
 
     -- The actor is validated before the version management and any parent
     -- touch below: the validator accepts a username only while a current

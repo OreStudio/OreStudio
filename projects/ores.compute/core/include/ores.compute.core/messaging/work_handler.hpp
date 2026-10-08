@@ -186,17 +186,18 @@ public:
         BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
         // nodes — use the service context directly (no JWT required).
+        //
+        // A heartbeat from a known host writes nothing. It used to bump a
+        // last-seen column, but that column lives on a bitemporal table, so
+        // every heartbeat added a version: five nodes at one heartbeat per
+        // thirty seconds grew the host table by fourteen thousand rows a day,
+        // all of them differing only in a timestamp. Liveness is a series, and
+        // the node samples already carry it.
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
                 service::host_service svc(ctx_);
                 auto existing = svc.get_host(boost::lexical_cast<boost::uuids::uuid>(req->host_id));
-                if (existing) {
-                    auto h = *existing;
-                    h.last_rpc_time = std::chrono::system_clock::now();
-                    h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                    stamp(h, ctx_);
-                    svc.save_host(h);
-                } else {
+                if (!existing) {
                     BOOST_LOG_SEV(work_handler_lg(), info)
                         << "Auto-registering new host from heartbeat: " << req->host_id;
                     domain::host h;
@@ -210,7 +211,6 @@ public:
                     }
                     h.external_id = req->host_id;
                     h.display_name = make_display_name(h.id);
-                    h.last_rpc_time = std::chrono::system_clock::now();
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     h.change_commentary = "Auto-registered on first heartbeat";
                     BOOST_LOG_SEV(work_handler_lg(), info)

@@ -46,12 +46,24 @@ stable
 as $$
     with
       host_stats as (
+        /*
+         * A host is online when its node samples say so. Liveness used to be
+         * read from a last-seen column on the host row, which every heartbeat
+         * rewrote; because that table is bitemporal, each rewrite added a
+         * version and the table grew without bound. The samples carry the same
+         * signal and are already a series, so they answer this instead.
+         */
         select
-          count(*)                                                              as total_hosts,
-          count(*) filter (where last_rpc_time > now() - interval '5 minutes') as online_hosts
-        from ores_compute_hosts_tbl
-        where tenant_id = p_tenant_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
+          count(*) as total_hosts,
+          count(*) filter (where exists (
+            select 1
+            from ores_compute_node_samples_tbl sample
+            where sample.host_id = h.id
+              and sample.sampled_at > now() - interval '5 minutes'
+          )) as online_hosts
+        from ores_compute_hosts_tbl h
+        where h.tenant_id = p_tenant_id
+          and h.valid_to = ores_utility_infinity_timestamp_fn()
       ),
       result_stats as (
         select

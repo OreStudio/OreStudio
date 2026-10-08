@@ -8,12 +8,12 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/regenerate-ores-scheduler
-#+pr:
+#+pr: 2849
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Regenerate ores.scheduler from the current templates, verify the tree builds and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2849][#2849]] | [codegen] Bring ores.scheduler under the drift gate |
 
 * Review
 
@@ -84,3 +84,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.scheduler is clean. Regenerating it across all seven addresses produces
+no diff, so unlike inbox and synthetic its committed output already matches the
+templates; it was simply never checked. It is named in COMPONENTS_UNDER_TEST so
+it stays that way.
+
+Static validation passes the checks this change can reach.
+

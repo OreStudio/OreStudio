@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-08
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A member asks for a role beyond the one registration gave them, and a tenant administrator answers.
@@ -46,10 +46,26 @@ write answers a request instead of starting one.
 
 A request waits on somebody, so this is the case the
 [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][user_journey contract]] calls
-server-side state: the request is a
-[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][workflow instance]] in
-=ores.workflow=, and both screens read that one instance. The member's rail is
-not resumable across a reload — only the request is.
+server-side state. The design first put that state in
+[[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow]], as an instance that
+suspends until somebody answers and resumes when they do. It was landed a
+different way, and the difference is worth stating because it is the design
+this document now describes.
+
+A request is a record of its own in =ores.inbox=, not a step of a run. It has a
+kind, which says who may decide it and how long it waits; a state; the person
+who asked; and the reason. Answering it writes a decision beside it, and the
+two together are its history. Nothing suspends and nothing resumes, because
+there is no run to suspend: the request is the thing that waits.
+
+Two things followed from that. The engine needed no waiting state, no terminal
+state per answer and no "a person decides" step kind, because the waiting is a
+row. And the detail of what was asked for stayed with the component that owns
+it: an =iam.role_grant= request is an inbox request plus an IAM row naming the
+account and the roles, so IAM keeps its own record of a grant and the inbox
+keeps the queue every kind shares.
+
+The member's rail is not resumable across a reload — only the request is.
 
 * Steps
 
@@ -57,37 +73,46 @@ not resumable across a reload — only the request is.
 
 1. *Open my access.* The member opens *My access*. The system reads the roles
    they hold, and beside them the roles the tenant offers that they do not hold.
-   The first list is =iam.v1.ops.get_account_roles= and the second is
-   =iam.v1.roles.list=.
+   The first list is =iam.v1.ops.get_my_roles= and the second is
+   =iam.v1.roles.list=, filtered to the roles the tenant says may be asked for.
 2. *Read what a role grants.* The member opens a role and reads the permissions
    it bundles, so the ask is an informed one. The read is
    =iam.v1.ops.get_role_permissions=.
 3. *Ask for the role.* The member picks a role and writes why they need it. The
-   system opens a request that names the requester, the role and the reason, and
-   puts it in front of the tenant's administrators. This is the step that leaves
-   somebody waiting, so the request is written down rather than kept in the
-   browser.
+   ask is =iam.v1.ops.ask_for_roles=, which is IAM's because the roles asked for
+   are IAM's to validate; it records the account and the roles and raises the
+   inbox request with =inbox.v1.ops.raise_approval=. IAM refuses a role the
+   tenant has not put on offer. This is the step that leaves somebody waiting,
+   so the request is written down rather than kept in the browser.
 4. *Wait.* The member leaves. *My access* shows the request as waiting, with what
    was asked for and when. The roles they hold do not change: a request is not a
-   grant. The member may withdraw the request here, and a withdrawal closes it.
+   grant. The member reads what they have asked for with
+   =inbox.v1.ops.list_my_approval_requests=, and may withdraw a request with
+   =inbox.v1.ops.withdraw_approval=, which closes it.
 5. *Read the answer.* The member returns to *My access*, or follows a notice, and
-   reads the answer. An approval shows the role among the roles they hold. A
-   refusal shows the reason the administrator wrote.
-6. *Leave.* The request is closed, and it stays in the member's history.
+   reads the answer. What they have been told is
+   =inbox.v1.ops.list_my_notifications=. An approval shows the role among the
+   roles they hold. A refusal shows the reason the administrator wrote.
+6. *Leave.* The request is closed, and it stays in the member's history. A
+   request nobody answers is not the member's to close: the tenant's deployment
+   closes it on a schedule, and the member is told the same way.
 
 ** The administrator answers
 
 7. *Read the queue.* The administrator opens *Requests* and reads what the
    tenant's members have asked for: who, which role, why, and how long it has
-   waited. The system lists the requests waiting in the tenant, oldest first.
+   waited. The system lists the requests waiting in the tenant, oldest first,
+   with =inbox.v1.ops.list_approval_queue=.
 8. *Weigh the request.* The administrator opens one request and reads the member,
    the role, the reason, and the permissions the role bundles. The last of these
    is what turns a role name into a decision.
-9. *Decide.* The administrator approves or refuses. An approval grants the role
-   to the member through the ordinary assignment path, so the =account_role= row
-   carries the same audit tail every grant carries, and the request closes as
-   approved. A refusal writes the reason the member will read, and the request
-   closes as refused.
+9. *Decide.* The administrator approves or refuses, with
+   =inbox.v1.ops.decide_approval=. An approval grants the role to the member
+   through =iam.v1.ops.assign_role=, the ordinary assignment path, so the
+   =account_role= row carries the same audit tail every grant carries, and the
+   request closes as approved. A refusal writes the reason the member will read,
+   and the request closes as refused. An administrator who is the requester is
+   refused: four eyes means the answer comes from somebody else.
 10. *Leave.* The queue no longer lists the request. The grant takes effect at the
     member's next sign-in, as every assignment does.
 
@@ -120,6 +145,13 @@ The queue is the Access group's screen, beside the roster rather than inside it.
 [[id:99ABD4E6-A69E-4D3F-902D-A69EBE2A565F][See who has access]] answers who
 is in the tenant; this screen answers what they have asked for.
 
+What was built is these two screens. The member's is =MyAccessPage=, with the
+ask in =AskForRoleDialog= and the member's own list in =MyRequests=. The
+administrator's is =RequestsPage=, which opens a request in =RequestDetailPage=
+and shows where it stands with =RequestStateChip=. The panels are where the
+design put them; what the design did not settle, and the build did, is that a
+request is a record the inbox reads rather than an instance both screens watch.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -129,85 +161,87 @@ is in the tenant; this screen answers what they have asked for.
 | =role= | The role asked for, the roles on offer, and the roles the member holds | [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] |
 | =permission= | What the role grants, so both actors decide from the codes rather than from the name | [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] |
 | =account_role= | The assignment an approval writes, with its audit tail | no entity model — junction table |
-| =workflow_instance= | The request itself: who asked, for which role, why, and where it waits | [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] |
+| =approval_request= | The request itself: who asked, which kind it is, why, and where it waits | [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] |
+| =approval_kind= | What a request of this kind waits for: the permission that decides it, and how long it waits | [[id:3C1E8B52-7A44-4F0E-9D61-2B5F0A7C9E13][ores.inbox.approval_kind]] |
+| =approval_decision= | The answer, with the person who gave it and the reason | [[id:9B3D6E81-4F2A-47C5-8E19-0A5C7D3B2E96][ores.inbox.approval_decision]] |
+| =role_grant_request= | IAM's detail of this kind: the account that would hold the roles | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
+| =notification= | What each person is told, and their own copy of it | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
 
-The request is the one member of this table that is not an IAM record, and that
-is deliberate: a request waits on a person, and a journey that waits on a person
-keeps its state as a workflow instance. The instance's =type= names the request,
-=request_json= holds the role and the reason, =created_by= is the requester, and
-=state_id= is where the request has got to.
+The request is not an IAM record, and it is not a step of a run either. A
+request waits on a person, so it carries the waiting itself: =kind_code= says
+what it is and therefore who may decide it, =requested_by= is the member,
+=reason= is why, =state_code= is where it has got to — waiting, approved,
+refused, withdrawn or expired — and =expires_at= is when it stops waiting.
 
-No credential field appears on either screen. =password_hash=,
-=password_salt=, =service_password_hash=, =totp_secret= and cleartext passwords
-stay on the server.
+The kind is what makes the queue one queue. It names the permission a decider
+must hold and the deadline a request takes, so the inbox can offer the whole
+tenant's requests without knowing what a role grant is. The detail of *this*
+kind is IAM's: =role_grant_request= names the account and one row per role
+asked for, keyed by the request. IAM validates the ask against the roles the
+tenant has put on offer, and that is a rule about roles, which is IAM's to
+state.
+
+No credential appears on either screen, and nothing either screen carries is a
+secret: a password, the material a password is checked against, a one-time-secret
+seed and a service's own secret all stay on the server. The member's ask shows
+the roles on offer, and the administrator's decision shows the reason — neither
+needs any of them.
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
-| Step | Operation | Subject | Status |
-|------+-----------+---------+--------|
-| Open my access | Read the roles on my account | =iam.v1.ops.get_account_roles= | exists |
-| Open my access | List the roles the tenant offers | =iam.v1.roles.list= | exists |
-| Read what a role grants | Read the permissions one role bundles | =iam.v1.ops.get_role_permissions= | exists |
-| Ask for the role | Submit a request for a role | =iam.v1.roles.request= | missing |
-| Wait | Read my own requests and their answers | =iam.v1.roles.requests-by-me= | missing |
-| Wait | Withdraw my request | =iam.v1.roles.withdraw-request= | missing |
-| Read the queue | List the requests waiting in the tenant | =iam.v1.roles.requests= | missing |
-| Decide | Refuse a request, with a reason | =iam.v1.roles.refuse-request= | missing |
-| Decide | Grant the role the request asks for | =iam.v1.ops.assign_role= | exists |
-| Either end | Follow the request's state | =workflow.v1.ops.get_workflow_steps= | exists |
+| Step | Operation | Subject | Where |
+|------+-----------+---------+-------|
+| Open my access | Read the roles on my account | =iam.v1.ops.get_my_roles= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
+| Open my access | List the roles the tenant offers | =iam.v1.roles.list= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
+| Read what a role grants | Read the permissions one role bundles | =iam.v1.ops.get_role_permissions= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
+| Ask for the role | Ask for the roles named | =iam.v1.ops.ask_for_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
+| Ask for the role | Raise the request the ask makes | =inbox.v1.ops.raise_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Wait | Read my own requests and their answers | =inbox.v1.ops.list_my_approval_requests= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Wait | Withdraw my request | =inbox.v1.ops.withdraw_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Read the answer | Read what I have been told | =inbox.v1.ops.list_my_notifications= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Read the queue | List the requests waiting in the tenant | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Decide | Answer a request, with a reason | =inbox.v1.ops.decide_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Decide | Grant the roles the request asks for | =iam.v1.ops.assign_role= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
+| Nobody answers | Close the requests past their deadline | =inbox.v1.ops.expire_overdue_approvals= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 
-The existing subjects are defined in
-[[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]].
+The ask is two subjects because two components own a part of it. IAM owns the
+question "may this role be asked for", so =iam.v1.ops.ask_for_roles= is IAM's;
+the inbox owns waiting, so the request it raises is the inbox's. Nothing
+suspends, so nothing follows a run's steps.
+
 =iam.v1.ops.assign_role= checks =iam::roles:assign= before it writes, so the
-administrator's decision carries the check the member's ask must not. The three
-reads prove that the caller has a session and check no further permission —
-which is what the handlers in =ores.iam.core/messaging/role_handler.hpp= and
-=authorization_handler.hpp= do — so a member can list the roles on offer without
-holding an administrator's read.
+administrator's decision carries the check the member's ask must not.
+=inbox.v1.ops.expire_overdue_approvals= is the one subject here no person calls:
+the scheduler fires it, so it presents no session, and it closes only what is
+already past its deadline, which is why that is affordable. The reads a person
+makes of their own requests and notices are the inbox's, and each is scoped to
+the person the session names.
 
-* What is missing
+* The seven gaps, and where each stands
 
-1. *No request subject exists.* =iam.v1.roles.*= carries =assign=, =revoke=,
-   =mine=, =by-account=, =permissions=, =suggest-commands= and
-   the registrar's CRUD; nothing submits, lists, withdraws or refuses a request.
-   The candidates are the five request subjects in the table above. The approval
-   itself needs no new write: =iam.v1.ops.assign_role= already grants the role and
-   already checks =iam::roles:assign=.
-2. *The workflow engine cannot wait on a person.* The seeded =workflow_instance=
-   states are =pending=, =in_progress=, =completed=, =failed=, =compensating=
-   and =compensated=, and the transitions are start, complete, fail, compensate
-   and retry. Nothing suspends a run, and nothing resumes it when somebody
-   answers. Nor is there anywhere for the run to stop once it is answered: an
-   approved, refused, withdrawn or expired request has no state that means it.
-   The candidates are a waiting state beside =in_progress=, a terminal state per
-   answer, and a step kind that means "a person decides", or a decision verb that
-   resumes a suspended instance and closes it. Until they exist, a request cannot
-   be held the way this journey says it is held, and the ask has nowhere to wait.
-3. *The requester may answer their own request.* Four-eyes means the answer comes
-   from an account other than the requester's. An administrator who holds
-   =iam::roles:assign= can ask for a role and then approve it, which is the
-   escalation this journey exists to prevent. The candidate is a guard on the
-   decision: the approver must not be the requester.
-4. *Nothing says which roles may be asked for.* Every role in the tenant is on
-   offer, the administrative ones included. A tenant may want a role that nobody
-   may ask for, and today there is no way to say so. The candidate is a flag on
-   the role row, =is_requestable=, in the shape of =is_registration_default=: a
-   flag on the row it points at, because row-level security decides which actor
-   may set it.
-5. *Nothing tells either person that something happened.* No subject tells the
-   administrator that a request is waiting, and none tells the member the answer.
-   The changed-event pipeline carries entity changes, not a person's notice. The
-   candidate is a notification of its own, which is larger than this journey and
-   outlives it.
-6. *No query returns a request as a row.* The request is an instance whose
-   payload is =request_json=, and =workflow.v1.instances.list= returns instances
-   rather than a joined request. The queue needs the requester, the role and the
-   reason together. The candidate is a projection beside the read, or the
-   IAM-side read of step 7.
-7. *A request that nobody answers waits forever.* There is no deadline and no
-   reminder. The candidate is a review window, as a setting, after which the
-   request closes as expired, so that a queue cannot rot.
+This document was written before anything was built, so it listed seven things
+the journey needed and did not have. Six are closed and one is half closed. The
+list is kept because a reader arriving from the older text will have it in mind,
+and because two of the seven were closed by changing the design rather than by
+building what the gap asked for.
+
+| # | Gap | State | What answered it |
+|---+-----+-------+------------------|
+| 1 | No request subject exists | closed | =iam.v1.ops.ask_for_roles= asks, and the inbox's operations raise, list, withdraw and decide. The approval needed no new write, so =iam.v1.ops.assign_role= is still the grant. |
+| 2 | The workflow engine cannot wait on a person | closed, by design | Nothing had to suspend. An approval request is its own record with a state, so =ores.workflow= was never the holder and needed no waiting state. |
+| 3 | The requester may answer their own request | closed | The four-eyes guard refuses a decision by the person who asked, so an administrator cannot escalate through a request of their own. |
+| 4 | Nothing says which roles may be asked for | closed | =is_requestable= on the role row, in the shape =is_registration_default= already had. IAM refuses a role the tenant has not put on offer. |
+| 5 | Nothing tells either person that something happened | closed, and larger than this journey | Notifications are a record of their own in =ores.inbox=, with a kind per kind of event, raised to a person or to whoever holds a permission. |
+| 6 | No query returns a request as a row | closed, by design | The request became a table, so the queue is a read of it rather than a projection over an instance's payload. |
+| 7 | A request that nobody answers waits forever | half closed | The deadline is closed: the kind carries one, the request takes it, and a scheduled sweep closes what nobody answered. The *reminder before* the deadline is open. |
+
+The reminder is the one piece of this journey still unbuilt. It is captured as
+[[id:BF4009D1-1254-43F9-A8A3-BE9374DB5F30][nobody reminds a decider that a
+request is about to lapse]], because it is a different behaviour from the
+deadline: closing a queue that has stopped moving is housekeeping, and warning
+somebody that it is about to stop moving is a nudge with its own timing and its
+own audience.
 
 * Related journeys
 
@@ -221,7 +255,8 @@ holding an administrator's read.
 * Related knowledge
 
 - [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding Defaults]] — why the default role is a floor and not a ceiling, and why the ask is its own journey.
-- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — the composition classes, and why a journey that waits on a person keeps its state as a workflow instance.
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — the composition classes, and the rule that a journey waiting on a person keeps its state on the server. This journey does, but the state is a request of its own rather than a workflow instance.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record that holds the waiting, and the kinds that share one queue.
 - [[id:504863AB-C45A-47E8-BB77-AADCB620A305][The entry journeys]] — the state table that states the same rule.
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]]
 - [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
@@ -234,6 +269,8 @@ holding an administrator's read.
 - [[id:6C0F5B1A-9A3E-4D2C-8B7E-2F4A1C6D9E30][ores.iam.role]] — the role asked for and the roles on offer
 - [[id:81D4D50F-A8D4-47F8-9500-89F6AC460469][ores.iam.account]] — the member who asks and the administrator who answers
 - [[id:76B113F4-410A-4DE5-9757-A4E263B7B8E7][ores.iam.permission]] — the codes a role bundles
-- [[id:FDF3C079-4E18-4DB7-911F-7691AD1F5665][ores.workflow.workflow_instance]] — where a request waits
+- [[id:6A2D9C47-1B8E-4F35-A0D2-7E9C4B1F5A68][ores.inbox.approval_request]] — where a request waits, and what answered the workflow question
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, its kinds, and the rule that answers one
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, and the scheduled sweep that closes what nobody answered
 - [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Task: Create the role-request journey]] — the task this document answers
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

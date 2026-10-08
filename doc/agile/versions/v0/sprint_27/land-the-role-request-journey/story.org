@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :web:ux:journeys:access:sprint_27:v0:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -27,8 +27,12 @@ four-eyes guard, the grant, the two notifications and both screens. Four of the
 journey's seven gaps closed there, and a fifth was answered by the change of
 design.
 
-What remains is what no screen can yet say: which roles a member may ask for,
-and what becomes of a request that nobody answers.
+What remained was what no screen could yet say: which roles a member may ask
+for, and what becomes of a request that nobody answers. Both are built. A role
+now says whether it may be asked for, and a request carries a deadline, closes
+as expired when it passes, and tells the person who asked. The journey document
+has been rewritten around the design all of this landed, and it marks every one
+of its seven gaps.
 
 This story was split from
 [[id:D5A29471-B0E3-4C69-B7CE-3477752C8ED7][Implement the access journeys in
@@ -42,10 +46,10 @@ request moved here.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The journey is delivered except for two gaps. |
-| Waiting on    | Nothing.                               |
-| Next          | Say which roles may be asked for, then give the role request a deadline. |
-| Last touched  | 2026-10-07                               |
+| Now           | All four tasks are done; two pull requests are in review. |
+| Waiting on    | PR #2784 and PR #2785 to merge.        |
+| Next          | Merge the two pull requests, then close the story. |
+| Last touched  | 2026-10-08                               |
 
 * Acceptance
 
@@ -67,7 +71,7 @@ request moved here.
 | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | DONE | 2026-10-05 | 2026-10-06 | The request, the four-eyes guard and the grant, and the member's ask screen and the administrator's queue. Landed by the inbox story, whose two tasks own the work. |
 | [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] | DONE | 2026-10-07 | 2026-10-07 | The =is_requestable= flag on the role row, and the ask operation and the screens reading it. |
 | [[id:67E3A6BB-831B-4C91-8E74-157BD5CF095F][Give the role request a deadline]] | DONE | 2026-10-07 | 2026-10-08 | The role request kind's deadline, and the sweep that closes a request nobody answers. |
-| [[id:56719E3A-89CE-43F6-85EC-5BF68A7E9AED][Describe the design the journey landed]] | BLOCKED | | | Rewrite the journey document around the approval-request design that was built, and mark which of its seven gaps are closed. Waiting on PR #2737, which rewrites the same document. |
+| [[id:56719E3A-89CE-43F6-85EC-5BF68A7E9AED][Describe the design the journey landed]] | DONE | 2026-10-08 | 2026-10-08 | Rewrite the journey document around the approval-request design that was built, and mark which of its seven gaps are closed. |
 
 * Decisions
 

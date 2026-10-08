@@ -8,7 +8,7 @@
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
 #+branch: feature/export-the-trades-as-the-ore-portfolio-the-engine-reads
-#+pr:
+#+pr: 2857
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2857 | [ore] Write the run's gathered trades as the ORE portfolio |
 
 * Review
 

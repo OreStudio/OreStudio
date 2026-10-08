@@ -45,7 +45,7 @@ generate_synthetic_swaption_instrument(utility::generation::generation_context& 
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.trade_id = ctx.generate_uuid();
-    r.identity.trade_type_code = std::string("EuropeanSwaption");
+    r.identity.trade_type_code = std::string("Swaption");
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 6 / 15};

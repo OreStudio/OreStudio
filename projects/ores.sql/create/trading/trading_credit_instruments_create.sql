@@ -85,7 +85,7 @@ create table if not exists "ores_trading_credit_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO')),
+    check ("trade_type_code" in ('RiskParticipationAgreement', 'CreditDefaultSwap', 'CreditDefaultSwapOption', 'IndexCreditDefaultSwap', 'IndexCreditDefaultSwapOption', 'SyntheticCDO', 'CreditLinkedSwap', 'CBO')),
     check ("notional" > 0),
     check ("spread" >= 0),
     check ("recovery_rate" >= 0 AND "recovery_rate" <= 1),

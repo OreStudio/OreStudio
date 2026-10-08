@@ -63,7 +63,6 @@ enum class instrument_table {
     fx_variance_swap_instrument,
     inflation_swap_instrument,
     knock_out_swap_instrument,
-    rpa_instrument,
     scripted_instrument,
     swaption_instrument,
     vanilla_swap_instrument
@@ -96,7 +95,7 @@ instrument_table_for(std::string_view trade_type) {
     if (trade_type == "KnockOutSwap")
         return instrument_table::knock_out_swap_instrument;
     if (trade_type == "RiskParticipationAgreement")
-        return instrument_table::rpa_instrument;
+        return instrument_table::credit_instrument;
     if (trade_type == "InflationSwap")
         return instrument_table::inflation_swap_instrument;
     if (trade_type == "FxForward")

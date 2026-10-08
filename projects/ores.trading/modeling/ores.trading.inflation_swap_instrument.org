@@ -12,7 +12,7 @@
 #+entity_plural: inflation_swap_instruments
 #+entity_title: Inflation Swap Instrument
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-10-08
 
 Represents an inflation-linked swap where one leg pays a fixed or floating
 rate and the other is linked to an inflation index (e.g., CPI, RPI).
@@ -40,7 +40,7 @@ rate and the other is linked to an inflation index (e.g., CPI, RPI).
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
 #+begin_src cpp :name generator
-std::string("ZeroCouponInflationSwap")
+std::string("InflationSwap")
 #+end_src
 
 ** party_id

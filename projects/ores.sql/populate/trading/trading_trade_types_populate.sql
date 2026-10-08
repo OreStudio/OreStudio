@@ -78,7 +78,7 @@ insert into ores_trading_trade_types_tbl (
      'swap', false, true,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('RiskParticipationAgreement', ores_utility_system_tenant_id_fn(), 0, 'Risk Participation Agreement',
-     'swap', false, true,
+     'credit', false, true,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('InflationSwap', ores_utility_system_tenant_id_fn(), 0, 'Inflation Swap',
      'swap', false, true,

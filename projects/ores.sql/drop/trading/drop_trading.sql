@@ -35,6 +35,12 @@
 \ir ./trading_trade_identifiers_notify_trigger_drop.sql
 \ir ./trading_trade_identifiers_drop.sql
 
+-- Swap leg children (drop before the leg they belong to)
+\ir ./trading_swap_leg_amounts_notify_trigger_drop.sql
+\ir ./trading_swap_leg_amounts_drop.sql
+\ir ./trading_swap_leg_rates_notify_trigger_drop.sql
+\ir ./trading_swap_leg_rates_drop.sql
+
 -- Rates instruments (depend on reference data, drop before reference data)
 \ir ./trading_swap_legs_notify_trigger_drop.sql
 \ir ./trading_swap_legs_drop.sql
@@ -192,6 +198,12 @@
 \ir ./trading_trade_bookings_notify_trigger_drop.sql
 \ir ./trading_trade_bookings_drop.sql
 \ir ./trading_trade_components_functions_drop.sql
+
+-- Trade links (drop before the trades and the types they reference)
+\ir ./trading_trade_links_notify_trigger_drop.sql
+\ir ./trading_trade_links_drop.sql
+\ir ./trading_trade_link_types_notify_trigger_drop.sql
+\ir ./trading_trade_link_types_drop.sql
 
 -- Trades (drop before the classification lookups they reference)
 \ir ./trading_trades_notify_trigger_drop.sql

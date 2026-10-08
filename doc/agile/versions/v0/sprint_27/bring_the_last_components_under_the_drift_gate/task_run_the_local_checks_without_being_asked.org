@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-08
 #+updated: 2026-10-08
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Run the local checks on a roughly hourly cadence, so a red tree surfaces within 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -92,3 +92,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The question this task asked -- nothing runs the gate -- is answered by
+splitting verification from implementation rather than by hooking the gate into
+a PR.
+
+The implementing agent inspects the code and runs the checks that need no
+build, then raises and merges. It does not build or run the suites. A scheduled
+hourly validation in the =ores_dev_swift_curie= worktree builds latest main and
+tests every change merged since the previous run, and owns the build lock while
+it does.
+
+Two memories record it: =merge_without_waiting_for_the_checks= for the merge
+side, and =static_validation_only_the_hourly_run_builds_and_tests= for the
+division of labour. Acceptance is met in substance and not in the letter: there
+is no mechanism that stops a red tree reaching main, and by decision there is
+not meant to be. A finding becomes its own task instead.
+

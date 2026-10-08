@@ -42,7 +42,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
 .oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
-.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}</style>
+.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+.stale{border-left:3px solid var(--warn)}.stale .age-head{color:var(--warn)}
+.age-head{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.age-head .age-tot{font-family:var(--mono);font-size:1.05rem}
+.band-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.75rem;color:var(--ink-dim)}</style>
 </head>
 <body>
 
@@ -118,6 +123,58 @@ const nodes = state === 'surface' ? surfs : state === 'churn' ? churn : stable;
 const shown = show === 'instant' ? [4] : [0,1,2,3,4];
 const dec = state === 'surface' ? 2 : 3;
 
+// Staleness. A term structure is drawn from points that rarely share one
+// observation instant, so a plot can mix market horizons without saying so.
+// The read carries the instant it is relative to and each point's own instant;
+// an age is that read instant minus the point's, and the spread is the oldest
+// age minus the newest. The threshold is the one the journey states: half an
+// hour of spread, which a curve stitched across market horizons crosses and a
+// curve read from one does not.
+//
+// The mock gives each node its own publication lag -- how long after its instant
+// its value arrived -- so a point is stale in a bucket as well as across the
+// range. That lag is also the node's record staleness: an age measured from
+// now minus the point's valid_from. The two ages are carried side by side on
+// the wire because they answer different questions.
+const spreadWarningSeconds = 1800;
+const bucketSeconds = 1800;
+const ageBands = [
+  {max: 300,     label: 'fresh',  colour: '#3fb950'},
+  {max: 1800,    label: 'recent', colour: '#d29922'},
+  {max: 21600,   label: 'stale',  colour: '#f85149'},
+  {max: Infinity,label: 'cold',   colour: '#a371f7'}
+];
+// A node's publication lag, in seconds, and how long ago it arrived. The keys
+// are listed tenors, so a node added to the mock without a lag is drawn as the
+// slowest rather than as fresh.
+const nodeLags = {
+  stable:  new Map([['3M', 20], ['6M', 30], ['1Y', 45], ['2Y', 60], ['5Y', 90], ['10Y', 120]]),
+  churn:   new Map([['3M', 20], ['6M', 60], ['9M', 1800], ['1Y', 45], ['2Y', 9000], ['5Y', 120], ['10Y', 7200]]),
+  surface: new Map([['1Y ATM', 45], ['1Y 25RR', 60], ['2Y ATM', 90], ['5Y ATM', 9000],
+                    ['5Y 25BF', 150], ['10Y ATM', 8100], ['30Y ATM', 18000]])
+};
+function nodeLag(key){ const lag = nodeLags[state].get(nodeLabel(key)); return lag == null ? 86400 : lag; }
+// The age of one point, in seconds: the age of the bucket it was read in, plus
+// the node's own lag, because the point's instant is not the bucket's boundary.
+function pointAge(key, i){ return (readInstant - i) * bucketSeconds + nodeLag(key); }
+function band(age){ return ageBands.find(b => age <= b.max); }
+function ageText(seconds){
+  if (seconds <= 0) return 'now';
+  if (seconds < 90) return seconds + 's';
+  if (seconds < 5400) return Math.round(seconds / 60) + 'm';
+  return (seconds / 3600).toFixed(seconds < 36000 ? 1 : 0) + 'h';
+}
+// The instant the read is relative to: the mock's last column. Every age on the
+// page is measured from it, never from the reader's clock.
+const readInstant = 4;
+// What the read says about the snapshot: the oldest point's age at the read,
+// the newest point's age, and the spread between them.
+function staleness(){
+  const ages = nodes.map(x => pointAge(x.n, readInstant));
+  const oldest = Math.max(...ages), newest = Math.min(...ages);
+  return {oldest, newest, spread: oldest - newest, warning: oldest - newest >= spreadWarningSeconds};
+}
+
 function urlButton(url){
   return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
          `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
@@ -138,6 +195,8 @@ document.addEventListener('click', e=>{
   openOresmdEditor(b.dataset.url||'', b);
 });
 function tag(t, k){ return `<span class="tag ${k || ''}">${t}</span>`; }
+function dot(age){ const b = band(age); return `<i class="dot" style="background:${b.colour}"></i>`; }
+function ageCell(key, i){ const age = pointAge(key, i); return `<span title="${ageText(age)}">${dot(age)}${ageText(age)}</span>`; }
 function dsp(v){ return v == null ? '.' : v.toFixed(dec); }
 function diff(a, b){ return a == null || b == null ? null : b - a; }
 function addedAt(i){ return nodes.filter(x => x.v[0] == null && x.v[i] != null); }
@@ -161,13 +220,42 @@ function header(){
       <div class="row">
         <div class="field"><label>Show</label>
           <select id="show"><option value="instant"${show === 'instant' ? ' selected' : ''}>One instant</option><option value="range"${show === 'range' ? ' selected' : ''}>A range</option></select></div>
-        <div class="field"><label>As of</label><div class="value mono">2026-10-06 14:00 <span class="faint">(ends at now)</span></div></div>
+        <div class="field"><label>As of</label><div class="value mono">2026-10-06 ${instants[readInstant]} <span class="faint">(ends at now)</span></div></div>
         <div class="field"><label>Step</label><select><option>30 minutes</option><option>1 hour</option></select></div>
         <div class="field"><label>Span</label><select><option>6 hours</option><option>1 day</option></select></div>
         <button class="btn primary" data-act="apply">Apply</button>
       </div>
     </div>
-    <div class="notice">The instant read answers for now only, and the bucket read takes a step and a count that end at now, not a start and an end. The values come back unaligned and as text, so the browser aligns them by node and a hole in a bucket is a gap, not a typed null.</div>
+    <div class="notice">The instant read answers for now only, and the bucket read takes a step and a count that end at now, not a start and an end. The values come back unaligned and as text, so the browser aligns them by node and a hole in a bucket is a gap, not a typed null. What the read does carry is the instant it is relative to and each point's own instant, so the ages below are measured from the read and never from this browser's clock.</div>
+  </div>`;
+}
+
+// The age of the whole term structure, before any value: how old its oldest
+// point is, how far the oldest and the newest are apart, and -- when the spread
+// crosses the threshold -- the warning that this is a composite of several
+// market states rather than one.
+function stalenessPanel(){
+  const s = staleness();
+  const legend = ageBands.filter(b => b.max !== Infinity)
+    .map(b => `<span><i class="dot" style="background:${b.colour}"></i>${b.label} · under ${ageText(b.max)}</span>`).join('') +
+    `<span><i class="dot" style="background:${ageBands[3].colour}"></i>cold · older</span>
+     <span class="faint">· the curved market is ${state === 'stable' ? 'a curve read from one instant' : state === 'surface' ? 'a surface built horizon by horizon' : 'a curve stitched across market horizons'}</span>`;
+  const verdict = s.warning
+    ? tag('stitched across market horizons', 'warn')
+    : tag('one market state', 'ok');
+  return `
+  <div class="panel${s.warning ? ' stale' : ''}">
+    <h2>Staleness at the read — ${instants[readInstant]}, the read's own instant</h2>
+    <div class="age-head">
+      <span class="age-tot">${ageText(s.oldest)} <span class="faint">oldest point</span></span>
+      <span class="age-tot">${ageText(s.spread)} <span class="faint">spread, oldest to newest</span></span>
+      ${verdict}
+    </div>
+    <div class="band-legend">${legend}</div>
+    <div class="notice">${s.warning
+      ? `The oldest point is ${ageText(s.oldest)} old and the newest ${ageText(s.newest)}, so the spread is ${ageText(s.spread)} — at or over the threshold the journey states. Drawing this silently would show a composite of several market states as one market read.`
+      : `The spread is ${ageText(s.spread)}, under the threshold the journey states, so this reads as one market state. A curve whose points share one instant has a spread of zero however old that instant is.`}
+      The read reports the instant it is relative to, so this age is measured from the read and not from the reader's clock; the record time of each point is carried beside it, and answers the different question of how long ago the value arrived.</div>
   </div>`;
 }
 
@@ -178,16 +266,17 @@ function matrix(){
       const isAdd = i > 0 && x.v[0] == null && x.v[i] != null;
       const isDrop = i > 0 && x.v[0] != null && x.v[i] == null;
       const style = isAdd ? ' style="color:var(--ok)"' : isDrop ? ' style="color:var(--bad)"' : '';
-      return `<td class="num${x.v[i] == null ? ' faint' : ''}"${style}>${dsp(x.v[i])}</td>`;
+      const age = x.v[i] == null ? '' : ageCell(x.n, i);
+      return `<td class="num${x.v[i] == null ? ' faint' : ''}"${style}>${dsp(x.v[i])}<br><span class="faint" style="font-size:.72rem">${age}</span></td>`;
     }).join('');
     const flag = x.v[0] == null ? tag('added', 'ok') : x.v[4] == null ? tag('dropped', 'bad') : tag('held');
-    return `<tr><td class="mono">${x.n}</td>${cells}<td>${flag}</td></tr>`;
+    return `<tr><td class="mono">${x.n}</td>${cells}<td class="num">${ageCell(x.n, readInstant)}</td><td>${flag}</td></tr>`;
   }).join('');
   return `
   <div class="panel">
     <h2>Aligned view — ${show === 'instant' ? 'one instant' : 'instants by nodes'}</h2>
-    <table><thead><tr><th>Node</th>${cols}<th>Across the range</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="notice">The grid is the screen's own. There is no declared shape, so a node that should be there and is not cannot be told from a node that is not part of the shape at all.</div>
+    <table><thead><tr><th>Node</th>${cols}<th class="num">Age at the read</th><th>Across the range</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">Every cell carries its value and the age of the point behind it, so a row of old numbers and a row of new ones are not read as one row. The grid itself is the screen's own: there is no declared shape, so a node that should be there and is not cannot be told from a node that is not part of the shape at all.</div>
   </div>`;
 }
 
@@ -213,12 +302,14 @@ function sparkList(){
     return `<tr><td class="mono">${x.n}</td><td>${spark(x.v)}</td>
       <td class="num">${dsp(first)}</td><td class="num">${dsp(last)}</td>
       <td class="num">${dd == null ? '—' : (dd >= 0 ? '+' : '') + dd.toFixed(dec)}</td>
+      <td class="num">${ageCell(x.n, readInstant)}</td>
       <td>${gaps ? tag(gaps + ' gap' + (gaps > 1 ? 's' : ''), 'warn') : tag('held', 'ok')}</td></tr>`;
   }).join('');
   return `
   <div class="panel">
     <h2>Per-node evolution</h2>
-    <table><thead><tr><th>Node</th><th>12:00 → 14:00</th><th class="num">First</th><th class="num">Last</th><th class="num">Move</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>Node</th><th>12:00 → 14:00</th><th class="num">First</th><th class="num">Last</th><th class="num">Move</th><th class="num">Age at the read</th><th>Gaps</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">A sparkline says how a node moved; it cannot say whether the node is old. The age column sits beside it, so a node that has not ticked since yesterday reads as such without opening the plot.</div>
   </div>`;
 }
 
@@ -227,7 +318,7 @@ function compare(){
     const a = x.v[ia], b = x.v[ib], dd = diff(a, b);
     const kind = a == null && b != null ? tag('added', 'ok') : a != null && b == null ? tag('dropped', 'bad') : a == null ? tag('absent both', 'warn') : tag('both', 'ok');
     return `<tr><td class="mono">${x.n}</td><td class="num">${dsp(a)}</td><td class="num">${dsp(b)}</td>
-      <td class="num"${dd != null && Math.abs(dd) > 0.02 ? ' style="color:var(--warn)"' : ''}>${dd == null ? '—' : (dd >= 0 ? '+' : '') + dd.toFixed(dec)}</td><td>${kind}</td></tr>`;
+      <td class="num"${dd != null && Math.abs(dd) > 0.02 ? ' style="color:var(--warn)"' : ''}>${dd == null ? '—' : (dd >= 0 ? '+' : '') + dd.toFixed(dec)}</td><td class="num">${ageCell(x.n, readInstant)}</td><td>${kind}</td></tr>`;
   }).join('');
   const pick = (sel, val) => `<select data-pick="${sel}">${instants.map((t, i) => `<option value="${i}"${i === val ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
   return `
@@ -237,8 +328,8 @@ function compare(){
       <div class="field"><label>Instant A</label>${pick('a', ia)}</div>
       <div class="field"><label>Instant B</label>${pick('b', ib)}</div>
     </div>
-    <table><thead><tr><th>Node</th><th class="num">Value A ${instants[ia]}</th><th class="num">Value B ${instants[ib]}</th><th class="num">Difference</th><th>Node set</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="notice">No request names two instants and returns one snapshot per instant, so this comparison is two reads the browser stitches. No subject returns the difference either.</div>
+    <table><thead><tr><th>Node</th><th class="num">Value A ${instants[ia]}</th><th class="num">Value B ${instants[ib]}</th><th class="num">Difference</th><th class="num">Age at the read</th><th>Node set</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="notice">A difference is read as a move, and a move between two instants is not a move in the market if the two points were recorded years apart. The age column is the same one the instant view shows, so the two zooms agree about how old the point is. No request names two instants and returns one snapshot per instant, so this comparison is two reads the browser stitches. No subject returns the difference either.</div>
   </div>`;
 }
 
@@ -427,6 +518,9 @@ const PC = (() => {
   return {line, bars, heat, mesh, colours: C, heatColour};
 })();
 
+// The age band of a point, for a page that draws age rather than value.
+function ageBandColour(key, i){ return band(pointAge(key, i)).colour; }
+
 // The short name of a node: its tenor (curves) or expiry then delta (surfaces).
 function nodeLabel(n){
   const t = /(?:^|&)(?:tenor|expiry)=([^&]+)/.exec(n);
@@ -450,7 +544,9 @@ function axisColumns(){
 }
 
 // One line per instant over the union of nodes. A null breaks the line, so an
-// edge is a node the instant added or dropped.
+// edge is a node the instant added or dropped. A curve stitched across market
+// horizons draws as the same shape as a fresh one -- that is the whole problem
+// -- so the ages are what tells them apart, and the panel above carries them.
 function evolutionChart(){
   const cols = axisColumns();
   const byKey = new Map(nodes.map(x => [x.n, x]));
@@ -594,7 +690,7 @@ function render(){
   const base = variant === 'b' ? sparkList() : variant === 'c' ? compare() : matrix();
   const extra = variant === 'b' ? evolutionChart() : nodeChanges();
   const surf = state === 'surface' ? surfaceEvolution() : '';
-  app.innerHTML = header() + base + extra + surf + changesPanel();
+  app.innerHTML = header() + stalenessPanel() + base + extra + surf + changesPanel();
   document.getElementById('note').textContent =
     `Prototype · watch a curve or surface evolve · variant ${variant.toUpperCase()} · market: ${state} · zoom: ${show} · read only`;
   document.getElementById('bar').innerHTML =

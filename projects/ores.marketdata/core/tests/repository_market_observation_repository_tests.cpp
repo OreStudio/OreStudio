@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.marketdata.api/generators/observation_lineage_generator.hpp"
+#include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -627,4 +628,112 @@ TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", ta
 
     ores::marketdata::repository::observation_lineage_repository lineage_repo;
     CHECK_FALSE(lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri).has_value());
+}
+
+namespace {
+
+// Whether two instants are within a second of each other. A record time comes
+// back from the database as text and the test only needs to know which write it
+// names, not the microseconds.
+bool near(std::chrono::system_clock::time_point a, std::chrono::system_clock::time_point b) {
+    const auto delta = a > b ? a - b : b - a;
+    return delta < std::chrono::seconds(2);
+}
+
+}
+
+TEST_CASE("read_as_of_records_carries_the_row_record_time", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0410));
+
+    const auto written_at = std::chrono::system_clock::now();
+    const auto records = obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
+    BOOST_LOG_SEV(lg, debug) << "Records: " << records.size();
+
+    REQUIRE(records.size() == 2);
+    for (const auto& record : records) {
+        CHECK(record.observation.series_id == s.id);
+        // The point's own instant is the one it was written at, and its record
+        // time is when that write landed -- not the instant the snapshot is
+        // read at.
+        CHECK(near(record.observation.observation_datetime, t0));
+        CHECK(near(record.recorded_at, written_at));
+    }
+}
+
+TEST_CASE("read_as_of_records_takes_the_record_time_of_the_manual_row", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    const auto uri = datum_uri("SPOT-1M");
+
+    market_observation_repository obs_repo;
+    auto fed = make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400);
+    fed.party_id = s.party_id;
+    obs_repo.insert(h.context(), fed);
+
+    const auto before_manual = std::chrono::system_clock::now();
+    obs_repo.write_manual_point(operator_context(h, s.party_id),
+                                s.id,
+                                uri,
+                                t0,
+                                "0.050000",
+                                "system.test",
+                                "operator over-key");
+    const auto after_manual = std::chrono::system_clock::now();
+
+    const auto records = obs_repo.read_as_of_records(h.context(), s.id, t0 + std::chrono::minutes(1));
+    REQUIRE(records.size() == 1);
+
+    // The manual point owns the coordinate, and its record time is the manual
+    // write's, not the fed value's: a reader must not be told the manual value
+    // arrived when the feed wrote the value it replaced.
+    CHECK(records.front().observation.value == "0.050000");
+    CHECK(records.front().recorded_at >= before_manual - std::chrono::seconds(2));
+    CHECK(records.front().recorded_at <= after_manual + std::chrono::seconds(2));
+}
+
+TEST_CASE("read_as_of_is_the_observations_of_read_as_of_records", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", t0, 0.0400));
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0410));
+
+    const auto as_of = t0 + std::chrono::minutes(1);
+    const auto records = obs_repo.read_as_of_records(h.context(), s.id, as_of);
+    const auto observations = obs_repo.read_as_of(h.context(), s.id, as_of);
+
+    REQUIRE(observations.size() == records.size());
+    for (std::size_t i = 0; i < records.size(); ++i) {
+        CHECK(observations[i].oresmd_uri == records[i].observation.oresmd_uri);
+        CHECK(observations[i].value == records[i].observation.value);
+        CHECK(observations[i].observation_datetime == records[i].observation.observation_datetime);
+    }
 }

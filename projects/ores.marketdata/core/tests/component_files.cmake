@@ -30,6 +30,7 @@ set(files
     "observation_lineage_eventing_integration_tests.cpp"
     "oresmd_pillar_quote_key_tests.cpp"
     "repository_as_of_rows_tests.cpp"
+    "repository_curve_snapshot_staleness_tests.cpp"
     "repository_entity_repository_tests.cpp"
     "repository_market_fixing_repository_tests.cpp"
     "repository_market_observation_repository_tests.cpp"

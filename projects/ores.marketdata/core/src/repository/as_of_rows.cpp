@@ -18,8 +18,10 @@
  *
  */
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <stdexcept>
 
 namespace ores::marketdata::repository {
@@ -27,6 +29,7 @@ namespace ores::marketdata::repository {
 namespace {
 
 constexpr std::size_t observation_columns = 10;
+constexpr std::size_t valid_from_column = 8;
 
 }
 
@@ -49,6 +52,19 @@ as_of_observation(const as_of_row& row, std::size_t first, std::string_view read
     e.valid_from = row[first + 8].value_or("");
     e.valid_to = row[first + 9].value_or("");
     return e;
+}
+
+std::chrono::system_clock::time_point
+as_of_recorded_at(const as_of_row& row, std::size_t first, std::string_view read) {
+    if (row.size() < first + observation_columns)
+        throw std::runtime_error(std::string(read) + ": a row has " + std::to_string(row.size()) +
+                                 " columns, expected " +
+                                 std::to_string(first + observation_columns));
+
+    const auto& valid_from = row[first + valid_from_column];
+    if (!valid_from)
+        throw std::runtime_error(std::string(read) + ": a row carries no record time");
+    return ores::database::repository::timestamp_to_timepoint(std::string_view{*valid_from});
 }
 
 std::size_t as_of_bucket_ordinal(const as_of_row& row, std::size_t bucket_count) {

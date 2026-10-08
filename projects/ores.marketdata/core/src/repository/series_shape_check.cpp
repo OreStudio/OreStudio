@@ -50,20 +50,18 @@ using declared_shapes = std::map<std::string, std::map<std::string, std::set<std
 /**
  * The declared shapes of the series @p series_ids names, read once.
  *
- * The filtered reads want an axis field per series id, and the whole point of
- * the shape is that it is not known before the read, so the rows are read
- * unfiltered and the series this batch does not name are dropped here. A series
- * with an axis row is present, and so declares a shape; a series with none is
- * absent, and so declares nothing.
+ * Both reads filter by the series, so a batch of points reads the shapes of the
+ * series those points belong to and nothing else. A series with an axis row is
+ * present, and so declares a shape; a series with none is absent, and so
+ * declares nothing.
  */
-declared_shapes read_shapes(ores::database::context ctx, const std::set<std::string>& series_ids) {
+declared_shapes read_shapes(ores::database::context ctx,
+                            const std::vector<std::string>& series_ids) {
     declared_shapes shapes;
-    for (const auto& axis : series_axis_repository{}.read_latest(ctx)) {
-        const auto id = boost::uuids::to_string(axis.series_id);
-        if (series_ids.contains(id))
-            shapes[id][axis.axis_field];
-    }
-    for (const auto& value : series_axis_value_repository{}.read_latest(ctx)) {
+    for (const auto& axis : series_axis_repository{}.read_latest_for_series(ctx, series_ids))
+        shapes[boost::uuids::to_string(axis.series_id)][axis.axis_field];
+    for (const auto& value :
+         series_axis_value_repository{}.read_latest_for_series(ctx, series_ids)) {
         const auto it = shapes.find(boost::uuids::to_string(value.series_id));
         if (it != shapes.end())
             it->second[value.axis_field].insert(value.value);
@@ -78,20 +76,25 @@ void series_shape_check::check(ores::database::context ctx,
     if (observations.empty())
         return;
 
-    std::set<std::string> series_ids;
-    for (const auto& obs : observations)
-        series_ids.insert(boost::uuids::to_string(obs.series_id));
+    const std::set<std::string> distinct{[&] {
+        std::set<std::string> ids;
+        for (const auto& obs : observations)
+            ids.insert(boost::uuids::to_string(obs.series_id));
+        return ids;
+    }()};
+    const std::vector<std::string> series_ids(distinct.begin(), distinct.end());
 
     const auto shapes = read_shapes(ctx, series_ids);
     for (const auto& obs : observations) {
-        const auto shape = shapes.find(boost::uuids::to_string(obs.series_id));
+        const auto id = boost::uuids::to_string(obs.series_id);
+        const auto shape = shapes.find(id);
         if (shape == shapes.end())
             continue;
 
         const auto point = datum::oresmd_uri_codec::read(obs.oresmd_uri);
         if (!point) {
             BOOST_LOG_SEV(shape_check_lg(), warn)
-                << "Series " << boost::uuids::to_string(obs.series_id)
+                << "Series " << id
                 << " has an oresmd URI the codec cannot read, so its point is accepted: "
                 << obs.oresmd_uri;
             continue;
@@ -103,8 +106,8 @@ void series_shape_check::check(ores::database::context ctx,
                 continue;
             const auto text = datum::text_of(point->at(*field));
             if (!values.contains(text))
-                throw std::invalid_argument(boost::uuids::to_string(obs.series_id) + " " +
-                                            axis_field + " " + text);
+                throw std::invalid_argument("the shape of series " + id + " declares no value '" +
+                                            text + "' for axis '" + axis_field + "'");
         }
     }
 }

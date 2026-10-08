@@ -51,9 +51,9 @@ public:
      * @brief Refuses the first observation whose point leaves the shape its
      * series declares.
      *
-     * @throws std::invalid_argument naming the series id, the axis field and
-     * the value the point carries, in that order, when the value is not one
-     * the axis declares.
+     * @throws std::invalid_argument naming the series, the value the point
+     * carries and the axis field that does not declare it, when the value is
+     * not one the axis declares.
      */
     static void check(ores::database::context ctx,
                       const std::vector<domain::market_observation>& observations);

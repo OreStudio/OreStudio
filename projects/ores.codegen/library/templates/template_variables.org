@@ -143,7 +143,6 @@ Top-level boolean sections that enable/disable template blocks.
 | =junction=        | True for junction-table entities.                         |
 | =has_tenant_id=   | Entity has a tenant_id column for multi-tenancy.          |
 | =nullable_tenant_id= | Entity's tenant is nullable; SQL NULL means no tenant. |
-| =has_workspace_id=| Entity has a workspace_id column.                         |
 | =has_batch_read=  | Repository exposes a batch read method.                   |
 | =has_batch_remove=| Repository exposes a batch remove method.                 |
 | =has_uuid_columns=| At least one column has a UUID type.                      |

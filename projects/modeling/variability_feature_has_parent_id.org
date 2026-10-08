@@ -37,7 +37,7 @@ has_parent_id" for the worked =counterparty= example and what the
 generated function does and does not cover.
 
 The feature is authored at the entity root, in the =* Flags= drawer,
-alongside =:has_tenant_id:= and =:has_workspace_id:=. That is where
+alongside =:has_tenant_id:=. That is where
 every reader looks for it.
 
 * Structural consequence

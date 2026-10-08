@@ -50,7 +50,6 @@ _PROFILES_DIR = Path(__file__).resolve().parents[3] / "modeling"
 # it is merged into. "" means the root of the domain_entity dict itself.
 _FEATURE_NAMESPACE: dict[str, str] = {
     "has_tenant_id": "",
-    "has_workspace_id": "",
     "has_parent_id": "",
     "read_only": "",
     "system_scope": "sql",

@@ -63,15 +63,6 @@ struct {{entity_singular}} final {
 {{/nullable_tenant_id}}
 
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-{{/has_workspace_id}}
 {{#primary_key.columns}}
     /**
      * @brief {{{description}}}

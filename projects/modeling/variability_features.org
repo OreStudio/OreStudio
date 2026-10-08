@@ -24,7 +24,6 @@ Variability Model's own bundle tables.
 ** Structural ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]])
 
 - [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]]
-- [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]]
 - [[id:F6ECC504-CBF4-4120-85D4-7B930C7BFBF0][has_parent_id]]
 - [[id:E13F0F34-2407-4C66-92F3-AA09E543377E][read_only]]
 

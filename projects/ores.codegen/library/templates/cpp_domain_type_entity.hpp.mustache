@@ -35,9 +35,6 @@ struct {{entity_singular}}_entity {
     std::string tenant_id;
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    std::string workspace_id;
-{{/has_workspace_id}}
 {{#has_audit_columns}}
     int version = 0;
 {{/has_audit_columns}}

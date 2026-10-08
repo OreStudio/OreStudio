@@ -20,7 +20,7 @@ the payloads reference it instead of restating the entity.
 
 The derivations are the request's own, held in the enriched
 =domain_entity= dict: the prelude's flags (=has_audit_columns=,
-=has_tenant_id=, =has_workspace_id=), the member lists
+=has_tenant_id=), the member lists
 (=primary_key.columns=, =natural_keys=, =columns=) and the audit tail
 (=has_audit_group=). Each field's =ts_type= is stamped by the loader's
 =org_loader._ts_domain_type=. A field with no projection carries no
@@ -104,9 +104,6 @@ export interface {{entity_pascal}} {
     tenant_id: string;
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    workspace_id: string;
-{{/has_workspace_id}}
 {{#primary_key.columns}}
     {{column}}: {{ts_type}};
 {{/primary_key.columns}}

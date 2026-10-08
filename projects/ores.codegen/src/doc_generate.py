@@ -79,7 +79,7 @@ PATTERN_GROUPS = (
 # picks per the task's Plan table, not a final catalogue -- refine as more
 # entities are commissioned through this scaffold.
 ENTITY_ORG_KNOBS = (
-    "has_tenant_id", "has_workspace_id", "has_parent_id",
+    "has_tenant_id", "has_parent_id",
     "has_foreign_keys", "has_insert_trigger_validations", "has_presentation",
     "presentation_has_uuid_primary_key", "presentation_has_change_reason_cache",
     "presentation_has_explorer_api", "presentation_has_pagination", "presentation_has_csv_xml_io",
@@ -96,7 +96,7 @@ ENTITY_ORG_SHAPE_PRESETS = {
     },
     # ores.refdata.book.org: soft-FK scoped under a parent entity.
     "fk-scoped": {
-        "has_tenant_id": True, "has_workspace_id": True,
+        "has_tenant_id": True,
         "has_foreign_keys": True, "has_insert_trigger_validations": True,
         "has_presentation": True, "presentation_has_uuid_primary_key": True,
         "presentation_has_explorer_api": True, "presentation_has_export_macro": True,

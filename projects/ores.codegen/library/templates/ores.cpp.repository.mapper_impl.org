@@ -102,9 +102,6 @@ domain::{{entity_singular}}
     r.{{{scaffold_prefix}}}tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.{{{scaffold_prefix}}}workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-{{/has_workspace_id}}
 {{#primary_key.columns}}
 {{#is_text}}
     r.{{{group_prefix}}}{{column}} = v.{{column}}.value();
@@ -287,9 +284,6 @@ domain::{{entity_singular}}
     r.tenant_id = v.{{{scaffold_prefix}}}tenant_id.to_string();
 {{/nullable_tenant_id}}
 {{/has_tenant_id}}
-{{#has_workspace_id}}
-    r.workspace_id = boost::uuids::to_string(v.{{{scaffold_prefix}}}workspace_id);
-{{/has_workspace_id}}
 {{#has_audit_columns}}
     r.version = v.{{{scaffold_prefix}}}version;
 {{/has_audit_columns}}

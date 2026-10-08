@@ -47,7 +47,6 @@ table can be read directly by whatever eventually resolves
 | Feature | Value |
 |------+-------|
 | [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
-| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
 | [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
 | [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |

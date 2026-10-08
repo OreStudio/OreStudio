@@ -35,10 +35,10 @@ The facet is off unless something turns it on, and three things can:
 
 1. The facet node's own =#+default:=. It is =disabled= today.
 2. A variability profile's =* Physical space= table. A row =| =ores.cpp.shell-command= | true |=
-   turns the facet on for every model bound to that profile. Eight profiles fix
+   turns the facet on for every model bound to that profile. Seven profiles fix
    it: =fk-scoped-child=, =fully-featured-lookup=, =self-referencing-hierarchy=,
-   =simple-lookup=, =tenant-scoped-junction=, =uuid-identified-lookup=,
-   =uuid-surrogate-lookup= and =workspace-scoped-lookup=.
+   =simple-lookup=, =tenant-scoped-junction=, =uuid-identified-lookup= and
+   =uuid-surrogate-lookup=.
 3. The model's own properties drawer, =:ores.cpp.shell-command.enabled: true=.
 
 A model whose profile already fixes the facet states nothing itself. The drawer

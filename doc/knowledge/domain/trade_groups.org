@@ -28,9 +28,10 @@ these apart, the taxonomy they form, and the order to read them in.
 | Structure | A set that is also a product | Its own key | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
 | Link | A relation between trades that holds nothing | None | [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] |
 
-Earlier notes on this cluster used /set/ for the attribute case alone,
-and /group/ for the operation case. This cluster uses *trade set* for
-every case, and *trade group* for the one an operation creates.
+The words are not degrees of one thing. Every collection here is a
+trade set. A trade group is the one an operation creates, a structure
+is the one that is also a product, and a link is not a collection at
+all.
 
 ** The test
 

@@ -38,7 +38,7 @@ inputs were *and at which time point the process read them*, because a
 repeat has to reconstruct the same input set rather than today's.
 
 [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]]
-now states what a trade group is: a trade set created for a run of a
+states what a trade group is: a trade set created for a run of a
 process, with the run supplying the identity, the provenance, the roles
 and the undo. What is missing is the run itself.
 

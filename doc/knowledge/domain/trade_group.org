@@ -27,9 +27,6 @@ An operation. Every other [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][trade set]]
 in the business names it: a book, a netting agreement, a structure. A
 trade group exists because a process ran.
 
-Earlier notes on this cluster called the same concept an /act/. This page
-uses the name the domain uses.
-
 ** The chain
 
 A /process/ is a kind of operation, such as a funding roll or a

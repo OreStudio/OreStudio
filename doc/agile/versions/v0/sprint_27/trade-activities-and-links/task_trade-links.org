@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ Every relation between two trades that a process did not create is a typed, dire
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47247685-9C95-4B7C-86D0-CD596C3A3247][Record trade activities and trade links]] |
-| Now          | The shape of both entities is settled; the models are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. A link holds nothing and needs no run. |
-| Next         | Write trade_link_type and trade_link, seed the types, then regenerate. |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -57,7 +57,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| pgTAP, the trade links, under the test DDL role | 8 of 8 | =pg_prove test/trading_trade_links_test.sql= | b7dba42f59 |
+| pgTAP, every trading file, under the test DDL role | 8 files, 94 tests, pass | =pg_prove test/trading_*_test.sql= | b7dba42f59 |
+| create files unreachable from the schema roots | 0 (was 4) | reachability probe over =\\ir= and =\\i= from the top-level =.sql= files | 7d98c723ea |
+| constraints on =ores_trading_trade_links_tbl= | 4: both ends, the activity, and the anchor party pin | =\\d= | 017bb3dc48 |
+| link type rows the populate writes | 12 | =select count(*) from ores_trading_trade_link_types_tbl= | ae49575dda |
 
 * Notes
 
@@ -85,3 +89,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=trade_link= joins two trades under a type from =trade_link_type=, with
+both ends enforced, the type validated against the seeded catalogue, and
+the activity that made it recorded. The link holds no amount, no state and
+no cash flow, and the tree still carries no successor trade id.
+
+Three defects surfaced only when the database was rebuilt, and none of
+them was visible from the C++. The two link tables had generated create
+files that no aggregator listed, so the tables had never existed. The link
+copied its party from the from trade and pinned it to nothing, so the copy
+could drift from its source. And the link had no party isolation policy,
+so a session restricted to a set of parties read every link in its tenant.
+All three are fixed here.
+
+The tables are wired into the schema, the party is pinned to the from
+trade's key, the party isolation policy matches the sibling trade tables,
+and a link may not join a trade to itself.

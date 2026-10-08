@@ -68,6 +68,11 @@
 \ir ./trading_structure_template_roles_create.sql
 \ir ./trading_structure_template_roles_notify_trigger_create.sql
 
+-- Structures (depend on the kind and template catalogues above, and on
+-- themselves for the parent)
+\ir ./trading_structures_create.sql
+\ir ./trading_structures_notify_trigger_create.sql
+
 -- Closed-set reference data. Each set is the ORE simple type of the same
 -- name, so the spellings round-trip through the ORE XML unchanged. The
 -- instrument tables reference them, so they load before the instruments.

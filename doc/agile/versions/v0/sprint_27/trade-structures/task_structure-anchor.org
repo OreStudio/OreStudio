@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-structures:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/structure-anchor
+#+pr: 2826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-05
 #+updated: 2026-10-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A structure is an immutable row with its own identity, parties, kind and templat
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| static checks on this branch | 6 of 6 pass | =compass check --only handler-permissions --only create-reachability --only model-drift --only cmake-sources --only sql-hygiene --only populate-refs= | feature/structure-anchor |
+| pgTAP cases written for the structure | 6, never executed | =pg_prove test/trading_structures_test.sql= | feature/structure-anchor |
 
 * Notes
 
@@ -75,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2826][#2826]] | [trading] Add the immutable structure |
 
 * Review
 
@@ -84,3 +85,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=structure= is the immutable anchor of a composed deal: party, counterparty,
+kind, an optional template and an optional parent, with no audit tail. The
+parent is a database foreign key to the table itself, because the parent is
+immutable too, and the insert trigger refuses a leg of a leg and a structure
+that is its own parent — one level of nesting, no more.
+
+Six pgTAP cases cover that rule and the two catalogue references.
+
+No build, no ctest and no database run happened on this branch. Validation was
+static only, by agreement this session: the hourly build and test on main is
+swift curie's. The six pgTAP cases have never been executed. The nesting rule
+in particular is proven only by reading the generated trigger, not by running
+it, and it is the most likely of this task's claims to be wrong.

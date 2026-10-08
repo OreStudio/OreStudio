@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 09D7A25C-D2CB-4B60-AF3B-D7E0FA72D053
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.structure
+#+description: Codegen entity model for the trading =structure= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The immutable identity of a deal assembled from several legs.
+#+entity_singular: structure
+#+entity_plural: structures
+#+entity_title: Structure
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+The immutable identity of a deal assembled from several trades. It holds
+what never changes for the deal's life: the party, the counterparty, the
+kind of binding, the template it was shaped by, and its parent when it is
+itself a leg of a larger deal.
+
+It is the anchor of the composition ladder. The legs are not owned
+children: a trade points at the structure that holds it, so the same trade
+can be unlinked from one deal and linked to another without being
+rewritten. The economics live on the legs, and the structure's internal
+version is read from them rather than stored beside them.
+
+A structure nests one level at most, because a deal inside a deal inside a
+deal has no confirmation to hang on. The insert trigger enforces it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:profile:       read-only-current-state
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The structure id: the firm's own identifier of the deal.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The firm's legal entity that is party to the deal. Every leg shares it,
+and the pin on the leg is what keeps the sharing true.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The counterparty the deal is struck with. Every leg shares it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The rung of the composition ladder the deal sits on, which is what decides
+whether it confirms as one document or trade by trade.
+
+#+begin_src cpp :name generator
+std::string("Strategy")
+#+end_src
+
+** template_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The template that shaped the deal, when one did. A package has none,
+because it binds its legs to nothing and no template describes it.
+
+#+begin_src cpp :name generator
+std::string("Straddle")
+#+end_src
+
+** parent_structure_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: true
+:END:
+
+The structure this one is a leg of, when the deal nests. Null for a deal
+the customer sees on its own.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_structures_tbl
+:immutable:        true
+:no_audit_columns: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_structure_fn;
+#+end_src
+* Insert trigger
+
+#+begin_src sql :name one_level_of_nesting :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- Structures nest one level at most. A structure that has a parent is a
+    -- leg of a larger deal, and a leg carries no legs of its own: the
+    -- confirmation hangs on the deal the customer sees, and there is no
+    -- second deal above it to confirm.
+    if NEW.parent_structure_id is not null and exists (
+        select 1 from ores_trading_structures_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_structure_id
+          and parent_structure_id is not null
+    ) then
+        raise exception 'Invalid parent_structure_id: %. The parent is itself a leg, and structures nest one level at most.',
+            NEW.parent_structure_id
+            using errcode = '23514';
+    end if;
+
+    -- A structure is not its own parent.
+    if NEW.parent_structure_id = NEW.id then
+        raise exception 'Invalid parent_structure_id: %. A structure cannot be its own parent.',
+            NEW.parent_structure_id
+            using errcode = '23514';
+    end if;
+#+end_src
+
+* Foreign keys
+
+** kind
+:PROPERTIES:
+:table:             ores_trading_structure_kinds_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid kind: %. No active structure kind found with this code.
+:END:
+
+The kind catalogue is system reference data.
+
+** template_code
+:PROPERTIES:
+:table:             ores_trading_structure_templates_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid template_code: %. No active structure template found with this code.
+:END:
+
+The template catalogue is system reference data. A package rests on no
+template, so the column is nullable.
+
+** parent_structure_id
+:PROPERTIES:
+:table:    ores_trading_structures_tbl
+:enforce:  true
+:nullable: true
+:END:
+
+A database foreign key: the parent is immutable, so the key can be
+enforced rather than checked.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: structure
+:entity_plural_short:   structures
+:entity_singular_words: structure
+:entity_plural_words:   structures
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: st
+:END:
+
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| id                  | Structure Id |
+| kind                | Kind         |
+| template_code       | Template     |
+| parent_structure_id | Parent       |
+| party_id            | Party        |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the ladder, the topology and the versioning rules.
+- [[id:9455D6ED-4935-4DAC-AAA9-C26C49E031B1][ores.trading.structure_kind]] — the rung this row states.
+- [[id:10A8794B-2EAF-4435-9E59-A579E8E4C680][ores.trading.structure_template]] — the shape the deal was built from.

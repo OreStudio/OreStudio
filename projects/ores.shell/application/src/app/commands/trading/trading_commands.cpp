@@ -72,6 +72,7 @@
 #include "ores.shell/app/commands/trading/rpa_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/scripted_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/settlement_type_commands.hpp"
+#include "ores.shell/app/commands/trading/structure_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_kind_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_template_commands.hpp"
 #include "ores.shell/app/commands/trading/structure_template_role_commands.hpp"
@@ -143,6 +144,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     rpa_instrument_commands::register_commands(root_menu, session);
     scripted_instrument_commands::register_commands(root_menu, session);
     settlement_type_commands::register_commands(root_menu, session);
+    structure_commands::register_commands(root_menu, session);
     structure_kind_commands::register_commands(root_menu, session);
     structure_template_commands::register_commands(root_menu, session);
     structure_template_role_commands::register_commands(root_menu, session);

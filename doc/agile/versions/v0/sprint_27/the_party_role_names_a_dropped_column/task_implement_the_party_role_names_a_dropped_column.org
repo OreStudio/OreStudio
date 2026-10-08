@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 6168D710-FBB6-468C-9401-DA2E004D42D5
+:END:
+#+title: Task: Implement Hotfix: the party role names a dropped column
+#+description: Initial task for: Hotfix: the party role names a dropped column
+#+type: task
+#+level: s1
+#+filetags: :the_party_role_names_a_dropped_column:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-party-role-names-a-dropped-column
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make ores.trading.api compile and let the party roles table be created.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] |
+| Now          | The model is corrected, the entity is regenerated, and the gate is green. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The build compiles past trade_party_role_table.cpp.
+- The party roles create script names no column the table does not have.
+
+* Plan
+
+Commit =178610c4e8= removed the =party_id= and =counterparty_id= columns from the
+=trade_party_role= model and regenerated. Two free-text sections still name
+=counterparty_id=: the C++ =** Table display= table and the SQL =** Indexes=
+table. The generator emits both verbatim, so the model drift gate stays green
+and only the compiler and the database see the disagreement.
+
+Remove the two rows and regenerate the entity. The generated C++ table writer
+loses the column, and the create script loses the index. The index is not merely
+redundant: =create index= on a column the table does not have fails, so
+=ores_trading_party_roles_tbl= could not be created either.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stale references in the model | 2, =** Table display= and =** Indexes= | =grep -n counterparty_id= on the model | aaa903ff2d |
+| Generated files corrected | 2, the C++ table writer and the create script | =git diff --stat= | aaa903ff2d |
+| Generated table writers scanned | 377, none other affected | =scan_generated_column_refs.py= | aaa903ff2d |
+
+* Notes
+
+The two rows survived because =* Columns= is parsed and validated while
+=** Table display= and =** Indexes= are free text. Only a compile or a database
+recreate catches the disagreement.
+
+No other entity has this defect. A scan of all 377 generated table writers,
+against the members of the class each one streams, and of every generated
+create script, against the columns of the table it creates, reports nothing
+else. That scan lives at =build/evidence/scan_generated_column_refs.py= as
+scratch; it caught both of these on the buggy revision, and it is a candidate
+for a permanent gate.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

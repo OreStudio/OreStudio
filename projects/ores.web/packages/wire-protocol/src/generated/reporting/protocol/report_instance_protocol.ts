@@ -41,6 +41,7 @@ export interface ReportInstanceWrite {
     fsm_state_id: string | null;
     trigger_run_id: number;
     output_message: string;
+    output_storage_key: string;
     started_at: string | null;
     completed_at: string | null;
 }

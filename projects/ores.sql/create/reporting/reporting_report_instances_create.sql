@@ -46,6 +46,7 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "fsm_state_id" uuid null,
     "trigger_run_id" bigint not null,
     "output_message" text not null,
+    "output_storage_key" text null,
     "started_at" timestamp with time zone null,
     "completed_at" timestamp with time zone null,
     "modified_by" text not null,

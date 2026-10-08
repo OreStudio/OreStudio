@@ -107,6 +107,12 @@ struct report_instance final {
     std::string output_message;
 
     /**
+     * @brief Storage key of the run's output archive, as the compute result named it. Set only once
+     * the run's results have been retrieved.
+     */
+    std::string output_storage_key;
+
+    /**
      * @brief When execution began. NULL if cancelled before starting.
      */
     std::optional<std::chrono::system_clock::time_point> started_at;

@@ -142,7 +142,7 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <name> <description> <definition_id> <run_grant_id> <fsm_state_id> <trigger_run_id> "
-        "<output_message> <started_at> <completed_at> <reason> <commentary>");
+        "<output_message> <output_storage_key> <started_at> <completed_at> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,8 +150,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <name> <description> <definition_id> <run_grant_id> <fsm_state_id> "
-        "<trigger_run_id> <output_message> <started_at> <completed_at> <reason> <commentary> "
-        "[--version <n>]");
+        "<trigger_run_id> <output_message> <output_storage_key> <started_at> <completed_at> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,8 +159,8 @@ void report_instance_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <name> <description> <definition_id> <run_grant_id> "
-        "<fsm_state_id> <trigger_run_id> <output_message> <started_at> <completed_at> <reason> "
-        "<commentary>");
+        "<fsm_state_id> <trigger_run_id> <output_message> <output_storage_key> <started_at> "
+        "<completed_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -355,8 +355,8 @@ void report_instance_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -368,6 +368,8 @@ void report_instance_commands::process_add(std::ostream& out,
         read_token(req.change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
         read_token(req.change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
         read_token(req.change.write.output_message, parsed->positionals[next++], "output_message");
+        read_token(
+            req.change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");
         read_token(req.change.write.started_at, parsed->positionals[next++], "started_at");
         read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         req.intent.reason_code = parsed->positionals[next++];
@@ -412,8 +414,8 @@ void report_instance_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -425,6 +427,8 @@ void report_instance_commands::process_set(std::ostream& out,
         read_token(req.change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
         read_token(req.change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
         read_token(req.change.write.output_message, parsed->positionals[next++], "output_message");
+        read_token(
+            req.change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");
         read_token(req.change.write.started_at, parsed->positionals[next++], "started_at");
         read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         req.intent.reason_code = parsed->positionals[next++];
@@ -481,8 +485,8 @@ void report_instance_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 11 + 2) {
+            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -496,6 +500,8 @@ void report_instance_commands::process_put_many(std::ostream& out,
             read_token(change.write.fsm_state_id, parsed->positionals[next++], "fsm_state_id");
             read_token(change.write.trigger_run_id, parsed->positionals[next++], "trigger_run_id");
             read_token(change.write.output_message, parsed->positionals[next++], "output_message");
+            read_token(
+                change.write.output_storage_key, parsed->positionals[next++], "output_storage_key");
             read_token(change.write.started_at, parsed->positionals[next++], "started_at");
             read_token(change.write.completed_at, parsed->positionals[next++], "completed_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

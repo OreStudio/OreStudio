@@ -150,6 +150,20 @@ Execution log or error message.
 std::string()
 #+end_src
 
+** output_storage_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Storage key of the run's output archive, as the compute result named it. Set
+only once the run's results have been retrieved.
+
+#+begin_src cpp :name generator
+std::string{}
+#+end_src
+
 ** started_at
 :PROPERTIES:
 :type:     timestamp with time zone

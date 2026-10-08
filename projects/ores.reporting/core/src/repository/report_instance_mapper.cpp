@@ -62,6 +62,7 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
                          std::nullopt;
     r.trigger_run_id = v.trigger_run_id;
     r.output_message = v.output_message;
+    r.output_storage_key = v.output_storage_key.value_or("");
     r.started_at = v.started_at.has_value() ? std::optional(timestamp_to_timepoint(*v.started_at)) :
                                               std::nullopt;
     r.completed_at = v.completed_at.has_value() ?
@@ -98,6 +99,8 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
                          std::nullopt;
     r.trigger_run_id = v.trigger_run_id;
     r.output_message = v.output_message;
+    r.output_storage_key =
+        v.output_storage_key.empty() ? std::nullopt : std::optional(v.output_storage_key);
     r.started_at = v.started_at.has_value() ?
                        std::optional(ores::platform::time::datetime::to_db_string(*v.started_at)) :
                        std::nullopt;

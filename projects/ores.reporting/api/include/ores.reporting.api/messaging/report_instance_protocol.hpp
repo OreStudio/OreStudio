@@ -48,6 +48,7 @@ struct report_instance_write {
     std::optional<boost::uuids::uuid> fsm_state_id;
     std::int64_t trigger_run_id;
     std::string output_message;
+    std::string output_storage_key;
     std::optional<std::chrono::system_clock::time_point> started_at;
     std::optional<std::chrono::system_clock::time_point> completed_at;
 };

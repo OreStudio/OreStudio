@@ -50,6 +50,7 @@ render_report_instance_fields(const domain::report_instance& v) {
         {.name = "Fsm State ID",
          .value = v.fsm_state_id ? boost::uuids::to_string(*v.fsm_state_id) : std::string{}});
     fields.push_back({.name = "Output Message", .value = v.output_message});
+    fields.push_back({.name = "Output Storage Key", .value = v.output_storage_key});
     fields.push_back({.name = "Started At",
                       .value = v.started_at ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.started_at) :

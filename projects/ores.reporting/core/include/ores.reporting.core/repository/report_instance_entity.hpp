@@ -55,6 +55,7 @@ struct report_instance_entity {
     std::optional<std::string> fsm_state_id;
     std::int64_t trigger_run_id;
     std::string output_message;
+    std::optional<std::string> output_storage_key;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
     std::string modified_by;

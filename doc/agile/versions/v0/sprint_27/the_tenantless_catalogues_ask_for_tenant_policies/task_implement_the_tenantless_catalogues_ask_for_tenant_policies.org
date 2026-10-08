@@ -8,7 +8,7 @@
 #+filetags: :the_tenantless_catalogues_ask_for_tenant_policies:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-tenantless-catalogues-ask-for-tenant-policies
-#+pr:
+#+pr: 2889
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2889][#2889]] | [codegen] Refuse an isolation policy the entity cannot support |
 
 * Review
 

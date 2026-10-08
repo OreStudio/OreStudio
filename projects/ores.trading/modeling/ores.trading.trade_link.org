@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 05BD64BB-94D8-4007-99D5-F0CED9DB6D20
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.trading.trade_link
+#+description: Codegen entity model for the trading =trade_link= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: A typed, directed relation between two trades (e.g. a close-out, a roll).
+#+entity_singular: trade_link
+#+entity_plural: trade_links
+#+entity_title: Trade Link
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+One relation between two trades, with a direction, a type and nothing
+else. A close-out answers a live trade, a roll replaces one, an exercise
+produces one. The link holds no cash flow, no amount and no state: the
+[[id:20D446E8-EA13-47AA-BE0C-FDDD7CF428F3][trade id type]] pattern of a
+typed reference applies here as well, with the type carrying the role of
+each end.
+
+The row is keyed by its two ends and its type, and the type is a
+[[id:8C8D3355-1797-4D8E-A47D-07D4402B2794][trade link type]] code. It
+records the trade activity that made it, because a link is created by an
+amendment like anything else, and it copies the party of the from end so
+row level security can see it on every row.
+
+A process that created a link records the run on the trade group, not
+here: a link holds nothing and stands alone.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** from_trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade the link starts at: the original a close-out ends, the
+transferred position a novation moves, the rolled trade a roll replaces.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** to_trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The trade the link ends at: the closing trade, the new counterparty's
+trade, the replacement a roll books.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** link_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The reason the two trades are joined, from the trade link types.
+
+#+begin_src cpp :name generator
+std::string("Roll")
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that made the link.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The party of the from end, copied so row level security sees it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_links_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_trading_validate_trade_link_fn;
+#+end_src
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: link
+:entity_plural_short:   links
+:entity_singular_words: trade link
+:entity_plural_words:   trade links
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tl
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| from_trade_id | From Trade |
+| to_trade_id | To Trade    |
+| link_type   | Link Type   |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

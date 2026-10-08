@@ -311,7 +311,8 @@ const fr: SourceCatalogue = {
             give: 'Accorder {role}',
             refuse: 'Refuser',
             decided: 'Décidée',
-            notFound: "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
+            notFound:
+                "Cette demande n'est pas ici. Elle a peut-être été retirée, ou elle n'est pas à vous.",
         },
     },
 
@@ -323,7 +324,7 @@ const fr: SourceCatalogue = {
         'Votre demande de {kind} a expiré avant que quiconque y réponde. Demandez-la de nouveau si vous en avez encore besoin.',
 
     'notification.inbox.approval_expiring':
-        'Une demande de {kind} est due avant le {deadline} et personne n\'y a répondu.',
+        "Une demande de {kind} est due avant le {deadline} et personne n'y a répondu.",
 
     signIns: {
         title: 'Connexions',
@@ -1157,8 +1158,7 @@ const fr: SourceCatalogue = {
                 showing: 'Affichage de {from}–{to} sur {total} entrées',
                 previous: 'Précédent',
                 next: 'Suivant',
-                paging:
-                    'La lecture répond une page à la fois ; le total est tout ce que le filtre correspond.',
+                paging: 'La lecture répond une page à la fois ; le total est tout ce que le filtre correspond.',
                 nothingMatches: 'Aucune correspondance',
                 empty: 'Aucune entrée ne correspond au filtre dans cette plage. Élargissez la plage ou retirez un filtre.',
                 emptyHint:

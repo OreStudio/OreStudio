@@ -1005,7 +1005,7 @@ function orderStory(events: readonly InboxStoryEvent[]): InboxStoryEvent[] {
  * Every row any component wrote for the request, in one stream: the request's
  * own versions, the answers given on it, the roles it asked for and what became
  * of them, and the notices this reader was given. A request the caller may not
- * read answers null, which is what opening it answers too.
+ * read answers with no events, which is what opening it answers too.
  *
  * The parts are not equally visible, and that is the design rather than an
  * accident of the join. The request and the roles it asks for are the asker's
@@ -1016,9 +1016,9 @@ function orderStory(events: readonly InboxStoryEvent[]): InboxStoryEvent[] {
 export async function readRequestStory(
     caller: AuthenticatedCaller,
     requestId: string,
-): Promise<InboxRequestStory | null> {
+): Promise<InboxRequestStory> {
     const history = await readRequestHistory(caller, requestId);
-    if (history === undefined) return null;
+    if (history === undefined) return { requestId, events: [] };
 
     const [roles, decisions, notices] = await Promise.all([
         readRequestedRoles(caller, requestId),

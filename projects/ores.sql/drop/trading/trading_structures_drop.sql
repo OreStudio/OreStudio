@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists structures_tbl_party_isolation_policy on "ores_trading_structures_tbl";
 drop policy if exists structures_tbl_tenant_isolation_policy on "ores_trading_structures_tbl";
 drop rule if exists ores_trading_structures_delete_rule on "ores_trading_structures_tbl";
 drop trigger if exists ores_trading_structures_insert_trg on "ores_trading_structures_tbl";

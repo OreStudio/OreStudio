@@ -155,7 +155,9 @@ function Request({
             {/* The identifier is here for the person who has to quote it, and
                 nowhere else on the page: what the request is about is the
                 title, and the identifier is not what anybody reads it for. */}
-            <p className="-mt-4 text-xs text-ink-faint">{t('inbox.request.id', { id: request.id })}</p>
+            <p className="-mt-4 text-xs text-ink-faint">
+                {t('inbox.request.id', { id: request.id })}
+            </p>
 
             {decide.isError && <Notice tone="error">{decide.error.message}</Notice>}
 

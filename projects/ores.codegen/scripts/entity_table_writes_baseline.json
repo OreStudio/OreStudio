@@ -668,6 +668,12 @@
     },
     {
       "kind": "sql_function",
+      "name": "ores_reporting_seed_report_configurations_fn",
+      "file": "projects/ores.sql/create/reporting/reporting_seed_report_configurations_create.sql",
+      "reason": "seeds the risk report config and its root portfolio scope for every definition a party carries, one idempotent pass the per-entity repository cannot express"
+    },
+    {
+      "kind": "sql_function",
       "name": "ores_synthetic_publish_theme_from_dq_fn",
       "file": "projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql",
       "reason": "predates the check"

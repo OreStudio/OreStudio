@@ -134,8 +134,7 @@ function previousOf(
         .slice(index + 1)
         .find(
             (candidate) =>
-                candidate.entityType === event.entityType &&
-                candidate.entityId === event.entityId,
+                candidate.entityType === event.entityType && candidate.entityId === event.entityId,
         );
 }
 
@@ -164,7 +163,8 @@ function StoryRow({
     const { t, language } = useTranslation();
     const changed = event.fields.filter(
         (field) =>
-            (before?.fields.find((older) => older.name === field.name)?.value ?? '') !== field.value,
+            (before?.fields.find((older) => older.name === field.name)?.value ?? '') !==
+            field.value,
     );
 
     return (

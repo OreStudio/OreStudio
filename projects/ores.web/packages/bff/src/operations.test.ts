@@ -181,9 +181,9 @@ function buildTestServer(
             calls.push({ subject: 'compute.v1.hosts.list', body: {} });
             return hosts;
         },
-        async natsServerSamples(input: Record<string, unknown>): Promise<
-            readonly Record<string, unknown>[]
-        > {
+        async natsServerSamples(
+            input: Record<string, unknown>,
+        ): Promise<readonly Record<string, unknown>[]> {
             calls.push({ subject: 'telemetry.v1.nats_server_samples.list', body: input });
             return serverSamples;
         },
@@ -193,10 +193,7 @@ function buildTestServer(
             calls.push({ subject: 'telemetry.v1.nats_stream_samples.list', body: input });
             return streamSamples.filter((row) => row['stream_name'] === input.streamName);
         },
-        async listLogs(input: {
-            readonly offset?: number;
-            readonly limit?: number;
-        }): Promise<{
+        async listLogs(input: { readonly offset?: number; readonly limit?: number }): Promise<{
             readonly entries: readonly Record<string, unknown>[];
             readonly totalCount: number;
         }> {

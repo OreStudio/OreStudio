@@ -578,6 +578,7 @@ schema row does not declare it.
 :current_state:         true
 :no_audit_columns:      true
 :rls_tenant_isolation:  true
+:rls_party_isolation:   true
 :END:
 
 The table is current state and carries no validity window. The series row is

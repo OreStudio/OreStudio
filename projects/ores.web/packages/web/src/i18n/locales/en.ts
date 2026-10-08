@@ -313,7 +313,8 @@ export const en: SourceCatalogue = {
             give: 'Give {role}',
             refuse: 'Refuse',
             decided: 'Decided',
-            notFound: 'This request is not here. It may have been taken away, or it may not be yours to see.',
+            notFound:
+                'This request is not here. It may have been taken away, or it may not be yours to see.',
         },
     },
 
@@ -1146,8 +1147,7 @@ export const en: SourceCatalogue = {
                 showing: 'Showing {from}–{to} of {total} entries',
                 previous: 'Previous',
                 next: 'Next',
-                paging:
-                    'The read answers one page at a time; the total is everything the filter matches.',
+                paging: 'The read answers one page at a time; the total is everything the filter matches.',
                 nothingMatches: 'Nothing matches',
                 empty: 'No entry matches the filter in this range. Widen the range or drop a filter.',
                 emptyHint:

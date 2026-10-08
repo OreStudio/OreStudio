@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 24C376D8-535D-4FB2-9A4E-703AFE4031B1
+:END:
+#+title: Task: Implement Hotfix: the series shape writer cannot name its context
+#+description: Initial task for: Hotfix: the series shape writer cannot name its context
+#+type: task
+#+level: s1
+#+filetags: :the_series_shape_writer_cannot_name_its_context:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-series-shape-writer-cannot-name-its-context
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E26E3F25-0290-4247-BA89-471519E427B8][Hotfix: the series shape writer cannot name its context]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let ores.marketdata.service compile again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E26E3F25-0290-4247-BA89-471519E427B8][Hotfix: the series shape writer cannot name its context]] |
+| Now          | The definition spells the type its declaration spells. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- The definition spells the parameter type the way its own declaration does.
+
+* Plan
+
+=bdb7215934= wrote the class' interface and its definition differently in one
+commit. The header declares =declare(ores::database::context ctx, ...)=; the
+definition writes =declare(context ctx, ...)=. The definition sits in
+=ores::marketdata::service::app=, where no =context= is visible, so clang
+refuses it and suggests the qualified name.
+
+The sibling class in the same directory, =curve_republish_service=, declares a
+member alias =using context = ores::database::context;= and both its header and
+its definition use it. That is why its identical-looking definitions compile.
+=series_shape_writer= spells the type out instead, so its definition has to
+spell it out too. Qualify the one token rather than add the alias: the header is
+the interface and already states the type in full.
+
+Nothing else in the file is out of scope. Every other name it uses resolves from
+the includes or from its own anonymous namespace, and clang reports one error
+for the translation unit.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Errors clang reported for the translation unit | 1 | the build log | 477cee8379 |
+| Unqualified =context= in the definition | 1 before, 0 after | =grep -n context= | 477cee8379 |
+| Hand-written C++ in the commit | 3 files, and the other two are sound | =git show --stat= | 477cee8379 |
+
+* Notes
+
+The rest of =bdb7215934= is codegen output for two new entities, =series_axis=
+and =series_axis_value=, which the drift gate reports in step with their models.
+The commit's other hand-written change is four lines in
+=curve_republish_service.cpp= that call =declare= and pass their own =ctx=; that
+file already has the alias, so it compiles.
+
+A repository-wide scan for a definition that names a bare =context= is not
+usable as a gate: most of the matches are inside =ores.database= itself, where
+=context= is the class, or in a file that carries a =using=. What distinguishes
+this one is that its own header spells the type in full while its definition
+does not.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: E26E3F25-0290-4247-BA89-471519E427B8
+:END:
+#+title: Story: Hotfix: the series shape writer cannot name its context
+#+description: bdb7215934 declared series_shape_writer::declare with a fully qualified ores::database::context in the header and an unqualified context in the definition, so ores.marketdata.service does not compile and the build stops at 87%.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:marketdata:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let ores.marketdata.service compile again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The definition spells the type the way its own declaration does. |
+| Waiting on    | The hourly validation build, which compiles =main=. |
+| Next          | Open the PR, merge, and close once the build is green. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The definition spells the parameter type the way its own declaration does.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E645F454-62C6-46A7-B3D9-D3131F4BA71D][Scaffold story: Hotfix: the series shape writer cannot name its context]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:24C376D8-535D-4FB2-9A4E-703AFE4031B1][Implement Hotfix: the series shape writer cannot name its context]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the series shape writer cannot name its context |
+
+* Decisions
+
+- *Qualify the definition; do not add the alias.* The sibling class in the
+  directory declares =using context = ores::database::context;= and uses it in
+  both places, which is why its definitions compile. Adding the alias here would
+  work too, but the header is the interface and it already states the type in
+  full; the one-token qualification makes the definition agree with it.
+- *Leave the rest of the commit alone.* Its other hand-written change is four
+  lines in =curve_republish_service.cpp=, whose class already has the alias.
+  Every other file it touched is codegen output, which the drift gate reports in
+  step with its models.
+
+* Out of scope
+
+- A gate for this. A bare =context= in a definition is correct inside
+  =ores.database= and in any file that carries a =using=, so a scan cannot tell
+  the defect from the convention without knowing the scope of every file.
+
+* See also
+
+- [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] — the
+  work the shape tables belong to.

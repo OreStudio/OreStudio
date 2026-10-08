@@ -2,7 +2,7 @@
 :ID: 5CF75315-C9BF-4114-8BF1-A6AB68FF573B
 :END:
 #+title: Task: Export the trades as the ORE portfolio the engine reads
-#+description: The run document names a portfolio file. The gather step stores rfl::msgpack::write of trade_export_item rows instead, which ORE cannot read, so the engine loads its market data and then stops at 'Pricing: Build Portfolio' with 'Failed to run analytics PRICING,XVA'. No trades-to-ORE-portfolio exporter exists: save_data(const portfolio&) and the trade mappers walk the import direction only. Build the export, store it as the portfolio body, and place it at the path the run document names, as the market data and the fixings now are.
+#+description: The run document names a portfolio file. The packaging step writes the gathered trades blob at a hardcoded trades.msgpack instead, which ORE cannot read, so the engine loads its market data and then stops at 'Pricing: Build Portfolio' with 'Failed to run analytics PRICING,XVA'. The exporter already exists as ores.ore.xml::exporter::export_portfolio, which turns the stored export response -- its trades and their instrument batch -- into the ORE portfolio through save_data(const portfolio&). It was written for the roundtrip harness and the shell's export command, and nothing in the run path called it. The work is therefore small: decode the blob, export it, and place the result at the path the run document names, as the market data and the fixings already are.
 #+type: task
 #+level: s1
 #+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The packaging step writes the run's gathered trades at the path the run
+document names for the portfolio, so the engine reads a portfolio rather than
+an internal encoding, and proceeds past "Build Portfolio".
 
 * Status
 
@@ -28,10 +30,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Now          | Implemented on =feature/export-the-trades-as-the-ore-portfolio-the-engine-reads=. |
+| Waiting on   | The hourly validation build, then a run, to confirm the engine prices. |
+| Next         | Validate, then close this task and the portfolio half of [[id:08E748D6-9C5C-4073-826A-6B95D250138E][Match the run configuration to the inputs the run produces]]. |
+| Last touched | 2026-10-08                               |
 
 * Relationship to the redesign
 
@@ -61,42 +63,47 @@ carried.
 
 * Plan
 
-The chain today, and where it breaks. =gather_trades= asks
-=trading.v1.ops.export_trades_to_storage= for the run's trades, which writes a
-gzipped msgpack of =trade_export_item= rows. =prepare_ore_package= then downloads
-that blob and writes it at a hardcoded =trades.msgpack=, so nothing ever puts a
-portfolio where the run document says one is.
+The chain, and where it broke. =gather_trades= asks
+=trading.v1.ops.export_trades_to_storage= for the run's trades, which writes the
+=export_portfolio_response= -- the trades and their instrument batch -- as
+msgpack. =prepare_ore_package= then downloaded that blob and wrote it at a
+hardcoded =trades.msgpack=, so nothing ever put a portfolio where the run
+document says one is.
 
-Two halves, and only the second is small.
+*Correction to the first reading.* The export walk already exists. It is
+=ores::ore::xml::exporter::export_portfolio= in
+=projects/ores.ore/core/src/xml/exporter.cpp=, with the per-instrument reverse
+mappers beside the forward ones in =ores.ore.core/domain/= (=reverse_swap=,
+=reverse_bond=, and so on). It reads the response's trades and instrument batch,
+rebuilds each trade's instrument from the batch by trade id, reverse-maps it,
+and renders the result with =save_data(const portfolio&)=. It was written for
+the roundtrip harness and has a production caller in the shell's portfolio
+export, so the gap was one unconnected call, not a missing walk.
 
-*1. Placement.* =run_store.hpp= already declares =run_data_files::portfolio=, the
-path the run document names, and =report_package_handler.cpp= already writes the
-market data and the fixings at their declared paths. The trade branch is the odd
-one out: it writes =trades.msgpack=. It changes to write the portfolio body at
-=places.portfolio=, and to fail loudly when the run document names no portfolio,
-as it already does for the fixings.
+So the work was one half, not two.
 
-*2. The export mapper.* The gathered rows are =domain::trade_export_item=, which
-carries instruments as an opaque payload with no shape a mapper can walk. So the
-export walk is:
+*Placement.* =run_store.hpp= declares =run_data_files::portfolio=, the path the
+run document names, and =report_package_handler.cpp= already writes the market
+data and the fixings at their declared paths. The trade branch was the odd one
+out. It now decodes the gathered blob, calls =export_portfolio=, writes the
+result at =places.portfolio=, and refuses the run when the run document names
+no portfolio, because ORE requires that name and a package without it cannot
+price.
 
-1. read the gathered rows and rebuild the types the import side's =trade_mapper=
-   and instrument mappers take as input;
-2. map them, producing an =ores::ore::domain::portfolio=;
-3. render it with =save_data(const portfolio&)= from =domain.hpp= -- the same
-   renderer the importer's inverse uses, so the XML matches what ORE expects by
-   construction rather than by our transcription of the schema;
-4. upload the rendered body as the run's portfolio input.
+Where the export lives is right as it stands: =ores.ore= owns the ORE schema,
+the XML facet owns the rendering, and =ores.ore.core/domain/= owns the
+per-instrument walks. The reporting chain asks for a portfolio; it does not
+know how one is built.
 
-Where it lives: =ores.ore= owns the ORE schema and its mappers, so the export
-walk belongs beside =trade_mapper= in =ores.ore.core/domain/=, not in the
-reporting handler that calls it. The reporting chain asks for the portfolio; it
-does not know how one is built.
-
-*Risk.* The redesign (=18FFC5F4=) needs the same reverse walk against a trade
-set's archive instead of the run's one blob. Building it once, as a function of
-the rows rather than of where they came from, is what lets both callers share it
--- and is the reason this task does not special-case the current blob's shape.
+*Risk.* The redesign ([[id:18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82][Map a book's archive into the ORE portfolio]])
+needs the same reverse walk against a trade set's archive instead of the run's
+one blob. =export_portfolio= is already a function of the rows rather than of
+where they came from, so both callers share it. The shape of the stored blob is
+the remaining coupling: it is the export response, and
+[[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]] changed it while this task was
+open. The first draft decoded a bare vector of =trade_export_item= and stopped
+compiling after that change landed; the rebase moved the decode onto the
+response. A future change to the stored shape reaches this call site.
 
 * Measurements
 
@@ -110,7 +117,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The package's hardcoded trades path | 1 before, 0 after | =git grep -n 'stage_dir / "trades.msgpack"' origin/main -- '*.cpp'= | 5830bdcf28 |
+| Callers of =exporter::export_portfolio= outside its definition and the core tests | 2 before, 3 after | =git grep -n "exporter::export_portfolio(" origin/main -- projects= | 5830bdcf28 |
+| =declared_data_files= assertions in =ores.ore.core.tests= | 0 before, 4 calls in 2 cases after | =grep -rn declared_data_files projects/ores.ore/core/tests/= | 5830bdcf28 |
+| C++ formatting of the two changed sources | clean | =clang-format --dry-run -Werror <file>= | this branch |
+| Org links, whole tree | 0 unresolved | =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | this branch |
 
 * Notes
 
@@ -138,3 +149,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*The task was mis-sized, and the correction is the substance of this record.*
+The premise "no trades-to-ORE-portfolio exporter exists" was false when the
+work started. =ores::ore::xml::exporter::export_portfolio= has been on trunk
+since PR 2628 and already does the whole reverse walk: it takes the export's
+trades and instrument batch, rebuilds each instrument by trade id, reverse-maps
+it through the per-instrument mappers, and renders the portfolio with
+=save_data(const portfolio&)=. It has a production caller in the shell's
+portfolio export and a corpus-wide round-trip suite behind it. What was missing
+was one call on the run path. The task's own note said to build the reverse
+walk once and to abandon this task if the redesign landed first; neither was
+needed, because the walk was already built.
+
+*What changed.* =report_package_handler.cpp= no longer writes the gathered
+trades at =trades.msgpack=. It reads the blob as the stored
+=export_portfolio_response=, calls =export_portfolio=, and writes the result at
+=places.portfolio=, the path the run document names. A run document that names
+no portfolio is refused, and so is a stored export marked failed.
+
+*Acceptance, bullet by bullet.*
+
+1. Placed at the declared path -- done in code; the test asserts the path
+   =declared_data_files= returns for a real run document.
+2. The engine proceeds past "Build Portfolio" -- *not observed*. This needs a
+   build and a run, and this environment does neither. It is the hourly
+   validation's to confirm.
+3. Every gathered trade appears -- the exporter writes a trade it cannot
+   reverse-map as its type and envelope rather than dropping it, and
+   =xml_exporter_directory_roundtrip_tests.cpp= already asserts that every
+   mapped trade in the ORE corpus reaches an output.
+4. The reverse walk sits beside the forward one and a one-sided change fails a
+   test -- already true on trunk, by that same corpus suite. No new test was
+   needed for it.
+
+*What was not done.* No build, no test run, no database recreate -- by the
+standing workflow, the agent does not build. The change is inspected
+statically: =clang-format= clean on both sources, org links resolve, =compass
+lint= clean.
+
+*The rebase.* The first draft decoded a bare =std::vector<trade_export_item>=.
+That stopped compiling when [[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]]
+landed and replaced the instrument payload with a typed batch, and made the
+storage export store the whole response. The rebase moved the decode onto
+=export_portfolio_response= and passed the batch to =export_portfolio=.
+
+*Kept for later.* The `Failure to run analytics PRICING,XVA` message cannot be
+cleared by this change alone. The run also needs its compute packages published
+and an ORE engine that accepts the portfolio this renders.

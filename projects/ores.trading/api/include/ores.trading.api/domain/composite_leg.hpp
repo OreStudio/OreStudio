@@ -28,6 +28,7 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/composite_leg_identity.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <string>
 #include <string_view>
 

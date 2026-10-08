@@ -25,7 +25,7 @@ import { Link, useParams } from 'react-router';
 import type { InboxStoryEvent } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { askedFor, stateLabel } from './words.js';
+import { askedFor, sourceLabel, stateLabel } from './words.js';
 import { formatDateTime } from '../ui/Time.js';
 import { DiffLines } from '../ui/Diff.js';
 import { AccountPicture } from '../ui/Images.js';
@@ -185,7 +185,7 @@ function StoryRow({
                             <span className="font-medium">{event.actor}</span>
                         </>
                     )}
-                    <span className="text-ink-muted">{event.entityType}</span>
+                    <span className="text-ink-muted">{sourceLabel(t, event.entityType)}</span>
                     <span className="text-xs tabular-nums text-ink-faint">
                         {formatDateTime(event.at, language)}
                     </span>

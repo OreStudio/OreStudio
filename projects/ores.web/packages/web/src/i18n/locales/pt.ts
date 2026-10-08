@@ -281,6 +281,12 @@ const pt: SourceCatalogue = {
             request: 'O pedido',
             answerNotShown:
                 'Este pedido tem resposta, e a resposta não é sua para ler. Os passos de quem respondeu não são mostrados.',
+            source: {
+                'ores.inbox.approval_request': 'o pedido',
+                'ores.inbox.approval_decision': 'a resposta',
+                'ores.inbox.notification': 'a notificação',
+                'ores.iam.role_grant_request_role': 'a função',
+            },
             kind: {
                 raised: 'Criado',
                 changed: 'Movido',

@@ -282,6 +282,12 @@ export const en: SourceCatalogue = {
             request: 'The request',
             answerNotShown:
                 'This request has an answer, and the answer is not yours to read. The steps taken by whoever answered it are not shown.',
+            source: {
+                'ores.inbox.approval_request': 'the request',
+                'ores.inbox.approval_decision': 'the answer',
+                'ores.inbox.notification': 'the notice',
+                'ores.iam.role_grant_request_role': 'the role',
+            },
             kind: {
                 raised: 'Raised',
                 changed: 'Moved',

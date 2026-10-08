@@ -5,15 +5,15 @@
 #+description: Task for: Run an example bundle through the compute grid from a report definition
 #+type: task
 #+level: s1
-#+filetags: :acme-report-grid-smoke-test:sprint_26:v0:
+#+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
 #+owner: marco
 #+branch: feature/retrieve-compute-results
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-09-27
-#+environment:
+#+updated: 2026-10-08
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ collect_compute_results completes without downloading anything, and ores.reporti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
-| Now          | Not yet started.                       |
+| Now          | Scoped, not implemented. =collect_results= is still the pass-through, and the request carries no location to download from. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-27                               |
+| Next         | The compute operation that answers for a batch, then the download and the record. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
@@ -40,9 +40,45 @@ collect_compute_results completes without downloading anything, and ores.reporti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Where it is.* =report_execution_handler::collect_results= in
+=ores.reporting/core/src/messaging/report_execution_handler.cpp= is a
+pass-through: it logs, sets =success= and completes. Nothing downloads, and the
+request it decodes carries no location to download from —
+=report_instance_id=, =tenant_id=, =correlation_id= and =batch_id=, and nothing
+else.
+
+*Where the location lives.* It is =output_uri= on compute's own result row.
+=ores.reporting= does not link =ores.compute=, which the Goal gives as the
+reason a finished job's results never come back.
+
+The arc has one established way for a component to reach another's data: ask the
+owner through its operation, carrying the run token, rather than read its
+tables. Every gather step does it, and the isolation story made it the rule for
+storage. So reporting asks compute for a batch's results and never sees
+compute's tables.
+
+*The decision to take first.* Two ways to get the location here, differing in
+who owns the knowledge.
+
+- *Reporting asks compute.* A compute operation answers for a batch: its
+  outcome and its =output_uri=. Reporting then downloads the object and records
+  where it landed. This is the arc's pattern, it needs a new subject with its
+  own tests, and compute's schema stays in compute.
+- *The workflow carries the location.* The step's request gains the output URI,
+  because the engine already dispatches with the batch. Smaller, but the engine
+  is the caller, so it has to have read the location from somewhere — the same
+  read, moved earlier and hidden.
+
+The plan is the first. The second is recorded because it is the cheaper move,
+and it is what a reader will think of.
+
+*The failed-job half.* The acceptance asks that a run whose compute job failed
+be distinguishable from one that produced output, so the operation answers the
+outcome as well as the location. A batch whose job failed is a failure of the
+run, not a run with no output.
+
+*Out of scope.* Parsing what the output holds. This task brings the bytes back
+and records where they are.
 
 * Notes
 

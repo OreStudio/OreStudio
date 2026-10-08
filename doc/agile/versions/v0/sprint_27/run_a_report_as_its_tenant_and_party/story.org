@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_27:v0:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-08
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -30,11 +30,11 @@ configuration, which needs a run token to call the owners.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Run grants and the schedule grant/revoke are done; the exchange is next. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement the run grant exchange.      |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -77,3 +77,42 @@ configuration, which needs a run token to call the owners.
   the scale half of the reporting design.
 - Packaging the run input, which is its own task in the backlog story and
   follows this one.
+
+* Result
+
+Closed with all four tasks DONE. A scheduled run acts as its definition's tenant
+and party: IAM holds the tenant-scoped, party-isolated bitemporal run grant and
+serves =create=, =revoke=, =get= and =exchange=; the exchange makes its five
+checks in order, intersects the role's permissions with the grantor's, mints a
+five-minute token carrying the =act=, =grant_id= and =run_id= claims, and logs
+every issue; one shared cache in =ores.service= holds the tokens the step
+services exchange; and reporting creates, revokes and re-creates grants with the
+schedule.
+
+Evidence, and its limits.
+
+- The live chain reached =submit_compute= with =gather_trades=,
+  =gather_market_data=, =assemble_bundle= and =prepare_ore_package= complete,
+  and run =fccf4a19-5927-4678-852c-0b2b45015b4f='s issue log holds four
+  =issued= rows — two from ReportingService and one each from OreService and
+  ComputeService — so every step service exchanged through the cache and none
+  was refused. The grant is recorded on the report instance at admission, so a
+  reschedule cannot change an in-flight run's authority.
+- The run did not reach =completed=, and that is not this story: the wrapper
+  fleet was bound to the system tenant, so no wrapper subscribed to a tenant
+  run's assignment, and =collect_compute_results= was still a pass-through.
+  Both belong to [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]],
+  which is where the rest of the run now sits.
+- The last acceptance bullet's scenario,
+  [[id:16526A07-0976-43EA-BC1F-DCF5EF0B9011][Verify a run step acts as its party]],
+  is still PENDING. Its positive half is what the live run shows; its negative
+  half — that the same read with the service token returns nothing — the code
+  asserts but no one has walked. It stays open against the story that now owns
+  the run, rather than being closed with this one.
+
+Three defects were fixed on the way, each because a check scoped a shared
+registry to the caller's own tenant: the report instance FSM guard read its
+states under the row's tenant, and both the workunit insert trigger and the
+workunit dispatcher refused or hid a system-tenant app version and its
+per-platform package. The last two are fixed in the codegen as a
+=:system_tenant_visible:= read scope, so the generated code states the rule.

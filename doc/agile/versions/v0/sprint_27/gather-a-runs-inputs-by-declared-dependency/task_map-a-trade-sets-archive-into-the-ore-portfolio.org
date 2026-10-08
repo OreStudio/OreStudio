@@ -2,7 +2,7 @@
 :ID: 18FFC5F4-6DEB-4E7F-B0C5-ECC359ED5A82
 :END:
 #+title: Task: Map a trade set's archive into the ORE portfolio
-#+description: No trades-to-ORE-portfolio exporter exists. trade_mapper and the instrument mappers walk the import direction only, so prepare_ore_package copies the trades blob into the tarball and ORE never opens it, which is why the engine stops at 'Build Portfolio'. ores.ore owns the ORE schema and its mappers, so it reads a trade set's archive, rebuilds the mapper's input types, maps them, renders the portfolio XML, and uploads it as the run's portfolio input.
+#+description: The exporter exists as ores.ore.xml::exporter::export_portfolio, which reverse-maps every instrument a trade carries and renders the portfolio with save_data(const portfolio&); the run path now calls it. Two things about it are wrong for a run that fans out over trade sets. It consumes the run's single export response rather than a trade set's archive, and it never fails: a trade it cannot reverse-map goes out as its type and envelope alone, and a trade whose ORE type the schema does not name is dropped. This task moves the mapper onto a trade set's archive and makes an inexpressible trade stop the step, naming the trade.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
@@ -12,7 +12,7 @@
 #+blocked_on: The trades archive, which is the input this mapper consumes.
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,15 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-No trades-to-ORE-portfolio exporter exists. =trade_mapper= and the instrument
-mappers walk the import direction only, so =prepare_ore_package= copies
-trading's blob into the tarball under a name ORE never opens, and the engine
-stops at "Pricing: Build Portfolio" with "Failed to run analytics
-PRICING,XVA".
+The reverse walk exists, and the run path calls it.
+=ores::ore::xml::exporter::export_portfolio= takes the export's trades and
+their instrument batch, rebuilds each instrument by trade id, reverse-maps it
+through the per-instrument mappers that sit beside the forward ones in
+=ores.ore.core/domain/=, and renders the result with
+=save_data(const portfolio&)=. [[id:5CF75315-C9BF-4114-8BF1-A6AB68FF573B][Export the trades as the ORE portfolio the engine reads]]
+connected it to the run.
 
-=ores.ore= owns the ORE schema and the mappers, so the reverse walk belongs
-there: read a trade set's archive, rebuild the mapper's input types, map them,
-render the portfolio XML, and upload it as the run's portfolio input.
+Two things about it are wrong for a run that fans out over trade sets.
+
+- It consumes the run's single =export_portfolio_response=, so a run that
+  gathers per set has nothing to hand it.
+- It never fails. A trade it cannot reverse-map goes out as its type and
+  envelope alone, and a trade whose type the ORE schema does not name is
+  dropped, so a portfolio can be quietly missing a trade ORE was meant to
+  price.
+
+This task moves the mapper onto a trade set's archive and makes an
+inexpressible trade stop the step.
 
 * Status
 
@@ -48,26 +58,29 @@ render the portfolio XML, and upload it as the run's portfolio input.
   describes, for every instrument type the archive can carry.
 - The rendered portfolio is what ORE reads at the file its run document names
   as =portfolioFile=, and the engine proceeds past "Build Portfolio".
-- A trade the mapper cannot express fails the step and names the trade, rather
-  than producing a portfolio that is quietly missing it.
+- A trade the mapper cannot express stops the step and names the trade. This is
+  a change of behaviour: the exporter as it stands writes such a trade as its
+  type and envelope alone, and drops one whose type the schema does not name,
+  rather than refusing either.
 - The output is one portfolio per trade set, uploaded as a declared artifact
   the package step can wait on, named by the batch key.
 
 * Plan
 
-=save_data(const portfolio&)= already exists, and every mapper's forward
-function already exists because the import path uses it. The work is the
-reverse direction, and the decision to take first is whether to add a reverse
-to each mapper or to build the portfolio by walking the archive directly
-against =trade_mapper='s element constructors. The mappers already know both
-spellings of each element, so a reverse beside each forward keeps the two
-halves of one mapping in one file; a separate builder would be a second place
-that knows the same correspondence.
+=save_data(const portfolio&)= exists, the per-instrument reverse mappers exist
+beside their forward halves, and =export_portfolio= already dispatches between
+them. The work is the input and the failure mode, not the walk: read a trade
+set's archive into the same two things the exporter already takes, and turn its
+two silent paths into a refusal.
+
+Do not add a second walk. A builder that walks the archive directly against
+=trade_mapper='s element constructors would be a second place that knows the
+same correspondence the mappers already hold, which is the arrangement the
+existing reverse mappers were written to avoid.
 
 The step must not emit a partial portfolio. ORE treats a portfolio that parses
-as the truth of what to price, so a trade that cannot be mapped has to stop
-the run: a silent omission is a report that prices a portfolio nobody asked
-for.
+as the truth of what to price, so a trade that cannot be mapped has to stop the
+run: a silent omission is a report that prices a portfolio nobody asked for.
 
 * Measurements
 

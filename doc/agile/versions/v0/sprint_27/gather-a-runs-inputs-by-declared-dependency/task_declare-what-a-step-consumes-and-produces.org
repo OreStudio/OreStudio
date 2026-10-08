@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,12 +33,12 @@ the engine consult that declaration before it dispatches.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
 
 
 * Acceptance
@@ -107,14 +107,14 @@ edited after a run started must not change what that run was waiting for.
 The reporting chain declares its own dependencies, and the whole chain was run
 live after the change: seven steps, =completed=.
 
-*What the task still owes.* The acceptance asks that an artifact's state be
-readable per run — missing, in progress, or present. The engine currently
-answers that for a *step result* by reading the step's state, which is the
-declaration working as far as step results go. The other half, the artifacts a
-step writes beyond its result (=produces=, carried but unread), needs the
-instance to record which keys exist, and that is the graph task's persistence.
-
-* Test Scenarios
+*What the task still owes, and how it was answered.* The acceptance asks that an
+artifact's state be readable per run — missing, in progress, or present. The
+first draft answered it for a *step result* by reading the step's state, and
+left the artifacts a step writes beyond its result (=produces=, carried but
+unread) to the graph task's persistence. The graph task then settled it the
+other way: the artifact *is* the step's name, so there is no separate
+=produces= to carry and no second place for a key to live. The field was
+dropped rather than persisted.
 
 * Test Scenarios
 
@@ -140,3 +140,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landed in PR 2781. The declaration is =consumes=: a step definition names the
+steps whose results it reads, and the name is the artifact key.
+
+- *A step names what it consumes.* =workflow_step_def= and =materialised_step=
+  carry =consumes=, and it travels with the run so a definition edited after a
+  run started cannot change what that run was waiting for.
+- *The engine refuses an incoherent chain, and names the inputs that have not
+  answered.* =on_start_workflow= refuses a chain naming a step no earlier step
+  produces, before an instance exists. At dispatch the engine reads its own
+  declaration against the steps that have completed and fails the run naming
+  what it is waiting on, instead of leaving the step's command builder to
+  discover it.
+- *An artifact's state is readable per run.* The final design made the step's
+  name the artifact, so an artifact's state is its producing step's state and
+  the engine already reads it. A separate =produces= field was drafted and
+  dropped: two names for one artifact is the second truth this task set out to
+  avoid, and the graph's doc states the rule that a fan-out keeps the names
+  distinct by naming each producer for the batch key it produces.
+- *A step that declares no inputs is dispatchable.* An empty =consumes=
+  dispatches immediately, so the declaration is no tax on work that has none.
+
+The graph and dispatch cases cover this, including a fan-out and a fan-in, in
+=ores.workflow.core.tests=. The reporting chain was run live after the change:
+seven steps, =completed=.

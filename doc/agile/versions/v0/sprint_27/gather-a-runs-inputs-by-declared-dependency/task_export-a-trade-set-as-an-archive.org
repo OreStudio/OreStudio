@@ -2,7 +2,7 @@
 :ID: 8BC0E84C-9B4B-4A12-8E3F-E86EF2A8A807
 :END:
 #+title: Task: Export a trade set as an archive
-#+description: trading.v1.ops.export_trades_to_storage takes book ids and no date and writes one gzipped msgpack of trade_export_item rows for all of them, which is not something the ORE mapper can consume: it carries instruments as an opaque payload and no shape the mapper can walk. Export one trade set at a time, by its batch key, and source everything the portfolio needs - trade headers, instruments and envelopes - into a zip whose shape is declared. The as-of travels on the set.
+#+description: trading.v1.ops.export_trades_to_storage takes book ids and no date and stores one blob for all of them: the export_portfolio_response, holding the trades and their typed instrument batch. The opaque instrument payload is gone, so the ORE mapper can be driven from it - that is how the single-set run maps its portfolio today. What the export cannot do is answer for one set, because it names books and no as-of. Export one trade set at a time, by its batch key, and source everything the portfolio needs - trade headers, instruments and envelopes - into a zip whose shape is declared. The as-of travels on the set.
 #+type: task
 #+level: s1
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
@@ -12,7 +12,7 @@
 #+blocked_on: The batcher, whose batch keys name the trade set this reads.
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -21,16 +21,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 =trading.v1.ops.export_trades_to_storage= takes book ids and no date, pages
-=trade_export_service::export_books=, writes one =rfl::msgpack= blob of
-=trade_export_item= rows for all of them, and uploads it. That blob is
-trading's own transport encoding: an instrument is carried as an opaque
-=instrument_payload=, because reflect-cpp cannot name the active alternative
-of the instrument variant.
+=trade_export_service::export_books=, and stores one blob for all of them: the
+=export_portfolio_response=, holding the trades and their instrument batch.
+[[id:3653CE61-84B8-4B77-9BBA-8D718A4B2F93][Carry the export's instruments as typed batches]] removed the opaque
+=instrument_payload=, so the batch is typed and the ORE mapper can be driven
+from it — which is how a run maps its portfolio today.
 
-The ORE mapper cannot be driven from that. Export **one trade set at a time, by
-its batch key**, and source everything the portfolio needs — trade headers,
-instruments and envelopes — into a zip whose shape is declared. The as-of
-travels on the set, so the request does not restate it.
+What the export cannot do is answer for one set. It names books and no as-of, so
+one object answers for every book in the report and for whatever the database
+holds now.
+
+Export **one trade set at a time, by its batch key**, and source everything the
+portfolio needs — trade headers, instruments and envelopes — into a zip whose
+shape is declared. The as-of travels on the set, so the request does not
+restate it.
 
 * Status
 
@@ -48,7 +52,7 @@ travels on the set, so the request does not restate it.
 
 - The request names a trade set's batch key, and the as-of comes from the set.
 - The archive holds everything the ORE portfolio mapper needs: each trade's
-  anchor, its instrument as something the mapper can walk, and its envelope
+  anchor, its instrument typed and keyed by the trade id, and its envelope
   (counterparty, netting set, portfolios, additional fields).
 - The archive's shape is declared — the set of members, their names, their
   encodings, and a manifest to check them against — so a reader validates

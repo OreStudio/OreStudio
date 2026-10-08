@@ -28,9 +28,9 @@ A role request that nobody answers closes on its own, so a queue cannot rot. The
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
-| Now          | Built, and walked end to end through the scheduler. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the PR.                         |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

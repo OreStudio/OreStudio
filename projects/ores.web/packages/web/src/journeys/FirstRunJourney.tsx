@@ -49,7 +49,7 @@ import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './f
 import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
 import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
-import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
+import type { PasswordPolicy, PartySummary, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 /** What a fresh installation's administrator is almost always called. */
 const DEFAULT_PRINCIPAL = 'super_admin';
@@ -73,6 +73,29 @@ function reasonOf(error: unknown): string {
  * Creating the first tenant is the ordinary case, so it is stated first.
  */
 const CHOICES: readonly FirstRunChoice[] = ['first-tenant', 'system-only'];
+
+/**
+ * The party category a tenant's system party carries.
+ *
+ * Bootstrap signs in here and nowhere else: the settings it writes are
+ * tenant-wide, which means scoped to this party, and a session in any other
+ * party cannot write them.
+ */
+const SYSTEM_PARTY_CATEGORY = 'System';
+
+/**
+ * The system party among the parties a sign-in offers, or nothing when the
+ * account works in none.
+ *
+ * Bootstrap signs in here and nowhere else. It writes tenant-wide settings, and
+ * a tenant-wide setting is scoped to the tenant's system party; a session in any
+ * other party is refused by the party isolation policy, whose visible set walks
+ * down from the selected party and finds the system party only when the selected
+ * party is its root.
+ */
+export function systemPartyOf(parties: readonly PartySummary[]): PartySummary | undefined {
+    return parties.find((party) => party.partyCategory === SYSTEM_PARTY_CATEGORY);
+}
 
 /** The stages the chosen rail runs, as a title key and a body key. */
 export function welcomeStages(choice: FirstRunChoice): readonly (readonly [string, string])[] {
@@ -395,18 +418,23 @@ export function FirstRunJourney({
      * Signing in as the deployment's administrator.
      *
      * The starting-point read and the provisioning request both belong to an
-     * account, so the journey enters as the administrator before either. An
-     * account that works in exactly one party is settled here; one that works
-     * in several cannot be guessed at, and the person is asked to choose.
+     * account, so the journey enters as the administrator before either.
+     *
+     * The party is always the tenant's system party, and it is never asked for.
+     * Bootstrap writes tenant-wide settings, and a tenant-wide setting is scoped
+     * to the system party: a session sitting in any other party is refused by
+     * the party isolation policy, because the visible set walks down from the
+     * selected party and the system party is its root. Offering the choice would
+     * offer a way to fail, so the choice is not offered.
      */
     const signInAsAdministrator = async (password: string): Promise<void> => {
         const outcome = await server.signIn({ username: draft.principal, password });
         if (outcome.outcome === 'party-required') {
-            const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
-            if (only === undefined) {
-                throw new Error(t('journey.admin.partyChoice'));
+            const system = systemPartyOf(outcome.parties);
+            if (system === undefined) {
+                throw new Error(t('journey.admin.noSystemParty'));
             }
-            await server.chooseParty(only.id, outcome.parties);
+            await server.chooseParty(system.id, outcome.parties);
         }
     };
 
@@ -504,6 +532,10 @@ export function FirstRunJourney({
         onHandOff: handOff,
         onCompleteSystemOnboarding: () => server.completeSystemOnboarding(),
         onFinished: () => onFinished(),
+        onSignOutAfterBootstrap: async () => {
+            await server.signOut();
+            onFinished();
+        },
     });
 
     return (

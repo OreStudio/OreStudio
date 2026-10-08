@@ -36,8 +36,10 @@ import {
     AdministratorArrival,
     FirstRunJourney,
     WelcomeCard,
+    systemPartyOf,
     welcomeStages,
 } from './FirstRunJourney.js';
+import type { PartySummary } from '@ores/wire-protocol/browser';
 import type { JourneyServer } from './server.js';
 
 function render(node: ReactNode): string {
@@ -161,6 +163,31 @@ describe('the system-only arrival', () => {
 
         expect(html).toContain('super_admin');
         expect(html).not.toContain('tenant');
+    });
+});
+
+describe('the party bootstrap signs in to', () => {
+    const party = (
+        id: string,
+        partyCategory: string,
+    ): PartySummary => ({
+        id,
+        name: `${partyCategory} party`,
+        partyCategory,
+        businessCenterCode: 'WRLD',
+    });
+
+    it('is the system party, whatever else the account works in', () => {
+        const operational = party('11111111-1111-1111-1111-111111111111', 'Operational');
+        const system = party('22222222-2222-2222-2222-222222222222', 'System');
+        const other = party('33333333-3333-3333-3333-333333333333', 'Operational');
+
+        expect(systemPartyOf([operational, system, other])).toBe(system);
+    });
+
+    it('is nothing when the account works in no system party', () => {
+        expect(systemPartyOf([party('11111111-1111-1111-1111-111111111111', 'Operational')]))
+            .toBeUndefined();
     });
 });
 

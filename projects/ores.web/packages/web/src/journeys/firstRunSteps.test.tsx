@@ -135,6 +135,7 @@ function steps(
         readonly onAdministratorSignIn?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
         readonly onFinished?: () => void;
+        readonly onSignOutAfterBootstrap?: () => Promise<void>;
         readonly goTo?: (id: string) => void;
     } = {},
 ) {
@@ -170,6 +171,8 @@ function steps(
         onCompleteSystemOnboarding:
             overrides.onCompleteSystemOnboarding ?? vi.fn(async () => undefined),
         onFinished: overrides.onFinished ?? vi.fn(),
+        onSignOutAfterBootstrap:
+            overrides.onSignOutAfterBootstrap ?? vi.fn(async () => undefined),
     });
 }
 
@@ -338,7 +341,7 @@ describe('an installation that keeps the system tenant alone', () => {
         expect(ready?.lead).toBe('The installation is set up, and super_admin is signed in.');
     });
 
-    it('records the finished wizard on both rails before it hands the browser over', async () => {
+    it('records the finished wizard before it hands the browser over', async () => {
         const order: string[] = [];
         const onCompleteSystemOnboarding = vi.fn(async () => {
             order.push('complete');
@@ -346,17 +349,38 @@ describe('an installation that keeps the system tenant alone', () => {
         const onFinished = vi.fn(() => {
             order.push('finished');
         });
+        const onSignOutAfterBootstrap = vi.fn(async () => {
+            order.push('signed-out');
+        });
 
-        for (const choice of ['first-tenant', 'system-only'] as const) {
-            order.length = 0;
-            const ready = steps({ choice, onCompleteSystemOnboarding, onFinished }).find(
-                (step) => step.id === 'ready',
-            );
-            await ready?.next?.run?.();
-            // The flag is what releases the gate on a system-only
-            // installation, so it must be written before the hand-over.
-            expect(order).toEqual(['complete', 'finished']);
-        }
+        const tenantReady = steps({
+            choice: 'first-tenant',
+            onCompleteSystemOnboarding,
+            onFinished,
+            onSignOutAfterBootstrap,
+        }).find((step) => step.id === 'ready');
+        await tenantReady?.next?.run?.();
+        /*
+         * The flag is what releases the gate, so it is written before the
+         * hand-over. The tenant rail hands the browser over signed in, as the
+         * administrator it just created.
+         */
+        expect(order).toEqual(['complete', 'finished']);
+
+        order.length = 0;
+        const systemReady = steps({
+            choice: 'system-only',
+            onCompleteSystemOnboarding,
+            onFinished,
+            onSignOutAfterBootstrap,
+        }).find((step) => step.id === 'ready');
+        await systemReady?.next?.run?.();
+        /*
+         * Bootstrap runs as the tenant's system party, and that is no party to
+         * leave somebody sitting in, so the system-only rail ends at the
+         * sign-in screen rather than handing the browser over.
+         */
+        expect(order).toEqual(['complete', 'signed-out']);
         expect(onCompleteSystemOnboarding).toHaveBeenCalledTimes(2);
     });
 

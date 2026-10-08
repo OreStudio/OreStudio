@@ -1472,8 +1472,8 @@ const pt: SourceCatalogue = {
             resumeLead:
                 'Esta instalação já tem o seu administrador. Inicie sessão com essa conta para continuar. A palavra-passe é também a que a entidade recebe quando o perfil dela partilha a sua.',
             signIn: 'Iniciar sessão e continuar',
-            partyChoice:
-                'O administrador trabalha em mais do que uma entidade. Inicie sessão e escolha uma primeiro.',
+            noSystemParty:
+                'O administrador não tem uma entidade de sistema onde iniciar sessão, por isso a instalação não pode ser aprovisionada.',
         },
 
         profile: {

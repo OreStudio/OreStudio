@@ -1461,8 +1461,8 @@ export const en: SourceCatalogue = {
             resumeLead:
                 'This installation already has its administrator. Sign in as that account to carry on. The password is also what the tenant takes when its profile shares yours.',
             signIn: 'Sign in and continue',
-            partyChoice:
-                'The administrator works in more than one party. Sign in and choose one first.',
+            noSystemParty:
+                'The administrator has no system party to sign in to, so the installation cannot be bootstrapped.',
         },
 
         profile: {

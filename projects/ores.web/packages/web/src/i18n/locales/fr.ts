@@ -1479,8 +1479,8 @@ const fr: SourceCatalogue = {
             resumeLead:
                 "Cette installation a déjà son administrateur. Connectez-vous avec ce compte pour continuer. Le mot de passe est aussi celui que l'entité reprend lorsque son profil partage le vôtre.",
             signIn: 'Se connecter et continuer',
-            partyChoice:
-                "L'administrateur travaille dans plusieurs entités. Connectez-vous et choisissez-en une d'abord.",
+            noSystemParty:
+                "L'administrateur n'a pas d'entité système à laquelle se connecter ; l'installation ne peut donc pas être amorcée.",
         },
 
         profile: {

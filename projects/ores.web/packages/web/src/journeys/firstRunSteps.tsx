@@ -107,6 +107,15 @@ export interface FirstRunStepsInput {
      */
     readonly onCompleteSystemOnboarding: () => Promise<void>;
     readonly onFinished: () => void;
+    /**
+     * Ends a system-only bootstrap: signs the administrator out and hands the
+     * browser the sign-in screen.
+     *
+     * Bootstrap runs as the system party because the settings it writes are
+     * tenant-wide, which is a party nobody should be left sitting in. The
+     * account signs in again as itself once the deployment is set up.
+     */
+    readonly onSignOutAfterBootstrap: () => Promise<void>;
 }
 
 export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<ReactNode>[] {
@@ -220,6 +229,10 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
                     // that kept the system tenant alone, so it is written
                     // before the browser is handed over, on both rails.
                     await input.onCompleteSystemOnboarding();
+                    if (choice === 'system-only') {
+                        await input.onSignOutAfterBootstrap();
+                        return;
+                    }
                     input.onFinished();
                 },
             },

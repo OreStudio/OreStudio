@@ -35,11 +35,11 @@ knowing the URI grammar, and without a second source of truth for what the ident
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | The reader is rewritten onto the identity projection. The wire, the handler and the read are in place; nothing is built. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the pull request.                 |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -172,6 +172,10 @@ directory, so the raw output is in the =* Evidence= section below instead.
 | Codec entry points that write a URI | 4 in all — =read=, =write=, =read_index=, =write_index=; =write= covers a series, which =spelling_of= branches on =datum.is_series()= | =grep -n "std::expected" .../oresmd_uri_codec.hpp; grep -n "is_series" .../oresmd_uri_codec.cpp= | =def733bc55= |
 | Schema rows that expose the identity's parts as data | 1 array, =schema=, of =instrument_type_count= rows with =asset=, =subject= and per-field =role=/=may_be_none= | =grep -n "struct schema_row" -A 12 projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp= | =def733bc55= |
 | Production consumers of the URI-keyed identity lookup | 3 call sites of =read_latest_by_uri=, all inside =ores.marketdata=: =curve_pillar_reader.cpp=, =feed_ingest_loop.cpp=, a service test. None is a view or the shell | =grep -rn "read_latest_by_uri" projects --include=*.cpp --include=*.hpp= | =def733bc55= |
+| Columns the identity projection exposes | 52: 45 identity fields and 7 context columns | =python3 build/scripts/check_marketdata_identity_columns.py= | =04b03c1d34= |
+| Asset-class views the identity can be read through | 10 | same | =04b03c1d34= |
+| Statements one typed-identity read issues | 2: the projection filter, then the series rows by the keys it matched | inspection of =market_series_identity_reader.cpp= | =04b03c1d34= |
+| Production consumers of the operation | 0 outside its own protocol, handler, reader and registration | =grep -rn "resolve_series_identity" projects --include=*.cpp --include=*.hpp= | =04b03c1d34= |
 
 * Evidence
 

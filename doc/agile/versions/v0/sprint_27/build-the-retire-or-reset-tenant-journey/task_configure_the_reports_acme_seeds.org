@@ -8,7 +8,7 @@
 #+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/configure-the-reports-acme-seeds
-#+pr: 2845
+#+pr: 2846
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -67,15 +67,25 @@ The inventory first, because the numbers decide the shape.
 Work, in order. Fold each step into the provisioning path so a recreated
 database reproduces it.
 
-1. Add the seed that creates, for every active definition of a party, its
-   risk report config and the configuration row that binds the two, shaped
-   from the =MinimalSetup= and =MarketRisk= run documents.
-2. Scope each config to the party's root portfolio.
-3. Bind the four configuration documents the type requires, using the
-   =MinimalSetup= and =Input= examples.
-4. Extend =ores_iam_reset_tenant_fn= to wipe the configuration tables, so a
-   reset leaves a tenant in the seeded state rather than with orphaned
-   configurations.
+1. Done in PR #2845. =ores_reporting_seed_report_configurations_fn= creates
+   the risk report config and the root portfolio scope for every definition
+   that already carries all four configuration bindings, and
+   =ores_reporting_analytic_flags_fn= maps each seeded report name to the
+   analytics it turns on.
+2. Outstanding. The four ORE documents and their bindings come from
+   =ore import-run <definition-id> <source-dir>=, which is built and is per
+   definition. Nothing in provisioning runs it, so the seeder is inert. The
+   next unit is a provisioning step that imports the matching
+   =external/ore/examples= directory for each seeded definition and then
+   calls the seeder.
+3. Outstanding. Extend =ores_iam_reset_tenant_fn= to wipe the configuration
+   tables, so a reset leaves a tenant in the seeded state rather than with
+   orphaned configurations.
+
+The split matters. =ores.ore= owns the run document and the four
+configuration documents. =ores.reporting= owns the risk report config, the
+analytics and the scope. An earlier draft of the seeder also wrote the
+bindings, which would have duplicated what the import already writes.
 
 * Measurements
 
@@ -116,6 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2846][#2846]] | [agile] Record how the report configuration work splits |
 | [[https://github.com/OreStudio/OreStudio/pull/2845][#2845]] | [reporting] Seed the report configurations a party's definitions need |
 
 * Review

@@ -8,7 +8,7 @@
 #+filetags: :sprint_27:v0:gather-a-runs-inputs-by-declared-dependency:
 #+owner: marco
 #+branch: feature/batch-a-trade-population
-#+pr:
+#+pr: 2875
 #+blocked_on: The trade group and its membership ([[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] in [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]]), which is what records a batch's sets against its run. That story parks itself pending a pilot process. The partitioning itself is not blocked: a set derived from a trade's book needs no table, and the book key already exists on the booking. The fan-in condition is unblocked too, since [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] is DONE.
 #+blocked_since:
 #+created: 2026-10-07
@@ -152,7 +152,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2875 | [trading] Partition a report's trade population into trade sets |
 
 * Review
 

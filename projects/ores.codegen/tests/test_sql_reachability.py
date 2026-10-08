@@ -14,7 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/scripts"))
 
-import check_sql_create_reachability as check  # noqa: E402
+import check_sql_reachability as check  # noqa: E402
 
 
 def _build(tmp_path, entry: str, files: dict[str, str]):
@@ -29,8 +29,20 @@ def _build(tmp_path, entry: str, files: dict[str, str]):
 
 
 def _bind(monkeypatch, sql_root, create_dir):
+    """Point the check at the miniature tree, and at no populate or drop tree.
+
+    The two other trees are left as directories that do not exist, so their
+    globs come back empty and only the tree under test contributes findings.
+    """
     monkeypatch.setattr(check, "SQL_ROOT", sql_root)
     monkeypatch.setattr(check, "CREATE_DIR", create_dir)
+    monkeypatch.setattr(check, "POPULATE_DIR", sql_root / "populate")
+    monkeypatch.setattr(check, "DROP_DIR", sql_root / "drop")
+    monkeypatch.setitem(check.TREES, "create", create_dir)
+    monkeypatch.setitem(check.TREES, "populate", sql_root / "populate")
+    monkeypatch.setitem(check.TREES, "drop", sql_root / "drop")
+    # The real entry points are named in the repository's tree, not this one.
+    monkeypatch.setattr(check, "EXTRA_ENTRY_POINTS", ())
 
 
 def test_the_repository_is_clean():

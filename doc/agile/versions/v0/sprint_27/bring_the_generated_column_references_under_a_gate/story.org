@@ -21,11 +21,11 @@ Catch a generated reference to a column that does not exist before it merges.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The check is written, registered in the catalogue, and proven both ways. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Open the PR and merge it.              |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -38,8 +38,8 @@ Catch a generated reference to a column that does not exist before it merges.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3F69130B-BAA7-4FC4-AFD3-65AD84B7903A][Scaffold story: Bring the generated column references under a gate]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:58083095-9AB8-4B4B-83B1-4528D664B2D4][Implement Bring the generated column references under a gate]] | STARTED | 2026-10-08 | | Initial task for: Bring the generated column references under a gate |
+| [[id:3F69130B-BAA7-4FC4-AFD3-65AD84B7903A][Scaffold story: Bring the generated column references under a gate]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:58083095-9AB8-4B4B-83B1-4528D664B2D4][Implement Bring the generated column references under a gate]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Bring the generated column references under a gate |
 
 * Decisions
 
@@ -63,3 +63,13 @@ Catch a generated reference to a column that does not exist before it merges.
 
 - [[id:48C8F8B1-780F-422C-814F-C9E4A9D65E11][Hotfix: the party role names a dropped column]] — the
   first defect the check reproduces.
+
+* Result
+
+Done. =check_generated_column_refs.py= is registered in the local check
+catalogue and green on the tree it landed on, and the two references that broke
+=main= at =3d52a070ba= are reported by it.
+
+Every acceptance criterion is met without a build: the check was run against
+the revision that broke, where it reports the member and the index, and against
+the fixed tree, where it reports nothing.

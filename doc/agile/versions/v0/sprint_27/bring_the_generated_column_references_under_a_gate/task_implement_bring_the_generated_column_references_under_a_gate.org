@@ -26,11 +26,11 @@ Catch a generated reference to a column that does not exist before it merges.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:931737B4-1E7C-4030-B144-A188328D4F82][Bring the generated column references under a gate]] |
-| Now          | The check is written, registered, and green; it fires on the revision that broke. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -109,3 +109,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2881. The gate is registered in =local_checks.py= and green on the
+tree it lands on, and it reproduces both references that broke =main= at
+=3d52a070ba=.

@@ -328,14 +328,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // ----------------------------------------------------------------
-    // Publish-from-DQ workflow step handler
+    // Publish-from-DQ workflow step handlers. One handler serves every
+    // subject, and it derives the SQL function from the delivered
+    // subject, so a new dataset needs a subject here and a row in
+    // ores_dq_artefact_types_tbl, and nothing else.
     // ----------------------------------------------------------------
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(
-            nats.queue_subscribe(publish_report_definitions_from_dq_request::nats_subject,
-                                 group,
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        static constexpr std::string_view publish_subjects[]{
+            publish_report_definitions_from_dq_request::nats_subject,
+            publish_risk_report_configs_from_dq_request::nats_subject,
+        };
+        for (const auto subject : publish_subjects) {
+            subs.push_back(nats.queue_subscribe(
+                subject, group, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        }
     }
 
     return subs;

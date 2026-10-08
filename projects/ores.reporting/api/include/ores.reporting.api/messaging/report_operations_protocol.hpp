@@ -114,6 +114,25 @@ struct publish_report_definitions_from_dq_request {
     static constexpr bool requires_session = true;
 };
 
+/**
+ * @brief The workflow step that publishes a DQ-cleared risk report configs bundle.
+ *
+ * The same trigger shape as publish_report_definitions_from_dq_request, and
+ * declared the same way: the SQL function name the handler derives from the
+ * subject depends on the spelling.
+ */
+struct publish_risk_report_configs_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.ops.publish_risk_report_configs_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_trades";

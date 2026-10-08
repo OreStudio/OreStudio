@@ -47,6 +47,11 @@
 \ir ./reporting_report_definitions_populate.sql
 
 \echo ''
+\echo '--- Risk Report Config Seed Data ---'
+\ir ./reporting_risk_report_configs_populate.sql
+\ir ./reporting_dataset_dependency_populate.sql
+
+\echo ''
 \echo '=== Reporting Component Population Complete ==='
 
 -- Summary

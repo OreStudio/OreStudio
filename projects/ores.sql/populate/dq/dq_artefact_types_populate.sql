@@ -199,6 +199,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'named_portfolios', 0, 'Named Portfolios', 'Top-level portfolios a party adds by name, staged as portfolios and published to the party a publish names',
      'dq_portfolios_artefact_tbl', 'refdata_portfolios_tbl', 'refdata.v1.ops.publish_named_portfolios_from_dq', 68,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'risk_report_configs', 0, 'Risk Report Configs', 'The run settings a seeded report definition resolves, published as the risk report config and its root portfolio scope',
+     'dq_risk_report_configs_artefact_tbl', 'reporting_risk_report_configs_tbl', 'reporting.v1.ops.publish_risk_report_configs_from_dq', 69,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

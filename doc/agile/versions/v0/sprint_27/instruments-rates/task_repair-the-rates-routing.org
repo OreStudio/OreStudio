@@ -139,6 +139,13 @@ Verification: the component regenerates with no drift; the codegen suite
 is 1276 passed; the full preset build exits 0 with no errors and no
 warnings.
 
+Rebased onto the refusal-catalogue merge (PR #2786, =b9268cc7c5=), which
+rewrote the SQL and C++ templates for the whole component. The rebase
+merged the one shared generated file without a conflict — the credit
+table's check is generated from the catalogue, so the two changes sit on
+different lines — and the component is still drift-clean after it, so no
+regeneration was needed.
+
 Not verified live: that an RPA document imports and round trips. The
 database and the service fleet are down in this environment, and
 recreating the database is shared work across eleven worktrees. The

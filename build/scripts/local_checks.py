@@ -444,7 +444,8 @@ CATALOGUE: tuple[Check, ...] = (
             "python3 projects/ores.codegen/scripts/regenerate_shell_recipe_inventory.py --check"
             " && python3 projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py --check",
         ),
-        classes=("modeling", "codegen"),
+        classes=("modeling", "codegen", "docs"),
+        paths=("doc/recipes/shell/*", "doc/recipes/http/*"),
         phase=PREPARE,
     ),
     Check(

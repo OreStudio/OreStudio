@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: F7E329C8-0127-40E9-84FE-FC8080FA1A25
+:END:
+#+title: Story: Catch the generated artefacts up, and fix a dangling id link
+#+description: Four local checks fail on main and none is a branch's fault: two generated shell scripts, the ER diagram, and a link whose id is spelled in a different case from the document that defines it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Four local checks fail on main and none of them is a branch's fault, so
+every branch inherits a red gate. Catch the tree back up: regenerate the
+two artefacts whose sources moved, and fix the link that breaks the site
+build.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The shell library tangles to exactly what is committed.
+- The committed ER diagram matches the schema.
+- No document links an id that no document defines.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:584F61BB-4B70-4A09-9BF1-1AA27C7511AF][Scaffold story: Catch the generated artefacts up, and fix a dangling id link]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F74B6E9F-5987-4E08-AB76-628DB0477959][Regenerate the stale artefacts]] | DONE | | 2026-10-08 | Initial task for: Catch the generated artefacts up, and fix a dangling id link |
+
+* Decisions
+
+* Out of scope
+
+-

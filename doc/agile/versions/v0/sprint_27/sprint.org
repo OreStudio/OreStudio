@@ -114,6 +114,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:4DC7605B-8D47-4EC6-B739-14F34052F48E][Hotfix: The credential model links a model that was withdrawn]] | DONE | | 2026-10-07 | ores.iam.account_credential.org links ores.iam.operations, a model that was withdrawn and never committed, so the link dangles and lint and site-page both fail on it. |
 | [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] | DONE | 2026-10-07 | 2026-10-08 | A trade set is the primitive: a well-defined set of trades. A trade group is the set a run of a process creates, a structure is the set that is also a product, and a link is neither. Batching, every process and every report stands on a stated model instead of an assumed one. |
 | [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] | BACKLOG | | | A process that acts on a set of trades must be traceable, so it can be undone or repeated. Record each run with an identity and a state machine, name the process it is a run of, and let the trade groups its inputs and outputs carry the run's key. Waits on one process with a real client. |
+| [[id:F7E329C8-0127-40E9-84FE-FC8080FA1A25][Catch the generated artefacts up, and fix a dangling id link]] | DONE | 2026-10-08 | 2026-10-08 | Four local checks failed on main and none was a branch's fault: two generated shell scripts, the ER diagram, and a link whose id is spelled in a different case from the document that defines it. |
 
 * Achievements
 

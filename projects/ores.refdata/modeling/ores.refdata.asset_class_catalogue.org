@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 4043de4c-5cdb-455e-b208-5aff69aa76ae
+:ID: 4043DE4C-5CDB-455E-B208-5AFF69AA76AE
 :END:
 #+title: ores.refdata.asset_class_catalogue
 #+description: The one declaration of the refdata product taxonomy, the oresmd market-data namespace and the mapping between them.

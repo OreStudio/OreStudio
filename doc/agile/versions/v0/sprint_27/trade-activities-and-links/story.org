@@ -68,7 +68,8 @@ The three tasks that hang process structure off the activity wait on it.
 
 - [[id:A7381409-AFD0-4F0E-BAB4-61CD35341AA8][Trace a process run over a set of trades]] — the capture the run model is written down in.
 - [[id:61590415-C7E0-4BB9-8845-8BB794896EE0][Implement the processes that act on sets of trades]] — the capture for building the processes themselves, one pilot at a time.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — what an act is, and the properties every one of these carries.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the primitive, the trade group a run creates, and the roles the process fixes.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] — the set a run reads and writes, and how its membership is resolved.
 
 * Out of scope
 

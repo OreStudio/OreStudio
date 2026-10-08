@@ -24,10 +24,10 @@ contributors sit in different books, the merge also generates
 inter-desk transfers so that no book's risk moves. And a merge that
 would leave a residual is refused.
 
-Each merge is one operation over a set of trades, so it is a
-[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity: when it ran, who ran it, which
-trades contributed, which trade resulted, and which transfers bridged
-the books.
+Each merge is one operation over a set of trades. The contributors, the
+result and the bridges are the roles its members play in one
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade group]], and the group carries a foreign key to
+the run that records when it ran and who ran it.
 
 * Detail
 
@@ -114,9 +114,10 @@ merge.
 
 ** Why a merge has an identity
 
-A merge is an operation that attaches to a set of trades as a whole,
-so under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]] it is a group.
-The business needs it in its own right:
+A merge is an operation that attaches to a set of trades as a whole.
+Under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets and trade groups]] the set is a trade group
+and the run is its identity. The business needs the run in its own
+right:
 
 - /When and who./ The time of the merge, the user or process that ran
   it, and any notes.
@@ -169,7 +170,7 @@ this page's own analysis.
 * See also
 
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why a merge is a group with an identity.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — why a merge is a group with an identity.
 - [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]] — the inverse operation.
 - [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]] — the portfolio-wide relative.
 - [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the credit sense of netting.

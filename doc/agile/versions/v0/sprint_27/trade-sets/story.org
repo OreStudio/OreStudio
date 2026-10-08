@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 3EA65FC8-B878-4B62-8E26-347295E49335
+:END:
+#+title: Story: Define the trade set model
+#+description: A trade set is the primitive: a well-defined grouping of trades fixed at a point in time. Give it the domain knowledge it lacks -- what membership means, how N sets are bound into the inputs and outputs of one process run, and the taxonomy that places structures, acts and links -- so batching, every process and every report stands on a stated foundation instead of an assumed one.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Lay the domain knowledge of grouping trades on one foundation. A trade
+set is the primitive: a well-defined set of trades. A trade group is the
+set a run of a process creates, a structure is the set that is also a
+product, and a link is neither. Batching, every process and every report
+then stands on a stated model rather than an assumed one.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The cluster is written, published and swept. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing; the story is closed.          |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The grouping vocabulary is stated once, in one place: trade set, trade group, structure and link.
+- A taxonomy diagram shows how the groupings relate to each other and to the constructs above them.
+- Each document names what it excludes, so batching, the processes and the reports keep their own homes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3BB2CFD1-8E91-4AAA-BFC0-78A2D8C2624E][Scaffold story: Define the trade set model]] | DONE | 2026-10-07 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8DE41619-363C-4F8A-A99C-C39DF5DDD028][Write the trade set knowledge documents]] | DONE | 2026-10-07 | 2026-10-08 | Write the trade-set cluster: the primitive, its membership, the nesting test, the trade group and its run, the taxonomy diagram, and the rewiring of the documents that carried the old vocabulary. |
+
+* Decisions
+
+** A trade set is the primitive, and a trade group is the set a run creates
+
+Taken 2026-10-08 with the owner.
+
+A trade set is any well-defined set of trades, and a context defines it:
+a book, a counterparty, a portfolio, a netting set, a structure, a
+recorded selection, or an operation. /Set/ is the general word.
+/Group/ is not a second kind of thing; it is the case where the context
+is an operation. A trade group carries a foreign key to the run, the run
+is an instance of the process, and the process declares the roles. A
+structure is a trade set that is also a product, and a link is not a set
+at all.
+
+Roles come at two levels and the process fixes both: the group's role in
+its run, and the trade's role in its group. A funding roll declares an
+input and an output group; a batch declares one group and gives its
+members no role. Input means what the run read and output what it wrote,
+so the two overlap: a partially terminated trade is in both.
+
+The run's properties belong to the run, and the process declares which
+it has. A funding roll creates trades together and is undone as a whole.
+A batch changes no trade, so it has neither obligation.
+
+Where sets nest, membership is part of the trade's identity and is a key
+on the trade. Where they do not, membership is rows in the group and the
+trade outlives it.
+
+* Out of scope
+
+-

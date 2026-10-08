@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 116164D0-A54A-4872-8BA6-1FE36583C8C4
+:END:
+#+title: Trade set
+#+description: The primitive: a set of trades, defined by a context. The contexts a set arises from, the rule that the context's entity is the set's identity, and the test that tells a set from a position or a filter.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_groups:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+A trade set is a set of trades. Something always defines it, and this
+page calls that something the set's /context/. The context is a book, a
+counterparty, a portfolio, a netting set, a structure, a strategy, a
+recorded selection, or an operation. The context's entity is the set's
+identity, and one trade belongs to many sets at once.
+
+* Detail
+
+** The primitive
+
+A trade set asks nothing of its members beyond membership in it. Every
+other construct in this cluster is a trade set with something added: a
+purpose, an operation, or a product.
+
+The set is not the trades. It is the reading of which trades are in it,
+and a reading needs a standpoint. That standpoint is the context.
+
+** The contexts
+
+| Context | The set | How a trade is in it | Detail |
+|---------+---------+----------------------+--------|
+| Book | The trades booked into it | One book per trade | [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] |
+| Counterparty | The trades facing it | One counterparty per trade | [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] |
+| Portfolio | The trades in the books below it | Through the book | [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] |
+| Netting set | The trades in the agreement | One netting set per trade | [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] |
+| Structure | Its legs | Recorded, with a role | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+| Strategy | The legs of one product family | Recorded, with a role | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
+| A recorded selection | The trades someone chose | Recorded | this page |
+| An operation | The trades a run of a process touched | Recorded, with a role | [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] |
+
+** The context's entity is the set's identity
+
+Where the business names a collection, an entity carries the name. The
+book is the identity of its trade set, and the netting set is the
+identity of its own. The set needs no key of its own, because the
+context supplies one.
+
+An empty set is therefore meaningful. A book with no trades is a book,
+and a netting set with no trades still has an agreement behind it. A
+collection with no identity could not be empty, because nothing would
+record that it exists.
+
+** Membership
+
+A context resolves membership in one of two ways: by derivation from the
+trades' own attributes, or from a list recorded when the set is created.
+The choice decides where membership is stored and whether the set changes
+underneath its reader.
+[[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]] states it.
+
+** Nesting
+
+Some sets contain others. The portfolio tree and the structure tree are
+of this kind, and there membership is part of the trade's identity.
+[[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] states the test that
+separates them from the rest.
+
+** What is not a set
+
+A [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][position]] aggregates trades and has no identity. The
+system computes it from the trades in scope rather than recording it, so
+nothing refers to it by key and it is not a set.
+
+[[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]], trade blotters and live filters are
+queries. A query becomes a set when someone records the membership it
+returned. Until then it is a question asked again each time it is read.
+
+** What follows for the model
+
+- A derived set is a key on the trade's booking and needs no table.
+- A recorded set is a table with a key, and a membership table beside it.
+- The context's entity supplies the set's key wherever one exists.
+- A set whose context has no entity carries a key of its own.
+
+* Sources
+
+The set, group and structure vocabulary comes from internal analysis
+notes on structures and deal composition. The reading of a context as the
+definition of a set, and the derived-versus-recorded distinction, are
+this page's synthesis.
+
+* See also
+
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the hub that orders this cluster.
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] — the set whose context is an operation.
+- [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]] — how membership is resolved, and when it holds.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] — the sets whose membership is part of a trade's identity.
+- [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the relations between trades that hold no container, and are therefore not sets.
+- [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate that is neither a set nor a link.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — identity by key, and why a named collection needs an entity.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note this cluster hangs from.

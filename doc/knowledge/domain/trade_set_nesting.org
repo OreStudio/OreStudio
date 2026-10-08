@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 80760020-5896-4C1C-805D-87B93982F0C0
+:END:
+#+title: Nested trade sets
+#+description: Where trade sets contain each other, membership is part of the trade's identity: a trade is a path in a tree of sets. Where they do not, membership is an annotation. The test, and what it decides for the model.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:trade_groups:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+
+* Summary
+
+Some trade sets contain others, and a trade sits at a path in that tree.
+The portfolio tree is the large case, and a structure is the same shape
+in miniature because a structure's identity is its membership. Where sets
+nest, membership is part of what the trade is and belongs on the trade.
+Where they do not, membership is an annotation that the trade outlives.
+
+* Detail
+
+** The portfolio tree
+
+[[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] gives the large case. A
+portfolio holds books and other portfolios, a [[id:130A3261-E788-4222-9BD7-371AD92982FB][book]] holds deals,
+and the tree is written as a path, =AP.CHINA.IRS.OPTION=.
+
+The sets along that path contain one another. The set for =AP= contains
+the set for =AP.CHINA=, which contains the set for =AP.CHINA.IRS=. A
+trade in the innermost set is in all of them, because it is in the
+innermost set at all.
+
+** Membership is identity
+
+The path is the trade's address. Two systems that agree on the path agree
+on where the trade is, and a trade that moves to another book has changed
+a versioned attribute of the trade rather than a row in a membership
+table.
+
+So the entity and the set are two readings of one thing. The book is the
+set's extent, and the set is the book's address. Neither is prior to the
+other, and a model that stores them separately has two facts to keep in
+step.
+
+** The structure
+
+A structure is the same shape in miniature. Its identity is its
+membership: a structure whose legs differ is a different structure, and
+that is why [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal
+Composition]] can say that a change to any leg is a change to
+the structure. The customer confirms the structure, not the legs, and the
+confirmation names one deal.
+
+** The test
+
+Ask whether a trade can be in two sets of one kind at the same time.
+
+A trade is in one book, faces one counterparty, sits in one netting set,
+and belongs to at most one structure. It is in many batches, many
+selections and many report subjects over its life.
+
+Where the answer is one, the sets nest and membership is part of the
+trade's identity. Where the answer is many, they do not nest and
+membership is an annotation.
+
+** The counter-case
+
+A batch. A trade is in many batches over its life, and none of them says
+what the trade is. Removing the trade from a batch, or the batch from the
+record, leaves the trade identical in every respect that matters to
+anyone else.
+
+The same holds for a report subject and for a user's selection. These
+sets are real, and they can be recorded and referred to, but they are not
+part of the trade's address.
+
+** What it decides
+
+- Nested membership is a key on the trade and is versioned with the
+  booking.
+- Flat membership is a row in a [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]] and is not versioned
+  with the trade.
+- A question about the trade's book is well formed. A question about the
+  trade's batch is not, because there is no single answer.
+- Putting a trade into a batch is not a trade amendment. Moving it
+  between books is, and [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] describes the
+  versioned form of the change.
+
+* Sources
+
+The portfolio tree and its path notation come from [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and
+portfolios]]. The reading of membership as identity, and the
+exclusivity test, are this page's synthesis.
+
+* See also
+
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the hub that orders this cluster.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] — the primitive, and every context a set arises from.
+- [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]] — how nested membership is resolved and stored.
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — the entity at the leaf of the portfolio tree.
+- [[id:44C9D99B-979B-43AB-90BC-AF7E7D8BDE7C][Dynamic books]] — the arbitrary groupings that sit outside the tree, and are therefore not identity.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the tree in miniature, and why the customer sees the structure.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — why a change of address is a versioned change to the trade.
+- [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster, and where to read this page in it.

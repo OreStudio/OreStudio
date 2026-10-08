@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 8DE41619-363C-4F8A-A99C-C39DF5DDD028
+:END:
+#+title: Task: Write the trade set knowledge documents
+#+description: Initial task for: Define the trade set model
+#+type: task
+#+level: s1
+#+filetags: :trade-sets:sprint_27:v0:
+#+owner: marco
+#+branch: feature/trade-sets
+#+pr: 2787
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-07
+#+updated: 2026-10-07
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Lay the domain knowledge of grouping trades on one foundation. A trade
+set is the primitive, a trade group is the set a run of a process
+creates, a structure is the set that is also a product, and a link is
+neither. Write that down once, with the taxonomy, so that batching, the
+processes and the reports are built on a stated model rather than an
+assumed one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-07                               |
+
+* Acceptance
+
+- The grouping vocabulary is stated once, in one place: trade set, trade group, structure and link.
+- A taxonomy diagram shows how the groupings relate to each other and to the constructs above them.
+- Each document names what it excludes, so batching, the processes and the reports keep their own homes.
+
+* Plan
+
+Settle the shape with the owner before writing, then write in reading
+order: the primitive, the two rules that hang off it, the set an
+operation creates, and the hub that orders them. Redraw the taxonomy as
+a diagram beside the notes. Then sweep the pages that carried the old
+set/group vocabulary, so one model is stated in one place and nothing
+contradicts it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Pages in the cluster | 5 | =ls doc/knowledge/domain/trade_set*.org doc/knowledge/domain/trade_group*.org= | 9875d2baf8 |
+| Documents restated onto the vocabulary | 13 | =git diff --name-only 9d12f82b8c..HEAD -- doc/knowledge= | 9875d2baf8 |
+
+* Notes
+
+The hub keeps the id of the page it replaces, so the thirty documents
+that linked the old vocabulary reach the new one unchanged.
+
+The run's own page, its identity and its state machine, stays with the
+capture that owns it. This cluster states the foreign key and stops.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2787][#2787]] | [doc] Define the trade set model |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The cluster is written and published.
+
+- The hub, [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]],
+  carries the words, the test, the taxonomy, the reading order, and the
+  boundary against the grid, the run, the processes and the links.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] gives the
+  primitive and the contexts it arises from.
+- [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]]
+  separates derived membership from recorded membership.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] states
+  the exclusivity test that tells identity from annotation.
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] gives the
+  chain, the two role levels, the process catalogue and the run's
+  properties.
+- =trade_set_taxonomy.puml= and its render hold the diagram.
+- Thirteen documents that carried the old vocabulary now state the
+  target model, and the two captures and the trading story with them.

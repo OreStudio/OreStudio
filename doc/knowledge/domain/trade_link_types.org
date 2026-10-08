@@ -20,7 +20,7 @@ means adding a row here, not a special case in code.
 
 Some collections of trades used to be filed here and are not links:
 structures, merges, compressions, allocations and process runs. Each
-is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][group]] with an identity of its own, and its trades
+is a [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade group]] with an identity of its own, and its trades
 reference the group rather than each other. The last section lists
 them and where they now live.
 
@@ -118,15 +118,16 @@ notional of the same trade by amendment. Where expiry produces a
 settlement, the resulting cash is [[id:AAF5F9CB-D854-40A8-AEB5-50D998A9F0C0][linked cash]]. Exercise
 into a new trade is the exception, and has its own row.
 
-** Groups, not links
+** Groups rather than links, and the structure beside them
 
-These collections have an identity of their own: an operation attaches
-to the set of trades as a whole, and the business refers to the
-collection by name. Under [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][trade sets, groups and links]]
-each is a group. Its trades reference the group, and each trade's role
-in it is recorded with the reference.
+A trade group has an identity of its own: an operation attaches to the
+set of trades as a whole, and the group carries a foreign key to the run
+that created it. Its trades reference the group, and each trade's role in
+it is recorded with the reference. A structure is the other case. It is a
+trade set too, and what it adds to the set is a product rather than a
+run.
 
-| Group | Economic effect | Roles of its trades | Detail |
+| Collection | Economic effect | Roles of its trades | Detail |
 |-------+-----------------+---------------------+--------|
 | Structure | Yes; a change to a leg is a change to the deal | leg, by its role in the structure | [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] |
 | Merge | Yes; the contributors close and the result opens | contributor, result, bridge | [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] |
@@ -144,7 +145,7 @@ in it is recorded with the reference.
 * See also
 
 - [[id:2AAC92EB-2320-4385-999E-947E9E8FE5C5][Trade links]] — the principle, the invariants, and the prior art behind the term.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — why the collections in the last table are groups.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — why the collections in the last table are groups.
 - [[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] — the structure note that orders this cluster.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder and the structure operations.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the activity taxonomy, and which activities cut a version.

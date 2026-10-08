@@ -1,0 +1,79 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Trade set taxonomy
+
+skinparam rectangle {
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+}
+skinparam arrow {
+    Color #4A78A8
+    FontColor #1A1A1E
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+rectangle "trade set\na well-defined set of trades" as TradeSet
+
+rectangle "attribute set\nbook, counterparty,\nportfolio, netting set" as AttributeSet
+rectangle "recorded set\na list with a key" as RecordedSet
+rectangle "trade group\ncreated for a run\nof a process" as TradeGroup
+rectangle "structure\nset that is also a product" as Structure
+
+rectangle "process\na kind of operation" as Process
+rectangle "run\none instance of a process" as Run
+
+rectangle "not a set\nposition, filter,\nlink" as NotASet
+
+TradeSet <|-- AttributeSet : context is an attribute
+TradeSet <|-- RecordedSet : context is a recorded list
+TradeSet <|-- TradeGroup : context is an operation
+TradeSet <|-- Structure : context is a product
+
+TradeGroup --> Run : created for
+Run --> Process : instance of
+
+TradeSet .> NotASet : distinguished from
+
+note bottom of AttributeSet
+  Membership is derived, so the set
+  stores nothing and the context's
+  entity is its identity.
+end note
+
+note bottom of RecordedSet
+  Membership is stored, so the set
+  carries its own key and holds still.
+end note
+
+note right of TradeGroup
+  The process fixes both role levels:
+  the group's role in its run, and
+  each trade's role in its group.
+end note
+
+@enduml

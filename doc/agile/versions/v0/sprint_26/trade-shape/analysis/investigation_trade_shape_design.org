@@ -170,7 +170,7 @@ an identity, not a by-product of links.
 - /Set aside/: one link record with several ends, and links plus a
   separate run table.
 
-Recorded in [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]],
+Recorded in [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]],
 [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]], [[id:9BC498E0-91ED-4CA4-A7D7-7EF15684E799][Trade compression]],
 [[id:BBD96309-7C59-4D94-BDA7-27EAB7A8612E][Trade merge]] and [[id:73766E2D-D01B-4628-A1A0-78C9BBF709F6][Trade allocation]], with the link
 catalogue, Trade Links, Trade Versioning and Trade Activity brought
@@ -477,7 +477,7 @@ id" in places, and a task on the story renames it to trade id.
 * See also
 
 - [[id:7C7714A5-A590-4AEC-BDF9-9BF5A76E03F2][Story: Design the trade shape on data-oriented principles]] — the story this investigation serves.
-- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets, groups and links]] — the vocabulary the design follows.
+- [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the vocabulary the design follows.
 - [[id:6CB4879F-3F4B-48CE-A01E-E1B9AEE866B0][Book moves]] — the book move rule and its sources.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade Modeling]] — the four entities a trade is built from.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the review criteria and the C1202 rule.

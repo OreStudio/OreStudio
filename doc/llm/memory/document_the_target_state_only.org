@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 5410FAC0-02D1-4BEE-8600-819AA42818A0
+:END:
+#+title: Document the target state, not the history
+#+description: A durable document states the target state of the model, the rule and the words, never what they used to be.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:bearings:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A durable document states what the model, the rule or the name is. It never states what any of them used to be.
+
+*Why:* The reader acts on the target state. A sentence that says a term used to mean something else, or that a property has moved, makes the reader reconstruct a past they cannot act on, and git already holds that record. It also dates the page: the history is stale the moment the next change lands.
+
+*How to apply:* Write 'a trade set is the primitive', not 'earlier notes used set for the attribute case'. Write 'the run carries the provenance', not 'the properties have moved to the run'. Where a rejected framing still matters as a live distinction, state the distinction in the present tense and never as a former position.

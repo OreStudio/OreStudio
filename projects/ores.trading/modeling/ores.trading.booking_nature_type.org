@@ -67,7 +67,6 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename:        ores_trading_booking_nature_types_tbl
-:rls_tenant_isolation: true
 :END:
 
 * C++

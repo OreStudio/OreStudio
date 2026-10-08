@@ -97,7 +97,6 @@ The leg's ordinal within its role, counting from one.
 :PROPERTIES:
 :tablename: ores_trading_structure_members_tbl
 :rls_tenant_isolation: true
-:rls_party_isolation: true
 :END:
 
 ** Checks

@@ -398,7 +398,6 @@ describe('OresClient authenticated calls', () => {
                                 cpu_count: 8,
                                 ram_mb: 32768,
                                 gpu_type: '',
-                                last_rpc_time: '2026-10-04 14:31:02Z',
                                 credit_total: 100,
                                 modified_by: 'probe',
                                 performed_by: 'probe',

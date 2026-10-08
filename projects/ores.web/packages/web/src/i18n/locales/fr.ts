@@ -899,7 +899,7 @@ const fr: SourceCatalogue = {
         services: {
             title: 'Opérations : services',
             description:
-                'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les enveloppes de calcul appartiennent à l’écran de la grille.',
+                'Chaque service attendu par le registre, confronté aux instances qui se signalent. Les exécutants de calcul appartiennent à l’écran de la grille.',
             updated: 'Mis à jour à {at}',
             refresh: 'Actualiser',
             skew: 'Décalage de version : {services} exécutent {versions} alors que le reste exécute {newest}. La comparaison porte sur les versions, car un battement énonce la version et non la construction.',
@@ -944,7 +944,7 @@ const fr: SourceCatalogue = {
         grid: {
             title: 'Opérations : grille de calcul',
             description:
-                'Le résumé des hôtes et du travail de l’installation, une ligne par nœud, et les enveloppes de calcul qui se signalent pour ces nœuds.',
+                'Le résumé des hôtes et du travail de l’installation, une ligne par machine, portant l’exécutant qui se signale pour elle.',
             updated: 'Mis à jour à {at}',
             refresh: 'Actualiser',
             units: {
@@ -978,8 +978,15 @@ const fr: SourceCatalogue = {
             nodes: {
                 title: 'Nœuds',
                 rows: '{count} lignes',
+                reported:
+                    '{running} exécutants sur {total} se sont signalés au cours des {minutes} dernières minutes',
+                lost: '{count} perdus',
+                missing: '{count} manquants',
                 columns: {
                     node: 'Nœud',
+                    status: 'État',
+                    version: 'Version',
+                    instance: 'Instance',
                     tasksCompleted: 'Tâches terminées',
                     tasksFailed: 'Échecs',
                     tasksSinceLast: 'Depuis le dernier',
@@ -990,26 +997,10 @@ const fr: SourceCatalogue = {
                     sinceHeartbeat: 'Depuis le battement',
                 },
                 noHost: 'aucun hôte ne le nomme',
-                hint: 'Lecture seule. Le tableau des nœuds est celui de toute l’installation, et un nœud garde sa ligne tant qu’il est silencieux. La dernière colonne est l’âge du plus récent échantillon du nœud ; un nœud dont la dernière colonne grandit est celui qu’il faut regarder.',
+                hint: 'Lecture seule. Le tableau des nœuds est celui de toute l’installation, et un nœud garde sa ligne tant qu’il est silencieux. Les colonnes de l’exécutant indiquent le processus de calcul qui se signale pour le nœud ; un nœud dont l’exécutant ne s’est jamais signalé indique « manquant ». La dernière colonne est l’âge du plus récent échantillon du nœud ; un nœud dont la dernière colonne grandit est celui qu’il faut regarder.',
                 open: 'Ouvrir le nœud',
                 openHint:
                     'En attente des parcours de calcul, qui possèdent les écrans des hôtes et des unités de travail.',
-            },
-            wrappers: {
-                title: 'Enveloppes de calcul',
-                reported:
-                    '{running} sur {total} se sont signalées au cours des {minutes} dernières minutes',
-                lost: '{count} perdues',
-                missing: '{count} manquantes',
-                columns: {
-                    instance: 'Instance',
-                    node: 'Nœud',
-                    status: 'État',
-                    version: 'Version',
-                    lastHeartbeat: 'Dernier battement',
-                },
-                ago: 'il y a {age}',
-                hint: 'Une enveloppe tourne sur chaque nœud et prend le travail que ce nœud exécute. Le battement porte l’identifiant d’hôte, donc chaque ligne nomme le nœud sur lequel elle tourne. Les lignes sont la lecture du registre filtrée sur le service d’enveloppe de calcul.',
             },
             gap: {
                 history: {

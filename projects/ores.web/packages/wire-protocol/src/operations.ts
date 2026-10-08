@@ -1689,7 +1689,6 @@ const hostSchema = z.object({
     ram_mb: z.int().nonnegative().default(0),
     gpu_type: text,
     display_name: text,
-    last_rpc_time: text,
     credit_total: z.number().default(0),
     modified_by: text,
     performed_by: text,
@@ -1717,19 +1716,23 @@ export const listHostsReplySchema = z.object({
     total: z.int().nonnegative().default(0),
 }) satisfies z.ZodType<ListHostsResponse>;
 
-/** One node row as the browser reads it: the measurements and the hostname. */
+/**
+ * One node row as the browser reads it: the measurements, the hostname, and the
+ * runner that reports for the node.
+ *
+ * The runner fields are folded onto the node rather than listed beside it,
+ * because one runner runs on each machine, so a second table would restate the
+ * node rows in another order. A node whose slot no instance fills keeps its row
+ * with the missing state and no instance or version.
+ */
 export const gridNodeRowSchema = nodeSummarySchema.extend({
     host: text.nullable().default(null),
+    instance_id: z.string().nullable().default(null),
+    state: z.string().default('missing'),
+    version: z.string().nullable().default(null),
 });
 
 export type GridNodeRow = z.infer<typeof gridNodeRowSchema>;
-
-/** One wrapper row as the browser reads it: its dated roster slot and its node. */
-export const gridWrapperRowSchema = serviceRosterRowSchema.extend({
-    host: text.nullable().default(null),
-});
-
-export type GridWrapperRow = z.infer<typeof gridWrapperRowSchema>;
 
 /** The body of the browser's grid read. */
 export const gridViewSchema = z.object({
@@ -1744,7 +1747,6 @@ export const gridViewSchema = z.object({
     outcomes_client_error: z.int().nonnegative().default(0),
     outcomes_no_reply: z.int().nonnegative().default(0),
     nodes: z.array(gridNodeRowSchema).default([]),
-    wrappers: z.array(gridWrapperRowSchema).default([]),
 });
 
 export type GridView = z.infer<typeof gridViewSchema>;

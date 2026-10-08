@@ -891,7 +891,7 @@ export const en: SourceCatalogue = {
         services: {
             title: 'Operations: services',
             description:
-                'Every service the registry expects, met by the instances that report. The compute wrappers belong to the grid screen.',
+                'Every service the registry expects, met by the instances that report. The compute runners belong to the grid screen.',
             updated: 'Updated {at}',
             refresh: 'Refresh',
             skew: 'Version skew: {services} run {versions} while the rest run {newest}. The comparison is between releases, because a heartbeat states the release and not the build.',
@@ -935,7 +935,7 @@ export const en: SourceCatalogue = {
         grid: {
             title: 'Operations: compute grid',
             description:
-                "The installation's host and work summary, one row per node, and the compute wrappers that report for those nodes.",
+                "The installation's host and work summary, one row per machine, carrying the runner that reports for it.",
             updated: 'Updated {at}',
             refresh: 'Refresh',
             units: {
@@ -969,8 +969,14 @@ export const en: SourceCatalogue = {
             nodes: {
                 title: 'Nodes',
                 rows: '{count} rows',
+                reported: '{running} of {total} runners reported in the last {minutes} minutes',
+                lost: '{count} lost',
+                missing: '{count} missing',
                 columns: {
                     node: 'Node',
+                    status: 'Status',
+                    version: 'Version',
+                    instance: 'Instance',
                     tasksCompleted: 'Tasks done',
                     tasksFailed: 'Failed',
                     tasksSinceLast: 'Since last',
@@ -981,25 +987,10 @@ export const en: SourceCatalogue = {
                     sinceHeartbeat: 'Since heartbeat',
                 },
                 noHost: 'no host names it',
-                hint: "Read-only. The node table is the whole installation's, and a node keeps its row while it is quiet. The last column is the age of the node's newest sample; a node whose last column grows is the one to look at.",
+                hint: "Read-only. The node table is the whole installation's, and a node keeps its row while it is quiet. The runner columns state the compute process that reports for the node; a node whose runner never reported says missing. The last column is the age of the node's newest sample; a node whose last column grows is the one to look at.",
                 open: 'Open the node',
                 openHint:
                     'Waits for the compute journeys, which own the host and workunit screens.',
-            },
-            wrappers: {
-                title: 'Compute wrappers',
-                reported: '{running} of {total} reported in the last {minutes} minutes',
-                lost: '{count} lost',
-                missing: '{count} missing',
-                columns: {
-                    instance: 'Instance',
-                    node: 'Node',
-                    status: 'Status',
-                    version: 'Version',
-                    lastHeartbeat: 'Last heartbeat',
-                },
-                ago: '{age} ago',
-                hint: 'One wrapper runs on each node and takes the work that node runs. The heartbeat carries the host id, so each row names the node it runs on. The rows are the roster read filtered to the compute wrapper service.',
             },
             gap: {
                 history: {

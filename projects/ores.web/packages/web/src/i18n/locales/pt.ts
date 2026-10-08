@@ -893,7 +893,7 @@ const pt: SourceCatalogue = {
         services: {
             title: 'Operações: serviços',
             description:
-                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os invólucros de cálculo pertencem ao ecrã da grelha.',
+                'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam. Os executores de cálculo pertencem ao ecrã da grelha.',
             updated: 'Atualizado às {at}',
             refresh: 'Atualizar',
             skew: 'Desvio de versão: {services} executam {versions} enquanto o resto executa {newest}. A comparação é entre versões, porque um batimento indica a versão e não a compilação.',
@@ -938,7 +938,7 @@ const pt: SourceCatalogue = {
         grid: {
             title: 'Operações: grelha de cálculo',
             description:
-                'O resumo dos anfitriões e do trabalho da instalação, uma linha por nó, e os invólucros de cálculo que se anunciam para esses nós.',
+                'O resumo dos anfitriões e do trabalho da instalação, uma linha por máquina, com o executor que se anuncia por ela.',
             updated: 'Atualizado às {at}',
             refresh: 'Atualizar',
             units: {
@@ -972,8 +972,15 @@ const pt: SourceCatalogue = {
             nodes: {
                 title: 'Nós',
                 rows: '{count} linhas',
+                reported:
+                    '{running} de {total} executores anunciaram-se nos últimos {minutes} minutos',
+                lost: '{count} perdidos',
+                missing: '{count} em falta',
                 columns: {
                     node: 'Nó',
+                    status: 'Estado',
+                    version: 'Versão',
+                    instance: 'Instância',
                     tasksCompleted: 'Tarefas concluídas',
                     tasksFailed: 'Falhas',
                     tasksSinceLast: 'Desde a última',
@@ -984,25 +991,10 @@ const pt: SourceCatalogue = {
                     sinceHeartbeat: 'Desde o batimento',
                 },
                 noHost: 'nenhum anfitrião o nomeia',
-                hint: 'Apenas de leitura. A tabela de nós é a de toda a instalação, e um nó mantém a sua linha enquanto está silencioso. A última coluna é a idade da amostra mais recente do nó; um nó cuja última coluna cresce é o que deve ser observado.',
+                hint: 'Apenas de leitura. A tabela de nós é a de toda a instalação, e um nó mantém a sua linha enquanto está silencioso. As colunas do executor indicam o processo de cálculo que se anuncia pelo nó; um nó cujo executor nunca se anunciou diz «em falta». A última coluna é a idade da amostra mais recente do nó; um nó cuja última coluna cresce é o que deve ser observado.',
                 open: 'Abrir o nó',
                 openHint:
                     'Aguarda os percursos de cálculo, que possuem os ecrãs dos anfitriões e das unidades de trabalho.',
-            },
-            wrappers: {
-                title: 'Invólucros de cálculo',
-                reported: '{running} de {total} anunciaram-se nos últimos {minutes} minutos',
-                lost: '{count} perdidos',
-                missing: '{count} em falta',
-                columns: {
-                    instance: 'Instância',
-                    node: 'Nó',
-                    status: 'Estado',
-                    version: 'Versão',
-                    lastHeartbeat: 'Último batimento',
-                },
-                ago: 'há {age}',
-                hint: 'Um invólucro corre em cada nó e recebe o trabalho que esse nó executa. O batimento transporta o identificador do anfitrião, por isso cada linha nomeia o nó em que corre. As linhas são a leitura do registo filtrada pelo serviço de invólucro de cálculo.',
             },
             gap: {
                 history: {

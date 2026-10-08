@@ -98,7 +98,6 @@ function wireHost(overrides: Record<string, unknown> = {}): Record<string, unkno
         cpu_count: 8,
         ram_mb: 32768,
         gpu_type: '',
-        last_rpc_time: '2026-10-04 14:31:02Z',
         credit_total: 100,
         modified_by: 'sysadmin',
         performed_by: 'sysadmin',
@@ -292,34 +291,33 @@ interface GridBody {
     readonly nodes: readonly {
         readonly host_id: string;
         readonly host: string | null;
+        readonly instance_id: string | null;
+        readonly state: string;
+        readonly version: string | null;
         readonly tasks_failed: number;
         readonly max_task_duration_ms: number;
-    }[];
-    readonly wrappers: readonly {
-        readonly service_name: string;
-        readonly host: string | null;
-        readonly age_seconds: number | null;
     }[];
 }
 
 describe('GET /api/operations/grid', () => {
-    const WRAPPER = 'ores.compute.wrapper';
+    /* The registry's service name; the screen calls the agent a runner. */
+    const RUNNER = 'ores.compute.wrapper';
 
-    /** One wrapper slot as the roster answers it. */
-    function wrapperSlot(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    /** One runner slot as the roster answers it. */
+    function runnerSlot(overrides: Record<string, unknown> = {}): Record<string, unknown> {
         return wireSlot({
-            service_name: WRAPPER,
-            display_name: 'Compute wrapper',
+            service_name: RUNNER,
+            display_name: 'Compute runner',
             slot: 1,
             host_id: HOST,
             ...overrides,
         });
     }
 
-    it('answers the summary, names the nodes, and places each wrapper on its node', async () => {
+    it('answers the summary, names the nodes, and folds each runner onto its node', async () => {
         const { server, cookies, calls } = buildTestServer('system-administration', [
-            wrapperSlot(),
-            wrapperSlot({
+            runnerSlot(),
+            runnerSlot({
                 slot: 2,
                 instance_id: null,
                 state: 'missing',
@@ -327,7 +325,8 @@ describe('GET /api/operations/grid', () => {
                 version: null,
                 sampled_at: null,
             }),
-            wireSlot(),
+            // A slot of another service on the same host must not be folded in.
+            wireSlot({ host_id: HOST, state: 'lost', version: 'v0.0.1' }),
         ]);
 
         const response = await server.inject({
@@ -349,15 +348,14 @@ describe('GET /api/operations/grid', () => {
         expect(body.nodes[1]?.host_id).toBe(UNKNOWN_HOST);
         expect(body.nodes[0]?.tasks_failed).toBe(2);
         expect(body.nodes[0]?.max_task_duration_ms).toBe(51_000);
-        // Only the wrappers are answered, and the heartbeat's host id places
-        // each on its node.
-        expect(body.wrappers.map((wrapper) => wrapper.service_name)).toEqual([WRAPPER, WRAPPER]);
-        expect(body.wrappers.map((wrapper) => wrapper.host)).toEqual(['Grid 01', null]);
-        // The wrapper's report is dated on the deployment's clock, as the
-        // services roster's rows are; a wrapper that never reported carries no
-        // age rather than a made-up one.
-        expect(typeof body.wrappers[0]?.age_seconds).toBe('number');
-        expect(body.wrappers[1]?.age_seconds).toBeNull();
+        // The runner is folded onto the node it reports for, so the node its
+        // host id names carries that instance's state, version and id.
+        expect(body.nodes.map((node) => node.state)).toEqual(['running', 'missing']);
+        expect(body.nodes[0]?.instance_id).toBe(INSTANCE);
+        expect(body.nodes[0]?.version).toBe('v0.0.25');
+        // A node no runner reports for keeps its row with nothing to name.
+        expect(body.nodes[1]?.instance_id).toBeNull();
+        expect(body.nodes[1]?.version).toBeNull();
         expect(calls).toEqual([
             { subject: 'compute.v1.ops.get_grid_stats', body: {} },
             { subject: 'compute.v1.hosts.list', body: {} },
@@ -368,7 +366,7 @@ describe('GET /api/operations/grid', () => {
     it('names a node by its registered display name, not by its external id', async () => {
         const { server, cookies } = buildTestServer(
             'system-administration',
-            [wrapperSlot()],
+            [runnerSlot()],
             wireGridStats(),
             [wireHost({ external_id: HOST, display_name: 'quiet-yak-4f2a' })],
         );
@@ -384,13 +382,14 @@ describe('GET /api/operations/grid', () => {
         const body = response.json() as GridBody;
         expect(body.nodes[0]?.host).toBe('quiet-yak-4f2a');
         expect(body.nodes[0]?.host).not.toBe(HOST);
-        expect(body.wrappers[0]?.host).toBe('quiet-yak-4f2a');
+        // The runner is placed on the node the host registry names.
+        expect(body.nodes[0]?.state).toBe('running');
     });
 
     it('falls back to the external id when a host has no display name', async () => {
         const { server, cookies } = buildTestServer(
             'system-administration',
-            [wrapperSlot()],
+            [runnerSlot()],
             wireGridStats(),
             [wireHost({ display_name: null })],
         );
@@ -409,7 +408,7 @@ describe('GET /api/operations/grid', () => {
     it('answers no sample time, rather than a zeroed one, when none is stored', async () => {
         const { server, cookies } = buildTestServer(
             'system-administration',
-            [wrapperSlot()],
+            [runnerSlot()],
             wireGridStats({ sampled_at: '' }),
         );
 
@@ -425,9 +424,7 @@ describe('GET /api/operations/grid', () => {
     });
 
     it('refuses a query field the read does not take', async () => {
-        const { server, cookies, calls } = buildTestServer('system-administration', [
-            wrapperSlot(),
-        ]);
+        const { server, cookies, calls } = buildTestServer('system-administration', [runnerSlot()]);
 
         const response = await server.inject({
             method: 'GET',
@@ -443,9 +440,7 @@ describe('GET /api/operations/grid', () => {
     });
 
     it('refuses a session that does not act on the deployment', async () => {
-        const { server, cookies, calls } = buildTestServer('tenant-administration', [
-            wrapperSlot(),
-        ]);
+        const { server, cookies, calls } = buildTestServer('tenant-administration', [runnerSlot()]);
 
         const response = await server.inject({
             method: 'GET',
@@ -461,7 +456,7 @@ describe('GET /api/operations/grid', () => {
     });
 
     it('refuses a caller with no session at all', async () => {
-        const { server } = buildTestServer('system-administration', [wrapperSlot()]);
+        const { server } = buildTestServer('system-administration', [runnerSlot()]);
 
         const response = await server.inject({ method: 'GET', url: '/api/operations/grid' });
         await server.close();

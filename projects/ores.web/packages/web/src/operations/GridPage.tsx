@@ -28,15 +28,17 @@
  * not: the poller computes them for one tenant, so the panel says whose they
  * are rather than presenting them as every tenant's work.
  *
- * The wrappers are placed on the nodes they run on, because the heartbeat
- * carries the host id. A node whose host row is missing keeps its row and says
- * no host names it, rather than printing the id as if it were one.
+ * One row per machine carries the runner that reports for it, because one
+ * runner runs on each node: the state, version and instance are columns of the
+ * node rather than a second table restating the node rows in another order. A
+ * node whose runner never reported keeps its row and says missing rather than
+ * leaving the table.
  */
 
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView, GridWrapperRow } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
@@ -193,6 +195,19 @@ function SummaryPanel({ view }: { readonly view: GridView }): ReactNode {
     );
 }
 
+/**
+ * The last eight characters of an instance id, as the row states them.
+ *
+ * The ids are UUIDv7, so they begin with a millisecond timestamp: agents
+ * started in the same moment share their leading hex digits, which makes the
+ * head say "when this process started" rather than which process it is. The
+ * tail is the random part, so it is the part that tells two runners apart. The
+ * full id stays in the cell's title.
+ */
+export function instanceTail(instanceId: string): string {
+    return instanceId.slice(-8);
+}
+
 /** One node's name: the hostname, or the id beside a plain statement it is one. */
 function NodeName({ node }: { readonly node: GridNodeRow }): ReactNode {
     const { t } = useTranslation();
@@ -207,21 +222,63 @@ function NodeName({ node }: { readonly node: GridNodeRow }): ReactNode {
     return <span className="font-mono">{node.host}</span>;
 }
 
+/** The runner's instance, shown by the tail with the full id in the title. */
+function RunnerInstance({ node }: { readonly node: GridNodeRow }): ReactNode {
+    if (node.instance_id === null) {
+        return <span className="font-mono text-ink-faint">—</span>;
+    }
+    return (
+        <span className="font-mono" title={node.instance_id}>
+            {instanceTail(node.instance_id)}
+        </span>
+    );
+}
+
 function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): ReactNode {
     const { t } = useTranslation();
+    const running = nodes.filter((node) => node.state === 'running');
+    const lost = nodes.filter((node) => node.state === 'lost');
+    const missing = nodes.filter((node) => node.state === 'missing');
+    const newestVersion = newestVersionOf(running);
     return (
         <section className="card space-y-4 p-6">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t('operations.grid.nodes.title')}</h2>
-                <span className="text-xs text-ink-faint">
-                    {t('operations.grid.nodes.rows', { count: nodes.length })}
-                </span>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-ink-faint">
+                    <span>{t('operations.grid.nodes.rows', { count: nodes.length })}</span>
+                    <span>
+                        {t('operations.grid.nodes.reported', {
+                            running: running.length,
+                            total: nodes.length,
+                            minutes: SERVICE_RUNNING_WINDOW_MINUTES,
+                        })}
+                    </span>
+                    {lost.length > 0 && (
+                        <Tag tone="muted">
+                            {t('operations.grid.nodes.lost', { count: lost.length })}
+                        </Tag>
+                    )}
+                    {missing.length > 0 && (
+                        <Tag tone="warn">
+                            {t('operations.grid.nodes.missing', { count: missing.length })}
+                        </Tag>
+                    )}
+                </div>
             </header>
             <table className="w-full text-sm">
                 <thead className="text-left text-xs text-ink-faint">
                     <tr>
                         <th className="py-1 font-normal">
                             {t('operations.grid.nodes.columns.node')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.nodes.columns.status')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.nodes.columns.version')}
+                        </th>
+                        <th className="py-1 font-normal">
+                            {t('operations.grid.nodes.columns.instance')}
                         </th>
                         <th className="py-1 font-normal">
                             {t('operations.grid.nodes.columns.tasksCompleted')}
@@ -256,6 +313,18 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                             <tr key={node.host_id}>
                                 <td className="py-2">
                                     <NodeName node={node} />
+                                </td>
+                                <td className="py-2">
+                                    <InstanceStateTag state={node.state} />
+                                </td>
+                                <td className="py-2">
+                                    <InstanceVersion
+                                        instance={node}
+                                        newestVersion={newestVersion}
+                                    />
+                                </td>
+                                <td className="py-2">
+                                    <RunnerInstance node={node} />
                                 </td>
                                 <td className="py-2 font-mono">{node.tasks_completed}</td>
                                 <td className="py-2 font-mono">
@@ -301,91 +370,6 @@ function NodesPanel({ nodes }: { readonly nodes: readonly GridNodeRow[] }): Reac
                     {t('operations.grid.nodes.openHint')}
                 </span>
             </div>
-        </section>
-    );
-}
-
-function WrappersPanel({ wrappers }: { readonly wrappers: readonly GridWrapperRow[] }): ReactNode {
-    const { t } = useTranslation();
-    const running = wrappers.filter((wrapper) => wrapper.state === 'running');
-    const lost = wrappers.filter((wrapper) => wrapper.state === 'lost');
-    const missing = wrappers.filter((wrapper) => wrapper.state === 'missing');
-    const newestVersion = newestVersionOf(running);
-    return (
-        <section className="card space-y-4 p-6">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-lg font-medium">{t('operations.grid.wrappers.title')}</h2>
-                <div className="flex items-center gap-2 text-xs text-ink-faint">
-                    <span>
-                        {t('operations.grid.wrappers.reported', {
-                            running: running.length,
-                            total: wrappers.length,
-                            minutes: SERVICE_RUNNING_WINDOW_MINUTES,
-                        })}
-                    </span>
-                    {lost.length > 0 && (
-                        <Tag tone="muted">
-                            {t('operations.grid.wrappers.lost', { count: lost.length })}
-                        </Tag>
-                    )}
-                    {missing.length > 0 && (
-                        <Tag tone="warn">
-                            {t('operations.grid.wrappers.missing', {
-                                count: missing.length,
-                            })}
-                        </Tag>
-                    )}
-                </div>
-            </header>
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-ink-faint">
-                    <tr>
-                        <th className="py-1 font-normal">
-                            {t('operations.grid.wrappers.columns.instance')}
-                        </th>
-                        <th className="py-1 font-normal">
-                            {t('operations.grid.wrappers.columns.node')}
-                        </th>
-                        <th className="py-1 font-normal">
-                            {t('operations.grid.wrappers.columns.status')}
-                        </th>
-                        <th className="py-1 font-normal">
-                            {t('operations.grid.wrappers.columns.version')}
-                        </th>
-                        <th className="py-1 font-normal">
-                            {t('operations.grid.wrappers.columns.lastHeartbeat')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-line-subtle">
-                    {wrappers.map((wrapper) => (
-                        <tr key={wrapper.instance_id ?? `missing-${String(wrapper.slot)}`}>
-                            <td className="py-2 font-mono" title={wrapper.instance_id ?? undefined}>
-                                {wrapper.instance_id === null
-                                    ? '—'
-                                    : wrapper.instance_id.slice(0, 8)}
-                            </td>
-                            <td className="py-2 font-mono">
-                                {wrapper.host === null ? '—' : wrapper.host}
-                            </td>
-                            <td className="py-2">
-                                <InstanceStateTag state={wrapper.state} />
-                            </td>
-                            <td className="py-2">
-                                <InstanceVersion instance={wrapper} newestVersion={newestVersion} />
-                            </td>
-                            <td className="py-2 font-mono">
-                                {wrapper.age_seconds === null
-                                    ? '—'
-                                    : t('operations.grid.wrappers.ago', {
-                                          age: formatAge(wrapper.age_seconds, t),
-                                      })}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <p className="text-xs text-ink-faint">{t('operations.grid.wrappers.hint')}</p>
         </section>
     );
 }
@@ -449,8 +433,6 @@ export function GridPage(): ReactNode {
             )}
 
             <NodesPanel nodes={view.nodes} />
-
-            <WrappersPanel wrappers={view.wrappers} />
 
             <GapPanel gaps={gaps} />
             <RelatedJourneys ids={JOURNEYS} />

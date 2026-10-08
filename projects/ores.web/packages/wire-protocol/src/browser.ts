@@ -214,10 +214,10 @@ export { serviceRosterViewSchema } from './operations.js';
 export type { ServiceRosterRow, ServiceRosterView } from './operations.js';
 
 // The compute grid the operations screen reads, as the BFF serves it: the
-// stored counters with their sample time, one row per node with its hostname,
-// and the wrappers placed on the nodes they run on.
-export { gridViewSchema, gridNodeRowSchema, gridWrapperRowSchema } from './operations.js';
-export type { GridNodeRow, GridView, GridWrapperRow } from './operations.js';
+// stored counters with their sample time, and one row per node carrying its
+// hostname and the runner that reports for it.
+export { gridViewSchema, gridNodeRowSchema } from './operations.js';
+export type { GridNodeRow, GridView } from './operations.js';
 
 // The login record a credentials screen reads. It carries no credential
 // column, so nothing secret travels with it.

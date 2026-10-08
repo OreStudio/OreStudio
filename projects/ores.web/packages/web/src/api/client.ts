@@ -1074,11 +1074,12 @@ export const api = {
     },
 
     /**
-     * The compute grid: the stored counters, the nodes and their wrappers.
+     * The compute grid: the stored counters and the nodes, each with its runner.
      *
-     * The BFF joins the host registry onto the node rows and the wrappers, so
-     * a name is the deployment's answer rather than a join this browser makes
-     * from a page it would have had to read itself.
+     * The BFF joins the host registry onto the node rows and folds each node's
+     * runner onto them, so a name and a runner state are the deployment's answer
+     * rather than joins this browser makes from pages it would have had to read
+     * itself.
      */
     async grid(): Promise<GridView> {
         return gridViewSchema.parse(await request('/api/operations/grid', { method: 'GET' }));

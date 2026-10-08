@@ -25,7 +25,7 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { ServiceRosterRow, SessionView } from '@ores/wire-protocol/browser';
-import type { GridNodeRow, GridView, GridWrapperRow } from '@ores/wire-protocol/browser';
+import type { GridNodeRow, GridView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { frFlat } from '../i18n/locales/fr.js';
@@ -180,11 +180,14 @@ function rosterRow(overrides: Partial<ServiceRosterRow> = {}): ServiceRosterRow 
     };
 }
 
-/** One node row as the BFF answers it: the measurements and the hostname. */
+/** One node row as the BFF answers it: the measurements, the hostname and its runner. */
 function gridNode(overrides: Partial<GridNodeRow> = {}): GridNodeRow {
     return {
         host_id: '9e0f33aa-0000-4000-8000-000000000001',
         host: 'grid-01.example.com',
+        instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
+        state: 'running',
+        version: 'v0.0.25',
         tasks_completed: 1284,
         tasks_failed: 0,
         tasks_since_last: 12,
@@ -193,25 +196,6 @@ function gridNode(overrides: Partial<GridNodeRow> = {}): GridNodeRow {
         input_bytes_fetched: 1_288_490_188,
         output_bytes_uploaded: 230_686_720,
         seconds_since_hb: 8,
-        ...overrides,
-    };
-}
-
-/** One wrapper row as the BFF answers it: its dated roster slot and its node. */
-function gridWrapper(overrides: Partial<GridWrapperRow> = {}): GridWrapperRow {
-    return {
-        service_name: 'ores.compute.wrapper',
-        display_name: 'Compute wrapper',
-        description: '',
-        service_account: null,
-        slot: 1,
-        state: 'running',
-        instance_id: '1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6',
-        host_id: '9e0f33aa-0000-4000-8000-000000000001',
-        host: 'grid-01.example.com',
-        version: 'v0.0.25',
-        sampled_at: '2026-10-04 14:31:00Z',
-        age_seconds: 5,
         ...overrides,
     };
 }
@@ -230,7 +214,6 @@ function gridView(overrides: Partial<GridView> = {}): GridView {
         outcomes_client_error: 3,
         outcomes_no_reply: 1,
         nodes: [gridNode()],
-        wrappers: [gridWrapper()],
         ...overrides,
     };
 }
@@ -435,7 +418,7 @@ describe('the services screen', () => {
         expect(html).toContain('15 m 0 s ago');
     });
 
-    it('leaves the compute wrappers to the grid screen', () => {
+    it('leaves the compute runners to the grid screen', () => {
         const html = withProviders(<ServicesPage />, '/', [
             rosterRow(),
             rosterRow({
@@ -595,6 +578,9 @@ describe('the compute grid screen', () => {
     const QUIET_NODE = gridNode({
         host_id: 'ad55e110-0000-4000-8000-000000000002',
         host: 'grid-05.example.com',
+        instance_id: '84b36cd1-7c2e-4a09-93b1-2c3d4e5f6a7b',
+        state: 'lost',
+        version: 'v0.0.24',
         tasks_completed: 101,
         tasks_since_last: 0,
         avg_task_duration_ms: 0,
@@ -606,6 +592,9 @@ describe('the compute grid screen', () => {
     const NAMELESS_NODE = gridNode({
         host_id: 'c30b9d47-0000-4000-8000-000000000003',
         host: null,
+        instance_id: null,
+        state: 'missing',
+        version: null,
         tasks_completed: 57,
         tasks_since_last: 2,
     });
@@ -667,43 +656,70 @@ describe('the compute grid screen', () => {
         expect(html).toContain('no host names it');
     });
 
-    it('places each wrapper on the node it runs on', () => {
+    it('carries each node’s runner on the node row, with the instance tail shown', () => {
         const html = withProviders(
             <GridPage />,
             '/',
             [],
             gridView({
-                wrappers: [
-                    gridWrapper(),
-                    gridWrapper({
-                        slot: 2,
+                nodes: [
+                    gridNode(),
+                    gridNode({
+                        host_id: '9e0f33aa-0000-4000-8000-000000000002',
+                        host: 'grid-05.example.com',
                         instance_id: '84b36cd1-7c2e-4a09-93b1-2c3d4e5f6a7b',
-                        host_id: null,
-                        host: null,
-                        age_seconds: 900,
+                        state: 'lost',
+                        version: 'v0.0.24',
                     }),
-                    gridWrapper({
-                        slot: 3,
-                        instance_id: null,
-                        host_id: null,
-                        host: null,
-                        state: 'missing',
-                        version: null,
-                        sampled_at: null,
-                        age_seconds: null,
+                    NAMELESS_NODE,
+                ],
+            }),
+        );
+
+        // One table: the node count and the runner report share its header.
+        expect(html).toContain('3 rows');
+        expect(html).toContain('1 of 3 runners reported in the last 5 minutes');
+        expect(html).toContain('1 lost');
+        expect(html).toContain('1 missing');
+        // The state words are the read's own, one per node.
+        expect(html.match(/>running</g) ?? []).toHaveLength(1);
+        expect(html.match(/>lost</g) ?? []).toHaveLength(1);
+        expect(html.match(/>missing</g) ?? []).toHaveLength(1);
+        // The instance identifier is shown by its tail, because UUIDv7 ids
+        // start with the instant the process started, which agents launched
+        // together share. The full value stays in the title.
+        expect(html).toContain('title="1a90fe12-5b3c-4d6e-8f70-91a2b3c4d5e6"');
+        expect(html).toContain('>b3c4d5e6<');
+        expect(html).not.toContain('>1a90fe12<');
+        // The version travels with the runner, and the two agent attributes
+        // share the row with the node's measurements.
+        expect(html).toContain('v0.0.24');
+        expect(html).toContain('grid-05.example.com');
+    });
+
+    it('warns about a running runner that trails the newest release', () => {
+        const html = withProviders(
+            <GridPage />,
+            '/',
+            [],
+            gridView({
+                nodes: [
+                    gridNode(),
+                    gridNode({
+                        host_id: '9e0f33aa-0000-4000-8000-000000000002',
+                        host: 'grid-02.example.com',
+                        instance_id: '84b36cd1-7c2e-4a09-93b1-2c3d4e5f6a7b',
+                        version: 'v0.0.24',
                     }),
                 ],
             }),
         );
 
-        expect(html).toContain('2 of 3 reported in the last 5 minutes');
-        expect(html).toContain('1 missing');
-        // The heartbeat carries the host id, so the panel names the node each
-        // wrapper runs on instead of listing them beside the nodes.
-        expect(html).toContain('grid-01.example.com');
-        expect(html).toContain('15 m 0 s ago');
-        // A wrapper whose host id names no host row shows nothing, not a name.
-        expect(html).not.toContain('listed beside the nodes');
+        // A running runner below the newest release carries the warning; a lost
+        // one is not compared, because a release from a process that stopped
+        // says nothing about the deployment.
+        expect(html).toContain('older build');
+        expect(html.match(/older build/g) ?? []).toHaveLength(1);
     });
 
     it('states no sample rather than presenting zero hosts as the fleet', () => {

@@ -110,12 +110,24 @@ export function InstanceStateTag({
     return <Tag tone={stateTone(known)}>{t(`operations.instance.state.${known}`)}</Tag>;
 }
 
+/**
+ * The release and the state a version cell reads.
+ *
+ * The services screen carries them on a roster row and the grid screen on a
+ * node row, so the cell states which fields it needs rather than which table
+ * the row came from.
+ */
+export interface VersionedInstance {
+    readonly version: string | null;
+    readonly state: string;
+}
+
 /** The release an instance runs, warned when it trails the newest running one. */
 export function InstanceVersion({
     instance,
     newestVersion,
 }: {
-    readonly instance: ServiceRosterSlot;
+    readonly instance: VersionedInstance;
     readonly newestVersion: string | undefined;
 }): ReactNode {
     const { t } = useTranslation();
@@ -172,7 +184,9 @@ export function sameVersion(left: string, right: string): boolean {
 }
 
 /** The newest release among the running instances. */
-export function newestVersionOf(running: readonly ServiceRosterSlot[]): string | undefined {
+export function newestVersionOf(
+    running: readonly { readonly version: string | null }[],
+): string | undefined {
     return running
         .map((instance) => instance.version)
         .filter((version): version is string => version !== null && version !== '')

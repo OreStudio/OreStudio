@@ -34,11 +34,15 @@ import type { LiveSession } from './sessions.js';
 /**
  * The one service whose instances run on the grid's nodes.
  *
+ * The wire name is the protocol's, from the service registry; the screen calls
+ * the agent a runner, because it is the compute service's process on a machine
+ * rather than a wrapper around anything.
+ *
  * Named here rather than shared with the services screen: that screen leaves
- * the wrappers out and this one keeps only them, so each states its own reach
+ * the runners out and this one keeps only them, so each states its own reach
  * into the roster rather than one screen's constant deciding both.
  */
-const COMPUTE_WRAPPER = 'ores.compute.wrapper';
+const COMPUTE_RUNNER = 'ores.compute.wrapper';
 
 /**
  * The operations routes: what the installation is doing, as the screens read
@@ -104,14 +108,16 @@ export function registerOperationsRoutes(
     });
 
     /**
-     * The compute grid: the stored summary, the nodes, and their wrappers.
+     * The compute grid: the stored summary and the nodes, each with its runner.
      *
      * The grid belongs to the installation, and the node read serves all of it;
      * the stored counters are narrower, computed by the poller for one tenant,
      * so the view carries them as they are and the screen says whose they are.
-     * The names a person reads arrive from the host registry, joined on the
-     * host id the node sample and the wrapper heartbeat both carry, so a
-     * wrapper is placed on the node it runs on.
+     * The names a person reads arrive from the host registry, and the runner
+     * heartbeat carries the same host id as the node sample, so the agent
+     * fields are folded onto the node it runs on rather than listed in a second
+     * table. A node whose runner never reported keeps its row with the missing
+     * state.
      */
     server.get('/api/operations/grid', async (request) => {
         const session = requireSession(request);
@@ -124,12 +130,17 @@ export function registerOperationsRoutes(
         const stats = await session.client.gridStats();
         const hosts = await session.client.listHosts();
         const slots = await session.client.serviceRoster();
-        const now = Date.now();
         const hostNames = new Map(
             hosts.map((host) => [host.id, host.display_name || host.external_id]),
         );
         const nameOf = (hostId: string | null): string | null =>
             hostId === null ? null : (hostNames.get(hostId) ?? null);
+        const runnersByHost = new Map<string, (typeof slots)[number]>();
+        for (const slot of slots) {
+            if (slot.service_name === COMPUTE_RUNNER && slot.host_id !== null) {
+                runnersByHost.set(slot.host_id, slot);
+            }
+        }
         return gridViewSchema.parse({
             sampled_at: stats.sampled_at === '' ? null : stats.sampled_at,
             total_hosts: stats.total_hosts,
@@ -141,17 +152,16 @@ export function registerOperationsRoutes(
             outcomes_success: stats.outcomes_success,
             outcomes_client_error: stats.outcomes_client_error,
             outcomes_no_reply: stats.outcomes_no_reply,
-            nodes: stats.node_summaries.map((node) => ({
-                ...node,
-                host: nameOf(node.host_id),
-            })),
-            wrappers: slots
-                .filter((slot) => slot.service_name === COMPUTE_WRAPPER)
-                .map((slot) => ({
-                    ...slot,
-                    age_seconds: secondsSinceReport(slot.sampled_at, now),
-                    host: nameOf(slot.host_id),
-                })),
+            nodes: stats.node_summaries.map((node) => {
+                const runner = runnersByHost.get(node.host_id);
+                return {
+                    ...node,
+                    host: nameOf(node.host_id),
+                    instance_id: runner?.instance_id ?? null,
+                    state: runner?.state ?? 'missing',
+                    version: runner?.version ?? null,
+                };
+            }),
         });
     });
 }

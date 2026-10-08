@@ -26,7 +26,7 @@
  * The screen answers the roster the registry expects with the samples the
  * instances send, so a service that went quiet keeps its row and a version that
  * lags behind is visible. The states use the read's own words and the shell's
- * tag tones. The compute wrappers belong to the grid screen, which shows them
+ * tag tones. The compute runners belong to the grid screen, which shows them
  * against the nodes they run on.
  *
  * The read is a point in time, so the screen offers a refresh control rather
@@ -53,8 +53,8 @@ import {
 } from './OperationsParts.js';
 import { RelatedJourneys, type JourneyId } from './RelatedJourneys.js';
 
-/** The service whose instances run on the grid's nodes, which the grid screen owns. */
-const COMPUTE_WRAPPER = 'ores.compute.wrapper';
+/** The compute service's runner, which the grid screen owns; the wire name is the registry's. */
+const COMPUTE_RUNNER = 'ores.compute.wrapper';
 
 /** The journeys that carry on from this one, in the order its page names them. */
 const JOURNEYS: readonly JourneyId[] = [
@@ -179,7 +179,7 @@ export function ServicesPage(): ReactNode {
         return <Notice tone="error">{roster.error.message}</Notice>;
     }
 
-    const rows = roster.data.filter((row) => row.service_name !== COMPUTE_WRAPPER);
+    const rows = roster.data.filter((row) => row.service_name !== COMPUTE_RUNNER);
     const groups = groupByService(rows);
     const running = rows.filter((row) => row.state === 'running');
     const lost = rows.filter((row) => row.state === 'lost');

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8C89C69C-4B08-4334-9649-39A1EEF83572
+:END:
+#+title: Task: Deprecate the polymorphic payload and design its replacement
+#+description: Record the wire rule in the knowledge base, deprecate the polymorphic-payload page, and write the replacement shape into the story. No code.
+#+type: task
+#+level: s1
+#+filetags: :typed-instrument-batches:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:27A66639-45CC-4C4F-A545-5BFD15DFC1CF][Carry every trading instrument as a typed batch]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Two documents and no code.
+
+1. Rewrite =doc/knowledge/architecture/polymorphic_types_over_nats.org= as a
+   deprecated page: what the pattern was, why it is wrong, the RFL constraint
+   that produced it, and the rule that replaces it.
+2. Add the rule to the Regime 3 section of
+   =doc/knowledge/architecture/data_oriented_design.org=, since that page
+   pointed at the deprecated one as the authority for polymorphism.
+3. Record the replacement design on the story that does the work.
+
+The rule: no =std::variant= field in a message; no =std::string= field holding
+an encoded value; a heterogeneous result set travels as one typed array per
+concrete type, joined by key, and the arrays are generated where the types
+they hold are generated.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The polymorphic-payload pattern is deprecated and the replacement is recorded.
+
+- =polymorphic_types_over_nats.org= now opens with a deprecation notice, states
+  the rule, keeps the RFL constraint that produced the old designs, and records
+  =instrument_payload= as the violation it was.
+- The Regime 3 section of the data-oriented design page states the rule
+  directly instead of delegating to the deprecated page, and its checklist row
+  reads "no polymorphic payload fields" rather than "polymorphism is closed and
+  versioned".
+- The story carries the replacement design: struct-of-arrays at the leaf level,
+  generated, joined by trade id, one round trip, and the discriminator taken
+  from the trade type the anchor already carries.
+
+The sweep found no other code to change: =instrument_payload= is the only
+untyped payload in the tree and no protocol header declares a =std::variant=
+field. The =std::string type= fields in ores.iam are tenant and account
+classifications, which are business data rather than tags.
+
+No code changed on this task.

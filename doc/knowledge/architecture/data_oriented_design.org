@@ -70,9 +70,16 @@ core state from cold annexes — not cache-line gymnastics.
 *** Regime 3 — wire and messaging
 
 NATS messages, JSON, CSV, and table I/O. The axioms apply as: flat
-value-shaped messages, versioned schemas, closed explicit
-polymorphism (see [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]]), and batched
-messages for high-volume feeds.
+value-shaped messages, versioned schemas, no polymorphic payload fields, and
+batched messages for high-volume feeds.
+
+A message carries no =std::variant= field and no =std::string= field holding
+an encoded value. A heterogeneous result set travels as one typed array per
+concrete type, joined by key, so each element's type is static from the array
+it sits in. The tag belongs to the container, not to every element. See
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]
+for the deprecated pattern this replaces and the RFL constraint that shapes
+the replacement.
 
 The wire shape is a codegen projection of the Regime 2 entity, not a
 second artefact: one entity yields one JSON codec and one table
@@ -207,7 +214,7 @@ Invariant checks — spot-check once per component:
 | Check | Description |
 |-------+-------------|
 | Flat value messages | Messages are value-shaped, not object graphs over the wire. |
-| Versioned and closed | Schema evolution is explicit; polymorphism is closed and versioned. |
+| No polymorphic payload fields | No =std::variant= field and no encoded =std::string= field; one typed array per concrete type, joined by key. |
 | Feed batching | High-volume feeds batch items per message instead of one message per item. |
 
 ** Report conventions

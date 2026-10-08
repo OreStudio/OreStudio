@@ -9,10 +9,8 @@
 #+owner: marco
 #+branch: feature/describe-the-design-the-journey-landed
 #+pr:
-#+blocked_on: PR #2737, which rewrites the same document's subjects
-#+blocked_since: 2026-10-07
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,25 +24,45 @@ The journey document still describes the design that was rejected. It puts the r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:086576F3-7ECF-41D5-947E-69E0D7C1997D][Land the role request journey]] |
-| Now          | Nothing.                               |
-| Waiting on   | PR #2737 to merge, because it rewrites the same document's subjects. |
-| Next         | Rewrite the document around the design that was built. |
-| Last touched | 2026-10-07                               |
+| Now          | The document describes the design that was built. |
+| Waiting on   | Nothing.                               |
+| Next         | Review the PR.                         |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
 - The document's Entities composed names the approval request, and not a workflow instance, as the request.
 - The document's Operations and messages names the subjects that exist, and drops the five that were never built.
-- Every one of the seven gaps is marked closed or open, and the two open ones point at their tasks.
+- Every one of the seven gaps is marked closed or open, and the one that is not fully closed says what is left and where it is captured.
 - No credential field is named, and no subject is spelled in a form the entity protocol forbids.
+
+The third criterion was amended. It read "the two open ones point at their tasks",
+which was true when gaps 4 and 7 were the open pair; both are now built, so the
+criterion states the rule instead of a count that has moved on.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The document is rewritten in place rather than replaced, because a user journey
+is a design document that outlives its sprint, and a reader arriving from the
+older text should be able to see what changed and why. Six sections move; the
+rest — the goal, the actors, the steps' ordering, the screens — stand, because
+the journey was right about what a person is trying to do and wrong only about
+what holds the waiting.
+
+The design change is stated where it matters rather than assumed. The old text
+put the request in =ores.workflow= as an instance that suspends and resumes; the
+new text says why that turned out to be unnecessary, in the section that made
+the claim, so the two readings sit side by side. The same applies to the seven
+gaps: they are kept as a table with a state per gap, because two of them were
+closed by changing the design rather than by building what they asked for, and
+that is the part a future reader would otherwise have to reconstruct.
+
+The subjects are replaced with the ones that exist, taken from the models rather
+than from memory: =compass codegen= generates every subject from a model, so the
+models are the source and the document cites them. Nothing is spelled in a form
+the protocol forbids, which is checked rather than asserted.
 
 * Measurements
 
@@ -58,7 +76,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Subject declarations, and none added | 213 declarations, 0 accepted in the baseline, none new | =check_subject_conformance.py= | =0e38c2a6fe= plus this branch |
+| Dangling id links | 0 | =./compass.sh lint= | =0e38c2a6fe= plus this branch |
+| Org links | 7292 files scanned, 0 unresolved | =emacs -Q --script projects/ores.lisp/src/ores-check-org-links.el= | =0e38c2a6fe= plus this branch |
+| Pattern uses | every service architecture pattern and its uses link each other | =build/scripts/check_pattern_uses.py= | =0e38c2a6fe= plus this branch |
 
 * Notes
 
@@ -86,3 +107,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The journey document now describes the design that was built, and every one of
+its seven gaps is marked.
+
+Six sections moved. The request is an approval request in =ores.inbox= with a
+kind, a state and a deadline, and not a workflow instance; the paragraph that
+claimed otherwise now says where that claim came from and why it was
+unnecessary, so a reader from the older text can follow the change rather than
+notice a gap. The entities table names the request, its kind, its decision, the
+IAM detail behind it and the notification a person is given. The operations
+table names the subjects that exist, taken from the models that generate them.
+
+The seven gaps are a table with a state each, because two of them were closed by
+changing the design rather than by building what they asked for. Gap 2 — the
+workflow engine cannot wait on a person — was answered by not needing the engine;
+gap 6 — no query returns a request as a row — was answered by making the request
+a table. Gap 7 is half closed: the deadline is built, and the reminder before
+it is not. That remainder is captured, and the document says why it is a
+different behaviour rather than a loose end.
+
+Two things were decided while writing it. The document names the screens that
+were built, because a journey that names only wireframes leaves a reader unable
+to find the code. And the credential sentence was reworded to state the
+guarantee without listing the fields: the acceptance said no credential field is
+named, and the old sentence named four in order to exclude them.
+
+Two subjects and two pages this document wants to link to arrive with the
+deadline task — =inbox.v1.ops.expire_overdue_approvals=, the Approval request
+expiry page and the reminder capture. None of them is on main yet, so the
+subject is described in prose and the two pages are named rather than linked:
+a dangling id link fails =compass lint=, and this document must stand on its
+own. The links are worth adding once that work lands.
+

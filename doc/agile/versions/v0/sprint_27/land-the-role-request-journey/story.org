@@ -67,7 +67,7 @@ request moved here.
 | [[id:859762E0-07E7-447F-AA97-69E8C9B14D3B][Land the role request]] | DONE | 2026-10-05 | 2026-10-06 | The request, the four-eyes guard and the grant, and the member's ask screen and the administrator's queue. Landed by the inbox story, whose two tasks own the work. |
 | [[id:2055AA2D-81DE-4C4B-A4F6-B849F16A271F][Say which roles may be asked for]] | DONE | 2026-10-07 | 2026-10-07 | The =is_requestable= flag on the role row, and the ask operation and the screens reading it. |
 | [[id:67E3A6BB-831B-4C91-8E74-157BD5CF095F][Give the role request a deadline]] | DONE | 2026-10-07 | 2026-10-08 | The role request kind's deadline, and the sweep that closes a request nobody answers. |
-| [[id:56719E3A-89CE-43F6-85EC-5BF68A7E9AED][Describe the design the journey landed]] | BLOCKED | | | Rewrite the journey document around the approval-request design that was built, and mark which of its seven gaps are closed. Waiting on PR #2737, which rewrites the same document. |
+| [[id:56719E3A-89CE-43F6-85EC-5BF68A7E9AED][Describe the design the journey landed]] | DONE | 2026-10-08 | 2026-10-08 | Rewrite the journey document around the approval-request design that was built, and mark which of its seven gaps are closed. |
 
 * Decisions
 

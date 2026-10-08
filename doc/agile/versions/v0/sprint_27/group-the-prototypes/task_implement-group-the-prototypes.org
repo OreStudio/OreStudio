@@ -169,6 +169,12 @@ capture that recorded the stale pointers is resolved.
 Seven of the eight Gemini files are kept as six review screens, and the two
 truncated prefixes are dropped.
 
+Every prototype page opens with a two-row links table naming the prototype and
+its review. The review row holds the link where a review exists and =none=
+where it does not, so =grep -rl 'prototype-review[^>]*>none' doc/prototypes
+--include=index.html= names the 43 prototypes nobody has reviewed. The guard
+holds the table to the review directory, so the row cannot go stale.
+
 Checks on =4f161ac260=: the guard passes; =compass lint= passes; the org link
 check resolves every link; a scan of all 93 prototype paths named anywhere in
 =doc/= finds each one on disk; the top page and all fourteen group pages are

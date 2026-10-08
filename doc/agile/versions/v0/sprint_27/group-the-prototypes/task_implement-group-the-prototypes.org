@@ -169,16 +169,28 @@ capture that recorded the stale pointers is resolved.
 Seven of the eight Gemini files are kept as six review screens, and the two
 truncated prefixes are dropped.
 
-Every page that presents a prototype heads itself with a two-row links table
-naming the prototype and its review: the prototype page and the seven design
-notes beside them, which are what a group page's title opens. The review row
-holds the link where a review exists and =none= where it does not, so
+Every page that presents a prototype heads itself with a three-row links table
+naming the prototype, its review and its group: the prototype page, the seven
+design notes beside them, which are what a group page's title opens, and every
+page of the nine-file review. The review row holds the link where a review
+exists and =none= where it does not, so
 =grep -rl 'prototype-review[^>]*>none' doc/prototypes --include=index.html=
-names the 43 prototypes nobody has reviewed. The table is sticky above the
-prototypes' own fixed chrome, which otherwise drew over it, and reads the
-site's palette through its variables, with the site's values as fallbacks. The
-guard holds the table to the review directory on both page kinds, so the row
-cannot go stale.
+names the 43 prototypes nobody has reviewed. The guard reads all three rows of
+every page and holds each to the tree.
+
+The table is part of the page's own flow rather than a sticky bar. A prototype
+puts its own chrome at the top of the viewport, so a bar above it buried the
+variant and state controls and made them unclickable; in flow, the chrome draws
+over the table as it draws over the rest of the page, and the twenty
+prototypes that do not pad their own body band carry a top margin so the table
+clears it.
+
+No page is processed at deploy: the review pages lost the site chrome first,
+which was moving every rem measurement and a whole menu bar, and then the
+prototypes lost it too, for the same reason: the root font size went from 16px
+to 17px and the body line height from 21px to 24.5px. Every deployed file is
+byte-identical to its source, and the served page renders pixel-identical to
+the file on disk.
 
 Checks on =4f161ac260=: the guard passes; =compass lint= passes; the org link
 check resolves every link; a scan of all 93 prototype paths named anywhere in

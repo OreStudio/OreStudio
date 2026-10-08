@@ -8,7 +8,7 @@
 #+filetags: :synthetic-data-against-market-data:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-synthetic-control-plane-one-registry
-#+pr:
+#+pr: 2782
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2782][#2782]] | [synthetic] Give the feed control plane one per-kind registry |
 
 * Review
 

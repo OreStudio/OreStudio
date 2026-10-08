@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: C0D511A9-E15F-4863-890D-5B20EA0628C7
+:END:
+#+title: Story: Trace a process run and the trade groups it creates
+#+description: A process that acts on a set of trades must be traceable, so it can be undone or repeated. Record each run with an identity and a state machine, name the process it is a run of, and let the trade groups its inputs and outputs carry the run's key. Waits on one process with a real client.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Record one run of a process over a set of trades: its identity, its
+state machine, the process it is a run of, and the trade groups that
+carry what the run read and what it wrote. The record is what lets a
+process be undone or repeated.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Scaffolded. The work waits on a pilot process. |
+| Waiting on    | One process with a real client, the funding roll or the spot sweep, to settle the run model against. |
+| Next          | Choose the pilot and study it.          |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The process enumeration is seeded, so a run names which process ran.
+- A run has an identity and a state machine over its evolution.
+- A trade group carries a foreign key to its run, and its membership names each trade and the role it played.
+- One detail table per kind of run records what that kind of run records.
+- An ORE import is one run.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E3F0B24-2449-4E4D-9D59-1D49A49ABC2D][Scaffold story: Trace a process run and the trade groups it creates]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:703C2FB3-F211-46F7-925D-4B2DA4C9E35A][Add the process run record]] | BACKLOG | | | Seed the process enumeration and add the run table with its identity, its process and its state machine. |
+| [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] | BACKLOG | | | Add the trade group a run creates and the membership that names each trade it read or wrote and the role it played. |
+| [[id:610BCC5C-073D-4FF0-86D3-0EAA4727306A][Add the run detail tables]] | BACKLOG | | | Add one detail table per kind of run, keyed by the run, for the facts that kind records. |
+| [[id:6165BF44-FAB9-4B94-B9FA-71292E0853AC][Record an ORE import as one run]] | BACKLOG | | | Make an ORE import one run, with every imported trade in its group and an import detail row keyed by the run. |
+
+* Decisions
+
+** The run is modelled against a client process, not in the abstract
+
+Taken 2026-10-08 with the owner. A process run exists so that a process
+can be undone and repeated, and no process is implemented. Modelling a
+run before a process has a client would fix its shape against nothing.
+This story therefore waits on one process with a real client, the funding
+roll or the spot sweep, and the first task after the scaffold is to
+settle the run against that pilot.
+
+The trade set model settled on 2026-10-08 supplies what the run needs and
+did not have: the trade group, its membership, the read and write sets,
+and the roles the process declares. That work is in
+[[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]].
+
+The shape is written down in
+[[id:A7381409-AFD0-4F0E-BAB4-61CD35341AA8][Trace a process run over a set of trades]].
+It is roughly the shape and not yet a design.
+
+* Out of scope
+
+-

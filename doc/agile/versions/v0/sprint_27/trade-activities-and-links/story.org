@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 47247685-9C95-4B7C-86D0-CD596C3A3247
 :END:
-#+title: Story: Record trade activities, their participants and trade links
-#+description: Add trade_activity with its type and participants, the act detail tables, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
+#+title: Story: Record trade activities and trade links
+#+description: Add trade_activity with its type, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
 #+type: story
 #+level: s2
 #+filetags: :sprint_27:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Add trade_activity with its type and participants, the act detail tables, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
+Add trade_activity with its type, and trade_link with its type, so every component version names its cause and every relation between trades is typed and directed.
 
 * Status
 
@@ -23,16 +23,15 @@ Add trade_activity with its type and participants, the act detail tables, and tr
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Four of eight tasks done. The trade activity is a stamp, the component versions point at it, and booking writes through the repositories. |
-| Waiting on    | A process run model, which three of the remaining tasks need: the processes are described in the domain notes and none is implemented. |
-| Next          | Join trades with typed links. A link holds nothing and needs no run, so nothing blocks it. |
-| Last touched  | 2026-10-07                               |
+| Now           | Four of five tasks done. The trade activity is a stamp, the component versions point at it, and booking writes through the repositories. |
+| Waiting on    | Nothing.                               |
+| Next          | Join trades with typed links.          |
+| Last touched  | 2026-10-08                               |
 
 * Acceptance
 
 - Every component version carries a foreign key to the trade_activity that caused it; the activity type states the economic, confirmable and real axes and the priority.
-- A process run names its inputs and outputs, and compression, merge, allocation, a roll or a sweep and a bulk book move record their own facts against the run. The trade activity is the stamp on an amendment, not the parent of either.
-- trade_link joins two trades with a type from trade_link_type, which names both roles and the economic effect; successor_trade_id is gone.
+- trade_link joins two trades with a type from trade_link_type, which names both roles and the economic effect.
 
 * Tasks
 
@@ -41,9 +40,6 @@ Add trade_activity with its type and participants, the act detail tables, and tr
 | [[id:765E9672-E777-48F6-A4A1-1AE08284FB9A][Give the activity type its axes and priority]] | DONE | 2026-10-05 | 2026-10-05 | Extend the trade activity type reference data with the economic, confirmable and real axes and the priority order the design states, so an activity says what kind of event it is. |
 | [[id:FCB5F73B-986F-4EAA-9251-0E3D72F9EE0E][Record each business event as a trade activity]] | DONE | 2026-10-05 | 2026-10-05 | Add trade_activity, an append-only record of each business event with its type, actor, time, comment and operational-error flag, and make booking a trade write one. |
 | [[id:831583EA-B294-48DB-88AD-53E7534E5658][Point every component version at its activity]] | DONE | | 2026-10-06 | Give the booking, state, identifier, party role, additional field, portfolio and instrument tables a foreign key to the trade_activity that wrote each version, replacing the bare activity type code. |
-| [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Name each trade a process run touches]] | BLOCKED | | | Add the participation table a process run carries, naming each trade the run read or wrote and the role it played. Waits on the run model. |
-| [[id:6165BF44-FAB9-4B94-B9FA-71292E0853AC][Record an ORE import as one process run]] | BLOCKED | | | Make an ORE import one process run, with every imported trade as a participant and an import detail row keyed by the run. Waits on the run model. |
-| [[id:610BCC5C-073D-4FF0-86D3-0EAA4727306A][Add the process run detail tables]] | BLOCKED | | | Add one detail table per kind of process run, keyed by the run: compression (provider, cycle reference), allocation (block, source, template), merge (policy, expiry-netting style), roll and sweep runs (process, run date) and bulk book move (books, cash flows moved). Waits on the run model. |
 | [[id:CF865781-BE15-42F7-BB13-7107BF06F97C][Join trades with typed links]] | BACKLOG | | | Add trade_link (from trade, to trade, type) and trade_link_type, which names both roles and whether the link has an economic effect, seeded from the link catalogue including exercise and roll. |
 | [[id:DD3DC229-6358-41B6-A9B5-9C0937439111][Book a trade through the repositories]] | DONE | 2026-10-06 | 2026-10-07 | Booking a trade writes the trade, its activity, its booking and its state with SQL inserts in ores_trading_book_trade_fn, bypassing the generated repositories. Give ores.database a unit of work so several repository writes share one transaction, move booking onto the repositories, and add an architectural rule, enforced by a check, that application code writes entity tables only through repositories. |
 
@@ -61,11 +57,12 @@ undone or repeated. Where a process generates an amendment it stamps
 its own activity, and that match is incidental: nothing requires a
 stamp to point at a run, and most stamps have no run behind them.
 
-The process run is not yet modelled. It needs an enumeration of the
-processes, a table per run with its own id and a state machine, and the
-run id as the key the trade groups carry for their inputs and outputs.
-The three tasks that hang process structure off the activity wait on it.
+The process run is its own subject and its own story:
+[[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]].
+The three tasks that hung process structure off the activity moved
+there, and the story waits on one process with a real client.
 
+- [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]] — the run, its state machine and the trade groups, waiting on a pilot process.
 - [[id:A7381409-AFD0-4F0E-BAB4-61CD35341AA8][Trace a process run over a set of trades]] — the capture the run model is written down in.
 - [[id:61590415-C7E0-4BB9-8845-8BB794896EE0][Implement the processes that act on sets of trades]] — the capture for building the processes themselves, one pilot at a time.
 - [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]] — the primitive, the trade group a run creates, and the roles the process fixes.

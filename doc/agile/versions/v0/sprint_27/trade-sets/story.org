@@ -27,7 +27,7 @@ then stands on a stated model rather than an assumed one.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The cluster is written, published and swept. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing; the story is closed.          |
 | Last touched  | 2026-10-08                               |

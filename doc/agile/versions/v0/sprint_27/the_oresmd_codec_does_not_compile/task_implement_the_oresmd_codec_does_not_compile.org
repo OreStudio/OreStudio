@@ -8,7 +8,7 @@
 #+filetags: :the_oresmd_codec_does_not_compile:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-oresmd-codec-does-not-compile
-#+pr:
+#+pr: 2879
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2879][#2879]] | [marketdata] Qualify the codec's spelling calls |
 
 * Review
 

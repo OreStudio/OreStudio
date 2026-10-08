@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-refusal-vocabulary
-#+pr:
+#+pr: 2786
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2786][#2786]] | [codegen,database,sql] Carry every refusal from one outcome catalogue |
 
 * Review
 

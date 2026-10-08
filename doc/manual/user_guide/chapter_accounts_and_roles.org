@@ -292,18 +292,18 @@ Each role's capability profile:
   suspend, terminate, reset.
 - =TenantAdmin= — everything within their own tenant.
 - =Trading= — read reference data; create, modify, archive and delete
-  workspaces.
+  trading data.
 - =Sales= — read-only reference data.
 - =Operations= — manage reference data (read, write, delete); view
   accounts.
 - =Support= — read-only across resources and admin screens: accounts,
   roles, login info.
-- =Viewer= — basic read-only access to domain data and workspaces.
+- =Viewer= — basic read-only access to domain data.
 - =DataPublisher= — publish curated datasets and bundles to production
   tables.
 
 The profiles embody a simple gradient: =Viewer= and =Sales= observe,
-=Trading= works within its own workspaces, =Operations= maintains the
+=Trading= works within its own virtual books, =Operations= maintains the
 shared data everyone depends on, and =Support= sees administrative
 state without being able to change it. The two administrator roles
 differ in scope rather than degree — =TenantAdmin= is omnipotent

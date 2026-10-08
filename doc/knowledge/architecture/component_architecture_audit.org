@@ -315,8 +315,8 @@ it at the entity root, so the explicit line was load-bearing:
 removing it dropped the entity's hierarchy function, repository
 method, handler and service. [[id:689F92F1-39F4-4956-B6CC-F105A3C1B2E9][Fix the has_parent_id feature
 namespace so profile bindings take effect]] moved the feature to the
-root namespace, where =has_tenant_id= and =has_workspace_id= already
-lived, and the lines came out.
+root namespace, where =has_tenant_id= already lived, and the lines came
+out.
 
 Treat a removal as output-neutral only after regeneration proves it.
 
@@ -328,10 +328,9 @@ proven this way, so leave its models alone until it joins.
 
 The first pass ran on 2026-09-17. It removed 41 redundant lines across
 19 models in analytics, compute, iam, refdata, reporting and synthetic.
-Two lines stayed as overrides: =compute.result= sets
-=has_change_reason_cache= false against the profile's true, and
-=reporting.report_definition= sets =has_workspace_id= true against the
-profile's false. Four =has_parent_id= lines stayed for the caution
+One line stayed as an override: =compute.result= sets
+=has_change_reason_cache= false against the profile's true. Four
+=has_parent_id= lines stayed for the caution
 above; the follow-up story removed them once the namespace was fixed.
 The same defect had also masked eleven flat entities, which bound the
 hierarchy profile without the two column properties that profile

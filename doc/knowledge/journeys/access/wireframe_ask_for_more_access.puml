@@ -30,7 +30,7 @@ salt
   {#
     Role | Description
     Viewer | Read-only access to domain data
-    Trading | Reads reference data and manages workspaces
+    Trading | Reads reference data and manages trades
   }
   --
   {#

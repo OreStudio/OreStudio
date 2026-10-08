@@ -449,7 +449,7 @@ Every =pg_notify= channel follows the rule:
   =ores_{component}_{entity_plural}=
 
 where =component= is the domain sub-prefix (=iam=, =refdata=, =trading=,
-=analytics=, =compute=, =dq=, =reporting=, =variability=, =workspace=,
+=analytics=, =compute=, =dq=, =reporting=, =variability=,
 =scheduler=, =mq=, …) and =entity_plural= is the snake_case plural name
 of the table without its =ores_{component}_= table prefix.
 
@@ -461,7 +461,6 @@ of the table without its =ores_{component}_= table prefix.
 | =iam= | =role= | =ores_iam_roles= |
 | =dq= | =change_reason= | =ores_dq_change_reasons= |
 | =variability= | =system_setting= | =ores_variability_system_settings= |
-| =workspace= | =workspace= | =ores_workspace_workspaces= |
 
 The component prefix is *required*.  Without it, the same entity noun in
 two domains (e.g. =parties= in =refdata= and a hypothetical =parties= in

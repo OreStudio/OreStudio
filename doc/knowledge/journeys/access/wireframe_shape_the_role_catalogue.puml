@@ -30,7 +30,7 @@ salt
   --
   {#
     Name | Trading
-    Description | Reads reference data and manages workspaces
+    Description | Reads reference data and manages trades
   }
   --
   Permissions in this role

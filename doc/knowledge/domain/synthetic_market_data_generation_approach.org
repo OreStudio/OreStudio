@@ -616,11 +616,11 @@ scenarios that do not require time-of-day fidelity.
   ad-hoc exploration (generates a seed from the system clock and displays
   it post-generation for repeatability)
 
-*Target workspace:*
+*Target sandbox:*
 
-The control panel provides a workspace selector dropdown (see [[#workspace-isolation][workspace isolation]])
-with an option to create a new workspace inline.  The currently selected
-workspace name is displayed prominently alongside a badge showing its current
+The control panel provides a sandbox selector dropdown (see [[#sandbox-isolation][sandbox isolation]])
+with an option to create a new sandbox inline.  The currently selected
+sandbox name is displayed prominently alongside a badge showing its current
 state (empty / has data / compared).
 
 *Generate button:*
@@ -635,38 +635,37 @@ A summary line shows elapsed time and estimated time remaining.  On failure,
 the row shows the specific constraint or validation that was violated, with a
 link to the constraint in the quality dashboard ([[#visualisation][visualisation]]).
 
-** Workspace isolation
+** Sandbox isolation
 :PROPERTIES:
-:CUSTOM_ID: workspace-isolation
+:CUSTOM_ID: sandbox-isolation
 :END:
 
-Generation writes into a workspace — an isolated, named market data
+Generation writes into a [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]], an isolated, named market data
 environment that does not affect the live environment or any other user's
-session.  The workspace concept exists in the ORE Studio architecture (see
-=doc/plans/2026-05-17-workspace-design.org=); this feature extends it with a
-synthetic market data generation owner.
+session.  This feature extends the sandbox concept with a synthetic market
+data generation owner.
 
-The workspace supports the following properties:
-- A workspace holds a complete set of market data for a contiguous date range.
-- Multiple workspaces can coexist; each is independently editable and
+The sandbox supports the following properties:
+- A sandbox holds a complete set of market data for a contiguous date range.
+- Multiple sandboxes can coexist; each is independently editable and
   independently deleteable.
-- Generating into a workspace is non-destructive and reversible — the previous
-  contents of the target workspace are replaced only when the generation
+- Generating into a sandbox is non-destructive and reversible.  The previous
+  contents of the target sandbox are replaced only when the generation
   completes successfully; a failed or aborted generation does not overwrite
-  existing workspace data.
-- A workspace can be compared against another workspace or against the live
+  existing sandbox data.
+- A sandbox can be compared against another sandbox or against the live
   environment.  The comparison view shows divergence per quote key as a
   difference table and as overlay time series charts.
-- A workspace can be promoted to the live environment when the user is
+- A sandbox can be promoted to the live environment when the user is
   satisfied with the generated data.  Promotion is gated: the quality
   dashboard ([[#visualisation][visualisation]]) must show green on all mandatory constraints before
   the "Promote" button is enabled.
 
-The control panel's "Target workspace" selector lets the user pick an existing
-workspace or create a new one with a user-supplied name and optional
+The control panel's "Target sandbox" selector lets the user pick an existing
+sandbox or create a new one with a user-supplied name and optional
 description.  This is the primary iteration mechanism: generate → inspect
 visualisations → adjust parameters → regenerate into the same or a new
-workspace → compare workspaces → promote.
+sandbox → compare sandboxes → promote.
 
 ** Visualisation
 :PROPERTIES:
@@ -675,14 +674,14 @@ workspace → compare workspaces → promote.
 
 ORE Studio provides visualisation surfaces to let users evaluate generated
 data before promoting it to production use.  All visualisation surfaces read
-from the selected workspace and update automatically when generation
+from the selected sandbox and update automatically when generation
 completes.
 
 *Time series viewer:*
 
 The time series viewer provides line charts of any selected quote type over
 the generated date range.  It supports multi-series overlay (e.g. the EUR 5Y
-OIS swap rate across three generated workspaces simultaneously).  The date
+OIS swap rate across three generated sandboxes simultaneously).  The date
 range and resampling frequency (daily / weekly) are configurable.  A
 statistics panel alongside each series shows mean, standard deviation, min,
 max, skewness, and excess kurtosis computed from the generated series.  The
@@ -694,7 +693,7 @@ and supports filtering by quote type prefix (=IR_SWAP/RATE/EUR/=, etc.).
 The yield curve viewer shows a per-currency snapshot of the zero curve or par
 swap curve as a line chart with tenor on the x-axis and rate on the y-axis.
 It supports animated evolution through the generated date range using a
-forward-step button and a scrubber.  Multi-workspace overlay allows visual
+forward-step button and a scrubber.  Multi-sandbox overlay allows visual
 comparison of the same curve date under different generation parameter sets.
 Hovering over a point shows the underlying =IR_SWAP/RATE= quote key and its
 generated value.

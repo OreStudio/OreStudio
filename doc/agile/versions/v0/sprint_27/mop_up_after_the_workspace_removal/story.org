@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 1716A3FE-59C1-4E34-875E-A259D5E6131F
+:END:
+#+title: Story: Mop up after the workspace removal
+#+description: The avatars populate script lost an insert header when the workspace avatar was removed, so the database could not recreate. The eventing worked example and several knowledge and manual pages still described the deleted table, feature flag and permission codes. Repair both.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The database recreates from the schema and populate scripts, and no knowledge or manual page describes the deleted workspace component.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- The database recreates cleanly.
+- The eventing worked example uses a surviving entity.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7504F3FC-7E1B-4907-8A64-F0F8EAA9825A][Scaffold story: Mop up after the workspace removal]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9F7C1DA9-F187-4BDB-8C80-ADCB53897084][Repair the avatars script and the stale docs]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Mop up after the workspace removal |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The database recreates cleanly. The avatars populate script keeps one insert
+header per avatar and reports 25 images. The eventing worked example uses
+ores.compute.host, a surviving entity with the same notify-trigger pipeline.
+The knowledge and manual pages that named the deleted table, feature flag,
+headers and permission codes are repointed. The leftover
+ores_solid_dirac_workspace_service role is dropped from this environment.
+

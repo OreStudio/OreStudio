@@ -264,8 +264,8 @@ this business unit for both day-to-day P&L attribution and regulatory
 desk-level reporting. Every front office account — Head of Trading,
 Head of Desk, Senior Trader, and Junior Trader alike — holds the
 =Trading= role, which grants read access to reference data and the
-ability to create, modify, archive, and delete the workspaces a
-trader actually works in (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] for the full
+ability to create, modify, archive, and delete the trades a trader
+works in (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] for the full
 permission profile).
 
 *** Middle office: processing what the desk books

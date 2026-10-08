@@ -453,7 +453,7 @@ for PlantUML, which is invoked as a JAR.
 
 Common invocations:
 - =find . -name "*.org" -newer doc/foo.org=
-- =grep -r "workspace_id" projects/ores.workspace/=
+- =grep -r "tenant_id" projects/ores.database/=
 - =./compass.sh list --type capture | head -50=
 - =python3 projects/ores.codegen/src/doc_generate.py --help=
 - =java -jar /usr/share/plantuml/plantuml.jar -checkonly foo.puml=

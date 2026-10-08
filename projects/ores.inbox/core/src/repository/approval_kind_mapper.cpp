@@ -24,7 +24,12 @@
  */
 #include "ores.inbox.core/repository/approval_kind_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.api/domain/approval_kind_json_io.hpp" // IWYU pragma: keep.
+#include "ores.inbox.core/repository/approval_kind_entity.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include <boost/log/sources/severity_feature.hpp>
+#include <vector>
 
 namespace ores::inbox::repository {
 

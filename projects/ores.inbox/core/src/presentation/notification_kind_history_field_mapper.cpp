@@ -23,8 +23,12 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/presentation/notification_kind_history_field_mapper.hpp"
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
+#include "ores.inbox.api/domain/notification_kind.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::inbox::presentation {
 

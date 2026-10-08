@@ -202,7 +202,7 @@ begin
     (v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
      'Intercompany Exposure Matrix',
      'Matrix of exposures between all group entities for consolidation elimination. Identifies circular funding, transfer pricing mismatches, and netting inefficiencies across the group. Monthly cadence (not daily — intercompany positions churn slowly). Holding company only.',
-     'risk', '0 6 * * 1,15', 'skip', 75, 'strategic', null),
+     'risk', '0 6 1 * *', 'skip', 75, 'strategic', null),
 
     -- =========================================================================
     -- Trading — trading desks only (16 reports)

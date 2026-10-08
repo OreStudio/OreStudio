@@ -117,8 +117,8 @@ Each handler calls =make_request_context(base_ctx, msg, verifier)=
   header). Absence ⇒ =unauthorized=; a token lacking the required permission ⇒
   =forbidden= (handlers gate writes with =has_permission(ctx, "<perm>")=).
 
-The validated token also carries the tenant, and =make_request_context= applies
-=X-Workspace-Id= / =X-Workspace-Resolution= headers to scope the request — see
+The validated token also carries the tenant and the party, and
+=make_request_context= scopes the request to them — see
 [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]].
 
 *** Calling another service: mint or delegate
@@ -228,7 +228,7 @@ missing):
   repository access.
 - [[id:03FA2F6D-9920-4BA1-A895-F8F796C94789][JWT Token Refresh: Configurable Lifetimes, Proactive Renewal]] — token lifetimes and renewal.
 - [[id:1411D94A-24FA-4164-AD75-F3CE7415903B][Unified Service Hosting]] — normalising all services onto the NATS runner.
-- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant and workspace scoping of requests.
+- [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant and party scoping of requests.
 - [[id:2B812EF1-A52B-41F5-AA41-F12C0DD25C45][Automate new service registration]] — the backlog to close the manual gaps above.
 - [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when in the startup sequence it is safe
   to mint tokens or warm caches, worked through IAM's party_cache.

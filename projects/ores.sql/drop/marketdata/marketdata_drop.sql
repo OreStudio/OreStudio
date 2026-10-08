@@ -30,6 +30,8 @@
 \ir ./marketdata_market_observations_drop.sql
 \ir ./marketdata_series_identity_views_drop.sql
 \ir ./marketdata_market_series_identity_drop.sql
+\ir ./marketdata_series_axis_values_drop.sql
+\ir ./marketdata_series_axes_drop.sql
 \ir ./marketdata_market_series_asset_class_drop.sql
 \ir ./marketdata_market_series_notify_trigger_drop.sql
 \ir ./marketdata_market_series_drop.sql

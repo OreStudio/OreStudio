@@ -635,9 +635,9 @@ void compute_commands::process_grid_stats(std::ostream& out,
         << std::endl;
     for (const auto& n : resp->node_summaries) {
         out << n.host_id << ' ' << n.tasks_completed << ' ' << n.tasks_failed << ' '
-            << n.tasks_since_last << ' ' << n.avg_task_duration_ms << ' '
-            << n.max_task_duration_ms << ' ' << n.input_bytes_fetched << ' '
-            << n.output_bytes_uploaded << ' ' << n.seconds_since_hb << std::endl;
+            << n.tasks_since_last << ' ' << n.avg_task_duration_ms << ' ' << n.max_task_duration_ms
+            << ' ' << n.input_bytes_fetched << ' ' << n.output_bytes_uploaded << ' '
+            << n.seconds_since_hb << std::endl;
     }
     out << std::endl;
 

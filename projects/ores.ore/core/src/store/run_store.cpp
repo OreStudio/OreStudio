@@ -210,9 +210,8 @@ bool inside(const std::filesystem::path& p) {
  * Empty when the run document names no file there. A name that would leave the
  * package is refused rather than written.
  */
-std::string data_file_path(const std::string& input_path,
-                           std::string_view parameter,
-                           const std::string& name) {
+std::string
+data_file_path(const std::string& input_path, std::string_view parameter, const std::string& name) {
     if (name.empty())
         return {};
     const std::filesystem::path path = std::filesystem::path(input_path) / name;

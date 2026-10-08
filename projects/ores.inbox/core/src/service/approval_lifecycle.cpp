@@ -239,14 +239,13 @@ void approval_lifecycle::tell_expired(const expired_request& expired) {
         // The message names the kind as a person reads it, which is a name and
         // not the code the row carries.
         const auto k = kind(expired.kind_code);
-        messaging::raise_notification_request n{.kind_code = "inbox.approval_expired",
-                                                .link_route = "requests",
-                                                .link_id = expired.request_id,
-                                                .arguments = {{.name = "kind",
-                                                               .value = k ? k->name
-                                                                          : expired.kind_code}},
-                                                .account_ids = {expired.requested_by},
-                                                .audience_permission_code = ""};
+        messaging::raise_notification_request n{
+            .kind_code = "inbox.approval_expired",
+            .link_route = "requests",
+            .link_id = expired.request_id,
+            .arguments = {{.name = "kind", .value = k ? k->name : expired.kind_code}},
+            .account_ids = {expired.requested_by},
+            .audience_permission_code = ""};
         notification_center(ctx_.with_tenant(*tenant, ctx_.service_account()))
             .raise(n, n.account_ids, *raiser);
     } catch (const std::exception& e) {

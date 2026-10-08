@@ -114,12 +114,10 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // not under a name of the packaging step's own. The run document comes
         // from its owner through the owner's operation, carrying the run token.
         auto owners = service_nats_.with_delegation(run_token);
-        const auto run_input =
-            ores::ore::service::messaging::export_run(owners, req.definition_id);
+        const auto run_input = ores::ore::service::messaging::export_run(owners, req.definition_id);
         const auto places = ores::ore::store::declared_data_files(run_input);
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Downloading market data: " << req.market_data_storage_key;
+        BOOST_LOG_SEV(lg(), debug) << "Downloading market data: " << req.market_data_storage_key;
         const auto market_data =
             transfer.download_blob(std::string(platform_bucket), req.market_data_storage_key);
         if (places.market_data.empty()) {

@@ -195,8 +195,10 @@ TEST_CASE("the_sweep_closes_what_ran_out_and_leaves_what_did_not", tags) {
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
 
-    const auto overdue = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Nobody will ask", asker.id);
-    const auto in_time = lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Still fresh", asker.id);
+    const auto overdue =
+        lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Nobody will ask", asker.id);
+    const auto in_time =
+        lifecycle.raise(*lifecycle.kind("iam.role_grant"), "Still fresh", asker.id);
     const auto overdue_id = boost::uuids::to_string(overdue.id);
     const auto in_time_id = boost::uuids::to_string(in_time.id);
 

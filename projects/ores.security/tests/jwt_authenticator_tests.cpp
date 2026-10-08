@@ -352,15 +352,10 @@ TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
     claims.expires_at = claims.issued_at + std::chrono::hours(1);
     claims.tenant_id = "acme-tenant-uuid";
     claims.storage_grants = {
-        storage_grant{.bucket = "ores",
-                      .key_prefix = "compute/packages/ORE-1.8.17.0/",
-                      .op = "get"},
-        storage_grant{.bucket = "ores",
-                      .key_prefix = "ore/packages/instance-uuid/",
-                      .op = "get"},
-        storage_grant{.bucket = "ores",
-                      .key_prefix = "compute/output/result-uuid",
-                      .op = "put"}};
+        storage_grant{
+            .bucket = "ores", .key_prefix = "compute/packages/ORE-1.8.17.0/", .op = "get"},
+        storage_grant{.bucket = "ores", .key_prefix = "ore/packages/instance-uuid/", .op = "get"},
+        storage_grant{.bucket = "ores", .key_prefix = "compute/output/result-uuid", .op = "put"}};
 
     const auto token = signer.create_token(claims);
     REQUIRE(token.has_value());

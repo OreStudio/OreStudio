@@ -87,8 +87,7 @@ public:
         }
         if (!has_permission(*ctx_expected, e->config_permission)) {
             BOOST_LOG_SEV(simulate_handler_lg(), warn)
-                << "Rejecting simulate request: missing permission " << e->config_permission
-                << ".";
+                << "Rejecting simulate request: missing permission " << e->config_permission << ".";
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -96,17 +95,16 @@ public:
         auto env = e->decode_simulate(msg);
         if (!env) {
             BOOST_LOG_SEV(simulate_handler_lg(), error) << "Failed to decode simulate request.";
-            e->reply_simulate(nats_,
-                              msg,
-                              feed_simulation_result{.success = false,
-                                                     .message =
-                                                         "Failed to decode simulate request."});
+            e->reply_simulate(
+                nats_,
+                msg,
+                feed_simulation_result{.success = false,
+                                       .message = "Failed to decode simulate request."});
             return;
         }
 
         e->reply_simulate(nats_, msg, run_simulate_paths(*env));
-        BOOST_LOG_SEV(simulate_handler_lg(), debug)
-            << "Reply sent for " << kind << ".simulate.";
+        BOOST_LOG_SEV(simulate_handler_lg(), debug) << "Reply sent for " << kind << ".simulate.";
     }
 
 private:

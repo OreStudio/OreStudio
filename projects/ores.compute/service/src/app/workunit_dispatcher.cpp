@@ -57,7 +57,8 @@ std::optional<storage_grant> grant_for_path(const std::string& path, std::string
     std::string key;
     if (!ores::storage::net::storage_paths::split_object_path(path, bucket, key))
         return std::nullopt;
-    return storage_grant{.bucket = std::move(bucket), .key_prefix = std::move(key), .op = std::move(op)};
+    return storage_grant{
+        .bucket = std::move(bucket), .key_prefix = std::move(key), .op = std::move(op)};
 }
 
 }
@@ -148,8 +149,7 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         result_svc.save_result(r);
 
         const auto result_id_str = boost::uuids::to_string(result_id);
-        const auto output_path =
-            ores::compute::net::compute_storage::output_path(result_id_str);
+        const auto output_path = ores::compute::net::compute_storage::output_path(result_id_str);
 
         // The node holds no standing storage credential, so the assignment
         // carries one for exactly the package, the input and the output. A
@@ -163,32 +163,30 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         for (const auto& source : sources) {
             auto grant = grant_for_path(source.path, source.op);
             if (!grant) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Cannot build a storage grant for " << source.path
-                    << "; cannot dispatch workunit " << workunit_id;
+                BOOST_LOG_SEV(lg(), error) << "Cannot build a storage grant for " << source.path
+                                           << "; cannot dispatch workunit " << workunit_id;
                 return;
             }
             grants.push_back(std::move(*grant));
         }
         const auto storage_token = minter_(tenant_uuid, grants);
         if (!storage_token) {
-            BOOST_LOG_SEV(lg(), error)
-                << "No storage capability for result " << result_id_str
-                << "; cannot dispatch workunit " << workunit_id;
+            BOOST_LOG_SEV(lg(), error) << "No storage capability for result " << result_id_str
+                                       << "; cannot dispatch workunit " << workunit_id;
             return;
         }
 
-        const auto event = ores::compute::messaging::work_assignment_event{
-            .tenant_id = tenant_uuid,
-            .result_id = result_id_str,
-            .workunit_id = workunit_id,
-            .app_version_id = app_version_id,
-            .package_uri = avp.package_uri,
-            .package_sha256 = avp.sha256,
-            .input_uri = wu->input_uri,
-            .config_uri = wu->config_uri,
-            .output_uri = output_path,
-            .storage_token = *storage_token};
+        const auto event =
+            ores::compute::messaging::work_assignment_event{.tenant_id = tenant_uuid,
+                                                            .result_id = result_id_str,
+                                                            .workunit_id = workunit_id,
+                                                            .app_version_id = app_version_id,
+                                                            .package_uri = avp.package_uri,
+                                                            .package_sha256 = avp.sha256,
+                                                            .input_uri = wu->input_uri,
+                                                            .config_uri = wu->config_uri,
+                                                            .output_uri = output_path,
+                                                            .storage_token = *storage_token};
         const std::string subject =
             std::string(ores::compute::messaging::work_assignment_event::nats_subject) + "." +
             tenant_uuid + "." + avp.platform_code;

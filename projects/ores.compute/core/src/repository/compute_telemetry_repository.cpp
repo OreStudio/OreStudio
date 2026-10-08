@@ -51,8 +51,8 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
         ORDER BY host_id, sampled_at DESC
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {}, lg(), "reading latest node samples");
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading latest node samples");
 
     std::vector<domain::node_sample> result;
     result.reserve(rows.size());

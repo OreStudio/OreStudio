@@ -28,12 +28,12 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/operations_protocol.hpp"
-#include <algorithm>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
 #include <chrono>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -110,9 +110,8 @@ boost::asio::awaitable<void> approval_expiry_schedule::register_job() {
 
     for (int attempt = 1;; ++attempt) {
         if (auto attempt_result = try_register_once(); attempt_result) {
-            BOOST_LOG_SEV(lg(), info) << "Registered the approval expiry job '"
-                                      << expiry_job_name << "' from " << schedule_setting_name
-                                      << ".";
+            BOOST_LOG_SEV(lg(), info) << "Registered the approval expiry job '" << expiry_job_name
+                                      << "' from " << schedule_setting_name << ".";
             co_return;
         } else if (!attempt_result.error().retryable) {
             throw application_exception(attempt_result.error().message);
@@ -148,15 +147,15 @@ approval_expiry_schedule::try_register_once() {
             failure{.message = "The setting " + std::string(schedule_setting_name) +
                                " could not be read: " + setting->result.message});
     if (setting->value.empty())
-        return std::unexpected(failure{.message = "The setting " +
-                                                   std::string(schedule_setting_name) +
-                                                   " is empty, so there is no schedule to register."});
+        return std::unexpected(
+            failure{.message = "The setting " + std::string(schedule_setting_name) +
+                               " is empty, so there is no schedule to register."});
 
     const auto cron = ores::scheduler::domain::cron_expression::from_string(setting->value);
     if (!cron)
         return std::unexpected(failure{.message = "The setting " +
-                                                   std::string(schedule_setting_name) +
-                                                   " is not a cron expression: " + cron.error()});
+                                                  std::string(schedule_setting_name) +
+                                                  " is not a cron expression: " + cron.error()});
 
     // The job is recognised by name, because that is the key the store holds
     // it under and the only thing about it that survives a restart. A job
@@ -170,14 +169,14 @@ approval_expiry_schedule::try_register_once() {
     if (jobs->result.outcome != outcome::ok)
         return std::unexpected(failure{.message = std::string("The scheduler's jobs could not be "
                                                               "listed: ") +
-                                                   jobs->result.message});
+                                                  jobs->result.message});
 
     const auto held = std::ranges::find_if(
         jobs->definitions, [](const auto& j) { return j.job_name == expiry_job_name; });
 
-    if (held != jobs->definitions.end() && held->schedule_expression.to_string() ==
-                                               cron->to_string() &&
-        held->is_active && held->action_type == "nats_publish")
+    if (held != jobs->definitions.end() &&
+        held->schedule_expression.to_string() == cron->to_string() && held->is_active &&
+        held->action_type == "nats_publish")
         return {};
 
     job_definition_change change;
@@ -189,10 +188,9 @@ approval_expiry_schedule::try_register_once() {
     change.write.command = "";
     change.write.schedule_expression = *cron;
     change.write.action_type = "nats_publish";
-    change.write.action_payload =
-        rfl::json::write(expiry_action_payload{
-            .subject = std::string(
-                ores::inbox::messaging::expire_overdue_approvals_request::nats_subject)});
+    change.write.action_payload = rfl::json::write(expiry_action_payload{
+        .subject =
+            std::string(ores::inbox::messaging::expire_overdue_approvals_request::nats_subject)});
     change.write.is_active = true;
     // The component owns the job's identity and replaces whatever holds it,
     // because this runs again on every restart.
@@ -208,8 +206,8 @@ approval_expiry_schedule::try_register_once() {
     if (!put)
         return std::unexpected(failure{.retryable = true, .message = put.error()});
     if (put->result.outcome != outcome::ok)
-        return std::unexpected(failure{.message = "The scheduler refused the expiry job: " +
-                                                   put->result.message});
+        return std::unexpected(
+            failure{.message = "The scheduler refused the expiry job: " + put->result.message});
     return {};
 }
 

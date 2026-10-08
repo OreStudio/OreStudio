@@ -196,8 +196,7 @@ void fx_spot_feed::start() {
 
             const auto& codec = ores::nats::default_wire_codec();
             BOOST_LOG_SEV(lg(), trace)
-                << "Encoding market_tick for " << nats_subject_
-                << ": wire_format="
+                << "Encoding market_tick for " << nats_subject_ << ": wire_format="
                 << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
             nats_.js_publish(nats_subject_, codec.encode(tick));
             return tick.value;

@@ -164,11 +164,10 @@ public:
             // so the client never needs the naming conventions.
             const auto target = registry_.resolve(req_ctx, req->config_id);
             if (!target) {
-                reply(
-                    nats_,
-                    msg,
-                    stop_feed_response{.success = false,
-                                       .message = "Feed config not found: " + req->config_id});
+                reply(nats_,
+                      msg,
+                      stop_feed_response{.success = false,
+                                         .message = "Feed config not found: " + req->config_id});
                 return;
             }
             source_name = target->row.candidate.source_name;

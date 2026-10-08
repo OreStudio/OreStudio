@@ -165,11 +165,11 @@ make_lineage(ores::utility::generation::generation_context& ctx,
 // How a reader classifies a point's source kind: a point with no annex row is
 // quoted, and an annex row names one of the other two. Kept here so the
 // assertion reads the design's own vocabulary.
-std::string reported_source_kind(
-    ores::marketdata::repository::observation_lineage_repository& lineage_repo,
-    market_observation_repository::context ctx,
-    const boost::uuids::uuid& series_id,
-    const ores::marketdata::domain::market_observation& obs) {
+std::string
+reported_source_kind(ores::marketdata::repository::observation_lineage_repository& lineage_repo,
+                     market_observation_repository::context ctx,
+                     const boost::uuids::uuid& series_id,
+                     const ores::marketdata::domain::market_observation& obs) {
     const auto lineage = lineage_repo.read_latest_by_observation(
         ctx, series_id, obs.observation_datetime, obs.oresmd_uri);
     return lineage ? lineage->point_source_kind : std::string("quoted");
@@ -387,11 +387,10 @@ TEST_CASE("read_as_of_quoted_point_without_annex_row_reports_quoted", tags) {
     REQUIRE(snapshot.size() == 1);
     CHECK(snapshot.front().value == "0.040000");
 
-    CHECK_FALSE(
-        lineage_repo
-            .read_latest_by_observation(
-                h.context(), s.id, quoted.observation_datetime, quoted.oresmd_uri)
-            .has_value());
+    CHECK_FALSE(lineage_repo
+                    .read_latest_by_observation(
+                        h.context(), s.id, quoted.observation_datetime, quoted.oresmd_uri)
+                    .has_value());
     CHECK(reported_source_kind(lineage_repo, h.context(), s.id, quoted) == "quoted");
 }
 
@@ -420,8 +419,7 @@ TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
     obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-1M", feed_after, 0.0450));
 
     // Before the manual point was keyed, the fed value stands.
-    const auto before =
-        obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(5));
+    const auto before = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(5));
     REQUIRE(before.size() == 1);
     CHECK(before.front().value == "0.040000");
 
@@ -451,8 +449,7 @@ namespace {
 // The session an operator writes a manual point with: the series' party, so
 // the party-scoped annex row is visible, and the test database user as the
 // actor the annex's modified_by must name.
-ores::database::context operator_context(database_helper& h,
-                                         const boost::uuids::uuid& party_id) {
+ores::database::context operator_context(database_helper& h, const boost::uuids::uuid& party_id) {
     return h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 }
 
@@ -478,8 +475,13 @@ TEST_CASE("write_manual_point_is_readable_and_reports_manual", tags) {
     fed.party_id = s.party_id;
     obs_repo.insert(h.context(), fed);
 
-    obs_repo.write_manual_point(
-        operator_context(h, s.party_id), s.id, uri, t0, "0.050000", "system.test", "operator over-key");
+    obs_repo.write_manual_point(operator_context(h, s.party_id),
+                                s.id,
+                                uri,
+                                t0,
+                                "0.050000",
+                                "system.test",
+                                "operator over-key");
 
     const auto snapshot = obs_repo.read_as_of(h.context(), s.id, t0 + std::chrono::minutes(1));
     REQUIRE(snapshot.size() == 1);
@@ -564,8 +566,13 @@ TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", tags) {
     fed.party_id = s.party_id;
     obs_repo.insert(h.context(), fed);
 
-    obs_repo.write_manual_point(
-        operator_context(h, s.party_id), s.id, uri, t0, "0.050000", "system.test", "operator over-key");
+    obs_repo.write_manual_point(operator_context(h, s.party_id),
+                                s.id,
+                                uri,
+                                t0,
+                                "0.050000",
+                                "system.test",
+                                "operator over-key");
 
     ores::marketdata::repository::observation_lineage_repository lineage_repo;
     const auto manual = lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri);
@@ -576,8 +583,7 @@ TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", tags) {
     obs_repo.clear_manual_point(operator_context(h, s.party_id), s.id, uri, t0);
 
     // No current manual row remains: the coordinate is back to the feed.
-    CHECK_FALSE(
-        lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri).has_value());
+    CHECK_FALSE(lineage_repo.read_latest_by_observation(h.context(), s.id, t0, uri).has_value());
 
     // The row itself is closed, not deleted, so the history still holds it.
     const auto history = lineage_repo.read_all(h.context(), manual_id);

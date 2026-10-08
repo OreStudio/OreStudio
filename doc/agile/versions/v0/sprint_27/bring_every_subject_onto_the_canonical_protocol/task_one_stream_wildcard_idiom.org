@@ -26,11 +26,11 @@ One way to state the subjects below a prefix, used at every stream-provisioning 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8A963327-DDFA-4C9F-B063-F4C7BB28E7AA][Bring every subject onto the canonical entity protocol]] |
-| Now          | One helper landed; the four sites use it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the suite, then close the story.   |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -73,9 +73,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Literal ">" appended to a subject outside ores.nats | 0 | =grep -rn '"\.>"' projects/ --include=*.cpp= | local tree |
-| Stream sites passing a bare subject constant | 0 | =grep -rn "ensure_stream" projects/ --include=*.cpp= | local tree |
-| Local checks | 35 of 35 pass | =./compass.sh check= | local tree |
+| Literal wildcard appended to a subject outside =ores.nats= | 0 | =grep -rn '"\.>"' projects/ --include=*.cpp= | =80dcac6037= |
+| Stream sites passing a bare subject constant | 0 | =grep -rn "ensure_stream" projects/ --include=*.cpp= | =80dcac6037= |
+| Local checks | 33 of 33 pass | =./compass.sh check= | =66961fc9dd= |
+
+The run that measured this found two things that were not this branch's:
+
+- =er-diagram= was red on =origin/main=: a model gained
+  =fixings_storage_key=, codegen regenerated the create script, and nothing
+  regenerated =ores_schema.puml=. Regenerated here in =66961fc9dd=. This is the
+  second trunk artefact the local run alone has caught.
+- =ctest= needs the NATS server up while =db= needs the services down, and
+  =compass services stop= stops both. With the whole target stopped, seventeen
+  suites fail on =NATS connect failed=; with the target up, =db recreate --kill=
+  loses its race with five reconnecting services. The green run above started
+  the =nats-server-festive-dijkstra.service= unit alone. The runner knows
+  neither constraint.
 
 * Notes
 
@@ -131,3 +144,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.nats::client= states both halves of the fact: =subjects_below(subject)=
+for the family below a base, and =covering_subjects({subjects})= for what a
+stream's filter needs. The market data, synthetic, compute wrapper and workflow
+services all provision through the second, the ingest loop subscribes through
+the first, and no site outside =ores.nats= appends a wildcard by hand any more.
+The marketdata domain keeps only base constants.
+
+=er-diagram= was red on trunk for a column, and is regenerated here.
+
+The environment the heavy checks need is still not stated anywhere: ctest wants
+NATS up, db wants the services down, and stopping the fleet stops both. That
+belongs in the runner, and it is the same class of gap as the two trunk
+artefacts this task's run caught.
+
+This task closes the story. The last thing the story was waiting on was a
+person running the checks: the subject grammar ratchet sat at zero, a merge
+broke it within hours of the PR gates coming out, and only an unrelated branch
+saw it. The gates are sound; nothing runs them.

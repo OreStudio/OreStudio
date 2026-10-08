@@ -21,12 +21,12 @@ One gate refuses a subject that is not {component}.v1.{resource}.{verb} with a v
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-10-07                               |
+| Last touched  | 2026-10-08                               |
 
 * The census
 
@@ -116,7 +116,7 @@ gate is a migration that grows back.
 | [[id:02756820-A373-4E59-84C7-BA2CB0E7B69B][Bring the renamed common verbs onto the closed set]] | DONE | | 2026-10-07 | Six subjects use save or update where the specification's closed set has put. iam.v1.accounts.save, iam.v1.accounts.update and iam.v1.accounts.update-email are the clearest; the rest are the same defect under a different component. |
 | [[id:6596D066-5050-475A-BA3B-6EF0F3E01E10][Move the entity operations into the reserved ops namespace]] | DONE | | 2026-10-07 | About forty subjects act on an entity without being one of the eight verbs and were never moved to the reserved namespace: iam.v1.accounts.{lock,unlock,change-password,reset-password,update-self,select-party,switch-party,set-default-party,attach-pictures,publish-from-dq} among them. The specification's discriminator is explicit, and the models that already comply -- ores.variability.operations and ores.reporting.operations -- show the shape and the justification each message owes. |
 | [[id:4F84DD5B-FC4E-4E02-BC1B-7CA6EF72448F][Give each resource one spelling and publish the adopted-components list]] | DONE | | 2026-10-07 | Three subject-parts exist twice, once snake_case and once kebab-case: dq.v1.lei-entities and dq.v1.lei_entities, inbox.v1.approval-requests and inbox.v1.approval_requests, reporting.v1.report-definitions and reporting.v1.report_definitions. Separately, the specification's Conformance section says the components that have adopted it are named by one list, and no such list exists anywhere in the tree. |
-| [[id:63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9][State the stream wildcard once]] | STARTED | 2026-10-08 | | A nats_subject constant names a prefix, but a stream or a subscription needs the prefix and its children. Four sites spell that three ways, and a test that passed the bare constant failed only against an empty JetStream. |
+| [[id:63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9][State the stream wildcard once]] | DONE | 2026-10-08 | 2026-10-08 | A nats_subject constant names a prefix, but a stream or a subscription needs the prefix and its children. Four sites spell that three ways, and a test that passed the bare constant failed only against an empty JetStream. |
 | [[id:C3D3A903-51D9-4878-8D3B-3775CCE107A0][Carry the subject rename into the seeds and the registrars]] | DONE | | 2026-10-07 | Three kinds of subject are declared nowhere in a model: the target_subject seeds, the subjects a registrar subscribes to, and the six subject_to_fn helpers. The migration left all three on the old spelling. |
 | [[id:6BAAA40B-F55F-43EE-96E4-3EC3C7AA3222][Bring the subjects no model declares onto the protocol]] | DONE | | 2026-10-07 | Ten subjects are written in protocol headers, registrars and seeds with no model declaring them, so the conformance gate never saw them. Bring them onto the grammar and widen the gate. |
 | [[id:2A705A0A-DCEB-4DB4-93D7-A16E23F19F00][Read the subjects no model declares]] | DONE | | 2026-10-07 | The gate reads a model's :subject: and nothing else, so a subject written in a protocol header, a hand-written constant or a DQ seed is invisible to it. Read those sites precisely enough to tell a subject from a job name or an event base. |
@@ -173,6 +173,25 @@ Three defects the work exposed, fixed here:
 
 Verified at =2f80858540=: the local gate passes 44 of 44 checks, including the
 full build, the database recreation and all 94 ctest suites.
+
+The story closed on 2026-10-08 with the last task, [[id:63BE0DED-F8F1-457F-AD0C-EDF2E9E6E6A9][State
+the stream wildcard once]]. Two things had kept it open that nothing else would
+have found. The gate's own numbers moved after the paragraph above: it now reads
+212 subjects, because two later tasks widened it to the protocol headers,
+hand-written constants and DQ seeds that no model declares. And the wildcard a
+stream needs was still spelled three ways at four sites, with the bare constant
+sitting beside it, which is what the ingest loop test tripped over.
+
+=ores.nats= now states both halves: =subjects_below(subject)= for the family
+below a base, and =covering_subjects({subjects})= for a stream's filter. No site
+outside that library appends a wildcard by hand.
+
+The lesson this story leaves behind is not about subjects. Its gate held the
+grammar at zero violations through a 133-subject migration, and then a merge
+broke it within hours of the GitHub PR gates coming out, because the local
+runner is something a person has to remember to run. A gate that runs only on
+request is a gate with a delay, and the delay is where this story's last task
+was hiding.
 
 * Out of scope
 

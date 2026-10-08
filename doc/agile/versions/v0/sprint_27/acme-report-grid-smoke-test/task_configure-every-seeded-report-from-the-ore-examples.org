@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9
+:END:
+#+title: Task: Configure every seeded report from the ORE examples
+#+description: Every report ACME is seeded with needs a risk report configuration, built from the external/ore examples, and scoped to a root portfolio. A report names a root portfolio, and a method resolves that root to every book under it, which is the scope the run executes over.
+#+type: task
+#+level: s1
+#+filetags: :acme-report-grid-smoke-test:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give every report ACME is seeded with the configuration it needs to run, so the
+chain executes it rather than failing before it starts.
+
+A report is scoped to a *root portfolio*. The configuration names that portfolio,
+and the run resolves it to every book beneath it -- that resolution is the
+population the run executes over, and it needs a method that answers it.
+
+Concretely: go through the reports =acme_demo= seeds, take the analytics each one
+implies from the =external/ore= examples, and create the configuration each needs,
+scoped to the root portfolio that report belongs to.
+
+Some reports have no meaningful portfolio scope -- a data-quality or
+system-health report is about the installation, not about a book -- so the task
+also decides what "scope" means for those, or records that they deliberately
+carry none.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3D1D3F74-12B2-408B-A84A-C9E6B1CA16AA][Run an example bundle through the compute grid from a report definition]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-08                               |
+
+- Every report definition =acme_demo= seeds for ACME either carries a
+  configuration that resolves to at least one book, or is recorded as
+  deliberately unscoped with the reason it has no scope.
+- A configuration is built from the =external/ore= example that matches the
+  report's analytics: its observation model, market data type and analysis
+  switches (NPV, cashflow, curves, sensitivity, simulation, XVA, stress) come
+  from that example rather than being guessed.
+- A report names a root portfolio, and a SQL method returns every book under
+  that root. The run uses that method as its scope, so a report added beneath the
+  root is picked up without editing the configuration.
+- The configuration is created where its definition is created, so their ids line
+  up by construction.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+*What the chain does today.* =report_execution_handler::gather_trades= resolves
+the configuration by definition id and then requires a scope:
+
+#+begin_src cpp
+const auto config = config_repo.find_by_definition_id(tenant_ctx, req.definition_id);
+if (!config) { /* "risk_report_config not found for definition " */ }
+const auto book_ids = config_repo.resolve_book_ids(tenant_ctx, config_id);
+if (book_ids.empty()) { /* "no books or portfolios in scope" */ }
+#+end_src
+
+A configuration alone is therefore not enough: it must resolve to at least one
+book, or the run fails one step later with a different message.
+
+*Why this cannot be a seed.* A static seed cannot reference a definition, because
+=ores_reporting_publish_report_definitions_from_dq_fn= in
+=projects/ores.sql/create/reporting/reporting_publish_from_dq_create.sql= inserts
+=gen_random_uuid()= for every definition it publishes, so the ids differ in every
+tenant. The configuration has to be created in that function, where the
+definition it names is being created.
+
+Nothing in the tree inserts a risk report configuration today: the only populate
+hit is an unrelated FSM lifecycle file.
+
+*How this differs from the minimal unblock.* =C39230E7= asks for at least one
+configuration so a run can be attempted at all. This task is the full pass --
+every seeded report, each built from the matching =external/ore= example.
+
+*Open questions.*
+
+- *Ordering.* Definitions are published during the bundle step. Do the party's
+  portfolios and books exist by then? If not, a configuration created there
+  resolves to nothing and fails exactly as today, only later.
+- *The root relation.* A method returning every book under a root portfolio needs
+  a defined parent/child relation between the two. Whether that is a column on
+  the portfolio, one on the book, or an existing hierarchy decides the method's
+  shape, so it is the first thing to settle.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

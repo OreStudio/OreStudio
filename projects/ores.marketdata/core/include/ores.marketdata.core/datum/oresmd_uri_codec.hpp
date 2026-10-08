@@ -80,6 +80,19 @@ public:
     /// The URI of @p index, or why it has none.
     [[nodiscard]] static std::expected<std::string, std::string>
     write_index(const market_index& index);
+
+    /**
+     * @brief The text a URI writes for @p type under =instrument=: the ORE
+     * name in lower case.
+     *
+     * Stated here rather than spelled again by whoever needs to store what a
+     * URI says, so the spelling a reader compares against is the spelling the
+     * writer produces.
+     */
+    [[nodiscard]] static std::string instrument_spelling(instrument_type type);
+
+    /// The text a URI writes for @p quote under =quote=.
+    [[nodiscard]] static std::string quote_spelling(quote_type quote);
 };
 
 }

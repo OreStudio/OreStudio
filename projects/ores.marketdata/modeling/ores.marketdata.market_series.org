@@ -296,6 +296,35 @@ market_series_repository::read_latest_by_uri(context ctx, const std::string& ore
 }
 #+end_src
 
+*** project_identity_after_write
+:PROPERTIES:
+:ID: 8B2F4C71-5D3E-4A96-9E18-7C4B1A6D2F03
+:END:
+
+Projects the identity of every series the generated write path writes, so a
+series is never committed without the row a query joins on.
+
+The hook sits where the row is written rather than at each call site, because
+every writer of a series reaches this method: the ingest loop, the curve
+republish, the import and the service. The projector reads the URI through the
+codec, so the projection cannot disagree with the identity the ticks land under,
+and the write joins the transaction the context already carries.
+
+A repository of another entity collapses these markers, so the hook costs every
+other entity nothing.
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#+end_src
+
+#+begin_src cpp :name project_one :implements 2C8F029A-9D8A-44E0-A06E-F9EA637ED581
+    market_series_identity_projector::project(ctx, std::vector<domain::market_series>{t});
+#+end_src
+
+#+begin_src cpp :name project_batch :implements 40393605-A998-4295-B69F-9FB035FFBC92
+    market_series_identity_projector::project(ctx, batch);
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

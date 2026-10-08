@@ -397,6 +397,21 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("sql",),
     ),
     Check(
+        id="marketdata-identity-columns",
+        title="The series identity projection matches the codec schema",
+        argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),
+        classes=("sql", "cpp", "modeling"),
+        paths=(
+            "projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp",
+            "projects/ores.marketdata/core/src/repository/market_series_identity_projector.cpp",
+            "projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org",
+            "projects/ores.sql/create/marketdata/marketdata_market_series_identity_create.sql",
+        ),
+        fix="Add the column to the create table, or place the field in the"
+            " projector's switch, to match the codec schema. One column per"
+            " identity field the schema declares, and no other.",
+    ),
+    Check(
         id="protocol-twins",
         title="Every protocol header has its TypeScript twin",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_protocol_twin_coverage.py"),

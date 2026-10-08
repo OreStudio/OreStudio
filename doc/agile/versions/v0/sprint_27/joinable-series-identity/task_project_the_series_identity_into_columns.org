@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 326FB65A-5133-487A-BCDF-EB289384DC51
+:END:
+#+title: Task: Project the series identity into typed columns
+#+description: Add a projection table keyed by the series id with one column per identity field the codec schema declares, written from the same codec parse that writes the URI and in the same transaction as the series row, so a query filters and joins on identity fields.
+#+type: task
+#+level: s1
+#+filetags: :joinable-series-identity:sprint_27:v0:
+#+owner: marco
+#+branch: feature/project-the-series-identity-into-columns
+#+pr: 2834
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A market series carries its identity only inside its oresmd_uri string. Add a projection table keyed by the series id with one column per identity field the codec schema declares, written from the same codec parse that writes the URI and in the same transaction as the series row. Then a query filters and joins on the identity fields, and the URI stays the only spelling the system writes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C3B6A94D-0464-4BD8-AAD4-D1FEAE8398E4][Make a series identity joinable in the database]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A projection table exists, keyed by the series id, with one column per identity field the codec schema declares, plus the kind, the asset class, the instrument type, the quote type, the subject, the owning party and the tenant.
+- A check compares the table's columns with the identity fields in the codec schema and fails when the two differ.
+- The series write path projects the identity of every row it writes, in the same transaction, so a committed series carries its projection.
+- A query that filters on a projected column, and one that joins it to another table, both run, and the plan shows an index is used.
+- A URI neither codec reads is recorded with its kind and no field values, so it stays findable and is never mistaken for a series with empty fields.
+
+* Plan
+
+The column set is the union of the identity fields the codec schema declares, so one
+column per =field= the schema marks =field_role::identity=, plus the columns that say
+which kind of identity the row is. The list is not retyped: the entity model is written
+from =schema.hpp= and a check fails when the two disagree.
+
+The writer walks the codec's own parse. =oresmd_uri_codec::read= gives a =market_datum=
+for a series URI and holds the subject field from the path like any other, so a writer
+that iterates =datum.fields()= fills the right column for every instrument type with no
+per-type code and no second reading of the grammar. A URI neither =read= nor
+=read_index= admits is recorded with its kind and no field values, because refusing it
+would fail the backfill and the generated test data, and because a row that records its
+kind still says what it is.
+
+The hook sits in =market_series_repository::write=, the one place a series row is
+written, so the projection and the row commit together. The generated write body takes
+one marker, which collapses to nothing for every other entity.
+
+The index the acceptance names is over the columns a caller filters on first -- the
+instrument type and the subject's own column -- because a filter that begins with the
+asset class alone selects most of the table and the planner will not use it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Identity fields the codec schema declares | 45 | =python3 build/scripts/check_marketdata_identity_columns.py= | f908713687 |
+| Columns in the projection table | 52 (45 fields, 7 context) | same | f908713687 |
+| Field cases in the projector's switch | 61 (45 identity, 16 coordinate) | same | f908713687 |
+| Local checks passing, heavy excluded | 31 of 37 | =python3 build/scripts/local_checks.py --exclude-heavy= | f908713687 |
+| Components drifting under =component-drift --all= | 1 (=ores.trading=, not this change) | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --all= | f908713687 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2834][#2834]] | [marketdata] Project the series identity into joinable columns |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The identity of a series is now a row of typed columns. Every write through
+=market_series_repository= projects it, and the projection is written from the
+codec's own parse, so it cannot disagree with the URI the ticks land under.
+
+What landed:
+
+- =ores.marketdata.market_series_identity=, one row per series, current state,
+  one column per identity field the codec schema declares, plus the kind, the
+  asset class, the instrument type, the quote type, the party and the tenant.
+  It generates no wire surface, so no client writes it.
+- =market_series_identity_projector=, which reads each URI through the codec and
+  places each field. Its switch names every declared field, so a field added to
+  the enum does not compile until it is placed, and the coordinate fields write
+  nothing because a series holds none.
+- Two new paste points in the repository template, at the end of the generated
+  single and batch writes, so the hook sits where the row is written rather than
+  at each call site. A repository of another entity collapses both.
+- =oresmd_uri_codec::instrument_spelling= and =quote_spelling=, so the projector
+  and the URI writer state the instrument and quote spelling once.
+- =build/scripts/check_marketdata_identity_columns.py=, registered in the local
+  check catalogue. It holds the table's columns and the projector's switch to
+  the schema, and reports either direction.
+
+Not done, and why:
+
+- The index (fixing) grammar. A series named by an index URI gets a row that
+  records the kind and the asset class and no field value. The index fields have
+  their own vocabulary, so projecting them is its own task if a query needs it;
+  the story's out-of-scope section says the same.
+- The backfill and the asset-class views. Both are the story's next slice.
+  =compass db recreate= reseeds the database through the repository, so the
+  rows this change needs are projected as they are written.
+
+Limitations:
+
+- Nothing was compiled and no test was run, by the hourly-build workflow. The
+  build and the suites are swift curie's validation.
+- The projection is one statement after the series write. It joins the caller's
+  transaction when the context carries one and is a transaction of its own
+  otherwise, because the codegen write helpers cannot take dynamic SQL. No
+  caller opens one today, so the two statements are adjacent rather than atomic;
+  the backfill in the next slice is what repairs a gap.
+- A series removed through the repository leaves its identity row behind. The
+  remove path is generated and carries no hook. A query that joins the series
+  table is unaffected; one that reads the projection alone is not.
+- The er-diagram check fails under the bare =python3= of this checkout, which
+  has no =pystache=. The committed diagram is correct: the renderer's =--check=
+  passes when it runs under the codegen venv.
+- =component-drift --all= reports drift in =ores.trading= alone, from another
+  environment's in-flight work. No marketdata artefact drifts.

@@ -1,0 +1,624 @@
+:PROPERTIES:
+:ID: 6C7FBF9C-21F4-44FE-8E12-5731BCE14399
+:END:
+#+title: ores.marketdata.market_series_identity
+#+description: Codegen entity model for the projection that makes a series identity joinable -- one column per identity field the codec schema declares, written from the same parse that writes the oresmd URI.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: market_series_identity
+#+entity_plural: market_series_identity
+#+entity_title: Market Series Identity
+#+brief: One column per identity field of a market series, written from the same codec parse that writes its oresmd URI.
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+A projection of =market_series.oresmd_uri=, one row per series, so a query can
+join on the series and filter on a real column. The URI stays the only spelling
+the system writes and the codec stays the only thing that reads it; this table is
+written from that parse, never read back to rebuild a URI.
+
+The column set is the identity fields =ores.marketdata= declares in its codec
+schema, one column per =field= the schema marks =field_role::identity=, plus the
+columns that say which kind of identity the row carries. A field the type's
+schema row does not declare is empty, because the row holds only the columns its
+own type fills. A column is text, not a typed relational form, because the codec
+keeps every value as the key spelled it and a projection that reinterpreted it
+would be a second spelling of the same identity.
+
+The table is a current state, not a history: the series row is already temporal
+and the identity does not change under it, so one row per series is enough and
+the primary key is the series. The column list is checked against the codec
+schema by =build/scripts/check_marketdata_identity_columns.py=, so the two cannot
+drift.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:profile:       read-only-current-state
+:subcomponent:  api
+:END:
+
+* Columns
+
+** series_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The market series this identity belongs to. A soft reference: the series table
+is temporal and its primary key carries the validity window, so no foreign key
+can name a single current row of it.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party that owns the series, copied so a query filters without joining the
+series table.
+
+** identity_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+Which grammar named the series: =series= for a series URI, =index= for an index
+(fixing) URI, =unknown= for a URI neither admits. A row whose kind is not
+=series= carries no field value, so nothing is invented for a URI the codec
+could not read.
+
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The asset class, as the URI's authority writes it, or empty when the URI's
+grammar names no asset class the codec knows.
+
+** instrument_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE instrument type, as the URI's =instrument= writes it, or empty when the
+identity is not a series.
+
+** quote_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The ORE quote type, as the URI's =quote= writes it, or empty when the identity
+is not a series.
+
+** atm
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =atm= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** cap_floor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =cap_floor= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =ccy= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** cds_index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =cds_index_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** commodity_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =commodity_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** contract
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =contract= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** contract_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =contract_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =curve_id= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =day_counter= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** doc_clause
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =doc_clause= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** dst
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =dst= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** eq_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =eq_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** fixed_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =fixed_ccy= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** fixed_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =fixed_tenor= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** flat_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =flat_ccy= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** flat_term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =flat_term= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** float_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =float_ccy= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** float_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =float_tenor= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** future_contract
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =future_contract= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** fwd_start
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =fwd_start= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** identifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =identifier= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index1
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index1= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index2= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index_tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index_tenor= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** index_term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =index_term= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** offset
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =offset= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =option_type= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** payer_receiver
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =payer_receiver= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** qualifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =qualifier= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** quote_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =quote_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** quote_tag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =quote_tag= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** rating_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =rating_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** relative
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =relative= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** running_spread
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =running_spread= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** seasonality_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =seasonality_type= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** security_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =security_id= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** seniority
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =seniority= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** side
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =side= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =tenor= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** term
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =term= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** time_unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =time_unit= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =underlying_name= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+** unit_ccy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The =unit_ccy= field of the identity, as the URI spells it, or empty when the type's
+schema row does not declare it.
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: market_series_identity
+:entity_plural_short:   market_series_identity
+:entity_singular_words: market series identity
+:entity_plural_words:   market series identities
+:END:
+
+** Conventions
+:PROPERTIES:
+:iterator_var: msi
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:             ores_marketdata_market_series_identity_tbl
+:current_state:         true
+:no_audit_columns:      true
+:rls_tenant_isolation:  true
+:END:
+
+The table is current state and carries no validity window. The series row is
+already temporal and the identity does not change under it, so a history here
+would be a second copy of something the series table already says.
+
+** Indexes
+
+| name       | columns                    | unique | current_only | where_extra          |
+|------------+----------------------------+--------+--------------+----------------------|
+| instrument | tenant_id, instrument_type | false  | false        |                      |
+| party      | tenant_id, party_id        | false  | false        |                      |
+| ccy        | tenant_id, ccy             | false  | false        | ccy is not null      |
+| unit_ccy   | tenant_id, unit_ccy        | false  | false        | unit_ccy is not null |
+
+A filter starts with the instrument type, because the asset class alone selects
+most of a class's series and the planner will not use an index it would then have
+to walk. The two currency columns are indexed because a currency pair is the
+scope most callers name, and each sits on a different field: the unit currency is
+the path of an FX identity and the currency is a query key of it.
+
+* Physical space
+
+The table is a projection the service writes and a query joins. It reaches no
+client as an entity of its own, so nothing but the data layer and the SQL schema
+is generated.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.service                    | false   |
+| ores.cpp.protocol                   | false   |
+| ores.cpp.nats-handler               | false   |
+| ores.cpp.nats-sub-registrar         | false   |
+| ores.cpp.nats-event-registrar       | false   |
+| ores.cpp.nats-eventing              | false   |
+| ores.cpp.nats-event-cache           | false   |
+| ores.cpp.history-provider-registrar | false   |
+| ores.cpp.presentation               | false   |
+| ores.cpp.eventing-integration-test  | false   |
+| ores.cpp.shell-command              | false   |
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |
+| ores.ts.protocol                    | false   |
+| ores.ts.domain                      | false   |

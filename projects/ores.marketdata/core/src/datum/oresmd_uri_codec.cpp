@@ -156,8 +156,8 @@ std::string spelling_of(const market_datum& datum) {
 
     auto params = u.params(query_encoding());
     params.append({"type", datum.is_series() ? series_type_value : quote_type_value});
-    params.append({"instrument", lower(ore_name(datum.type()))});
-    params.append({"quote", lower(ore_name(datum.quote()))});
+    params.append({"instrument", instrument_spelling(datum.type())});
+    params.append({"quote", quote_spelling(datum.quote())});
     for (const auto& fv : datum.fields()) {
         if (fv.name == row.subject || std::holds_alternative<none_t>(fv.held))
             continue;
@@ -309,6 +309,14 @@ std::expected<std::string, std::string> oresmd_uri_codec::write_index(const mark
     if (const auto why = no_ore_name(index))
         return std::unexpected(std::format("no ORE index name names this index: {}", *why));
     return spelling_of(index);
+}
+
+std::string oresmd_uri_codec::instrument_spelling(instrument_type type) {
+    return lower(ore_name(type));
+}
+
+std::string oresmd_uri_codec::quote_spelling(quote_type quote) {
+    return lower(ore_name(quote));
 }
 
 }

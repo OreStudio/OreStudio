@@ -17,20 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
--- Drop observations, fixings and the asset-class junction before series
--- (they reference it).
-\ir ./marketdata_feed_bindings_notify_trigger_drop.sql
-\ir ./marketdata_feed_bindings_drop.sql
-\ir ./marketdata_market_fixings_notify_trigger_drop.sql
-\ir ./marketdata_market_fixings_drop.sql
-\ir ./marketdata_observation_lineages_notify_trigger_drop.sql
-\ir ./marketdata_observation_lineages_drop.sql
-\ir ./marketdata_market_observations_notify_trigger_drop.sql
-\ir ./marketdata_market_observations_drop.sql
-\ir ./marketdata_market_series_identity_drop.sql
-\ir ./marketdata_market_series_asset_class_drop.sql
-\ir ./marketdata_market_series_notify_trigger_drop.sql
-\ir ./marketdata_market_series_drop.sql
-\ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
-\ir ./marketdata_series_classification_rules_drop.sql
+drop policy if exists market_series_identity_tbl_tenant_isolation_policy on "ores_marketdata_market_series_identity_tbl";
+drop rule if exists ores_marketdata_market_series_identity_delete_rule on "ores_marketdata_market_series_identity_tbl";
+drop trigger if exists ores_marketdata_market_series_identity_insert_trg on "ores_marketdata_market_series_identity_tbl";
+drop function if exists ores_marketdata_market_series_identity_insert_fn;
+drop table if exists "ores_marketdata_market_series_identity_tbl";

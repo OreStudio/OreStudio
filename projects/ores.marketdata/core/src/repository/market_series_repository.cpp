@@ -33,6 +33,7 @@
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.core/repository/market_series_entity.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
 #include "ores.marketdata.core/repository/market_series_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
@@ -166,6 +167,7 @@ void market_series_repository::write(context ctx,
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
         ctx, market_series_mapper::map(t), lg(), "Writing market series to database.");
+    market_series_identity_projector::project(ctx, std::vector<domain::market_series>{t});
 }
 
 void market_series_repository::write(
@@ -179,6 +181,7 @@ void market_series_repository::write(
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
     execute_write_query(
         ctx, market_series_mapper::map(batch), lg(), "Writing market series to database.");
+    market_series_identity_projector::project(ctx, batch);
 }
 
 std::vector<domain::market_series> market_series_repository::read_latest(context ctx) {

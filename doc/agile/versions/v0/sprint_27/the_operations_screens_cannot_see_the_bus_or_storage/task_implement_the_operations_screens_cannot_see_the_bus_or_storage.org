@@ -8,7 +8,7 @@
 #+filetags: :the_operations_screens_cannot_see_the_bus_or_storage:sprint_27:v0:
 #+owner: marco
 #+branch: feature/test-the-operations-screens
-#+pr:
+#+pr: 2895
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2895][#2895]] | [telemetry,storage] Let the operations screens see the bus and every running service |
 
 * Review
 

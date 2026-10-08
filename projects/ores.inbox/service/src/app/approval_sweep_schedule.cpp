@@ -162,8 +162,9 @@ approval_sweep_schedule::try_register_once() {
                                                               "listed: ") +
                                                   jobs->result.message});
 
+    const auto& job_name = described_.job_name;
     const auto held = std::ranges::find_if(
-        jobs->definitions, [](const auto& j) { return j.job_name == described_.job_name; });
+        jobs->definitions, [&job_name](const auto& j) { return j.job_name == job_name; });
 
     if (held != jobs->definitions.end() &&
         held->schedule_expression.to_string() == cron->to_string() && held->is_active &&

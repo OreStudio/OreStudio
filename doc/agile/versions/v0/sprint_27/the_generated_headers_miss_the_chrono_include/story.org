@@ -37,8 +37,8 @@ Let every generated domain header that names std::chrono compile on its own.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CF8E5DE2-E0DC-4E0B-B588-56EE6F64ECAD][Scaffold story: Hotfix: the generated headers miss the chrono include]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:14F4BBA4-9215-4BC3-BE75-F9D3A12D0DC4][Implement Hotfix: the generated headers miss the chrono include]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the generated headers miss the chrono include |
+| [[id:CF8E5DE2-E0DC-4E0B-B588-56EE6F64ECAD][Scaffold story: Hotfix: the generated headers miss the chrono include]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:14F4BBA4-9215-4BC3-BE75-F9D3A12D0DC4][Implement Hotfix: the generated headers miss the chrono include]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the generated headers miss the chrono include |
 
 * Decisions
 

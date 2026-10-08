@@ -26,11 +26,11 @@ Let every generated domain header that names std::chrono compile on its own.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EDF4A4B1-049B-4626-8A5B-A56FAB91E5D9][Hotfix: the generated headers miss the chrono include]] |
-| Now          | Every generated header names std::chrono with <chrono>; the gate has both rules and is green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -123,3 +123,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2884. The template emits the include, 237 models stopped
+declaring it, four kept or gained it, and no generated domain header names
+=std::chrono= without =<chrono>= or declares it twice.
+
+Both acceptance criteria are met without a build: the rule walks all 1538
+generated domain headers and reports nothing, and it reports the 126 on the
+pre-fix tree. Whether the translation units compile is the hourly validation
+build's to say, and no build ran in this worktree.

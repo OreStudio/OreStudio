@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 4BE909F3-D2B5-4FB5-A6F4-7791936B9B90
+:END:
+#+title: Task: Commit the risk report config generated output
+#+description: 97051b9fd0 added the dq risk report config staging entity and committed the model, but not everything it generates: the dq TypeScript domain and protocol twins are untracked, and the marketdata identity SQL and reporting operations protocol moved with it. component-drift --all names the untracked files explicitly and fails.
+#+type: task
+#+level: s1
+#+filetags: :build-the-retire-or-reset-tenant-journey:sprint_27:v0:
+#+owner: marco
+#+branch: fix/commit-the-risk-report-config-output
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Commit the generated output the model change left behind, so component-drift --all completes over every component again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8B276277-A49D-4813-A017-C0529C798DBB][Build the retire or reset tenant journey]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- component-drift --all completes over every component and finds no drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+check_component_drift --all exits 0 over every component and reports no drift.
+
+The task began as its opposite. ores.dq.risk_report_config.org was an invalid
+scaffold that aborted the gate at dq, and the first branch removed it. While
+that sat open, 97051b9fd0 completed the model on main, so deleting it would
+have destroyed finished work and the removal was abandoned.
+
+What was left is the second half of that commit: it added the model and
+committed the model, but not everything the model generates. The dq TypeScript
+domain and protocol twins were untracked, and the marketdata identity SQL and
+the reporting operations protocol moved with it. component-drift names
+untracked files explicitly, because git diff cannot see them, so the gate kept
+failing on a tree that looked complete.
+
+The lesson is not about this model. A model and its generated output are one
+change, and committing the first without the second leaves the gate red in a
+way that reads as drift rather than as an omission.
+

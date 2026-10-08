@@ -26,15 +26,24 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "ores.storage.service/app/application_exception.hpp"
 #include "ores.storage.service/messaging/registrar.hpp"
 #include "ores.utility/version/version.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/throw_exception.hpp>
+#include <memory>
 
 namespace ores::storage::service::app {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view service_name = "ores.storage.service";
+constexpr std::string_view service_version = ORES_VERSION;
+}
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -72,6 +81,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         [store](auto& n, auto c, auto v) {
             return ores::storage::service::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v), store);
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
     co_return;
 }

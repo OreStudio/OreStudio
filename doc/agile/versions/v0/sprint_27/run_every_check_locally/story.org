@@ -42,6 +42,7 @@ One local command replaces the GitHub pull-request wait. The command classifies 
 | [[id:93FAC931-489F-401F-9870-E740C640A39F][Scaffold story: Run every check locally in one report]] | DONE | 2026-10-06 | 2026-10-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:0829AF20-92A5-4497-983F-A15B4D8C3871][Build the local check runner, its report and its decision tree]] | DONE | 2026-10-06 | 2026-10-07 | Initial task for: Run every check locally in one report |
 | [[id:A932B4F2-DE97-4348-83E1-DBF22B0B89CB][Retire the GitHub pull-request checks]] | DONE | 2026-10-06 | 2026-10-06 | Delete every workflow that gates a pull request, once the local runner covers it. GitHub keeps only the builds that are not pull-request checks. |
+| [[id:CADFBDB3-118E-40A0-A434-64A03B1EF177][Order the generating checks before the deriving ones]] | DONE | | 2026-10-08 | tangle-shell runs before component-drift in the catalogue, so it tangles the recipes as committed and component-drift then rewrites them: the scripts are stale again the moment the recipes are committed, which is why the shell library needs a re-tangle catch-up commit every few days. |
 
 * Decisions
 

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: CADFBDB3-118E-40A0-A434-64A03B1EF177
+:END:
+#+title: Task: Order the generating checks before the deriving ones
+#+description: tangle-shell runs before component-drift in the catalogue, so it tangles the recipes as committed and component-drift then rewrites them: the scripts are stale again the moment the recipes are committed, which is why the shell library needs a re-tangle catch-up commit every few days.
+#+type: task
+#+level: s1
+#+filetags: :run_every_check_locally:sprint_27:v0:
+#+owner: marco
+#+branch: feature/order-the-generating-checks-before-the-deriving-ones
+#+pr: 2866
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let a check declare what it must follow, and order every phase by that declaration, so a deriving writer never reads what another check is about to rewrite.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A2C7D47F-E8EB-4D67-862A-3E1007E78146][Run every check locally in one report]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- A check can name the checks it must follow, and a phase runs in that order.
+- component-drift runs before every check that derives from generated output.
+- A dependency that is not a check, or a cycle, is an error rather than a silent wrong order.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2866][#2866]] | [codegen] Order the generating checks before the deriving ones |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A check can name what it must follow, and each phase is ordered by that
+declaration. component-drift now runs before tangle-shell, tangle-http,
+site-page, component-docs, cmake-sources, recipe-inventories and
+physical-inventory -- every check that derives from generated output.
+
+The sort is deliberately conservative. It takes one ready check at a time in
+catalogue order, so only a check that declares a dependency moves, and it moves
+no further forward than the first check that names it. Nothing else is
+reshuffled.
+
+The tests pin the property that matters: component-drift precedes every check
+that names it, only the generator moves, an unknown dependency raises, and a
+cycle raises.
+
+Verified: pytest projects/ores.codegen/tests/test_local_checks.py passes 31, and
+the next run's prepare phase opens with component-drift.
+
+The run that verified it also surfaced a trunk defect worth its own task. The
+gate aborts at the first model that fails validation:
+ores.dq.risk_report_config.org is missing the subcomponent flag and states no
+primary key, and component-drift stops there, so components after dq are never
+regenerated in that run. A single bad model turns the tree-wide gate into a
+partial one, and the failure reads as drift rather than as a broken model.
+

@@ -110,7 +110,6 @@ The configuration type; must exist in ores_reporting_configuration_types_tbl.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

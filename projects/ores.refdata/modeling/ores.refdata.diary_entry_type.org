@@ -134,7 +134,6 @@ drop function if exists ores_refdata_validate_diary_entry_type_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

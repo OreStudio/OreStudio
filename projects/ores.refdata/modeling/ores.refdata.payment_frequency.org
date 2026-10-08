@@ -189,7 +189,6 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

@@ -26,6 +26,7 @@
 #define ORES_ANALYTICS_API_DOMAIN_STRESS_TEST_SHIFT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>

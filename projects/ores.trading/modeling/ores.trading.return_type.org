@@ -94,7 +94,6 @@ drop function if exists ores_trading_validate_return_type_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

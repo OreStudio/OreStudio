@@ -115,7 +115,6 @@ system tenant's catalogue and a bootstrap load still passes through.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src

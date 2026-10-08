@@ -241,7 +241,6 @@ std::nullopt
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #include <optional>
 #+end_src

@@ -217,7 +217,6 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #+end_src

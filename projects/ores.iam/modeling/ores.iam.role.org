@@ -242,7 +242,6 @@ role_repository::read_registration_default(context ctx) {
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #+end_src

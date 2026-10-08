@@ -159,7 +159,6 @@ The template catalogue is system reference data.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

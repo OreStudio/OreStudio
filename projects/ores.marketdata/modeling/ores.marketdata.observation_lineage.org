@@ -302,7 +302,6 @@ observation_lineage_repository::read_latest_by_observation(context ctx,
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
-#include <chrono>
 #include <string>
 #+end_src
 

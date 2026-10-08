@@ -26,6 +26,7 @@
 #define ORES_DQ_API_DOMAIN_ORIGIN_DIMENSION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 #include <string>
 #include <string_view>
 

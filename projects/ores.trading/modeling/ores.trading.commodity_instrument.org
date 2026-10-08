@@ -500,7 +500,6 @@ repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <optional>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"

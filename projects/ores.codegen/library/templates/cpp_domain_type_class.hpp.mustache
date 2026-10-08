@@ -14,6 +14,9 @@
 #include <cstdint>
 #include <vector>
 {{/has_base64_columns}}
+{{#has_audit_columns}}
+#include <chrono>
+{{/has_audit_columns}}
 {{^has_domain_groups}}
 {{^has_identity_group}}
 {{#has_tenant_id}}
@@ -183,6 +186,7 @@ struct {{entity_singular}} final {
 #include <cstdint>
 #include <vector>
 {{/has_base64_columns}}
+#include <chrono>
 #include <string_view>
 
 namespace ores::{{component}}::domain {

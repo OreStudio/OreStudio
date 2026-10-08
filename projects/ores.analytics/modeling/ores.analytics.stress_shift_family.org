@@ -80,7 +80,6 @@ What the value means, in one line, for a reader who does not know ORE.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <chrono>
 #include <string>
 #+end_src
 

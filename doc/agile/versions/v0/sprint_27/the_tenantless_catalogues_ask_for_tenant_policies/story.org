@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8D5F977B-6E6F-4C5D-962E-5FA819323D1C
+:END:
+#+title: Story: Hotfix: the tenantless catalogues ask for tenant policies
+#+description: a2dcf034fa and 2b7301ceca declared booking_nature_type, counterparty_scope_type and entry_channel_type as having no tenant, but their models still ask for a tenant isolation policy, so the generated create scripts read a tenant_id column that does not exist and the schema cannot be built at all. e37b84a81b did the same for structure_member, whose party policy reads a party_id column the pin removal had already dropped.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:sprint_27:v0:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the database schema load.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | The four flags are gone and the generator refuses both shapes. |
+| Waiting on    | Nothing.                               |
+| Next          | Open the PR and merge it.              |
+| Last touched  | 2026-10-08                               |
+
+* Acceptance
+
+- No generated create script reads a column its table does not have.
+- The generator refuses a policy flag the entity cannot support.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:80D374A8-B6DB-43E2-BF00-B7FE199C9AF3][Scaffold story: Hotfix: the tenantless catalogues ask for tenant policies]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DB2079E3-D0DA-4817-B0BF-FE246B7170E2][Implement Hotfix: the tenantless catalogues ask for tenant policies]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the tenantless catalogues ask for tenant policies |
+
+* Decisions
+
+- *The flags are wrong, not the tables.* =entry_channel_type= and its two
+  siblings are tenant-less by design, and =structure_member= has no party
+  column by design. The policy flags, not the entities, are the mistake.
+- *Refuse the shape in the generator.* Both rules go into
+  =validate_rls_isolation=, which already refuses three other combinations on
+  the same principle. The database is the wrong place to find out.
+- *Do not reopen the gap.* =structure_member= keeps the restrictive party
+  policy the hand-written =trading_rls_policies_create.sql= gives it; only the
+  generated duplicate that cannot load is gone.
+
+* Out of scope
+
+- Why the flags and the columns could drift apart. A gate over the generated
+  policies rather than the model would catch any missing column, not just the
+  three a policy names; the two rules here are the ones with a proven failure.

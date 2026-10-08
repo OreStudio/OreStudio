@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: DB2079E3-D0DA-4817-B0BF-FE246B7170E2
+:END:
+#+title: Task: Implement Hotfix: the tenantless catalogues ask for tenant policies
+#+description: Initial task for: Hotfix: the tenantless catalogues ask for tenant policies
+#+type: task
+#+level: s1
+#+filetags: :the_tenantless_catalogues_ask_for_tenant_policies:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-tenantless-catalogues-ask-for-tenant-policies
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D5F977B-6E6F-4C5D-962E-5FA819323D1C][Hotfix: the tenantless catalogues ask for tenant policies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the database schema load.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8D5F977B-6E6F-4C5D-962E-5FA819323D1C][Hotfix: the tenantless catalogues ask for tenant policies]] |
+| Now          | The four flags are gone and the generator refuses both shapes. |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-10-08                               |
+
+* Acceptance
+
+- No generated create script reads a column its table does not have.
+- The generator refuses a policy flag the entity cannot support.
+
+* Plan
+
+Found by recreating the database, which had not been possible since these
+models changed. The template emits the tenant policy from
+=sql.rls_tenant_isolation= and the party policy from =sql.rls_party_isolation=,
+and each policy reads one column of its own name. Nothing tied either flag to
+the column existing:
+
+- =a2dcf034fa= and =2b7301ceca= gave =booking_nature_type=,
+  =counterparty_scope_type= and =entry_channel_type= =:has_tenant_id: false= --
+  their prose says the set is the same for every tenant -- but left
+  =:rls_tenant_isolation: true=. The generated create scripts then read a
+  =tenant_id= column the tables do not have.
+- =e37b84a81b= gave =structure_member= =:rls_party_isolation: true= on the
+  premise that it "had party_id with no restrictive policy". Both halves are
+  wrong: =178610c4e8= had already removed the column, and the hand-written
+  =trading_rls_policies_create.sql= already gives the table a restrictive party
+  policy through =ores_trading_structure_party_fn=. The generated policy reads
+  =party_id=, so the schema cannot load.
+
+Drop the four flags and regenerate. Then add the two rules to
+=validate_rls_isolation=, beside the three it already carries, so the same
+mistake fails when the model is read rather than when the schema is loaded.
+
+The party rule applies to a domain entity only. A junction's =party_id= comes
+from one of its sides and is not in =columns= at all, so a rule stated over the
+declared columns would fail the ninety junction and entity models that are
+correct today.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Generated create scripts reading a column their table lacks | 4 before, 0 after | the scan in * Notes | 8b6104d5e1 |
+| Models asking for party isolation | 90 | =load_model= over every model | 8b6104d5e1 |
+| Of those, domain entities without a declared party_id | 1, =structure_member= | the same pass | 8b6104d5e1 |
+| Bound models the new rules did not reject | 329 of 329 | =check_model_drift --summary= | 8b6104d5e1 |
+
+* Notes
+
+The scan that found these parses each generated create script's table columns
+and then looks for =tenant_id=, =party_id= or =counterparty_id= in the rest of
+the file. It is deliberately narrow: =trade_bookings= and =iam_sessions= are
+reported by it and are sound, because the first's references are qualified on
+the trades, books and netting sets it joins and the second's is a comment. A
+rule that read the policies instead of the file text would not have those false
+positives, and would also catch a policy that reads any other missing column.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

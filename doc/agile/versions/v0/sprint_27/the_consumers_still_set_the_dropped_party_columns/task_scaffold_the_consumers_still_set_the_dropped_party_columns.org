@@ -8,7 +8,7 @@
 #+filetags: :the_consumers_still_set_the_dropped_party_columns:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-consumers-still-set-the-dropped-party-columns
-#+pr:
+#+pr: 2882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2882][#2882]] | [trading] Stop the consumers setting the dropped party columns |
 
 * Review
 

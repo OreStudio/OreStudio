@@ -20,18 +20,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story: create the story and its task in Sprint 27, wire
+them into the sprint, and open the branch.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next          | Nothing. |
+| Last touched | 2026-10-08                               |
 
 * Acceptance
 
@@ -83,3 +84,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the branch exist, and the sprint lists the
+story. The work task carries the same branch, so the scaffold rides the
+work's pull request.

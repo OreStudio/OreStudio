@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-07
 #+updated: 2026-10-07
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ assumed one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3EA65FC8-B878-4B62-8E26-347295E49335][Define the trade set model]] |
-| Now          | The cluster is written and the taxonomy diagram renders. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the pages, then open the PR.    |
+| Next         | Nothing. |
 | Last touched | 2026-10-07                               |
 
 * Acceptance
@@ -46,25 +46,27 @@ assumed one.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Settle the shape with the owner before writing, then write in reading
+order: the primitive, the two rules that hang off it, the set an
+operation creates, and the hub that orders them. Redraw the taxonomy as
+a diagram beside the notes. Then sweep the pages that carried the old
+set/group vocabulary, so one model is stated in one place and nothing
+contradicts it.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pages in the cluster | 5 | =ls doc/knowledge/domain/trade_set*.org doc/knowledge/domain/trade_group*.org= | 9875d2baf8 |
+| Documents restated onto the vocabulary | 13 | =git diff --name-only 9d12f82b8c..HEAD -- doc/knowledge= | 9875d2baf8 |
 
 * Notes
+
+The hub keeps the id of the page it replaces, so the thirty documents
+that linked the old vocabulary reach the new one unchanged.
+
+The run's own page, its identity and its state machine, stays with the
+capture that owns it. This cluster states the foreign key and stops.
 
 * Test Scenarios
 
@@ -90,3 +92,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The cluster is written and published.
+
+- The hub, [[id:2AF58405-4F3D-4B74-AAD0-6A97E7DA215F][Trade sets and trade groups]],
+  carries the words, the test, the taxonomy, the reading order, and the
+  boundary against the grid, the run, the processes and the links.
+- [[id:116164D0-A54A-4872-8BA6-1FE36583C8C4][Trade set]] gives the
+  primitive and the contexts it arises from.
+- [[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]]
+  separates derived membership from recorded membership.
+- [[id:80760020-5896-4C1C-805D-87B93982F0C0][Nested trade sets]] states
+  the exclusivity test that tells identity from annotation.
+- [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][Trade group]] gives the
+  chain, the two role levels, the process catalogue and the run's
+  properties.
+- =trade_set_taxonomy.puml= and its render hold the diagram.
+- Thirteen documents that carried the old vocabulary now state the
+  target model, and the two captures and the trading story with them.

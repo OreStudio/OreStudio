@@ -263,27 +263,6 @@ deadline: closing a queue that has stopped moving is housekeeping, and warning
 somebody that it is about to stop moving is a nudge with its own timing and its
 own audience.
 
-* Prototype
-
-A static page at =doc/prototypes/access/see-the-story-of-a-request/index.html=: mock data
-only, no backend, no build step and no session. It argues that the whole story of
-one request -- the request raised, the detail written, the decisions, the
-notification and the grant -- belongs on one screen, the way a code review shows
-a pull request, because no single screen the journey has today holds more than
-one of those rows.
-
-The prototype exists because the journey writes to six tables and answers the
-reader from one of them at a time. Whether the answer is a story, a set of
-sections or a lane per table is the question it asks.
-
-- Variants :: a one merged stream, b one section per table, c one lane per table
-  on a shared time axis
-- Readers :: the administrator, who may read every row, and the member, who may
-  not read the decisions taken on their own request
-- Source :: =doc/prototypes/access/see-the-story-of-a-request/index.html=
-- Open :: =/OreStudio/doc/prototypes/access/see-the-story-of-a-request/= once the site is
-  built, or the file directly
-
 * Related journeys
 
 - [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — where the member reads the roles they hold, which is where the ask starts and where the answer is read.
@@ -314,4 +293,5 @@ sections or a lane per table is the question it asks.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, its kinds, and the rule that answers one
 - [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the design of the deadline this journey's gap 7 asked for: the kind's deadline, the two close paths, and the scheduled sweep that closes what nobody answered
 - [[id:CF975012-2E6A-4F9D-821A-30BAE7FCC031][Task: Create the role-request journey]] — the task this document answers
+- [[id:5DCAE331-205B-4343-85FB-F9004972FD5F][See the story of a request prototype]] — the whole journey drawn as one request's story, and what each of the two readers may open
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

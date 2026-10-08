@@ -27,7 +27,7 @@ generated alternative kept beside the agreed design, never instead of it.
 | Prototype                           | What it argues | Open it | Review |
 |-------------------------------------+----------------+---------+--------|
 | [[file:access.org][Access screens]] | A member's own roles and a “Can I…?” answer, the administrator giving and taking away roles with a reason, and a role catalogue whose permissions are a grid by area rather than a list of 890 codes. | [[file:access/][prototype]] | [[file:access/review/][Gemini review]] |
-| See the story of a request | The role-request journey writes to six tables and each screen answers from one: whether one request's whole story belongs in one place, and which parts of it each reader may open. | [[file:see-the-story-of-a-request/][prototype]] | none |
+| [[file:see-the-story-of-a-request.org][See the story of a request]] | The role-request journey writes to six tables and each screen answers from one: whether one request's whole story belongs in one place, and which parts of it each reader may open. | [[file:see-the-story-of-a-request/][prototype]] | none |
 
 
 * Adding a prototype

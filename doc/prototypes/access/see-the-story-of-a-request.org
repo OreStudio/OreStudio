@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 5DCAE331-205B-4343-85FB-F9004972FD5F
+:END:
+#+title: See the story of a request prototype
+#+description: The role-request journey from one request's point of view: every row the six tables wrote, in the order they wrote it, with the field differences and the reader who may open each row.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:access:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+* Summary
+
+One request writes to six tables -- =approval_request=, =role_grant_request=,
+=role_grant_request_role=, =approval_decision=, =account_role= and
+=notification= -- and every screen the journey has answers from one of them at
+a time. This prototype puts all thirteen rows on one screen, newest first, in
+the order the store wrote them, and asks whether that is the right shape the
+way a code review shows a pull request.
+
+It is one file of mock HTML, CSS and JavaScript. It calls no service, needs no
+build and no session, and carries three variants and two readers as query
+parameters.
+
+It is not accepted yet. No verdict has been asked for, and the row on the group
+page says =none= for its review because none exists.
+
+* Detail
+
+** The question
+
+The journey is finished, and the record of it is spread across the screens that
+wrote it. The administrator who answers a request never sees the whole of what
+they set in motion: the request is in the queue, the roles asked for are on the
+detail screen, the decision is on the decision row, the grant lands on the
+member's own access, and the notices are in two different inboxes. Nobody can
+read what happened in the order it happened.
+
+The prototype asks whether the order is the thing worth drawing, and it asks
+the question a second time as a second axis, because the first one cannot be
+answered without it: *who is reading*. The administrator may open every row.
+The member may not read the decisions taken on their own request, so their copy
+of the same story has a hole in it exactly where the answer was given.
+
+** What it argues
+
+| The journey today | This prototype | Why |
+|-------------------+----------------+-----|
+| One screen per table | One stream, newest first, every table in it | What happened next is the question, and only one view answers it |
+| A state code at each end | The state change drawn as a field difference, from one value to the next | "waiting" then "approved" hides that anything happened between |
+| The reader sees what their screens read | The reader axis is drawn, and the member's copy says what it does not have | An entitlement rule is a design decision, not a hole to be papered over |
+| A history panel per record, with a revert | A revert only where a write exists to serve it -- the asker's own words and the deadline | A decision is an act, not an edit; offering to undo it would be a lie |
+
+It reads the trail from what the components already keep. Every row above is a
+version with an actor and a time, so no new store is proposed; the read is
+across the histories the components already have, and the reader's entitlement
+decides which of them answer.
+
+** What the prototype settled
+
+Two things were decided while it was being built, and they are the reason it is
+worth keeping.
+
+The difference widget is the record screens' own. A changed value splits into
+what stayed, what changed, and what stayed after it, and the middle is marked
+on the old line in red and on the new line in green. The same widget draws the
+history panel today, so the trail needs no new way of showing a change.
+
+There is almost nothing here to revert. A revert makes sense on a commit
+because a commit is a diff, but most of this journey is not: a decision is an
+act with a reason and an actor, and a state is what the acts left behind rather
+than a field somebody set. The only revert the journey can honestly serve is
+the asker's own words and the deadline they take, and the prototype offers the
+button there and nowhere else.
+
+** What is real and what is not
+
+The rows, their order and their field differences are mock, invented to look
+like what a real request writes. The entity names and their columns are the
+model's own. The two readers are real rules: the member may read their own
+request, the roles it asks for and their own notices, and may not read the
+decisions other people took.
+
+Nothing here is wired to a service, and the prototype proposes no read that
+exists today. A screen built from it would need one, and that read does not
+exist yet.
+
+** Where the code lives
+
+=doc/prototypes/access/see-the-story-of-a-request/index.html=: one file, plain
+HTML, CSS and JavaScript, no framework and no build step. The site build copies
+the directory through =ores-deploy-prototypes=, beside the other prototypes.
+
+Open it with =see-the-story-of-a-request/?variant=a&who=admin=; the bar along
+the bottom switches both.
+
+- Variants :: =a= one merged stream, =b= one section per table, =c= one lane per
+  table on a shared time axis
+- Readers :: =admin=, who may open every row, and =member=, who may not
+
+* See also
+
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the journey this prototype answers to, and the tables it draws.
+- [[id:A5C3E9B1-7D24-4F6A-9B8E-2C1D0F3E5A71][Access screens prototype]] — the screens the journey has today, whose history panel supplies the difference widget.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record that holds the waiting, and the rule that answers one.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

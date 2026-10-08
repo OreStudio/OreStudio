@@ -95,7 +95,9 @@ public:
      */
     static trade
     reverse_knock_out_swap(const ores::trading::domain::knock_out_swap_instrument& instr,
-                           const std::vector<ores::trading::domain::swap_leg>& legs);
+                           const std::vector<ores::trading::domain::swap_leg>& legs,
+                           const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                           const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Forward-maps an InflationSwap trade (InflationSwapData) to ORES
@@ -119,20 +121,26 @@ public:
      * @brief Reverse-maps ORES domain types back to a Swap ORE XSD trade.
      */
     static trade reverse_swap(const ores::trading::domain::vanilla_swap_instrument& instr,
-                              const std::vector<ores::trading::domain::swap_leg>& legs);
+                              const std::vector<ores::trading::domain::swap_leg>& legs,
+                              const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                              const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Reverse-maps ORES domain types back to a ForwardRateAgreement
      * ORE XSD trade.
      */
     static trade reverse_fra(const ores::trading::domain::fra_instrument& instr,
-                             const std::vector<ores::trading::domain::swap_leg>& legs);
+                             const std::vector<ores::trading::domain::swap_leg>& legs,
+                             const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                             const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Reverse-maps ORES domain types back to a CapFloor ORE XSD trade.
      */
     static trade reverse_capfloor(const ores::trading::domain::cap_floor_instrument& instr,
-                                  const std::vector<ores::trading::domain::swap_leg>& legs);
+                                  const std::vector<ores::trading::domain::swap_leg>& legs,
+                                  const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                                  const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Forward-maps a Swaption trade (SwaptionData) to ORES domain types,
@@ -147,7 +155,9 @@ public:
      * @brief Reverse-maps ORES domain types back to a Swaption ORE XSD trade.
      */
     static trade reverse_swaption(const ores::trading::domain::swaption_instrument& instr,
-                                  const std::vector<ores::trading::domain::swap_leg>& legs);
+                                  const std::vector<ores::trading::domain::swap_leg>& legs,
+                                  const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                                  const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     /**
      * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES
@@ -168,6 +178,8 @@ public:
     static trade reverse_callable_swap(
         const ores::trading::domain::callable_swap_instrument& instr,
         const std::vector<ores::trading::domain::swap_leg>& legs,
+        const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+        const std::vector<ores::trading::domain::swap_leg_rate>& rates,
         const std::vector<ores::trading::domain::callable_swap_call_date>& call_dates);
 
     /**
@@ -190,11 +202,27 @@ public:
     static trading::domain::swap_instrument_data forward_balance_guaranteed_swap(const trade& t);
 
 private:
+    /**
+     * Appends one leg of an ORE leg list to the family carrier: the leg row
+     * itself and the notional and rate children that carry its schedule.
+     */
+    static void append_leg(trading::domain::swap_instrument_data& result,
+                           const legData& ld,
+                           int leg_number);
+
     static ores::trading::domain::swap_leg map_leg(const legData& ld, int leg_number);
+
+    static std::vector<ores::trading::domain::swap_leg_amount> map_leg_amounts(const legData& ld,
+                                                                               int leg_number);
+
+    static std::vector<ores::trading::domain::swap_leg_rate> map_leg_rates(const legData& ld,
+                                                                           int leg_number);
 
     static legData reverse_leg(const std::optional<std::chrono::year_month_day>& start_date,
                                const std::optional<std::chrono::year_month_day>& maturity_date,
-                               const ores::trading::domain::swap_leg& sl);
+                               const ores::trading::domain::swap_leg& sl,
+                               const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
+                               const std::vector<ores::trading::domain::swap_leg_rate>& rates);
 
     static legData_Notionals_t make_notionals(double notional);
 };

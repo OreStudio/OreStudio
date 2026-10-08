@@ -75,6 +75,27 @@ ores::ore::domain::trade load_first_trade(const std::string& filename) {
 // Vanilla Swap mapper tests
 // =============================================================================
 
+
+/**
+ * The leg's economics are rows beside it, so a test reads the child of the
+ * leg it is asserting on rather than a column of the leg.
+ */
+static double leg_notional(const ores::trading::domain::swap_instrument_data& data, int leg_number) {
+    for (const auto& a : data.leg_amounts)
+        if (a.leg_number == leg_number)
+            return a.amount.to_double();
+    return 0.0;
+}
+
+static double leg_rate(const ores::trading::domain::swap_instrument_data& data,
+                int leg_number,
+                const std::string& rate_role) {
+    for (const auto& r : data.leg_rates)
+        if (r.leg_number == leg_number && r.rate_role == rate_role)
+            return r.value;
+    return 0.0;
+}
+
 TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("IR_Swap_Vanilla.xml");
@@ -89,13 +110,13 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     REQUIRE(legs.size() == 2);
     CHECK(legs[0].leg_type_code == "Fixed");
     CHECK(legs[0].currency == "EUR");
-    CHECK(legs[0].notional.to_double() == Approx(10000000.0).epsilon(0.001));
-    CHECK(legs[0].fixed_rate == Approx(0.021).epsilon(0.0001));
+    CHECK(leg_notional(result, 1) == Approx(10000000.0).epsilon(0.001));
+    CHECK(leg_rate(result, 1, "fixed") == Approx(0.021).epsilon(0.0001));
 
     CHECK(legs[1].leg_type_code == "Floating");
     CHECK(legs[1].currency == "EUR");
     CHECK(legs[1].floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(legs[1].notional.to_double() == Approx(10000000.0).epsilon(0.001));
+    CHECK(leg_notional(result, 2) == Approx(10000000.0).epsilon(0.001));
     BOOST_LOG_SEV(lg, info) << "Swap forward-mapper test passed";
 }
 
@@ -105,7 +126,7 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swap(
-        std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.SwapData.operator bool());
     CHECK(reconstructed.SwapData->LegData.size() == 2);
@@ -138,7 +159,7 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
 
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
-    CHECK(legs[0].fixed_rate == Approx(0.005).epsilon(0.00001));
+    CHECK(leg_rate(result, 1, "fixed") == Approx(0.005).epsilon(0.00001));
     CHECK(legs[0].currency == "EUR");
     BOOST_LOG_SEV(lg, info) << "FRA forward-mapper test passed";
 }
@@ -149,7 +170,7 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_fra(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_fra(
-        std::get<ores::trading::domain::fra_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::fra_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.ForwardRateAgreementData.operator bool());
     const auto& fra = *reconstructed.ForwardRateAgreementData;
@@ -179,7 +200,7 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     REQUIRE(legs.size() == 1);
     CHECK(legs[0].leg_type_code == "Floating");
     CHECK(legs[0].currency == "EUR");
-    CHECK(legs[0].notional.to_double() == Approx(3000000.0).epsilon(0.001));
+    CHECK(leg_notional(result, 1) == Approx(3000000.0).epsilon(0.001));
     CHECK(legs[0].floating_index_code == "EUR-EURIBOR-6M");
     BOOST_LOG_SEV(lg, info) << "CapFloor forward-mapper test passed";
 }
@@ -190,7 +211,7 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_capfloor(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
-        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.CapFloorData.operator bool());
     const auto& cf = *reconstructed.CapFloorData;
@@ -244,9 +265,9 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_forward", tags) {
     REQUIRE(result.legs.size() == 2);
     CHECK(result.legs[0].leg_type_code == "Floating");
     CHECK(result.legs[0].floating_index_code == "USD-SOFR");
-    CHECK(result.legs[0].notional.to_double() == Approx(100000000.0).epsilon(0.001));
+    CHECK(leg_notional(result, 1) == Approx(100000000.0).epsilon(0.001));
     CHECK(result.legs[1].leg_type_code == "Fixed");
-    CHECK(result.legs[1].fixed_rate == Approx(0.05).epsilon(0.0001));
+    CHECK(leg_rate(result, 2, "fixed") == Approx(0.05).epsilon(0.0001));
     BOOST_LOG_SEV(lg, info) << "KnockOutSwap forward-mapper test passed";
 }
 
@@ -256,7 +277,7 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_knock_out_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_knock_out_swap(
-        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument), result.legs);
+        std::get<ores::trading::domain::knock_out_swap_instrument>(result.instrument), result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.TradeType == ores::ore::domain::oreTradeType::KnockOutSwap);
     REQUIRE(reconstructed.KnockOutSwapData.operator bool());

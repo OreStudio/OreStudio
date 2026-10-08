@@ -103,12 +103,26 @@ void encode_leaf_with_legs(const Leaf& leaf,
 }
 
 /**
- * The wire shape of a rates leaf: the leaf, its legs and its call date
- * schedule. It is the family struct with the variant removed, so a reader
- * rebuilds the family carrier from it without knowing the leaf's type.
+ * The wire shape of a rates leaf: the leaf, its legs, the legs' notional and
+ * rate children, and its call date schedule. It is the family struct with the
+ * variant removed, so a reader rebuilds the family carrier from it without
+ * knowing the leaf's type.
  */
 template <typename Leaf>
 struct swap_leaf_payload {
+    Leaf instrument;
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<callable_swap_call_date> call_dates;
+};
+
+/**
+ * The payload as it was before the legs gained their amount and rate
+ * children, so a message from a peer built before that change still reads.
+ */
+template <typename Leaf>
+struct swap_leaf_payload_v1 {
     Leaf instrument;
     std::vector<swap_leg> legs;
     std::vector<callable_swap_call_date> call_dates;
@@ -117,18 +131,27 @@ struct swap_leaf_payload {
 template <typename Leaf>
 void encode_swap_leaf(const Leaf& leaf,
                       const std::vector<swap_leg>& legs,
+                      const std::vector<swap_leg_amount>& leg_amounts,
+                      const std::vector<swap_leg_rate>& leg_rates,
                       const std::vector<callable_swap_call_date>& call_dates,
                       instrument_payload& out) {
     out.type = std::string(leaf_name<Leaf>());
-    out.body = rfl::json::write(swap_leaf_payload<Leaf>{leaf, legs, call_dates});
+    out.body = rfl::json::write(
+        swap_leaf_payload<Leaf>{leaf, legs, leg_amounts, leg_rates, call_dates});
 }
 
 template <typename Variant>
 void encode_swap(const Variant& variant,
                  const std::vector<swap_leg>& legs,
+                 const std::vector<swap_leg_amount>& leg_amounts,
+                 const std::vector<swap_leg_rate>& leg_rates,
                  const std::vector<callable_swap_call_date>& call_dates,
                  instrument_payload& out) {
-    std::visit([&](const auto& leaf) { encode_swap_leaf(leaf, legs, call_dates, out); }, variant);
+    std::visit(
+        [&](const auto& leaf) {
+            encode_swap_leaf(leaf, legs, leg_amounts, leg_rates, call_dates, out);
+        },
+        variant);
 }
 
 template <typename T>
@@ -180,14 +203,29 @@ void try_one_swap(const instrument_payload& payload, std::optional<swap_instrume
     if (found || payload.type != leaf_name<Leaf>())
         return;
     if (auto r = read_as<swap_leaf_payload<Leaf>>(payload)) {
-        found = swap_instrument_data{
-            Variant(std::move(r->instrument)), std::move(r->legs), std::move(r->call_dates)};
+        found = swap_instrument_data{Variant(std::move(r->instrument)),
+                                     std::move(r->legs),
+                                     std::move(r->leg_amounts),
+                                     std::move(r->leg_rates),
+                                     std::move(r->call_dates)};
+        return;
+    }
+    // A payload written before the legs gained their amount and rate children
+    // carries the leaf, its legs and the call dates only, so read it and leave
+    // the children empty.
+    if (auto r = read_as<swap_leaf_payload_v1<Leaf>>(payload)) {
+        found = swap_instrument_data{Variant(std::move(r->instrument)),
+                                     std::move(r->legs),
+                                     {},
+                                     {},
+                                     std::move(r->call_dates)};
         return;
     }
     // A payload written before the call dates became child rows carries the
     // leaf and its legs only, so read it and leave the schedule empty.
     if (auto r = read_as<with_legs<Leaf, swap_leg>>(payload))
-        found = swap_instrument_data{Variant(std::move(r->instrument)), std::move(r->legs), {}};
+        found = swap_instrument_data{
+            Variant(std::move(r->instrument)), std::move(r->legs), {}, {}, {}};
 }
 
 template <typename Variant, std::size_t... Is>
@@ -304,7 +342,12 @@ instrument_payload encode_instrument(const trade_instrument& instrument) {
             if constexpr (std::is_same_v<T, std::monostate>) {
                 return;
             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                encode_swap(leaf.instrument, leaf.legs, leaf.call_dates, out);
+                encode_swap(leaf.instrument,
+                            leaf.legs,
+                            leaf.leg_amounts,
+                            leaf.leg_rates,
+                            leaf.call_dates,
+                            out);
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 out.type = std::string(leaf_name<commodity_instrument>());
                 out.body =

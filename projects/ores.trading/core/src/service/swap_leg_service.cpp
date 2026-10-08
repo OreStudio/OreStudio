@@ -104,9 +104,6 @@ domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     v.business_day_convention_code = write.business_day_convention_code;
     v.payment_frequency_code = write.payment_frequency_code;
     v.floating_index_code = write.floating_index_code;
-    v.fixed_rate = write.fixed_rate;
-    v.spread = write.spread;
-    v.notional = write.notional;
     v.currency = write.currency;
     return v;
 }

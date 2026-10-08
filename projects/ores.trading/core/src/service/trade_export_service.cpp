@@ -25,6 +25,8 @@
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
@@ -205,6 +207,13 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
 
     // Phase 2: batch-fetch legs (one call covers all swap types)
     std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg>> legs_map;
+    // A rates leg states its notionals and its rates as rows of their own, so
+    // they are fetched beside the legs and only for the instruments that
+    // state one.
+    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg_amount>>
+        leg_amounts_map;
+    std::unordered_map<std::string, std::vector<ores::trading::domain::swap_leg_rate>>
+        leg_rates_map;
     {
         std::vector<std::string> all_swap;
         for (auto* v : {&fra_ids,
@@ -220,6 +229,14 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
             repository::swap_leg_repository leg_repo;
             for (auto& leg : leg_repo.read_by_instruments_batch(ctx, all_swap))
                 legs_map[boost::uuids::to_string(leg.identity.trade_id)].push_back(std::move(leg));
+            repository::swap_leg_amount_repository amount_repo;
+            for (auto& amount : amount_repo.read_by_instruments_batch(ctx, all_swap))
+                leg_amounts_map[boost::uuids::to_string(amount.trade_id)].push_back(
+                    std::move(amount));
+            repository::swap_leg_rate_repository rate_repo;
+            for (auto& rate : rate_repo.read_by_instruments_batch(ctx, all_swap))
+                leg_rates_map[boost::uuids::to_string(rate.trade_id)].push_back(
+                    std::move(rate));
         }
     }
     std::unordered_map<std::string, std::vector<ores::trading::domain::composite_leg>>
@@ -253,6 +270,20 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
         auto it = legs_map.find(id);
         return it != legs_map.end() ? std::move(it->second) :
                                       std::vector<ores::trading::domain::swap_leg>{};
+    };
+
+    auto take_leg_amounts = [&](const std::string& id) {
+        auto it = leg_amounts_map.find(id);
+        return it != leg_amounts_map.end() ?
+                   std::move(it->second) :
+                   std::vector<ores::trading::domain::swap_leg_amount>{};
+    };
+
+    auto take_leg_rates = [&](const std::string& id) {
+        auto it = leg_rates_map.find(id);
+        return it != leg_rates_map.end() ?
+                   std::move(it->second) :
+                   std::vector<ores::trading::domain::swap_leg_rate>{};
     };
 
     auto take_call_dates = [&](const std::string& id) {
@@ -331,6 +362,8 @@ void populate_instruments_for_trades(const Ctx& ctx, std::vector<trade_export_it
             swap_instrument_data data;
             data.instrument = std::move(v);
             data.legs = take_legs(id);
+            data.leg_amounts = take_leg_amounts(id);
+            data.leg_rates = take_leg_rates(id);
             data.call_dates = take_call_dates(id);
             imap[id] = std::move(data);
         }

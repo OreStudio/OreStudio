@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: DAA82E2D-8DD6-4830-9FF9-65D6486D7CA7
+:END:
+#+title: The domain header's chrono include is gated wider than the symbol it serves
+#+description: The domain class header template emits <chrono> for every entity with audit columns, but the member that needs it also requires the entity to have no audit group. An entity that carries audit_record audit gets the include and never spells std::chrono:: -- six trading instrument headers are the only instances. Narrowing the gate to exclude them breaks 26 more headers, because <chrono> also covers chrono-typed columns the commit that added the gate removed from the models.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cpp:trading:
+#+created: 2026-10-08
+#+updated: 2026-10-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org=
+writes the domain class headers, and its =<chrono>= include sits behind
+=has_audit_columns=:
+
+#+begin_src mustache
+{{#has_audit_columns}}
+#include <chrono>
+{{/has_audit_columns}}
+#+end_src
+
+The member the include was added for is nested one flag deeper, inside the
+alternative that an audit *group* replaces:
+
+#+begin_src mustache
+{{#has_audit_group}}
+    {{{audit_group_qualified}}} audit;
+{{/has_audit_group}}
+{{^has_audit_group}}
+{{#has_audit_columns}}
+    std::chrono::system_clock::time_point recorded_at;
+{{/has_audit_columns}}
+{{/has_audit_group}}
+#+end_src
+
+So an entity that carries =audit_record audit= gets the include and never
+spells =std::chrono::=. Six generated headers are the only instances in the
+tree, all in ores.trading:
+
+- =bond_instrument.hpp=
+- =composite_instrument.hpp=
+- =composite_leg.hpp=
+- =equity_position_instrument.hpp=
+- =scripted_instrument.hpp=
+- =swap_leg.hpp=
+
+* Why
+
+Two reasons this is worth fixing, and one reason it is not a quick fix.
+
+*The include is dead in those six.* Commit =06936a44da= states the rule the
+template breaks: an include a template's files need sits behind a context flag
+computed from the branch that spells its symbol. Here the gate is one branch
+wider than the symbol. Commit =177a2d6196= introduced it, gated on
+=has_audit_columns=, and the six headers compile only because
+=audit_record.hpp= already brings =<chrono>=.
+
+*The obvious narrowing breaks 26 more headers.* The include also serves
+chrono-typed columns, such as =std::chrono::year_month_day start_date= and
+=maturity_date= on =callable_swap_instrument=, and =177a2d6196= deleted the
+models' hand declarations of =<chrono>= on the understanding that the template
+now owns the include. Of the 32 generated domain headers that carry an
+audit-group member, 26 name =std::chrono::= in a column and depend on this
+include:
+
+#+begin_example
+$ for h in $(grep -rl "AUTO-GENERATED FILE" projects/*/api/include/*/domain/*.hpp); do
+    grep -qE "^    [a-z_:]+::audit_record audit;" "$h" && echo "$h"; done | wc -l
+32
+$ ... | while read h; do grep -q "std::chrono::" "$h" && echo "$h"; done | wc -l
+26
+#+end_example
+
+Gating on =has_audit_columns and not has_audit_group= therefore removes an
+include that 26 headers need. The compiler and
+=projects/ores.codegen/tests/test_domain_includes.py= would both catch it, but
+only after the regeneration.
+
+*The safe gate is "the header spells =std::chrono::="* — the union of the two
+branches that spell it:
+
+#+begin_example
+(has_audit_columns and not has_audit_group)
+or any member's cpp_type names std::chrono::
+#+end_example
+
+That belongs in =core.py= beside the =has_base64_columns= /
+=has_decimal_columns= family, which exist for the same purpose. It is not a
+one-line template edit: it is a flag, a re-tangle with
+=ores-build-codegen-templates.el=, and a regeneration of every component, with
+=test_domain_includes.py= and =check_component_drift.py --all= as the proof
+that no header lost an include it needs.
+
+Note that the drift itself is already fixed. PR #2893 committed the six
+headers with the include, because that is what the template emits, and
+=check_component_drift.py --component trading-cpp= is clean. This capture is
+about the template being one branch wider than its symbol, not about drift.
+
+* References
+
+- =projects/ores.codegen/library/templates/ores.cpp.domain.class_header.org=
+- =projects/ores.codegen/library/templates/cpp_domain_type_class.hpp.mustache=
+  (the tangle of that file)
+- =projects/ores.codegen/src/codegen/core.py= — the =has_*_columns= flag family
+- =projects/ores.codegen/tests/test_domain_includes.py= — the used-but-undeclared
+  rule that guards the narrow gate
+- Commits =177a2d6196= (added the gate), =06936a44da= (states the rule)
+- PR #2893, which committed the six headers as they are
+
+* See also
+
+- [[id:C6A0AB65-D503-474C-95AA-462D8B46C06E][Hotfix: the chrono include never reached the trading instruments]] — the
+  drift the gate's own commit left behind, now closed.
+- [[id:C203937E-BB91-48F4-995D-523D3866D60C][Fix trading entity model drift]] — the larger trading sweep this belongs
+  beside.

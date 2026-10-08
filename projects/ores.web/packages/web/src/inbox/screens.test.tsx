@@ -263,7 +263,7 @@ describe('the request queue', () => {
     it('names who asked, what for and why, and opens the request from the row', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [queued()], total: 1 });
+                client.setQueryData(['request-queue'], { items: [queued()], total: 1, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -280,7 +280,7 @@ describe('the request queue', () => {
     it('says nothing is waiting rather than drawing an empty table', () => {
         const html = render(
             (client) => {
-                client.setQueryData(['request-queue'], { items: [], total: 0 });
+                client.setQueryData(['request-queue'], { items: [], total: 0, answered: [] });
             },
             <RequestsPage />,
             '/requests',
@@ -293,7 +293,9 @@ describe('the request queue', () => {
         const html = render(
             (client) => {
                 client.setQueryData(['request-queue'], {
-                    items: [
+                    items: [],
+                    total: 0,
+                    answered: [
                         queued({
                             stateCode: 'approved',
                             decision: {
@@ -304,17 +306,35 @@ describe('the request queue', () => {
                             },
                         }),
                     ],
-                    total: 1,
                 });
             },
             <RequestsPage />,
             '/requests',
         );
 
+        expect(html).toContain('Nothing is waiting.');
         expect(html).toContain('Answered');
         expect(html).toContain('Approved');
         expect(html).toContain('by priya');
         expect(html).toContain('Induction done.');
+    });
+
+    it('keeps a held request in the table, because nobody has answered it', () => {
+        const html = render(
+            (client) => {
+                client.setQueryData(['request-queue'], {
+                    items: [queued({ stateCode: 'held' })],
+                    total: 1,
+                    answered: [],
+                });
+            },
+            <RequestsPage />,
+            '/requests',
+        );
+
+        expect(html).toContain('daniel');
+        expect(html).toContain('Held');
+        expect(html).not.toContain('Nothing is waiting.');
     });
 });
 

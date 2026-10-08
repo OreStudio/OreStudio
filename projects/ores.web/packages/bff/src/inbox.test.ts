@@ -114,6 +114,7 @@ function joins() {
             accounts: [{ id: DANIEL, username: 'daniel' }],
             total: 1,
         },
+        'inbox.v1.approval_decisions.list': { result: OK, decisions: [], total: 0 },
     };
 }
 
@@ -402,12 +403,13 @@ describe('inbox routes', () => {
         expect(calls).toHaveLength(0);
     });
 
-    it('answers the queue the server picked, with no decision looked for', async () => {
-        const { server, cookies, calls } = buildTestServer({
+    it('answers the queue the server picked, and the answered tail it carried', async () => {
+        const { server, cookies } = buildTestServer({
             'inbox.v1.ops.list_approval_queue': {
                 result: OK,
                 requests: [wireRequest(REQUEST, DANIEL)],
                 total: 1,
+                answered: [],
             },
             ...joins(),
         });
@@ -432,10 +434,59 @@ describe('inbox routes', () => {
                 },
             ],
             total: 1,
+            answered: [],
         });
-        expect(calls.filter((c) => c.subject === 'inbox.v1.approval_decisions.list')).toHaveLength(
-            0,
-        );
+    });
+
+    it('answers the requests just answered, with what was decided on them', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [],
+                total: 0,
+                answered: [wireRequest(REQUEST, DANIEL)],
+            },
+            ...joins(),
+            'inbox.v1.approval_decisions.list': {
+                result: OK,
+                decisions: [
+                    {
+                        request_id: REQUEST,
+                        decision_code: 'approve',
+                        decided_by: PRIYA,
+                        decided_at: '2026-10-05 10:00:00Z',
+                        comment: 'Desk needs it',
+                    },
+                ],
+                total: 1,
+            },
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.items).toEqual([]);
+        expect(body.answered).toEqual([
+            {
+                id: REQUEST,
+                version: 3,
+                kindCode: 'iam.role_grant',
+                stateCode: 'waiting',
+                requestedBy: 'daniel',
+                requestedAt: '2026-10-04 09:00:00Z',
+                reason: 'I need the desk role',
+                expiresAt: '',
+                roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
+                decision: {
+                    decisionCode: 'approve',
+                    decidedBy: PRIYA,
+                    decidedAt: '2026-10-05 10:00:00Z',
+                    comment: 'Desk needs it',
+                },
+            },
+        ]);
     });
 
     it('decides a request against the version read, in the server own words', async () => {

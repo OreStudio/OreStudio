@@ -113,8 +113,11 @@ The member's rail is not resumable across a reload — only the request is.
    request closes as approved. A refusal writes the reason the member will read,
    and the request closes as refused. An administrator who is the requester is
    refused: four eyes means the answer comes from somebody else.
-10. *Leave.* The queue no longer lists the request. The grant takes effect at the
-    member's next sign-in, as every assignment does.
+10. *Leave.* The request leaves the waiting list. The grant takes effect at the
+    member's next sign-in, as every assignment does. The request does not
+    disappear: it stays in the queue's answered tail for as long as the
+    installation says, so the administrator sees what they answered, and the
+    notice that links back to it opens.
 
 The ask and the decision are final steps: there is no Back past a request that
 has been made, or past a decision that has been given. A member who needs the
@@ -136,6 +139,13 @@ The administrator's screen is the queue. It shows the requests waiting in the
 tenant, the selected request in full, and the decision. The decision is one
 panel because the administrator reads the reason and answers at once; a request
 that needs research is left in the queue rather than half-answered.
+
+An answered request leaves the waiting list, but it does not leave the screen.
+The notice that says what happened links back to the request, and a request
+that vanished would give the administrator nothing to look at, so the queue
+carries the requests answered within a window below the waiting ones. How long
+that window is, is the installation's, as the variability system setting
+=inbox.approval_queue.answered_window_seconds=.
 
 #+caption: Answer a request: the tenant's waiting requests, the selected request with what the role grants, and the decision.
 #+attr_html: :width 100%
@@ -201,7 +211,7 @@ needs any of them.
 | Wait | Read the roles my request asks for | =iam.v1.ops.get_request_roles= | [[id:16DCD9A8-0854-4237-AAAC-2E6129EB79D4][ores.iam.role_grant_request]] |
 | Wait | Withdraw my request | =inbox.v1.ops.withdraw_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Read the answer | Read what I have been told | =inbox.v1.ops.list_my_notifications= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
-| Read the queue | List the requests waiting in the tenant | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
+| Read the queue | List the requests waiting in the tenant, and the ones answered recently | =inbox.v1.ops.list_approval_queue= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Decide | Answer a request, with a reason | =inbox.v1.ops.decide_approval= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |
 | Decide | Grant the roles the request asks for | =iam.v1.ops.assign_role= | [[id:C47A4410-8624-431C-98FE-D05304CEC6D8][ores.iam.authorization_messages]] |
 | Nobody answers | Close the requests past their deadline | =inbox.v1.ops.expire_overdue_approvals= | [[id:353B9AFD-C3B5-46BF-8D1B-E0362AE3CD23][ores.inbox.approval_operations]] |

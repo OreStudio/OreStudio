@@ -76,7 +76,8 @@ ores::history::service::dispatch_registry& history_registry() {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
-                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             std::chrono::seconds answered_window) {
 
     std::vector<ores::nats::service::subscription> subs;
     const auto add = [&subs](std::vector<ores::nats::service::subscription> more) {
@@ -104,7 +105,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // withdrawing and deciding apply the lifecycle rules, and the queue and
     // one's own requests are reads a person works from.
     {
-        auto h = std::make_shared<approval_operations_handler>(nats, ctx, verifier);
+        auto h = std::make_shared<approval_operations_handler>(
+            nats, ctx, verifier, answered_window);
         subs.push_back(
             nats.queue_subscribe(raise_approval_request_request::nats_subject,
                                  queue_group,

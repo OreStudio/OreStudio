@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <stdexcept>
 
 namespace ores::inbox::service {
@@ -36,6 +37,15 @@ using namespace ores::logging;
 namespace {
 
 constexpr int max_page = 500;
+
+/**
+ * @brief How many answered requests the tail carries at most.
+ *
+ * The window says how far back the tail reaches; this says how wide it is. A
+ * busy tenant answers more in a day than anybody reads, and nobody acts on an
+ * answered request, so the tail is a glance and not a list.
+ */
+constexpr int answered_tail_limit = 20;
 
 int clamp_limit(int limit) {
     return std::clamp(limit, 1, max_page);
@@ -171,6 +181,61 @@ request_page approval_lifecycle::queue(const std::vector<std::string>& kind_code
         page.requests.assign(rows.begin() + first, rows.begin() + last);
     }
     return page;
+}
+
+std::vector<domain::approval_request>
+approval_lifecycle::recently_answered(const std::vector<std::string>& kind_codes,
+                                      const boost::uuids::uuid& excluding,
+                                      std::chrono::seconds window) {
+    if (kind_codes.empty() || window <= std::chrono::seconds::zero())
+        return {};
+
+    /*
+     * The two arrays are comma-joined rather than passed as PostgreSQL array
+     * literals: both hold codes the model itself declares, so neither can hold
+     * the separator.
+     */
+    std::string kinds;
+    for (const auto& code : kind_codes) {
+        if (!kinds.empty())
+            kinds += ',';
+        kinds += code;
+    }
+    const std::string open = "waiting,held";
+
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx_,
+        "select r.id::text"
+        " from ores_inbox_approval_requests_tbl r"
+        " where r.valid_to = ores_utility_infinity_timestamp_fn()"
+        " and r.kind_code = any(string_to_array($1::text, ','))"
+        " and r.state_code <> all(string_to_array($2::text, ','))"
+        " and r.requested_by <> $3::uuid"
+        " and r.valid_from >= clock_timestamp() - make_interval(secs => $4::double precision)"
+        " order by r.valid_from desc"
+        " limit $5::int",
+        {kinds,
+         open,
+         boost::uuids::to_string(excluding),
+         std::to_string(window.count()),
+         std::to_string(answered_tail_limit)},
+        lg(),
+        "Reading the approval requests answered recently");
+
+    std::vector<std::string> ids;
+    ids.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (!row.empty() && row.front())
+            ids.push_back(*row.front());
+    }
+    if (ids.empty())
+        return {};
+
+    repository::approval_request_repository repo;
+    auto answered = repo.read_latest(ctx_, ids);
+    // The store orders a read by key, so the answer's own order is put back.
+    std::ranges::sort(answered, std::greater{}, &domain::approval_request::recorded_at);
+    return answered;
 }
 
 request_page

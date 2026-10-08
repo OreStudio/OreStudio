@@ -25,6 +25,7 @@
 #include "ores.inbox.core/messaging/registrar.hpp"
 #include "ores.inbox.service/app/application_exception.hpp"
 #include "ores.inbox.service/app/approval_expiry_schedule.hpp"
+#include "ores.inbox.service/app/approval_queue_window.hpp"
 #include "ores.inbox.service/messaging/approval_decision_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_decision_type_event_registrar.hpp"
 #include "ores.inbox.service/messaging/approval_kind_event_registrar.hpp"
@@ -121,14 +122,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     approval_expiry_schedule expiry_schedule(svc_nats);
     co_await expiry_schedule.register_job();
 
+    // How long an answered request stays in the queue's answered tail. Like
+    // the sweep's schedule, this is the installation's to set, so it is read
+    // once from the settings and a service that cannot read it still serves.
+    const auto answered_window = answered_window_seconds(svc_nats);
+
     co_await ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
         "ores.inbox.service",
-        [](auto& n, auto c, auto v) {
+        [answered_window](auto& n, auto c, auto v) {
             return ores::inbox::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), std::move(v), answered_window);
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(

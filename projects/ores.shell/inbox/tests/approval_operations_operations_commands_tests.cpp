@@ -66,11 +66,12 @@ TEST_CASE("approval_operations_operations_registers_every_declared_command", tag
              std::string{"approval_operations decide-approval"},
              std::string{"approval_operations list-approval-queue"},
              std::string{"approval_operations list-my-approval-requests"},
+             std::string{"approval_operations get-approval"},
              std::string{"approval_operations expire-overdue-approvals"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 6 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 7 command(s).";
 }
 
 TEST_CASE("approval_operations_operations_process_raise_approval_requires_a_session", tags) {
@@ -331,6 +332,66 @@ TEST_CASE("approval_operations_operations_process_list_my_approval_requests_reac
     command_feedback::reset();
     approval_operations_operations_commands::process_list_my_approval_requests(
         out, session, std::vector<std::string>{});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("approval_operations_operations_process_get_approval_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    approval_operations_operations_commands::process_get_approval(out,
+                                                                  session,
+                                                                  std::vector<std::string>{
+                                                                      "sample",
+                                                                  });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("approval_operations_operations_process_get_approval_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    approval_operations_operations_commands::process_get_approval(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 1 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("approval_operations_operations_process_get_approval_reaches_the_transport", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    approval_operations_operations_commands::process_get_approval(out,
+                                                                  session,
+                                                                  std::vector<std::string>{
+                                                                      "sample",
+                                                                  });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

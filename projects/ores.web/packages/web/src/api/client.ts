@@ -46,6 +46,7 @@ import {
     historyVersionSchema,
     inboxNotificationPageSchema,
     inboxRequestPageSchema,
+    inboxRequestQueueSchema,
     inboxRequestViewSchema,
     type BadgePresentation,
     type ClassificationList,
@@ -53,6 +54,7 @@ import {
     type HistoryVersion,
     type InboxNotificationView,
     type InboxPage,
+    type InboxRequestQueue,
     type InboxRequestView,
     type AccountAccess,
     type PermissionEntry,
@@ -530,12 +532,15 @@ export const api = {
         });
     },
 
-    /** The requests waiting to be decided, oldest first. */
+    /**
+     * The requests waiting to be decided, oldest first, and the ones answered
+     * within the installation's window, newest answer first.
+     */
     async requestQueue(page: {
         readonly offset: number;
         readonly limit: number;
-    }): Promise<InboxPage<InboxRequestView>> {
-        return inboxRequestPageSchema.parse(
+    }): Promise<InboxRequestQueue> {
+        return inboxRequestQueueSchema.parse(
             await request(`/api/requests?${pageQuery(page)}`, { method: 'GET' }),
         );
     },

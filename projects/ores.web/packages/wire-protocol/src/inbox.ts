@@ -164,6 +164,7 @@ const requestsReplySchema = z.object({
     result: resultEnvelopeSchema,
     requests: z.array(wireApprovalRequestSchema).default([]),
     total: z.int().nonnegative().default(0),
+    answered: z.array(wireApprovalRequestSchema).default([]),
 });
 
 const requestReplySchema = z.object({
@@ -288,6 +289,20 @@ export interface InboxPage<Item> {
     readonly total: number;
 }
 
+/**
+ * The queue: what is waiting, and what was answered and is still in view.
+ *
+ * An answered request leaves the open list the moment it is answered, so the
+ * notice that links back to what happened would open a request the queue no
+ * longer holds. The answered tail is the server's, bounded by the installation's
+ * window, and is not part of `total`: nobody acts on it.
+ */
+export interface InboxRequestQueue {
+    readonly items: readonly InboxRequestView[];
+    readonly total: number;
+    readonly answered: readonly InboxRequestView[];
+}
+
 /** The page a screen parses, built from the item schema it holds. */
 export function inboxPageSchema<Item extends z.ZodType>(item: Item) {
     return z.object({
@@ -298,6 +313,13 @@ export function inboxPageSchema<Item extends z.ZodType>(item: Item) {
 
 export const inboxRequestPageSchema = inboxPageSchema(inboxRequestViewSchema);
 export const inboxNotificationPageSchema = inboxPageSchema(inboxNotificationViewSchema);
+
+/** The queue a screen parses: the open page, its size, and the answered tail. */
+export const inboxRequestQueueSchema = z.object({
+    items: z.array(inboxRequestViewSchema).default([]),
+    total: z.int().nonnegative().default(0),
+    answered: z.array(inboxRequestViewSchema).default([]),
+});
 
 /** The types a screen reads, as the schemas above describe them. */
 export type InboxRequestRoleView = z.infer<typeof inboxRequestRoleViewSchema>;
@@ -665,16 +687,19 @@ export async function readRequest(
 }
 
 /**
- * The open requests the signed-in person may decide, oldest first.
+ * The open requests the signed-in person may decide, oldest first, and the ones
+ * answered within the installation's window, newest answer first.
  *
  * The server picks the queue: a request is in it when the person holds the
- * permission its kind names to decide it and did not raise it themselves.
+ * permission its kind names to decide it and did not raise it themselves. The
+ * answered tail carries the decisions taken on it, because saying what happened
+ * is the whole reason it is still in view.
  */
 export async function readRequestQueue(
     caller: AuthenticatedCaller,
     input: { readonly offset: number; readonly limit: number },
     viewer: RequestViewer,
-): Promise<InboxPage<InboxRequestView>> {
+): Promise<InboxRequestQueue> {
     const request: ListApprovalQueueRequest = {
         offset: input.offset,
         limit: input.limit,
@@ -685,15 +710,17 @@ export async function readRequestQueue(
         requestsReplySchema,
     );
     ok(INBOX_SUBJECTS.queue, reply.result);
+    const raised = [...reply.requests, ...reply.answered];
     const join = await joinRequests(
         caller,
-        reply.requests.map((raised) => raised.id),
-        false,
+        raised.map((one) => one.id),
+        true,
         viewer,
     );
     return {
-        items: reply.requests.map((raised) => toRequestView(raised, join)),
+        items: reply.requests.map((one) => toRequestView(one, join)),
         total: reply.total,
+        answered: reply.answered.map((one) => toRequestView(one, join)),
     };
 }
 

@@ -124,6 +124,21 @@ BEGIN
         'string',
         'Cron expression for the job that closes approval requests past their kind''s deadline. Default is every five minutes.'
     );
+
+    -- -----------------------------------------------------------------------------
+    -- Inbox queue settings
+    -- -----------------------------------------------------------------------------
+    -- An answered request leaves the queue, which leaves the person who answered
+    -- it nothing to look at when a notice links back to what happened. The
+    -- installation says how long an answered request stays in view, because how
+    -- long it is worth looking at depends on how many requests a deployment
+    -- raises and how long its administrators take to answer.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'inbox.approval_queue.answered_window_seconds',
+        '86400',
+        'integer',
+        'How long an answered approval request stays in the queue''s answered tail, in seconds. Default is 86400 (one day).'
+    );
 END $$;
 
 

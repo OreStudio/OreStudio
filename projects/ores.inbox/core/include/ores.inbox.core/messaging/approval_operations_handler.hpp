@@ -118,10 +118,12 @@ class approval_operations_handler {
 public:
     approval_operations_handler(ores::nats::service::client& nats,
                                 ores::database::context ctx,
-                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                std::chrono::seconds answered_window)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , verifier_(std::move(verifier))
+        , answered_window_(answered_window) {}
 
     void raise(ores::nats::message msg) {
         using ores::utility::domain::outcome;
@@ -358,11 +360,13 @@ public:
                 if (has_permission(*ctx, k.decide_permission_code))
                     decidable.push_back(k.code);
             auto page = lifecycle.queue(decidable, *me, req->offset, req->limit);
+            auto answered = lifecycle.recently_answered(decidable, *me, answered_window_);
             reply(nats_,
                   msg,
                   list_approval_queue_response{.result = approval_result(outcome::ok, "", ""),
                                                .requests = std::move(page.requests),
-                                               .total = page.total});
+                                               .total = page.total,
+                                               .answered = std::move(answered)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(approval_operations_handler_lg(), error)
                 << "Error reading the approval queue: " << e.what();
@@ -583,6 +587,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    std::chrono::seconds answered_window_;
 };
 
 }

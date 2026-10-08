@@ -134,10 +134,20 @@ struct decide_approval_request_response {
 };
 
 /**
- * @brief Reads the open requests the signed-in person may decide.
+ * @brief Reads the open requests the signed-in person may decide, and the ones
+ * answered within the installation's window.
  *
  * Open means waiting or held. A request is in the queue when the person holds
  * its kind's decide permission and did not raise it. Oldest first.
+ *
+ * A request leaves the queue the moment it is answered, which leaves the person
+ * who answered it nothing to look at: the notice that says what happened links
+ * to a request the queue no longer holds. So the answer carries the requests
+ * answered recently beside the open ones, newest answer first, for as long as
+ * the installation says. How long is the variability system setting
+ * =inbox.approval_queue.answered_window_seconds=; the read falls back to an
+ * empty tail when that setting cannot be read, because the open queue is the
+ * read's reason to exist and it is not.
  */
 struct list_approval_queue_request {
     using response_type = struct list_approval_queue_response;
@@ -157,9 +167,15 @@ struct list_approval_queue_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> requests;
     /**
-     * @brief How many requests the whole queue holds, for paging.
+     * @brief How many open requests the whole queue holds, for paging. The answered
+     * tail is bounded by the window and is not part of this count.
      */
     int total = 0;
+    /**
+     * @brief The requests answered within the window, newest answer first. Bounded,
+     * and not paged: nobody acts on them.
+     */
+    std::vector<ores::inbox::domain::approval_request> answered;
 };
 
 /**

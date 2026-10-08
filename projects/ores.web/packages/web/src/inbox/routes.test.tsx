@@ -90,7 +90,7 @@ const gate: BootstrapState = {
 
 function render(path: string, permissionCodes: readonly string[]): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['request-queue'], { items: [request], total: 1 });
+    client.setQueryData(['request-queue'], { items: [request], total: 1, answered: [] });
     client.setQueryData(
         ['permissions'],
         [{ code: 'refdata::currencies:read', description: 'View currencies' }],

@@ -26,6 +26,7 @@
 #include "ores.inbox.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -129,6 +130,23 @@ public:
                        const boost::uuids::uuid& excluding,
                        int offset,
                        int limit);
+
+    /**
+     * @brief The requests of the given kinds, not raised by an account, that
+     * were answered within a window, newest answer first.
+     *
+     * A request leaves the open queue the moment it is answered, so the person
+     * who answered it has nothing to look at when a notice links back to what
+     * happened. This is the tail that keeps it in view.
+     *
+     * The answer is the moment the request's current version was written,
+     * which for an answered request is the moment of the answer. A window of
+     * zero answers nothing.
+     */
+    std::vector<domain::approval_request>
+    recently_answered(const std::vector<std::string>& kind_codes,
+                      const boost::uuids::uuid& excluding,
+                      std::chrono::seconds window);
 
     /**
      * @brief The requests an account raised, newest first.

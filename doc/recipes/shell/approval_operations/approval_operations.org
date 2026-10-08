@@ -117,6 +117,27 @@ It is addressed at =inbox.v1.ops.list_my_approval_requests=.
 approval_operations list-my-approval-requests
 #+end_src
 
+** =get-approval=
+:PROPERTIES:
+:ID: 5939718C-21D0-5CCA-9FDE-E0B7D8B0BA84
+:END:
+
+Sends =get_approval_request= and prints =get_approval_response=, so the shape is the protocol's and the meaning is the service's. It reads =request_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations get-approval <request_id>
+#+end_example
+
+It is addressed at =inbox.v1.ops.get_approval=.
+
+#+name: approval_operations-get-approval
+#+begin_src ores-shell :tangle approval_operations-get-approval.ores :exports none
+approval_operations get-approval __none__
+#+end_src
+
 ** =expire-overdue-approvals=
 :PROPERTIES:
 :ID: B23A004E-B229-50F3-BC8A-FE67A13A3643

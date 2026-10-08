@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Make the local checks run at the point a change is offered, so a red tree cannot open a PR or be pushed, rather than depending on someone remembering to run them.
+Run the local checks on a roughly hourly cadence, so a red tree surfaces within the hour rather than waiting for one person to remember to run the suite. Pull requests merge without waiting for the checks; the report is the triage queue.
 
 * Status
 
@@ -35,10 +35,17 @@ Make the local checks run at the point a change is offered, so a red tree cannot
 
 * Acceptance
 
-- A red tree cannot reach main without the checks having run and reported.
-- The mechanism is documented in the runbook and costs a clean change no more than it does today.
+- The suite runs about hourly and writes the report without anyone asking.
+- A finding becomes its own task, and the merge that exposed it is not held.
+- The cadence and the merge policy are recorded in the runbook.
 
 * Plan
+
+Decided on 2026-10-08: the checks are not a merge gate. A C++ change costs
+a full build, a database recreate and every test suite, which is an hour or
+more on a workstation, and gating merges on that makes the checks the slowest
+part of the day. The suite runs about hourly instead, and its report is the
+triage queue. This is the reverse of the position this task was written with.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the

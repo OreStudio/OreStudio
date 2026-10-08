@@ -279,6 +279,12 @@ const fr: SourceCatalogue = {
             request: 'La demande',
             answerNotShown:
                 "Cette demande a une réponse, et la réponse n'est pas à vous. Les étapes de celui qui a répondu ne sont pas montrées.",
+            source: {
+                'ores.inbox.approval_request': 'la demande',
+                'ores.inbox.approval_decision': 'la réponse',
+                'ores.inbox.notification': 'la notification',
+                'ores.iam.role_grant_request_role': 'le rôle',
+            },
             kind: {
                 raised: 'Créée',
                 changed: 'Déplacée',

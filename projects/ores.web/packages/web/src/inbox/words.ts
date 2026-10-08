@@ -65,6 +65,20 @@ export function kindLabel(t: (key: string) => string, kindCode: string): string 
 }
 
 /**
+ * The table an event of a story came from, as a person reads it.
+ *
+ * A model's name is not a word anybody says. The story names the source by what
+ * it contributed -- the request, the answer, the notice, the role -- and falls
+ * back to the model's own name for a source this build does not know, because a
+ * step nobody can name is still a step somebody has to read.
+ */
+export function sourceLabel(t: (key: string) => string, entityType: string): string {
+    const key = `inbox.story.source.${entityType}`;
+    const label = t(key);
+    return label === key ? entityType : label;
+}
+
+/**
  * What a request asks for, as a row names it.
  *
  * A person's own requests name the roles they asked for, because IAM answers

@@ -1,0 +1,225 @@
+recipe	command	status	reason
+projects/ores.shell/scripts/library/activity_categories/activity_categories-add.ores	activity_categories add __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-get-many.ores	activity_categories get-many __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-get.ores	activity_categories get __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-list.ores	activity_categories list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-put-many.ores	activity_categories put-many --count 1 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-set.ores	activity_categories set __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-version.ores	activity_categories version __none__ --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_categories/activity_categories-versions.ores	activity_categories versions __none__ --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-add.ores	activity_types add __none__ __none__ false __none__ __none__ - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-get-many.ores	activity_types get-many __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-get.ores	activity_types get __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-list.ores	activity_types list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-put-many.ores	activity_types put-many --count 1 __none__ __none__ false __none__ __none__ - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-set.ores	activity_types set __none__ __none__ false __none__ __none__ - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-version.ores	activity_types version __none__ --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/activity_types/activity_types-versions.ores	activity_types versions __none__ --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-add.ores	amortization_types add __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-get-many.ores	amortization_types get-many __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-get.ores	amortization_types get __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-list.ores	amortization_types list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-put-many.ores	amortization_types put-many --count 1 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-set.ores	amortization_types set __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-version.ores	amortization_types version __none__ --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/amortization_types/amortization_types-versions.ores	amortization_types versions __none__ --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-add.ores	average_types add __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-get-many.ores	average_types get-many __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-get.ores	average_types get __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-list.ores	average_types list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-put-many.ores	average_types put-many --count 1 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-set.ores	average_types set __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-version.ores	average_types version __none__ --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/average_types/average_types-versions.ores	average_types versions __none__ --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-add.ores	balance_guaranteed_swap_instruments add 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-get-many.ores	balance_guaranteed_swap_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-get.ores	balance_guaranteed_swap_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-list.ores	balance_guaranteed_swap_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-put-many.ores	balance_guaranteed_swap_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-set.ores	balance_guaranteed_swap_instruments set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-version.ores	balance_guaranteed_swap_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/balance_guaranteed_swap_instruments/balance_guaranteed_swap_instruments-versions.ores	balance_guaranteed_swap_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-add.ores	barrier_types add __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-get-many.ores	barrier_types get-many __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-get.ores	barrier_types get __none__	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-list.ores	barrier_types list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-put-many.ores	barrier_types put-many --count 1 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-set.ores	barrier_types set __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-version.ores	barrier_types version __none__ --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/barrier_types/barrier_types-versions.ores	barrier_types versions __none__ --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-add.ores	bond_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-get-many.ores	bond_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-get.ores	bond_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-list.ores	bond_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-put-many.ores	bond_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-set.ores	bond_instruments set 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-version.ores	bond_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_instruments/bond_instruments-versions.ores	bond_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-add.ores	bond_issues add __none__ __none__ - - 0 - - - - - - - - - - - - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-get-many.ores	bond_issues get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-get.ores	bond_issues get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-list.ores	bond_issues list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-put-many.ores	bond_issues put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ - - 0 - - - - - - - - - - - - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-set.ores	bond_issues set 00000000-0000-0000-0000-000000000000 __none__ __none__ - - 0 - - - - - - - - - - - - system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-version.ores	bond_issues version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/bond_issues/bond_issues-versions.ores	bond_issues versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-add.ores	callable_swap_instruments add 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-get-many.ores	callable_swap_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-get.ores	callable_swap_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-list.ores	callable_swap_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-put-many.ores	callable_swap_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-set.ores	callable_swap_instruments set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-version.ores	callable_swap_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/callable_swap_instruments/callable_swap_instruments-versions.ores	callable_swap_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-add.ores	cap_floor_instruments add 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-get-many.ores	cap_floor_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-get.ores	cap_floor_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-list.ores	cap_floor_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-put-many.ores	cap_floor_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-set.ores	cap_floor_instruments set 00000000-0000-0000-0000-000000000000 __none__ 1970-01-01 1970-01-01 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-version.ores	cap_floor_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/cap_floor_instruments/cap_floor_instruments-versions.ores	cap_floor_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-add.ores	commodity_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ - - - __none__ - __none__ __none__ - - __none__ - __none__ - - - __none__ - - __none__ __none__ - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-get-many.ores	commodity_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-get.ores	commodity_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-list.ores	commodity_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-put-many.ores	commodity_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ - - - __none__ - __none__ __none__ - - __none__ - __none__ - - - __none__ - - __none__ __none__ - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-set.ores	commodity_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 __none__ - - - __none__ - __none__ __none__ - - __none__ - __none__ - - - __none__ - - __none__ __none__ - __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-version.ores	commodity_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/commodity_instruments/commodity_instruments-versions.ores	commodity_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-add.ores	composite_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-get-many.ores	composite_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-get.ores	composite_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-list.ores	composite_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-put-many.ores	composite_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-set.ores	composite_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-version.ores	composite_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_instruments/composite_instruments-versions.ores	composite_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-add.ores	composite_legs add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-by-instrument-id.ores	composite_legs by-instrument-id 00000000-0000-0000-0000-000000000000 --limit 1	NOT_WIRED	✗ Wrong command: composite_legs by-instrument-id 00000000-0000-0000-0000-000000000000 --limit 1
+projects/ores.shell/scripts/library/composite_legs/composite_legs-by-trade-id.ores	composite_legs by-trade-id 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-get-many.ores	composite_legs get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-get.ores	composite_legs get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-list.ores	composite_legs list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-put-many.ores	composite_legs put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-set.ores	composite_legs set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 0 __none__ system.new_record generated_script	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-version.ores	composite_legs version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/composite_legs/composite_legs-versions.ores	composite_legs versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-add.ores	credit_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - - __none__ - - system.new_record generated_script	ABORTED	✗ Script aborted at line 2: credit_instruments add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __n
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-get-many.ores	credit_instruments get-many 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-get.ores	credit_instruments get 00000000-0000-0000-0000-000000000000	ANSWERED	ok
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-list.ores	credit_instruments list --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-put-many.ores	credit_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - - __none__ - - system.new_record generated_script	ABORTED	✗ Script aborted at line 2: credit_instruments put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-set.ores	credit_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __none__ __none__ __none__ - - __none__ - - system.new_record generated_script	ABORTED	✗ Script aborted at line 2: credit_instruments set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ 0 0 __none__ 1970-01-01 1970-01-01 __none__ __none__ __none__ - __none__ __n
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-version.ores	credit_instruments version 00000000-0000-0000-0000-000000000000 --version 1	ANSWERED	ok
+projects/ores.shell/scripts/library/credit_instruments/credit_instruments-versions.ores	credit_instruments versions 00000000-0000-0000-0000-000000000000 --limit 1	ANSWERED	ok
+projects/ores.shell/scripts/library/*/activity_categories-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/activity_categories-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/activity_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/activity_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/amortization_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/amortization_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/average_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/average_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/balance_guaranteed_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/balance_guaranteed_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/barrier_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/barrier_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/bond_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/bond_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/bond_issues-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/bond_issues-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/callable_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/callable_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/cap_floor_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/cap_floor_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/commodity_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/commodity_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/composite_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/composite_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/composite_legs-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/composite_legs-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/credit_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/credit_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_accumulator_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_accumulator_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_asian_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_asian_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_barrier_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_barrier_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_digital_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_digital_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_forward_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_forward_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_position_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_position_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_position_option_underlyings-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_position_option_underlyings-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_variance_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/equity_variance_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/exercise_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/exercise_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fpml_event_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fpml_event_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fra_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fra_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_accumulator_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_accumulator_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_asian_forward_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_asian_forward_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_barrier_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_barrier_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_digital_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_digital_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_forward_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_forward_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_vanilla_option_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_vanilla_option_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_variance_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/fx_variance_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/inflation_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/inflation_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/knock_out_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/knock_out_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/lifecycle_events-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/lifecycle_events-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/long_short_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/long_short_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/moment_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/moment_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/option_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/option_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/party_role_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/party_role_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/payoff_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/payoff_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/price_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/price_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/return_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/return_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/rpa_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/rpa_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/scripted_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/scripted_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/settlement_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/settlement_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/swap_legs-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/swap_legs-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/swaption_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/swaption_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_id_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_id_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_identifiers-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_identifiers-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_party_roles-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_party_roles-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_types-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trade_types-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trades-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/trades-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/vanilla_swap_instruments-delete.ores		NOT_REPLAYED	not replayed: named in --skip
+projects/ores.shell/scripts/library/*/vanilla_swap_instruments-delete-many.ores		NOT_REPLAYED	not replayed: named in --skip

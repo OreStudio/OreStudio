@@ -1,0 +1,5 @@
+ores::trading::domain::balance_guaranteed_swap_instrument *-- ores::trading::domain::instrument_identity
+ores::trading::messaging::activity_category_change *-- ores::trading::messaging::activity_category_write
+ores::trading::messaging::activity_category_lookup *-- ores::trading::domain::activity_category
+ores::trading::messaging::trade_event_subjects::export_portfolio_response *-- ores::trading::messaging::trade_event_subjects::trade_export_item
+ores::trading::messaging::trade_event_subjects::get_trade_instrument_response *-- ores::trading::domain::trade

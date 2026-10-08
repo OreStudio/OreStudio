@@ -1,0 +1,2 @@
+ores::trading::repository::activity_category_mapper ..> ores::trading::repository::activity_category_entity
+ores::trading::service::activity_category_service *-- ores::trading::repository::activity_category_repository

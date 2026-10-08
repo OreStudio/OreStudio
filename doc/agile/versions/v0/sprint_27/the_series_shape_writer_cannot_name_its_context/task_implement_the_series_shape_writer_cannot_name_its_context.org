@@ -26,11 +26,11 @@ Let ores.marketdata.service compile again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E26E3F25-0290-4247-BA89-471519E427B8][Hotfix: the series shape writer cannot name its context]] |
-| Now          | The definition spells the type its declaration spells. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
+| Next         | Nothing. |
 | Last touched | 2026-10-08                               |
 
 * Acceptance
@@ -109,3 +109,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged in PR #2887. The definition names =ores::database::context=, as its own
+declaration does, and the translation unit has no other out-of-scope name.
+
+The compile is verified by inspection only. No build ran in this worktree: the
+current workflow has the hourly validation build compile =main=, and that run is
+the confirmation.

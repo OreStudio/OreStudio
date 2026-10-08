@@ -36,8 +36,8 @@ Let ores.marketdata.service compile again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E645F454-62C6-46A7-B3D9-D3131F4BA71D][Scaffold story: Hotfix: the series shape writer cannot name its context]] | STARTED | 2026-10-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:24C376D8-535D-4FB2-9A4E-703AFE4031B1][Implement Hotfix: the series shape writer cannot name its context]] | STARTED | 2026-10-08 | | Initial task for: Hotfix: the series shape writer cannot name its context |
+| [[id:E645F454-62C6-46A7-B3D9-D3131F4BA71D][Scaffold story: Hotfix: the series shape writer cannot name its context]] | DONE | 2026-10-08 | 2026-10-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:24C376D8-535D-4FB2-9A4E-703AFE4031B1][Implement Hotfix: the series shape writer cannot name its context]] | DONE | 2026-10-08 | 2026-10-08 | Initial task for: Hotfix: the series shape writer cannot name its context |
 
 * Decisions
 

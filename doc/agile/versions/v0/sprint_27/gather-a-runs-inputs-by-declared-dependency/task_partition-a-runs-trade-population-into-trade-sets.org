@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: Trade sets, which ores.trading does not have yet (Merry Newton's work): a batcher partitions trades into sets that do not exist to partition into. The dependency graph, for the fan-in condition.
+#+blocked_on: The trade group and its membership ([[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]] in [[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]]), which is what records a batch's sets against its run. That story parks itself pending a pilot process. The partitioning itself is not blocked: a set derived from a trade's book needs no table, and the book key already exists on the booking. The fan-in condition is unblocked too, since [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] is DONE.
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -36,9 +36,9 @@ rest of the run reads.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:004B0E88-1BB6-4323-A579-EEB56C29BA3F][Gather a run's inputs by declared dependency]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Trade sets in ores.trading (Merry Newton), and [[id:E3988B3F-BB78-4E9C-850A-78CA4CEAF72D][Hold a workflow as a dependency graph]] for the fan-in condition. |
-| Next         | Begin implementation.                  |
+| Now          | Not started. The partitioning half is ready to build; the recording half waits on the trade group. |
+| Waiting on   | The trade group and its membership, [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], for the acceptance bullet that records the sets against the run. |
+| Next         | Build the partitioning: the strategy interface, batch by book, the batch key and the as-of, and the composition the requirements demand. |
 | Last touched | 2026-10-07                               |
 
 
@@ -115,6 +115,27 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+*Where the sets come from, and why that splits this task.* The trade-set
+knowledge documents settled which sets need storage and which do not
+([[id:55269F2C-18DD-4A33-B1CE-770EF5F56BB5][Trade set membership]]).
+
+A set whose context is a book is *derived*: the trades in a book are the trades
+whose booking names that book, so the set is a predicate over a key the trade
+already carries and needs no table. Batch by book is therefore pure
+partitioning over data that exists, and nothing about it waits on a new entity.
+
+A set a *run* read is *recorded*, because a repeat has to reconstruct the input
+it read rather than today's. That is a [[id:D6CF158A-69D1-4C1A-8FF3-0F1F4836B16B][trade group]]: a set with a foreign
+key to the run, and a membership table beside it. It is
+[[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], in
+[[id:C0D511A9-E15F-4863-890D-5B20EA0628C7][Trace a process run and the trade groups it creates]], and that story is
+parked until a pilot process settles the run model.
+
+So one acceptance bullet — that the batcher records the sets it created against
+the run — waits on that work, and the rest does not. The earlier blocker text
+said the sets did not exist to partition into; on the settled model they do,
+for the strategy this task ships first.
 
 * Test Scenarios
 

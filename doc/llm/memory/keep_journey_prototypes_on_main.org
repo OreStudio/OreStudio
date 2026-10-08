@@ -27,13 +27,18 @@ by journey topic: one top page naming the groups, one page per group, one
 folder per group.
 
 *How to apply:* Put the files under =doc/prototypes/<group>/<name>/=, copy the
-design tokens from =projects/ores.web/packages/web/src/styles.css=, add a row
-to the group's page =doc/prototypes/<group>/index.org=, and stop there:
-=ores-deploy-prototypes= deploys every prototype it finds under the tree, so no
-build file names one. A Gemini review, where one exists, goes at
-=doc/prototypes/<group>/<name>/review/=, and the group's row names it. Do not
-add a prototype route to =ores.web=. =build/scripts/check_prototype_inventory.py=
-fails when a prototype is missing from its group page, when a group is missing
-from the top page, when a review is named nowhere, and when a React prototype
-tree reappears. The empirical apparatus of compass-method-prototype is still
-thrown away.
+design tokens from =projects/ores.web/packages/web/src/styles.css=, open the
+page with the links table every prototype carries, and leave its review row at
+=none= until a review lands. Add a row to the group's page
+=doc/prototypes/<group>/index.org=, and stop there: =ores-deploy-prototypes=
+deploys every prototype it finds under the tree, so no build file names one. A
+Gemini review, where one exists, goes at =doc/prototypes/<group>/<name>/review/=,
+and the group's row names it.
+=grep -rl 'prototype-review[^>]*>none' doc/prototypes --include=index.html=
+names every prototype nobody has reviewed; do not let that list grow unnoticed.
+Do not add a prototype route to =ores.web=.
+=build/scripts/check_prototype_inventory.py= fails when a prototype is missing
+from its group page, when a group is missing from the top page, when a review is
+named nowhere, when a prototype page's links table disagrees with whether that
+review exists, and when a React prototype tree reappears. The empirical
+apparatus of compass-method-prototype is still thrown away.

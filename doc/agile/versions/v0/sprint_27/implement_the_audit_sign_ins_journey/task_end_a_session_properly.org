@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A sign-out closes the session it belongs to, and an administrator can close a se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -85,3 +85,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Logout ended its session row with zeroed byte counters, so a sign-out erased
+what the session had moved. It now reads the row and carries the counters
+through.
+
+A tenant administrator can end another account's session with
+=iam.v1.ops.end_session=, behind its own =iam::sessions:end= rather than the
+=iam::*= wildcard. The tenant comes from the caller's own session and the
+sessions table carries row-level security, so another tenant's session is not
+there to end; a session that has already ended is refused in the reply.

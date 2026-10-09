@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The Audit: sign-ins screen can read the tenant's authentication events, filtered
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -84,3 +84,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=iam.v1.auth_events.list= reads the caller's tenant's events, newest first,
+filtered by account, period and event type. The table carries no row-level
+security, so =auth_event_repository::read_events= scopes on =tenant_id=
+itself through one parameterised statement: an empty filter does not filter.
+The handler requires =iam::auth_events:read=, which the seed adds and grants
+to =HttpService= for the BFF path.
+
+The operation model renders the protocol, the BFF route and the shell
+command; the three static gates stay green (subject conformance, protocol
+twin coverage, handler permissions). =ores.iam.core.tests= passes 240 of 252,
+and the 12 failures are the mTLS-NATS eventing tests this environment cannot
+run, not this read.

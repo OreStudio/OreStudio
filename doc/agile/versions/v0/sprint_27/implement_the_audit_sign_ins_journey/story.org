@@ -21,11 +21,11 @@ The administrator can account for every open session: who is signed in, what the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
@@ -41,14 +41,33 @@ The administrator can account for every open session: who is signed in, what the
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8A46E5E4-5044-4A99-80BC-90868F24CCD8][Scaffold story: Implement the audit sign-ins journey]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:8FF54AAC-49FD-400B-BEE6-8939D68ABE33][Read the auth events over the wire]] | BACKLOG | | | ores_iam_auth_events_tbl holds one row per login, failure, logout, token refresh and tenant entry, with no subject that reads it. Add iam.v1.auth_events.list, scoped to the caller's tenant, filtered by account, period and event type. |
-| [[id:9104CB82-E5E6-461A-AAA1-E7F56E14E25C][Read the session statistics over the wire]] | BACKLOG | | | ores_iam_session_stats_daily_vw, _hourly_vw and _aggregate_daily_vw exist as continuous aggregates over the session samples, and no subject reads any of them. Add iam.v1.sessions.statistics. |
-| [[id:1909652E-638B-4F84-AD83-12E8AB430CBB][End a session properly]] | BACKLOG | | | Logout only flips login_info.online, and session_repository::end_session writes the end time but is called only on the caller's own service session. A logout must end its session row and record the logout event, and a tenant administrator must be able to end another account's session. |
-| [[id:9F6939D6-6BAE-4A24-A550-097F9914449B][Resolve an address to a country]] | BACKLOG | | | ores_geo_ip2country_lookup_fn resolves an address to a country code, but it has no subject and ignores the tenant, and nothing fills the country a session or a login records. |
-| [[id:976E9B1D-4382-4F79-A120-8E805ED751D4][Show the audit sign-ins screen]] | BACKLOG | | | Build Audit: sign-ins from the accepted prototype: one filter bar over the active sessions, the session activity, the session statistics, the failed attempts and the auth events, with Refresh as the only action. |
+| [[id:8FF54AAC-49FD-400B-BEE6-8939D68ABE33][Read the auth events over the wire]] | DONE | 2026-10-09 | 2026-10-09 | ores_iam_auth_events_tbl holds one row per login, failure, logout, token refresh and tenant entry, with no subject that reads it. Add iam.v1.auth_events.list, scoped to the caller's tenant, filtered by account, period and event type. |
+| [[id:9104CB82-E5E6-461A-AAA1-E7F56E14E25C][Read the session statistics over the wire]] | DONE | | 2026-10-09 | ores_iam_session_stats_daily_vw, _hourly_vw and _aggregate_daily_vw exist as continuous aggregates over the session samples, and no subject reads any of them. Add iam.v1.sessions.statistics. |
+| [[id:1909652E-638B-4F84-AD83-12E8AB430CBB][End a session properly]] | DONE | | 2026-10-09 | Logout only flips login_info.online, and session_repository::end_session writes the end time but is called only on the caller's own service session. A logout must end its session row and record the logout event, and a tenant administrator must be able to end another account's session. |
+| [[id:9F6939D6-6BAE-4A24-A550-097F9914449B][Resolve an address to a country]] | DONE | | 2026-10-09 | ores_geo_ip2country_lookup_fn resolves an address to a country code, but it has no subject and ignores the tenant, and nothing fills the country a session or a login records. |
+| [[id:976E9B1D-4382-4F79-A120-8E805ED751D4][Show the audit sign-ins screen]] | DONE | | 2026-10-09 | Build Audit: sign-ins from the accepted prototype: one filter bar over the active sessions, the session activity, the session statistics, the failed attempts and the auth events, with Refresh as the only action. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+The journey is built. The tenant administrator reads the active sessions,
+the session activity, the session statistics, the failed attempts and the
+authentication events off one screen, ends a session that cannot be
+explained, and each session says where it came from.
+
+Two premises in the journey document were wrong and the code records the
+corrections: the session statistics do not come from the continuous
+aggregates, which exist only under the Timescale licence this database does
+not have, and logout already ended its session row, though it zeroed the
+byte counters on the way out.
+
+Verified by the build (exit 0), =compass db recreate -y -k= (exit 0), the
+web, BFF and wire-protocol test suites, and the C++ suites for iam, http and
+the shell. The twelve failures in =ores.iam.core.tests= are the mTLS-NATS
+eventing integration tests, which this environment cannot run.
+

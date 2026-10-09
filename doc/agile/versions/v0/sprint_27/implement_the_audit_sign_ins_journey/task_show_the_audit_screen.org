@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The administrator reads the whole record of sign-ins on one screen, and the BFF 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -84,3 +84,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=Audit: sign-ins= reads the five panels the journey names off one filter bar,
+with Refresh as the only page action. An open session carries *End session*,
+which calls =iam.v1.ops.end_session= and re-reads. The session-activity panel
+states that its data is not available, because nothing writes a session
+sample row yet.
+
+The browser reaches the BFF rather than the domain services, so the three
+missing reads also needed BFF routes and wire-protocol reads: =GET
+/api/auth-events=, =GET /api/session-statistics=, =POST
+/api/sessions/:sessionId/end= and =GET /api/geo/country=.
+
+Verification: =npm run typecheck= in wire-protocol, bff and web passes;
+=vitest= passes 432 web, 305 bff and 159 wire-protocol tests; prettier is
+clean. No browser screenshot was taken, so the prototype match is by markup
+and tests.

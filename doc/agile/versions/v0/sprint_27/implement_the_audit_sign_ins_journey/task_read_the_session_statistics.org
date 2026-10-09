@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The Audit: sign-ins screen can read session statistics from the aggregates.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -83,3 +83,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+=iam.v1.ops.get_session_statistics= answers one row per day and account,
+newest day first, scoped to the caller's tenant.
+
+The journey's premise was wrong and the model records the correction: the
+three =ores_iam_session_stats_*_vw= continuous aggregates are created only
+under the =timescale= licence, and this database reports =apache=, so they do
+not exist. Rather than depend on a licensed feature, the read aggregates
+=ores_iam_sessions_tbl= itself, so it answers in either edition.

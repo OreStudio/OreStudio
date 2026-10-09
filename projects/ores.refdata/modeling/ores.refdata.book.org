@@ -353,11 +353,13 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 ** book_purpose_type
 :PROPERTIES:
 :type: text
+:default: 'Trading'
 :END:
 
 ** ledger_feed_type
 :PROPERTIES:
 :type: text
+:default: 'None'
 :END:
 
 ** is_sweepable

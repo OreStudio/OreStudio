@@ -39,8 +39,8 @@ create table if not exists "ores_dq_books_artefact_tbl" (
     "cost_center" text null,
     "book_status" text not null,
     "regulatory_book_type" text not null,
-    "book_purpose_type" text not null,
-    "ledger_feed_type" text not null,
+    "book_purpose_type" text not null default 'Trading',
+    "ledger_feed_type" text not null default 'None',
     "is_sweepable" boolean not null default false,
     "rates_centre_code" text null
 );

@@ -226,13 +226,25 @@ describe('A person', () => {
     }
 
     it('offers a member only what a member may read', () => {
-        const html = member('daniel');
+        const html = member('priya');
 
         expect(html).toContain('>Details<');
         expect(html).toContain('>Timeline<');
         expect(html).not.toMatch(/>Contact</);
         expect(html).not.toMatch(/>Roles</);
         expect(html).not.toMatch(/>Sign-ins</);
+    });
+
+    /**
+     * A person's own contact record is read through their session, so it needs
+     * no permission and the empty record is a form waiting to be filled. Hiding
+     * it because they may not read a colleague's would take away the only place
+     * they can put their own address.
+     */
+    it("offers a member their own contact record", () => {
+        const html = member('daniel', '/people/daniel');
+
+        expect(html).toContain('>Contact<');
     });
 
     it('marks their details read only for a viewer who may not change them', () => {

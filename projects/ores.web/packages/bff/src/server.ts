@@ -70,10 +70,12 @@ import {
     contactWriteViewSchema,
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
+    myPartiesSchema,
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
     readMyContactInformation,
+    readMyParties,
     readImageUploadPolicy,
     updateAccount,
     updateSelfAccount,
@@ -992,6 +994,16 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/me/access', async (request) => {
         const session = requireSession(request);
         return accountAccessSchema.parse(await readMyAccess(session.client));
+    });
+
+    /**
+     * The parties the signed-in person works in, each with its name, and the
+     * party quick sign-in uses. The association read carries an identifier
+     * alone, so the server names them.
+     */
+    server.get('/api/me/parties', async (request) => {
+        const session = requireSession(request);
+        return myPartiesSchema.parse(await readMyParties(session.client));
     });
 
     /** The roles one account holds. The server allows it to a holder of iam::roles:read. */

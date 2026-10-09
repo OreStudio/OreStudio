@@ -174,6 +174,11 @@ export type {
 export { imageUploadPolicyViewSchema, imageUploadViewSchema } from './entities/image.js';
 export type { ImageUploadPolicy, ImageUploadView } from './entities/image.js';
 
+// The parties the signed-in member works in, as the Where I work screen reads
+// them from the BFF.
+export { myPartiesSchema, myPartySchema } from './membership.js';
+export type { MyParties, MyParty } from './membership.js';
+
 // The starting-point read, so the browser parses what the BFF served with the
 // definition the server serialised it from.
 export { seedProfileChoiceSchema, seedProfilesResponseSchema } from './operations.js';

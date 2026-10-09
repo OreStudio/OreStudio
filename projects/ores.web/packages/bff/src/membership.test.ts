@@ -1,0 +1,206 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *
+ */
+
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import type { OresClient } from '@ores/wire-protocol';
+import type { Config } from './config.js';
+import { buildServer, sessionCookieName } from './server.js';
+import { createSessionStore } from './sessions.js';
+import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
+
+/**
+ * The membership route: the parties the signed-in person works in.
+ *
+ * The association read answers with an identifier alone, so the server names
+ * each party. These cases pin what the BFF decides: the shape it answers, and
+ * that a party the server cannot name arrives as a stated gap rather than a
+ * missing row.
+ */
+
+const config: Config = {
+    port: 0,
+    host: '127.0.0.1',
+    logLevel: 'silent',
+    session: { ttlSeconds: 3600, cookieSecure: false },
+    allowedOrigins: [],
+    loginAttemptsPerMinute: 100,
+};
+
+const ENVIRONMENT_ID = 'eager_maxwell';
+const SESSION_COOKIE = sessionCookieName(ENVIRONMENT_ID);
+
+function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
+    const path = resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        '../../../config/environments.json',
+    );
+    return loadSiteConfiguration({
+        environment: { [SITE_CONFIG_VARIABLE]: path },
+        environmentId: ENVIRONMENT_ID,
+    });
+}
+
+const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+const PRIYA = '11111111-1111-1111-1111-111111111111';
+const UK = '22222222-2222-2222-2222-222222222222';
+const US = '33333333-3333-3333-3333-333333333333';
+
+type Answer = unknown | ((body: unknown) => unknown);
+
+function buildTestServer(answers: Record<string, Answer>) {
+    const sessions = createSessionStore({ ttlSeconds: 60 });
+    const calls: { subject: string; body: unknown }[] = [];
+    const client = {
+        async callAuthenticated(
+            subject: string,
+            body: unknown,
+            schema: { parse: (value: unknown) => unknown },
+        ): Promise<unknown> {
+            calls.push({ subject, body });
+            const answer = answers[subject];
+            if (answer === undefined) throw new Error(`unexpected subject ${subject}`);
+            return schema.parse(typeof answer === 'function' ? answer(body) : answer);
+        },
+        async close(): Promise<void> {
+            return undefined;
+        },
+    } as unknown as OresClient;
+    const session = sessions.create({
+        client,
+        session: null,
+        username: 'priya',
+        email: 'priya@acme.example',
+        accountId: PRIYA,
+        tenantId: SYSTEM_TENANT,
+        tenantName: 'Acme',
+        mode: 'tenant-administration',
+        version: 'v0.0.25 (test)',
+        availableParties: [],
+        accessLifetimeSeconds: 1800,
+        passwordResetRequired: false,
+        sessionId: '66666666-6666-6666-6666-666666666666',
+    });
+    const server = buildServer({
+        config,
+        site: siteConfiguration(),
+        sessions,
+        createClient: () => ({ client, connect: async () => undefined }),
+    });
+    return { server, cookies: { [SESSION_COOKIE]: session.id }, calls };
+}
+
+describe('membership routes', () => {
+    it('answers the parties the person works in with their names, and the default', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.get_my_parties': {
+                result: { outcome: 'ok' },
+                default_party_id: US,
+                parties: [
+                    {
+                        party_id: UK,
+                        name: 'ACME Corporation UK plc',
+                        short_code: 'ACCOUK',
+                        party_category: 'Operational',
+                        business_center_code: 'GBLO',
+                    },
+                    {
+                        party_id: US,
+                        name: 'ACME Corporation US Inc',
+                        short_code: 'ACCOUS',
+                        party_category: 'Operational',
+                        business_center_code: 'USNY',
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/me/parties', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            defaultPartyId: US,
+            parties: [
+                {
+                    partyId: UK,
+                    name: 'ACME Corporation UK plc',
+                    shortCode: 'ACCOUK',
+                    partyCategory: 'Operational',
+                    businessCenterCode: 'GBLO',
+                },
+                {
+                    partyId: US,
+                    name: 'ACME Corporation US Inc',
+                    shortCode: 'ACCOUS',
+                    partyCategory: 'Operational',
+                    businessCenterCode: 'USNY',
+                },
+            ],
+        });
+        expect(calls).toEqual([{ subject: 'iam.v1.ops.get_my_parties', body: {} }]);
+    });
+
+    it('states a party the server cannot name instead of dropping it', async () => {
+        const { server, cookies } = buildTestServer({
+            'iam.v1.ops.get_my_parties': {
+                result: { outcome: 'ok' },
+                default_party_id: '',
+                parties: [
+                    {
+                        party_id: UK,
+                        name: '',
+                        short_code: '',
+                        party_category: '',
+                        business_center_code: '',
+                    },
+                ],
+            },
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/me/parties', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            defaultPartyId: '',
+            parties: [
+                {
+                    partyId: UK,
+                    name: '',
+                    shortCode: '',
+                    partyCategory: '',
+                    businessCenterCode: '',
+                },
+            ],
+        });
+    });
+
+    it('refuses a caller with no session', async () => {
+        const { server } = buildTestServer({});
+
+        const response = await server.inject({ method: 'GET', url: '/api/me/parties' });
+        await server.close();
+
+        expect(response.statusCode).toBe(401);
+    });
+});

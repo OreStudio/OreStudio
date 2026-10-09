@@ -485,6 +485,58 @@ struct get_my_account_contact_information_response {
 };
 
 /**
+ * @brief One party the caller's account works in, as the member's own screen
+ * reads it.
+ *
+ * The name, the category and the business centre come from IAM's party cache,
+ * which mirrors refdata's parties per tenant; the association itself carries
+ * the identifier alone. A party the cache has not seen answers with empty
+ * strings rather than a half-read row.
+ *
+ * Declared before the response that carries it, because the generators emit
+ * the messages in the order this file states them.
+ */
+struct my_party {
+    std::string party_id;
+    std::string name;
+    std::string short_code;
+    std::string party_category;
+    std::string business_center_code;
+};
+
+/**
+ * @brief A member's read of the parties their own account works in.
+ *
+ * The session names the account, so the request carries no account id and
+ * cannot name another account's list. The read needs no permission: it is a
+ * self read on the allow-list of Authorised reads.
+ *
+ * The subject exists because the association read answers with a party
+ * identifier and nothing on the browser's path turns one into a name: the
+ * sign-in reply is the only read that names a party today.
+ */
+struct get_my_parties_request {
+    using response_type = struct get_my_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.get_my_parties";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+struct get_my_parties_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The party quick sign-in uses, or empty when the account stores none.
+     */
+    std::string default_party_id;
+    std::vector<my_party> parties;
+};
+
+/**
  * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
  * Every account that names a picture code and carries no picture gets one:

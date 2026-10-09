@@ -252,7 +252,7 @@ the person the session names.
 * The seven gaps, and where each stands
 
 This document was written before anything was built, so it listed seven things
-the journey needed and did not have. Six are closed and one is half closed. The
+the journey needed and did not have. All seven are closed. The
 list is kept because a reader arriving from the older text will have it in mind,
 and because two of the seven were closed by changing the design rather than by
 building what the gap asked for.

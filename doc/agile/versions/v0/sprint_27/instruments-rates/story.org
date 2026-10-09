@@ -21,11 +21,11 @@ Rework swaps, FRAs, caps and floors, swaptions and the other rates trade types t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The family's data model is being analysed; the ER proposal is not yet written. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the analysis, then break the rework into tasks. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -124,3 +124,7 @@ decisions are what they are.
   real foreign keys.
 - The three unrouted codes' products, which need ORE importer support
   before a table can hold them.
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes. The owner had moved on before closing the story, so this close records the tasks' state rather than a fresh verification of the goal.

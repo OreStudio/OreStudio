@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: B2A24902-A8DD-4AAB-AFCA-5ADE689190E8
+:END:
+#+title: Task: Implement Close the sprint's finished stories
+#+description: Close the twelve stories whose tasks are all done, give each a Result, and correct the role-request journey's gap sentence.
+#+type: task
+#+level: s1
+#+filetags: :close-the-sprints-finished-stories:sprint_27:v0:
+#+owner: marco
+#+branch: feature/close-the-sprints-finished-stories
+#+pr: 2928
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D2D4A58-CDE0-4C88-8F79-6B718DEAA4D2][Close the sprint's finished stories]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close every sprint story whose tasks are all DONE, record what finished each
+one, and correct the one sentence in the role-request journey that contradicts
+its own gap table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D2D4A58-CDE0-4C88-8F79-6B718DEAA4D2][Close the sprint's finished stories]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- A scan reports no story STARTED with all tasks DONE.
+- Each closed story has a Result that says what finished it.
+- The journey's prose agrees with its table.
+
+* Plan
+
+The twelve were found by scanning every =sprint_27= story for a STARTED state
+whose task files are all DONE. Each was closed with =compass story done=, which
+flips the story, its sprint row and the journal together. The Results were
+appended afterwards: the seven hotfixes from their merged PR numbers, read out
+of the task files, and the five larger stories with a sentence saying the close
+records task state rather than a fresh verification.
+
+The journey sentence was one line: it said six of the seven gaps were closed
+and one half closed, where the table beneath it marks all seven closed and the
+two sweeps that answered the seventh are described further down the same page.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| stories STARTED with all tasks DONE, before | 12 | a scan of =doc/agile/versions/v0/sprint_27/*/story.org= against their task files | d74a5bd3b9 |
+| the same, after | 0 | the same scan | working tree after the close |
+| stories that had no Result | 11 of 12 | the same scan, reading the =* Result= section | d74a5bd3b9 |
+
+* Notes
+
+The five larger stories were closed on their tasks' state. Their tasks are DONE
+with merged PRs and written Results, so the work has finished by every record
+the sprint holds; what is missing is the owner's own close. The Results say so,
+so a reader is not misled into thinking somebody re-verified the goals.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2928][#2928]] | [agile] Close the sprint's finished stories |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Twelve stories closed, eleven Results written, one journey sentence corrected.
+No code changed.

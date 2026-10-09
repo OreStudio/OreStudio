@@ -21,11 +21,11 @@ Make ores.trading.api compile and let the party roles table be created.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The model and its generated output are corrected. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Open the PR, merge, and close once the build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -54,3 +54,7 @@ Make ores.trading.api compile and let the party roles table be created.
 
 - A permanent gate for this defect class. The scratch scan is named in the
   task's Notes; promoting it into =local_checks.py= is its own change.
+
+* Result
+
+Merged in PR #2880. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

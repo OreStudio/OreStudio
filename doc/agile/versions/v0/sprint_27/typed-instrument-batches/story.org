@@ -26,11 +26,11 @@ encoded it as JSON text is deleted.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The replacement is implemented: the batch is generated, the export carries it, and the payload is deleted. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise and merge the implementation PR; the hourly validation job builds and tests it. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -92,3 +92,7 @@ encoded it as JSON text is deleted.
   of about 170 members. The container is therefore declared as =field_group=
   models before the batch is generated, so every batch member is generated.
   This is the container grammar the bond relational design sequences over.
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes. The owner had moved on before closing the story, so this close records the tasks' state rather than a fresh verification of the goal.

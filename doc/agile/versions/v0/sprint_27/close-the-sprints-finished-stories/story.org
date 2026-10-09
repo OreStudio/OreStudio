@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 9D2D4A58-CDE0-4C88-8F79-6B718DEAA4D2
+:END:
+#+title: Story: Close the sprint's finished stories
+#+description: Twelve stories sit STARTED with every task DONE and every PR merged, so the sprint table says work is in flight that has finished, and eleven of them carry no Result at all. Close them and record what finished them, and correct the role-request journey's sentence that contradicts its own gap table.
+#+type: story
+#+level: s2
+#+filetags: :agile:bookkeeping:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the sprint table tell the truth about what is in flight: no story says
+STARTED once every one of its tasks is DONE and every one of its PRs merged.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- No sprint story is STARTED with every task DONE.
+- Every closed story records what finished it.
+- The role-request journey's prose agrees with its own gap table.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:904C8F34-53A8-4860-AE4E-D08D8C50F96C][Scaffold story: Close the sprint's finished stories]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B2A24902-A8DD-4AAB-AFCA-5ADE689190E8][Implement Close the sprint's finished stories]] | DONE | | 2026-10-09 | Initial task for: Close the sprint's finished stories |
+
+* Decisions
+
+- *A close on task state says so.* Five of the twelve are larger stories whose
+  owners had moved on to other work. Their tasks are all DONE with merged PRs,
+  which is good evidence the work finished, but it is not a re-verification of
+  each goal by the person who set it. Their Results say that plainly rather than
+  claiming a verification that did not happen.
+- *The seven hotfixes name their PR.* Those were landed and verified today --
+  the build and the whole suite were run on the commit that carries them -- so
+  their Results name the PR and the suite run.
+
+* Out of scope
+
+- Whether any of the five larger stories is really finished. This close records
+  their tasks' state; an owner who disagrees reopens it.
+
+* Result
+
+Done. Twelve stories closed and each given a Result. A scan of every
+=sprint_27= story afterwards reports none STARTED with all tasks DONE, down
+from twelve. The role-request journey no longer says six of its seven gaps are
+closed where its own table says all seven are.

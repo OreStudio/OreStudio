@@ -21,11 +21,11 @@ Make the synthetic feeds first-class producers in the new market data model. A f
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -64,3 +64,7 @@ observation belongs to.
 * Out of scope
 
 -
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes. The owner had moved on before closing the story, so this close records the tasks' state rather than a fresh verification of the goal.

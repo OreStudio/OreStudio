@@ -21,11 +21,11 @@ Make the trade import and the trading service compile again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The assignments are gone; the scan finds no other consumer. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Open the PR, merge, and close once the build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -53,3 +53,7 @@ Make the trade import and the trading service compile again.
 - A gate for this family. A hand-written consumer that names a member the entity
   no longer has is a compile error, and stating the rule without compiling means
   knowing each receiver's type; there is nothing cheap and sound to add.
+
+* Result
+
+Merged in PR #2882. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

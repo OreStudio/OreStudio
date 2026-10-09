@@ -21,11 +21,11 @@ Let ores.inbox.service compile again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The lookup's predicate names a local holding the job name. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Open the PR, merge, and close once the build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -59,3 +59,7 @@ Let ores.inbox.service compile again.
 
 - [[id:8D6BEBC3-A56A-4A00-B9B0-B7A7B364A616][Hotfix: the oresmd codec does not compile]] — the
   same shape: merged without a build, refused on the first compile.
+
+* Result
+
+Merged in PR #2888. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

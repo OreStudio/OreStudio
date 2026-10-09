@@ -49,11 +49,14 @@ const party = {
     businessCenterCode: 'GBLO',
 };
 
+/** The account every signed-in fixture in this file holds. */
+const ACCOUNT_ID = '3f1e2d4c-0000-4000-8000-000000000001';
+
 function sessionIn(mode: SessionView['mode']): SessionView {
     return {
         username: 'admin',
         email: 'admin@acme.test',
-        accountId: '3f1e2d4c-0000-4000-8000-000000000001',
+        accountId: ACCOUNT_ID,
         tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
         tenantName: 'Acme Corporation',
         mode,
@@ -66,15 +69,34 @@ function sessionIn(mode: SessionView['mode']): SessionView {
     };
 }
 
-/** What the deployment answers after a Bare-system bootstrap finished. */
+/**
+ * What the deployment answers after a Bare-system bootstrap finished, read
+ * through the session of the account above.
+ */
 const afterBareSystem: BootstrapState = {
     status: 'ready',
     inBootstrapMode: false,
     hasTenant: false,
     onboardingComplete: false,
     onboardingTenantComplete: false,
+    accountId: ACCOUNT_ID,
+    sessionPresent: true,
     message: '',
     version: 'v0.0.25 (test)',
+};
+
+/**
+ * The same answer as a visitor with no session reads it.
+ *
+ * The two flags are settings, so a request with no session cannot read them
+ * and the answer names no account. The signed-in fixture above is not weakened
+ * to this: a screen that acted on this answer for a signed-in person would put
+ * the wizard in front of somebody who has finished it.
+ */
+const afterBareSystemAnonymous: BootstrapState = {
+    ...afterBareSystem,
+    accountId: '',
+    sessionPresent: false,
 };
 
 /** What the deployment answers once the first run finished and made a tenant. */
@@ -84,7 +106,18 @@ const afterFirstRun: BootstrapState = {
     onboardingComplete: true,
 };
 
+/** A rail drawn while the deployment is still in bootstrap mode. */
+const inBootstrapAnonymous: BootstrapState = {
+    ...afterBareSystemAnonymous,
+    inBootstrapMode: true,
+};
+
 const anonymous: SessionState = { status: 'anonymous' };
+
+/** The header of a rendered page, where a rail offers what it offers. */
+function header(html: string): string {
+    return html.slice(html.indexOf('<header'), html.indexOf('</header>'));
+}
 
 function render(path: string, gate: BootstrapState, session: SessionState): string {
     const client = new QueryClient();
@@ -114,13 +147,16 @@ function render(path: string, gate: BootstrapState, session: SessionState): stri
 
 describe('the bootstrap rail the deployment answers with', () => {
     it('does not return for a browser with no session, and the login screen shows', () => {
-        const html = render('/login', afterBareSystem, anonymous);
+        const html = render('/login', afterBareSystemAnonymous, anonymous);
 
         expect(html).not.toContain('First run journey');
         expect(html).toContain('Sign in');
     });
 
-    it('holds a system administrator whose wizard flag reads unfinished', () => {
+    it('holds a system administrator whose named account has an unfinished wizard flag', () => {
+        // The answer names the account in hand and says the wizard has not
+        // finished, so the account rule lets the rail stand: the rule is about
+        // whose answer it is, not a reason to disable a legitimate rail.
         const html = render('/', afterBareSystem, {
             status: 'authenticated',
             session: sessionIn('system-administration'),
@@ -152,5 +188,30 @@ describe('the bootstrap rail the deployment answers with', () => {
 
         expect(html).not.toContain('Tenant setup screen');
         expect(html).not.toContain('First run journey');
+    });
+
+    it('decides nothing from an answer that names no account while somebody is signed in', () => {
+        // The flags are settings read through a session, and this answer was
+        // read through none. Acting on it would put the wizard in front of a
+        // person who holds a session, so nothing is decided until an answer
+        // that names their account arrives.
+        const html = render('/', afterBareSystemAnonymous, {
+            status: 'authenticated',
+            session: sessionIn('system-administration'),
+        });
+
+        expect(html).toContain('Loading...');
+        expect(html).not.toContain('First run journey');
+    });
+
+    it('offers the way out of a rail while somebody is signed in, and only then', () => {
+        const signedIn = render('/', afterBareSystem, {
+            status: 'authenticated',
+            session: sessionIn('system-administration'),
+        });
+        const visitor = render('/', inBootstrapAnonymous, anonymous);
+
+        expect(header(signedIn)).toContain('Sign out');
+        expect(header(visitor)).not.toContain('Sign out');
     });
 });

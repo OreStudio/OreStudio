@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 6272CAAF-48D4-4909-BBC2-5FDD82AF4637
+:END:
+#+title: Task: Implement Hotfix: the denial test counts on a caller without a role
+#+description: Take back the Member assignment the account trigger gives a person account, so the denial case's caller holds no role when it calls the read.
+#+type: task
+#+level: s1
+#+filetags: :the-denial-test-counts-on-a-caller-without-a-role:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-denial-test-counts-on-a-caller-without-a-role
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5996E81C-C075-46B2-AB83-9114A8187026][Hotfix: the denial test counts on a caller without a role]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the caller of the denial case hold nothing, so the read under test is
+refused for the reason the case states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5996E81C-C075-46B2-AB83-9114A8187026][Hotfix: the denial test counts on a caller without a role]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The denial case holds a caller with no role assignment when it calls the read.
+- =ores.iam.core.tests= passes.
+- No production code changes.
+
+* Plan
+
+=account_role_repository::remove_all_for_account(caller.id)= is called after the
+two accounts are written and before the service is constructed. The junction row
+is closed rather than deleted, and =read_effective_permissions= no longer sees
+it, so the caller reaches the gate holding nothing.
+
+The account trigger gives Member to a person account at version 1 and never
+again, so an administrator can leave an account in exactly this state. The case
+is not asserting something unreachable.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ores.iam.core.tests, before | 771 assertions, 252 cases, 1 case failing | =compass build rat= | 9825740467 |
+| ores.iam.core.tests, after | 771 assertions in 252 cases, all passed | =compass build test_ores.iam.core.tests= | working tree after the fix |
+| suites and tests in the full run | 82 suites, 9547 tests, 1 failure | =compass test results= | 9825740467 |
+
+* Notes
+
+The case failed with the outcome =ok= and a non-empty roles list, so the gate
+was never reached: the caller held =iam::roles:read= through Member.
+
+Whether that is the right state is a separate question and is recorded in the
+story's decisions. This task changes the test only.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One call added to the denial case. =ores.iam.core.tests= passes and the suite
+is green again.

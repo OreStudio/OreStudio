@@ -115,10 +115,13 @@ What landed:
 
 Limitations:
 
-- Nothing was compiled and no test was run. The build and the suites are swift curie's
-  hourly validation.
-- The check is not proven against a live database. The statements the filtered reads emit
-  were read, not run.
+- The branch was landed before each environment built its own tree, so it was never
+  compiled on its own. Trunk now carries the proof and the marketdata suites pass,
+  including =ores.marketdata.core.tests= and =ores.marketdata.core.corpus.tests=, which
+  write points through the generated =insert= the check sits in.
+- The check is now proven against a live database. =compass db recreate= rebuilt the
+  schema and the suites ran against it, so the filtered shape reads execute rather than
+  being read from the emitted statements.
 - The import declaring a shape from what it carries is out of scope and is the next task,
   =let_an_import_declare_the_shape_it_carries=. The shape writer sits in
   =ores.marketdata.service= to read the reference tenors, and the import sits in

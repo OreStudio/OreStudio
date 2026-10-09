@@ -58,6 +58,10 @@ const inBootstrap: BootstrapState = {
     hasTenant: false,
     onboardingComplete: false,
     onboardingTenantComplete: false,
+    // The installation has nobody to sign in as, so the flags were read for
+    // no account and the request presented no session.
+    accountId: '',
+    sessionPresent: false,
     message: 'This deployment has not been provisioned.',
     version: 'v0.0.25 (test)',
 };
@@ -67,6 +71,9 @@ const ready: BootstrapState = {
     hasTenant: true,
     onboardingComplete: true,
     onboardingTenantComplete: true,
+    // The answer names the account whose session it was read through.
+    accountId: session.accountId,
+    sessionPresent: true,
     message: '',
     version: 'v0.0.25 (test)',
 };
@@ -74,6 +81,29 @@ const ready: BootstrapState = {
 const tenantless: BootstrapState = { ...ready, hasTenant: false, onboardingComplete: false };
 /** A system-only installation that finished its wizard, so it has no user tenant. */
 const systemOnlyComplete: BootstrapState = { ...tenantless, onboardingComplete: true };
+/*
+ * The same answers as a visitor with no session reads them. The two setup flags
+ * are settings, so a request with no session cannot read them and the answer
+ * names no account. A screen must not act on that answer once somebody signs
+ * in, which is why the signed-in fixtures above are not weakened to this.
+ */
+const readyAnonymous: BootstrapState = {
+    ...ready,
+    onboardingComplete: false,
+    onboardingTenantComplete: false,
+    accountId: '',
+    sessionPresent: false,
+};
+const tenantlessAnonymous: BootstrapState = {
+    ...tenantless,
+    accountId: '',
+    sessionPresent: false,
+};
+const systemOnlyAnonymous: BootstrapState = {
+    ...systemOnlyComplete,
+    accountId: '',
+    sessionPresent: false,
+};
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
 /** A super administrator, whose session acts on the deployment itself. */
@@ -178,7 +208,10 @@ describe('a journey that has begun', () => {
         const html = render('/setup', ready, authenticated, { journeyInProgress: true });
 
         expect(html).toContain('First run journey');
-        expect(html).not.toContain('Sign out');
+        // The rail is the one public screen a signed-in person stands on, so it
+        // carries the way out now; what says this is the rail and not the
+        // application is that the application's home is not rendered.
+        expect(html).not.toContain('Welcome, admin');
     });
 
     it('hands the browser to the ordinary routes once it finishes', () => {
@@ -191,7 +224,7 @@ describe('a journey that has begun', () => {
 
 describe('the route table once the flag is clear', () => {
     it('offers the sign-in form to a visitor', () => {
-        const html = render('/login', ready, anonymous);
+        const html = render('/login', readyAnonymous, anonymous);
 
         expect(html).toContain('Sign in');
         expect(html).toContain('Username');
@@ -199,7 +232,7 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('states the environment the deployment serves in the public shell', () => {
-        const html = render('/login', ready, anonymous, { environment });
+        const html = render('/login', readyAnonymous, anonymous, { environment });
 
         expect(html).toContain('environment Bright Faraday (non-production)');
     });
@@ -211,7 +244,7 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('carries the banner on the sign-in dialog, above the work', () => {
-        const html = render('/login', ready, anonymous);
+        const html = render('/login', readyAnonymous, anonymous);
 
         // The same element the setup journeys carry, at the ratio nothing may
         // crop, and it stands above the form rather than inside it.
@@ -221,13 +254,13 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('offers the way to the registration door from the sign-in dialog', () => {
-        const html = render('/login', ready, anonymous);
+        const html = render('/login', readyAnonymous, anonymous);
 
         expect(html).toContain('/signup');
     });
 
     it('does not render the application to a visitor', () => {
-        const html = render('/', ready, anonymous);
+        const html = render('/', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Welcome, admin');
         expect(html).not.toContain('Sign out');
@@ -252,7 +285,7 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('sends a visitor to sign in rather than to a journey they cannot run', () => {
-        const html = render('/tenants/new', ready, anonymous);
+        const html = render('/tenants/new', readyAnonymous, anonymous);
 
         // The guard is a redirect, and a redirect renders nothing of its own:
         // what matters is that the journey is not one of them.
@@ -267,7 +300,7 @@ describe('the route table once the flag is clear', () => {
     });
 
     it('sends a visitor to sign in rather than to the party journey', () => {
-        const html = render('/parties/new', ready, anonymous);
+        const html = render('/parties/new', readyAnonymous, anonymous);
 
         expect(html).not.toContain('New party journey');
     });
@@ -287,7 +320,7 @@ describe('the route table once the flag is clear', () => {
 
 describe('the registration door', () => {
     it('is offered to a visitor at its own route', () => {
-        const html = render('/signup', ready, anonymous);
+        const html = render('/signup', readyAnonymous, anonymous);
 
         expect(html).toContain('Registration door');
     });
@@ -313,7 +346,7 @@ describe('an installation that has no tenant of its own', () => {
          * true forever; it is not a reason to hold the rail, and the wizard
          * signs the person out, so this is the state it leaves behind.
          */
-        const visitor = render('/login', tenantless, anonymous);
+        const visitor = render('/login', tenantlessAnonymous, anonymous);
 
         expect(visitor).not.toContain('First run journey');
         expect(visitor).toContain('Sign in');
@@ -323,7 +356,9 @@ describe('an installation that has no tenant of its own', () => {
         const signedIn = render('/', tenantless, systemAdmin);
 
         expect(signedIn).toContain('First run journey');
-        expect(signedIn).not.toContain('Sign out');
+        // A signed-in rail carries the way out, so it cannot be told from the
+        // application by the absence of one; the home screen is the difference.
+        expect(signedIn).not.toContain('Welcome, admin');
     });
 
     it('releases the browser once the wizard recorded that it finished', () => {
@@ -332,7 +367,7 @@ describe('an installation that has no tenant of its own', () => {
          * tenant" is true forever; the wizard's flag is what says the setup job
          * is done and the browser may leave the rail.
          */
-        const visitor = render('/login', systemOnlyComplete, anonymous);
+        const visitor = render('/login', systemOnlyAnonymous, anonymous);
 
         expect(visitor).not.toContain('First run journey');
         expect(visitor).toContain('Sign in');
@@ -348,7 +383,7 @@ describe('an installation that has no tenant of its own', () => {
 
 describe('a server that does not answer', () => {
     it('says so and offers to ask again, rather than guessing a shell', () => {
-        const html = render('/', ready, anonymous, {
+        const html = render('/', readyAnonymous, anonymous, {
             gate: { status: 'unreachable', reason: '503: no broker' },
         });
 
@@ -386,7 +421,7 @@ describe('the requests queue', () => {
     });
 
     it('sends a visitor to sign in rather than to the queue', () => {
-        const html = render('/requests', ready, anonymous);
+        const html = render('/requests', readyAnonymous, anonymous);
 
         expect(html).not.toContain('Roles people in this tenant have asked for, oldest first.');
         expect(html).not.toContain('Sign out');

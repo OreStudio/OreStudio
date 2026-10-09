@@ -38,6 +38,7 @@ export function PublicShell({
     wide = false,
     serverVersion,
     environment,
+    actions,
 }: {
     readonly children: ReactNode;
     /**
@@ -53,6 +54,14 @@ export function PublicShell({
     readonly serverVersion?: string;
     /** The environment the deployment serves, or nothing before it answers. */
     readonly environment?: EnvironmentView | undefined;
+    /**
+     * What this screen offers beside the mark, or nothing.
+     *
+     * A journey is the one public screen somebody can be signed in on, and a
+     * signed-in person owes a way out: a setup that cannot be finished, or a
+     * session the deployment has forgotten, must not be a room with no door.
+     */
+    readonly actions?: ReactNode;
 }): ReactNode {
     const { t } = useTranslation();
     const width = wide ? 'max-w-[1100px]' : 'max-w-[680px]';
@@ -68,6 +77,9 @@ export function PublicShell({
                     >
                         {t('app.name')}
                     </a>
+                    {actions !== undefined && (
+                        <div className="ml-auto flex items-center gap-3">{actions}</div>
+                    )}
                 </div>
             </header>
             <main className={`mx-auto w-full flex-1 px-5 py-12 ${width}`}>{children}</main>

@@ -176,6 +176,26 @@ export const bootstrapStatusSchema = z.object({
     onboardingComplete: z.boolean(),
     /** Whether the caller's tenant finished its own setup run. */
     onboardingTenantComplete: z.boolean(),
+    /**
+     * The account the two settings answers were read for, or empty.
+     *
+     * The rest of the answer is read without a session, because a deployment in
+     * bootstrap mode has nobody to sign in as, while the two flags above are
+     * settings and settings are not readable without one. A screen compares this
+     * with the account it holds, so that a flag read from outside the deployment
+     * is never mistaken for a fact about the session in hand.
+     */
+    accountId: z.string(),
+    /**
+     * Whether the request carried a session cookie at all.
+     *
+     * A browser whose session has ended still presents its cookie, and the
+     * difference between presenting nothing and presenting something the
+     * deployment no longer knows is what lets a screen hand a stale browser back
+     * to the sign-in form instead of holding it on a screen whose one action
+     * cannot succeed.
+     */
+    sessionPresent: z.boolean(),
     message: z.string(),
     /** The build the deployment runs, as the deployment states it. */
     version: z.string(),

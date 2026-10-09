@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 1909652E-638B-4F84-AD83-12E8AB430CBB
+:END:
+#+title: Task: End a session properly
+#+description: Logout only flips login_info.online, and session_repository::end_session writes the end time but is called only on the caller's own service session. A logout must end its session row and record the logout event, and a tenant administrator must be able to end another account's session.
+#+type: task
+#+level: s1
+#+filetags: :implement_the_audit_sign_ins_journey:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-the-audit-sign-ins-journey
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A sign-out closes the session it belongs to, and an administrator can close a session that cannot be explained.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Logout ends the caller's session row, writes the byte counters, and records a logout auth event.
+- iam.v1.sessions.end ends another account's session in the caller's tenant and needs its own permission.
+- A session that has ended is absent from the active-session read.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

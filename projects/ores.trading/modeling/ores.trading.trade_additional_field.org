@@ -41,6 +41,8 @@ ORE import moves off in its own task.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:parent_entity: trade
+:bump_parent_version: true
 :END:
 
 The trade this field belongs to.

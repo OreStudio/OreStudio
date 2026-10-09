@@ -30,6 +30,7 @@
  * so it is also offered from Home.
  */
 
+import { GitBranch, LayoutGrid, Network, ScrollText, Server } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { PageHeader } from '../ui/Primitives.js';
@@ -42,26 +43,31 @@ export function OperationsArea(): ReactNode {
             title: t('operations.screens.services'),
             body: t('operations.screens.servicesBody'),
             to: '/operations/services',
+            icon: Server,
         },
         {
             title: t('operations.screens.grid'),
             body: t('operations.screens.gridBody'),
             to: '/operations/grid',
+            icon: LayoutGrid,
         },
         {
             title: t('operations.screens.bus'),
             body: t('operations.screens.busBody'),
             to: '/operations/bus',
+            icon: Network,
         },
         {
             title: t('operations.screens.logs'),
             body: t('operations.screens.logsBody'),
             to: '/operations/logs',
+            icon: ScrollText,
         },
         {
             title: t('operations.screens.versions'),
             body: t('operations.screens.versionsBody'),
             to: '/operations/versions',
+            icon: GitBranch,
         },
     ];
 

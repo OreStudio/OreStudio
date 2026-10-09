@@ -51,6 +51,7 @@ Put every component that generates C++ under the drift gate, one component per c
 | [[id:0BA03E10-9295-4243-B475-A0E0C721D243][Task: Fail the reachability check on a dangling include]] | DONE | 2026-10-08 | 2026-10-08 | The reachability check reports a file no aggregator includes, and an include that names no file, across create, populate and drop. |
 | [[id:7300F857-3E69-4AA8-9B93-5DE7E259C803][Fix what validation run 1 found]] | BACKLOG | | | The first hourly validation run, cut from dfd7880807, left two defects live that no other fix had reached: two tenant-scoped swap leg tables with no row level security, and a test locator that read the wrong translation group and reported sixteen phantom missing sentences. |
 | [[id:791A90F5-BA11-476A-9B54-0FFBB06C152D][Close the account access read every member held]] | STARTED | 2026-10-09 | | Task for: Bring the last components under the drift gate |
+| [[id:DA76A66C-93AA-4A4F-B3B4-6A5ABB7DF4E9][Fix the two red codegen checks]] | STARTED | 2026-10-09 | | Task for: Bring the last components under the drift gate |
 
 * Decisions
 

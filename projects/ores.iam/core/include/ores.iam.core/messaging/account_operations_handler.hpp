@@ -949,6 +949,45 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.ops.get_reporting_tree.
+     *
+     * A read of the tenant's own roster, so it needs =iam::accounts:read= and
+     * names no tenant: row-level security bounds what it can see.
+     */
+    void get_reporting_tree(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<get_reporting_tree_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:read")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+            service::account_operations_service svc(ctx);
+            auto response = svc.get_reporting_tree(*req);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            get_reporting_tree_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The read failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
     void select_party(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);

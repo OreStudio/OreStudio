@@ -197,3 +197,84 @@ export async function setReportingLine(
     }
     return reply.account;
 }
+
+/** One account in the tenant's reporting shape, as the screen reads it. */
+export const reportingTreeNodeSchema = z.object({
+    accountId: z.string(),
+    username: z.string(),
+    fullName: z.string(),
+    jobTitle: z.string(),
+    /** The manager, or null when the account is a root. */
+    reportsToAccountId: z.string().nullable(),
+    /** Managers between this account and a root, or -1 when it reaches none. */
+    depth: z.int(),
+    directReports: z.int(),
+});
+
+export const reportingTreeSchema = z.object({
+    /** How many accounts reach no root, so the screen can state the gap. */
+    unrooted: z.int(),
+    nodes: z.array(reportingTreeNodeSchema),
+});
+
+export type ReportingTree = z.infer<typeof reportingTreeSchema>;
+export type ReportingTreeNode = z.infer<typeof reportingTreeNodeSchema>;
+
+const wireReportingTreeNodeSchema = z.object({
+    account_id: z.string(),
+    username: z.string(),
+    full_name: z.string(),
+    job_title: z.string(),
+    reports_to_account_id: z.string().default(''),
+    depth: z.int(),
+    direct_reports: z.int(),
+});
+
+const wireReportingTreeSchema = z
+    .object({
+        result: decidedResultSchema,
+        nodes: z.array(wireReportingTreeNodeSchema).default([]),
+        unrooted: z.int().default(0),
+    })
+    .transform((row) => ({
+        result: row.result,
+        tree: {
+            unrooted: row.unrooted,
+            nodes: row.nodes.map((node) => ({
+                accountId: node.account_id,
+                username: node.username,
+                fullName: node.full_name,
+                jobTitle: node.job_title,
+                reportsToAccountId:
+                    node.reports_to_account_id === '' ? null : node.reports_to_account_id,
+                depth: node.depth,
+                directReports: node.direct_reports,
+            })),
+        },
+    }));
+
+/**
+ * Reads the tenant's reporting shape, or one account's branch of it.
+ *
+ * An empty root asks for the whole tenant, ordered by depth; a stated root asks
+ * for that account's branch. The server needs iam::accounts:read, and an
+ * account that reaches no root is answered with depth -1 and counted in
+ * `unrooted` rather than being dropped.
+ */
+export async function readReportingTree(
+    caller: AuthenticatedCaller,
+    rootAccountId = '',
+): Promise<ReportingTree> {
+    const reply = await caller.callAuthenticated(
+        accountSubjects.get_reporting_tree_request,
+        { root_account_id: rootAccountId },
+        wireReportingTreeSchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(
+            accountSubjects.get_reporting_tree_request,
+            reply.result.message,
+        );
+    }
+    return reportingTreeSchema.parse(reply.tree);
+}

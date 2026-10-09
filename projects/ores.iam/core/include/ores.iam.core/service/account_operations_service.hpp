@@ -407,6 +407,21 @@ public:
     set_reporting_line(const messaging::set_reporting_line_request& request);
 
     /**
+     * @brief Reads the tenant's reporting shape in one call.
+     *
+     * The accounts come from the tenant's own roster, which row-level security
+     * bounds. An unstated root answers the whole tenant, ordered by depth; a
+     * stated root answers that account's branch. An account that reaches no
+     * root is answered with depth -1 and counted in the response.
+     *
+     * @param request The root to answer from, or empty for the whole tenant
+     * @return The shared result plus the nodes, and how many accounts reach no
+     * root
+     */
+    messaging::get_reporting_tree_response
+    get_reporting_tree(const messaging::get_reporting_tree_request& request);
+
+    /**
      * @brief Writes the fields a member owns on their own account.
      *
      * The account is the caller's own, named by the session rather than by

@@ -30,6 +30,7 @@ import {
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
     myPartiesSchema,
+    reportingTreeSchema,
     type AccountContactInformation,
     type AccountSignIns,
     type AccountWriteView,
@@ -40,6 +41,7 @@ import {
     type ImageUploadView,
     type MyParties,
     type ReportingLineWrite,
+    type ReportingTree,
     type ProfileWrite,
     permissionEntrySchema,
     roleSummarySchema,
@@ -537,6 +539,17 @@ export const api = {
                 headers: JSON_HEADERS,
                 body: JSON.stringify(write),
             }),
+        );
+    },
+
+    /**
+     * The tenant's reporting shape, or one account's branch of it. The server
+     * needs iam::accounts:read.
+     */
+    async reportingTree(rootAccountId = ''): Promise<ReportingTree> {
+        const query = rootAccountId === '' ? '' : `?root=${encodeURIComponent(rootAccountId)}`;
+        return reportingTreeSchema.parse(
+            await request(`/api/reporting-tree${query}`, { method: 'GET' }),
         );
     },
 

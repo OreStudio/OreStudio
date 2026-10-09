@@ -21,7 +21,7 @@ One gate refuses a subject that is not {component}.v1.{resource}.{verb} with a v
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |

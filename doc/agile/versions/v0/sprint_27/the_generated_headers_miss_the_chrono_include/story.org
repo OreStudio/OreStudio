@@ -21,11 +21,11 @@ Let every generated domain header that names std::chrono compile on its own.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The template gates the include, the models stopped declaring it, and both include rules are green. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Open the PR, merge, and close once the build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -60,3 +60,7 @@ Let every generated domain header that names std::chrono compile on its own.
   =main= declare no =<chrono>= and reach it through the domain header they
   include. That is a separate question about the operation template and is
   unchanged here.
+
+* Result
+
+Merged in PR #2884. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

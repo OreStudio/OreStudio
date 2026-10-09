@@ -21,11 +21,11 @@ Make ores.marketdata.core compile again on main.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The fix is merged in PR #2879 and awaits the hourly validation build. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Close the story once that build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -56,3 +56,7 @@ Make ores.marketdata.core compile again on main.
 
 - Why the break reached =main=. It landed through the merge-without-checks
   workflow and the hourly validation build had not yet reached it.
+
+* Result
+
+Merged in PR #2879. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

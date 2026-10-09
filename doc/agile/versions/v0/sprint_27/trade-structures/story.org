@@ -21,11 +21,11 @@ Implement section 11 of the trade shape investigation, so a structure is a group
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Add structure kinds and templates.     |
+| Next          | Nothing. |
 | Last touched  | 2026-10-02                               |
 
 * Acceptance
@@ -49,3 +49,7 @@ Implement section 11 of the trade shape investigation, so a structure is a group
 * Out of scope
 
 - The structure's external version and confirmation status, which live on the agreement and belong to the authorisation and agreement work.
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes. The owner had moved on before closing the story, so this close records the tasks' state rather than a fresh verification of the goal.

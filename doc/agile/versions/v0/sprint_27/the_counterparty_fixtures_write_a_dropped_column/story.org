@@ -21,11 +21,11 @@ Let ores.refdata.api compile and let the counterparty fixtures load.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The member is gone from the code and from nine fixtures; the scans find no other consumer. |
+| Now           | Nothing. |
 | Waiting on    | The hourly validation build, which compiles =main=. |
-| Next          | Open the PR, merge, and close once the build is green. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-08                               |
 
 * Acceptance
@@ -60,3 +60,7 @@ Let ores.refdata.api compile and let the counterparty fixtures load.
 
 - [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] — the
   work that replaced the column with the junction.
+
+* Result
+
+Merged in PR #2886. Verified on main at the green suite run: 85 suites, 9586 tests, 0 failures.

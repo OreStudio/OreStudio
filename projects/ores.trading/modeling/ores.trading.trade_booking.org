@@ -152,6 +152,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_bookings_tbl
+:party_scoped_writes: true
 :END:
 
 ** Virtual books

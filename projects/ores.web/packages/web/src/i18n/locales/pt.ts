@@ -126,6 +126,7 @@ const pt: SourceCatalogue = {
             jobTitle: 'Cargo',
             title: 'Pessoas',
             lead: 'Quem pode iniciar sessão neste inquilino, e os papéis de cada um.',
+            leadNoRoles: 'Quem pode iniciar sessão neste inquilino.',
             person: 'Pessoa',
             roles: 'Papéis',
             noRole: 'Sem papel',
@@ -1506,12 +1507,23 @@ const pt: SourceCatalogue = {
     },
 
     timeline: {
-        by: 'Por {who}',
         empty: 'Ainda nada lhe aconteceu.',
         field: 'Campo',
-        gapsTitle: 'O que este fluxo não contém',
         notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
         changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
+        kind: {
+            raised: 'Criado',
+            changed: 'Alterado',
+            asked: 'Papel pedido',
+            told: 'Notificado',
+            decided: 'Respondido',
+            granted: 'Concedido',
+            signed_in: 'Sessão iniciada',
+            sign_in_failed: 'Sessão recusada',
+            signed_out: 'Sessão terminada',
+            refreshed: 'Sessão renovada',
+            noticed: 'Registado',
+        },
     },
 
     validation: {

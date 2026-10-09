@@ -30,6 +30,7 @@ import { Avatar, imageUrl } from '../ui/Images.js';
 import { Tag } from '../ui/Primitives.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
+import { useHolds } from './holds.js';
 
 /** The address of one person's page. */
 export function personPath(username: string): string {
@@ -56,13 +57,27 @@ const PEOPLE: ListSource<Account> = {
  */
 export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode {
     const { t } = useTranslation();
+    const holds = useHolds();
     const system = mode === 'system-administration';
     const title = system ? t('accounts.title') : t('access.people.title');
+    /*
+     * The roles column reads one person's grants a row at a time, and that read
+     * is its own permission. A caller who does not hold it is not shown the
+     * column at all: a member who opens this screen is asking who is here, not
+     * what each of them may do, and a refusal is a worse answer than an absent
+     * column.
+     */
+    const mayReadRoles = holds('iam::roles:read');
+    const lead = system
+        ? t('accounts.description')
+        : mayReadRoles
+          ? t('access.people.lead')
+          : t('access.people.leadNoRoles');
     return (
         <RecordList
             source={PEOPLE}
             title={title}
-            lead={system ? t('accounts.description') : t('access.people.lead')}
+            lead={lead}
             crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: title }]}
             actions={
                 <LinkButton to="/reporting-lines" variant="ghost" size="sm">
@@ -108,11 +123,15 @@ export function PeoplePage({ mode }: { readonly mode: SessionMode }): ReactNode 
                     header: t('access.people.jobTitle'),
                     cell: (account) => account.jobTitle,
                 },
-                {
-                    id: 'roles',
-                    header: t('access.people.roles'),
-                    cell: (account) => <HeldRoles accountId={account.id} />,
-                },
+                ...(mayReadRoles
+                    ? [
+                          {
+                              id: 'roles',
+                              header: t('access.people.roles'),
+                              cell: (account: Account) => <HeldRoles accountId={account.id} />,
+                          },
+                      ]
+                    : []),
             ]}
         />
     );

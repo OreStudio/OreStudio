@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: B3D7CFB5-753F-41E1-9545-89B271D5D1A6
+:END:
+#+title: Task: Prototype Where I work
+#+description: [wayfinder:prototype] The member's screen: the identity summary, the parties the account works in, the default party, the switch, and the gap where no client path exists.
+#+type: task
+#+level: s1
+#+filetags: :implement_membership_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-membership-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: what should the member's
+*Where I work* screen look like in =ores.web=?
+
+[[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]] carries
+one screen. It shows who the member is signed in as, the party the session is
+acting for, and the parties the account works in with the default called out,
+because the member thinks of them as one question: where am I, and where can I
+be. The prototype decides the layout, the order of the panels, the copy of the
+unavailable and empty states, and how the screen presents the operations the
+server does not have.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
+| Now          | The prototype is being built.          |
+| Waiting on   | Nothing.                               |
+| Next          | Put the three variants to the product owner for sign-off. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =doc/prototypes/membership/where-i-work/index.html= is a static page: no
+  framework, no build step, no backend, and mock data only.
+- Three variants of the screen are compared on one page, switchable without a
+  rebuild and with no server.
+- Every panel states the truth about its data. No read outside sign-in turns a
+  party identifier into a name, so no panel invents one, and the screen says
+  what it cannot yet show.
+- The page states every gap the journey document records.
+- The names, the sections and the actions follow the
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]] and the
+  [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]].
+- The page is registered on [[file:../../../prototypes/membership/index.org][Membership prototypes]] and in the
+  [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] inventory, and
+  =build/scripts/check_prototype_inventory.py= passes.
+- * Result carries the verdict, the rejected variants, and every document claim
+  the tree contradicts.
+
+* Plan
+
+1. Read the journey document's wireframe, and the =account=, =account_party=
+   and =party= models.
+2. Build three variants on one static page, with a switch that needs no rebuild
+   and no server.
+3. Drive each variant through the same cases: one party, three parties, no
+   stored default, a switch in flight, and a switch the server refuses.
+4. Record the verdict in * Result.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the =* What is missing= section of
+[[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]]. The screen
+states each one, and the prototype decides how.
+
+1. *No readable party list outside sign-in.* =account_parties= carries
+   =party_id= alone, and =iam.v1.ops.login= is the only read that returns a
+   party name. The candidate is a party lookup the member may call, scoped to
+   the parties the account works in.
+2. *Nothing in the web client switches party.* =selectParty= and =switchParty=
+   exist in the wire protocol and =SessionProvider= exposes =chooseParty=, but
+   the only caller is the sign-in picker. There is no account menu entry and no
+   *Where I work* screen.
+3. *No default-party call at all in the web client.* =set_my_default_party=
+   exists on the server and is mapped to no method, no BFF route and no
+   control.
+4. *Clearing the default is not expressible.* =set_my_default_party_request=
+   carries only =party_id=, so "no default" cannot be stated. The candidate is a
+   nullable body or a =clear-default-party= subject.
+5. *No client-side wrapper for the association read.* The generated protocol has
+   =account_parties.list_by_account_id=; =operations.ts= and the BFF do not
+   speak it.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

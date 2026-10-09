@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 08E9CD97-DE62-4F88-95BB-E26A5703DD8D
+:END:
+#+title: Task: Prototype Reporting lines
+#+description: [wayfinder:prototype] The administrator's screen: the reporting tree, the selected account's line, the manager picker with a change reason, and the gap where no approval exists.
+#+type: task
+#+level: s1
+#+filetags: :implement_membership_journeys:sprint_27:v0:
+#+owner: marco
+#+branch: feature/implement-membership-journeys
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer one question with a throwaway prototype: what should the *Reporting
+lines* screen look like in =ores.web=?
+
+[[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] carries
+one screen with three panels: the tree, the selected account, and the save
+controls with their change reason. The prototype decides how the tree is drawn
+from a flat read, how the selected person and their manager are shown, what a
+change states about who approves it, and how the screen presents the operations
+the server does not have.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
+| Now          | The prototype is being built.          |
+| Waiting on   | Nothing.                               |
+| Next          | Put the three variants to the product owner for sign-off. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =doc/prototypes/membership/reporting-lines/index.html= is a static page: no
+  framework, no build step, no backend, and mock data only.
+- Three variants of the screen are compared on one page, switchable without a
+  rebuild and with no server.
+- Every panel states the truth about its data. The roster is read as a flat
+  page and the tree is nested in the browser, so the page says so; no panel
+  claims a tree read the server does not serve.
+- A loop the server would accept today is drawn as a loop the screen must
+  catch, and the page says the server does not refuse it.
+- The page states every gap the journey document records, including the absent
+  approval.
+- The names, the sections and the actions follow the
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX language]] and the
+  [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]].
+- The page is registered on [[file:../../../prototypes/membership/index.org][Membership prototypes]] and in the
+  [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] inventory, and
+  =build/scripts/check_prototype_inventory.py= passes.
+- * Result carries the verdict, the rejected variants, and every document claim
+  the tree contradicts.
+
+* Plan
+
+1. Read the journey document's wireframe, and the =account=, =account_party=,
+   =party= and change-reason models.
+2. Build three variants on one static page, with a switch that needs no rebuild
+   and no server.
+3. Drive each variant through the same cases: a clean tree, an orphan with no
+   manager, a person whose line a proposal would move, and a pair that would
+   make a loop.
+4. Record the verdict in * Result.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The journey's gaps, from the =* What is missing= section of
+[[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]]. The
+screen states each one, and the prototype decides how.
+
+1. *No tree read.* The server answers one flat page of accounts with
+   =reports_to_account_id= repeated per row. There is no children-by-manager
+   read, no depth, no root list and no subtree, so the whole roster has to
+   arrive first and the shape is computed in the browser.
+2. *No cycle check.* Nothing refuses =A reports to B= when =B= already reports
+   to =A=, so the server accepts a loop that has no root.
+3. *No reporting-line-only write.* Setting one field means sending the whole
+   =update_account_request=, so a concurrent edit to another field is silently
+   overwritten by the stale copy the screen holds.
+4. *Nothing in the web client ships the screen.* No web screen draws a tree or
+   offers a manager picker. The Qt client did: =OrgChartWidget= read every
+   tenant account and drew one card per person, and it was removed with
+   =ores.qt=.
+5. *Party names are still unreachable.* The card shows the office, which needs
+   the party's name, and the account-party read carries =party_id= alone. This
+   is the same gap as on
+   [[id:0B3A2F4E-F4F0-4F19-8D07-EED38EF65B61][Choose where I work]].
+6. *No history of the line.* The account is versioned, so a change is
+   recoverable through =iam.v1.accounts_versions.list=, but the tree screen
+   states none of it.
+7. *No approval.* A reporting-line change is a proposal that a hierarchical
+   superior or a tenant administrator approves, and nothing in the platform
+   holds such an approval: no request, no queue, no notification and no
+   decision. Until there is, the screen states who approves and the line does
+   not move.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

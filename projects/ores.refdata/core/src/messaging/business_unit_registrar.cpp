@@ -77,6 +77,10 @@ register_business_unit_handlers(ores::nats::service::client& nats,
         queue_group,
         [h](ores::nats::message msg) { h->delete_many_business_units(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        list_by_party_id_business_units_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_party_id_business_units(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_business_unit_versions_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->list_business_unit_versions(std::move(msg)); }));

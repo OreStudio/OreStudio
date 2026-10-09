@@ -27,6 +27,7 @@ import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
 import type { Result } from '../../../utility/protocol.js';
+import type { Scope } from '../../../utility/protocol.js';
 
 export interface BusinessUnitKey {
     unit_code: string;
@@ -59,7 +60,9 @@ export interface BusinessUnitLookup {
 }
 
 export interface BusinessUnitsFilter {
+    party_id: string | null;
     id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface BusinessUnitEvent {
@@ -152,6 +155,21 @@ export interface DeleteManyBusinessUnitsResponse {
     result: Result;
 }
 
+export interface ListByPartyIdBusinessUnitsRequest {
+    party_id: string;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: BusinessUnitsFilter | null;
+}
+
+export interface ListByPartyIdBusinessUnitsResponse {
+    result: Result;
+    business_units: BusinessUnit[];
+    total: number;
+}
+
 export interface ListBusinessUnitVersionsRequest {
     key: BusinessUnitKey;
     offset: number;
@@ -183,6 +201,7 @@ export const subjects = {
     put_many_business_units_request: 'refdata.v1.business_units.put_many',
     delete_business_unit_request: 'refdata.v1.business_units.delete',
     delete_many_business_units_request: 'refdata.v1.business_units.delete_many',
+    list_by_party_id_business_units_request: 'refdata.v1.business_units.list_by_party_id',
     list_business_unit_versions_request: 'refdata.v1.business_units_versions.list',
     get_business_unit_version_request: 'refdata.v1.business_units_versions.get',
 } as const;
@@ -199,6 +218,7 @@ export const requiresSession = {
     put_many_business_units_request: true,
     delete_business_unit_request: true,
     delete_many_business_units_request: true,
+    list_by_party_id_business_units_request: true,
     list_business_unit_versions_request: true,
     get_business_unit_version_request: true,
 } as const;

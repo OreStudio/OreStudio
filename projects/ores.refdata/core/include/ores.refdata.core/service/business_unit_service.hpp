@@ -91,6 +91,8 @@ public:
     delete_business_unit(const messaging::delete_business_unit_request& request);
     messaging::delete_many_business_units_response
     delete_many_business_units(const messaging::delete_many_business_units_request& request);
+    messaging::list_by_party_id_business_units_response list_by_party_id_business_units(
+        const messaging::list_by_party_id_business_units_request& request);
     messaging::list_business_unit_versions_response
     list_business_unit_versions(const messaging::list_business_unit_versions_request& request);
     messaging::get_business_unit_version_response
@@ -113,6 +115,46 @@ public:
      * @return Total number of active business units.
      */
     std::uint32_t count_business_units();
+
+
+    /**
+     * @brief Lists business units filtered by party_id, with pagination.
+     *
+     * @param party_id The party_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching business units for the requested page.
+     */
+    std::vector<domain::business_unit> list_business_units_by_party_id(const std::string& party_id,
+                                                                       std::uint32_t offset,
+                                                                       std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active business units filtered by party_id.
+     *
+     * @param party_id The party_id to filter by.
+     * @return Total number of matching business units.
+     */
+    std::uint32_t count_business_units_by_party_id(const std::string& party_id);
+
+    /**
+     * @brief Lists business units filtered by party_id, with pagination.
+     *
+     * @param party_id The party_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching business units for the requested page.
+     */
+    std::vector<domain::business_unit> list_business_units_by_party_id(
+        const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active business units filtered by party_id.
+     *
+     * @param party_id The party_id to filter by.
+     * @return Total number of matching business units.
+     */
+    std::uint32_t count_business_units_by_party_id(const boost::uuids::uuid& party_id);
 
 
     /**

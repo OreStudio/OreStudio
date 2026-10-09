@@ -66,7 +66,9 @@ struct business_unit_lookup {
 };
 
 struct business_units_filter {
+    std::optional<boost::uuids::uuid> party_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
 };
 
 struct business_unit_event {
@@ -220,6 +222,30 @@ struct delete_many_business_units_request {
 
 struct delete_many_business_units_response {
     ores::utility::domain::result result;
+};
+
+struct list_by_party_id_business_units_request {
+    using response_type = struct list_by_party_id_business_units_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business_units.list_by_party_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    boost::uuids::uuid party_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<business_units_filter> filter;
+};
+
+struct list_by_party_id_business_units_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::business_unit> business_units;
+    std::uint64_t total;
 };
 
 struct list_business_unit_versions_request {

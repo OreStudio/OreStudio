@@ -150,6 +150,30 @@ public:
     std::optional<domain::business_unit>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+    /**
+     * @brief Reads latest business units filtered by party_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param party_id The party_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::business_unit> read_latest_by_party_id(
+        context ctx,
+        const std::string& party_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::business_units_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active business units filtered by party_id.
+     */
+    std::uint32_t get_total_business_unit_count_by_party_id(
+        context ctx,
+        const std::string& party_id,
+        const std::optional<messaging::business_units_filter>& filter = std::nullopt);
+
 
     /**
      * @brief Whether a list of business units can be ordered by a field.

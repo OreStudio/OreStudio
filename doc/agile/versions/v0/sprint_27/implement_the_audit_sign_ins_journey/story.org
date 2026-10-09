@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 6790C74D-F554-41FB-8896-EE277B2CEADE
+:END:
+#+title: Story: Implement the audit sign-ins journey
+#+description: A tenant administrator reviews active sessions, session activity, failed attempts and where each session came from. The auth events and the session statistics have no subject, logout leaves the session open, and an address is never resolved to a country, so the screen cannot account for the sessions it lists.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The administrator can account for every open session: who is signed in, what the session did, who is failing to get in, where the session came from, and they can end a session that cannot be explained.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- iam.v1.auth_events.list reads the tenant's authentication events, filtered by account, period and event.
+- iam.v1.sessions.statistics reads the session statistics from the continuous aggregates.
+- Logout ends the caller's session row and records a logout event, and an administrator can end another account's session in the tenant.
+- An address resolves to a country over the wire, and the session read carries where each session came from.
+- The Audit: sign-ins screen reads all of it over the BFF.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A46E5E4-5044-4A99-80BC-90868F24CCD8][Scaffold story: Implement the audit sign-ins journey]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8FF54AAC-49FD-400B-BEE6-8939D68ABE33][Read the auth events over the wire]] | BACKLOG | | | ores_iam_auth_events_tbl holds one row per login, failure, logout, token refresh and tenant entry, with no subject that reads it. Add iam.v1.auth_events.list, scoped to the caller's tenant, filtered by account, period and event type. |
+| [[id:9104CB82-E5E6-461A-AAA1-E7F56E14E25C][Read the session statistics over the wire]] | BACKLOG | | | ores_iam_session_stats_daily_vw, _hourly_vw and _aggregate_daily_vw exist as continuous aggregates over the session samples, and no subject reads any of them. Add iam.v1.sessions.statistics. |
+| [[id:1909652E-638B-4F84-AD83-12E8AB430CBB][End a session properly]] | BACKLOG | | | Logout only flips login_info.online, and session_repository::end_session writes the end time but is called only on the caller's own service session. A logout must end its session row and record the logout event, and a tenant administrator must be able to end another account's session. |
+| [[id:9F6939D6-6BAE-4A24-A550-097F9914449B][Resolve an address to a country]] | BACKLOG | | | ores_geo_ip2country_lookup_fn resolves an address to a country code, but it has no subject and ignores the tenant, and nothing fills the country a session or a login records. |
+| [[id:976E9B1D-4382-4F79-A120-8E805ED751D4][Show the audit sign-ins screen]] | BACKLOG | | | Build Audit: sign-ins from the accepted prototype: one filter bar over the active sessions, the session activity, the session statistics, the failed attempts and the auth events, with Refresh as the only action. |
+
+* Decisions
+
+* Out of scope
+
+-

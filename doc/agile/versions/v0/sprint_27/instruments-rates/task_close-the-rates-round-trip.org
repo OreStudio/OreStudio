@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 1E1BA14F-E8A2-4DD4-B538-DA125EC7B7A1
+:END:
+#+title: Task: Close the rates round trip
+#+description: Add the missing reverse mappers for InflationSwap, BalanceGuaranteedSwap and FlexiSwap, and decide the hand-written rates carrier's and codec's disposition: replace them with the generated per-entity protocols, or record why the carrier must stay hand-written. (Staging unit 6; findings R10, R13.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/close-the-rates-round-trip
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every rates product the importer writes can be exported again, and the family's carrier and codec are either the generated per-entity protocols or the one recorded exception.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- InflationSwap, BalanceGuaranteedSwap and FlexiSwap round-trip through the mapper: an import writes the fact row and the export writes the element back.
+- The three products have round-trip cases with literal expected values.
+- The rates carrier and its codec are either generated from the models or carry a recorded reason why the carrier stays hand-written and the codec is the only hand-written surface left.
+- The hand-written rates variant and the payload container are gone, or their retention is recorded.
+
+* Plan
+
+1. *The three products.* Read the import paths of =InflationSwap=,
+   =BalanceGuaranteedSwap= and =FlexiSwap= and the exporter's dispatch, and
+   write the reverse mapper each one is missing. They take the header and the
+   fact row, as the six existing reverse mappers do.
+2. *Cases.* One round-trip case per product with literal expected values, at
+   the shape unit 3 left the family in.
+3. *The carrier's disposition.* Compare the hand-written rates carrier and
+   codec against the generated per-entity protocols. Replace them if the
+   generated path carries the legs and the shared children; otherwise record
+   why the carrier stays hand-written and make the codec the only hand-written
+   surface left.
+4. *Removal.* Either way, the hand-written rates variant and the payload
+   container are gone, or their retention is recorded with its reason.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- This task changes no schema, so it is independent of unit 4 and can run
+  beside it on its own branch.
+- It is the first half of story acceptance clause 4; unit 8 is the proof.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

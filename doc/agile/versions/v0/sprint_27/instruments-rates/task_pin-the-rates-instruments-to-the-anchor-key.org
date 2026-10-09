@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: A1319B90-C06B-4220-A3BA-7471F75F4BB8
+:END:
+#+title: Task: Pin the rates instruments to the anchor's key
+#+description: Add the trade anchor's unique index and pin every rates instrument row to it with the composite foreign key on the party and the trade type. The one unit that changes the trade model. (Staging unit 5; finding R7.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/pin-the-rates-instruments-to-the-anchor-key
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every rates instrument row, the header and the facts alike, is pinned to the trade anchor by a composite key over the tenant, the trade, the party and the trade type, so a row cannot disagree with the anchor it belongs to.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- ores_trading_trades_tbl carries the unique index the composite key needs.
+- Every rates instrument row, the header included, carries a foreign key to the anchor over the tenant, the trade, the party and the trade type.
+- A row whose party or trade type disagrees with the anchor's is refused, and a case proves it.
+- The generated models, the SQL and the repositories agree on the key.
+- The change to the trade model is recorded where the other families can join it.
+
+* Plan
+
+1. *The anchor's index.* Add the unique index the composite key needs to the
+   trade model and regenerate. This is a change to =ores_trading_trades_tbl=,
+   not to this family, so record it where the other families can join it.
+2. *The instruments' key.* Declare the composite foreign key on the header and
+   on each of the eight fact tables, over the tenant, the trade, the party and
+   the trade type.
+3. *The fallout.* The repositories key on the trade id today; the composite key
+   adds the party and the type, so the generated key parameters, the services
+   and the shell surfaces follow, and the tests that build a row without the
+   anchor's party will start to fail — that is the check working.
+4. *A refusing case.* A repository case that writes a row whose party or trade
+   type disagrees with the anchor's, and expects the store to refuse it.
+5. *Before branching.* The trade anchor is shared with every other family and
+   with in-flight work; check the fleet for what else is touching it before
+   starting.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- This is the only unit of the arc that changes the trade model, so it is the
+  one that needs a fleet check and possibly a coordination note before it
+  starts.
+- Story acceptance clause 2 is this task; it is the last clause that a
+  structural change, rather than a proof, can satisfy.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 4A53F30C-42AB-41D1-9C3C-55321FC38920
+:END:
+#+title: Task: Generate the blotter's common-date view
+#+description: Finding R9: each product states its dates under its own name - start_date, maturity_date, expiry_date, end_date - so a deal grid cannot read one date column across the family. The view maps each product's dates to one set of names, and it is generated because the mapping is a property of the models. This first family creates the view; each later family adds its mapping. (Staging unit 7; finding R9.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/generate-the-blotters-common-date-view
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The blotter reads one set of date columns across the rates family, from a view generated from the models rather than hand-written.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- A common-date view exists, generated from the family's models, mapping each product's dates to the common names.
+- A query over the view reads one date column across the rates family, including a FRA whose date is stated as an end date and a swaption whose dates describe its underlying swap.
+- A later family adds its mapping by declaring it on its models, with no hand-written edit to the view.
+- A generated test proves the mapping names the columns the models declare.
+
+* Plan
+
+1. *The mapping is a property of the models.* Declare, on each product model,
+   which of its columns states which common date; do not write the mapping in
+   the view by hand.
+2. *Generate the view* from those declarations, as the rest of the schema is
+   generated, so a later family adds its mapping by declaring it.
+3. *The common names.* Trade date, start, expiry and maturity. The rates
+   family is the first to map: a FRA states its maturity as an end date, and a
+   swaption states its underlying swap's dates, so both are cases the mapping
+   must get right rather than the easy rows.
+4. *The test.* A generated test asserts the view's columns are the ones the
+   models declare, and a query reads one date column across the whole family.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Unblocked by unit 3: the header is the one row per rates trade the view
+  reads its common dates from, which is why the view could not exist before it.
+- It depends on no later unit and can run at any point after unit 3.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

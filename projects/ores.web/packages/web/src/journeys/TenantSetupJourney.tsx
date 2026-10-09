@@ -82,7 +82,7 @@ function reasonOf(error: unknown): string {
  */
 export function TenantSetupPanel({ run, server, onFinished }: TenantSetupPanelProps): ReactNode {
     const { t } = useTranslation();
-    const [complete, setComplete] = useState(false);
+    const [reported, setReported] = useState(false);
 
     if (run === undefined) {
         return (
@@ -103,6 +103,15 @@ export function TenantSetupPanel({ run, server, onFinished }: TenantSetupPanelPr
         );
     }
 
+    /*
+     * The run the panel was handed is the tenant's own answer, so its status is
+     * the fact the door opens on. The progress the rail follows is a second read
+     * of the same run, and it may only ever report completion: a panel that
+     * waited on it alone would refuse a door the tenant's own record had already
+     * opened.
+     */
+    const complete = reported || run.status === 'completed';
+
     return (
         <div className="card p-6">
             <div className="mb-5 border-b border-line pb-5">
@@ -113,7 +122,7 @@ export function TenantSetupPanel({ run, server, onFinished }: TenantSetupPanelPr
             <RunProgress
                 server={server}
                 instanceId={run.instanceId}
-                onCompleted={() => setComplete(true)}
+                onCompleted={() => setReported(true)}
             />
             <div className="mt-6 flex border-t border-line pt-4">
                 <Button

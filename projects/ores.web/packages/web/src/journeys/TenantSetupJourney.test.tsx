@@ -109,6 +109,19 @@ function render(run: { instanceId: string; status: string; error: string } | und
     );
 }
 
+/**
+ * The door's own opening tag, less its styling, so an assertion reads the
+ * button's `disabled` attribute rather than the word in the class names it
+ * also carries.
+ */
+function doorTag(html: string): string {
+    const start = html.indexOf('<button');
+    if (start === -1) {
+        return '';
+    }
+    return html.slice(start, html.indexOf('>', start)).replace(/class="[^"]*"/, '');
+}
+
 describe('the tenant setup screen', () => {
     it('waits rather than stating a run that has not been read', () => {
         const html = render(undefined);
@@ -137,6 +150,19 @@ describe('the tenant setup screen', () => {
         expect(html).toContain('Finish setting up your tenant');
         expect(html).toContain('Go to the application');
         // The run is still going, so the way into the application is closed.
-        expect(html).toContain('disabled');
+        expect(doorTag(html)).toContain('disabled');
+    });
+
+    it('opens the door on the run the tenant itself reported finished', () => {
+        const html = render({
+            instanceId: '55555555-5555-5555-5555-555555555555',
+            status: 'completed',
+            error: '',
+        });
+
+        expect(html).toContain('Go to the application');
+        // The run the panel was handed finished, so the door is open even
+        // before the rail has read the run's progress for itself.
+        expect(doorTag(html)).not.toContain('disabled');
     });
 });

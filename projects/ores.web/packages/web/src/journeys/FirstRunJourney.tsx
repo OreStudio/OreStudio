@@ -272,6 +272,7 @@ export function FirstRunJourney({
     const { t } = useTranslation();
     const [policy, setPolicy] = useState<PasswordPolicy>();
     const [profiles, setProfiles] = useState<readonly SeedProfileChoice[]>([]);
+    const [profilesFailure, setProfilesFailure] = useState<string>();
     const [loadFailure, setLoadFailure] = useState<string>();
     const [attempt, setAttempt] = useState(0);
     const [draft, setDraft] = useState<AdministratorDraft>({
@@ -394,8 +395,40 @@ export function FirstRunJourney({
     const enterAsAdministrator = async (password: string): Promise<void> => {
         await signInAsAdministrator(password);
         setCreatingPassword(password);
-        setProfiles(await server.seedProfiles());
     };
+
+    /*
+     * The starting points, once there is an account to read them with.
+     *
+     * They are the system tenant's rows, so the read needs an account and cannot
+     * happen before one exists. It used to be part of creating the administrator,
+     * which covered the first run and nothing else: a browser that arrives
+     * already signed in — the person who made the administrator a moment ago, or
+     * one who signed in and reloaded — resumed at the starting point with nothing
+     * to choose from, because this page had never asked for them.
+     */
+    useEffect(() => {
+        if (!signedIn) {
+            return;
+        }
+        let cancelled = false;
+        void (async () => {
+            try {
+                const loaded = await server.seedProfiles();
+                if (!cancelled) {
+                    setProfiles(loaded);
+                    setProfilesFailure(undefined);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setProfilesFailure(reasonOf(error));
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [server, signedIn]);
 
     /**
      * Creating the administrator, and then entering as it.
@@ -486,7 +519,16 @@ export function FirstRunJourney({
             steps={steps}
             at={at ?? indexOfStep(steps, startStep(signInRequired, signedIn))}
             onMove={setAt}
-            header={<JourneyHeader tenant={describedTenant} />}
+            header={
+                <>
+                    {profilesFailure !== undefined && (
+                        <Notice tone="error">
+                            {t('journey.profilesFailed', { message: profilesFailure })}
+                        </Notice>
+                    )}
+                    <JourneyHeader tenant={describedTenant} />
+                </>
+            }
         />
     );
 }

@@ -1534,6 +1534,8 @@ const pt: SourceCatalogue = {
             'Recarregue a página para recomeçar a partir do último ecrã registado pelo deployment.',
         policyFailed:
             'Não foi possível ler as regras da palavra-passe, por isso não é possível definir aqui nenhuma. {message}',
+        profilesFailed:
+            'Não foi possível ler os pontos de partida, por isso não há nada a partir do qual construir um inquilino. {message}',
 
         welcome: {
             title: 'Bem-vindo ao ORE Studio',

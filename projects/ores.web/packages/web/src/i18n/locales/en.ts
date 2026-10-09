@@ -1523,6 +1523,8 @@ export const en: SourceCatalogue = {
         reloadHint: 'Reload the page to start again from the last screen the deployment recorded.',
         policyFailed:
             'The password rules could not be read, so no password can be set here. {message}',
+        profilesFailed:
+            'The starting points could not be read, so there is nothing to build a tenant from. {message}',
 
         welcome: {
             title: 'Welcome to ORE Studio',

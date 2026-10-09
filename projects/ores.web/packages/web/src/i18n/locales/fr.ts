@@ -1541,6 +1541,8 @@ const fr: SourceCatalogue = {
             'Rechargez la page pour reprendre au dernier écran enregistré par le déploiement.',
         policyFailed:
             "Les règles de mot de passe n'ont pas pu être lues, aucun mot de passe ne peut donc être défini ici. {message}",
+        profilesFailed:
+            "Les points de départ n'ont pas pu être lus, il n'y a donc rien à partir de quoi construire un locataire. {message}",
 
         welcome: {
             title: 'Bienvenue dans ORE Studio',

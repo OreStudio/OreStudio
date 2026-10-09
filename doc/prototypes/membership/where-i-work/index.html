@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  "Where I work": the member reads the parties their account works in, sets the
+  party quick sign-in uses, and switches the party the session acts for. Three
+  variants on one static page, switched from the bar at the foot. Every panel
+  states the gap the journey document records.
+-->
+<title>ORE Studio · Where I work</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+/* Colour and type are the web app's tokens (projects/ores.web/packages/web/src/styles.css). */
+:root {
+  color-scheme: dark;
+  --bg: #121214; --raised: #1a1a1e; --overlay: #26262b;
+  --line-subtle: #21262d; --line: #30363d; --line-strong: #4a5568;
+  --ink: #e3e3e6; --ink-muted: #a1a1aa; --ink-faint: #71717a; --ink-inverse: #0d1117;
+  --accent: #58a6ff; --accent-bright: #8ab4f8; --accent-dim: #1b2a3d;
+  --up: #3fb950; --up-strong: #238636; --down: #f85149; --warn: #d29922; --purple: #8957e5;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius: 0.5rem;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font: 14px/1.5 var(--sans); padding-bottom: 8rem; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-bright); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 1.375rem; } h2 { font-size: 1rem; } h3 { font-size: 0.875rem; }
+p { margin: 0; }
+.muted { color: var(--ink-muted); } .faint { color: var(--ink-faint); }
+.code { font-family: var(--mono); font-size: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 5; background: var(--raised); border-bottom: 1px solid var(--line); }
+.top-inner { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.brand-mark { width: 1.25rem; height: 1.25rem; border-radius: 4px; background: linear-gradient(135deg, var(--accent), #1f6feb); }
+.place { font-size: 12px; color: var(--ink-muted); border-left: 1px solid var(--line); padding-left: 1rem; white-space: nowrap; }
+.menu { display: flex; gap: 0.25rem; flex-wrap: wrap; flex: 1; min-width: 0; }
+.menu button { background: none; border: 0; padding: 0.375rem 0.625rem; border-radius: 6px; color: var(--ink-muted); cursor: pointer; }
+.menu button:hover { background: var(--overlay); color: var(--ink); }
+.menu button[aria-current="page"] { color: var(--ink); background: var(--overlay); }
+.menu button.soon { color: var(--ink-faint); }
+.me-wrap { position: relative; }
+.me { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid transparent; border-radius: 999px; padding: 0.125rem 0.625rem 0.125rem 0.125rem; cursor: pointer; }
+.me:hover { border-color: var(--line); }
+.avatar { width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+.me-menu { position: absolute; right: 0; top: 2.75rem; width: 17rem; background: var(--overlay); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.5rem; box-shadow: 0 12px 32px rgba(0,0,0,0.45); z-index: 8; }
+.me-menu .who { padding: 0.5rem; border-bottom: 1px solid var(--line); margin-bottom: 0.25rem; display: grid; gap: 0.125rem; }
+.me-menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 0.4rem 0.5rem; border-radius: 6px; cursor: pointer; }
+.me-menu button:hover { background: var(--raised); }
+.me-menu button[aria-current="true"] { background: var(--accent-dim); color: var(--accent-bright); }
+.me-menu .sep { height: 1px; background: var(--line); margin: 0.25rem 0; }
+
+/* Page */
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem; display: grid; gap: 1.25rem; }
+.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.head > div { min-width: 0; display: grid; gap: 0.25rem; }
+.crumbs { font-size: 12px; color: var(--ink-faint); display: flex; gap: 0.375rem; }
+section.card { background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius); }
+.card.pad { padding: 1rem; }
+.grid { display: grid; gap: 1rem; }
+.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+@media (max-width: 54rem) { .two { grid-template-columns: 1fr; } }
+
+/* Identity */
+.identity { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.avatar-lg { width: 3rem; height: 3rem; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; background: var(--accent-dim); color: var(--accent-bright); }
+.identity .lines { display: grid; gap: 0.125rem; min-width: 0; }
+.identity .name { font-size: 1.0625rem; font-weight: 600; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem 1.25rem; }
+.fact { display: grid; gap: 0.125rem; }
+.fact .label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); }
+
+/* Acting-for banner */
+.acting { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.875rem 1rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius); background: var(--raised); }
+.acting .big { font-size: 1.0625rem; font-weight: 600; }
+.acting .spacer { margin-left: auto; }
+
+/* Chips and buttons */
+.chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 11px; padding: 0.1rem 0.45rem; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap; }
+.chip.active { border-color: var(--up-strong); color: var(--up); }
+.chip.acting { border-color: var(--accent); color: var(--accent-bright); background: var(--accent-dim); }
+.chip.default { border-color: var(--purple); color: #c4a7f5; }
+.btn { border: 1px solid var(--line); background: var(--raised); padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: var(--line-strong); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--ink-inverse); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-bright); border-color: var(--accent-bright); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.small { padding: 0.25rem 0.5rem; font-size: 12px; }
+.linkish { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
+
+/* Cards variant */
+.cards { grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); }
+.party { display: grid; gap: 0.625rem; padding: 1rem; }
+.party .top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.party .name { font-weight: 600; }
+.party .meta { display: grid; gap: 0.125rem; font-size: 12px; }
+.party .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--line-subtle); padding-top: 0.625rem; }
+.party.acting { border-color: var(--line-strong); box-shadow: inset 3px 0 0 var(--accent); }
+
+/* Table variant */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line-subtle); vertical-align: middle; }
+th { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+tbody tr:last-child td { border-bottom: 0; }
+tr.picked { background: var(--overlay); }
+.radio { width: 1rem; height: 1rem; accent-color: var(--accent); }
+.bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.75rem 1rem; border-top: 1px solid var(--line); background: var(--overlay); border-radius: 0 0 var(--radius) var(--radius); }
+
+/* Two-column variant list */
+.rows { display: grid; }
+.row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--line-subtle); }
+.row:last-child { border-bottom: 0; }
+.row .name { font-weight: 600; }
+.row .actions { display: flex; gap: 0.5rem; align-items: center; }
+
+/* Gaps / notes */
+.gaps { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.5rem; }
+.gaps h2 { display: flex; align-items: center; gap: 0.5rem; }
+.gaps ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+.gaps li { color: var(--ink-muted); }
+.mini { font-size: 12px; }
+
+/* Prototype bar */
+.proto-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--overlay); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.5rem 1rem; }
+.proto-bar .who { font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { background: none; border: 0; padding: 0.3rem 0.7rem; cursor: pointer; color: var(--ink-muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent-bright); }
+.spacer { margin-left: auto; }
+#notes { position: fixed; left: 1rem; right: 1rem; bottom: 3.75rem; z-index: 11; max-width: 72rem; margin: 0 auto; max-height: 60vh; overflow: auto; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 1rem 1.25rem; box-shadow: 0 16px 48px rgba(0,0,0,0.5); display: grid; gap: 0.75rem; }
+#notes ul { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.375rem; }
+#notes li { color: var(--ink-muted); }
+.toast { position: fixed; bottom: 3.75rem; left: 50%; transform: translateX(-50%); z-index: 12; background: var(--overlay); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0.4rem 1rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.note { font-size: 12px; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>ORE Studio</span>
+    <span class="place">Acme Corporation</span>
+    <nav class="menu" aria-label="Areas">
+      <button>Home</button>
+      <button>Reference data</button>
+      <button>Market data</button>
+      <button>Trading</button>
+      <button>Reporting</button>
+      <button>My access</button>
+    </nav>
+    <div class="me-wrap">
+      <button class="me" id="me" aria-expanded="false" aria-haspopup="true">
+        <span class="avatar" aria-hidden="true">AM</span>
+        <span>Ashley Moore</span>
+        <span class="faint" aria-hidden="true">▾</span>
+      </button>
+      <div class="me-menu" id="me-menu" hidden>
+        <div class="who">
+          <strong>Ashley Moore</strong>
+          <span class="mini muted">ashley.moore@acme_corporation</span>
+        </div>
+        <button>Present myself</button>
+        <button aria-current="true">Where I work</button>
+        <button>Protect my account</button>
+        <button>My access</button>
+        <div class="sep"></div>
+        <button>Sign out</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer class="proto-bar">
+  <span class="who">Prototype · Where I work</span>
+  <div class="seg" id="variant-seg" role="group" aria-label="Variant"></div>
+  <div class="seg" id="case-seg" role="group" aria-label="Case"></div>
+  <span class="spacer"></span>
+  <button class="btn small" id="notes-btn" aria-expanded="false">What this prototype argues</button>
+</footer>
+
+<div id="notes" hidden>
+  <h2>What this prototype argues</h2>
+  <p class="muted">One screen, three panels: who you are, where you are acting, and where you can be. The journey document fixes the panels; the variants decide their arrangement.</p>
+  <ul>
+    <li><strong>A · One place each (recommended).</strong> A card per party, and each card states the two things a member does to it — act for it, or make it the default. The actions sit with the place they change, so nothing depends on a selection made somewhere else.</li>
+    <li><strong>B · One list, one action bar.</strong> The parties are rows and the actions wait in a bar under them. Compact for many parties; it needs a selection that the member can lose sight of.</li>
+    <li><strong>C · Where I am, where I can be.</strong> The acting party and the identity sit in one column, the list in the other. Best when a member switches often; it repeats the acting party in both columns.</li>
+    <li>The <em>account menu</em> is the entry point. Open it from the circle with your initials, top right.</li>
+    <li><strong>No party name can be read here today.</strong> The sign-in reply is the only read that returns a party name; the association read carries an id alone, and no read the screen may call turns one into the other. The names below are mock data.</li>
+    <li><strong>The switch works; the screen that uses it does not exist.</strong> <span class="code">POST /api/session/switch-party</span>, <span class="code">api/client.ts</span> and <span class="code">SessionProvider.switchParty</span> are wired end to end, and the new-party journey is the only caller. The account menu has no entry point and no member screen offers the switch.</li>
+    <li><strong>The journey document says nothing in the web client switches party.</strong> That claim is stale: the call is wired and called. What is missing is the member's screen. The correction belongs to the extraction pass.</li>
+    <li><strong>Set as default is not reachable.</strong> <span class="code">iam.v1.ops.set_my_default_party</span> exists on the server and has no BFF route, no client method and no control.</li>
+    <li><strong>Clearing the default cannot be asked for.</strong> The request carries a party id and no way to say "none", so the build draws no <em>Clear default</em> control. It is drawn here only to show what is missing.</li>
+    <li><strong>The association read has no client wrapper.</strong> <span class="code">account_parties.list_by_account_id</span> is generated and nothing in the BFF or the wire client speaks it.</li>
+    <li>A switch issues a fresh sign-in token, so the actions here are the session's, not the record's. Nothing on this screen holds state after the reply.</li>
+  </ul>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const ME = {
+    username: 'ashley.moore@acme_corporation',
+    full_name: 'Ashley Moore',
+    job_title: 'Junior Analyst',
+    initials: 'AM',
+    contact_email: 'ashley.moore@acmecorp.com',
+    tenant: 'Acme Corporation',
+    signed_in_at: 'Today, 08:42',
+    signed_in_from: 'New York, US · 10.4.12.87',
+  };
+
+  const THREE = [
+    { id: 'c2b0f4d1-6d3a-4f0e-9c1a-5b7e2f8a4d10', code: 'acme_us', name: 'ACME Corporation US Inc', centre: 'New York, US', category: 'Legal entity' },
+    { id: '8a1e9c47-2b6f-4d3e-8a51-0c9d7e6b3f22', code: 'acme_uk', name: 'ACME Corporation UK plc', centre: 'London, GB', category: 'Legal entity' },
+    { id: '4f7d2b83-9c1e-4a6b-b0d2-7e5a1f9c8b33', code: 'acme_group', name: 'Acme Corporation Plc', centre: 'London, GB', category: 'Holding company' },
+  ];
+
+  const state = {
+    variant: new URLSearchParams(location.search).get('variant') || 'a',
+    occasion: new URLSearchParams(location.search).get('case') || 'three',
+    parties: THREE.map((p) => Object.assign({}, p)),
+    acting: 'acme_us',
+    storedDefault: 'acme_us',
+    picked: null,
+    toast: '',
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const byCode = (code) => state.parties.find((p) => p.code === code);
+  const acting = () => byCode(state.acting);
+
+  function toast(message) {
+    state.toast = message;
+    render();
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => { state.toast = ''; render(); }, 2600);
+  }
+
+  function setDefault(code) {
+    // The build calls iam.v1.ops.set_my_default_party here; there is no route yet.
+    if (state.storedDefault === code) return;
+    state.storedDefault = code;
+    toast(`Quick sign-in will use ${byCode(code).name}.`);
+  }
+
+  function clearDefault() {
+    // Drawn, not offered: set_my_default_party_request carries no way to say "none".
+    toast('The server cannot store "no default" today.');
+  }
+
+  function switchTo(code) {
+    if (state.acting === code) return;
+    state.acting = code;
+    toast(`You are now acting for ${byCode(code).name}. A fresh sign-in token was issued.`);
+  }
+
+  /* ---------- variant A: one place each ---------- */
+  function cards() {
+    return `
+      <section class="card pad">
+        <div class="head"><div><h1>Where I work</h1><p class="muted">The parties your account works in, and the one your session is acting for.</p></div></div>
+      </section>
+      ${identityCard()}
+      <section class="grid cards">
+        ${state.parties.map((p) => partyCard(p)).join('')}
+      </section>`;
+  }
+
+  function partyCard(p) {
+    const isActing = p.code === state.acting;
+    const isDefault = p.code === state.storedDefault;
+    return `
+      <section class="card party ${isActing ? 'acting' : ''}">
+        <div class="top-row">
+          <div>
+            <div class="name">${esc(p.name)}</div>
+            <div class="meta muted">
+              <span class="code">${esc(p.code)}</span>
+              <span>${esc(p.centre)} · ${esc(p.category)}</span>
+            </div>
+          </div>
+          <div class="grid" style="gap:.25rem;justify-items:end">
+            ${isActing ? '<span class="chip acting">Acting for</span>' : ''}
+            ${isDefault ? '<span class="chip default">Default</span>' : ''}
+          </div>
+        </div>
+        <div class="actions">
+          ${isActing
+            ? '<span class="mini faint">This is the party your session is acting for.</span>'
+            : `<button class="btn small primary" data-switch="${esc(p.code)}">Switch to this party</button>`}
+          ${isDefault
+            ? '<button class="btn small" data-clear="1" title="The request cannot say &quot;no default&quot;">Clear default</button>'
+            : `<button class="btn small" data-default="${esc(p.code)}">Set as default</button>`}
+        </div>
+      </section>`;
+  }
+
+  /* ---------- variant B: one list, one action bar ---------- */
+  function list() {
+    const picked = state.picked;
+    return `
+      <section class="card pad">
+        <div class="head"><div><h1>Where I work</h1><p class="muted">Pick a party, then act for it or make it the default.</p></div></div>
+      </section>
+      ${identityCard()}
+      <section class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th></th><th>Party</th><th>Code</th><th>Where</th><th>State</th></tr></thead>
+            <tbody>
+              ${state.parties.map((p) => `
+                <tr class="${picked === p.code ? 'picked' : ''}">
+                  <td><input class="radio" type="radio" name="pick" value="${esc(p.code)}" ${picked === p.code ? 'checked' : ''} aria-label="Select ${esc(p.name)}"></td>
+                  <td><span class="name">${esc(p.name)}</span><div class="mini faint">${esc(p.category)}</div></td>
+                  <td class="code">${esc(p.code)}</td>
+                  <td>${esc(p.centre)}</td>
+                  <td>
+                    ${p.code === state.acting ? '<span class="chip acting">Acting for</span> ' : ''}
+                    ${p.code === state.storedDefault ? '<span class="chip default">Default</span>' : ''}
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="bar">
+          <button class="btn primary" id="b-switch" ${picked && picked !== state.acting ? '' : 'disabled'}>Switch to selected party</button>
+          <button class="btn" id="b-default" ${picked && picked !== state.storedDefault ? '' : 'disabled'}>Set as default</button>
+          <button class="btn" id="b-clear" ${picked && picked === state.storedDefault ? '' : 'disabled'} title="The request cannot say &quot;no default&quot;">Clear default</button>
+          <span class="mini faint">The action bar acts on the selected row.</span>
+        </div>
+      </section>`;
+  }
+
+  /* ---------- variant C: where I am, where I can be ---------- */
+  function columns() {
+    const a = acting();
+    return `
+      <section class="card pad">
+        <div class="head"><div><h1>Where I work</h1><p class="muted">Where you are, and where you can be.</p></div></div>
+      </section>
+      <div class="grid two">
+        <div class="grid">
+          ${identityCard()}
+          <section class="card pad">
+            <h2>You are acting for</h2>
+            <p class="name" style="font-size:1.0625rem;font-weight:600;margin-top:.5rem">${esc(a.name)}</p>
+            <div class="facts" style="margin-top:.75rem">
+              <div class="fact"><span class="label">Code</span><span class="code">${esc(a.code)}</span></div>
+              <div class="fact"><span class="label">Where</span><span>${esc(a.centre)}</span></div>
+              <div class="fact"><span class="label">Session started</span><span>${esc(ME.signed_in_at)}</span></div>
+              <div class="fact"><span class="label">Signed in from</span><span>${esc(ME.signed_in_from)}</span></div>
+            </div>
+            <p class="mini faint" style="margin-top:.75rem">Screens read this party's data until you switch.</p>
+          </section>
+        </div>
+        <section class="card">
+          <div class="pad" style="padding-bottom:.75rem"><h2>Where you can be</h2><p class="mini muted">Every party your account works in.</p></div>
+          <div class="rows">
+            ${state.parties.map((p) => `
+              <div class="row">
+                <div>
+                  <div class="name">${esc(p.name)}</div>
+                  <div class="mini muted"><span class="code">${esc(p.code)}</span> · ${esc(p.centre)}</div>
+                </div>
+                <div class="actions">
+                  ${p.code === state.acting ? '<span class="chip acting">Acting for</span>' : ''}
+                  ${p.code === state.storedDefault ? '<span class="chip default">Default</span>' : ''}
+                  ${p.code !== state.acting ? `<button class="btn small" data-switch="${esc(p.code)}">Switch</button>` : ''}
+                  ${p.code !== state.storedDefault ? `<button class="btn small" data-default="${esc(p.code)}">Make default</button>` : ''}
+                  ${p.code === state.storedDefault ? '<button class="btn small" data-clear="1" title="The request cannot say &quot;no default&quot;">Clear</button>' : ''}
+                </div>
+              </div>`).join('')}
+          </div>
+        </section>
+      </div>`;
+  }
+
+  function identityCard() {
+    return `
+      <section class="card pad">
+        <div class="identity">
+          <span class="avatar-lg" aria-hidden="true">${esc(ME.initials)}</span>
+          <div class="lines">
+            <span class="name">${esc(ME.full_name)}</span>
+            <span class="muted">${esc(ME.job_title)} · ${esc(ME.tenant)}</span>
+            <span class="mini faint code">${esc(ME.username)}</span>
+          </div>
+          <div class="facts" style="margin-left:auto;min-width:18rem">
+            <div class="fact"><span class="label">Signed in</span><span>${esc(ME.signed_in_at)}</span></div>
+            <div class="fact"><span class="label">From</span><span>${esc(ME.signed_in_from)}</span></div>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  function gaps() {
+    return `
+      <section class="gaps">
+        <h2><span class="chip" style="border-color:var(--warn);color:var(--warn)">Not available yet</span> What this screen cannot do</h2>
+        <ol>
+          <li><strong>The parties cannot be named.</strong> The association read answers with <span class="code">party_id</span> and no read this screen may call turns an id into a name. Until one does, this list states the gap rather than showing a party it cannot read.</li>
+          <li><strong>Set as default has no path.</strong> <span class="code">iam.v1.ops.set_my_default_party</span> exists on the server; no BFF route, no client method and no control reach it.</li>
+          <li><strong>Clearing the default cannot be stated.</strong> The request carries a party id and no "none", so the build draws no <em>Clear default</em>.</li>
+          <li><strong>The switch is wired, and no screen offers it.</strong> <span class="code">POST /api/session/switch-party</span>, the client method and the session provider all exist, and the new-party journey is their only caller. The member has no <em>Where I work</em> screen and no account-menu entry point, which is what this prototype draws.</li>
+          <li><strong>The association read has no client wrapper.</strong> <span class="code">account_parties.list_by_account_id</span> is generated and nothing in the BFF or the wire client speaks it.</li>
+        </ol>
+      </section>`;
+  }
+
+  function emptyState() {
+    return `
+      <section class="card pad">
+        <h2>You work in one party</h2>
+        <p class="muted" style="margin-top:.5rem">${esc(state.parties[0].name)} is the only party your account is associated with, so there is nothing to switch.</p>
+        <p class="mini faint" style="margin-top:.5rem">Every account must work in at least one party: an account with none is refused at sign-in, so this screen never shows an empty list.</p>
+      </section>`;
+  }
+
+  function render() {
+    $('me-menu').hidden = !document.body.dataset.menu;
+    const body = state.occasion === 'one' ? emptyState() : state.variant === 'b' ? list() : state.variant === 'c' ? columns() : cards();
+    $('app').innerHTML = `
+      <div class="crumbs"><span>Home</span><span aria-hidden="true">›</span><span>Account</span><span aria-hidden="true">›</span><span>Where I work</span></div>
+      ${body}
+      ${gaps()}
+      <p class="mini faint">Mock data. No server is read and no write leaves this page. The party names are placeholders, because the read this screen needs does not exist yet.</p>`;
+
+    $('variant-seg').innerHTML = [['a', 'A · One place each'], ['b', 'B · One list'], ['c', 'C · Two columns']]
+      .map(([id, label]) => `<button data-variant="${id}" aria-pressed="${state.variant === id}">${esc(label)}</button>`).join('');
+    $('case-seg').innerHTML = [['three', 'Three parties'], ['one', 'One party']]
+      .map(([id, label]) => `<button data-case="${id}" aria-pressed="${state.occasion === id}">${esc(label)}</button>`).join('');
+
+    const t = $('toast');
+    t.hidden = !state.toast;
+    t.textContent = state.toast;
+
+    const picked = $('b-switch');
+    if (picked) { /* bars are re-bound below */ }
+    bind();
+  }
+
+  function bind() {
+    document.querySelectorAll('[data-switch]').forEach((el) => { el.onclick = () => switchTo(el.dataset.switch); });
+    document.querySelectorAll('[data-default]').forEach((el) => { el.onclick = () => setDefault(el.dataset.default); });
+    document.querySelectorAll('[data-clear]').forEach((el) => { el.onclick = () => clearDefault(); });
+    document.querySelectorAll('input[name="pick"]').forEach((el) => {
+      el.onchange = () => { state.picked = el.value; render(); };
+    });
+    const sw = $('b-switch');
+    if (sw) sw.onclick = () => switchTo(state.picked);
+    const df = $('b-default');
+    if (df) df.onclick = () => setDefault(state.picked);
+    const cl = $('b-clear');
+    if (cl) cl.onclick = () => clearDefault();
+  }
+
+  document.addEventListener('click', (e) => {
+    const v = e.target.closest('[data-variant]');
+    if (v) { state.variant = v.dataset.variant; sync(); render(); return; }
+    const c = e.target.closest('[data-case]');
+    if (c) {
+      state.occasion = c.dataset.case;
+      state.parties = c.dataset.case === 'one' ? THREE.slice(0, 1).map((p) => Object.assign({}, p)) : THREE.map((p) => Object.assign({}, p));
+      state.acting = state.parties[0].code;
+      state.storedDefault = state.parties[0].code;
+      state.picked = null;
+      sync(); render(); return;
+    }
+    if (e.target.closest('#me')) { document.body.dataset.menu = document.body.dataset.menu ? '' : '1'; render(); return; }
+    if (!e.target.closest('#me-menu')) { if (document.body.dataset.menu) { document.body.dataset.menu = ''; render(); } }
+  });
+
+  $('notes-btn').onclick = () => {
+    const open = $('notes').hidden;
+    $('notes').hidden = !open;
+    $('notes-btn').setAttribute('aria-expanded', String(open));
+    $('notes-btn').textContent = open ? 'Hide what this prototype argues' : 'What this prototype argues';
+  };
+
+  function sync() {
+    const u = new URL(location.href);
+    u.searchParams.set('variant', state.variant);
+    u.searchParams.set('case', state.occasion);
+    history.replaceState(null, '', u);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

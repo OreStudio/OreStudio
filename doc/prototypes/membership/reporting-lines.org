@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 2D4296A1-E632-4CF8-91AA-B6EEAFD40965
+:END:
+#+title: Reporting lines prototype
+#+description: The administrator's screen for who reports to whom: three ways to draw the shape, and the gaps each one states.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:membership:journeys:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:reporting-lines/][the prototype]]         |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Membership prototypes]]               |
+| Journey       | [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] |
+
+* Summary
+
+The reporting line is one field on the account: =reports_to_account_id=, a
+nullable soft self-reference. The shape only appears when somebody holds it in
+their head, and the journey is the screen that draws it and lets an
+administrator correct it.
+
+The prototype reads the ACME demo dataset — 58 accounts, their job titles and
+their managers — lays it out three ways, and states every gap the journey
+records.
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
+
+Open the [[file:reporting-lines/][prototype]].
+
+* Detail
+
+** The verdict
+
+*Not yet signed off.* The recommendation is variant A, an indented tree with the
+selected person beside it.
+
+** The three variants
+
+| Variant | Shape | What it settles | What it gives up |
+|---------+-------+-----------------+------------------|
+| A · Tree | An indented tree with expand and collapse, and the selected person in a panel beside it | Depth and branches are plain, the whole tenant stays on one screen, and the controls have a fixed place | It is not an organisation chart to the eye |
+| B · Chart | Boxes joined by connector lines | It reads as an org chart, which is what an administrator often means by "the shape" | It stops working at a few hundred people and on a narrow window |
+| C · Table | One row per person, indented by depth, with a manager column | It is the easiest to search and to read a manager from | The shape has to be inferred from the indentation |
+
+** The declared gaps the screen states
+
+1. *There is no tree read.* The server answers one flat page of accounts, so
+   the page nests the flat list in the browser. A large tenant cannot page a
+   branch, and the whole roster must arrive first.
+2. *The server accepts a loop.* Nothing refuses =A reports to B= when =B=
+   already reports to =A=. The manager picker leaves out every person who
+   reports to the selected one, directly or through others, and the panel says
+   that the screen is doing the check the server does not.
+3. *There is no reporting-line-only write.* One field means the whole
+   =update_account_request=, so a concurrent change to another field is
+   overwritten by the copy the page read.
+4. *No office can be named.* The card shows the party a person works in, and
+   the association read carries =party_id= alone. Office values are marked in
+   amber on the page.
+5. *The line has no history here.* The account is versioned and the screen
+   states none of it.
+6. *There is no approval.* The journey makes a change a proposal that a
+   hierarchical superior or a tenant administrator answers, and nothing holds
+   one: no request, no queue, no notification and no decision. The *A proposal*
+   case draws who decides and states that the line does not move.
+
+** The cases the bar switches
+
+- *Clean tree* is the ordinary case.
+- *No lines* is the empty state: nobody reports to anyone, every person is a
+  root, and each is offered as a manager.
+- *A proposal* is the waiting case: one person asked to move, and the platform
+  cannot hold the answer.
+
+** Why the tree is drawn from a flat read
+
+The journey document says the tree is assembled by the client from a flat read,
+not fetched as a tree. This prototype does exactly that, so the cost is visible:
+the whole roster arrives before anything is drawn, and a tenant the size of a
+large bank would send every account to draw one branch. The tree read the
+journey proposes is the fix, and the prototype argues for it rather than hiding
+the problem.
+
+* See also
+
+- [[file:where-i-work.org][Where I work prototype]] — the member's half of the same idea.
+- [[file:index.org][Membership prototypes]] — the group page.
+- [[id:36FC0D92-F532-4B6C-99FE-B669DB87C0FE][Draw the reporting line]] — the journey this answers.

@@ -32,9 +32,11 @@ import type {
 } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { Avatar, imageUrl } from '../ui/Images.js';
+import { AccountPicture, Avatar, imageUrl } from '../ui/Images.js';
 import { Button, Detail, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { displayName } from './names.js';
+import { personPath } from './PeoplePage.js';
+import { useHolds } from './holds.js';
 /**
  * The forms of a person's account: who they are and how to reach them.
  *
@@ -86,14 +88,18 @@ function fieldIssue(outcome: PanelOutcome | undefined, name: string): FieldIssue
     return message === undefined || message === '' ? {} : { error: message };
 }
 
-export function resolveManager(
-    accounts: readonly Account[],
-    reportsTo: string | null,
-): string | null {
+/**
+ * The account a reporting line names, when the caller may read the directory.
+ *
+ * An account states its manager as an identifier, and a reader can do nothing
+ * with an identifier: it is resolved to the row it names so the line can be
+ * drawn as that person, with their picture and their name, opening their page.
+ * A caller who may not read the directory, or a manager who is no longer in it,
+ * is shown the recorded identifier rather than a name the screen invented.
+ */
+function resolveManager(accounts: readonly Account[], reportsTo: string | null): Account | null {
     if (reportsTo === null) return null;
-    const manager = accounts.find((row) => row.id === reportsTo);
-    if (manager === undefined) return reportsTo;
-    return displayName(manager, manager.username);
+    return accounts.find((row) => row.id === reportsTo) ?? null;
 }
 
 /**
@@ -109,7 +115,7 @@ export function IdentityPanel({
     pending,
     refused,
     signInEmail,
-    managerName,
+    manager,
     canWrite,
     me,
     username,
@@ -120,7 +126,7 @@ export function IdentityPanel({
     readonly pending: boolean;
     readonly refused: string | null;
     readonly signInEmail: string;
-    readonly managerName: string | null;
+    readonly manager: Account | null;
     readonly canWrite: boolean;
     readonly me: boolean;
     readonly username: string;
@@ -300,17 +306,34 @@ export function IdentityPanel({
 
             <div className="space-y-2 border-t border-line-subtle pt-4">
                 <h3 className="text-sm font-medium">{t('profile.identity.reporting')}</h3>
-                <p className="text-sm">
-                    {account.reportsToAccountId === null
-                        ? t('profile.identity.noLine')
-                        : t('profile.identity.reportsTo', { name: managerName ?? '' })}
-                </p>
-                {account.reportsToAccountId !== null &&
-                    managerName === account.reportsToAccountId && (
+                {account.reportsToAccountId === null && (
+                    <p className="text-sm">{t('profile.identity.noLine')}</p>
+                )}
+                {account.reportsToAccountId !== null && manager === null && (
+                    <>
+                        <p className="text-sm">
+                            {t('profile.identity.reportsTo', {
+                                name: account.reportsToAccountId,
+                            })}
+                        </p>
                         <p className="text-xs text-ink-faint">
                             {t('profile.identity.reportsToUnknown')}
                         </p>
-                    )}
+                    </>
+                )}
+                {manager !== null && (
+                    <Link
+                        to={personPath(manager.username)}
+                        className="flex w-fit items-center gap-2 text-sm hover:underline"
+                    >
+                        <AccountPicture
+                            username={manager.username}
+                            name={displayName(manager, manager.username)}
+                            size="sm"
+                        />
+                        <span>{displayName(manager, manager.username)}</span>
+                    </Link>
+                )}
                 <div className="flex flex-wrap items-center gap-3">
                     <Button disabled title={t('profile.identity.proposeWhy')}>
                         {t('profile.identity.propose')}
@@ -880,10 +903,16 @@ export function IdentityTab({
      * The tenant list that names the manager is the administrator's read, so
      * a member who cannot read it is shown the recorded identifier instead.
      */
+    /*
+     * The directory is a read, not a write: a member may not change anybody's
+     * account and may still see who their manager is. Gating this on write was
+     * why a member was shown their manager's identifier instead of the person.
+     */
+    const mayReadDirectory = useHolds()('iam::accounts:read');
     const managers = useQuery({
         queryKey: ['accounts'],
         queryFn: api.accounts,
-        enabled: writes.accounts || writes.contacts,
+        enabled: mayReadDirectory,
     });
     const reasons = useQuery({ queryKey: ['amend-reasons'], queryFn: api.amendReasons });
     return (
@@ -892,7 +921,7 @@ export function IdentityTab({
             pending={account.isPending}
             refused={account.isError ? account.error.message : null}
             signInEmail={account.data?.email ?? fallbackEmail}
-            managerName={resolveManager(
+            manager={resolveManager(
                 managers.data?.accounts ?? [],
                 account.data?.reportsToAccountId ?? null,
             )}

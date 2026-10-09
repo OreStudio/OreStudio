@@ -8,7 +8,7 @@
 #+filetags: :the-export-joins-on-a-trade-id-nobody-mints:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-export-joins-on-a-trade-id-nobody-mints
-#+pr:
+#+pr: 2907
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2907][#2907]] | [ore] Mint the trade id the export joins on |
 
 * Review
 

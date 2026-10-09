@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: A6472918-1412-4456-B80A-922EEA6795C9
+:END:
+#+title: Story: Validate a curve pillar's tenor codes
+#+description: ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code are undeclared soft references to refdata_tenors. The only database check validates curve_role_code, so a typo in a tenor code saves and then throws at bootstrap time inside curve_republish_resolver, where the end tenor doubles as the quote point id.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A curve bootstrap pillar refuses a start or end tenor code the reference tenor catalogue does not hold, at save time, rather than throwing later inside the bootstrap resolver.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- A pillar whose start_tenor_code or end_tenor_code is not a reference tenor is refused at save time, and the refusal names the code.
+- The check reads the same reference catalogue the pillar already consults for its curve role.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F04D9F04-034F-4454-A27A-EE387DFD38C6][Refuse a pillar whose tenor code the catalogue does not hold]] | BACKLOG | | | Check ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code against refdata_tenors when a pillar is saved, as the pillar already checks its curve_role_code. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-06 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=ir_curve_bootstrap_pillar.start_tenor_code= and =end_tenor_code= are
+undeclared soft references to =refdata_tenors=. The only database check
+validates =curve_role_code=, so a typo in a tenor code saves and then throws at
+bootstrap time inside =curve_republish_resolver=, where the end tenor doubles as
+the quote point id.
+
+** Why the shape check does not cover it
+
+The import task made a curve's declared shape check its own term values against
+=refdata_tenors=, but that check runs when a shape is declared, from the points a
+build produced. It does not read the pillar a person saved. A typo in a pillar's
+tenor code still saves and still throws later, so this is its own task.

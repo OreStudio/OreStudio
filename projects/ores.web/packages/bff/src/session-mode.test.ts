@@ -85,6 +85,7 @@ function buildTestServer(tenantId: string, tenantName: string): ReturnType<typeo
                 accountId: '11111111-1111-1111-1111-111111111111',
                 tenantId,
                 tenantName,
+                tenantBootstrapping: false,
                 version: 'v0.0.25 (test)',
                 database: {
                     fingerprint: 'e4803181e989327c',

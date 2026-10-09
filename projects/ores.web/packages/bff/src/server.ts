@@ -379,6 +379,44 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     }
 
     /**
+     * Whether the tenant's own setup run has finished, read through the session.
+     *
+     * The status the session carries is a snapshot the login took, so a session
+     * opened while its tenant was bootstrapping still reports it that way after
+     * the run ends. The tenant's setup run is the run the rail follows, and its
+     * completing step is what makes the tenant active, so the run's own finish
+     * is the fact that ends the rail. A read that fails, or a tenant with no
+     * run, leaves the snapshot as it stands: nothing is claimed that was not
+     * read.
+     */
+    async function tenantSetupFinished(session: LiveSession): Promise<boolean> {
+        try {
+            const run = await readTenantSetupRun(session.client);
+            return run.status === 'completed';
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Ends the tenant setup rail for a session whose tenant has finished.
+     *
+     * Read wherever the session view is served: the person who finished the run
+     * is the one still holding the rail, and the run's record is what releases
+     * them. A session that is not bootstrapping is left alone, so the read
+     * happens only while a rail is up.
+     */
+    async function refreshTenantBootstrapping(session: LiveSession): Promise<LiveSession> {
+        if (!session.tenantBootstrapping) {
+            return session;
+        }
+        if (!(await tenantSetupFinished(session))) {
+            return session;
+        }
+        return sessions.tenantBootstrapped(session.id) ?? session;
+    }
+
+    /**
      * The session the browser presents, or nothing when it presents none.
      *
      * Two of the bootstrap answer's fields are read through a session while the
@@ -401,6 +439,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
             accountId: session.accountId,
             tenantId: session.tenantId,
             tenantName: session.tenantName,
+            tenantBootstrapping: session.tenantBootstrapping,
             mode: session.mode,
             version: session.version,
             database: session.database,
@@ -419,6 +458,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 email: outcome.email,
                 accountId: outcome.accountId,
                 tenantName: outcome.tenantName,
+                tenantBootstrapping: outcome.tenantBootstrapping,
                 version: outcome.version,
                 database: outcome.database,
                 availableParties: outcome.availableParties,
@@ -435,6 +475,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                     accountId: outcome.accountId,
                     tenantId: outcome.tenantId,
                     tenantName: outcome.tenantName,
+                    tenantBootstrapping: outcome.tenantBootstrapping,
                     mode: sessionModeFor(outcome.tenantId),
                     version: outcome.version,
                     database: outcome.database,
@@ -784,6 +825,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                  */
                 tenantId: outcome.tenantId,
                 tenantName: outcome.tenantName,
+                tenantBootstrapping: outcome.tenantBootstrapping,
                 mode: sessionModeFor(outcome.tenantId),
                 version: outcome.version,
                 database: outcome.database,
@@ -800,7 +842,9 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
     });
 
-    server.get('/api/session', async (request) => sessionResponse(requireSession(request)));
+    server.get('/api/session', async (request) =>
+        sessionResponse(await refreshTenantBootstrapping(requireSession(request))),
+    );
 
     server.delete('/api/session', async (request, reply) => {
         const id = readSessionId(request);
@@ -825,6 +869,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 accountId: session.accountId,
                 tenantId: session.tenantId,
                 tenantName: session.tenantName,
+                tenantBootstrapping: session.tenantBootstrapping,
                 version: session.version,
                 database: session.database,
                 username: session.username,

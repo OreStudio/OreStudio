@@ -89,7 +89,10 @@ const RUNS = {
 
 type Answers = Record<string, unknown>;
 
-function buildTestServer(answers: Answers): {
+function buildTestServer(
+    answers: Answers,
+    options: { readonly tenantBootstrapping?: boolean } = {},
+): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
@@ -115,12 +118,34 @@ function buildTestServer(answers: Answers): {
     } as unknown as OresClient;
     const session = sessions.create({
         client,
-        session: null,
+        session: {
+            kind: 'active',
+            token: 'token',
+            accountId: '11111111-1111-1111-1111-111111111111',
+            tenantId: ACME_TENANT,
+            tenantName: 'Acme Corporation',
+            tenantBootstrapping: options.tenantBootstrapping ?? false,
+            version: 'v0.0.25 (test)',
+            database: {
+                fingerprint: '',
+                environment: '',
+                commit: '',
+                created: '',
+            },
+            username: 'acme_admin',
+            email: 'acme_admin@acme',
+            party,
+            availableParties: [party],
+            accessLifetimeSeconds: 1800,
+            passwordResetRequired: false,
+            sessionId: '33333333-3333-3333-3333-333333333333',
+        },
         username: 'acme_admin',
         email: 'acme_admin@acme',
         accountId: '11111111-1111-1111-1111-111111111111',
         tenantId: ACME_TENANT,
         tenantName: 'Acme Corporation',
+        tenantBootstrapping: options.tenantBootstrapping ?? false,
         mode: 'application',
         version: 'v0.0.25 (test)',
         availableParties: [party],
@@ -189,5 +214,44 @@ describe('GET /api/tenant-setup', () => {
         });
 
         expect(response.statusCode).toBe(500);
+    });
+});
+
+describe('GET /api/session and the tenant setup rail', () => {
+    async function readSession(answers: Answers, tenantBootstrapping: boolean) {
+        const built = buildTestServer(answers, { tenantBootstrapping });
+        const response = await built.server.inject({
+            method: 'GET',
+            url: '/api/session',
+            cookies: { [SESSION_COOKIE]: built.sessionId },
+        });
+        await built.server.close();
+        return { response, calls: built.calls };
+    }
+
+    it('clears the flag once the tenant setup run has finished', async () => {
+        const finished = {
+            ...RUNS,
+            instances: [{ ...RUNS.instances[0], status: 'completed' }],
+        };
+        const { response } = await readSession({ 'workflow.v1.instances.list': finished }, true);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ tenantBootstrapping: false });
+    });
+
+    it('keeps the flag while the run is still going', async () => {
+        const { response } = await readSession({ 'workflow.v1.instances.list': RUNS }, true);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ tenantBootstrapping: true });
+    });
+
+    it('does not read a run for a session whose tenant is already active', async () => {
+        const { response, calls } = await readSession({}, false);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ tenantBootstrapping: false });
+        expect(calls).toHaveLength(0);
     });
 });

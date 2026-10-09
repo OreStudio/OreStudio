@@ -62,6 +62,8 @@ interface SessionRecord {
     accountId: string;
     tenantId: string;
     tenantName: string;
+    /** Whether the tenant was still being set up when the login was accepted. */
+    tenantBootstrapping: boolean;
     /** The context the session runs in, decided when the login was accepted. */
     mode: SessionMode;
     /** The build the login was answered by. */
@@ -87,6 +89,8 @@ export interface LiveSession {
     readonly accountId: string;
     readonly tenantId: string;
     readonly tenantName: string;
+    /** Whether the caller's tenant is still being set up. */
+    readonly tenantBootstrapping: boolean;
     /** The context the session runs in, decided when the login was accepted. */
     readonly mode: SessionMode;
     /** The build the login was answered by. */
@@ -118,6 +122,7 @@ export interface SessionStore {
         readonly accountId: string;
         readonly tenantId: string;
         readonly tenantName: string;
+        readonly tenantBootstrapping: boolean;
         readonly mode: SessionMode;
         readonly version: string;
         readonly database?: DatabaseInfo;
@@ -145,6 +150,15 @@ export interface SessionStore {
     ): LiveSession | undefined;
     /** Records a re-issued token and its new lifetime after a refresh. */
     refresh(id: string, accessLifetimeSeconds: number): void;
+    /**
+     * Records that the session's tenant finished being set up.
+     *
+     * The bootstrap flag is a snapshot the login took, so a session opened
+     * while its tenant was bootstrapping still reports it that way until this
+     * runs. The tenant's setup run is what flips the tenant's status, so its
+     * finish is the fact that ends the rail.
+     */
+    tenantBootstrapped(id: string): LiveSession | undefined;
     /**
      * Records that the signed-in account set a password of its own.
      *
@@ -183,6 +197,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: record.accountId,
             tenantId: record.tenantId,
             tenantName: record.tenantName,
+            tenantBootstrapping: record.tenantBootstrapping,
             mode: record.mode,
             version: record.version,
             database: record.database,
@@ -205,6 +220,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             accountId: input.accountId,
             tenantId: input.tenantId,
             tenantName: input.tenantName,
+            tenantBootstrapping: input.tenantBootstrapping,
             mode: input.mode,
             version: input.version,
             database: input.database ?? UNKNOWN_DATABASE,
@@ -251,6 +267,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             record.party = session.party;
             record.version = session.version;
             record.database = session.database;
+            record.tenantBootstrapping = session.tenantBootstrapping;
             record.accessLifetimeSeconds = session.accessLifetimeSeconds;
             record.passwordResetRequired = session.passwordResetRequired;
             record.expiresAt = now() + ttlMs;
@@ -274,6 +291,15 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
             if (record !== undefined) {
                 record.accessLifetimeSeconds = accessLifetimeSeconds;
             }
+        },
+
+        tenantBootstrapped(id) {
+            const record = sessions.get(hash(id));
+            if (record === undefined) {
+                return undefined;
+            }
+            record.tenantBootstrapping = false;
+            return toLive(id, record);
         },
 
         passwordChanged(id) {

@@ -36,10 +36,10 @@ import type { SessionView } from '@ores/wire-protocol/browser';
  * tenant of its own, and the wizard signs the person out as its last act. The
  * flag that says the wizard finished can only be read through a session, so a
  * browser with none reads it as false. That must not return the setup rail: the
- * rail is the login screen's. Once the deployment is set up, a tenant that has
- * not finished its own run holds that tenant's administrator on the tenant
- * setup screen, and a flag read as finished releases them. This file pins each
- * branch of both rules.
+ * rail is the login screen's. Once the deployment is set up, a session in a
+ * tenant that is still bootstrapping stays on the tenant setup screen, and a
+ * session in an active tenant is never held, whatever the deployment's
+ * tenant-level flag says. This file pins each branch of both rules.
  */
 
 const party = {
@@ -52,7 +52,7 @@ const party = {
 /** The account every signed-in fixture in this file holds. */
 const ACCOUNT_ID = '3f1e2d4c-0000-4000-8000-000000000001';
 
-function sessionIn(mode: SessionView['mode']): SessionView {
+function sessionIn(mode: SessionView['mode'], tenantBootstrapping = false): SessionView {
     return {
         username: 'admin',
         email: 'admin@acme.test',
@@ -60,6 +60,7 @@ function sessionIn(mode: SessionView['mode']): SessionView {
         tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
         tenantName: 'Acme Corporation',
         mode,
+        tenantBootstrapping,
         version: 'v0.0.25 (test)',
         party,
         availableParties: [party],
@@ -166,17 +167,31 @@ describe('the bootstrap rail the deployment answers with', () => {
         expect(html).not.toContain('Tenant setup screen');
     });
 
-    it('holds a tenant administrator whose tenant setup has not finished', () => {
+    it('holds a session whose tenant is still bootstrapping on the tenant setup screen', () => {
         const html = render('/login', afterFirstRun, {
             status: 'authenticated',
-            session: sessionIn('application'),
+            session: sessionIn('application', true),
         });
 
         expect(html).toContain('Tenant setup screen');
         expect(html).not.toContain('First run journey');
     });
 
-    it('releases a tenant administrator once the tenant setup recorded its finish', () => {
+    it('never holds a session in an active tenant, whatever the tenant-level flag reads', () => {
+        // The deployment's tenant flag is a setting under the tenant's system
+        // party, and a session in another party reads it as unfinished forever.
+        // The session's own tenant status is the fact the rail is written in
+        // terms of, and an active tenant is never held.
+        const html = render('/', afterFirstRun, {
+            status: 'authenticated',
+            session: sessionIn('application'),
+        });
+
+        expect(html).not.toContain('Tenant setup screen');
+        expect(html).not.toContain('First run journey');
+    });
+
+    it('releases a session once the tenant it signed in to is active', () => {
         const html = render(
             '/',
             { ...afterFirstRun, onboardingTenantComplete: true },

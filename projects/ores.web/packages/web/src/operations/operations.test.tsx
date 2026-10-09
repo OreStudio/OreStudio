@@ -96,6 +96,7 @@ function sessionWith(overrides: Partial<SessionView> = {}): SessionView {
         tenantId: '3f1e2d4c-0000-4000-8000-000000000002',
         tenantName: 'System',
         mode: 'system-administration',
+        tenantBootstrapping: false,
         version: SESSION_VERSION,
         database: {
             fingerprint: '1109eccab21e8fe8',

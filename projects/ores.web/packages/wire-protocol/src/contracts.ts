@@ -106,6 +106,15 @@ export const sessionViewSchema = z.object({
     tenantName: z.string(),
     /** The context the session runs in. Stated by the server, never inferred. */
     mode: sessionModeSchema,
+    /**
+     * Whether the session's tenant is still being set up.
+     *
+     * It is the tenant's own lifecycle status, read from the tenant row when
+     * the session was opened, so it is the same fact in every party of the
+     * tenant. The setup gate holds on it, and the server clears it once the
+     * tenant's setup run has finished.
+     */
+    tenantBootstrapping: z.boolean(),
     /** The build the session was opened against, as the server stated it. */
     version: z.string(),
     /** The database the login answer carried, beside the build it states. */
@@ -130,6 +139,8 @@ export const partyChoiceSchema = z.object({
     email: z.string(),
     accountId: z.string(),
     tenantName: z.string(),
+    /** Whether the caller's tenant is still being set up. */
+    tenantBootstrapping: z.boolean(),
     /** The build the login was answered by. */
     version: z.string(),
     /** The database the login answer carried, beside the build it states. */

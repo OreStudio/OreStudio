@@ -265,6 +265,7 @@ function buildTestServer(
         accountId: '11111111-1111-1111-1111-111111111111',
         tenantId: SYSTEM_TENANT,
         tenantName: 'System',
+        tenantBootstrapping: false,
         version: 'v0.0.25 (test)',
         username: 'admin',
         email: 'admin@example.com',

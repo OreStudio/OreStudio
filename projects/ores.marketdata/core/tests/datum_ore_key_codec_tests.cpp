@@ -564,7 +564,7 @@ std::map<std::string, expected> ore_view(const market_datum& d) {
             if (d.type() == it::commodity_option)
                 v["optionType"] = exact(str(d, fl::option_type) == "P" ? "Put" : "Call");
             else {
-                v["offset"] = exact(str(d, fl::offset));
+                v["offset"] = exact(str(d, fl::spread_offset));
                 v["optionType"] = exact("Call");
             }
             break;

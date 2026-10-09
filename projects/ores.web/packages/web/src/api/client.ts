@@ -29,6 +29,7 @@ import {
     contactWriteViewSchema,
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
+    myPartiesSchema,
     type AccountContactInformation,
     type AccountSignIns,
     type AccountWriteView,
@@ -37,6 +38,7 @@ import {
     type ContactWriteView,
     type ImageUploadPolicy,
     type ImageUploadView,
+    type MyParties,
     type ProfileWrite,
     permissionEntrySchema,
     roleSummarySchema,
@@ -513,6 +515,11 @@ export const api = {
     /** The roles the signed-in person holds, with who gave each one and why. */
     async myAccess(): Promise<AccountAccess> {
         return accountAccessSchema.parse(await request('/api/me/access', { method: 'GET' }));
+    },
+
+    /** The parties the signed-in person works in, each with its name. */
+    async myParties(): Promise<MyParties> {
+        return myPartiesSchema.parse(await request('/api/me/parties', { method: 'GET' }));
     },
 
     /** The roles one account holds. */

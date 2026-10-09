@@ -453,6 +453,9 @@ export type {
     ProfileWrite,
 } from './profile-operations.js';
 
+export { myPartiesSchema, myPartySchema, readMyParties } from './membership.js';
+export type { MyParties, MyParty } from './membership.js';
+
 export {
     CREDENTIAL_SUBJECTS,
     endSession,

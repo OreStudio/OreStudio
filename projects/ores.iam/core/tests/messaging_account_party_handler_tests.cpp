@@ -20,6 +20,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.core/messaging/account_operations_handler.hpp"
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -98,4 +99,45 @@ TEST_CASE("stamp_account_party_preserves_target_party_id", tags) {
     CHECK(ap.party_id == target_party.id);
     CHECK(!ap.tenant_id.empty());
     CHECK(!ap.change_reason_code.empty());
+}
+
+/*
+ * What iam.v1.ops.get_my_parties states about each association. The
+ * association carries the party identifier alone, so the name a member reads
+ * comes from the party IAM's cache holds for the tenant. The two cases below
+ * are the whole rule: a known party is named, and a party the cache cannot
+ * name states the gap rather than a half-read row.
+ */
+
+TEST_CASE("a_members_party_is_named_from_the_party_behind_the_association", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto party_id = boost::uuids::random_generator()();
+    ores::refdata::domain::party known;
+    known.id = party_id;
+    known.full_name = "ACME Corporation UK plc";
+    known.short_code = "ACCOUK";
+    known.party_category = "Operational";
+    known.business_center_code = "GBLO";
+
+    const auto summary = ores::iam::messaging::acct_project_my_party(party_id, known);
+
+    CHECK(summary.party_id == boost::uuids::to_string(party_id));
+    CHECK(summary.name == "ACME Corporation UK plc");
+    CHECK(summary.short_code == "ACCOUK");
+    CHECK(summary.party_category == "Operational");
+    CHECK(summary.business_center_code == "GBLO");
+}
+
+TEST_CASE("a_party_the_cache_cannot_name_states_the_gap_and_invents_nothing", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto party_id = boost::uuids::random_generator()();
+    const auto summary = ores::iam::messaging::acct_project_my_party(party_id, std::nullopt);
+
+    CHECK(summary.party_id == boost::uuids::to_string(party_id));
+    CHECK(summary.name.empty());
+    CHECK(summary.short_code.empty());
+    CHECK(summary.party_category.empty());
+    CHECK(summary.business_center_code.empty());
 }

@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(15);
+select plan(12);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -107,8 +107,7 @@ returns void as $$
     from t_ctx;
 $$ language sql;
 
-create or replace function pg_temp.party_role(p_trade uuid, p_role text,
-    p_counterparty uuid default null)
+create or replace function pg_temp.party_role(p_trade uuid, p_role text)
 returns void as $$
     insert into ores_trading_party_roles_tbl (trade_id, trade_activity_id, role, tenant_id,
         version, modified_by, performed_by, change_reason_code,
@@ -157,11 +156,9 @@ select throws_ok(
     '23503', null,
     'an identifier of an unknown trade is refused');
 
-select throws_ok(
-    $$select pg_temp.identifier('00000000-0000-0000-0000-0000000ca001', 'Internal', 'I-1',
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'an identifier carries the trade''s party');
+-- An identifier used to carry the trade's party and a case here proved the
+-- pin. The children stopped copying the party, so there is no copy left to get
+-- wrong and nothing for the case to assert.
 
 -- =============================================================================
 -- Party roles
@@ -181,11 +178,9 @@ select throws_ok(
     '23503', null,
     'an unknown role is refused');
 
-select throws_ok(
-    $$select pg_temp.party_role('00000000-0000-0000-0000-0000000ca001', 'ExecutingBroker',
-        '00000000-0000-0000-0000-0000000ca0ff')$$,
-    '23503', null,
-    'an unknown counterparty is refused');
+-- A role used to name a counterparty and a case here proved an unknown one
+-- was refused. The table stopped carrying the counterparty, so the argument is
+-- gone with the column.
 
 select throws_ok(
     $$select pg_temp.party_role('00000000-0000-0000-0000-0000000ca0ff', 'ExecutingBroker')$$,
@@ -205,11 +200,8 @@ select throws_ok(
     '23514', null,
     'the ordinal starts at one');
 
-select throws_ok(
-    $$select pg_temp.field('00000000-0000-0000-0000-0000000ca001', 2,
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'an additional field carries the trade''s party');
+-- An additional field used to carry the trade's party, and this case proved
+-- the pin. The table stopped carrying the party, so the case is gone with it.
 
 select throws_ok(
     $$select pg_temp.field('00000000-0000-0000-0000-0000000ca0ff', 1)$$,

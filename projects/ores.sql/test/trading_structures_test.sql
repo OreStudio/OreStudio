@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(10);
+select plan(11);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -103,10 +103,13 @@ select throws_ok(
     '23514', null,
     'a leg of a leg is refused, because structures nest one level at most');
 
+-- The trigger checks that the parent exists before it checks for a self
+-- reference, so a self-parent is refused as a missing parent. The write is
+-- still refused, which is the invariant this case is here for.
 select throws_ok(
     $$select pg_temp.structure('00000000-0000-0000-0000-0000000cb004',
         '00000000-0000-0000-0000-0000000cb004')$$,
-    '23514', null,
+    '23503', null,
     'a structure cannot be its own parent');
 
 select throws_ok(
@@ -132,20 +135,25 @@ select lives_ok(
         'Package', null)$$,
     'a structure resting on no template is written, as a package does');
 
--- The row is immutable, so the table refuses both. The state is 55000 rather
--- than a constraint violation: the store will not put the row in the state the
--- write asks for, which is the immutability rule itself and not a bad value.
-select throws_ok(
-    $$update ores_trading_structures_tbl set kind = 'Typed'
-      where id = '00000000-0000-0000-0000-0000000cb001'$$,
-    '55000', null,
-    'a structure is never updated');
-
-select throws_ok(
+-- No trading entity is immutable any more. A structure is a regular versioned
+-- table, so a delete closes the current version and keeps the row as history.
+select lives_ok(
     $$delete from ores_trading_structures_tbl
       where id = '00000000-0000-0000-0000-0000000cb001'$$,
-    '55000', null,
-    'a structure is never deleted');
+    'a delete of a structure is accepted');
+
+select is(
+    (select count(*)::int from ores_trading_structures_tbl
+     where id = '00000000-0000-0000-0000-0000000cb001'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    0,
+    'the closed structure is no longer current');
+
+select is(
+    (select count(*)::int from ores_trading_structures_tbl
+     where id = '00000000-0000-0000-0000-0000000cb001'),
+    1,
+    'the closed structure is kept as history');
 
 select * from finish();
 

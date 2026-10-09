@@ -34,7 +34,7 @@
 
 begin;
 
-select plan(19);
+select plan(17);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -244,30 +244,21 @@ select throws_ok(
     '23503', null,
     'a booking of an unknown trade is refused');
 
-select throws_ok(
-    $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
-        '00000000-0000-0000-0000-0000000bb001', 0, (select counterparty_id from t_ctx), null,
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'a booking cannot name a party other than the trade''s');
-
-select throws_ok(
-    $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
-        '00000000-0000-0000-0000-0000000bb000', 0, (select other_counterparty_id from t_ctx))$$,
-    '23503', null,
-    'a booking cannot name a counterparty other than the trade''s');
-
+-- The booking has no party or counterparty column any more, so the two cases
+-- that named one are gone with it. What the trade owns is what the booking
+-- may name: a book, and a netting set, both of the trade's own party and
+-- counterparty. The insert trigger refuses a bad one as an invalid value.
 select throws_ok(
     $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
         '00000000-0000-0000-0000-0000000bb001', 0, (select counterparty_id from t_ctx))$$,
-    '23503', null,
+    '23514', null,
     'a booking cannot name a book of another party');
 
 select throws_ok(
     $$select pg_temp.booking('00000000-0000-0000-0000-0000000ba002',
         '00000000-0000-0000-0000-0000000bb000', 0, (select counterparty_id from t_ctx),
         '00000000-0000-0000-0000-0000000be001')$$,
-    '23503', null,
+    '23514', null,
     'a booking cannot file the trade in another counterparty''s netting set');
 
 select lives_ok(

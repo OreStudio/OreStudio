@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(6);
+select plan(5);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -112,8 +112,15 @@ select '00000000-0000-0000-0000-0000000cd003', ores_utility_system_tenant_id_fn(
     current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
 from t_ctx;
 
-create or replace function pg_temp.link(p_trade uuid, p_structure uuid, p_role text,
-    p_party uuid default null)
+insert into ores_trading_structures_tbl (id, tenant_id, party_id, counterparty_id,
+    kind, template_code, parent_structure_id,
+    modified_by, performed_by, change_reason_code, change_commentary)
+select '00000000-0000-0000-0000-0000000cd004', ores_utility_system_tenant_id_fn(), party_id,
+    counterparty_id, 'Strategy', 'Straddle', null,
+    current_user, current_user, 'system.new_record', 'Structure pgTAP fixture'
+from t_ctx;
+
+create or replace function pg_temp.link(p_trade uuid, p_structure uuid, p_role text)
 returns void as $$
     insert into ores_trading_structure_members_tbl (trade_id, structure_id, role,
         sequence_number, tenant_id, version,
@@ -143,9 +150,12 @@ select lives_ok(
         '00000000-0000-0000-0000-0000000cd002', 'body')$$,
     'the butterfly takes its body');
 
+-- The member table has no party column any more, so the case is put through a
+-- fresh straddle: cc001 already sits in cd001 and cd004 offers a free leg, so
+-- only the one-deal-at-a-time rule can refuse it.
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000cc001',
-        '00000000-0000-0000-0000-0000000cd002', 'body')$$,
+        '00000000-0000-0000-0000-0000000cd004', 'leg')$$,
     '23505', null,
     'a trade already linked elsewhere is refused, so it sits in one deal at a time');
 
@@ -153,12 +163,9 @@ select throws_ok(
 -- The party and the counterparty
 -- =============================================================================
 
-select throws_ok(
-    $$select pg_temp.link('00000000-0000-0000-0000-0000000cc002',
-        '00000000-0000-0000-0000-0000000cd003', 'leg',
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'a member carries the structure''s party, not another party''s');
+-- A member used to carry the structure's party and a case here proved the pin.
+-- The children stopped copying the party, so there is no copy left to get
+-- wrong and nothing for the case to assert.
 
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000cc0ff',

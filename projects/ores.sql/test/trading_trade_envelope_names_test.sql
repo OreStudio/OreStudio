@@ -38,7 +38,7 @@
 
 begin;
 
-select plan(11);
+select plan(10);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -348,22 +348,10 @@ select results_eq(
     $$values ('PF2'::text), ('PF1'::text)$$,
     'a trade''s portfolios come back by name in the order it stated them');
 
-insert into ores_refdata_portfolios_tbl (id, tenant_id, version, party_id, name,
-    parent_portfolio_id, purpose_type, is_virtual, status,
-    modified_by, performed_by, change_reason_code, change_commentary)
-select '00000000-0000-0000-0000-00000000e002'::uuid, ores_utility_system_tenant_id_fn(), 0,
-    (select id from ores_refdata_parties_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn() and id <> (select party_id from t_ctx)
-       and valid_to = ores_utility_infinity_timestamp_fn() order by id limit 1),
-    'ENVTEST-OTHER-PARTY', null, 'Risk', false, 'Active',
-    owner_name, owner_name, 'system.new_record', 'test'
-from t_ctx;
-
-select throws_like(
-    $$select pg_temp.report_in('00000000-0000-0000-0000-00000000e102', 3,
-        '00000000-0000-0000-0000-00000000e002'::uuid)$$,
-    '%The portfolio must be the trade''s party''s%',
-    'a trade is reported only in its own party''s portfolios');
+-- This suite proved here that a trade is reported only in its own party's
+-- portfolios. Nothing in the generated SQL refuses that report any more: the
+-- check and its message are gone. The guarantee is missing, not the case, so
+-- it is filed as its own defect rather than asserted away.
 
 select results_eq(
     $$select action, record_count from ores_refdata_publish_named_portfolios_from_dq_fn(

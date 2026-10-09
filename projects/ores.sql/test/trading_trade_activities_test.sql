@@ -164,19 +164,19 @@ select is(
     1::bigint,
     'the refused booking wrote no activity');
 
-select throws_ok(
-    $$update ores_trading_trade_activities_tbl set comment = 'changed'
-      where id = (select activity_id from t_booked)$$,
-    '55000',
-    null,
-    'an activity is never updated');
-
-select throws_ok(
+-- No trading entity is immutable any more. A delete closes the current version
+-- and keeps the row as history.
+select lives_ok(
     $$delete from ores_trading_trade_activities_tbl
       where id = (select activity_id from t_booked)$$,
-    '55000',
-    null,
-    'an activity is never deleted');
+    'a delete of an activity is accepted');
+
+select is(
+    (select count(*)::int from ores_trading_trade_activities_tbl
+     where id = (select activity_id from t_booked)
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    0,
+    'the closed activity is no longer current');
 
 create temp table t_versions_before on commit drop as
 select (select count(*) from ores_trading_trade_bookings_tbl

@@ -35,7 +35,7 @@
 
 begin;
 
-select plan(8);
+select plan(7);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -109,7 +109,7 @@ returns uuid as $$
 $$ language sql;
 
 create or replace function pg_temp.link(p_from uuid, p_to uuid, p_type text,
-    p_party uuid default null, p_activity uuid default null)
+    p_activity uuid default null)
 returns void as $$
     insert into ores_trading_trade_links_tbl (from_trade_id, to_trade_id, link_type,
         trade_activity_id, tenant_id, version, modified_by, performed_by,
@@ -156,7 +156,7 @@ select throws_ok(
 
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',
-        '00000000-0000-0000-0000-0000000ca004', 'CloseOut', null,
+        '00000000-0000-0000-0000-0000000ca004', 'CloseOut',
         '00000000-0000-0000-0000-0000000caf0f')$$,
     '23503', null,
     'a link made by an unknown activity is refused');
@@ -165,12 +165,9 @@ select throws_ok(
 -- The copied party and the two ends
 -- =============================================================================
 
-select throws_ok(
-    $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',
-        '00000000-0000-0000-0000-0000000ca004', 'Novation',
-        (select other_party_id from t_ctx))$$,
-    '23503', null,
-    'a link carries the party of its from end, not another party''s');
+-- A link used to carry the party of its from end and a case here proved the
+-- pin. The children stopped copying the party, so there is no copy left to get
+-- wrong and nothing for the case to assert.
 
 select throws_ok(
     $$select pg_temp.link('00000000-0000-0000-0000-0000000ca003',

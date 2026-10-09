@@ -6,12 +6,12 @@
 # 1. Parses SQL CREATE/DROP files to generate a JSON model
 # 2. Renders the model using Mustache templates: one diagram per group,
 #    and an index page that names the groups
-# 3. Optionally renders the PNG using plantuml
+# 3. Optionally draws every diagram as SVG using plantuml
 #
 # Usage:
-#   ./plantuml_er_generate.sh          regenerate the .puml files, then the .png
+#   ./plantuml_er_generate.sh          regenerate the .puml files, then draw them
 #   ./plantuml_er_generate.sh --check  exit non-zero if any committed .puml
-#                                      is stale, without rendering the PNG
+#                                      is stale, without drawing anything
 #
 
 set -e
@@ -75,24 +75,28 @@ if [ "$CHECK" -eq 1 ]; then
 fi
 python3 "${SCRIPT_DIR}/src/plantuml_er_generate.py" "${GENERATE_ARGS[@]}"
 
-# Step 3: Render PNG (optional)
+# Step 3: Draw the diagrams (optional). SVG, because the schema has no
+# raster budget left: at 463 tables the PNG overflowed a 32-bit pixel
+# count. Every group file is drawn, not only the index. The images are not
+# committed: PlantUML bakes the installed build's layout into them.
+DIAGRAMS=("${SQL_DIR}/modeling/ores_schema"*.puml)
+
 if [ "$CHECK" -eq 1 ]; then
     echo ""
-    echo "Check mode: skipping PNG generation"
+    echo "Check mode: skipping the drawing step"
 elif command -v plantuml &> /dev/null; then
     echo ""
-    echo "Rendering PNG..."
-    PLANTUML_LIMIT_SIZE=131072 plantuml "${SQL_DIR}/modeling/ores_schema.puml"
+    echo "Drawing ${#DIAGRAMS[@]} diagram(s) as SVG..."
+    plantuml -tsvg "${DIAGRAMS[@]}"
 elif [ -f /usr/share/plantuml/plantuml.jar ]; then
     echo ""
-    echo "Rendering PNG..."
+    echo "Drawing ${#DIAGRAMS[@]} diagram(s) as SVG..."
     java -Djava.awt.headless=true \
-         -DPLANTUML_LIMIT_SIZE=131072 \
          -jar /usr/share/plantuml/plantuml.jar \
-         "${SQL_DIR}/modeling/ores_schema.puml"
+         -tsvg "${DIAGRAMS[@]}"
 else
     echo ""
-    echo "Note: plantuml not found, skipping PNG generation"
+    echo "Note: plantuml not found, skipping the drawing step"
 fi
 
 echo ""

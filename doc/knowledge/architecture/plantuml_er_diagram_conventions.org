@@ -26,8 +26,25 @@ another file.
 |-----------+--------------------------------------|
 | Index     | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] — every group, its file, and its tables |
 | Group     | =projects/ores.sql/modeling/ores_schema.<group>.puml= — one per package, committed |
-| Rendered  | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] (committed) |
+| Drawn     | [[proj:projects/ores.sql/modeling/ores_schema.svg][=projects/ores.sql/modeling/ores_schema.svg=]] and one per group, =ores_schema.<group>.svg= — committed |
 | CMakeLists | [[proj:projects/ores.sql/modeling/CMakeLists.txt][=projects/ores.sql/modeling/CMakeLists.txt=]] |
+
+The =.puml= files hold what the diagram says and the SVG images are what
+a reader opens, so both are committed. The drawing is SVG because the
+schema has no raster budget left: the single 463-table diagram overflowed
+a 32-bit pixel count before it was split.
+
+Below is the index; every group's image is on
+[[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][the ores.sql component page]].
+
+[[proj:projects/ores.sql/modeling/ores_schema.svg]]
+
+* Groups
+
+The groups are the model's packages. A package holds its tables and the
+keys that stay inside it; a key that leaves is named in the note beside
+the group it reaches. The model's =packages= list is what names them, so
+a group cannot drift from the schema.
 
 * Generation pipeline
 
@@ -44,7 +61,7 @@ The pipeline has three stages, all driven by
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
 | Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
 | Render   | the intermediate JSON + a mustache template per group, and one for the index | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
-| Diagram  | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | [[proj:projects/ores.sql/modeling/ores_schema.png][=projects/ores.sql/modeling/ores_schema.png=]] |
+| Draw     | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema*.svg= |
 
 The intermediate model file is *not* committed and *not* literate. It
 lives under =build/output/= (gitignored) because it is regenerated on
@@ -54,9 +71,11 @@ doesn't benefit from org-mode literate prose, drawers, or block-paste
 mechanisms — those are reserved for the *authored* models humans
 maintain (under each component's =modeling/= directory).
 
-The =.puml= files and the =.png= are committed because reviewers and
-readers benefit from seeing schema-shape diffs in PRs and viewing a
-group without rebuilding.
+The =.puml= files are committed because reviewers and readers benefit
+from seeing schema-shape diffs in PRs. The images are committed because
+the documentation site renders them: an image link under =proj:= exports
+as an image tag pointing at the file in the repository, so an image that
+is not in the tree is a broken page.
 
 * Skeleton
 

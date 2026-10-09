@@ -9,13 +9,42 @@
 #+level: cross
 #+filetags: :sql:database:schema:component:
 #+created: 2026-05-20
-#+updated: 2026-05-29
+#+updated: 2026-10-09
 
 * Diagram
 
-#+attr_html: :width 100% :alt ores.sql component diagram
-#+caption: ores.sql
-[[file:ores.sql.png][file:ores.sql.png]]
+The schema is one diagram per group, because 463 tables in a single
+picture overflowed PlantUML's raster budget. The index names every group,
+the file it is drawn in and the tables it holds, and each group is drawn
+on its own.
+
+#+attr_html: :width 100% :alt ores.sql schema index
+#+caption: The schema index
+[[file:ores_schema.svg][file:ores_schema.svg]]
+
+| Group | Tables | Diagram |
+|-------+--------+---------|
+| iam | 24 | [[file:ores_schema.iam.svg]] |
+| assets | 3 | [[file:ores_schema.assets.svg]] |
+| refdata | 153 | [[file:ores_schema.refdata.svg]] |
+| dq_staging | 57 | [[file:ores_schema.dq_staging.svg]] |
+| dq_datasets | 6 | [[file:ores_schema.dq_datasets.svg]] |
+| dq_methodology | 4 | [[file:ores_schema.dq_methodology.svg]] |
+| dq_metadata | 15 | [[file:ores_schema.dq_metadata.svg]] |
+| variability | 1 | [[file:ores_schema.variability.svg]] |
+| telemetry | 5 | [[file:ores_schema.telemetry.svg]] |
+| geo | 1 | [[file:ores_schema.geo.svg]] |
+| trading | 99 | [[file:ores_schema.trading.svg]] |
+| mq | 4 | [[file:ores_schema.mq.svg]] |
+| scheduler | 2 | [[file:ores_schema.scheduler.svg]] |
+| reporting | 20 | [[file:ores_schema.reporting.svg]] |
+| compute | 12 | [[file:ores_schema.compute.svg]] |
+| workflow | 4 | [[file:ores_schema.workflow.svg]] |
+| database | 1 | [[file:ores_schema.database.svg]] |
+| marketdata | 10 | [[file:ores_schema.marketdata.svg]] |
+| analytics | 20 | [[file:ores_schema.analytics.svg]] |
+| synthetic | 9 | [[file:ores_schema.synthetic.svg]] |
+| inbox | 13 | [[file:ores_schema.inbox.svg]] |
 
 * Summary
 

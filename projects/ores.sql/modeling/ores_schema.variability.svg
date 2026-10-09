@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="522px" preserveAspectRatio="none" style="width:844px;height:522px;" version="1.1" viewBox="0 0 844 522" width="844px" zoomAndPan="magnify"><defs><filter height="300%" id="fezg9d41tdwj" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="313" x="277" y="19.2419">ORES Database Schema — variability</text><!--MD5=[e7211027558a5d71f1a9a89bf88798e9]
+cluster variability--><rect fill="#E8F5E9" filter="url(#fezg9d41tdwj)" height="366" style="stroke: #000000; stroke-width: 1.5;" width="792.5" x="40.5" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="69" x="402.25" y="65.0718">variability</text><!--MD5=[d07fdaa7e3bd9210d03f26878bf1fffb]
+class ores_variability_system_settings_tbl--><rect fill="#C6F0D8" filter="url(#fezg9d41tdwj)" height="268.4347" id="ores_variability_system_settings_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="203" x="56.5" y="107.8858"/><rect fill="#C6F0D8" height="42.6882" style="stroke: #A80036; stroke-width: 1.5;" width="203" x="56.5" y="107.8858"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="62" x="127" y="125.7139">«temporal»</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="197" x="59.5" y="142.0581">ores_variability_system_settings_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="57.5" x2="258.5" y1="150.5741" y2="150.5741"/><ellipse cx="67.5" cy="161.5741" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="130" x="76.5" y="166.333">tenant_id : uuid «PK, FK»</text><ellipse cx="67.5" cy="176.556" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="76.5" y="181.3149">id : uuid «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="57.5" x2="258.5" y1="188.5379" y2="188.5379"/><ellipse cx="67.5" cy="199.5379" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="76.5" y="204.2968">version : integer</text><ellipse cx="67.5" cy="214.5197" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="58" x="76.5" y="219.2787">name : text</text><ellipse cx="67.5" cy="229.5016" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="76.5" y="234.2605">party_id : uuid «FK»</text><ellipse cx="67.5" cy="244.4835" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="57" x="76.5" y="249.2424">value : text</text><ellipse cx="67.5" cy="259.4654" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="76.5" y="264.2243">data_type : text</text><ellipse cx="67.5" cy="274.4473" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="76.5" y="279.2062">description : text</text><ellipse cx="67.5" cy="289.4292" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="94" x="76.5" y="294.1881">modified_by : text</text><ellipse cx="67.5" cy="304.4111" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="76.5" y="309.17">performed_by : text</text><ellipse cx="67.5" cy="319.393" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="166" x="76.5" y="324.1519">change_reason_code : text «FK»</text><ellipse cx="67.5" cy="334.3748" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="138" x="76.5" y="339.1338">change_commentary : text</text><ellipse cx="67.5" cy="349.3567" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="129" x="76.5" y="354.1156">valid_from : timestamptz</text><ellipse cx="67.5" cy="364.3386" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="114" x="76.5" y="369.0975">valid_to : timestamptz</text><path d="M330,86.6058 L330,238.1058 L259.91,242.1058 L330,246.1058 L330,397.6081 A0,0 0 0 0 330,397.6081 L817,397.6081 A0,0 0 0 0 817,397.6081 L817,96.6058 L807,86.6058 L330,86.6058 A0,0 0 0 0 330,86.6058 " fill="#FBFB77" filter="url(#fezg9d41tdwj)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M807,86.6058 L807,96.6058 L817,96.6058 L807,86.6058 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="300" x="336" y="105.5029">AUTO-GENERATED FILE - DO NOT EDIT MANUALLY</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="329" x="336" y="123.2089">Template: sql_schema_domain_entity_create.mustache</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="287" x="336" y="140.9149">To modify, update the template and regenerate.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="125" x="336" y="158.6209">System Setting Table</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="444" x="336" y="176.3269">A system setting is a named configuration value the platform reads while it</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="427" x="336" y="194.0329">runs, such as system.bootstrap_mode or onboarding.party. The value is</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="442" x="336" y="211.739">stored as text and data_type says how to read it, because one table carries</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="249" x="336" y="229.445">every type rather than one table per type.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="444" x="336" y="247.151">A setting is scoped to a tenant and a party. Tenant-wide settings live under</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="366" x="336" y="264.857">the tenant's system party, and a party-specific setting such as</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="440" x="336" y="282.563">onboarding.party lives under that party's own id. The pair is what makes a</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="466" x="336" y="300.269">setting name unique: the same name may hold different values for two parties</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="314" x="336" y="317.9751">in one tenant, so a caller always reads within a scope.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="410" x="336" y="335.6811">The table is bitemporal like every other entity, so a setting's history is</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="452" x="336" y="353.3871">kept and a configuration change is auditable and reversible. The name is the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="360" x="336" y="371.0931">natural key callers use; id is the surrogate the store keeps for</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="121" x="336" y="388.7991">foreign-key stability.</text><path d="M6,429.6958 L6,510.5199 L310,510.5199 L310,439.6958 L300,429.6958 L6,429.6958 " fill="#FBFB77" filter="url(#fezg9d41tdwj)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,429.6958 L300,439.6958 L310,439.6958 L300,429.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="102" x="12" y="448.5929">Group: variability</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="466.2989">Tables: 1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="484.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="501.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[f9292e0a312159d752d8d8989c5fc9ab]
+@startuml
+
+title ORES Database Schema — variability
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: variability
+Tables: 1
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "variability" #E8F5E9 {
+    entity ores_variability_system_settings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        - -
+        * version : integer
+        * name : text
+        * party_id : uuid <<FK>>
+        * value : text
+        * data_type : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_variability_system_settings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    System Setting Table
+    A system setting is a named configuration value the platform reads while it
+    runs, such as system.bootstrap_mode or onboarding.party. The value is
+    stored as text and data_type says how to read it, because one table carries
+    every type rather than one table per type.
+    A setting is scoped to a tenant and a party. Tenant-wide settings live under
+    the tenant's system party, and a party-specific setting such as
+    onboarding.party lives under that party's own id. The pair is what makes a
+    setting name unique: the same name may hold different values for two parties
+    in one tenant, so a caller always reads within a scope.
+    The table is bitemporal like every other entity, so a setting's history is
+    kept and a configuration change is auditable and reversible. The name is the
+    natural key callers use; id is the surrogate the store keeps for
+    foreign-key stability.
+    end note
+
+}
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

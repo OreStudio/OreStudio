@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="298px" preserveAspectRatio="none" style="width:586px;height:298px;" version="1.1" viewBox="0 0 586 298" width="586px" zoomAndPan="magnify"><defs><filter height="300%" id="f1412j68zia39p" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="262" x="173.5" y="19.2419">ORES Database Schema — geo</text><!--MD5=[89e6d60e5876151f740048b4df9ee345]
+cluster geo--><rect fill="#FFF9C4" filter="url(#f1412j68zia39p)" height="142" style="stroke: #000000; stroke-width: 1.5;" width="510" x="65" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="26" x="307" y="65.0718">geo</text><!--MD5=[1cd57fc5d00eb95855a03cdc8c33581e]
+class ores_geo_ip2country_tbl--><rect fill="#F7E5FF" filter="url(#f1412j68zia39p)" height="87.2898" id="ores_geo_ip2country_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="154" x="81" y="86.4558"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="154" x="81" y="86.4558"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="134" x="91" y="104.2839">ores_geo_ip2country_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="82" x2="234" y1="112.8" y2="112.8"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="82" x2="234" y1="120.8" y2="120.8"/><ellipse cx="92" cy="131.8" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="106" x="101" y="136.5589">ip_range : int8range</text><ellipse cx="92" cy="146.7818" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="101" y="151.5408">tenant_id : uuid «FK»</text><ellipse cx="92" cy="161.7637" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="128" x="101" y="166.5226">country_code : text «FK»</text><path d="M330,107.3958 L330,126.1058 L235.15,130.1058 L330,134.1058 L330,152.8079 A0,0 0 0 0 330,152.8079 L559,152.8079 A0,0 0 0 0 559,152.8079 L559,117.3958 L549,107.3958 L330,107.3958 A0,0 0 0 0 330,107.3958 " fill="#FBFB77" filter="url(#f1412j68zia39p)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M549,107.3958 L549,117.3958 L559,117.3958 L549,107.3958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="208" x="336" y="126.2929">IP range to country code mapping.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="193" x="336" y="143.9989">Uses GiST index for fast lookups.</text><path d="M6,205.6958 L6,286.5199 L310,286.5199 L310,215.6958 L300,205.6958 L6,205.6958 " fill="#FBFB77" filter="url(#f1412j68zia39p)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,205.6958 L300,215.6958 L310,215.6958 L300,205.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="67" x="12" y="224.5929">Group: geo</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="242.2989">Tables: 1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="260.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="277.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[4804c962b8d62198c67a82249ffed042]
+@startuml
+
+title ORES Database Schema — geo
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: geo
+Tables: 1
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "geo" #FFF9C4 {
+    entity ores_geo_ip2country_tbl  #F7E5FF {
+        - -
+        * ip_range : int8range
+        * tenant_id : uuid <<FK>>
+        * country_code : text <<FK>>
+    }
+
+    note right of ores_geo_ip2country_tbl
+    IP range to country code mapping.
+    Uses GiST index for fast lookups.
+    end note
+
+}
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

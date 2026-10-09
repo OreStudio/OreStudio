@@ -18,9 +18,16 @@
 #
 set(name "ores_schema")
 
+# The ER diagram is one file per group plus an index over them, so the
+# target draws every one. SVG, because the schema has no raster budget left
+# at 463 tables, and the images are not committed: PlantUML bakes the
+# installed build's layout into them, and the .puml files are the artefacts.
+string(REPLACE ";" " " er_java_args "${ORES_JAVA_ARGS}")
+
 set(diagram_target generate_${name}_diagram)
 add_custom_target(${diagram_target}
-    COMMENT "Generating PlantUML ER diagram for ${name}" VERBATIM
-    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    COMMENT "Generating PlantUML ER diagrams for ${name}" VERBATIM
+    COMMAND bash -c
+            "java ${er_java_args} -jar ${ORES_PLANTUML_JAR} -tsvg ${name}*.puml"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 add_dependencies(make_all_diagrams ${diagram_target})

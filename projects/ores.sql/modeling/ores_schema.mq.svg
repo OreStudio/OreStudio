@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="788px" preserveAspectRatio="none" style="width:1333px;height:788px;" version="1.1" viewBox="0 0 1333 788" width="1333px" zoomAndPan="magnify"><defs><filter height="300%" id="f41akjmgljpvc" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="258" x="549" y="19.2419">ORES Database Schema — mq</text><!--MD5=[9686ca3972e5d30219a25bc4cc8265b2]
+cluster mq--><rect fill="#FBE9E7" filter="url(#f41akjmgljpvc)" height="632" style="stroke: #000000; stroke-width: 1.5;" width="1275.5" x="46.5" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="23" x="672.75" y="65.0718">mq</text><!--MD5=[c90c16403e70a9ee54d3c562eef7f077]
+class ores_mq_message_archive_tbl--><rect fill="#F7E5FF" filter="url(#f41akjmgljpvc)" height="237.1087" id="ores_mq_message_archive_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="188" x="64" y="426.5458"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="188" x="64" y="426.5458"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="169" x="73.5" y="444.3739">ores_mq_message_archive_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="65" x2="251" y1="452.89" y2="452.89"/><ellipse cx="75" cy="463.89" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="79" x="84" y="468.6489">id : bigint «PK»</text><ellipse cx="75" cy="478.8718" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="162" x="84" y="483.6308">archived_at : timestamptz «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="65" x2="251" y1="490.8537" y2="490.8537"/><ellipse cx="75" cy="501.8537" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="109" x="84" y="506.6126">queue_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="84" y="521.5945">tenant_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="84" y="536.5764">party_id : uuid «FK»</text><ellipse cx="75" cy="546.7994" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="84" y="551.5583">message_type : text</text><ellipse cx="75" cy="561.7813" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="84" y="566.5402">payload_type : text</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="84" y="581.5221">payload : jsonb</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="105" x="84" y="596.504">raw_payload : bytea</text><ellipse cx="75" cy="606.727" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="84" y="611.4859">final_status : text</text><ellipse cx="75" cy="621.7088" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="84" y="626.4678">created_at : timestamptz</text><ellipse cx="75" cy="636.6907" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="84" y="641.4496">read_count : int</text><ellipse cx="75" cy="651.6726" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="107" x="84" y="656.4315">error_message : text</text><path d="M353,504.6958 L353,541.1058 L252.34,545.1058 L353,549.1058 L353,585.5199 A0,0 0 0 0 353,585.5199 L840,585.5199 A0,0 0 0 0 840,585.5199 L840,514.6958 L830,504.6958 L353,504.6958 A0,0 0 0 0 353,504.6958 " fill="#FBFB77" filter="url(#f41akjmgljpvc)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M830,504.6958 L830,514.6958 L840,514.6958 L830,504.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="160" x="359" y="523.5929">MQ message archive table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="466" x="359" y="541.2989">Stores acknowledged messages. TimescaleDB hypertable on archived_at when</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="269" x="359" y="559.0049">available; degrades gracefully to a plain table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="399" x="359" y="576.7109">Partitioned by archived_at with 1-day chunks and 90-day retention.</text><!--MD5=[ad173c9abc68bee74259c4bd8563cf55]
+class ores_mq_messages_tbl--><rect fill="#F7E5FF" filter="url(#f41akjmgljpvc)" height="252.0905" id="ores_mq_messages_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="162" x="515.5" y="140.0558"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="162" x="515.5" y="140.0558"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="129" x="532" y="157.8839">ores_mq_messages_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="516.5" x2="676.5" y1="166.4" y2="166.4"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="516.5" x2="676.5" y1="174.4" y2="174.4"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="535.5" y="190.1589">id : bigserial</text><ellipse cx="526.5" cy="200.3818" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="109" x="535.5" y="205.1408">queue_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="535.5" y="220.1226">tenant_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="535.5" y="235.1045">party_id : uuid «FK»</text><ellipse cx="526.5" cy="245.3275" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="535.5" y="250.0864">message_type : text</text><ellipse cx="526.5" cy="260.3094" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="535.5" y="265.0683">payload_type : text</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="535.5" y="280.0502">payload : jsonb</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="105" x="535.5" y="295.0321">raw_payload : bytea</text><ellipse cx="526.5" cy="305.2551" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="60" x="535.5" y="310.014">status : text</text><ellipse cx="526.5" cy="320.237" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="136" x="535.5" y="324.9959">visible_after : timestamptz</text><ellipse cx="526.5" cy="335.2188" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="535.5" y="339.9778">created_at : timestamptz</text><ellipse cx="526.5" cy="350.2007" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="132" x="535.5" y="354.9596">updated_at : timestamptz</text><ellipse cx="526.5" cy="365.1826" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="535.5" y="369.9415">read_count : int</text><ellipse cx="526.5" cy="380.1645" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="107" x="535.5" y="384.9234">error_message : text</text><path d="M861,243.3958 L861,262.1058 L677.74,266.1058 L861,270.1058 L861,288.8079 A0,0 0 0 0 861,288.8079 L1306,288.8079 A0,0 0 0 0 1306,288.8079 L1306,253.3958 L1296,243.3958 L861,243.3958 A0,0 0 0 0 861,243.3958 " fill="#FBFB77" filter="url(#f41akjmgljpvc)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M1296,243.3958 L1296,253.3958 L1306,253.3958 L1296,243.3958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="189" x="867" y="262.2929">MQ task queue messages table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="424" x="867" y="279.9989">Regular (non-hypertable) table for pending and in-flight task messages.</text><!--MD5=[e64567ae5acc0e32adf0ba7128f2abe2]
+class ores_mq_queue_stats_tbl--><rect fill="#F7E5FF" filter="url(#f41akjmgljpvc)" height="147.2173" id="ores_mq_queue_stats_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="191" x="62.5" y="271.4958"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="191" x="62.5" y="271.4958"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="139" x="88.5" y="289.3239">ores_mq_queue_stats_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="63.5" x2="252.5" y1="297.84" y2="297.84"/><ellipse cx="73.5" cy="308.84" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="129" x="82.5" y="313.5989">queue_id : uuid «PK, FK»</text><ellipse cx="73.5" cy="323.8218" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="165" x="82.5" y="328.5808">recorded_at : timestamptz «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="63.5" x2="252.5" y1="335.8037" y2="335.8037"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="82.5" y="351.5626">tenant_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="82.5" y="366.5445">party_id : uuid «FK»</text><ellipse cx="73.5" cy="376.7675" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="119" x="82.5" y="381.5264">pending_count : bigint</text><ellipse cx="73.5" cy="391.7494" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="132" x="82.5" y="396.5083">processing_count : bigint</text><ellipse cx="73.5" cy="406.7313" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="114" x="82.5" y="411.4902">total_archived : bigint</text><path d="M360.5,399.6958 L360.5,405.2058 L253.96,409.2058 L360.5,413.2058 L360.5,480.5199 A0,0 0 0 0 360.5,480.5199 L832.5,480.5199 A0,0 0 0 0 832.5,480.5199 L832.5,409.6958 L822.5,399.6958 L360.5,399.6958 A0,0 0 0 0 360.5,399.6958 " fill="#FBFB77" filter="url(#f41akjmgljpvc)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M822.5,399.6958 L822.5,409.6958 L832.5,409.6958 L822.5,399.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="222" x="366.5" y="418.5929">MQ queue statistics time-series table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="438" x="366.5" y="436.2989">Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="451" x="366.5" y="454.0049">TimescaleDB hypertable when available; degrades gracefully to a plain table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="402" x="366.5" y="471.7109">Partitioned by recorded_at with 1-day chunks and 30-day retention.</text><!--MD5=[ca59a77cdc27fd0662d9258f2d185fa4]
+class ores_mq_queues_tbl--><rect fill="#F7E5FF" filter="url(#f41akjmgljpvc)" height="177.1811" id="ores_mq_queues_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="161" x="77.5" y="86.5158"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="161" x="77.5" y="86.5158"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="113" x="101.5" y="104.3439">ores_mq_queues_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="78.5" x2="237.5" y1="112.86" y2="112.86"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="78.5" x2="237.5" y1="120.86" y2="120.86"/><ellipse cx="88.5" cy="131.86" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="43" x="97.5" y="136.6189">id : uuid</text><ellipse cx="88.5" cy="146.8418" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="87" x="97.5" y="151.6008">scope_type : text</text><ellipse cx="88.5" cy="161.8237" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="90" x="97.5" y="166.5826">queue_type : text</text><ellipse cx="88.5" cy="176.8056" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="58" x="97.5" y="181.5645">name : text</text><ellipse cx="88.5" cy="191.7875" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="97.5" y="196.5464">description : text</text><ellipse cx="88.5" cy="206.7694" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="97.5" y="211.5283">created_at : timestamptz</text><ellipse cx="88.5" cy="221.7513" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="135" x="97.5" y="226.5102">modified_at : timestamptz</text><ellipse cx="88.5" cy="236.7332" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="94" x="97.5" y="241.4921">modified_by : text</text><ellipse cx="88.5" cy="251.7151" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="97.5" y="256.474">is_active : boolean</text><path d="M369.5,86.3958 L369.5,105.1658 L238.94,109.1658 L369.5,113.1658 L369.5,131.8079 A0,0 0 0 0 369.5,131.8079 L823.5,131.8079 A0,0 0 0 0 823.5,131.8079 L823.5,96.3958 L813.5,86.3958 L369.5,86.3958 A0,0 0 0 0 369.5,86.3958 " fill="#FBFB77" filter="url(#f41akjmgljpvc)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M813.5,86.3958 L813.5,96.3958 L823.5,96.3958 L813.5,86.3958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="165" x="375.5" y="105.2929">MQ queue definitions table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="433" x="375.5" y="122.9989">Supports party, tenant and system scope; task and channel queue types.</text><path d="M6,695.6958 L6,776.5199 L310,776.5199 L310,705.6958 L300,695.6958 L6,695.6958 " fill="#FBFB77" filter="url(#f41akjmgljpvc)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,695.6958 L300,705.6958 L310,705.6958 L300,695.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="64" x="12" y="714.5929">Group: mq</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="732.2989">Tables: 4</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="750.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="767.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[421cdffd9562c803141bb4bf2ddb11a7]
+link ores_mq_queues_tbl to ores_mq_messages_tbl--><path d="M248.45,201.8758 C248.45,201.8758 505.78,201.8758 505.78,201.8758 " fill="none" id="ores_mq_queues_tbl-ores_mq_messages_tbl" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="505.78" x2="513.78" y1="201.8758" y2="195.8758"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="505.78" x2="513.78" y1="201.8758" y2="207.8758"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="505.78" x2="513.78" y1="201.8758" y2="201.8758"/><ellipse cx="499.78" cy="201.8758" fill="none" rx="4" ry="4" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="244.45" x2="244.45" y1="205.8758" y2="197.8758"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="247.45" x2="247.45" y1="205.8758" y2="197.8758"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="248.45" x2="240.45" y1="201.8758" y2="201.8758"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="21" x="321" y="229.0029">has</text><!--MD5=[0b6fe1ba18cab5ed2f7c7109284846e4]
+@startuml
+
+title ORES Database Schema — mq
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: mq
+Tables: 4
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "mq" #FBE9E7 {
+    entity ores_mq_message_archive_tbl  #F7E5FF {
+        * id : bigint <<PK>>
+        * archived_at : timestamptz <<PK>>
+        - -
+        * queue_id : uuid <<FK>>
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * message_type : text
+        * payload_type : text
+          payload : jsonb
+          raw_payload : bytea
+        * final_status : text
+        * created_at : timestamptz
+        * read_count : int
+        * error_message : text
+    }
+
+    note right of ores_mq_message_archive_tbl
+    MQ message archive table.
+    Stores acknowledged messages. TimescaleDB hypertable on archived_at when
+    available; degrades gracefully to a plain table.
+    Partitioned by archived_at with 1-day chunks and 90-day retention.
+    end note
+
+    entity ores_mq_messages_tbl  #F7E5FF {
+        - -
+          id : bigserial
+        * queue_id : uuid <<FK>>
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * message_type : text
+        * payload_type : text
+          payload : jsonb
+          raw_payload : bytea
+        * status : text
+        * visible_after : timestamptz
+        * created_at : timestamptz
+        * updated_at : timestamptz
+        * read_count : int
+        * error_message : text
+    }
+
+    note right of ores_mq_messages_tbl
+    MQ task queue messages table.
+    Regular (non-hypertable) table for pending and in-flight task messages.
+    end note
+
+    entity ores_mq_queue_stats_tbl  #F7E5FF {
+        * queue_id : uuid <<PK, FK>>
+        * recorded_at : timestamptz <<PK>>
+        - -
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * pending_count : bigint
+        * processing_count : bigint
+        * total_archived : bigint
+    }
+
+    note right of ores_mq_queue_stats_tbl
+    MQ queue statistics time-series table.
+    Populated by ores_mq_queue_stats_scrape_fn() via an ores.scheduler job.
+    TimescaleDB hypertable when available; degrades gracefully to a plain table.
+    Partitioned by recorded_at with 1-day chunks and 30-day retention.
+    end note
+
+    entity ores_mq_queues_tbl  #F7E5FF {
+        - -
+        * id : uuid
+        * scope_type : text
+        * queue_type : text
+        * name : text
+        * description : text
+        * created_at : timestamptz
+        * modified_at : timestamptz
+        * modified_by : text
+        * is_active : boolean
+    }
+
+    note right of ores_mq_queues_tbl
+    MQ queue definitions table.
+    Supports party, tenant and system scope; task and channel queue types.
+    end note
+
+}
+
+
+ores_mq_queues_tbl ||- -o{ ores_mq_messages_tbl : "has"
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

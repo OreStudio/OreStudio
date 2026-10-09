@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/type-the-axis-values-a-surface-varies-over
-#+pr:
+#+pr: 2963
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2963][#2963]] | [marketdata] Type the strike label a surface component is named by |
 
 * Review
 

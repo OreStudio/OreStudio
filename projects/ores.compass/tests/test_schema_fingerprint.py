@@ -83,25 +83,45 @@ def test_a_matching_database_passes(monkeypatch, tmp_path, capsys):
     assert expected in capsys.readouterr().out
 
 
-def test_a_mismatched_database_is_refused_with_both_fingerprints(
+def test_a_mismatch_warns_with_both_fingerprints_and_continues(
         monkeypatch, tmp_path, capsys):
+    """A developer's checkout that has moved past its database still starts."""
+    monkeypatch.delenv("ORES_REQUIRE_SCHEMA_MATCH", raising=False)
     make_tree(tmp_path)
     expected = compass_db.schema_fingerprint(tmp_path)
     monkeypatch.setattr(compass_db, "database_info", lambda env: {
         "schema_fingerprint": "0000000000000000", "git_commit": "abc123",
         "git_date": "2026/10/01 10:00:00"})
     assert compass_db.check_schema_in_sync(
-        tmp_path, {"ORES_TEST_DB_DATABASE": "ores_dev_x"}) is False
+        tmp_path, {"ORES_TEST_DB_DATABASE": "ores_dev_x"}) is True
     err = capsys.readouterr().err
-    assert "REFUSING TO START" in err
+    assert "WARNING" in err
+    assert "REFUSING TO START" not in err
     assert expected in err
     assert "0000000000000000" in err
     assert "abc123" in err
     assert "compass db recreate" in err
+    assert "ORES_REQUIRE_SCHEMA_MATCH" in err
 
 
-def test_an_unreachable_database_is_refused(monkeypatch, tmp_path, capsys):
+def test_a_mismatch_is_refused_when_the_strict_answer_is_asked_for(
+        monkeypatch, tmp_path, capsys):
+    """A deployment sets the switch and gets the refusal it needs."""
+    make_tree(tmp_path)
+    monkeypatch.setattr(compass_db, "database_info", lambda env: {
+        "schema_fingerprint": "0000000000000000", "git_commit": "abc123",
+        "git_date": "2026/10/01 10:00:00"})
+    assert compass_db.check_schema_in_sync(
+        tmp_path, {"ORES_TEST_DB_DATABASE": "ores_dev_x",
+                   "ORES_REQUIRE_SCHEMA_MATCH": "1"}) is False
+    assert "REFUSING TO START" in capsys.readouterr().err
+
+
+def test_an_unreachable_database_warns_and_continues(monkeypatch, tmp_path, capsys):
+    monkeypatch.delenv("ORES_REQUIRE_SCHEMA_MATCH", raising=False)
     make_tree(tmp_path)
     monkeypatch.setattr(compass_db, "database_info", lambda env: None)
-    assert compass_db.check_schema_in_sync(tmp_path, {}) is False
-    assert "(none)" in capsys.readouterr().err
+    assert compass_db.check_schema_in_sync(tmp_path, {}) is True
+    err = capsys.readouterr().err
+    assert "(none)" in err
+    assert "WARNING" in err

@@ -173,6 +173,18 @@ export const AUTH_EVENT_ENTITY = 'ores.iam.auth_event';
 /** How many sign-ins one person's stream carries. */
 const SIGN_IN_PAGE = 200;
 
+/**
+ * The key a record's history is read by.
+ *
+ * A history provider resolves the row by the key its model declares, not by the
+ * row's id, and the two differ: an account is declared by its username and a
+ * contact record by its mail address. Reading by the id answers with no
+ * versions, which reads on the stream as a record that was never written.
+ */
+const ACCOUNT_KEY = (account: { readonly username: string }): string => account.username;
+
+const CONTACT_KEY = (contact: { readonly email: string }): string => contact.email;
+
 /** What each authentication event type reads as in the stream. */
 const SIGN_IN_KINDS: Readonly<Record<string, string>> = {
     login_success: 'signed_in',
@@ -264,7 +276,7 @@ export async function readPersonTimeline(
             gaps,
             ACCOUNT_ENTITY,
             'The account’s own versions need the account read, which this caller does not hold.',
-            () => readEntityHistory(caller, ACCOUNT_ENTITY, account.id),
+            () => readEntityHistory(caller, ACCOUNT_ENTITY, ACCOUNT_KEY(account)),
             [],
         ),
         orGap(
@@ -291,13 +303,13 @@ export async function readPersonTimeline(
     ]);
 
     const contactEvents =
-        contact === null
+        contact === null || CONTACT_KEY(contact) === ''
             ? []
             : await orGap(
                   gaps,
                   CONTACT_ENTITY,
                   'The contact record’s versions need the contact history read, which this caller does not hold.',
-                  () => readEntityHistory(caller, CONTACT_ENTITY, contact.id),
+                  () => readEntityHistory(caller, CONTACT_ENTITY, CONTACT_KEY(contact)),
                   [],
               ).then((versions) => recordEvents(CONTACT_ENTITY, contact.id, versions));
 

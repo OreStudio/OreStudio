@@ -30,11 +30,11 @@ and write the header beside them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | The header and the eight fact tables are modelled, regenerated and routed; the mapper, handler and export wiring is in progress. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build at the new shape and run the ORE round trip. |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -197,3 +197,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates family has a header. =ores_trading_rate_instruments_tbl= carries the
+family's coverage check, the party and the party boundary, the trade-activity
+key, the start and maturity dates, the description and the delete cascade that
+closes the family's twelve tables. The eight product tables are fact tables
+keyed by the same trade, holding only their own fields; the catalogue routes
+the family's ten codes to the header; and the import writes the header row
+before the fact row where the export reads both. A new case deletes a header
+and proves the family closes with it.
+
+The task's acceptance has one line that does not hold as written: "each
+product fact table checks its own" trade type. The catalogue states one
+routing per trade type, so a fact table cannot carry a check while the header
+carries the family's, and the bond pilot this family follows does not do it
+either. The story's acceptance is reconciled here rather than at story close,
+because the reason is structural, not a deferral.
+
+Two clauses of the staging unit that this task's Plan listed as already done
+were already done: the cross-currency swap's own type (its own task) and the
+seven unwritten columns.

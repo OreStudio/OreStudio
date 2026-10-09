@@ -262,6 +262,43 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     CHECK(xml.contains(imported.front().ore_id));
 }
 
+TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema states a plain swap and a cross-currency swap in an element
+    // each, and both elements are the same type, so the only thing that keeps
+    // the two products apart is the code the row states. The document carries
+    // one of each.
+    const auto f = example_path("IRFX_Cross_Currency_Swap_non_rebalancing.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(imported.size() == 2);
+
+    int swaps = 0;
+    int cross_currency = 0;
+    for (const auto& src : imported) {
+        const auto* sd = std::get_if<ores::trading::domain::swap_instrument_data>(&src.instrument);
+        REQUIRE(sd != nullptr);
+        const auto* leaf =
+            std::get_if<ores::trading::domain::vanilla_swap_instrument>(&sd->instrument);
+        REQUIRE(leaf != nullptr);
+        if (leaf->identity.trade_type_code == "CrossCurrencySwap")
+            ++cross_currency;
+        else if (leaf->identity.trade_type_code == "Swap")
+            ++swaps;
+    }
+    CHECK(swaps == 1);
+    CHECK(cross_currency == 1);
+
+    auto [items, instruments] = make_export_payload(imported);
+    const auto xml = exporter::export_portfolio(items, instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml.contains("<TradeType>Swap</TradeType>"));
+    CHECK(xml.contains("<TradeType>CrossCurrencySwap</TradeType>"));
+    CHECK(xml.contains("<SwapData>"));
+    CHECK(xml.contains("<CrossCurrencySwapData>"));
+}
+
 TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 

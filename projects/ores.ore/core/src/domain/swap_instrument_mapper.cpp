@@ -561,14 +561,21 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping swap: " << std::string(t.id);
 
     const swapData* sd = nullptr;
+    // The schema states a cross-currency swap in its own element of the same
+    // type as a plain swap, so which one the document used is the product
+    // type and has to be kept: the two are different products, not two
+    // spellings of one.
+    bool cross_currency = false;
 
-    if (t.SwapData)
+    if (t.SwapData) {
         sd = &*t.SwapData;
-    else if (t.CrossCurrencySwapData)
+    } else if (t.CrossCurrencySwapData) {
         sd = &*t.CrossCurrencySwapData;
+        cross_currency = true;
+    }
 
     vanilla_swap_instrument instr;
-    instr.identity.trade_type_code = "Swap";
+    instr.identity.trade_type_code = cross_currency ? "CrossCurrencySwap" : "Swap";
     instr.audit.modified_by = "ores";
     instr.audit.performed_by = "ores";
     instr.audit.change_reason_code = "system.external_data_import";
@@ -886,8 +893,13 @@ trade swap_instrument_mapper::reverse_swap(
     const std::vector<ores::trading::domain::swap_leg_rate>& rates) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping swap";
 
+    // The product type the row states decides the element, because the
+    // schema gives a plain swap and a cross-currency swap an element each,
+    // and writing both as SwapData turns the second into the first.
+    const bool cross_currency = instr.identity.trade_type_code == "CrossCurrencySwap";
+
     trade t;
-    t.TradeType = oreTradeType::Swap;
+    t.TradeType = cross_currency ? oreTradeType::CrossCurrencySwap : oreTradeType::Swap;
 
     swapData sd;
     for (const auto& sl : legs)
@@ -897,7 +909,10 @@ trade swap_instrument_mapper::reverse_swap(
                                          amounts_for_leg(amounts, sl.identity.leg_number),
                                          rates_for_leg(rates, sl.identity.leg_number)));
 
-    t.SwapData = std::move(sd);
+    if (cross_currency)
+        t.CrossCurrencySwapData = std::move(sd);
+    else
+        t.SwapData = std::move(sd);
     return t;
 }
 

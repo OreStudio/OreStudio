@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: B8D25D9B-4994-4483-B499-E8530AEBB767
+:END:
+#+title: Task: Carry the cross-currency swap's own type
+#+description: The ORE importer writes trade_type_code Swap for a cross-currency swap as well as for a plain swap, and the reverse always emits SwapData, so a cross-currency swap round trips as an ordinary swap and its product type is lost. Keep the type the document states in both directions.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/carry-the-cross-currency-swaps-own-type
+#+pr: 2951
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A cross-currency swap keeps its own product type through the import and the
+export. Today the importer stores it as =Swap= and the exporter writes it back
+as =SwapData=, so the two products are one on the wire and in the store, and a
+cross-currency swap is indistinguishable from a plain swap after a round trip.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Complete. The two products stay apart through the import and the export. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and merge.                |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The importer stores =trade_type_code = "CrossCurrencySwap"= for a trade the
+  document states as =CrossCurrencySwapData=, and =Swap= for =SwapData=.
+- The exporter emits =CrossCurrencySwapData= and =TradeType
+  CrossCurrencySwap= for a row whose type is =CrossCurrencySwap=, and
+  =SwapData= and =Swap= otherwise.
+- A document carrying one of each round trips with the two products still
+  apart.
+
+* Plan
+
+1. The schema gives the two products an element each, =SwapData= and
+   =CrossCurrencySwapData=, and both elements are the same XSD type
+   (=swapData=). Which element the document used is therefore the only
+   statement of the product type, and nothing else can recover it. The forward
+   mapper reads whichever element is present and states the matching code.
+2. The reverse mapper reads that code back and writes the element the code
+   names. It takes the code from the row it was handed rather than from a
+   parameter, so the exporter's existing dispatch — which already routes both
+   codes to =reverse_swap= — needs no change.
+3. The example document =IRFX_Cross_Currency_Swap_non_rebalancing.xml= carries
+   one plain swap and one cross-currency swap, which makes it the test: the
+   two must stay apart through the import, the batch and the export.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Products the fix separates | 2 | IRFX_Cross_Currency_Swap_non_rebalancing.xml | worktree |
+| Build | exit 0, 0 errors, 0 warnings | compass build --preset linux-clang-debug-make -j 2 | worktree |
+| ores.ore.core.tests | 624 cases, 482193 assertions, all pass | ./ores.ore.core.tests | worktree |
+| The new case alone | 1 case, 11 assertions, pass | ./ores.ore.core.tests "export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap" | worktree |
+| clang-format on the changed C++ | clean | clang-format --dry-run --Werror | worktree |
+
+The new case fails without the fix: the forward mapper assigned the literal
+=Swap= to every swap-shaped trade, so the document's cross-currency swap
+counted as a plain swap and the export wrote no =CrossCurrencySwapData=.
+
+* Notes
+
+- The schema gives the two products an element each of the same XSD type
+  (=swapData=), so the element the document used is the only statement of the
+  product type and nothing downstream can recover it. That is why the fix is
+  in the mapper's two directions and not in the table.
+- The reverse mapper reads the code from the row it was handed rather than
+  from a parameter, so the exporter's dispatch, which already routes both
+  =Swap= and =CrossCurrencySwap= to =reverse_swap=, needed no change.
+- The example document was chosen because it carries one of each product, so
+  the case proves they stay apart rather than that one type round trips.
+- This is one clause of the staging unit "the header and the fact tables".
+  The unit's other clauses — the header itself, the field move and the seven
+  unwritten columns — are not in this task; the header's own task records the
+  design and is not started.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2951][#2951]] | [ore] Carry the cross-currency swap's own type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A cross-currency swap keeps its own product type through the import and the
+export. The importer stores =CrossCurrencySwap= where the document used
+=CrossCurrencySwapData= and =Swap= where it used =SwapData=; the exporter
+writes the element and the trade type the row names. The case that covers it
+imports and exports a document holding one of each, and the two come out
+apart.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2951][#2951]] | [ore] Carry the cross-currency swap's own type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

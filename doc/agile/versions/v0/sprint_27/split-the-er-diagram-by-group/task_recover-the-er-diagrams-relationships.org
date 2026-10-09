@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :split-the-er-diagram-by-group:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/recover-the-er-diagrams-relationships
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A package diagram draws the arrows between the tables it holds. The arrows come 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -57,9 +57,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Keys the create scripts state | 339: 336 trigger checks, 2 REFERENCES, 1 FOREIGN KEY | the three patterns over =projects/ores.sql/create= | 3495b31ff0 |
+| Keys attached to a table | 338 | =SQLParser().fk_targets= | 3495b31ff0 |
+| Edges in the model | 328, none dangling, none self-referencing | =get_model()['relationships']= | 3495b31ff0 |
+| Columns newly marked FK in the diagram | 57 | =git diff= on =ores_schema.puml= | 6af5fd35de |
+| codegen-tests | pass, 75.2 s | =compass check --only codegen-tests= | 6af5fd35de |
+| er-diagram | pass, 2.7 s | =compass check --only er-diagram= | 6af5fd35de |
 
 * Notes
+
+The diagram still marks 1,473 columns as FK while only 273 of them have a
+target that any script states. The gap is the naming heuristic in
+=apply_column_markings=, which marks every =*_id= column and everything in
+=FK_COLUMNS=: =tenant_id= appears 454 times and =change_reason_code= 373
+times. Those markers are left alone here -- this task is about the arrows
+-- but a column marked FK with no edge is the next thing the diagram
+says that the schema does not. Worth a task once the split lands.
 
 * Test Scenarios
 
@@ -85,3 +98,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The parser drew no edges because =FK_TARGET_TABLES= named its targets
+without the =ores_= prefix that every table in the model carries, so no
+lookup could match. The map is deleted.
+
+The targets now come from the schema itself. A create script states a key
+in one of three ways, and all three are read: the comment the create
+template emits above a trigger check, a =REFERENCES= clause on a column,
+and a named =FOREIGN KEY= constraint. Each is attached to the table in the
+same script that declares the column, so a hand-written script holding
+several tables still resolves; a key whose column belongs to no table in
+its script, or to more than one, is left out rather than guessed at.
+
+Of 339 stated keys, 338 resolve to a table and 328 become edges: the rest
+are duplicates of the same table pair and keys a table holds to itself.
+That a key no script states still draws nothing is a test, so the arrows
+cannot drift back into a list kept in the parser.
+
+The 57 columns whose target the SQL states but whose name never said so --
+=day_counter=, =calendar_code= and their like -- now carry the FK mark.

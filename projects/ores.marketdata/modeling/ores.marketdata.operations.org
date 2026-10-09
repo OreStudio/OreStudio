@@ -1209,18 +1209,20 @@ reads, so the engine can be handed the file its run document names.
 :response: backfill_series_identity_response
 :END:
 
-Projects the identity of every series the tenant holds that has none, so a
-series written before the projection existed becomes joinable. A series that
-already carries a projection is left alone, so running this again finds
-nothing to do.
+Projects the identity of every series the tenant holds whose stored row is not
+what the current projector would write, so a series written before the
+projection existed, or one an earlier projector left with a fixing's fields
+empty, becomes joinable. A series whose row already matches is left alone, so
+running this again finds nothing to do.
 
 #+begin_src cpp :name comment
 /**
- * @brief Projects the identity of every series that has none.
+ * @brief Projects the identity of every series whose stored row is stale.
  *
  * The projection is written by the series write path, so only rows that
- * predate it or that were written outside it are missing. This finds those
- * and writes them, and touches nothing that already has a row.
+ * predate it, that were written outside it, or that an earlier projector
+ * spelled differently are stale. This compares each series' fresh projection
+ * with the stored row and writes only the difference.
  */
 #+end_src
 
@@ -1258,6 +1260,9 @@ nothing to do.
 #+begin_src cpp :name comment
 /**
  * @brief How many series were projected by this call.
+ *
+ * A series whose stored row already matched the fresh projection is not
+ * counted: only the rows this call wrote are.
  */
 #+end_src
 
@@ -1269,7 +1274,8 @@ nothing to do.
 
 #+begin_src cpp :name comment
 /**
- * @brief How many current series already carried a projection.
+ * @brief How many current series already carried the projection this call
+ * would write.
  */
 #+end_src
 

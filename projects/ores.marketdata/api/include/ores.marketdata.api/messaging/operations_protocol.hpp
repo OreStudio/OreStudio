@@ -601,11 +601,12 @@ struct export_market_data_to_storage_response {
 };
 
 /**
- * @brief Projects the identity of every series that has none.
+ * @brief Projects the identity of every series whose stored row is stale.
  *
  * The projection is written by the series write path, so only rows that
- * predate it or that were written outside it are missing. This finds those
- * and writes them, and touches nothing that already has a row.
+ * predate it, that were written outside it, or that an earlier projector
+ * spelled differently are stale. This compares each series' fresh projection
+ * with the stored row and writes only the difference.
  */
 struct backfill_series_identity_request {
     using response_type = struct backfill_series_identity_response;
@@ -629,10 +630,14 @@ struct backfill_series_identity_response {
     std::string message;
     /**
      * @brief How many series were projected by this call.
+     *
+     * A series whose stored row already matched the fresh projection is not
+     * counted: only the rows this call wrote are.
      */
     int projected_count = 0;
     /**
-     * @brief How many current series already carried a projection.
+     * @brief How many current series already carried the projection this call
+     * would write.
      */
     int already_projected_count = 0;
     /**

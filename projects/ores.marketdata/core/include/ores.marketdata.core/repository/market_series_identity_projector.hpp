@@ -47,6 +47,20 @@ namespace ores::marketdata::repository {
 class ORES_MARKETDATA_CORE_EXPORT market_series_identity_projector final {
 public:
     /**
+     * @brief What a re-projection wrote, left alone and could not read.
+     *
+     * A projection an earlier projector wrote carries a fixing's kind and its
+     * asset class and no field value. Re-projecting compares a fresh projection
+     * with the stored row and writes only the rows that differ, so a call is
+     * idempotent and repairs the rows an earlier projector wrote.
+     */
+    struct reprojection_result {
+        std::size_t written = 0;
+        std::size_t unchanged = 0;
+        std::size_t unreadable = 0;
+    };
+
+    /**
      * @brief Projects @p series, replacing the identity of any series already
      * projected.
      *
@@ -57,6 +71,20 @@ public:
      */
     static std::size_t project(ores::database::context ctx,
                                const std::vector<domain::market_series>& series);
+
+    /**
+     * @brief Projects @p series and writes only the rows whose projection
+     * changed.
+     *
+     * The write path projects a series as it writes it, so every row it has
+     * seen is already current. A row an earlier projector wrote, or one whose
+     * URI changed, is not: this compares a fresh projection with what the table
+     * holds and writes the difference. A second call over the same series finds
+     * nothing to write, so the backfill repairs the rows the current projector
+     * would spell differently however often it runs.
+     */
+    static reprojection_result reproject(ores::database::context ctx,
+                                         const std::vector<domain::market_series>& series);
 };
 
 }

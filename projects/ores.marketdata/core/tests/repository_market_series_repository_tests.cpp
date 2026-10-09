@@ -19,8 +19,11 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/market_series_identity.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_projector.hpp"
+#include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -223,4 +226,94 @@ TEST_CASE("two_parties_may_each_hold_one_identity", tags) {
     second.party_id = boost::uuids::random_generator{}();
 
     CHECK_NOTHROW(repo.write(h.context(), second));
+}
+
+// A series whose URI names a fixing. It carries no instrument type, so the
+// projection reads it through the index codec rather than the instrument
+// schema, and its identity fields come from the index grammar.
+ores::marketdata::domain::market_series make_fixing_test_series(database_helper& h,
+                                                               const boost::uuids::uuid& party) {
+    ores::marketdata::domain::market_series s;
+    s.id = boost::uuids::random_generator{}();
+    s.version = 0;
+    s.tenant_id = h.tenant_id();
+    s.party_id = party;
+    s.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
+    s.series_subclass = "yield";
+    s.derivation_kind = "OBSERVED";
+    s.derivation_config_id = boost::uuids::nil_uuid();
+    s.derivation_config_version = 0;
+    s.modified_by = h.db_user();
+    s.performed_by = h.db_user();
+    s.change_reason_code = "system.test";
+    s.change_commentary = "fixing identity projection test";
+    return s;
+}
+
+TEST_CASE("a_fixing_series_projects_its_identity_fields", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository repo;
+    const auto s = make_fixing_test_series(h, boost::uuids::random_generator{}());
+    repo.write(h.context(), s);
+
+    ores::marketdata::repository::market_series_identity_repository identities;
+    const auto rows = identities.read_latest(h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+
+    // The row decomposes the fixing URI onto the same columns a convention's
+    // fixing URI decomposes onto: the authority is the asset class, the URI's
+    // index key is the family, and name and tenor are the family's fields.
+    CHECK(rows[0].identity_kind == "index");
+    CHECK(rows[0].asset_class == "ir");
+    CHECK(rows[0].ccy == "EUR");
+    CHECK(rows[0].index == "ibor");
+    CHECK(rows[0].index_name == "EURIBOR");
+    CHECK(rows[0].tenor == "6M");
+    CHECK(rows[0].instrument_type.empty());
+    CHECK(rows[0].quote_type.empty());
+}
+
+TEST_CASE("reprojecting_repairs_a_fixing_row_and_changes_nothing_after", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository repo;
+    const auto s = make_fixing_test_series(h, boost::uuids::random_generator{}());
+    repo.write(h.context(), s);
+
+    // A row an earlier projector wrote: the kind and the asset class and no
+    // field value. Re-projecting has to correct it, because the row the write
+    // path leaves is not the only one the table can hold.
+    ores::marketdata::domain::market_series_identity stale;
+    stale.tenant_id = h.tenant_id();
+    stale.series_id = s.id;
+    stale.party_id = s.party_id;
+    stale.identity_kind = "index";
+    stale.asset_class = "ir";
+    ores::marketdata::repository::market_series_identity_repository{}.write(h.context(), stale);
+
+    const auto first =
+        ores::marketdata::repository::market_series_identity_projector::reproject(h.context(), {s});
+    CHECK(first.written == 1);
+    CHECK(first.unchanged == 0);
+    CHECK(first.unreadable == 0);
+
+    const auto second =
+        ores::marketdata::repository::market_series_identity_projector::reproject(h.context(), {s});
+    CHECK(second.written == 0);
+    CHECK(second.unchanged == 1);
+
+    const auto rows = ores::marketdata::repository::market_series_identity_repository{}.read_latest(
+        h.context(), boost::uuids::to_string(s.id));
+    REQUIRE(rows.size() == 1);
+    CHECK(rows[0].ccy == "EUR");
+    CHECK(rows[0].index == "ibor");
+    CHECK(rows[0].index_name == "EURIBOR");
+    CHECK(rows[0].tenor == "6M");
 }

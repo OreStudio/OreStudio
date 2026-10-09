@@ -136,6 +136,20 @@ public:
                                const std::vector<std::string>& args);
 
     /**
+     * @brief Re-projects the tenant's series identities.
+     *
+     * Sends a backfill_series_identity_request over NATS. The projection is
+     * written from the oresmd URI, so a series whose stored row predates a
+     * change to how the URI is projected -- a fixing's fields, for example --
+     * is brought up to date. A row already matches is left alone, so the
+     * command is safe to run again. The optional --party narrows it to one
+     * owning party.
+     */
+    static void process_backfill_identity(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          const std::vector<std::string>& args);
+
+    /**
      * @brief Watch one oresmd on the republished tick stream.
      *
      * Resolves the URI with the oresmd codec and subscribes on the session's

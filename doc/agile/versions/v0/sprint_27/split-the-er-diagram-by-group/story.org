@@ -139,7 +139,7 @@ Two combinations look strongest:
 |------+-------+-------+-----+-------------|
 | [[id:440BD2AE-E77B-4BFA-BEB8-3DA607512407][Recover the ER diagram's relationships]] | DONE | 2026-10-09 | 2026-10-09 | The parser renders no relationships because its FK map lost the table prefix. Infer the edges from the SQL it already reads. |
 | [[id:240C063C-AFF0-4F5C-804D-13F32B7E2FA5][Split the ER diagram by package]] | DONE | 2026-10-09 | 2026-10-09 | One diagram over 463 tables cannot be painted. Generate one per package, plus an index. |
-| [[id:4EB66588-9DF4-4EF7-9F5C-416F88BE33E7][Draw the ER diagrams as SVG]] | BACKLOG | | | The raster PNG overflows and the PNG and cmapx carry the installed PlantUML's layout. Emit SVG and untrack both. |
+| [[id:4EB66588-9DF4-4EF7-9F5C-416F88BE33E7][Draw the ER diagrams as SVG]] | DONE | 2026-10-09 | 2026-10-09 | The raster PNG overflows and the PNG and cmapx carry the installed PlantUML's layout. Emit SVG and untrack both. |
 | [[id:E2FA84AB-7F18-4998-8563-C2E749408B7F][Gate every ER diagram]] | BACKLOG | | | The er-diagram check reads one file. Make it cover every generated diagram, discovered rather than listed. |
 
 * Decisions

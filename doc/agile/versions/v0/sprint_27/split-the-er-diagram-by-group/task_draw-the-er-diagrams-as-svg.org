@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :split-the-er-diagram-by-group:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-the-er-diagrams-as-svg
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The diagrams ship as vector files and no environment-specific raster or image ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -57,7 +57,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Diagrams drawn as SVG | 22, exit 0 | =plantuml -tsvg ores_schema*.puml= | adc5954e60 |
+| SVG total size | 4.5 MB | =du -ch ores_schema*.svg= | adc5954e60 |
+| PNG or cmapx written by a draw | 0 | =ls ores_schema*.png ores_schema*.cmapx= | adc5954e60 |
+| CMake target | exit 0, 22 SVGs redrawn | =compass build generate_ores_schema_diagram= | - |
+| Tracked images after this task | 0 | =git ls-files 'projects/ores.sql/modeling/*'= | - |
+| er-diagram, codegen-tests, org-links, cmake-sources | 4/4 passed | =compass check --only er-diagram --only codegen-tests --only org-links --only cmake-sources= | - |
 
 * Notes
 
@@ -85,3 +90,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The drawing step emits SVG and every generated diagram is drawn, not only
+the index: the script expands =ores_schema*.puml= and the CMake target
+does the same through =bash -c=, because CMake cannot expand a glob in a
+=COMMAND= and the file set has to follow the model rather than a list
+kept in the build description. 22 diagrams draw in one pass, 4.5 MB in
+total, and a pass writes no PNG and no cmapx.
+
+=ores_schema.png= and =ores_schema.cmapx= are deleted from the index, and
+=.gitignore= carries =ores_schema*.svg= so a drawing pass leaves the
+working tree clean. Nothing is tracked but the =.puml= files, which are
+the artefacts: an image carries the installed PlantUML build's layout, so
+it cannot be regenerated identically on another machine, and the SVG of a
+153-table group is 4 MB that every checkout would pay for.
+
+=ORES_JAVA_ARGS= is shared with the sixteen component diagrams that still
+draw PNGs, so it keeps =PLANTUML_LIMIT_SIZE=; the ER target passes it
+through and adds =-tsvg=. The script's own invocation drops the limit,
+since a vector has no pixel count to overflow, and its java fallback does
+the same.
+
+The conventions doc now names the drawn files and says they are not
+committed, and the memory note no longer sends a reader back to the two
+artefacts that used to be tracked.

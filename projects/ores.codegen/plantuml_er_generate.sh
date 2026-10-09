@@ -4,12 +4,13 @@
 #
 # This script:
 # 1. Parses SQL CREATE/DROP files to generate a JSON model
-# 2. Renders the model using a Mustache template to produce PlantUML
+# 2. Renders the model using Mustache templates: one diagram per group,
+#    and an index page that names the groups
 # 3. Optionally renders the PNG using plantuml
 #
 # Usage:
-#   ./plantuml_er_generate.sh          regenerate the .puml, then the .png
-#   ./plantuml_er_generate.sh --check  exit non-zero if the committed .puml
+#   ./plantuml_er_generate.sh          regenerate the .puml files, then the .png
+#   ./plantuml_er_generate.sh --check  exit non-zero if any committed .puml
 #                                      is stale, without rendering the PNG
 #
 
@@ -66,6 +67,7 @@ echo "Generating PlantUML..."
 GENERATE_ARGS=(
     --model "${ER_MODEL}"
     --template "${SCRIPT_DIR}/library/templates/plantuml_er.mustache"
+    --index-template "${SCRIPT_DIR}/library/templates/plantuml_er_index.mustache"
     --output "${SQL_DIR}/modeling/ores_schema.puml"
 )
 if [ "$CHECK" -eq 1 ]; then

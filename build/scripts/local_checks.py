@@ -423,7 +423,7 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="er-diagram",
-        title="The committed ER diagram matches the schema",
+        title="The committed ER diagrams match the schema",
         argv=(
             "bash",
             "-c",
@@ -434,10 +434,11 @@ CATALOGUE: tuple[Check, ...] = (
             " && python3 projects/ores.codegen/src/plantuml_er_generate.py"
             " --model build/output/codegen/plantuml_er_model.json"
             " --template projects/ores.codegen/library/templates/plantuml_er.mustache"
+            " --index-template projects/ores.codegen/library/templates/plantuml_er_index.mustache"
             " --output projects/ores.sql/modeling/ores_schema.puml --check",
         ),
         classes=("sql", "modeling"),
-        fix="Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagram.",
+        fix="Run projects/ores.codegen/plantuml_er_generate.sh and commit the diagrams.",
     ),
     Check(
         id="sql-hygiene",

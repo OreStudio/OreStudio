@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A tenant administrator onboards a counterparty in ores.web, and the screen match
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,29 +35,69 @@ A tenant administrator onboards a counterparty in ores.web, and the screen match
 
 * Acceptance
 
--
+- The nine steps journey 5 draws run end to end in =ores.web= against the live
+  fleet, and the screen matches the prototype the product owner accepted.
+- The screen is reachable from =AppRoutes.tsx= and holds an =Operations= account,
+  because the role task that unblocked it is done.
+- Its tests pass and =npm run typecheck=, =npm run format:check= and =npm test=
+  are green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scope recorded before the build, so the work starts from a map rather than from
+a read of everything.
+
+1. Read the accepted prototype at
+   =doc/prototypes/parties/onboard-a-counterparty/prototype.js= (1573 lines)
+   beside journey 5's =* Steps=, and take the step order, the field set and the
+   refused state from them. The prototype is the design of record.
+2. Read the precedent, because a journey screen is a composition rather than a
+   new structure: =journeys/NewPartyJourney.tsx= is 92 lines and
+   =journeys/newPartySteps.tsx= is 368, and both reuse
+   =journeys/parts.tsx= (789), =journeys/runtime.ts= (189) and
+   =journeys/derive.ts= (211). Work out which of the shared parts already carry
+   the panels journey 5 draws — a list, a form step, a child-row editor, a
+   review, a refusal — and add a part only where none exists.
+3. Build =CounterpartyJourney.tsx= and =counterpartySteps.tsx= against the wire
+   subjects journey 5's coverage table names. That table was reconciled with the
+   tree in this story, so every subject in it resolves; do not work from the
+   prototype's subject strings, which were written before the reconciliation and
+   name two subjects the tree does not carry.
+4. Register the screen in =AppRoutes.tsx=, beside the =NewPartyJourney= route.
+5. Write the tests the sibling screens have: a step-derivation test beside
+   =newPartySteps.test.tsx=, and a journey test beside =NewPartyJourney.test.tsx=.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Steps journey 5 draws | 9 | =grep -cE '^[0-9]+\\. \\*' the journey's =* Steps= | =9ca4d504b0= |
+| Lines in the accepted prototype | 1573 | =wc -l doc/prototypes/parties/onboard-a-counterparty/prototype.js= | =9ca4d504b0= |
+| Lines in the sibling screen and its steps | 92 + 368 | =wc -l journeys/NewPartyJourney.tsx journeys/newPartySteps.tsx= | =9ca4d504b0= |
+| Lines in the shared parts they reuse | 789 + 189 + 211 | =wc -l journeys/parts.tsx journeys/runtime.ts journeys/derive.ts= | =9ca4d504b0= |
 
 * Notes
+
+Started, not built. The reconnaissance above is recorded so the build begins
+from a map; the screen itself is a 9-step front-end composition that needs the
+prototype and the shared parts read in full, and it is left for a session with
+the room to do that and verify the result.
+
+Everything it was waiting on is done and merged. The story's eleven server-side
+tasks are all =DONE=, including the four that unblocked this screen: the typed
+refusal, the authoritative-identifier and primary-contact flags, the
+counterparty business centres, and the composite write. =Operations= now holds
+the permissions the screen needs, so a person who is not a tenant administrator
+can run it. The one gap journey 5 still carries is the composite read of the
+agreements and collateral terms, and the screen works without it by reading them
+one subject at a time, which the journey's own step text describes.
+
+Two traps worth naming before the build. Journey 5's prototype names
+=refdata.v1.counterparties.composite_as_of= and a child-carrying list reply; the
+tree carries =refdata.v1.ops.get_counterparty_composite_as_of= instead, and the
+landing list reads its children with =counterparty_id_one_of= rather than one
+reply. Both corrections are in the journey's coverage table, so read that table
+and not the prototype's subject strings.
 
 * Test Scenarios
 

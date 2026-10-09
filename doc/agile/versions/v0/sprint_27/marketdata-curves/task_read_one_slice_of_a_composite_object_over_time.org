@@ -28,9 +28,9 @@ A caller asks for one component of a composite object over a range and gets a te
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | The plan is written. The wire operation is being added. |
+| Now          | Implemented and green. The operation, the as-of instant read, the reader, the handler and the tests are in. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the operation, the as-of instant read, the handler and the tests. |
+| Next         | Open the PR, then record the result.   |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -105,7 +105,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata suites | 5 of 5 pass: api, client, core, core.corpus, service | =ctest --test-dir build/output/linux-clang-debug-make -R "^ores\.marketdata\." --output-on-failure= | =b5c6f55016= |
+| new slice-reader cases | 5 cases, 36 assertions, all pass | =publish/bin/ores.marketdata.core.tests "[series_slice_reader]"= | =b5c6f55016= |
+| marketdata codegen drift | none | =projects/ores.codegen/venv/bin/python projects/ores.codegen/scripts/check_component_drift.py --component marketdata --dry-run= | =b5c6f55016= |
+| local checks, branch against =origin/main= | 27 of the 32 pass on a clean tree; the rest are the environment's, see the limitations | =python3 build/scripts/local_checks.py --exclude-heavy --base origin/main --jobs 2= | =b5c6f55016= |
 
 * Notes
 
@@ -154,3 +157,61 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A caller now asks for one component of a composite object over a range and gets
+a term structure at each instant, without knowing that the object is stored as a
+series and without building a URI.
+
+What landed:
+
+- =get_series_slice_request= and =get_series_slice_response= in
+  =ores.marketdata.operations=, generated into the C++ protocol and the
+  TypeScript twin. The request embeds the resolver's typed identity, so the two
+  cannot drift.
+- =series_slice_instant=, whose values are index for index with the response's
+  coordinates.
+- =market_observation_repository::read_as_of_instants=, the bucket read with the
+  boundaries drawn from the data, in one statement over the same index.
+- =service::series_slice_reader=, which validates the component against the
+  shape, walks the instants and builds the ladder.
+- =messaging::series_slice_handler=, registered on
+  =marketdata.v1.ops.get_series_slice=, which owns the session, the permission
+  and the wire.
+
+Acceptance:
+
+- /One component is returned as a term structure over a range of instants./ Met.
+  The response states the declared ladder once and one row per instant. The test
+  imports a surface whose 2Y point is stated once and asserts it is carried
+  forward beside the 1Y value that moved.
+- /The component is named from the object definition, so no caller builds an
+  oresmd URI by hand./ Met. The object is named by typed identity fields and the
+  component by an axis and a value the shape declares. The only strings a caller
+  states are the ones the shape holds.
+- /A component the shape does not declare is refused, with the reason./ Met. A
+  value the axis does not hold, an axis the object does not declare, a two-axis
+  object whose component field is empty, and a reversed range are each refused
+  with a message that names what is missing.
+
+Limitations:
+
+- *The composition stops at two axes.* A term structure has one ladder, so an
+  object of three axes, such as a swaption cube, is refused with that reason
+  rather than served a surface. A read that walks two axes at once is the
+  evolution read's work.
+- *The read walks every point of every instant.* The component is selected in
+  C++, by reading each point's stored URI through the codec, so the work grows
+  with the object's size and the range's length and not with the component's.
+  Pushing the component into SQL would need a text match on the URI, which the
+  codec's own encoding would make fragile.
+- *Sub-second instants group at the second.* An instant is carried as
+  microseconds, so two instants inside one second are two rows, but the read
+  states the instant as the codec and the rest of the component do, to the
+  second.
+- *Four local checks do not pass here, and none is this branch's.*
+  =component-drift= timed out after 900 s on a box at load 20; it writes
+  generated files before it compares, so the files it had regenerated in
+  =ores.refdata= then failed =format= and =drift-sweep= until they were
+  reverted. =er-diagram= cannot import =pystache= under the bare =python3= the
+  check invokes. A dry run of =component-drift= names no marketdata file, and
+  the reverted tree passes =format= and =drift-sweep=.

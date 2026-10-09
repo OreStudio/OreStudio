@@ -155,6 +155,11 @@ def _wait_for_log(ctx, name, pattern, timeout=120, log_basename=None) -> bool:
 JOURNAL_LINES = 400
 JOURNAL_TIMEOUT_S = 20
 
+# How much of a failing unit's journal a failed start prints. Enough for
+# the service's own refusal, which is the line a person acts on, without
+# burying it under everything that led there.
+FAILED_UNIT_JOURNAL_LINES = 12
+
 
 def _journal_lines(units, lines=JOURNAL_LINES):
     """The most recent journal lines for one unit or several, oldest first.
@@ -346,7 +351,7 @@ def _resolve_service(ctx, selector):
 
 
 def _service_ready(ctx, unit_pairs, timeout=300):
-    """Wait until every unit is active.
+    """Wait until every unit is active, and stop the moment one fails.
 
     ActiveState is the readiness signal for the compiled services, because
     they are Type=notify: systemd reports the unit active only once the
@@ -354,54 +359,57 @@ def _service_ready(ctx, unit_pairs, timeout=300):
     more, and scanning one would only restate that. nats-server and
     ores.web are Type=simple; systemd reports them active when the process
     is up, and nats blocks on its own port check before its start job
-    completes."""
+    completes.
+
+    A unit that has reached `failed` will not become active by being
+    waited on, so the wait ends there rather than at the timeout. The
+    reason it would not run is in its journal, and that reason is what the
+    person needs: a refusal that arrives in seconds is worth more than a
+    dot trail that arrives in five minutes."""
     waiting = {unit for unit, _ in unit_pairs}
     ready = {}
-    # Two rounds at most: the first wait, then one retry of whatever systemd
-    # gave up on. An earlier version called itself for the retry, so a unit
-    # that could not come up was retried forever and a start never returned.
-    for attempt in (1, 2):
-        waiting = _await_active(waiting, ready, timeout if attempt == 1 else 120)
-        if not waiting:
-            break
-        broken = [unit for unit in sorted(waiting)
-                  if _unit_active_state(unit) in ("failed", "inactive")]
-        if not broken:
-            break
-        # Requires= means a unit whose first start attempt fails races a
-        # dependency and permanently fails that start job: systemd does not
-        # re-trigger it once the dependency's own Restart=always succeeds.
-        # One reset-failed and start covers that race without masking a
-        # genuinely broken service, which fails the retry too.
-        print(f"[retry: {len(broken)} unit(s) did not become active; "
-              f"resetting and starting them once]")
-        for unit in broken:
-            _systemctl(["reset-failed", f"{unit}.service"], check=False)
-            _systemctl(["start", f"{unit}.service"], check=False)
+    waiting = _await_active(waiting, ready, timeout)
+    if waiting:
+        _report_unstarted(sorted(waiting))
     return not waiting
 
 
-def _await_active(waiting, ready, timeout):
-    """Wait until every unit in `waiting` is active, or the timeout expires.
+def _report_unstarted(units):
+    """Why each unit that did not come up did not come up.
 
-    ActiveState is the readiness signal for the compiled services, because
-    they are Type=notify: systemd reports the unit active only once the
-    service itself called sd_notify(READY=1). There is no log to scan, and
-    scanning one would only restate that. nats-server and ores.web are
-    Type=simple; systemd reports them active when the process is up, and nats
-    blocks on its own port check before its start job completes.
+    A unit the manager tried and could not run says so in its journal, and
+    that message is the whole point of a failed start. A unit that never
+    ran has nothing to show, so it is named and left at that."""
+    print()
+    print(f"[{len(units)} unit(s) did not start]")
+    for unit in units:
+        state = _unit_active_state(unit)
+        print(f"  {unit}: {state}")
+        if state != "failed":
+            continue
+        for line in _journal_lines(unit, lines=FAILED_UNIT_JOURNAL_LINES):
+            print(f"    {line}")
+
+
+def _await_active(waiting, ready, timeout):
+    """Wait until every unit in `waiting` is active, one fails, or time runs out.
 
     Returns the units still not active, and records the rest in `ready`."""
     print(f"  wait    {len(waiting)} unit(s) (active)", end="", flush=True)
     deadline = time.time() + timeout
     while waiting and time.time() < deadline:
-        for unit in sorted(waiting):
-            if _unit_active_state(unit) == "active":
+        states = {unit: _unit_active_state(unit) for unit in sorted(waiting)}
+        for unit, state in states.items():
+            if state == "active":
                 ready[unit] = True
-                waiting.discard(unit)
-        if waiting:
-            print(".", end="", flush=True)
-            time.sleep(0.5)
+        waiting = {unit for unit in waiting if unit not in ready}
+        if not waiting:
+            break
+        if any(state == "failed" for state in states.values()):
+            print(" ... failed")
+            return waiting
+        print(".", end="", flush=True)
+        time.sleep(0.5)
     if waiting:
         print(f" ... timeout ({len(waiting)} still not active: "
               f"{', '.join(sorted(waiting))})")

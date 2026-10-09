@@ -8,6 +8,7 @@ boundary are monkeypatched.
 
 import subprocess
 import sys
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -249,3 +250,61 @@ class TestLogs:
         monkeypatch.setattr(compass_services.systemd_generate,
                             "fetch_service_definitions", lambda services: [])
         assert compass_services._resolve_units(ctx, "nope") == []
+
+
+class TestStartupFailure:
+    """A failed unit ends the wait at once and says why."""
+
+    def test_a_failed_unit_stops_the_wait_instead_of_burning_the_timeout(
+            self, monkeypatch):
+        monkeypatch.setattr(compass_services, "_unit_active_state",
+                            lambda unit: "failed")
+        started = time.monotonic()
+        waiting = compass_services._await_active({"ores.iam.service"}, {},
+                                                  timeout=300)
+        elapsed = time.monotonic() - started
+
+        assert waiting == {"ores.iam.service"}
+        assert elapsed < 5, f"waited {elapsed:.1f}s on a unit that had failed"
+
+    def test_a_unit_still_coming_up_is_waited_for(self, monkeypatch):
+        states = iter(["activating", "active"])
+        monkeypatch.setattr(compass_services, "_unit_active_state",
+                            lambda unit: next(states))
+        monkeypatch.setattr(compass_services.time, "sleep", lambda _s: None)
+
+        ready = {}
+        waiting = compass_services._await_active({"ores.iam.service"}, ready,
+                                                 timeout=5)
+
+        assert waiting == set()
+        assert ready == {"ores.iam.service": True}
+
+    def test_a_failure_prints_the_unit_and_its_journal(self, monkeypatch,
+                                                       capsys, ctx):
+        monkeypatch.setattr(compass_services, "_unit_active_state",
+                            lambda unit: "failed")
+        monkeypatch.setattr(
+            compass_services, "_journal_lines",
+            lambda unit, lines=None: ["REFUSING TO START: the database "
+                                      "schema does not match this build."])
+
+        compass_services._report_unstarted(["ores.iam.service"])
+        printed = capsys.readouterr().out
+
+        assert "1 unit(s) did not start" in printed
+        assert "ores.iam.service: failed" in printed
+        assert "REFUSING TO START" in printed
+
+    def test_a_unit_that_never_ran_is_named_without_a_journal(self, monkeypatch,
+                                                              capsys):
+        monkeypatch.setattr(compass_services, "_unit_active_state",
+                            lambda unit: "inactive")
+        monkeypatch.setattr(compass_services, "_journal_lines",
+                            lambda unit, lines=None: pytest.fail(
+                                "a unit that never ran has no journal to read"))
+
+        compass_services._report_unstarted(["ores.refdata.service"])
+        printed = capsys.readouterr().out
+
+        assert "ores.refdata.service: inactive" in printed

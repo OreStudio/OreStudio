@@ -8,7 +8,7 @@
 #+filetags: :the-party-role-test-asserts-a-dropped-column:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/the-party-role-test-asserts-a-dropped-column
-#+pr:
+#+pr: 2906
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2906][#2906]] | [trading] Assert a header the party role table still has |
 
 * Review
 

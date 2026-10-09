@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 4585D0EF-5DDC-4FC9-83FC-3E98A0A7141A
+:END:
+#+title: Story: Hotfix: the marketdata offset field has no name
+#+description: a6f1f9b570 renamed the series identity projection column offset to spread_offset, but datum_ore_key_codec_tests.cpp still reads fl::offset, so ores.marketdata.core.tests does not compile and the build stops at 91%.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.marketdata:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let ores.marketdata.core.tests compile, so a full build reaches 100% on main.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- datum_ore_key_codec_tests.cpp names a field enum member that exists.
+- The ORE key the commodity calendar spread option case writes is still =offset=.
+- A full build completes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:99B5C1AF-E63A-4BFC-937F-CA996BCD473D][Scaffold story: Hotfix: the marketdata offset field has no name]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6D9E6C2F-FC26-4A03-86AE-87E517C53CFA][Implement Hotfix: the marketdata offset field has no name]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the marketdata offset field has no name |
+
+* Decisions
+
+- *The ORE key stays =offset=.* =a6f1f9b570= renamed the C++ field to
+  =spread_offset= because something else in the process reads the name it
+  carries: the PostgreSQL store, where =offset= is reserved. Its model records
+  that ORE's own spelling of the key is unchanged, so only the enum member
+  moves and the JSON key this test writes stays =offset=.
+
+* Out of scope
+
+- The rename itself. =a6f1f9b570= and =4ec27d8c47= decided it. This restores the
+  one caller that was left behind.
+
+* Result
+
+Done. The stale reference was line 567 of
+=projects/ores.marketdata/core/tests/datum_ore_key_codec_tests.cpp=, the only
+one in the tree. =./compass.sh build= completes to 100%.

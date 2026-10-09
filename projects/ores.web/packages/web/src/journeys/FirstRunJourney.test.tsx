@@ -33,7 +33,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { FirstRunJourney, WelcomeIntro, systemPartyOf } from './FirstRunJourney.js';
+import { FirstRunJourney, WelcomeIntro, startStep, systemPartyOf } from './FirstRunJourney.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
 import type { JourneyServer } from './server.js';
 
@@ -147,6 +147,7 @@ describe('the page before the deployment answers', () => {
             <FirstRunJourney
                 server={fakeServer()}
                 inBootstrapMode={true}
+                signedIn={false}
                 onStarted={() => undefined}
                 onFinished={() => undefined}
             />,
@@ -154,5 +155,22 @@ describe('the page before the deployment answers', () => {
 
         expect(html).toContain('Loading...');
         expect(html).not.toContain('<nav');
+    });
+});
+
+describe('the step a first run opens on', () => {
+    it('welcome, for a deployment that has no administrator', () => {
+        expect(startStep(false, false)).toBe('welcome');
+    });
+
+    it('the administrator, when the account exists and nobody holds its session', () => {
+        expect(startStep(true, false)).toBe('administrator');
+    });
+
+    it('the starting point, when the browser is already signed in as it', () => {
+        // Asking a browser that holds the account's session to sign in asks for
+        // a session it already has, which is how the person who made the
+        // administrator a moment ago was asked to sign in as it.
+        expect(startStep(false, true)).toBe('profile');
     });
 });

@@ -838,6 +838,7 @@ export function ConnectedApp(): ReactNode {
                 <FirstRunJourney
                     server={server}
                     inBootstrapMode={gate.status === 'ready' && gate.inBootstrapMode}
+                    signedIn={session.status === 'authenticated'}
                     onStarted={() => setJourneyInProgress(true)}
                     onFinished={() => {
                         setJourneyInProgress(false);

@@ -183,4 +183,4 @@ and the resolved-dates step -- and the refusal that operation would carry.
 *What is not verified.* No database or C++ test exercises the new column or the
 new writes: the box shares one PostgreSQL across eleven worktrees, so =compass db
 recreate= would disrupt the others, and the local =.env= is at format version 27
-against a required 29. The build result is recorded when it lands.
+against a required 29. The branch builds green.

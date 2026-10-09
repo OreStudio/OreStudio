@@ -152,12 +152,12 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'dq::change_reasons:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'assets::images:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'variability::flags:read');
-    -- The role catalogue and the permission codes are what a member reads
-    -- to decide what to ask for, and the screens that show them are the
-    -- member's own. Neither is request data: a role a tenant offers is
-    -- offered to its people, and a permission code says what a role does.
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::roles:read');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::permissions:read');
+    -- The role and permission catalogues are open reads: the models name
+    -- their list and get subjects in :open_reads:, so a member reads either
+    -- without a code. Granting iam::roles:read here was the only thing that
+    -- put it in reach of every person, and that same code gates reading
+    -- another account's roles, so a member could read any account's access.
+    -- Account data is not screen furniture, so Member holds neither code.
 
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');

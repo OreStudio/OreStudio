@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: DDC770CE-E427-42CA-B634-FE57C408217A
+:END:
+#+title: Story: Hotfix: the audit events miss the sign-ins
+#+description: Multi-party sign-ins record no event, refusals record no tenant, and the time filters cannot be compared, so the audit screen shows almost nothing.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:sprint_27:v0:
+#+created: 2026-10-10
+#+updated: 2026-10-10
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The audit sign-ins screen shows almost nothing, on an installation whose
+authentication log is not empty. Three separate defects see to that.
+
+An account with several parties finishes signing in at party selection, not
+at the login. The login handler knows this and says so in a comment -- but
+the selection handler never records the event, so the sign-in is never
+logged. Every account the ACME profile provisions has five parties, so
+every sign-in it makes is invisible to the screen.
+
+A refused sign-in is recorded against no tenant and under the principal the
+person typed, which is hostname-qualified. The row is therefore both
+unfindable by a tenant-scoped read and unreadable as a username.
+
+And no read answers at all. A wire timestamp crosses the protocol as text,
+text does not compare against the =event_time= timestamptz column, and
+PostgreSQL refuses the comparison rather than coercing the parameter. Every
+read fails, the BFF turns the failure into an empty list, and the screen
+states there is nothing to show -- which is exactly what a working screen
+would say about an empty log.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Fix verified against a running installation. |
+| Waiting on    | Nothing.                               |
+| Next          | PR, then merge.                        |
+| Last touched  | 2026-10-10                               |
+
+* Acceptance
+
+- A sign-in that completes at party selection records a =login_success=.
+- A refusal records the tenant that was reached for and the bare username.
+- The events read answers for every window, including =all= and =day=.
+- Recording an event never refuses a sign-in that already succeeded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E21D4940-4BDF-49F0-8EF3-14882C5E81C5][Scaffold story: Hotfix: the audit events miss the sign-ins]] | DONE | 2026-10-10 | 2026-10-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6B6872B0-FB52-4D87-BD9C-A165CE8C2968][Implement Hotfix: the audit events miss the sign-ins]] | DONE | | 2026-10-10 | Initial task for: Hotfix: the audit events miss the sign-ins |
+
+* Decisions
+
+* Out of scope
+
+-

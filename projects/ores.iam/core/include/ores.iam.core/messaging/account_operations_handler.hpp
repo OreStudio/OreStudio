@@ -29,6 +29,7 @@
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_operations_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
@@ -1151,6 +1152,26 @@ public:
             }
 
             BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            /*
+             * The login that led here recorded nothing, because an account
+             * with several parties only finishes signing in when one is
+             * chosen. This is the sign-in event, so it is recorded here --
+             * against the chosen party, since that is the scope the session
+             * actually opened in. A failure to record it must not refuse a
+             * sign-in that already succeeded.
+             */
+            try {
+                repository::auth_event_repository ev_repo(ctx);
+                ev_repo.record_login_success(std::chrono::system_clock::now(),
+                                             tenant_id_str,
+                                             boost::uuids::to_string(account_id),
+                                             claims_result->username.value_or(""),
+                                             claims_result->session_id.value_or(""),
+                                             boost::uuids::to_string(requested_party_id));
+            } catch (const std::exception& ev_err) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "Failed to record login_success event: " << ev_err.what();
+            }
             reply(nats_,
                   msg,
                   select_party_response{.success = true,

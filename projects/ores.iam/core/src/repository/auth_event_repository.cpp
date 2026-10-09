@@ -163,6 +163,13 @@ auth_event_repository::read_events(const context& ctx,
      * parameter does not filter. Building the WHERE clause in C++ would
      * branch once per combination, and the table's (tenant_id, event_time)
      * index still orders the scan.
+     *
+     * The time bounds arrive as text, because a wire timestamp crosses the
+     * protocol as one, and text does not compare against the timestamptz
+     * column: PostgreSQL refuses the comparison rather than coercing the
+     * parameter, so the read has to name the cast. It goes through nullif
+     * so the empty value stays the filter turned off -- casting the empty
+     * string on its own raises instead of yielding null.
      */
     static const std::string sql =
         "select id, event_time, tenant_id, account_id, event_type, username, "
@@ -171,8 +178,8 @@ auth_event_repository::read_events(const context& ctx,
         "where tenant_id = $1 "
         "and ($2 = '' or account_id = $2) "
         "and ($3 = '' or event_type = $3) "
-        "and ($4 = '' or event_time >= $4) "
-        "and ($5 = '' or event_time <= $5) "
+        "and (nullif($4, '') is null or event_time >= nullif($4, '')::timestamptz) "
+        "and (nullif($5, '') is null or event_time <= nullif($5, '')::timestamptz) "
         "order by event_time desc "
         "limit $6::bigint offset $7::bigint";
 

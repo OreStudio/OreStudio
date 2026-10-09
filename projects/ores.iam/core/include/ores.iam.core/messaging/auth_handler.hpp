@@ -685,20 +685,26 @@ public:
          * service's startup check is the first.
          */
         const auto db_info = repository::read_database_info(ctx_);
-        try {
-            // The hostname routes the request to a tenant; the username is what
-            // the account row is stored under.
-            const auto principal = split_principal(req->principal);
-            const auto& username = principal.username;
-            ores::database::context login_ctx = ctx_;
-            if (principal.has_hostname) {
-                if (auto t = auth_lookup_tenant_by_hostname(ctx_, principal.hostname)) {
-                    auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
-                    if (tid_result)
-                        login_ctx = ctx_.with_tenant(*tid_result, "");
-                }
+        /*
+         * The hostname routes the request to a tenant; the username is what
+         * the account row is stored under. Both are resolved before the
+         * service call rather than inside the block below, so a refusal can
+         * be recorded against the tenant the person was reaching for and
+         * under the username they typed -- not against the handler's own
+         * system tenant, and not under the hostname-qualified principal they
+         * signed in with.
+         */
+        const auto principal = split_principal(req->principal);
+        const auto& username = principal.username;
+        ores::database::context login_ctx = ctx_;
+        if (principal.has_hostname) {
+            if (auto t = auth_lookup_tenant_by_hostname(ctx_, principal.hostname)) {
+                auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
+                if (tid_result)
+                    login_ctx = ctx_.with_tenant(*tid_result, "");
             }
-
+        }
+        try {
             service::account_operations_service svc(login_ctx);
             auto ip = boost::asio::ip::address_v4::loopback();
             const auto outcome = svc.login(username, req->password, ip);
@@ -929,9 +935,11 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), warn)
                 << "Login refused for " << req->principal << ": "
                 << ores::utility::serialization::to_string(e.code);
-            record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {
-                ev_repo.record_login_failure(
-                    std::chrono::system_clock::now(), "", req->principal, e.what());
+            record_auth_event(login_ctx, "login_failure", [&](auto& ev_repo) {
+                ev_repo.record_login_failure(std::chrono::system_clock::now(),
+                                             login_ctx.tenant_id().to_string(),
+                                             username,
+                                             e.what());
             });
             login_response resp;
             resp.success = false;
@@ -951,9 +959,11 @@ public:
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {
-                ev_repo.record_login_failure(
-                    std::chrono::system_clock::now(), "", req->principal, e.what());
+            record_auth_event(login_ctx, "login_failure", [&](auto& ev_repo) {
+                ev_repo.record_login_failure(std::chrono::system_clock::now(),
+                                             login_ctx.tenant_id().to_string(),
+                                             username,
+                                             e.what());
             });
             login_response resp;
             resp.success = false;

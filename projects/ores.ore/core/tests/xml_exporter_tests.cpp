@@ -25,8 +25,11 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <utility>
+#include <variant>
 #include <vector>
 
 namespace {
@@ -41,6 +44,39 @@ std::filesystem::path ore_path(const std::string& relative) {
 std::filesystem::path example_path(const std::string& filename) {
     return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
                                                 filename);
+}
+
+/**
+ * @brief Turns imported trades into the payload the exporter consumes.
+ *
+ * The importer leaves the trade id unset; the planner mints it on the import
+ * path. The export joins each item to its instrument in the batch by that id,
+ * so this mints a distinct id per trade and stamps it onto the instrument,
+ * exactly as the planner does. Without that, every trade in a document shares
+ * the nil id and joins to the batch's first instrument.
+ */
+std::pair<std::vector<ores::trading::messaging::trade_export_item>,
+          ores::trading::domain::instrument_batch>
+make_export_payload(const std::vector<ores::ore::xml::trade_import_item>& imported) {
+    std::vector<ores::trading::messaging::trade_export_item> items;
+    ores::trading::domain::instrument_batch instruments;
+    boost::uuids::random_generator uuid_gen;
+
+    for (const auto& src : imported) {
+        const auto trade_id = uuid_gen();
+        auto instrument = src.instrument;
+        if (!std::holds_alternative<std::monostate>(instrument))
+            ores::trading::domain::stamp_ids(instrument, trade_id);
+
+        ores::trading::messaging::trade_export_item item;
+        item.anchor = src.anchor;
+        item.anchor.id = trade_id;
+        item.ore_id = src.ore_id;
+        ores::trading::domain::append_instrument(instruments, instrument);
+        items.push_back(std::move(item));
+    }
+
+    return {std::move(items), std::move(instruments)};
 }
 
 }
@@ -215,15 +251,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     const auto imported = importer::import_portfolio_with_context(f);
     REQUIRE(imported.size() == 1);
 
-    std::vector<trade_export_item> items;
-    ores::trading::domain::instrument_batch instruments;
-    for (const auto& src : imported) {
-        trade_export_item item;
-        item.anchor = src.anchor;
-        item.ore_id = src.ore_id;
-        ores::trading::domain::append_instrument(instruments, src.instrument);
-        items.push_back(std::move(item));
-    }
+    auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
@@ -241,15 +269,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     const auto imported = importer::import_portfolio_with_context(f);
     REQUIRE(imported.size() == 1);
 
-    std::vector<trade_export_item> items;
-    ores::trading::domain::instrument_batch instruments;
-    for (const auto& src : imported) {
-        trade_export_item item;
-        item.anchor = src.anchor;
-        item.ore_id = src.ore_id;
-        ores::trading::domain::append_instrument(instruments, src.instrument);
-        items.push_back(std::move(item));
-    }
+    auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
@@ -266,15 +286,7 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     const auto imported = importer::import_portfolio_with_context(f);
     REQUIRE(imported.size() == 3);
 
-    std::vector<trade_export_item> items;
-    ores::trading::domain::instrument_batch instruments;
-    for (const auto& src : imported) {
-        trade_export_item item;
-        item.anchor = src.anchor;
-        item.ore_id = src.ore_id;
-        ores::trading::domain::append_instrument(instruments, src.instrument);
-        items.push_back(std::move(item));
-    }
+    auto [items, instruments] = make_export_payload(imported);
 
     const auto xml = exporter::export_portfolio(items, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
@@ -306,13 +318,15 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     ores::ore::domain::load_data(doc, p);
     REQUIRE(p.Trade.size() == 1);
 
-    const auto r = trade_mapper::map_bond_instrument(p.Trade.front());
+    auto r = trade_mapper::map_bond_instrument(p.Trade.front());
     REQUIRE(r.has_value());
 
     ores::trading::domain::instrument_batch instruments;
     trade_export_item item;
     item.ore_id = "RoundtripBondFuture001";
+    item.anchor.id = boost::uuids::random_generator{}();
     item.anchor.trade_type = "BondFuture";
+    ores::trading::domain::stamp_ids(*r, item.anchor.id);
     ores::trading::domain::append_instrument(instruments, *r);
 
     const auto xml = exporter::export_portfolio({item}, instruments);

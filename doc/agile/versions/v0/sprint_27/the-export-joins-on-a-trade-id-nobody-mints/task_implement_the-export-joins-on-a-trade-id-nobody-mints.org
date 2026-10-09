@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 9C358136-8FC8-48F7-83EA-20F2DDAD49AC
+:END:
+#+title: Task: Implement Hotfix: the export joins on a trade id nobody mints
+#+description: Mint a trade id in xml::roundtrip() and in the exporter tests, so each trade joins to its own instrument.
+#+type: task
+#+level: s1
+#+filetags: :the-export-joins-on-a-trade-id-nobody-mints:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-export-joins-on-a-trade-id-nobody-mints
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2E3F547C-5016-4E47-83A4-09B0591B98C6][Hotfix: the export joins on a trade id nobody mints]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give every trade in a payload built without the planner an id, and stamp the
+same id on its instrument, so the export's join resolves to the trade's own
+instrument.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2E3F547C-5016-4E47-83A4-09B0591B98C6][Hotfix: the export joins on a trade id nobody mints]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =xml::roundtrip()= mints one id per trade and stamps it onto the instrument.
+- The exporter tests build payloads through one shared helper that does the same.
+- Their assertions are unchanged, and the importer still leaves ids unset.
+
+* Plan
+
+=export_portfolio= joins a trade to its instrument by =item.anchor.id=, and
+=rebuild_instrument= keys the batch by the instrument's identity =trade_id=.
+Two payload builders bypass the planner: =xml::roundtrip()= and the exporter
+tests. Both left every id nil and the uuid default, so the join matched the
+first row of whichever typed array was searched first.
+
+The roundtrip walk now mints an id with =boost::uuids::random_generator=,
+stamps it on the instrument through =trading::domain::stamp_ids=, and carries it
+on the anchor -- exactly what the planner does. The exporter tests share one
+=make_export_payload= helper that does the same, which replaces the duplicate
+nil ids they used to feed.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| nightly failures this one bug explains | 3 | see the story description | fa84f6e6f9 |
+| files changed | 2 | =git show --stat fa84f6e6f9= | fa84f6e6f9 |
+
+* Notes
+
+The three nightly failures were a CapFloor resolving to another trade's swap,
+which threw =std::get<cap_floor_instrument>= and lost =IR_DurAdjusted_CMS.xml=
+and its ten trades; an Ascot resolving to a swap, which wrote a type and an
+envelope with no =AscotData=; and the exporter tests feeding duplicate nil ids.
+
+The fix was written in another worktree against a prebuilt tree and not
+executed there. It is executed here.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=trading::domain::stamp_ids= is applied per trade in the roundtrip walk, and the
+exporter tests build every payload through =make_export_payload=. The importer
+is untouched.

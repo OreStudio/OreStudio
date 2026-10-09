@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 6D9E6C2F-FC26-4A03-86AE-87E517C53CFA
+:END:
+#+title: Task: Implement Hotfix: the marketdata offset field has no name
+#+description: Rename the field enum member the calendar spread option case reads, so ores.marketdata.core.tests compiles.
+#+type: task
+#+level: s1
+#+filetags: :the-marketdata-offset-field-has-no-name:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-marketdata-offset-field-has-no-name
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4585D0EF-5DDC-4FC9-83FC-3E98A0A7141A][Hotfix: the marketdata offset field has no name]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the commodity calendar spread option case in
+=datum_ore_key_codec_tests.cpp= read the field enum member that exists, so the
+translation unit compiles and the suite links.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4585D0EF-5DDC-4FC9-83FC-3E98A0A7141A][Hotfix: the marketdata offset field has no name]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =datum_ore_key_codec_tests.cpp= compiles.
+- The JSON key the case writes is unchanged.
+- =./compass.sh build= completes.
+
+* Plan
+
+=fl::offset= becomes =fl::spread_offset=. The field enum in
+=ores.marketdata.api/datum/schema.hpp= declares =spread_offset= and no =offset=,
+and =market_series_identity.hpp= records why: =offset= is a reserved word in
+PostgreSQL and the identity column the generator writes takes the qualified
+name. The JSON key the case assigns is a separate string and stays =offset=,
+which is ORE's own spelling of the key.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| stale =fl::offset= references in the tree | 1 | =git grep -n "fl::offset" -- projects/= | b70b9a18d6 |
+
+* Notes
+
+The compiler named the fix: =no member named 'offset' in
+'ores::marketdata::datum::field'; did you mean 'timex::offset'=, which is the
+system struct in =bits/timex.h= and not ours.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One line changed. =ores.marketdata.core.tests= links, and the full build reaches
+100%.

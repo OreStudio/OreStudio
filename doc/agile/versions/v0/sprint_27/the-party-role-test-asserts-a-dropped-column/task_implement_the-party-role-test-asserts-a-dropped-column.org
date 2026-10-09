@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: EBDEE0F7-9B45-44A5-A88B-CEDA4678264E
+:END:
+#+title: Task: Implement Hotfix: the party role test asserts a dropped column
+#+description: Assert a header the trade party role table still renders, so ores.trading.api.tests passes.
+#+type: task
+#+level: s1
+#+filetags: :the-party-role-test-asserts-a-dropped-column:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-party-role-test-asserts-a-dropped-column
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:27699F2B-FF9C-466B-9462-7C733B85F0CE][Hotfix: the party role test asserts a dropped column]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the empty-vector case of =trade_party_role_convert_empty_vector_to_table=
+assert a header the table still renders, so =ores.trading.api.tests= passes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:27699F2B-FF9C-466B-9462-7C733B85F0CE][Hotfix: the party role test asserts a dropped column]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The case asserts the header the generated table writes.
+- =ores.trading.api.tests= passes.
+
+* Plan
+
+The assertion moves from =Counterparty ID= to =Trade ID=, the anchor the role
+hangs off now, and gains a comment naming why the old header went. The case
+itself stays: it verifies that an empty vector still renders the header row,
+which is a property of the converter and not of the column.
+
+The generated table writes =Trade ID=, =Role=, =Modified By=, =Version= --
+=trade_party_role_table.cpp= line 36.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| headers the generated table writes | Trade ID, Role, Modified By, Version | =git grep -n "Trade ID" -- projects/ores.trading/api/src/domain/trade_party_role_table.cpp= | 395b099bd2 |
+
+* Notes
+
+The stale assertion is a regression =c73c71ea= left behind: it removed the
+counterparty columns from the model's display table and regenerated the
+converter, but the case that names a column was not regenerated with it.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+One assertion and its comment changed. =ores.trading.api.tests= passes.

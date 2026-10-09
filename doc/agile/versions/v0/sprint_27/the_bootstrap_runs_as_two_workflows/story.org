@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 21ACFC60-0C38-44E2-B384-7834B6331927
+:END:
+#+title: Story: The bootstrap runs as two workflows, one per administrator
+#+description: Tenant provisioning is one run that a super administrator starts and that also does the new tenant's own setup, so the person who owns the deployment is the one who finishes somebody else's tenant, and a single screen tries to be both wizards. The run is split at the authentication boundary: the super administrator's run creates the tenant and its administrator and hands over, and the tenant administrator's own run initialises the tenant.
+#+type: story
+#+level: s2
+#+filetags: :bootstrap:iam:workflow:web:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let each administrator finish the half of a tenant's setup that is theirs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- A run owned by the system tenant publishes the deployment's own data and starts the tenant's run.
+- A run owned by the new tenant runs the profile's remaining steps and activates the tenant.
+- The super administrator sees the tenant bootstrapping; the tenant administrator sees only their own run.
+- The bootstrap ends at the sign-in screen on both rails.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C156A9B4-AF6A-49BC-B408-14C4F85DAEFB][Split tenant provisioning into the system run and the tenant run]] | DONE | 2026-10-09 | 2026-10-09 | Initial task for: The bootstrap runs as two workflows, one per administrator |
+
+* Decisions
+
+- *Cut at the authentication boundary, not inside the run.* The tenant row, its
+  registered data, its system party and its administrator are created
+  synchronously, before any run exists, and that has to stay: every later step
+  mints a token for the administrator, and the tenant administrator role exists
+  only once the registered data has been copied. So the first run is what acts on
+  the deployment, and the second is what acts inside the tenant.
+- *The parent hands its own request to the child.* A profile's ordered steps, its
+  argument JSON and the parameter values are supplied by the caller when a run
+  starts, and the second run is started by somebody who never saw them. Passing
+  the parent's request JSON to the child means the plan is read once, when the
+  super administrator's run starts, and nothing new is persisted to carry it.
+- *Partition by step kind, declared in code.* =system_provision= publishes the
+  deployment's own data into the system tenant, so it is the only system-scoped
+  kind today. The predicate lives beside the catalogue so a kind added later has
+  to be classified rather than defaulting into the wrong run.
+- *One engine capability, not a new engine.* A step's subject and payload are
+  free and the step executor already mints its own token, so one run hands over
+  to another by having its last step publish the child's start message. Nothing
+  in the workflow engine changed.
+- *Two runs, two owners, and that is the visibility.* A run belongs to the tenant
+  that asked for it, so the super administrator and the tenant administrator each
+  see only their own. The gate needed no new deployment state: the provisioner
+  already seeds the new tenant's =system.bootstrap_mode= and =onboarding.tenant=,
+  and the tenant run's finishing step clears the first and sets the second.
+
+* Out of scope
+
+- Whether the first run should publish the deployment's own data at all when a
+  second tenant is added to a deployment that already has some. It republishes
+  =system_core= as it does today, which is idempotent but redundant.
+
+* Result
+
+Done. A tenant is created by one run and finished by another, one per
+administrator.
+
+The super administrator's run declares two steps, =system_provision= and
+=start_tenant_setup=, and leaves the tenant in =bootstrapping=. The tenant
+administrator's run declares the profile's remaining kinds and
+=complete_provisioning=, which marks the tenant active and clears its bootstrap
+flag.
+
+Proven end to end over HTTP against a running fleet on a recreated database: the
+administrator was created, a tenant was provisioned from =empty_operational=, the
+system run completed with exactly those two steps, the tenant row read
+=bootstrapping=, the tenant administrator signed in with
+=onboardingTenantComplete: false=, =GET /api/tenant-setup= answered the tenant's
+own run, that run completed with =publish_bundle=, =import_lei_hierarchy=,
+=provision_party= and =complete_provisioning=, the tenant row then read =active=,
+and the same read answered =onboardingTenantComplete: true= so the gate released
+the administrator into the application.

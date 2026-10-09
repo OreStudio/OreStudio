@@ -1521,6 +1521,12 @@ const pt: SourceCatalogue = {
         retry: 'Tentar de novo',
     },
 
+    error: {
+        heading: 'Um pedido não foi concluído',
+        dismiss: 'Dispensar',
+        dismissAll: 'Dispensar tudo',
+    },
+
     journey: {
         steps: 'Passos',
         failedHeading: 'A configuração parou com um erro',

@@ -19,7 +19,14 @@
  *
  */
 
-import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    MutationCache,
+    QueryCache,
+    QueryClient,
+    QueryClientProvider,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
 import {
     createContext,
     use,
@@ -30,6 +37,7 @@ import {
     type ReactNode,
 } from 'react';
 import { api } from '../api/client.js';
+import { reportError } from '../api/errors.js';
 import { ApiFailure } from '../api/transport.js';
 import type { PartySummary, SessionView } from '@ores/wire-protocol/browser';
 
@@ -108,6 +116,14 @@ export const SESSION_QUERY_KEY = ['session'] as const;
 
 export function createQueryClient(): QueryClient {
     const client: QueryClient = new QueryClient({
+        /*
+         * Every request the application makes goes through these two caches, so
+         * naming the one reporter here is what lets a screen stay silent about
+         * a failure it did not expect and still be heard: the banner above the
+         * route table says what happened whatever screen is on.
+         */
+        queryCache: new QueryCache({ onError: reportError }),
+        mutationCache: new MutationCache({ onError: reportError }),
         defaultOptions: {
             queries: {
                 // A 4xx is an expected answer, not a transient fault, so retrying it

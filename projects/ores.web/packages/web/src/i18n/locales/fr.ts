@@ -1528,6 +1528,12 @@ const fr: SourceCatalogue = {
         retry: 'Réessayer',
     },
 
+    error: {
+        heading: "Une requête n'a pas abouti",
+        dismiss: 'Ignorer',
+        dismissAll: 'Tout ignorer',
+    },
+
     journey: {
         steps: 'Étapes',
         failedHeading: "La configuration s'est arrêtée sur une erreur",

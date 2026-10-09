@@ -238,6 +238,28 @@ inline bool auth_is_party_onboarding_complete(const ores::database::context& ctx
 }
 
 /**
+ * @brief The party a sign-in must open on while the tenant is being set up.
+ *
+ * The setup writes tenant-wide settings, which are scoped to the tenant's
+ * system party, so a session in any other party cannot write them. A tenant
+ * being set up therefore signs its administrator in to that party and offers
+ * no choice; offering one would offer a way to fail. Nothing when the sign-in
+ * is ordinary, or when the account holds no system party: the choice is then
+ * the person's, as it is once the setup has finished.
+ */
+inline std::optional<boost::uuids::uuid>
+auth_bootstrap_party_id(bool in_tenant_bootstrap,
+                        const std::vector<party_summary>& available_parties) {
+    if (!in_tenant_bootstrap)
+        return std::nullopt;
+    for (const auto& party : available_parties) {
+        if (party.party_category == "System")
+            return boost::uuids::string_generator()(party.id);
+    }
+    return std::nullopt;
+}
+
+/**
  * @brief The deployment's answer to a registration, given its two flags.
  *
  * Nothing when the door is open, and the code and the sentence when it is shut.
@@ -728,8 +750,32 @@ public:
             }
             const auto session_id_str = boost::uuids::to_string(sess.id);
 
-            if (account_parties.size() == 1) {
-                const auto& party_id = account_parties.front().party_id;
+            /*
+             * The account's parties as the answer states them. The category
+             * names the tenant's system party, which a sign-in during the
+             * tenant's setup opens on without asking.
+             */
+            std::vector<party_summary> available_parties;
+            for (const auto& ap : account_parties) {
+                const auto p =
+                    auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
+                available_parties.push_back(party_summary{
+                    .id = boost::uuids::to_string(ap.party_id),
+                    .name = p ? p->full_name : std::string{},
+                    .party_category = p ? p->party_category : std::string{},
+                    .business_center_code = p ? p->business_center_code : std::string{}});
+            }
+            const auto bootstrap_party_id =
+                auth_bootstrap_party_id(in_tenant_bootstrap, available_parties);
+
+            /*
+             * One party is not a choice, and neither is the system party a
+             * tenant being set up signs in to: both open the session here
+             * rather than sending the person to the picker.
+             */
+            if (account_parties.size() == 1 || bootstrap_party_id) {
+                const auto party_id =
+                    bootstrap_party_id ? *bootstrap_party_id : account_parties.front().party_id;
                 auto visible = auth_compute_visible_party_ids(
                     *party_cache_, acct.tenant_id.to_string(), party_id);
 
@@ -768,32 +814,22 @@ public:
                 resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->access_lifetime_s;
                 resp.session_id = session_id_str;
-                for (const auto& ap : account_parties) {
-                    auto p =
-                        auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
-                    if (ap.party_id == party_id) {
-                        const bool onboarding_complete =
-                            auth_is_party_onboarding_complete(login_ctx,
-                                                              acct.tenant_id.to_string(),
-                                                              boost::uuids::to_string(party_id));
-                        resp.party_setup_required = !onboarding_complete;
-                        if (resp.party_setup_required) {
-                            BOOST_LOG_SEV(auth_handler_lg(), info)
-                                << "login: party_setup_required=true for party "
-                                << boost::uuids::to_string(party_id);
-                        } else if (p && p->status == "Inactive") {
-                            resp.party_setup_warning =
-                                "Party setup completed, but the party is still marked Inactive.";
-                            BOOST_LOG_SEV(auth_handler_lg(), warn)
-                                << "login: onboarding.party complete but party "
-                                << boost::uuids::to_string(party_id) << " still Inactive";
-                        }
-                    }
-                    resp.available_parties.push_back(party_summary{
-                        .id = boost::uuids::to_string(ap.party_id),
-                        .name = p ? p->full_name : std::string{},
-                        .party_category = p ? p->party_category : std::string{},
-                        .business_center_code = p ? p->business_center_code : std::string{}});
+                resp.available_parties = available_parties;
+                const auto selected =
+                    auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), party_id);
+                const bool onboarding_complete = auth_is_party_onboarding_complete(
+                    login_ctx, acct.tenant_id.to_string(), boost::uuids::to_string(party_id));
+                resp.party_setup_required = !onboarding_complete;
+                if (resp.party_setup_required) {
+                    BOOST_LOG_SEV(auth_handler_lg(), info)
+                        << "login: party_setup_required=true for party "
+                        << boost::uuids::to_string(party_id);
+                } else if (selected && selected->status == "Inactive") {
+                    resp.party_setup_warning =
+                        "Party setup completed, but the party is still marked Inactive.";
+                    BOOST_LOG_SEV(auth_handler_lg(), warn)
+                        << "login: onboarding.party complete but party "
+                        << boost::uuids::to_string(party_id) << " still Inactive";
                 }
                 BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 record_auth_event(login_ctx, "login_success", [&](auto& ev_repo) {
@@ -838,6 +874,7 @@ public:
                 resp.password_reset_required = outcome.password_reset_required;
                 resp.access_lifetime_s = token_settings()->party_selection_lifetime_s;
                 resp.session_id = session_id_str;
+                resp.available_parties = available_parties;
                 if (acct.default_party_id) {
                     const auto default_id = *acct.default_party_id;
                     const bool is_available =
@@ -846,15 +883,6 @@ public:
                                     [&](const auto& ap) { return ap.party_id == default_id; });
                     if (is_available)
                         resp.default_party_id = boost::uuids::to_string(default_id);
-                }
-                for (const auto& ap : account_parties) {
-                    auto p =
-                        auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
-                    resp.available_parties.push_back(party_summary{
-                        .id = boost::uuids::to_string(ap.party_id),
-                        .name = p ? p->full_name : std::string{},
-                        .party_category = p ? p->party_category : std::string{},
-                        .business_center_code = p ? p->business_center_code : std::string{}});
                 }
                 BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 // Multi-party: login_success recorded after party selection

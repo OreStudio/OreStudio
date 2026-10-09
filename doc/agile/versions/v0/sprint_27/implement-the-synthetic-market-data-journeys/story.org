@@ -37,8 +37,7 @@ A person authors an FX price feed, authors an IR curve feed, runs a collection a
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:AF124B71-1F0B-4899-8707-F85B81FD51C3][Scaffold the synthetic implementation story]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. |
-| [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Bring the synthetic models onto the address mechanism]] | BACKLOG | | | The nine synthetic models carry no Physical space section, so no protocol address is declared and the TypeScript twin cannot be generated. |
-| [[id:ECFA5A82-3BAE-45A0-8044-6A9CB8E30913][Project the synthetic protocol to TypeScript]] | BACKLOG | | | Synthetic is one of three components with no committed TypeScript protocol, so ores.web cannot speak it. |
+| [[id:0091F10A-AC68-4C12-8536-F72E371E4E61][Close M06, the synthetic TypeScript twin]] | BACKLOG | | | Synthetic has no committed TypeScript protocol, so ores.web cannot speak it. The clean standard tracks this as M06 under the ores.synthetic clean-up, which clever_dijkstra owns. |
 | [[id:1982F935-F3AD-4AF4-9F09-C36BB6FF2F9D][Give the BFF the synthetic routes]] | BACKLOG | | | The BFF has no route for any synthetic subject, and the web reaches the bus only through the BFF. |
 | [[id:2DCC5A20-11C5-4EDA-B8AA-386710F9F804][Build the yield curve process type screen]] | BACKLOG | | | Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues. |
 | [[id:6E54699C-427C-471A-AA70-FCCCD27ABC85][Build the FX price feed screen]] | BACKLOG | | | Journey 1: the pair, the process, the GMM mixture and the sample paths, on the record-screen framework. |

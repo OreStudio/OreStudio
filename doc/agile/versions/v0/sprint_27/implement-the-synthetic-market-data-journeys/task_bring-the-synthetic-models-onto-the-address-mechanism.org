@@ -1,32 +1,32 @@
 :PROPERTIES:
 :ID: 0091F10A-AC68-4C12-8536-F72E371E4E61
 :END:
-#+title: Task: Bring the synthetic models onto the address mechanism
-#+description: The nine synthetic models carry no Physical space section, so no protocol address is declared and the TypeScript twin cannot be generated.
+#+title: Task: Close M06, the synthetic TypeScript twin
+#+description: Synthetic has no committed TypeScript protocol, which the clean standard tracks as M06 and no gate can see. Generate the twin, commit it, and wire the check.
 #+type: task
 #+level: s1
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bring-the-synthetic-models-onto-the-address-mechanism
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Each synthetic model declares its addresses, and the generator emits the same C++ it emits today.
+Every synthetic protocol header has its TypeScript twin committed, and the twin-coverage check covers the component.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:004E867C-000D-4009-91AA-377C140ED73D][Implement the synthetic market data journeys in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,8 +35,9 @@ Each synthetic model declares its addresses, and the generator emits the same C+
 
 * Acceptance
 
-- All nine models carry a Physical space table, with each address's enabled state chosen and justified.
-- The component drift gate is green: the C++ output is unchanged or the change is understood.
+- Nine twins exist under packages/wire-protocol/src/generated/synthetic/protocol/, generated and not hand-written.
+- check_protocol_twin_coverage.py passes with synthetic among the covered components.
+- The component drift gate still regenerates every address and reports no drift, so the twin cannot go stale silently.
 
 * Plan
 

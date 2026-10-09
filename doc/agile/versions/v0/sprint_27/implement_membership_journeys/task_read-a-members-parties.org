@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-a-members-parties
-#+pr:
+#+pr: 2974
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -107,7 +107,7 @@ one subject scoped to the caller, and reach it from the browser.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2974][#2974]] | [iam] Read a member's own parties with their names |
 
 * Review
 

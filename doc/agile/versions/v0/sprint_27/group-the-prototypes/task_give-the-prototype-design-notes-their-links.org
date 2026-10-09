@@ -8,7 +8,7 @@
 #+filetags: :group-the-prototypes:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/give-the-prototype-design-notes-their-links
-#+pr:
+#+pr: 2946
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2946][#2946]] | [doc] Open a prototype and its review from its design note |
 
 * Review
 

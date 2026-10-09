@@ -1211,6 +1211,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:read',       'View instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:write',      'Create and modify instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:delete',     'Delete instrument option exercise fees');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_prices:read',     'View instrument option exercise prices');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_prices:write',    'Create and modify instrument option exercise prices');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_prices:delete',   'Delete instrument option exercise prices');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_payment_dates:read',       'View instrument option payment dates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_payment_dates:write',      'Create and modify instrument option payment dates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_payment_dates:delete',     'Delete instrument option payment dates');

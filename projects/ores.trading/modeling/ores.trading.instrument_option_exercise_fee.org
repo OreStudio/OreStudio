@@ -85,12 +85,15 @@ Kind of exercise fee the document states.
 
 ** start_date
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
 :nullable: true
 :END:
 
 Date the exercise fee starts to apply.
+
+The schema states the date as text and the boundary parses it, so the
+column is a date.
 
 ** currency
 :PROPERTIES:

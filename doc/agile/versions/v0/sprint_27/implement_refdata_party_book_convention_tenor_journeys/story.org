@@ -74,6 +74,7 @@ several journeys need the same thing.
 | [[id:75FC1047-7339-442F-983C-083DB8BD8C5E][Give the party memberships their versions]] | BACKLOG | | | Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id. |
 | [[id:ABEC57F4-A85F-4D0E-83F6-1FC9C7C891AB][Serve the convention family mapping, its term filter and term rules]] | BACKLOG | | | Give the server the family-to-entity mapping, a term filter on the convention lists, an existence check on each term column, and a draft version in the history view. |
 | [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with the refusal it carries]] | BACKLOG | | | Add the resolve operation journey 9 draws in two places, and the refusal payload its failures should carry instead of a thrown exception reaching the screen as a 500. |
+| [[id:21B42DA6-013A-46D5-A2E0-866D43E872B9][Seed the tenor conventions' roll rule]] | DONE | 2026-10-09 | 2026-10-09 | business_day_convention_type was added to tenor_convention as a non-nullable, validated column, but no raw-SQL writer names it. A fresh compass db recreate fails in refdata_tenor_conventions_populate.sql, and a tenant provision fails copying the conventions. |
 
 * Decisions
 

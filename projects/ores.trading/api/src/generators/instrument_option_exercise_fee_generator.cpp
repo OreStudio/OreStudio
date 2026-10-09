@@ -49,6 +49,8 @@ generate_synthetic_instrument_option_exercise_fee(utility::generation::generatio
     r.sequence_number = 0;
     r.trade_activity_id = ctx.generate_uuid();
     r.amount = ores::utility::decimal::decimal::from_string("100").value();
+    r.start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

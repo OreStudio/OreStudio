@@ -252,6 +252,12 @@ them rather than widening them.
 :column: trade_id
 :END:
 
+** instrument_option_exercise_prices
+:PROPERTIES:
+:table:  ores_trading_instrument_option_exercise_prices_tbl
+:column: trade_id
+:END:
+
 ** swap_legs
 :PROPERTIES:
 :table:  ores_trading_swap_legs_tbl

@@ -23,6 +23,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/schema_fingerprint.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <cstdlib>
 #include <rfl/json.hpp>
 #include <sstream>
 #include <stdexcept>
@@ -79,16 +80,32 @@ void context_factory::verify_schema_fingerprint(const context& ctx, const std::s
     std::ostringstream msg;
     msg << "\n"
         << rule << "\n"
-        << "REFUSING TO START: the database schema does not match this build.\n"
+        << "The database schema does not match this build.\n"
         << "  Expected schema fingerprint (this build): " << expected << "\n"
         << "  Actual schema fingerprint (database)    : " << actual << "\n"
         << "  Database " << database << " " << recorded.provenance << ".\n"
-        << "  The code and the database were built from different SQL, so queries\n"
-        << "  would fail or return wrong results.\n"
-        << "  Fix: compass services stop && compass db recreate -y -k\n"
+        << "  The code and the database were built from different SQL, so a query\n"
+        << "  against a table that moved will fail or return wrong results.\n"
+        << "  Fix: compass services stop && compass db recreate -y -k\n";
+    /*
+     * A deployment must not serve a database its code was not built against,
+     * and a developer iterating on a checkout that has moved past its database
+     * needs the service to run, so the mismatch can be seen working rather than
+     * only read about. The strict answer is therefore asked for by setting
+     * ORES_REQUIRE_SCHEMA_MATCH, which is what a deployment and continuous
+     * integration do; without it the mismatch is a warning and the service
+     * starts.
+     */
+    if (std::getenv("ORES_REQUIRE_SCHEMA_MATCH") != nullptr) {
+        msg << "REFUSING TO START: ORES_REQUIRE_SCHEMA_MATCH is set.\n" << rule;
+        BOOST_LOG_SEV(lg(), error) << "FATAL: " << msg.str();
+        throw schema_mismatch_exception(msg.str());
+    }
+    msg << "The service starts anyway: a query against a table that moved will\n"
+        << "fail and the rest of the product is unaffected. Set\n"
+        << "ORES_REQUIRE_SCHEMA_MATCH=1 to refuse instead.\n"
         << rule;
-    BOOST_LOG_SEV(lg(), error) << "FATAL: " << msg.str();
-    throw schema_mismatch_exception(msg.str());
+    BOOST_LOG_SEV(lg(), warn) << "WARNING: " << msg.str();
 }
 
 std::ostream& operator<<(std::ostream& s, const context_factory::configuration& v) {

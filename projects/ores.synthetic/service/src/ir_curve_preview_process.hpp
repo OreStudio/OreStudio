@@ -23,7 +23,7 @@
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
-#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <cstdint>
 #include <memory>

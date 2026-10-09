@@ -1,0 +1,213 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_TRADING_CORE_SERVICE_INSTRUMENT_OPTION_EXERCISE_PRICE_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_INSTRUMENT_OPTION_EXERCISE_PRICE_SERVICE_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
+#include "ores.trading.api/messaging/instrument_option_exercise_price_protocol.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/instrument_option_exercise_price_repository.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace ores::trading::service {
+
+/**
+ * @brief Service for managing instrument option exercise prices.
+ *
+ * Provides a higher-level interface for instrument option exercise price operations,
+ * wrapping the underlying repository.
+ */
+class ORES_TRADING_CORE_EXPORT instrument_option_exercise_price_service {
+private:
+    inline static std::string_view logger_name =
+        "ores.trading.service.instrument_option_exercise_price_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Constructs a instrument_option_exercise_price_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
+    explicit instrument_option_exercise_price_service(context ctx);
+
+    /**
+     * @brief The protocol operations, one method per subject.
+     *
+     * A method takes the canonical request and answers its response, so the
+     * handler that serves the subject decodes, calls and replies without
+     * deciding anything. The result a caller reads -- missing, conflicting,
+     * denied -- is filled here, where the storage call that decided it is
+     * made, rather than being inferred from an exception.
+     */
+    /**@{*/
+    messaging::list_instrument_option_exercise_prices_response
+    list_instrument_option_exercise_prices(
+        const messaging::list_instrument_option_exercise_prices_request& request);
+    messaging::get_instrument_option_exercise_price_response get_instrument_option_exercise_price(
+        const messaging::get_instrument_option_exercise_price_request& request);
+    messaging::get_many_instrument_option_exercise_prices_response
+    get_many_instrument_option_exercise_prices(
+        const messaging::get_many_instrument_option_exercise_prices_request& request);
+    messaging::put_instrument_option_exercise_price_response put_instrument_option_exercise_price(
+        const messaging::put_instrument_option_exercise_price_request& request);
+    messaging::put_many_instrument_option_exercise_prices_response
+    put_many_instrument_option_exercise_prices(
+        const messaging::put_many_instrument_option_exercise_prices_request& request);
+    messaging::delete_instrument_option_exercise_price_response
+    delete_instrument_option_exercise_price(
+        const messaging::delete_instrument_option_exercise_price_request& request);
+    messaging::delete_many_instrument_option_exercise_prices_response
+    delete_many_instrument_option_exercise_prices(
+        const messaging::delete_many_instrument_option_exercise_prices_request& request);
+    messaging::list_instrument_option_exercise_price_versions_response
+    list_instrument_option_exercise_price_versions(
+        const messaging::list_instrument_option_exercise_price_versions_request& request);
+    messaging::get_instrument_option_exercise_price_version_response
+    get_instrument_option_exercise_price_version(
+        const messaging::get_instrument_option_exercise_price_version_request& request);
+    /**@}*/
+
+    /**
+     * @brief Lists instrument option exercise prices with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of instrument option exercise prices for the requested page.
+     */
+    std::vector<domain::instrument_option_exercise_price> list_exercise_prices(std::uint32_t offset,
+                                                                               std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active instrument option exercise prices.
+     *
+     * @return Total number of active instrument option exercise prices.
+     */
+    std::uint32_t count_exercise_prices();
+
+
+    /**
+     * @brief Retrieves a single instrument option exercise price as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The instrument option exercise price at that version if found, std::nullopt
+     * otherwise.
+     */
+    std::optional<domain::instrument_option_exercise_price> get_exercise_price_at_version(
+        const std::string& trade_id, const std::string& sequence_number, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single instrument option exercise price by its primary key.
+     *
+     * @return The instrument option exercise price if found, std::nullopt otherwise.
+     */
+    std::optional<domain::instrument_option_exercise_price>
+    get_exercise_price(const std::string& trade_id, const std::string& sequence_number);
+
+    /**
+     * @brief Retrieves a batch of instrument option exercise prices by primary key.
+     */
+    std::vector<domain::instrument_option_exercise_price>
+    get_exercise_prices(const std::vector<std::string>& trade_ids,
+                        const std::vector<std::string>& sequence_numbers);
+
+    /**
+     * @brief Saves a instrument option exercise price (creates or updates).
+     *
+     * @param exercise_price The instrument option exercise price to save.
+     * @throws std::exception on failure.
+     */
+    void save_exercise_price(const domain::instrument_option_exercise_price& exercise_price);
+
+    /**
+     * @brief Saves a batch of instrument option exercise prices.
+     *
+     * @param exercise_prices The instrument option exercise prices to save.
+     * @throws std::exception on failure.
+     */
+    void save_exercise_prices(
+        const std::vector<domain::instrument_option_exercise_price>& exercise_prices);
+
+    /**
+     * @brief Deletes a instrument option exercise price by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_exercise_price(const std::string& trade_id, const std::string& sequence_number);
+
+    /**
+     * @brief Deletes instrument option exercise prices by their primary keys.
+     */
+    void delete_exercise_prices(const std::vector<std::string>& trade_ids,
+                                const std::vector<std::string>& sequence_numbers);
+
+    /**
+     * @brief Retrieves all historical versions of a instrument option exercise price.
+     *
+     * Addressed by the entity's key, which is its storage key.
+     */
+    std::vector<domain::instrument_option_exercise_price>
+    get_exercise_price_history(const std::string& trade_id, const std::string& sequence_number);
+
+private:
+    context ctx_;
+    repository::instrument_option_exercise_price_repository repo_;
+
+    /**
+     * @brief Checks one change against the row it names, and stamps it.
+     *
+     * A single write and a batch state the same claim, so the check, the
+     * server-derived provenance and the version the store must match are one
+     * decision made in one place. A batch that made the decision per element
+     * would eventually make it differently from the single write.
+     *
+     * @param change The change as the caller stated it.
+     * @param intent The reason and commentary the caller gave.
+     * @param out The stamped domain object, written only when the result is ok.
+     * @return ok, or why the change was refused.
+     */
+    ores::utility::domain::result
+    prepare_change(const messaging::instrument_option_exercise_price_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::instrument_option_exercise_price& out);
+};
+
+}
+
+#endif

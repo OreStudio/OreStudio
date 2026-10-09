@@ -32,11 +32,10 @@
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
-#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

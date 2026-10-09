@@ -23,6 +23,14 @@
 #include "ores.trading.core/messaging/cap_floor_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fra_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/inflation_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_exercise_fee_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_exercise_price_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_payment_date_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_premium_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_schedule_date_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_schedule_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_strike_registrar.hpp"
 #include "ores.trading.core/messaging/knock_out_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/rate_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
@@ -104,6 +112,53 @@ register_rates_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(swap_leg_subs.begin()),
                 std::make_move_iterator(swap_leg_subs.end()));
+
+    // The shared children the rates family writes. They are registered here,
+    // in the root that owns them, rather than by the bond family's root.
+    auto instrument_strike_subs = register_instrument_strike_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_strike_subs.begin()),
+                std::make_move_iterator(instrument_strike_subs.end()));
+
+    auto instrument_schedule_subs = register_instrument_schedule_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_schedule_subs.begin()),
+                std::make_move_iterator(instrument_schedule_subs.end()));
+
+    auto instrument_schedule_date_subs =
+        register_instrument_schedule_date_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_schedule_date_subs.begin()),
+                std::make_move_iterator(instrument_schedule_date_subs.end()));
+
+    auto instrument_option_subs = register_instrument_option_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_option_subs.begin()),
+                std::make_move_iterator(instrument_option_subs.end()));
+
+    auto instrument_option_premium_subs =
+        register_instrument_option_premium_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_option_premium_subs.begin()),
+                std::make_move_iterator(instrument_option_premium_subs.end()));
+
+    auto instrument_option_exercise_fee_subs =
+        register_instrument_option_exercise_fee_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_option_exercise_fee_subs.begin()),
+                std::make_move_iterator(instrument_option_exercise_fee_subs.end()));
+
+    auto instrument_option_payment_date_subs =
+        register_instrument_option_payment_date_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_option_payment_date_subs.begin()),
+                std::make_move_iterator(instrument_option_payment_date_subs.end()));
+
+    auto instrument_option_exercise_price_subs =
+        register_instrument_option_exercise_price_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(instrument_option_exercise_price_subs.begin()),
+                std::make_move_iterator(instrument_option_exercise_price_subs.end()));
 
     return subs;
 }

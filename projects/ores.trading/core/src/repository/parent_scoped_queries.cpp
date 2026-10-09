@@ -49,6 +49,8 @@
 #include "ores.trading.core/repository/instrument_option_entity.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_fee_entity.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_fee_mapper.hpp"
+#include "ores.trading.core/repository/instrument_option_exercise_price_entity.hpp"
+#include "ores.trading.core/repository/instrument_option_exercise_price_mapper.hpp"
 #include "ores.trading.core/repository/instrument_option_mapper.hpp"
 #include "ores.trading.core/repository/instrument_option_payment_date_entity.hpp"
 #include "ores.trading.core/repository/instrument_option_payment_date_mapper.hpp"
@@ -434,6 +436,26 @@ read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::strin
         [](const auto& entities) { return instrument_option_payment_date_mapper::map(entities); },
         lg(),
         "Reading instrument option payment dates by instrument ids.");
+}
+
+std::vector<domain::instrument_option_exercise_price>
+read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<instrument_option_exercise_price_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
+
+    return execute_read_query<instrument_option_exercise_price_entity,
+                              domain::instrument_option_exercise_price>(
+        ctx,
+        query,
+        [](const auto& entities) { return instrument_option_exercise_price_mapper::map(entities); },
+        lg(),
+        "Reading instrument option exercise prices by instrument ids.");
 }
 
 std::vector<domain::instrument_strike>

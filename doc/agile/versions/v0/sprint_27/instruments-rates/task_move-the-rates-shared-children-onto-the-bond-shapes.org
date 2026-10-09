@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/move-the-rates-shared-children-onto-the-bond-shapes
-#+pr: 2986
+#+pr: 3021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -26,11 +26,11 @@ The cap/floor strikes and schedules and the swaption's option block sit on the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -44,29 +44,39 @@ The cap/floor strikes and schedules and the swaption's option block sit on the s
 
 * Plan
 
+Stage 1, merged as PR #2986, is the family's ownership of the children: the
+header's cascade, the catalogue's child arrays, and the schedule owner role.
+
 1. *The shapes.* The bond pilot's =instrument_strike=, =instrument_schedule=,
-   =instrument_schedule_date=, =instrument_option= and its four keyed children
-   are the target. Read them first and reuse their column sets rather than
-   widening them; the family writes to them, it does not extend them. The one
-   exception is =instrument_schedules.owner_role=, whose check lists
-   =trs_funding=, =repo=, =ascot_swap=, =option= and =trs= today: the rates
-   owner roles join that list when the first rates schedule lands.
-2. *The models.* Give the cap/floor and the swaption the children they write,
-   and retype the option block's text columns: =premium_amount=,
-   =premium_currency=, =premium_pay_date=, =exercise_prices=,
-   =settlement_fixing_date= and =instrument_option_exercise_fees.start_date=.
-3. *The cascade and the children list.* Add the shared children to
-   =ores.trading.rate_instruments=' =* Delete cascade= and to the trade-type
-   catalogue's =* Batch / ** Children=, so a header delete closes them and the
-   export carries them.
-4. *The registration root.* Move the shared children's registration out of
-   =registrar_bond.cpp= into the root that owns them, so the bond family stops
-   being the reason a rates child is registered.
-5. *The mapper.* Write the children on import and read them on export, beside
-   the leg collections the family already carries.
-6. *Order.* Take one product end to end first — the cap/floor, which has the
-   fewest own fields once the dates moved — with a build and the round trip
-   between products.
+   =instrument_schedule_date=, =instrument_option= and its keyed children are
+   the target. The family writes to them; it does not widen them.
+2. *The retyping, finding R5, decided.* ORE states =PremiumAmount=,
+   =PremiumPayDate=, =ExercisePrices= and the option premiums'
+   =SettlementFixingDate= as =xs:string=, and the schema copied the string.
+   The storage is typed and the boundary converts, as the family's =end_date=
+   does: =premium_amount= becomes =numeric(28, 10)=, =premium_pay_date= and
+   both =settlement_fixing_date= columns become =date=.
+3. *=exercise_prices=, the fourth child.* The column holds a list in a string
+   and the option block has three keyed children where the design's entity
+   table names four. =instrument_option_exercise_price= is the fourth: the
+   trade, the ordinal, the exercise date and the price, as
+   =instrument_option_premium= is keyed. The text column is dropped.
+   =premium_currency= stays =text=, because a currency code is text in every
+   other table here and soft-FKs to =ores_refdata_currencies_tbl=.
+4. *The registration root, finding R11.* Move the shared children's
+   registration out of =registrar_bond.cpp= into the root that owns them.
+5. *The mapper.* =swap_instrument_data= gains one vector per child;
+   =forward_capfloor= fills the strikes and the schedules,
+   =forward_swaption= fills the option block, and the reverse mappers read
+   them back. The import handler calls the =save_strike=, =save_schedule= and
+   =save_option_block= helpers the bond path already has, with =owner_role=
+   =swap= for a leg's schedule and =option= for the exercise dates.
+6. *The export.* The export service reads the child tables for the rates
+   trade ids into the batch arrays and =as_swap= gathers them by trade id.
+7. *The proof.* A cap/floor round trip that keeps its strikes and schedules,
+   and a swaption round trip that keeps its option block.
+8. *Order.* The cap/floor first, end to end, with a build and the round trip
+   between it and the swaption.
 
 * Measurements
 
@@ -80,7 +90,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build | exit 0, no errors, no warnings | =./compass.sh build --preset linux-clang-debug-make -j 2= | ceced2447a |
+| Codegen suite | 1301 passed, 0 failed | =pytest projects/ores.codegen/tests -q= | ceced2447a |
+| Drift, cmake, inventories, reachability | all clean, no writes | the four check scripts, run bare | ceced2447a |
+| Database recreate | exit 0, 348 s, fingerprint =041671e4685afdc7= | =./compass.sh db recreate -y -k= | ceced2447a |
+| =ores.trading.api.tests= | 370 assertions in 82 cases | the suite binary | ceced2447a |
+| =ores.trading.core.tests= | 954 assertions in 141 cases | the suite binary | ceced2447a |
+| =ores.ore.core.tests= | 482259 assertions in 627 cases | the suite binary | ceced2447a |
+| The unit's three cases | 66 assertions in 3 cases | =./ores.ore.core.tests "mapper_roundtrip_capfloor_shared_children,mapper_roundtrip_swaption_option_block,mapper_roundtrip_swaption_exercise_price_children"= | ceced2447a |
+| Branch shape | 3 commits, no merge commits | =git log --merges --oneline origin/main..HEAD= is empty | ceced2447a |
 
 * Notes
 
@@ -105,6 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3021][#3021]] | [trading,ore,sql] Move the rates family onto the shared children |
 | [[https://github.com/OreStudio/OreStudio/pull/2986][#2986]] | [trading,sql] Give the rates header its shared children |
 
 * Review
@@ -114,3 +133,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rates family writes the shared children the bond pilot built, and they
+survive the round trip. The cap/floor states its strikes as
+=instrument_strikes= rows and its underlying swap's schedule as
+=instrument_schedules= and =instrument_schedule_dates= rows; the swaption
+states its option block as =instrument_options= and four keyed children,
+including =instrument_option_exercise_price=, the fourth child the design's
+entity table names and the models never had. The option block's text dates
+and its price list are typed: =premium_amount= is a decimal,
+=premium_pay_date= and both =settlement_fixing_date= columns are dates, and
+=exercise_prices= is the child rather than a string. The header's cascade
+names all eight children, and their registration sits in
+=registrar_rates.cpp= rather than the bond family's root (finding R11).
+
+Three residuals, all deliberate:
+
+- *The database-level end-to-end proof is unit 8's.* The acceptance's
+  "written by the import and read by the export" is proved by the mapper
+  round trips and by the wiring compiling, not by importing a rates trade
+  into the database and exporting it. The corpus round trip at the new shape
+  is already the task =Prove the rates round trip over the corpus=, which is
+  where that proof belongs, and duplicating it here would prove it twice.
+- *Bonds now carry their exercise prices through the fourth child.* The
+  =instrument_option= shape is shared with the bond family, so retyping the
+  option block and dropping =exercise_prices= would have silently dropped
+  bond prices; the bond writer and reader convert at the boundary and write
+  and read the child instead. This is a behaviour change for the bond family
+  and is called out in the PR. The price list pairs token *i* with exercise
+  date *i*, so a document stating more prices than dates loses the tail.
+- *=split_numbers= is duplicated* in the ORE mapper and the import handler,
+  in two components' anonymous namespaces. Not worth a shared API yet.
+
+An earlier attempt at this unit bundled a cherry-pick of a trunk hotfix and
+two merge commits; both are gone, and the branch is three commits on
+=ceced2447a= with a clean history. The first database recreate failed because
+the branch's base predated the trunk seed hotfix, which is what rebasing onto
+current trunk fixed; no trunk fix is carried in this unit.

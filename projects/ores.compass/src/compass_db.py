@@ -580,12 +580,26 @@ def schema_sync(project_root, info):
     return expected, f"out of sync (database {actual or '(none)'}, checkout {expected})", _C_RED, warn
 
 
-def check_schema_in_sync(project_root, env):
-    """Refuse, loudly, when the database was built from other SQL.
+def schema_match_required(env):
+    """Whether a mismatch must stop the caller rather than warn it.
 
-    Returns True when the fingerprints match. Otherwise prints a banner naming
+    A deployment must not serve a database its code was not built against, so
+    the strict answer is the safe one and can be asked for by setting
+    ORES_REQUIRE_SCHEMA_MATCH, here or in the environment. The default is the
+    developer's: a checkout that has moved past its database still starts, so
+    the mismatch can be seen working rather than only read about."""
+    return bool(env.get("ORES_REQUIRE_SCHEMA_MATCH") or
+                os.environ.get("ORES_REQUIRE_SCHEMA_MATCH"))
+
+
+def check_schema_in_sync(project_root, env):
+    """Warn, loudly, when the database was built from other SQL.
+
+    Returns True when the caller may start. A mismatch prints a banner naming
     both fingerprints, the commit the database was built from and the fix, and
-    returns False so the caller stops."""
+    then lets the caller continue; it returns False only when
+    ORES_REQUIRE_SCHEMA_MATCH asks for the strict answer, which a deployment
+    and continuous integration do."""
     info = database_info(env)
     expected = schema_fingerprint(project_root)
     if info and info.get("schema_fingerprint") == expected:
@@ -594,15 +608,26 @@ def check_schema_in_sync(project_root, env):
     actual = info.get("schema_fingerprint") if info else None
     built = (f"built from commit {info.get('git_commit', '?')} at {info.get('git_date', '?')}"
              if info else "unreachable, or never stamped by compass db recreate")
+    required = schema_match_required(env)
     rule = "=" * 78
     print(rule, file=sys.stderr)
-    print("REFUSING TO START: the database schema does not match this checkout.", file=sys.stderr)
+    if required:
+        print("REFUSING TO START: the database schema does not match this checkout.",
+              file=sys.stderr)
+    else:
+        print("WARNING: the database schema does not match this checkout.", file=sys.stderr)
+        print("  The services start anyway, because ORES_REQUIRE_SCHEMA_MATCH is not set.",
+              file=sys.stderr)
+        print("  Queries against a table that moved will fail, and the rest of the",
+              file=sys.stderr)
+        print("  product is unaffected. Set ORES_REQUIRE_SCHEMA_MATCH=1 to refuse.",
+              file=sys.stderr)
     print(f"  Expected schema fingerprint (this checkout): {expected}", file=sys.stderr)
     print(f"  Actual schema fingerprint (database)       : {actual or '(none)'}", file=sys.stderr)
     print(f"  Database {env.get('ORES_TEST_DB_DATABASE', '?')}: {built}", file=sys.stderr)
     print("  Fix: compass services stop && compass db recreate -y -k", file=sys.stderr)
     print(rule, file=sys.stderr)
-    return False
+    return not required
 
 
 def cmd_db_status(project_root, env):

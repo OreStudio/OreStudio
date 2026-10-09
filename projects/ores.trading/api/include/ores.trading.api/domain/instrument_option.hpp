@@ -46,7 +46,7 @@ namespace ores::trading::domain {
  * and the equity, FX and commodity products state it too. The nine bond
  * tables carry the option's type and its strike and nothing else, so this
  * table holds the block: the exercise and payment terms, the settlement
- * terms, and the three nested groups whose lists get child tables of
+ * terms, and the four nested groups whose lists get child tables of
  * their own.
  *
  * A member the document omits is a null column. Three members are
@@ -55,11 +55,11 @@ namespace ores::trading::domain {
  * omitted it. Each of those three carries a flag on this row:
  * has_exercise_data, has_payment_data and has_settlement_data.
  *
- * Every other member is text, and the text is the document's own
- * spelling. The schema types the premium amount, the exercise price list
- * and the several flags as text or as its own bool, which enumerates
- * thirteen spellings, so a decoded form would not re-emit what the
- * document held.
+ * The schema types the premium amount, the premium pay date and the
+ * several flags as text or as its own bool, which enumerates thirteen
+ * spellings, so a decoded form would not re-emit what the document held.
+ * The premium amount and the two settlement dates are typed here and the
+ * boundary converts, as the family's end_date does.
  */
 struct instrument_option final {
     /**
@@ -163,11 +163,10 @@ struct instrument_option final {
     /**
      * @brief Premium amount for the single-premium spelling.
      *
-     * The column is text because the schema states the amount as text, and the corpus states
-     * amounts the numeric form would reformat. The premium list spelling keeps its rows in the
-     * premium table.
+     * The schema states the amount as text and the boundary parses it, so the column holds a
+     * decimal. The premium list spelling keeps its rows in the premium table.
      */
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
 
     /**
      * @brief Currency the single premium pays in.
@@ -176,16 +175,10 @@ struct instrument_option final {
 
     /**
      * @brief Date the single premium pays on.
-     */
-    std::optional<std::string> premium_pay_date;
-
-    /**
-     * @brief The exercise price list, as the document spelled it.
      *
-     * The schema types the member as text, so the column keeps the document's own text rather than
-     * a decoded list of numbers.
+     * The schema states the date as text and the boundary parses it, so the column is a date.
      */
-    std::optional<std::string> exercise_prices;
+    std::optional<std::chrono::year_month_day> premium_pay_date;
 
     /**
      * @brief Period an exercise fee settles over.
@@ -271,8 +264,10 @@ struct instrument_option final {
 
     /**
      * @brief Date the settlement block fixes on, when the document states one.
+     *
+     * The schema states the date as text and the boundary parses it, so the column is a date.
      */
-    std::optional<std::string> settlement_fixing_date;
+    std::optional<std::chrono::year_month_day> settlement_fixing_date;
 
     /**
      * @brief Username of the person who last modified this instrument option.

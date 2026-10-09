@@ -137,6 +137,7 @@
 #include "ores.refdata.service/messaging/sandbox_event_registrar.hpp"
 #include "ores.refdata.service/messaging/sandbox_member_event_registrar.hpp"
 #include "ores.refdata.service/messaging/series_subclass_code_event_registrar.hpp"
+#include "ores.refdata.service/messaging/sub_periods_coupon_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swap_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_volatility_config_event_registrar.hpp"
@@ -308,6 +309,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_producer_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_sandbox_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_sandbox_member_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_sub_periods_coupon_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swap_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_swap_index_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(

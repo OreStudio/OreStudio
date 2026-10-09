@@ -47,9 +47,8 @@ namespace ores::marketdata::repository {
 struct observation_record;
 
 
-// One instant of a series' evolution: the object as it stood then, with the
-// points that were current at it.
-struct as_of_instant {
+// One instant of a series: the points the series states at it.
+struct series_instant {
     std::chrono::system_clock::time_point as_of;
     std::vector<domain::market_observation> points;
 };
@@ -256,12 +255,13 @@ public:
                        const std::chrono::seconds& bucket_size,
                        unsigned int bucket_count);
 
-    std::vector<as_of_instant>
-    read_as_of_instants(context ctx,
-                        const boost::uuids::uuid& series_id,
-                        const std::chrono::system_clock::time_point& from_datetime,
-                        const std::chrono::system_clock::time_point& to_datetime,
-                        unsigned int max_instants);
+    std::vector<series_instant>
+    read_instants(context ctx,
+                  const boost::uuids::uuid& series_id,
+                  const std::chrono::system_clock::time_point& from_datetime,
+                  const std::chrono::system_clock::time_point& to_datetime,
+                  const std::vector<std::chrono::system_clock::time_point>& instants,
+                  unsigned int max_instants);
 
     void write_manual_point(context ctx,
                             const boost::uuids::uuid& series_id,

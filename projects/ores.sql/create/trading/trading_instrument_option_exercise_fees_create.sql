@@ -43,7 +43,7 @@ create table if not exists "ores_trading_instrument_option_exercise_fees_tbl" (
     "trade_activity_id" uuid not null,
     "amount" numeric(28, 10) not null,
     "type" text null,
-    "start_date" text null,
+    "start_date" date null,
     "currency" text null,
     "modified_by" text not null,
     "performed_by" text not null,

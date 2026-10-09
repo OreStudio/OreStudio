@@ -38,7 +38,15 @@ swap_instrument_data as_swap(const instrument_batch& batch,
                                 find_all(batch.swap_legs, trade_id),
                                 find_all(batch.swap_leg_amounts, trade_id),
                                 find_all(batch.swap_leg_rates, trade_id),
-                                find_all(batch.callable_swap_call_dates, trade_id)};
+                                find_all(batch.callable_swap_call_dates, trade_id),
+                                find_all(batch.instrument_strikes, trade_id),
+                                find_all(batch.instrument_schedules, trade_id),
+                                find_all(batch.instrument_schedule_dates, trade_id),
+                                find_all(batch.instrument_options, trade_id),
+                                find_all(batch.instrument_option_premiums, trade_id),
+                                find_all(batch.instrument_option_exercise_fees, trade_id),
+                                find_all(batch.instrument_option_payment_dates, trade_id),
+                                find_all(batch.instrument_option_exercise_prices, trade_id)};
 }
 
 /**
@@ -77,6 +85,30 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.swap_leg_rates.end(), v.leg_rates.begin(), v.leg_rates.end());
                 batch.callable_swap_call_dates.insert(
                     batch.callable_swap_call_dates.end(), v.call_dates.begin(), v.call_dates.end());
+                batch.instrument_strikes.insert(
+                    batch.instrument_strikes.end(), v.strikes.begin(), v.strikes.end());
+                batch.instrument_schedules.insert(
+                    batch.instrument_schedules.end(), v.schedules.begin(), v.schedules.end());
+                batch.instrument_schedule_dates.insert(batch.instrument_schedule_dates.end(),
+                                                       v.schedule_dates.begin(),
+                                                       v.schedule_dates.end());
+                batch.instrument_options.insert(
+                    batch.instrument_options.end(), v.options.begin(), v.options.end());
+                batch.instrument_option_premiums.insert(batch.instrument_option_premiums.end(),
+                                                        v.option_premiums.begin(),
+                                                        v.option_premiums.end());
+                batch.instrument_option_exercise_fees.insert(
+                    batch.instrument_option_exercise_fees.end(),
+                    v.option_exercise_fees.begin(),
+                    v.option_exercise_fees.end());
+                batch.instrument_option_payment_dates.insert(
+                    batch.instrument_option_payment_dates.end(),
+                    v.option_payment_dates.begin(),
+                    v.option_payment_dates.end());
+                batch.instrument_option_exercise_prices.insert(
+                    batch.instrument_option_exercise_prices.end(),
+                    v.option_exercise_prices.begin(),
+                    v.option_exercise_prices.end());
             } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
                 append_variant(batch, v);
             } else if constexpr (std::is_same_v<T, equity_instrument_data>) {

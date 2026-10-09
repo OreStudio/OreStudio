@@ -266,25 +266,6 @@ export interface GetCurveSnapshotResponse {
 }
 
 /**
- * @brief Requests a curve-evolution view: bucket_count as-of snapshots, one
- * every bucket_seconds, ending now.
- */
-export interface GetCurveSnapshotBucketsRequest {
-    oresmd_uri: string;
-    bucket_seconds: number;
-    bucket_count: number;
-}
-
-export interface GetCurveSnapshotBucketsResponse {
-    /** Oldest to newest, one entry per bucket; a bucket with no observations
-     * at/before its boundary is an empty vector.
-     */
-    buckets: MarketObservation[][];
-    success: boolean;
-    message: string;
-}
-
-/**
  * @brief One instant of a slice: the object as it stood then.
  */
 export interface SeriesSliceInstant {
@@ -364,6 +345,98 @@ export interface GetSeriesSliceResponse {
     coordinates: string[];
     /** Oldest first, one entry per distinct market instant in the range. */
     instants: SeriesSliceInstant[];
+}
+
+/**
+ * @brief One node of a composite object: its coordinate labels and the change
+ * it shows over the range.
+ */
+export interface EvolutionNode {
+    /**
+     * @brief One label per declared axis, index for index with the response's
+     * coordinate_fields.
+     */
+    coordinates: string[];
+    /**
+     * @brief The change the node shows over the range.
+     *
+     * One of never_quoted, persistent, added, dropped or intermittent, which is
+     * the first of those that holds. never_quoted is a node the shape declares and
+     * no instant in the range carries, which is what tells it apart from a node the
+     * object does not have: that node is not in the response at all.
+     */
+    status: string;
+}
+
+/**
+ * @brief One instant of the evolution: the object as it stood then.
+ */
+export interface EvolutionInstant {
+    as_of: string;
+    /**
+     * @brief The value at each node, index for index with the response's nodes.
+     *
+     * The empty string is a hole: the shape declares the node and no point held a
+     * value for it at this instant.
+     */
+    values: string[];
+}
+
+/**
+ * @brief Requests a whole composite object as instants by nodes.
+ *
+ * The object is named the way the resolver names one, so no caller builds an
+ * oresmd URI and no caller matches on one. The instants are either the ones the
+ * object holds between two instants or the set the caller states.
+ */
+export interface GetSeriesEvolutionRequest {
+    /** The object, as the typed identity the resolver already takes. */
+    identity: ResolveSeriesIdentityRequest;
+    /** The first market instant of the range, inclusive, when instants is empty. */
+    from_instant: string;
+    /** The last market instant of the range, inclusive, when instants is empty. */
+    to_instant: string;
+    /**
+     * @brief The instants the caller states, which replace the range when the
+     * vector is not empty.
+     *
+     * Each one is read as the object stood at it, whether or not the object holds a
+     * point at exactly that instant. A caller that wants the object at the month
+     * ends states them; a caller that wants everything it holds between two
+     * instants states the range and leaves this empty.
+     */
+    instants: string[];
+}
+
+/**
+ * @brief The object at each instant, against one grid of declared nodes.
+ *
+ * The grid is stated once, because it belongs to the shape and not to the
+ * points: nodes holds every combination of the declared axis values, each with
+ * its labels and the change it shows over the range, and every instant's values
+ * are index for index with it. A node the shape declares and no instant carries
+ * is a cell all the same, which is what tells it apart from a node the object
+ * does not have.
+ */
+export interface GetSeriesEvolutionResponse {
+    success: boolean;
+    /** Why the read was refused, when it was. */
+    message: string;
+    /**
+     * @brief The axis names, in the order the shape stores them.
+     *
+     * Every node's coordinates are index for index with this.
+     */
+    coordinate_fields: string[];
+    /**
+     * @brief The declared grid, with the last axis varying fastest.
+     *
+     * Every combination of the declared axis values is a node, whether or not any
+     * instant carries it.
+     */
+    nodes: EvolutionNode[];
+    /** Oldest first, one entry per distinct market instant read. */
+    instants: EvolutionInstant[];
 }
 
 /**
@@ -662,8 +735,8 @@ export const subjects = {
     republish_curve_request: 'marketdata.v1.ops.republish_curve',
     compute_curve_request: 'marketdata.v1.ops.compute_curve',
     get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
-    get_curve_snapshot_buckets_request: 'marketdata.v1.ops.get_curve_snapshot_buckets',
     get_series_slice_request: 'marketdata.v1.ops.get_series_slice',
+    get_series_evolution_request: 'marketdata.v1.ops.get_series_evolution',
     import_market_data_request: 'marketdata.v1.ops.import_market_data',
     start_feeds_under_folder_request: 'marketdata.v1.ops.start_feeds_under_folder',
     stop_feeds_under_folder_request: 'marketdata.v1.ops.stop_feeds_under_folder',
@@ -685,8 +758,8 @@ export const requiresSession = {
     republish_curve_request: true,
     compute_curve_request: true,
     get_curve_snapshot_request: true,
-    get_curve_snapshot_buckets_request: true,
     get_series_slice_request: true,
+    get_series_evolution_request: true,
     import_market_data_request: true,
     start_feeds_under_folder_request: true,
     stop_feeds_under_folder_request: true,

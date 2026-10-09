@@ -55,6 +55,7 @@ import type { FraInstrument } from './domain/fra_instrument.js';
 import type { InflationSwapInstrument } from './domain/inflation_swap_instrument.js';
 import type { InstrumentOption } from './domain/instrument_option.js';
 import type { InstrumentOptionExerciseFee } from './domain/instrument_option_exercise_fee.js';
+import type { InstrumentOptionExercisePrice } from './domain/instrument_option_exercise_price.js';
 import type { InstrumentOptionPaymentDate } from './domain/instrument_option_payment_date.js';
 import type { InstrumentOptionPremium } from './domain/instrument_option_premium.js';
 import type { InstrumentSchedule } from './domain/instrument_schedule.js';
@@ -109,6 +110,7 @@ export interface InstrumentBatch {
     inflation_swap_instruments: InflationSwapInstrument[];
     instrument_options: InstrumentOption[];
     instrument_option_exercise_fees: InstrumentOptionExerciseFee[];
+    instrument_option_exercise_prices: InstrumentOptionExercisePrice[];
     instrument_option_payment_dates: InstrumentOptionPaymentDate[];
     instrument_option_premiums: InstrumentOptionPremium[];
     instrument_schedules: InstrumentSchedule[];

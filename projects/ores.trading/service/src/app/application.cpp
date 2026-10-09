@@ -81,6 +81,7 @@
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_exercise_fee_event_registrar.hpp"
+#include "ores.trading.service/messaging/instrument_option_exercise_price_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_payment_date_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_option_premium_event_registrar.hpp"
 #include "ores.trading.service/messaging/instrument_schedule_date_event_registrar.hpp"
@@ -352,6 +353,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto instrument_option_exercise_fee_sub =
         ores::trading::service::messaging::register_instrument_option_exercise_fee_event_mapping(
+            event_source, event_bus, nats);
+    auto instrument_option_exercise_price_sub =
+        ores::trading::service::messaging::register_instrument_option_exercise_price_event_mapping(
             event_source, event_bus, nats);
     auto instrument_option_payment_date_sub =
         ores::trading::service::messaging::register_instrument_option_payment_date_event_mapping(

@@ -59,6 +59,7 @@
 #include "ores.trading.core/messaging/fpml_event_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/fpml_event_type_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_fee_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_option_exercise_price_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_payment_date_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_premium_history_provider_registrar.hpp"
@@ -220,6 +221,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_exercise_type_history_provider(hist_registry);
     register_fpml_event_type_history_provider(hist_registry);
     register_instrument_option_exercise_fee_history_provider(hist_registry);
+    register_instrument_option_exercise_price_history_provider(hist_registry);
     register_instrument_option_history_provider(hist_registry);
     register_instrument_option_payment_date_history_provider(hist_registry);
     register_instrument_option_premium_history_provider(hist_registry);

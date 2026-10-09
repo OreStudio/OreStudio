@@ -48,6 +48,11 @@ generate_synthetic_instrument_option(utility::generation::generation_context& ct
     r.trade_id = ctx.generate_uuid();
     r.trade_activity_id = ctx.generate_uuid();
     r.long_short = std::string("Long");
+    r.premium_amount = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
+    r.premium_pay_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.has_exercise_data = true;
     r.exercise_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.exercise_price = ores::utility::decimal::decimal::from_string(
@@ -55,6 +60,8 @@ generate_synthetic_instrument_option(utility::generation::generation_context& ct
                            .value();
     r.has_payment_data = true;
     r.has_settlement_data = true;
+    r.settlement_fixing_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

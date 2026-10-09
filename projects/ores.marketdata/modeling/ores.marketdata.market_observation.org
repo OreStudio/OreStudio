@@ -524,27 +524,32 @@ market_observation_repository::read_as_of_buckets(
 }
 #+end_src
 
-*** read_as_of_instants
+*** read_instants
 :PROPERTIES:
 :ID: 5e5bb397-6845-4c56-bf2d-d2e9360e9361
 :END:
 
-Reconstructs one as-of snapshot per instant a series states in a range, oldest
-first, for a slice or an aligned evolution view. The instants and the
-per-instant reduction run in one statement, so the read is one round trip
-rather than one as-of query per instant. It is =read_as_of_buckets= with the
-boundaries drawn from the data rather than from a fixed grid.
+Reads the points a series states at each instant, oldest first, for a slice or
+an aligned evolution view. The instants and their points come back in one
+statement, so the read is one round trip however many instants it covers.
 
-An instant is one the series holds in the range, not one the caller generates,
-so a quiet series yields few and a busy one yields many. A range that holds more
-instants than =max_instants= is refused rather than truncated, because a caller
-that asked for a quarter and got a day would read the answer as complete.
+An instant's points are the ones the series states *at* it, not the ones it
+held by then. That is what lets a reader see a node a structure gained or lost:
+a point a later build does not state is absent from that build, and not carried
+forward from the last time it was stated. A reader that wants the object as it
+stood at an instant, assembled from whatever the last quote per coordinate was,
+asks =read_as_of_records= or =read_as_of_buckets= instead.
+
+The instants are either the ones the series states between two datetimes or the
+set the caller names. A stated set replaces the range, and a stated instant at
+which the series states nothing yields no rows. More instants than
+=max_instants= is refused rather than truncated, because a caller that asked for
+a quarter and got a day would read the answer as complete.
 
 #+begin_src cpp :name type_declarations :implements E4B7A1C3-9D25-4F68-B0A7-3C6E8D1F5A92
 
-// One instant of a series' evolution: the object as it stood then, with the
-// points that were current at it.
-struct as_of_instant {
+// One instant of a series: the points the series states at it.
+struct series_instant {
     std::chrono::system_clock::time_point as_of;
     std::vector<domain::market_observation> points;
 };
@@ -552,52 +557,71 @@ struct as_of_instant {
 #+end_src
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<as_of_instant>
-read_as_of_instants(context ctx,
-                    const boost::uuids::uuid& series_id,
-                    const std::chrono::system_clock::time_point& from_datetime,
-                    const std::chrono::system_clock::time_point& to_datetime,
-                    unsigned int max_instants);
+std::vector<series_instant>
+read_instants(context ctx,
+              const boost::uuids::uuid& series_id,
+              const std::chrono::system_clock::time_point& from_datetime,
+              const std::chrono::system_clock::time_point& to_datetime,
+              const std::vector<std::chrono::system_clock::time_point>& instants,
+              unsigned int max_instants);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<as_of_instant>
-market_observation_repository::read_as_of_instants(
+std::vector<series_instant>
+market_observation_repository::read_instants(
     context ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& from_datetime,
     const std::chrono::system_clock::time_point& to_datetime,
+    const std::vector<std::chrono::system_clock::time_point>& instants,
     unsigned int max_instants) {
     using ores::platform::time::datetime;
-    BOOST_LOG_SEV(lg(), debug) << "Reading the as-of instants of series: " << series_id << " from "
+    BOOST_LOG_SEV(lg(), debug) << "Reading the instants of series: " << series_id << " from "
                                << datetime::to_iso8601_utc(from_datetime) << " to "
-                               << datetime::to_iso8601_utc(to_datetime);
+                               << datetime::to_iso8601_utc(to_datetime) << ", " << instants.size()
+                               << " stated instant(s)";
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto from_str = datetime::to_iso8601_utc(from_datetime);
     const auto to_str = datetime::to_iso8601_utc(to_datetime);
     const auto cap_str = std::to_string(max_instants + 1);
 
-    // The instants and the per-instant as-of reduction both happen in the
-    // database, in one statement: the instants the series states in the range
-    // are the boundaries, and the LATERAL subquery resolves each oresmd_uri to
-    // its own latest observation at or before that boundary -- a per-instant
-    // DISTINCT ON (oresmd_uri), driven by
+    // The stated instants travel as one comma-separated string, because the
+    // read takes text parameters. An empty one gives an empty array, which is
+    // what the SQL reads as "no set was stated".
+    std::string stated_str;
+    for (const auto& instant : instants) {
+        if (!stated_str.empty())
+            stated_str += ',';
+        stated_str += datetime::to_iso8601_utc(instant);
+    }
+
+    // The instants the read covers and their points come back together: the
+    // boundaries are the caller's stated set when there is one and otherwise
+    // the instants the series states in the range, and the points are the rows
+    // at those instants and no others. The index is
     // observations_series_coordinate_datetime_idx (tenant_id, series_id,
-    // oresmd_uri, observation_datetime desc), so each point is a skip-scan
-    // straight to its latest row per instant rather than a sort over the whole
-    // series.
+    // oresmd_uri, observation_datetime desc), so the join by instant is served
+    // by its leading columns rather than by a scan of the hypertable.
     //
     // The instant travels as microseconds since the epoch, because it is a
     // grouping key before it is a timestamp, and a text rendering parsed back
-    // would group at another precision than the boundary used.
+    // would group at another precision than the rows carry.
     static const std::string sql = R"(
-        WITH instants AS (
-            SELECT DISTINCT observation_datetime AS instant
-            FROM ores_marketdata_market_observations_tbl
-            WHERE tenant_id = $1 AND series_id = $2
-                AND observation_datetime >= $3 AND observation_datetime <= $4
-                AND valid_to = $6
+        WITH stated AS (
+            SELECT unnest(string_to_array($7, ',')::timestamptz[]) AS instant
+        ),
+        instants AS (
+            SELECT instant FROM (
+                SELECT instant FROM stated
+                UNION
+                SELECT DISTINCT observation_datetime
+                FROM ores_marketdata_market_observations_tbl
+                WHERE tenant_id = $1 AND series_id = $2
+                    AND observation_datetime >= $3 AND observation_datetime <= $4
+                    AND valid_to = $6
+                    AND NOT EXISTS (SELECT 1 FROM stated)
+            ) u
             ORDER BY instant
             LIMIT $5::int
         )
@@ -605,60 +629,39 @@ market_observation_repository::read_as_of_instants(
                o.id, o.tenant_id, o.party_id, o.series_id, o.observation_datetime,
                o.oresmd_uri, o.value, o.source, o.valid_from, o.valid_to
         FROM instants i
-        CROSS JOIN LATERAL (
-            SELECT DISTINCT ON (oresmd_uri) *
-            FROM ores_marketdata_market_observations_tbl m
-            WHERE m.tenant_id = $1 AND m.series_id = $2
-                AND m.observation_datetime <= i.instant
-                AND m.valid_to = $6
-            ORDER BY oresmd_uri, observation_datetime DESC
-        ) o
+        JOIN ores_marketdata_market_observations_tbl o
+          ON o.tenant_id = $1 AND o.series_id = $2
+         AND o.observation_datetime = i.instant AND o.valid_to = $6
         ORDER BY i.instant, o.oresmd_uri
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP},
+        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str},
         lg(),
-        "reading the as-of instants of a series");
+        "reading the instants of a series");
 
-    std::vector<as_of_instant> result;
+    std::vector<series_instant> result;
     for (const auto& row : rows) {
         if (row.empty() || !row[0])
-            throw std::runtime_error("read_as_of_instants: a row carries no instant");
+            throw std::runtime_error("read_instants: a row carries no instant");
         const std::chrono::system_clock::time_point instant{
             std::chrono::microseconds(std::stoll(*row[0]))};
         if (result.empty() || result.back().as_of != instant) {
             if (result.size() >= max_instants)
-                throw std::runtime_error("read_as_of_instants: the range holds more than " +
+                throw std::runtime_error("read_instants: the range holds more than " +
                                          std::to_string(max_instants) +
                                          " instants; ask for a narrower range");
             result.push_back({instant, {}});
         }
         result.back().points.push_back(
-            market_observation_mapper::map(as_of_observation(row, 1, "read_as_of_instants")));
-    }
-
-    // The manual overlay, once per instant: a manual point owns its coordinate
-    // from the instant whose boundary is at or after the point's own, and the
-    // instants before it keep the value they showed.
-    for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
-        for (auto& instant : result) {
-            if (manual.observation.observation_datetime > instant.as_of)
-                continue;
-            const auto it = std::ranges::find(instant.points,
-                                              manual.observation.oresmd_uri,
-                                              &domain::market_observation::oresmd_uri);
-            if (it != instant.points.end())
-                *it = manual.observation;
-            else
-                instant.points.push_back(manual.observation);
-        }
+            market_observation_mapper::map(as_of_observation(row, 1, "read_instants")));
     }
     return result;
 }
 #+end_src
+
 
 *** write_manual_point
 :PROPERTIES:

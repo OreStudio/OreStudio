@@ -132,7 +132,7 @@ in for them.
 | Set the extrapolation | Read or write the two extrapolations | none | missing |
 | Choose a parametric model | Read or write the model and its parameters | none | missing |
 | Read the current surface | Read a snapshot of the grid | =marketdata.v1.curve_snapshot.get= | partial |
-| Read the current surface | Read the grid over time | =marketdata.v1.ops.get_curve_snapshot_buckets= | partial |
+| Read the current surface | Read the grid over time | =marketdata.v1.ops.get_series_evolution= | exists |
 | Check the provenance | Read one point's lineage | =marketdata.v1.observation_lineages.get= | exists |
 | Save the framework | Write the surface framework | none | missing |
 

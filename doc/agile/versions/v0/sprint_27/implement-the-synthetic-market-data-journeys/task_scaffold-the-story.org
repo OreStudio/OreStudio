@@ -83,3 +83,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is filed and wired into Sprint 27, and its nine tasks are in
+dependency order. Nothing is built yet, and the ordering is the whole
+point of the scaffold: the screens cannot come first.
+
+ores.web cannot speak the component. Seventeen components have a
+committed TypeScript protocol and synthetic is not one of them, because
+its nine models carry no =* Physical space= section: no address is
+declared, so there is nothing for the TypeScript facet to project. The
+BFF reaches the bus only through those generated modules, so a screen
+built now would have nothing to call.
+
+The order is therefore the models onto the address mechanism, then the
+protocol twin, then the BFF routes, then the screens. The twin cannot be
+done for two entities at a time either: once =generated/synthetic/protocol/=
+exists, =check_protocol_twin_coverage.py= demands a twin for every
+synthetic header.

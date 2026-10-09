@@ -28,10 +28,11 @@
  * rail assertable without a browser: the list is data, and the page is the
  * state that fills it in.
  *
- * The person chooses on the welcome whether the installation ends with a tenant
- * of its own. That choice decides whether the five tenant steps are part of the
- * rail at all, so it is an input here rather than a flag read somewhere else:
- * the rail that is built is the rail the person was promised.
+ * The person chooses on the starting point whether the installation ends with
+ * a tenant of its own. That choice decides whether the four tenant stages
+ * follow the starting point at all, so it is an input here rather than a flag
+ * read somewhere else: the rail that is built is the rail the person was
+ * promised.
  */
 
 import type { ReactNode } from 'react';
@@ -78,7 +79,9 @@ export interface FirstRunStepsInput {
     readonly onTenantSignInComplete: () => void;
     /** Whether the installation ends with a tenant of its own, or without one. */
     readonly choice: FirstRunChoice;
-    /** The splash, the choice, and the stages the chosen rail runs. */
+    /** Records the starting point the person chose on the profile step. */
+    readonly onChoose: (choice: FirstRunChoice) => void;
+    /** The introduction the welcome step shows. */
     readonly welcome: ReactNode;
     /** Whether the deployment already has its administrator. */
     readonly administratorExists: boolean;
@@ -106,24 +109,40 @@ export interface FirstRunStepsInput {
      * screen even when it keeps no tenant of its own.
      */
     readonly onCompleteSystemOnboarding: () => Promise<void>;
-    readonly onFinished: () => void;
+    /**
+     * Ends a bootstrap: signs the browser out and hands it the sign-in screen.
+     *
+     * Bootstrap runs as the system party because the settings it writes are
+     * tenant-wide, which is a party nobody should be left sitting in. Both
+     * rails end here, the tenant one included, so the installation's own
+     * administrator signs in again as itself once the deployment is set up.
+     */
+    readonly onSignOutAfterBootstrap: () => Promise<void>;
 }
 
 export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<ReactNode>[] {
     const { t, server, policy, administrator, entry, choice } = input;
     const known = input.administratorExists;
-    const tenantSteps =
-        choice === 'first-tenant'
-            ? newTenantSteps({
-                  t,
-                  server,
-                  policy,
-                  profiles: input.profiles,
-                  state: input.tenant,
-                  creatingPassword: input.creatingPassword,
-                  onHandOff: input.onHandOff,
-              })
-            : [];
+    /*
+     * The starting point offers the profiles and the installation that keeps
+     * no tenant, and what it chooses is the rail: a profile runs the four
+     * tenant stages after it, and no tenant goes straight to the sign-in. The
+     * step is on both rails because it is where the choice is made.
+     */
+    const tenantSteps = newTenantSteps({
+        t,
+        server,
+        policy,
+        profiles: input.profiles,
+        state: input.tenant,
+        creatingPassword: input.creatingPassword,
+        onHandOff: input.onHandOff,
+        startingPoint: {
+            noTenant: choice === 'system-only',
+            chooseTenant: () => input.onChoose('first-tenant'),
+            chooseNoTenant: () => input.onChoose('system-only'),
+        },
+    });
     /*
      * The arrival names the account that is signed in when the journey ends:
      * the tenant's administrator on the tenant rail, and the administrator the
@@ -220,7 +239,7 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
                     // that kept the system tenant alone, so it is written
                     // before the browser is handed over, on both rails.
                     await input.onCompleteSystemOnboarding();
-                    input.onFinished();
+                    await input.onSignOutAfterBootstrap();
                 },
             },
         },

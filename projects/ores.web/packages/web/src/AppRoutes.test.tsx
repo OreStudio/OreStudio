@@ -74,6 +74,11 @@ const tenantless: BootstrapState = { ...ready, hasTenant: false, onboardingCompl
 const systemOnlyComplete: BootstrapState = { ...tenantless, onboardingComplete: true };
 const anonymous: SessionState = { status: 'anonymous' };
 const authenticated: SessionState = { status: 'authenticated', session };
+/** A super administrator, whose session acts on the deployment itself. */
+const systemAdmin: SessionState = {
+    status: 'authenticated',
+    session: { ...session, mode: 'system-administration' },
+};
 
 const environment: EnvironmentView = {
     id: 'bright_faraday',
@@ -298,11 +303,21 @@ describe('the registration door', () => {
 });
 
 describe('an installation that has no tenant of its own', () => {
-    it('holds a person whose deployment has not been set up, signed in or not', () => {
-        const visitor = render('/iam/account', tenantless, anonymous);
-        const signedIn = render('/', tenantless, authenticated);
+    it('does not hold a browser that has no session, so the sign-in screen shows', () => {
+        /*
+         * An installation may keep only the system tenant, so "no tenant" is
+         * true forever; it is not a reason to hold the rail, and the wizard
+         * signs the person out, so this is the state it leaves behind.
+         */
+        const visitor = render('/login', tenantless, anonymous);
 
-        expect(visitor).toContain('First run journey');
+        expect(visitor).not.toContain('First run journey');
+        expect(visitor).toContain('Sign in');
+    });
+
+    it('holds a system administrator whose wizard has not recorded its finish', () => {
+        const signedIn = render('/', tenantless, systemAdmin);
+
         expect(signedIn).toContain('First run journey');
         expect(signedIn).not.toContain('Sign out');
     });

@@ -121,6 +121,17 @@ export function isProfileTaken(
 }
 
 /**
+ * The starting point that creates no tenant, and whether it is chosen.
+ *
+ * A journey that offers it passes this; its words come from the catalogue,
+ * because no server row describes it.
+ */
+export interface NoTenantChoice {
+    readonly selected: boolean;
+    readonly onSelect: () => void;
+}
+
+/**
  * The starting points, as cards.
  *
  * Each card states what the server said about its profile — its bullets, how
@@ -131,22 +142,56 @@ export function isProfileTaken(
  * unique, so a card whose tenant already exists is shown but cannot be chosen.
  * It carries a green tick instead of a sentence: the person only needs to see
  * that this one is already installed.
+ *
+ * A first run may also offer a starting point that creates no tenant. It is one
+ * more card in the same grid, first, because it answers the same question; the
+ * question reads as one choice rather than a profile list with an exception
+ * beside it.
  */
 export function ProfileCards({
     profiles,
     selected,
     onSelect,
     takenCodes = new Set<string>(),
+    noTenant,
 }: {
     readonly profiles: readonly SeedProfileChoice[];
     readonly selected: string | undefined;
     readonly onSelect: (profile: SeedProfileChoice) => void;
     /** The tenant codes the deployment already holds. */
     readonly takenCodes?: ReadonlySet<string>;
+    /** The starting point that creates no tenant, where a journey offers it. */
+    readonly noTenant?: NoTenantChoice;
 }): ReactNode {
     const { t } = useTranslation();
     return (
         <div role="radiogroup" className="grid gap-3 sm:grid-cols-2">
+            {noTenant !== undefined && (
+                <button
+                    type="button"
+                    role="radio"
+                    aria-checked={noTenant.selected}
+                    onClick={noTenant.onSelect}
+                    className={cx(
+                        'card relative p-4 text-left transition-colors',
+                        noTenant.selected
+                            ? 'border-accent ring-3 ring-accent/20'
+                            : 'hover:border-line-strong',
+                    )}
+                >
+                    <div className="flex items-baseline justify-between gap-2">
+                        <span className="font-semibold">
+                            {t('journey.profile.noTenant.title')}
+                        </span>
+                        <span className="text-xs text-ink-faint">
+                            {t('journey.profile.noTenant.audience')}
+                        </span>
+                    </div>
+                    <p className="mt-1 text-sm text-ink-muted">
+                        {t('journey.profile.noTenant.summary')}
+                    </p>
+                </button>
+            )}
             {profiles.map((profile) => {
                 const logo = profileLogo(profile.code);
                 const taken = isProfileTaken(profile, takenCodes);

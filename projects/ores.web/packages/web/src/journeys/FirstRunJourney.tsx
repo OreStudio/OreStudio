@@ -23,10 +23,10 @@
  * The first run journey: the rail, and the state that fills it in.
  *
  * An installation with no administrator and no tenant is brought to life on one
- * rail. The person chooses at the start what the installation is left with: the
- * ordinary ending creates the first tenant, whose steps run inline, and its
- * administrator takes over and signs in; the other creates no tenant, so the
- * installation keeps the system tenant alone. The five tenant steps are the
+ * rail. The person chooses at the starting point what the installation is left
+ * with: the ordinary ending creates the first tenant, whose stages run inline,
+ * and its administrator takes over and signs in; the other creates no tenant, so
+ * the installation keeps the system tenant alone. The five tenant steps are the
  * shared library, so the new tenant journey runs the same ones rather than a
  * copy of them.
  *
@@ -40,7 +40,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Field, Input, Notice, cx } from '../ui/Primitives.js';
+import { Button, Field, Input, Notice } from '../ui/Primitives.js';
 import { NewPasswordField, PasswordInput } from '../ui/PasswordField.js';
 import { JourneyPage } from './JourneyPage.js';
 import { JourneyHeader } from './parts.js';
@@ -49,7 +49,7 @@ import { firstRunSteps, type AdministratorDraft, type FirstRunChoice } from './f
 import type { TenantEntry } from './FirstSignIn.js';
 import type { JourneyServer } from './server.js';
 import { administratorPassword, tenantPrincipal, useNewTenant } from './state.js';
-import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
+import type { PasswordPolicy, PartySummary, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 /** What a fresh installation's administrator is almost always called. */
 const DEFAULT_PRINCIPAL = 'super_admin';
@@ -68,93 +68,59 @@ function reasonOf(error: unknown): string {
 }
 
 /**
- * The two endings the person chooses between, in the order they are offered.
+ * The party category a tenant's system party carries.
  *
- * Creating the first tenant is the ordinary case, so it is stated first.
+ * Bootstrap signs in here and nowhere else: the settings it writes are
+ * tenant-wide, which means scoped to this party, and a session in any other
+ * party cannot write them.
  */
-const CHOICES: readonly FirstRunChoice[] = ['first-tenant', 'system-only'];
+const SYSTEM_PARTY_CATEGORY = 'System';
 
-/** The stages the chosen rail runs, as a title key and a body key. */
-export function welcomeStages(choice: FirstRunChoice): readonly (readonly [string, string])[] {
-    if (choice === 'system-only') {
-        return [
-            ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
-            ['journey.welcome.stage.signIn', 'journey.welcome.stage.systemSignInBody'],
-        ];
-    }
-    return [
-        ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
-        ['journey.welcome.stage.tenant', 'journey.welcome.stage.tenantBody'],
-        ['journey.welcome.stage.signIn', 'journey.welcome.stage.signInBody'],
-    ];
+/**
+ * The system party among the parties a sign-in offers, or nothing when the
+ * account works in none.
+ *
+ * Bootstrap signs in here and nowhere else. It writes tenant-wide settings, and
+ * a tenant-wide setting is scoped to the tenant's system party; a session in any
+ * other party is refused by the party isolation policy, whose visible set walks
+ * down from the selected party and finds the system party only when the selected
+ * party is its root.
+ */
+export function systemPartyOf(parties: readonly PartySummary[]): PartySummary | undefined {
+    return parties.find((party) => party.partyCategory === SYSTEM_PARTY_CATEGORY);
 }
 
 /**
- * The choice, and what the chosen journey leaves behind.
+ * What the welcome states about the journey, as a title key and a body key.
  *
- * The rail names every step of the chosen journey, so these cards say what a
- * stage produces rather than repeating the step titles; the stages change with
- * the choice because the rail does, and a person who counts the rail and reads
- * the stages should find both statements true.
- *
- * The choice is made here, deliberately and in front of the person, because it
- * decides whether the installation ends up half provisioned. It is not a flag
- * read from the browser's environment: a control somebody can switch on without
- * seeing it is not a control at all.
+ * It is an introduction and nothing else: the person reads what the setup does
+ * before starting it. What the installation is left with is chosen at the
+ * starting point, so no stage here is a choice.
  */
-export function WelcomeCard({
-    choice,
-    onChoice,
-}: {
-    readonly choice: FirstRunChoice;
-    readonly onChoice: (choice: FirstRunChoice) => void;
-}): ReactNode {
+const WELCOME_STAGES: readonly (readonly [string, string])[] = [
+    ['journey.welcome.stage.admin', 'journey.welcome.stage.adminBody'],
+    ['journey.welcome.stage.tenant', 'journey.welcome.stage.tenantBody'],
+    ['journey.welcome.stage.signIn', 'journey.welcome.stage.signInBody'],
+];
+
+/**
+ * The welcome, which introduces the journey the person is about to take.
+ *
+ * The rail names every step, so these cards say what a stage produces rather
+ * than repeating the step titles: a person who counts the rail and reads the
+ * stages should find both statements true.
+ */
+export function WelcomeIntro(): ReactNode {
     const { t } = useTranslation();
-    const stages = welcomeStages(choice);
     return (
-        <div className="space-y-5">
-            <div
-                role="radiogroup"
-                aria-label={t('journey.welcome.choiceLabel')}
-                className="grid gap-3 sm:grid-cols-2"
-            >
-                {CHOICES.map((option) => (
-                    <button
-                        key={option}
-                        type="button"
-                        role="radio"
-                        aria-checked={choice === option}
-                        onClick={() => onChoice(option)}
-                        className={cx(
-                            'card p-4 text-left transition-colors',
-                            choice === option
-                                ? 'border-accent ring-3 ring-accent/20'
-                                : 'hover:border-line-strong',
-                        )}
-                    >
-                        <span className="font-semibold">
-                            {t(`journey.welcome.choice.${option}.title`)}
-                        </span>
-                        <p className="mt-1 text-sm text-ink-muted">
-                            {t(`journey.welcome.choice.${option}.body`)}
-                        </p>
-                    </button>
-                ))}
-            </div>
-            <ul
-                className={cx(
-                    'grid gap-4',
-                    stages.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
-                )}
-            >
-                {stages.map(([title, body]) => (
-                    <li key={title} className="rounded-md border border-line p-4">
-                        <p className="text-sm font-medium">{t(title)}</p>
-                        <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ul className="grid gap-4 sm:grid-cols-3">
+            {WELCOME_STAGES.map(([title, body]) => (
+                <li key={title} className="rounded-md border border-line p-4">
+                    <p className="text-sm font-medium">{t(title)}</p>
+                    <p className="mt-1 text-sm text-ink-muted">{t(body)}</p>
+                </li>
+            ))}
+        </ul>
     );
 }
 
@@ -306,12 +272,12 @@ export function FirstRunJourney({
     /*
      * What the installation is left with. The ordinary ending is the default,
      * and the choice lives here rather than on the server because it is the
-     * person's, made in front of them on the welcome card.
+     * person's, made in front of them on the starting point.
      *
-     * The choice changes the rail's shape: the five tenant steps and the
-     * tenant sign-in come and go. The control that makes it is on the welcome
-     * step, which is the rail's first, so only steps after the one the person
-     * stands on change and the position stays inside both rails.
+     * The choice changes the rail's shape: the four tenant stages and the
+     * tenant sign-in come and go. The control that makes it is on the starting
+     * point, which is the last step both rails share, so only steps after the
+     * one the person stands on change and the position stays inside both rails.
      */
     const [choice, setChoice] = useState<FirstRunChoice>('first-tenant');
     /*
@@ -395,18 +361,23 @@ export function FirstRunJourney({
      * Signing in as the deployment's administrator.
      *
      * The starting-point read and the provisioning request both belong to an
-     * account, so the journey enters as the administrator before either. An
-     * account that works in exactly one party is settled here; one that works
-     * in several cannot be guessed at, and the person is asked to choose.
+     * account, so the journey enters as the administrator before either.
+     *
+     * The party is always the tenant's system party, and it is never asked for.
+     * Bootstrap writes tenant-wide settings, and a tenant-wide setting is scoped
+     * to the system party: a session sitting in any other party is refused by
+     * the party isolation policy, because the visible set walks down from the
+     * selected party and the system party is its root. Offering the choice would
+     * offer a way to fail, so the choice is not offered.
      */
     const signInAsAdministrator = async (password: string): Promise<void> => {
         const outcome = await server.signIn({ username: draft.principal, password });
         if (outcome.outcome === 'party-required') {
-            const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
-            if (only === undefined) {
-                throw new Error(t('journey.admin.partyChoice'));
+            const system = systemPartyOf(outcome.parties);
+            if (system === undefined) {
+                throw new Error(t('journey.admin.noSystemParty'));
             }
-            await server.chooseParty(only.id, outcome.parties);
+            await server.chooseParty(system.id, outcome.parties);
         }
     };
 
@@ -476,7 +447,8 @@ export function FirstRunJourney({
         tenantSignInComplete,
         onTenantSignInComplete: () => setTenantSignInComplete(true),
         choice,
-        welcome: <WelcomeCard choice={choice} onChoice={setChoice} />,
+        onChoose: setChoice,
+        welcome: <WelcomeIntro />,
         administratorArrival: <AdministratorArrival principal={draft.principal} />,
         administratorForm: (
             <AdministratorForm
@@ -503,15 +475,25 @@ export function FirstRunJourney({
         onAdministratorSignIn: () => signInAsAdministrator(creatingPassword),
         onHandOff: handOff,
         onCompleteSystemOnboarding: () => server.completeSystemOnboarding(),
-        onFinished: () => onFinished(),
+        onSignOutAfterBootstrap: async () => {
+            await server.signOut();
+            onFinished();
+        },
     });
+
+    /*
+     * The header names the tenant being described, and an installation that
+     * keeps no tenant has none: a profile chosen before the person changed
+     * their mind is not a tenant they are creating.
+     */
+    const describedTenant = choice === 'system-only' ? { ...tenant, profile: undefined } : tenant;
 
     return (
         <JourneyPage
             steps={steps}
             at={at ?? indexOfStep(steps, inBootstrapMode ? 'welcome' : 'administrator')}
             onMove={setAt}
-            header={<JourneyHeader tenant={tenant} />}
+            header={<JourneyHeader tenant={describedTenant} />}
         />
     );
 }

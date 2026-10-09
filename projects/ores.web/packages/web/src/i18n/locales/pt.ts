@@ -1434,17 +1434,6 @@ const pt: SourceCatalogue = {
             title: 'Bem-vindo ao ORE Studio',
             lead: 'Configure uma nova instalação: crie o administrador que a possui e depois escolha com o que a instalação fica.',
             start: 'Começar',
-            choiceLabel: 'Com o que a instalação fica',
-            choice: {
-                'first-tenant': {
-                    title: 'Criar o primeiro inquilino',
-                    body: 'Dê um nome a um inquilino e ao seu administrador. A instalação fica com um inquilino próprio.',
-                },
-                'system-only': {
-                    title: 'Manter apenas o inquilino de sistema',
-                    body: 'Não crie nenhum inquilino. A instalação fica apenas com o inquilino de sistema, o que é útil para testes.',
-                },
-            },
             stage: {
                 admin: 'Criar o administrador',
                 adminBody: 'A conta proprietária desta instalação.',
@@ -1454,8 +1443,6 @@ const pt: SourceCatalogue = {
                 signIn: 'Iniciar sessão',
                 signInBody:
                     'O primeiro início de sessão do administrador do inquilino, com uma palavra-passe própria.',
-                systemSignInBody:
-                    'O primeiro início de sessão do administrador, com a palavra-passe que o percurso guarda.',
             },
         },
 
@@ -1472,8 +1459,8 @@ const pt: SourceCatalogue = {
             resumeLead:
                 'Esta instalação já tem o seu administrador. Inicie sessão com essa conta para continuar. A palavra-passe é também a que a entidade recebe quando o perfil dela partilha a sua.',
             signIn: 'Iniciar sessão e continuar',
-            partyChoice:
-                'O administrador trabalha em mais do que uma entidade. Inicie sessão e escolha uma primeiro.',
+            noSystemParty:
+                'O administrador não tem uma entidade de sistema onde iniciar sessão, por isso a instalação não pode ser aprovisionada.',
         },
 
         profile: {
@@ -1481,6 +1468,12 @@ const pt: SourceCatalogue = {
             lead: 'Um ponto de partida é um perfil que o servidor guarda. Indica as definições, os passos e o inquilino que cria.',
             counts: '{settings} definições · {steps} passos',
             installed: 'Instalado',
+            noTenant: {
+                title: 'Sistema mínimo',
+                audience: 'Para utilizadores avançados',
+                summary:
+                    'Mantém apenas o inquilino de sistema e não cria nenhum inquilino próprio.',
+            },
         },
 
         details: {

@@ -1441,17 +1441,6 @@ const fr: SourceCatalogue = {
             title: 'Bienvenue dans ORE Studio',
             lead: "Configurez une nouvelle installation : créez l'administrateur qui la possède, puis choisissez ce que l'installation conserve.",
             start: 'Commencer',
-            choiceLabel: "Ce que l'installation conserve",
-            choice: {
-                'first-tenant': {
-                    title: 'Créer le premier locataire',
-                    body: "Nommez un locataire et son administrateur. L'installation finit avec un locataire qui lui est propre.",
-                },
-                'system-only': {
-                    title: 'Garder le locataire système seul',
-                    body: "Ne créez aucun locataire. L'installation finit avec le seul locataire système, ce qui est utile pour les tests.",
-                },
-            },
             stage: {
                 admin: "Créer l'administrateur",
                 adminBody: 'Le compte propriétaire de cette installation.',
@@ -1461,8 +1450,6 @@ const fr: SourceCatalogue = {
                 signIn: 'Se connecter',
                 signInBody:
                     "La première connexion de l'administrateur du locataire, avec son propre mot de passe.",
-                systemSignInBody:
-                    "La première connexion de l'administrateur, avec le mot de passe que le parcours détient.",
             },
         },
 
@@ -1479,8 +1466,8 @@ const fr: SourceCatalogue = {
             resumeLead:
                 "Cette installation a déjà son administrateur. Connectez-vous avec ce compte pour continuer. Le mot de passe est aussi celui que l'entité reprend lorsque son profil partage le vôtre.",
             signIn: 'Se connecter et continuer',
-            partyChoice:
-                "L'administrateur travaille dans plusieurs entités. Connectez-vous et choisissez-en une d'abord.",
+            noSystemParty:
+                "L'administrateur n'a pas d'entité système à laquelle se connecter ; l'installation ne peut donc pas être amorcée.",
         },
 
         profile: {
@@ -1488,6 +1475,12 @@ const fr: SourceCatalogue = {
             lead: "Un point de départ est un profil détenu par le serveur. Il indique les paramètres, les étapes et le locataire qu'il crée.",
             counts: '{settings} paramètres · {steps} étapes',
             installed: 'Installé',
+            noTenant: {
+                title: 'Système nu',
+                audience: 'Pour utilisateurs avertis',
+                summary:
+                    "L'installation ne garde que le locataire système et ne crée aucun locataire propre.",
+            },
         },
 
         details: {

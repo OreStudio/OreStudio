@@ -85,13 +85,16 @@ import type { EnvironmentView } from '@ores/contracts';
  * is nothing else to be at, and a redirect leaves a URL somebody can share that
  * leads nowhere. Creating the administrator closes that question but not the
  * job, so the gate carries two further reasons to stay. The first is that the
- * deployment has no tenant of its own *and* the system provisioner wizard has
- * not recorded that it finished: an installation may keep only the system
- * tenant, so "no tenant" alone would hold it on the setup screen forever, and
- * the flag is what the wizard writes as its last act. The second is that the
- * journey has begun in this browser, which holds the rail after the tenant
- * exists until the person finishes. The deployment's own state is what survives
- * a reload; the tab's memory only outlives the tenant.
+ * journey has begun in this browser, which holds the rail until the person
+ * finishes. The second is that a system administrator is signed in and the
+ * system provisioner wizard has not recorded that it finished: a first-run
+ * installation may keep only the system tenant, and the wizard signs the person
+ * out at the end, so the flag is read through their session while they have
+ * one. A visitor with no session is never held, and neither is a session in a
+ * normal tenant: the deployment's lacking a tenant of its own is not a reason
+ * to hold the rail, because an installation may keep the system tenant alone,
+ * and a normal tenant's setup belongs to the tenant wizard. The deployment's
+ * own state is what survives a reload; the tab's memory only outlives the run.
  */
 export interface AppRoutesProps {
     readonly gate: BootstrapState;
@@ -181,11 +184,17 @@ export function AppRoutes({
         );
     }
 
-    if (
-        gate.inBootstrapMode ||
-        (!gate.hasTenant && !gate.onboardingComplete) ||
-        journeyInProgress
-    ) {
+    /*
+     * A system administrator resuming a provisioner wizard that has not
+     * recorded its finish stays on the rail. The mode is the session's own,
+     * read from the login answer rather than derived from the tenant here.
+     */
+    const resumingSystemSetup =
+        session.status === 'authenticated' &&
+        session.session.mode === 'system-administration' &&
+        !gate.onboardingComplete;
+
+    if (gate.inBootstrapMode || resumingSystemSetup || journeyInProgress) {
         return (
             <Routes>
                 <Route

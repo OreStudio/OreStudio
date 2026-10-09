@@ -8,7 +8,7 @@
 #+filetags: :reconcile-the-sprints-bookkeeping:sprint_27:v0:
 #+owner: marco
 #+branch: feature/reconcile-the-sprints-bookkeeping
-#+pr:
+#+pr: 2931
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -86,7 +86,7 @@ not that the task ran out of work. Both are recorded in the story's decisions.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2931][#2931]] | [agile] Reconcile the sprint's bookkeeping |
 
 * Review
 

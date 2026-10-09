@@ -15,32 +15,52 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Let the sprint table tell the truth about what is in flight: no story says
+STARTED once every one of its tasks is DONE and every one of its PRs merged.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
 
--
+- No sprint story is STARTED with every task DONE.
+- Every closed story records what finished it.
+- The role-request journey's prose agrees with its own gap table.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:904C8F34-53A8-4860-AE4E-D08D8C50F96C][Scaffold story: Close the sprint's finished stories]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B2A24902-A8DD-4AAB-AFCA-5ADE689190E8][Implement Close the sprint's finished stories]] | BACKLOG | | | Initial task for: Close the sprint's finished stories |
+| [[id:904C8F34-53A8-4860-AE4E-D08D8C50F96C][Scaffold story: Close the sprint's finished stories]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B2A24902-A8DD-4AAB-AFCA-5ADE689190E8][Implement Close the sprint's finished stories]] | DONE | | 2026-10-09 | Initial task for: Close the sprint's finished stories |
 
 * Decisions
 
+- *A close on task state says so.* Five of the twelve are larger stories whose
+  owners had moved on to other work. Their tasks are all DONE with merged PRs,
+  which is good evidence the work finished, but it is not a re-verification of
+  each goal by the person who set it. Their Results say that plainly rather than
+  claiming a verification that did not happen.
+- *The seven hotfixes name their PR.* Those were landed and verified today --
+  the build and the whole suite were run on the commit that carries them -- so
+  their Results name the PR and the suite run.
+
 * Out of scope
 
--
+- Whether any of the five larger stories is really finished. This close records
+  their tasks' state; an owner who disagrees reopens it.
+
+* Result
+
+Done. Twelve stories closed and each given a Result. A scan of every
+=sprint_27= story afterwards reports none STARTED with all tasks DONE, down
+from twelve. The role-request journey no longer says six of its seven gaps are
+closed where its own table says all seven are.

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1010px" preserveAspectRatio="none" style="width:844px;height:1010px;" version="1.1" viewBox="0 0 844 1010" width="844px" zoomAndPan="magnify"><defs><filter height="300%" id="f1axuahenfm0hb" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="312" x="277.5" y="19.2419">ORES Database Schema — telemetry</text><!--MD5=[54e1782a4aa528d227184f5d6c743fef]
+cluster telemetry--><rect fill="#FCE4EC" filter="url(#f1axuahenfm0hb)" height="854" style="stroke: #000000; stroke-width: 1.5;" width="808.5" x="24.5" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="68" x="394.75" y="65.0718">telemetry</text><!--MD5=[8f99d689bc7d99fa8ee9343d50c4e438]
+class ores_telemetry_expected_services_tbl--><rect fill="#F7E5FF" filter="url(#f1axuahenfm0hb)" height="117.2536" id="ores_telemetry_expected_services_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="216" x="50" y="768.4758"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="216" x="50" y="768.4758"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="210" x="53" y="786.3039">ores_telemetry_expected_services_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="51" x2="265" y1="794.82" y2="794.82"/><ellipse cx="61" cy="805.82" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="128" x="70" y="810.5789">service_name : text «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="51" x2="265" y1="817.8018" y2="817.8018"/><ellipse cx="61" cy="828.8018" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="87" x="70" y="833.5608">replicas : integer</text><ellipse cx="61" cy="843.7837" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="100" x="70" y="848.5426">display_name : text</text><ellipse cx="61" cy="858.7656" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="70" y="863.5245">description : text</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="111" x="70" y="878.5064">service_account : text</text><path d="M330,646.0158 L330,823.1058 L266.35,827.1058 L330,831.1058 L330,886.1941 A0,0 0 0 0 330,886.1941 L817,886.1941 A0,0 0 0 0 817,886.1941 L817,656.0158 L807,646.0158 L330,646.0158 A0,0 0 0 0 330,646.0158 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M807,646.0158 L807,656.0158 L817,656.0158 L807,646.0158 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="106" x="336" y="664.9129">Expected Services</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="402" x="336" y="682.6189">The services the installation runs and how many instances of each it</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="341" x="336" y="700.3249">expects. The rows are generated from the service registry</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="267" x="336" y="718.0309">(projects/modeling/service_registry.org) into</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="466" x="336" y="735.7369">populate/telemetry/telemetry_expected_services_populate.sql, so the registry</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="415" x="336" y="753.4429">stays the one source. The services roster joins these rows with the last</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="419" x="336" y="771.149">heartbeat of each instance, so an expected instance that never reports</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="83" x="336" y="788.855">still has a row.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="421" x="336" y="806.561">The display name is the name a person reads, such as Analytics Service,</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="435" x="336" y="824.267">and the description says what the service does. The service account is the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="410" x="336" y="841.973">IAM account the process signs in as, null for a process that signs in as</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="131" x="336" y="859.679">no account of its own.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="418" x="336" y="877.3851">Installation-level, like the heartbeat samples: no tenant owns a service.</text><!--MD5=[8a84960942bf09137819f2632f865dd9]
+class ores_telemetry_logs_tbl--><rect fill="#F7E5FF" filter="url(#f1axuahenfm0hb)" height="222.1268" id="ores_telemetry_logs_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="183" x="66.5" y="538.0358"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="183" x="66.5" y="538.0358"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="131" x="92.5" y="555.8639">ores_telemetry_logs_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="67.5" x2="248.5" y1="564.38" y2="564.38"/><ellipse cx="77.5" cy="575.38" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="86.5" y="580.1389">id : uuid «PK»</text><ellipse cx="77.5" cy="590.3618" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="157" x="86.5" y="595.1208">timestamp : timestamptz «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="67.5" x2="248.5" y1="602.3437" y2="602.3437"/><ellipse cx="77.5" cy="613.3437" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="86.5" y="618.1026">tenant_id : uuid «FK»</text><ellipse cx="77.5" cy="628.3256" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="86.5" y="633.0845">source : text</text><ellipse cx="77.5" cy="643.3075" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="98" x="86.5" y="648.0664">source_name : text</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="114" x="86.5" y="663.0483">session_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="117" x="86.5" y="678.0302">account_id : uuid «FK»</text><ellipse cx="77.5" cy="688.2532" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="53" x="86.5" y="693.0121">level : text</text><ellipse cx="77.5" cy="703.2351" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="86.5" y="707.994">component : text</text><ellipse cx="77.5" cy="718.217" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="74" x="86.5" y="722.9759">message : text</text><ellipse cx="77.5" cy="733.1988" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="46" x="86.5" y="737.9578">tag : text</text><ellipse cx="77.5" cy="748.1807" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="136" x="86.5" y="752.9396">recorded_at : timestamptz</text><path d="M450.5,574.5458 L450.5,602.1058 L249.96,606.1058 L450.5,610.1058 L450.5,637.6639 A0,0 0 0 0 450.5,637.6639 L696.5,637.6639 A0,0 0 0 0 696.5,637.6639 L696.5,584.5458 L686.5,574.5458 L450.5,574.5458 A0,0 0 0 0 450.5,574.5458 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M686.5,574.5458 L686.5,584.5458 L696.5,584.5458 L686.5,574.5458 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="136" x="456.5" y="593.4429">Application log entries.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="225" x="456.5" y="611.1489">Designed for TimescaleDB hypertable.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="156" x="456.5" y="628.8549">Partitioned by timestamp.</text><!--MD5=[afc738f937ee75f70649aaa2b393389b]
+class ores_telemetry_nats_server_samples_tbl--><rect fill="#F7E5FF" filter="url(#f1axuahenfm0hb)" height="177.1811" id="ores_telemetry_nats_server_samples_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="231" x="42.5" y="352.5158"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="231" x="42.5" y="352.5158"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="225" x="45.5" y="370.3439">ores_telemetry_nats_server_samples_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="43.5" x2="272.5" y1="378.86" y2="378.86"/><ellipse cx="53.5" cy="389.86" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="161" x="62.5" y="394.6189">sampled_at : timestamptz «PK»</text><ellipse cx="53.5" cy="404.8418" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="130" x="62.5" y="409.6008">tenant_id : uuid «PK, FK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="43.5" x2="272.5" y1="416.8237" y2="416.8237"/><ellipse cx="53.5" cy="427.8237" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="62.5" y="432.5826">in_msgs : bigint</text><ellipse cx="53.5" cy="442.8056" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="90" x="62.5" y="447.5645">out_msgs : bigint</text><ellipse cx="53.5" cy="457.7875" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="83" x="62.5" y="462.5464">in_bytes : bigint</text><ellipse cx="53.5" cy="472.7694" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="62.5" y="477.5283">out_bytes : bigint</text><ellipse cx="53.5" cy="487.7513" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="62.5" y="492.5102">connections : integer</text><ellipse cx="53.5" cy="502.7332" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="62.5" y="507.4921">mem_bytes : bigint</text><ellipse cx="53.5" cy="517.7151" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="133" x="62.5" y="522.474">slow_consumers : integer</text><path d="M330.5,409.5458 L330.5,437.1058 L273.74,441.1058 L330.5,445.1058 L330.5,472.6639 A0,0 0 0 0 330.5,472.6639 L816.5,472.6639 A0,0 0 0 0 816.5,472.6639 L816.5,419.5458 L806.5,409.5458 L330.5,409.5458 A0,0 0 0 0 330.5,409.5458 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M806.5,409.5458 L806.5,419.5458 L816.5,419.5458 L806.5,409.5458 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="205" x="336.5" y="428.4429">NATS server-level metrics samples.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="465" x="336.5" y="446.1489">Populated by ores.telemetry.service polling /varz on the NATS monitoring API.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="388" x="336.5" y="463.8549">Designed for TimescaleDB hypertable, partitioned by sampled_at.</text><!--MD5=[87fb02b21547ce03b2d466042571d9cf]
+class ores_telemetry_nats_stream_samples_tbl--><rect fill="#F7E5FF" filter="url(#f1axuahenfm0hb)" height="132.2354" id="ores_telemetry_nats_stream_samples_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="235" x="40.5" y="211.9858"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="235" x="40.5" y="211.9858"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="229" x="43.5" y="229.8139">ores_telemetry_nats_stream_samples_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="41.5" x2="274.5" y1="238.33" y2="238.33"/><ellipse cx="51.5" cy="249.33" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="161" x="60.5" y="254.0889">sampled_at : timestamptz «PK»</text><ellipse cx="51.5" cy="264.3118" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="130" x="60.5" y="269.0708">tenant_id : uuid «PK, FK»</text><ellipse cx="51.5" cy="279.2937" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="128" x="60.5" y="284.0526">stream_name : text «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="41.5" x2="274.5" y1="291.2756" y2="291.2756"/><ellipse cx="51.5" cy="302.2756" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="90" x="60.5" y="307.0345">messages : bigint</text><ellipse cx="51.5" cy="317.2575" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="60.5" y="322.0164">bytes : bigint</text><ellipse cx="51.5" cy="332.2394" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="134" x="60.5" y="336.9983">consumer_count : integer</text><path d="M335.5,246.5458 L335.5,274.1058 L275.95,278.1058 L335.5,282.1058 L335.5,309.6639 A0,0 0 0 0 335.5,309.6639 L811.5,309.6639 A0,0 0 0 0 811.5,309.6639 L811.5,256.5458 L801.5,246.5458 L335.5,246.5458 A0,0 0 0 0 335.5,246.5458 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M801.5,246.5458 L801.5,256.5458 L811.5,256.5458 L801.5,246.5458 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="265" x="341.5" y="265.4429">NATS JetStream per-stream metrics samples.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="455" x="341.5" y="283.1489">Populated by ores.telemetry.service polling /jsz on the NATS monitoring API.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="388" x="341.5" y="300.8549">Designed for TimescaleDB hypertable, partitioned by sampled_at.</text><!--MD5=[d94df8e3269e8977970613f6acce9d99]
+class ores_telemetry_service_samples_tbl--><rect fill="#F7E5FF" filter="url(#f1axuahenfm0hb)" height="117.2536" id="ores_telemetry_service_samples_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="206" x="55" y="86.4758"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="206" x="55" y="86.4758"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="200" x="58" y="104.3039">ores_telemetry_service_samples_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="56" x2="260" y1="112.82" y2="112.82"/><ellipse cx="66" cy="123.82" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="161" x="75" y="128.5789">sampled_at : timestamptz «PK»</text><ellipse cx="66" cy="138.8018" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="128" x="75" y="143.5608">service_name : text «PK»</text><ellipse cx="66" cy="153.7837" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="135" x="75" y="158.5426">instance_id : text «PK, FK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="56" x2="260" y1="165.7656" y2="165.7656"/><ellipse cx="66" cy="176.7656" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="75" y="181.5245">host_id : text «FK»</text><ellipse cx="66" cy="191.7475" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="75" y="196.5064">version : text</text><path d="M342.5,95.8358 L342.5,141.1058 L261.24,145.1058 L342.5,149.1058 L342.5,194.3659 A0,0 0 0 0 342.5,194.3659 L804.5,194.3659 A0,0 0 0 0 804.5,194.3659 L804.5,105.8358 L794.5,95.8358 L342.5,95.8358 A0,0 0 0 0 342.5,95.8358 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M794.5,95.8358 L794.5,105.8358 L804.5,105.8358 L794.5,95.8358 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="159" x="348.5" y="114.7329">Service heartbeat samples.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="441" x="348.5" y="132.4389">Populated by the heartbeat_publisher embedded in every domain service.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="440" x="348.5" y="150.1449">Each service publishes a heartbeat every 15 seconds; the telemetry service</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="351" x="348.5" y="167.8509">subscribes and writes one row here per heartbeat received.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="388" x="348.5" y="185.5569">Designed for TimescaleDB hypertable, partitioned by sampled_at.</text><path d="M6,917.6958 L6,998.5199 L310,998.5199 L310,927.6958 L300,917.6958 L6,917.6958 " fill="#FBFB77" filter="url(#f1axuahenfm0hb)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,917.6958 L300,927.6958 L310,927.6958 L300,917.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="102" x="12" y="936.5929">Group: telemetry</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="954.2989">Tables: 5</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="972.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="989.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[3a362b6070408925b136ac4f2e71a8f9]
+@startuml
+
+title ORES Database Schema — telemetry
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: telemetry
+Tables: 5
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "telemetry" #FCE4EC {
+    entity ores_telemetry_expected_services_tbl  #F7E5FF {
+        * service_name : text <<PK>>
+        - -
+        * replicas : integer
+        * display_name : text
+        * description : text
+          service_account : text
+    }
+
+    note right of ores_telemetry_expected_services_tbl
+    Expected Services
+    The services the installation runs and how many instances of each it
+    expects. The rows are generated from the service registry
+    (projects/modeling/service_registry.org) into
+    populate/telemetry/telemetry_expected_services_populate.sql, so the registry
+    stays the one source. The services roster joins these rows with the last
+    heartbeat of each instance, so an expected instance that never reports
+    still has a row.
+    The display name is the name a person reads, such as Analytics Service,
+    and the description says what the service does. The service account is the
+    IAM account the process signs in as, null for a process that signs in as
+    no account of its own.
+    Installation-level, like the heartbeat samples: no tenant owns a service.
+    end note
+
+    entity ores_telemetry_logs_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * timestamp : timestamptz <<PK>>
+        - -
+        * tenant_id : uuid <<FK>>
+        * source : text
+        * source_name : text
+          session_id : uuid <<FK>>
+          account_id : uuid <<FK>>
+        * level : text
+        * component : text
+        * message : text
+        * tag : text
+        * recorded_at : timestamptz
+    }
+
+    note right of ores_telemetry_logs_tbl
+    Application log entries.
+    Designed for TimescaleDB hypertable.
+    Partitioned by timestamp.
+    end note
+
+    entity ores_telemetry_nats_server_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * tenant_id : uuid <<PK, FK>>
+        - -
+        * in_msgs : bigint
+        * out_msgs : bigint
+        * in_bytes : bigint
+        * out_bytes : bigint
+        * connections : integer
+        * mem_bytes : bigint
+        * slow_consumers : integer
+    }
+
+    note right of ores_telemetry_nats_server_samples_tbl
+    NATS server-level metrics samples.
+    Populated by ores.telemetry.service polling /varz on the NATS monitoring API.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+    entity ores_telemetry_nats_stream_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * tenant_id : uuid <<PK, FK>>
+        * stream_name : text <<PK>>
+        - -
+        * messages : bigint
+        * bytes : bigint
+        * consumer_count : integer
+    }
+
+    note right of ores_telemetry_nats_stream_samples_tbl
+    NATS JetStream per-stream metrics samples.
+    Populated by ores.telemetry.service polling /jsz on the NATS monitoring API.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+    entity ores_telemetry_service_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * service_name : text <<PK>>
+        * instance_id : text <<PK, FK>>
+        - -
+        * host_id : text <<FK>>
+        * version : text
+    }
+
+    note right of ores_telemetry_service_samples_tbl
+    Service heartbeat samples.
+    Populated by the heartbeat_publisher embedded in every domain service.
+    Each service publishes a heartbeat every 15 seconds; the telemetry service
+    subscribes and writes one row here per heartbeat received.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+}
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

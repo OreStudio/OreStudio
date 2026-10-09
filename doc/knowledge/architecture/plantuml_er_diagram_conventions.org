@@ -26,13 +26,47 @@ another file.
 |-----------+--------------------------------------|
 | Index     | [[proj:projects/ores.sql/modeling/ores_schema.puml][=projects/ores.sql/modeling/ores_schema.puml=]] — every group, its file, and its tables |
 | Group     | =projects/ores.sql/modeling/ores_schema.<group>.puml= — one per package, committed |
-| Drawn     | =projects/ores.sql/modeling/ores_schema*.svg= — one per file, *not* committed |
+| Drawn     | [[proj:projects/ores.sql/modeling/ores_schema.svg][=projects/ores.sql/modeling/ores_schema.svg=]] and one per group, =ores_schema.<group>.svg= — committed |
 | CMakeLists | [[proj:projects/ores.sql/modeling/CMakeLists.txt][=projects/ores.sql/modeling/CMakeLists.txt=]] |
 
-The =.puml= files are the artefacts. An image is drawn on demand, as SVG:
-the schema has no raster budget left, and PlantUML bakes the installed
-build's layout into any image it draws, so an image cannot be regenerated
-identically on another machine and is not committed.
+The =.puml= files hold what the diagram says and the SVG images are what
+a reader opens, so both are committed. The drawing is SVG because the
+schema has no raster budget left: the single 463-table diagram overflowed
+a 32-bit pixel count before it was split.
+
+Below is the index, then one image per group.
+
+[[proj:projects/ores.sql/modeling/ores_schema.svg]]
+
+* Groups
+
+The groups are the model's packages. A package holds its tables and the
+keys that stay inside it; a key that leaves is named in the note beside
+the group it reaches.
+
+| Group | Diagram | Tables |
+|-------+---------+--------|
+| iam | [[proj:projects/ores.sql/modeling/ores_schema.iam.svg]] | 24 |
+| assets | [[proj:projects/ores.sql/modeling/ores_schema.assets.svg]] | 3 |
+| refdata | [[proj:projects/ores.sql/modeling/ores_schema.refdata.svg]] | 153 |
+| dq_staging | [[proj:projects/ores.sql/modeling/ores_schema.dq_staging.svg]] | 57 |
+| dq_datasets | [[proj:projects/ores.sql/modeling/ores_schema.dq_datasets.svg]] | 6 |
+| dq_methodology | [[proj:projects/ores.sql/modeling/ores_schema.dq_methodology.svg]] | 4 |
+| dq_metadata | [[proj:projects/ores.sql/modeling/ores_schema.dq_metadata.svg]] | 15 |
+| variability | [[proj:projects/ores.sql/modeling/ores_schema.variability.svg]] | 1 |
+| telemetry | [[proj:projects/ores.sql/modeling/ores_schema.telemetry.svg]] | 5 |
+| geo | [[proj:projects/ores.sql/modeling/ores_schema.geo.svg]] | 1 |
+| trading | [[proj:projects/ores.sql/modeling/ores_schema.trading.svg]] | 99 |
+| mq | [[proj:projects/ores.sql/modeling/ores_schema.mq.svg]] | 4 |
+| scheduler | [[proj:projects/ores.sql/modeling/ores_schema.scheduler.svg]] | 2 |
+| reporting | [[proj:projects/ores.sql/modeling/ores_schema.reporting.svg]] | 20 |
+| compute | [[proj:projects/ores.sql/modeling/ores_schema.compute.svg]] | 12 |
+| workflow | [[proj:projects/ores.sql/modeling/ores_schema.workflow.svg]] | 4 |
+| database | [[proj:projects/ores.sql/modeling/ores_schema.database.svg]] | 1 |
+| marketdata | [[proj:projects/ores.sql/modeling/ores_schema.marketdata.svg]] | 10 |
+| analytics | [[proj:projects/ores.sql/modeling/ores_schema.analytics.svg]] | 20 |
+| synthetic | [[proj:projects/ores.sql/modeling/ores_schema.synthetic.svg]] | 9 |
+| inbox | [[proj:projects/ores.sql/modeling/ores_schema.inbox.svg]] | 13 |
 
 * Generation pipeline
 
@@ -49,7 +83,7 @@ The pipeline has three stages, all driven by
 |----------+--------------------------------------------------------+----------------------------------------------+---------------------------------|
 | Parse    | =projects/ores.sql/create/**/*.sql=                    | [[proj:projects/ores.codegen/src/plantuml_er_parse_sql.py][=projects/ores.codegen/src/plantuml_er_parse_sql.py=]] | =build/output/codegen/plantuml_er_model.json= |
 | Render   | the intermediate JSON + a mustache template per group, and one for the index | [[proj:projects/ores.codegen/src/plantuml_er_generate.py][=projects/ores.codegen/src/plantuml_er_generate.py=]] (pystache) | =projects/ores.sql/modeling/ores_schema.<group>.puml=, and the index at =ores_schema.puml= |
-| Draw     | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema*.svg= (untracked) |
+| Draw     | the =.puml= files                                      | PlantUML (system =plantuml=, or =plantuml.jar=) | =projects/ores.sql/modeling/ores_schema*.svg= |
 
 The intermediate model file is *not* committed and *not* literate. It
 lives under =build/output/= (gitignored) because it is regenerated on
@@ -60,9 +94,10 @@ mechanisms — those are reserved for the *authored* models humans
 maintain (under each component's =modeling/= directory).
 
 The =.puml= files are committed because reviewers and readers benefit
-from seeing schema-shape diffs in PRs. The images are not: a reader who
-wants one draws it with the same script a build runs, and the drawing is
-a click away rather than a several-megabyte file in every checkout.
+from seeing schema-shape diffs in PRs. The images are committed because
+the documentation site renders them: an image link under =proj:= exports
+as an image tag pointing at the file in the repository, so an image that
+is not in the tree is a broken page.
 
 * Skeleton
 

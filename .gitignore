@@ -99,13 +99,11 @@ build/nats/
 # Scratch the codegen tests render into (shell command and recipe coverage)
 /.runtime/
 
-# PlantUML side artefacts of a drawing. A render emits <name>.cmapx beside
+# PlantUML clickable-map side artefacts. A render emits <name>.cmapx beside
 # the .puml whenever a signature contains something PlantUML reads as a
-# creole link, such as [[nodiscard]], and <name>.svg which is the image
-# itself. The .puml files are the artefacts; these are outputs of a
-# drawing pass, and both carry the installed build's layout.
+# creole link, such as [[nodiscard]]. The .puml and the drawn image are the
+# artefacts; this is neither.
 *.cmapx
-projects/ores.sql/modeling/ores_schema*.svg
 
 .bash_profile
 .bashrc

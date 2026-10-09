@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="769px" preserveAspectRatio="none" style="width:853px;height:769px;" version="1.1" viewBox="0 0 853 769" width="853px" zoomAndPan="magnify"><defs><filter height="300%" id="f5as5yaheewrr" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="313" x="281.5" y="19.2419">ORES Database Schema — scheduler</text><!--MD5=[1346839f4d9afb2d0f5d9392cd5481da]
+cluster scheduler--><rect fill="#F1F8E9" filter="url(#f5as5yaheewrr)" height="613" style="stroke: #000000; stroke-width: 1.5;" width="797.5" x="44.5" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="67" x="409.75" y="65.0718">scheduler</text><!--MD5=[fe634c8957001843ec5b61d2d8b2026a]
+class ores_scheduler_job_definitions_tbl--><rect fill="#C6F0D8" filter="url(#f5as5yaheewrr)" height="313.3803" id="ores_scheduler_job_definitions_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="195" x="60.5" y="301.4158"/><rect fill="#C6F0D8" height="42.6882" style="stroke: #A80036; stroke-width: 1.5;" width="195" x="60.5" y="301.4158"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="62" x="127" y="319.2439">«temporal»</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="189" x="63.5" y="335.5881">ores_scheduler_job_definitions_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="61.5" x2="254.5" y1="344.1041" y2="344.1041"/><ellipse cx="71.5" cy="355.1041" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="80.5" y="359.863">id : uuid «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="61.5" x2="254.5" y1="367.086" y2="367.086"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="80.5" y="382.8449">tenant_id : uuid «FK»</text><ellipse cx="71.5" cy="393.0679" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="80.5" y="397.8268">version : integer</text><ellipse cx="71.5" cy="408.0497" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="80.5" y="412.8087">job_name : text</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="80.5" y="427.7905">party_id : uuid «FK»</text><ellipse cx="71.5" cy="438.0135" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="80.5" y="442.7724">description : text</text><ellipse cx="71.5" cy="452.9954" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="81" x="80.5" y="457.7543">command : text</text><ellipse cx="71.5" cy="467.9773" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="137" x="80.5" y="472.7362">schedule_expression : text</text><ellipse cx="71.5" cy="482.9592" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="80.5" y="487.7181">action_type : text</text><ellipse cx="71.5" cy="497.9411" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="117" x="80.5" y="502.7">action_payload : jsonb</text><ellipse cx="71.5" cy="512.923" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="80.5" y="517.6819">is_active : boolean</text><ellipse cx="71.5" cy="527.9048" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="94" x="80.5" y="532.6638">modified_by : text</text><ellipse cx="71.5" cy="542.8867" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="80.5" y="547.6456">performed_by : text</text><ellipse cx="71.5" cy="557.8686" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="166" x="80.5" y="562.6275">change_reason_code : text «FK»</text><ellipse cx="71.5" cy="572.8505" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="138" x="80.5" y="577.6094">change_commentary : text</text><ellipse cx="71.5" cy="587.8324" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="129" x="80.5" y="592.5913">valid_from : timestamptz</text><ellipse cx="71.5" cy="602.8143" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="114" x="80.5" y="607.5732">valid_to : timestamptz</text><path d="M330,174.9258 L330,454.1058 L255.94,458.1058 L330,462.1058 L330,645.2823 A0,0 0 0 0 330,645.2823 L826,645.2823 A0,0 0 0 0 826,645.2823 L826,184.9258 L816,174.9258 L330,174.9258 A0,0 0 0 0 330,174.9258 " fill="#FBFB77" filter="url(#f5as5yaheewrr)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M816,174.9258 L816,184.9258 L826,184.9258 L816,174.9258 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="300" x="336" y="193.8229">AUTO-GENERATED FILE - DO NOT EDIT MANUALLY</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="329" x="336" y="211.5289">Template: sql_schema_domain_entity_create.mustache</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="287" x="336" y="229.2349">To modify, update the template and regenerate.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="116" x="336" y="246.9409">Job Definition Table</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="444" x="336" y="264.6469">A job the scheduler fires on a cron expression. The row carries the schedule</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="429" x="336" y="282.3529">(schedule_expression), what to run when it fires, and whether it is active.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="437" x="336" y="300.059">action_type selects the behaviour: execute_sql runs the SQL in command,</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="446" x="336" y="317.765">and nats_publish publishes the subject and body carried in action_payload.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="242" x="336" y="335.471">The table is bi-temporal and audited (see</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="442" x="336" y="353.177">projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="421" x="336" y="370.883">carries version, the four audit columns and the valid_from/valid_to pair</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="449" x="336" y="388.589">with the GIST exclusion and the delete rule, so the model takes the ordinary</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="236" x="336" y="406.2951">audited shape and needs no shape flag.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="446" x="336" y="424.0011">tenant_id is nullable. A job may belong to no tenant, because the scheduler</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="445" x="336" y="441.7071">fires system jobs from a NULL-tenant row: the MQ statistics scrape and the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="387" x="336" y="459.4131">compute stale-result reaper are both such rows. The model binds</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="436" x="336" y="477.1191">uuid-identified-lookup for its UUID surrogate key, its tenant scope and its</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="438" x="336" y="494.8251">standard presentation tier, and states nullable_tenant_id itself, which that</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="161" x="336" y="512.5312">profile leaves to the model.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="399" x="336" y="530.2372">job_name is the natural key and is unique within its tenant; id is the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="475" x="336" y="547.9432">surrogate. Uniqueness is what the component's upsert path relies on: a job that</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="455" x="336" y="565.6492">arrives under an existing name updates that row in place instead of adding a</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="72" x="336" y="583.3552">second one.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="459" x="336" y="601.0612">The component's operational views — the global job-instance list and the live</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="459" x="336" y="618.7673">scheduler status — are operations rather than entity verbs, and are modelled</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="243" x="336" y="636.4733">in ores.scheduler.scheduling_operations.</text><!--MD5=[bf8698f657873c21f33bb215ffe8a0b4]
+class ores_scheduler_job_instances_tbl--><rect fill="#F7E5FF" filter="url(#f5as5yaheewrr)" height="207.1449" id="ores_scheduler_job_instances_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="193" x="61.5" y="86.5358"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="193" x="61.5" y="86.5358"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="184" x="66" y="104.3639">ores_scheduler_job_instances_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="62.5" x2="253.5" y1="112.88" y2="112.88"/><ellipse cx="72.5" cy="123.88" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="93" x="81.5" y="128.6389">id : bigserial «PK»</text><ellipse cx="72.5" cy="138.8618" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="167" x="81.5" y="143.6208">triggered_at : timestamptz «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="62.5" x2="253.5" y1="150.8437" y2="150.8437"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="81.5" y="166.6026">tenant_id : uuid «FK»</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="81.5" y="181.5845">party_id : uuid «FK»</text><ellipse cx="72.5" cy="191.8075" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="149" x="81.5" y="196.5664">job_definition_id : uuid «FK»</text><ellipse cx="72.5" cy="206.7894" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="81.5" y="211.5483">action_type : text</text><ellipse cx="72.5" cy="221.7713" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="60" x="81.5" y="226.5302">status : text</text><ellipse cx="72.5" cy="236.7532" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="125" x="81.5" y="241.5121">started_at : timestamptz</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="143" x="81.5" y="256.494">completed_at : timestamptz</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="106" x="81.5" y="271.4759">duration_ms : bigint</text><ellipse cx="72.5" cy="281.6988" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="107" x="81.5" y="286.4578">error_message : text</text><path d="M348,85.6958 L348,122.5258 L254.88,126.5258 L348,130.5258 L348,166.5199 A0,0 0 0 0 348,166.5199 L808,166.5199 A0,0 0 0 0 808,166.5199 L808,95.6958 L798,85.6958 L348,85.6958 A0,0 0 0 0 348,85.6958 " fill="#FBFB77" filter="url(#f5as5yaheewrr)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M798,85.6958 L798,95.6958 L808,95.6958 L798,85.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="177" x="354" y="104.5929">Scheduler Job Instances Table</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="216" x="354" y="122.2989">Execution history for scheduler jobs.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="439" x="354" y="140.0049">Designed for TimescaleDB hypertable; degrades gracefully to a plain table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="165" x="354" y="157.7109">Partitioned by triggered_at.</text><path d="M6,676.6958 L6,757.5199 L310,757.5199 L310,686.6958 L300,676.6958 L6,676.6958 " fill="#FBFB77" filter="url(#f5as5yaheewrr)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,676.6958 L300,686.6958 L310,686.6958 L300,676.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="102" x="12" y="695.5929">Group: scheduler</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="713.2989">Tables: 2</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="731.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="748.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[f89da3230f0300da97631723b718e11b]
+@startuml
+
+title ORES Database Schema — scheduler
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: scheduler
+Tables: 2
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "scheduler" #F1F8E9 {
+    entity ores_scheduler_job_definitions_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        - -
+          tenant_id : uuid <<FK>>
+        * version : integer
+        * job_name : text
+          party_id : uuid <<FK>>
+        * description : text
+        * command : text
+        * schedule_expression : text
+        * action_type : text
+        * action_payload : jsonb
+        * is_active : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_scheduler_job_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Job Definition Table
+    A job the scheduler fires on a cron expression. The row carries the schedule
+    (schedule_expression), what to run when it fires, and whether it is active.
+    action_type selects the behaviour: execute_sql runs the SQL in command,
+    and nats_publish publishes the subject and body carried in action_payload.
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it
+    carries version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the ordinary
+    audited shape and needs no shape flag.
+    tenant_id is nullable. A job may belong to no tenant, because the scheduler
+    fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+    compute stale-result reaper are both such rows. The model binds
+    uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
+    standard presentation tier, and states nullable_tenant_id itself, which that
+    profile leaves to the model.
+    job_name is the natural key and is unique within its tenant; id is the
+    surrogate. Uniqueness is what the component's upsert path relies on: a job that
+    arrives under an existing name updates that row in place instead of adding a
+    second one.
+    The component's operational views — the global job-instance list and the live
+    scheduler status — are operations rather than entity verbs, and are modelled
+    in ores.scheduler.scheduling_operations.
+    end note
+
+    entity ores_scheduler_job_instances_tbl  #F7E5FF {
+        * id : bigserial <<PK>>
+        * triggered_at : timestamptz <<PK>>
+        - -
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * job_definition_id : uuid <<FK>>
+        * action_type : text
+        * status : text
+        * started_at : timestamptz
+          completed_at : timestamptz
+          duration_ms : bigint
+        * error_message : text
+    }
+
+    note right of ores_scheduler_job_instances_tbl
+    Scheduler Job Instances Table
+    Execution history for scheduler jobs.
+    Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
+    Partitioned by triggered_at.
+    end note
+
+}
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="414px" preserveAspectRatio="none" style="width:828px;height:414px;" version="1.1" viewBox="0 0 828 414" width="828px" zoomAndPan="magnify"><defs><filter height="300%" id="fjv37uux0tw61" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="308" x="271.5" y="19.2419">ORES Database Schema — database</text><!--MD5=[db65ce44d5e360fb4ec835f941dc7573]
+cluster database--><rect fill="#EFEBE9" filter="url(#fjv37uux0tw61)" height="258" style="stroke: #000000; stroke-width: 1.5;" width="753.5" x="63.5" y="48.1058"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="63" x="408.75" y="65.0718">database</text><!--MD5=[5be58e1a957fb4f6eeb980d824d93252]
+class ores_database_info_tbl--><rect fill="#F7E5FF" filter="url(#fjv37uux0tw61)" height="132.2354" id="ores_database_info_tbl" style="stroke: #A80036; stroke-width: 1.5;" width="157" x="79.5" y="121.9858"/><rect fill="#F7E5FF" height="26.3441" style="stroke: #A80036; stroke-width: 1.5;" width="157" x="79.5" y="121.9858"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="127" x="94.5" y="139.8139">ores_database_info_tbl</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="80.5" x2="235.5" y1="148.33" y2="148.33"/><ellipse cx="90.5" cy="159.33" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="99.5" y="164.0889">id : uuid «PK»</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="80.5" x2="235.5" y1="171.3118" y2="171.3118"/><ellipse cx="90.5" cy="182.3118" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="131" x="99.5" y="187.0708">schema_fingerprint : text</text><ellipse cx="90.5" cy="197.2937" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="129" x="99.5" y="202.0526">build_environment : text</text><ellipse cx="90.5" cy="212.2756" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="87" x="99.5" y="217.0345">git_commit : text</text><ellipse cx="90.5" cy="227.2575" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="99.5" y="232.0164">git_date : text</text><ellipse cx="90.5" cy="242.2394" fill="#000000" rx="3" ry="3" style="stroke: #000000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="99.5" y="246.9983">created_at : timestamptz</text><path d="M330,85.7158 L330,184.1058 L236.57,188.1058 L330,192.1058 L330,290.482 A0,0 0 0 0 330,290.482 L801,290.482 A0,0 0 0 0 801,290.482 L801,95.7158 L791,85.7158 L330,85.7158 A0,0 0 0 0 330,85.7158 " fill="#FBFB77" filter="url(#fjv37uux0tw61)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M791,85.7158 L791,95.7158 L801,95.7158 L791,85.7158 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="445" x="336" y="104.6129">Stores the schema fingerprint, git commit and build environment recorded</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="405" x="336" y="122.3189">when the database was created or recreated. Holds exactly one row.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="436" x="336" y="140.0249">The schema fingerprint is a hash of the SQL scripts the database was built</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="442" x="336" y="157.7309">from (projects/ores.sql/schema_fingerprint.cmake defines it). Every service</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="431" x="336" y="175.4369">and test run compares it with the fingerprint compiled into the code and</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="193" x="336" y="193.1429">refuses to start when they differ.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="435" x="336" y="210.849">Deliberately not a temporal table and not a codegen entity. It records the</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="399" x="336" y="228.555">checkout that built the database before any service is running, so it</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="440" x="336" y="246.261">cannot depend on the audit, history or eventing stacks a generated entity</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="450" x="336" y="263.967">carries. `compass db recreate` inserts the row and `compass bearings` reads</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="95" x="336" y="281.673">the newest one.</text><path d="M6,321.6958 L6,402.5199 L310,402.5199 L310,331.6958 L300,321.6958 L6,321.6958 " fill="#FBFB77" filter="url(#fjv37uux0tw61)" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M300,321.6958 L300,331.6958 L310,331.6958 L300,321.6958 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="99" x="12" y="340.5929">Group: database</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="51" x="12" y="358.2989">Tables: 1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="283" x="12" y="376.0049">Index and the other groups: ores_schema.puml</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="248" x="12" y="393.7109">Table naming: &lt;component&gt;_&lt;entity&gt;_tbl</text><!--MD5=[5a6a589735814a67d96d1ccdd10d85e8]
+@startuml
+
+title ORES Database Schema — database
+hide circle
+skinparam linetype ortho
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: database
+Tables: 1
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+package "database" #EFEBE9 {
+    entity ores_database_info_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        - -
+        * schema_fingerprint : text
+        * build_environment : text
+        * git_commit : text
+        * git_date : text
+        * created_at : timestamptz
+    }
+
+    note right of ores_database_info_tbl
+    Stores the schema fingerprint, git commit and build environment recorded
+    when the database was created or recreated. Holds exactly one row.
+    The schema fingerprint is a hash of the SQL scripts the database was built
+    from (projects/ores.sql/schema_fingerprint.cmake defines it). Every service
+    and test run compares it with the fingerprint compiled into the code and
+    refuses to start when they differ.
+    Deliberately not a temporal table and not a codegen entity. It records the
+    checkout that built the database before any service is running, so it
+    cannot depend on the audit, history or eventing stacks a generated entity
+    carries. `compass db recreate` inserts the row and `compass bearings` reads
+    the newest one.
+    end note
+
+}
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 25.0.5-ea+7-1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

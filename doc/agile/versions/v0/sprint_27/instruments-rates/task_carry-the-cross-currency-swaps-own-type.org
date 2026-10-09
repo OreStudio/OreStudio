@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-cross-currency-swaps-own-type
-#+pr: 2951
+#+pr: 2952
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -106,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2952][#2952]] | [agile] Remove the duplicated sections three task pages carry |
 | [[https://github.com/OreStudio/OreStudio/pull/2951][#2951]] | [ore] Carry the cross-currency swap's own type |
 
 * Review

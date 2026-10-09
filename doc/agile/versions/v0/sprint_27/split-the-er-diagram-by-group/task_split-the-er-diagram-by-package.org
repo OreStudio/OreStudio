@@ -8,7 +8,7 @@
 #+filetags: :split-the-er-diagram-by-group:sprint_27:v0:
 #+owner: marco
 #+branch: feature/split-the-er-diagram-by-package
-#+pr:
+#+pr: 2937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2937][#2937]] | [codegen,sql] Split the ER diagram into one file per group |
 
 * Review
 

@@ -395,6 +395,48 @@ export interface GetMyPartiesResponse {
 }
 
 /**
+ * @brief An administrator's write on who one account reports to.
+ *
+ * The write names one field and nothing else, so a screen that changes the
+ * reporting line does not send every other field back, and a field changed
+ * elsewhere between the screen's read and this write is not silently
+ * overwritten. It needs =iam::accounts:update=, as every administered account
+ * write does.
+ *
+ * An empty =reports_to_account_id= clears the line. =expected_version= is the
+ * account version the caller read: when it is stated and the account has moved
+ * on since, the write is refused with a conflict rather than applied to a row
+ * the caller has not seen. An absent version states no precondition.
+ */
+export interface SetReportingLineRequest {
+    account_id: string;
+    /**
+     * @brief The manager's account id, or empty to clear the line.
+     */
+    reports_to_account_id: string;
+    /**
+     * @brief The account version the caller read, in decimal, or empty for no
+     * precondition.
+     *
+     * Text rather than a number because empty has to be expressible on this wire,
+     * as it is for every other optional value here, and because a fresh account's
+     * version is 0: no integer is left over to mean "not stated".
+     */
+    expected_version: string;
+    change_reason_code: string;
+    change_commentary: string;
+}
+
+export interface SetReportingLineResponse {
+    result: Result;
+    /**
+     * @brief The account as written, so the screen can redraw with its new
+     * version. Stated only when the outcome is ok.
+     */
+    account: Account | null;
+}
+
+/**
  * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
  * Every account that names a picture code and carries no picture gets one:
@@ -437,6 +479,7 @@ export const subjects = {
         'iam.v1.ops.update_self_account_contact_information',
     get_my_account_contact_information_request: 'iam.v1.ops.get_my_account_contact_information',
     get_my_parties_request: 'iam.v1.ops.get_my_parties',
+    set_reporting_line_request: 'iam.v1.ops.set_reporting_line',
     attach_account_pictures_request: 'iam.v1.ops.attach_account_pictures',
 } as const;
 /**
@@ -461,5 +504,6 @@ export const requiresSession = {
     update_self_account_contact_information_request: true,
     get_my_account_contact_information_request: true,
     get_my_parties_request: true,
+    set_reporting_line_request: true,
     attach_account_pictures_request: true,
 } as const;

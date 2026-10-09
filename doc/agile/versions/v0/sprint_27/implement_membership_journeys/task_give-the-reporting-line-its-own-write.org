@@ -8,12 +8,12 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/give-the-reporting-line-its-own-write
-#+pr:
+#+pr: 2987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,32 +26,61 @@ Changing who a person reports to writes that field alone, records why, and refus
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =iam.v1.ops.set_reporting_line= writes the reporting line alone, leaving every other field as the account had it.
+- The request names the manager (empty clears the line), the version the caller read, and the reason.
+- A stated version that no longer matches is refused as =conflict=, and the line does not move.
+- A manager that does not exist, a self reference, and a line that would close a cycle are all refused, each naming the reason.
+- The write needs =iam::accounts:update=, and a caller without it is refused before the service is reached.
+- The browser reaches the write over =PUT /api/accounts/:id/reporting-line=, and the shell reaches the same subject.
+- =check_component_drift.py --component iam= reports no drift, and the C++ and BFF tests cover it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Declare =iam.v1.ops.set_reporting_line=: the account, the manager, the
+   version the caller read, and the reason.
+2. Write it in the service: read the account, refuse a stale version, refuse a
+   self reference, set the one field, and answer the account as written.
+3. Serve it from the account handler behind =iam::accounts:update=.
+4. Wire the browser path, and let codegen emit the shell command.
+5. Test what the narrow write promises: one field written, the reason
+   recorded, a stale version refused, a self reference refused.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| IAM core suite after this change | 264 cases, 821 assertions | =bash build/evidence/run_case.sh ores.iam.core.tests= | (branch tip) |
+| BFF membership cases | 8 | =npm test --workspace @ores/bff -- membership= | (branch tip) |
+
+* Notes
+
+- *The version is text, not a number.* The first draft carried
+  =std::optional<int>=. The shell facet refused it — a message field with an
+  optional scalar has no shell token form — and a sentinel integer would not
+  work either, because a fresh account's version is 0. Text with empty meaning
+  "not stated" is what every other optional value on this wire already does.
+  The gap in the shell generator is captured at
+  [[id:0E7269C1-0DDF-450E-AD83-05458B0B6A1D][An optional scalar in a message has
+  no shell token form]].
+- *The write answers the account as written.* The store stamps the new version,
+  so the service re-reads after the write rather than answering the copy it
+  read. The screen then redraws against the version it must state next time.
+- *The cycle guard and the self check overlap, and both stay.* The SQL guard
+  catches every cycle including a self reference, but it arrives as a
+  constraint violation; the service checks the self reference itself so it can
+  answer with a result the screen can draw.
+- *=wireAccountSchema= and =mapAccount= became exports.* The reply carries an
+  account, and the alternative was restating sixteen fields and the
+  nil-to-null rule in the membership seam.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
@@ -74,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2987][#2987]] | [iam] Give the reporting line its own write |
 
 * Review
 
@@ -83,3 +112,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+The reporting line has its own write, so a screen can change one field without
+sending the rest of the account back:
+
+| Layer | What landed |
+|-------+-------------|
+| Message | =iam.v1.ops.set_reporting_line=: the account, the manager (empty clears), the version the caller read, and the reason. |
+| Service | =set_reporting_line= reads the account, refuses a stale version as =conflict=, refuses a self reference, writes the one field, and answers the account as written. |
+| Handler | Served behind =iam::accounts:update=, so a caller without it is refused before the service is reached. |
+| Clients | =setReportingLine= in the wire seam, =PUT /api/accounts/:id/reporting-line=, =api.setReportingLine()=, and the generated shell command =account_operations set-reporting-line=. |
+| Tests | Three C++ cases and two BFF cases. |
+
+*Verification.* =check_component_drift.py --component iam= reports no drift and
+clang-format is clean. The IAM core suite passes, 264 cases and 821 assertions
+(three new). The BFF membership tests pass, 8 cases. The three TypeScript
+packages typecheck.
+
+*What the task taught.* The first draft carried =std::optional<int>= for the
+version and the shell facet refused the whole component: an optional scalar in a
+message has no shell token form. The field is text with empty meaning "not
+stated", which is the wire's existing idiom for an optional value; the generator
+gap is captured rather than papered over.

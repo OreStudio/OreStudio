@@ -391,6 +391,22 @@ public:
                                      const std::optional<boost::uuids::uuid>& party_id);
 
     /**
+     * @brief Writes who one account reports to, and nothing else.
+     *
+     * The write names one field, so a field changed elsewhere between the
+     * caller's read and this write is not overwritten. A stated expected
+     * version that no longer matches the account is refused with a conflict,
+     * rather than applied to a row the caller has not seen.
+     *
+     * @param request The account, the manager (empty clears the line), the
+     * version the caller read, and the reason
+     * @return The shared result plus the account as written, when the write
+     * succeeded
+     */
+    messaging::set_reporting_line_response
+    set_reporting_line(const messaging::set_reporting_line_request& request);
+
+    /**
      * @brief Writes the fields a member owns on their own account.
      *
      * The account is the caller's own, named by the session rather than by

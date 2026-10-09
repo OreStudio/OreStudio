@@ -67,6 +67,29 @@ const US = '33333333-3333-3333-3333-333333333333';
 
 type Answer = unknown | ((body: unknown) => unknown);
 
+/** One account as the server writes it, for the reporting-line reply. */
+function wireAccount(overrides: Record<string, unknown> = {}) {
+    return {
+        version: 4,
+        id: PRIYA,
+        tenant_id: SYSTEM_TENANT,
+        username: 'priya',
+        full_name: 'Priya Raman',
+        email: 'priya@acme.example',
+        account_type: 'user',
+        job_title: 'Analyst',
+        reports_to_account_id: null,
+        default_party_id: null,
+        image_id: null,
+        modified_by: 'priya',
+        change_reason_code: 'common.non_material_update',
+        change_commentary: '',
+        performed_by: 'priya',
+        recorded_at: '2026-10-09 12:00:00Z',
+        ...overrides,
+    };
+}
+
 function buildTestServer(answers: Record<string, Answer>) {
     const sessions = createSessionStore({ ttlSeconds: 60 });
     const calls: { subject: string; body: unknown }[] = [];
@@ -262,5 +285,60 @@ describe('membership routes', () => {
 
         expect(response.statusCode).toBeGreaterThanOrEqual(400);
         expect(response.body).toContain('not a member');
+    });
+
+    it('writes who an account reports to and states the version the screen read', async () => {
+        const { server, cookies, calls } = buildTestServer({
+            'iam.v1.ops.set_reporting_line': {
+                result: { outcome: 'ok' },
+                account: wireAccount({ reports_to_account_id: US, version: 4 }),
+            },
+        });
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: `/api/accounts/${PRIYA}/reporting-line`,
+            cookies,
+            payload: { reportsToAccountId: US, expectedVersion: '3' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        expect(calls).toEqual([
+            {
+                subject: 'iam.v1.ops.set_reporting_line',
+                body: {
+                    account_id: PRIYA,
+                    reports_to_account_id: US,
+                    expected_version: '3',
+                    change_reason_code: '',
+                    change_commentary: '',
+                },
+            },
+        ]);
+        expect(response.json()).toMatchObject({ id: PRIYA, reportsToAccountId: US, version: 4 });
+    });
+
+    it('reports a version conflict in the server\u2019s words', async () => {
+        const { server, cookies } = buildTestServer({
+            'iam.v1.ops.set_reporting_line': {
+                result: {
+                    outcome: 'conflict',
+                    message: 'The account has changed since it was read.',
+                },
+                account: null,
+            },
+        });
+
+        const response = await server.inject({
+            method: 'PUT',
+            url: `/api/accounts/${PRIYA}/reporting-line`,
+            cookies,
+            payload: { reportsToAccountId: US, expectedVersion: '1' },
+        });
+        await server.close();
+
+        expect(response.statusCode).toBeGreaterThanOrEqual(400);
+        expect(response.body).toContain('changed since');
     });
 });

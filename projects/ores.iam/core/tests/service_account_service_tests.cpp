@@ -513,6 +513,106 @@ TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
     CHECK(!err.empty());
 }
 
+TEST_CASE("set_reporting_line_writes_one_field_and_records_the_reason", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e1 = generate_synthetic_account(ctx);
+    const auto report = sut.create_account(e1.username, e1.email, password, e1.modified_by);
+    const auto e2 = generate_synthetic_account(ctx);
+    const auto boss = sut.create_account(e2.username, e2.email, password, e2.modified_by);
+
+    const auto before = sut.find_account_by_id(report.id);
+    REQUIRE(before.has_value());
+
+    ores::iam::messaging::set_reporting_line_request req;
+    req.account_id = boost::uuids::to_string(report.id);
+    req.reports_to_account_id = boost::uuids::to_string(boss.id);
+    req.expected_version = std::to_string(before->version);
+    req.change_reason_code = "common.non_material_update";
+    req.change_commentary = "Moved desk";
+
+    const auto response = sut.set_reporting_line(req);
+
+    REQUIRE(response.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(response.account.has_value());
+    REQUIRE(response.account->reports_to_account_id.has_value());
+    CHECK(*response.account->reports_to_account_id == boss.id);
+    CHECK(response.account->change_commentary == "Moved desk");
+    // Every other field keeps the value the account already had: this is the
+    // point of a write narrower than update_account.
+    CHECK(response.account->email == before->email);
+    CHECK(response.account->full_name == before->full_name);
+    CHECK(response.account->job_title == before->job_title);
+}
+
+TEST_CASE("set_reporting_line_refuses_a_version_the_caller_has_not_seen", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e1 = generate_synthetic_account(ctx);
+    const auto report = sut.create_account(e1.username, e1.email, password, e1.modified_by);
+    const auto e2 = generate_synthetic_account(ctx);
+    const auto boss = sut.create_account(e2.username, e2.email, password, e2.modified_by);
+
+    const auto before = sut.find_account_by_id(report.id);
+    REQUIRE(before.has_value());
+
+    ores::iam::messaging::set_reporting_line_request req;
+    req.account_id = boost::uuids::to_string(report.id);
+    req.reports_to_account_id = boost::uuids::to_string(boss.id);
+    req.expected_version = std::to_string(before->version + 1);
+
+    const auto response = sut.set_reporting_line(req);
+
+    CHECK(response.result.outcome == ores::utility::domain::outcome::conflict);
+    CHECK_FALSE(response.account.has_value());
+    const auto unchanged = sut.find_account_by_id(report.id);
+    REQUIRE(unchanged.has_value());
+    CHECK_FALSE(unchanged->reports_to_account_id.has_value());
+}
+
+TEST_CASE("set_reporting_line_clears_the_line_and_refuses_self_reporting", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e1 = generate_synthetic_account(ctx);
+    const auto report = sut.create_account(e1.username, e1.email, password, e1.modified_by);
+    const auto e2 = generate_synthetic_account(ctx);
+    const auto boss = sut.create_account(e2.username, e2.email, password, e2.modified_by);
+
+    ores::iam::messaging::set_reporting_line_request req;
+    req.account_id = boost::uuids::to_string(report.id);
+    req.reports_to_account_id = boost::uuids::to_string(boss.id);
+    REQUIRE(sut.set_reporting_line(req).result.outcome == ores::utility::domain::outcome::ok);
+
+    // An empty manager clears the line, with no version stated.
+    req.reports_to_account_id.clear();
+    req.expected_version.clear();
+    const auto cleared = sut.set_reporting_line(req);
+    REQUIRE(cleared.result.outcome == ores::utility::domain::outcome::ok);
+    REQUIRE(cleared.account.has_value());
+    CHECK_FALSE(cleared.account->reports_to_account_id.has_value());
+
+    // A person cannot report to themselves.
+    req.reports_to_account_id = boost::uuids::to_string(report.id);
+    const auto self = sut.set_reporting_line(req);
+    CHECK(self.result.outcome == ores::utility::domain::outcome::invalid);
+    CHECK(self.result.code == "self_reporting");
+}
+
 TEST_CASE("a_reporting_line_may_not_close_a_cycle", tags) {
     auto lg(make_logger(test_suite));
 

@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0E7269C1-0DDF-450E-AD83-05458B0B6A1D
+:END:
+#+title: An optional scalar in a message has no shell token form
+#+description: A message field declared std::optional<int> is refused by the shell facet: the generator has no token form for an optional scalar, so the whole component regeneration stops. The model author then has to express the value another way.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:shell:modeling:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A message model may declare a field whose type is an optional scalar, such as
+=std::optional<int>=. The C++ facet emits it, the TypeScript facet emits it, and
+the shell facet refuses it: =_SHELL_TOKEN_TYPES= in
+=projects/ores.codegen/src/codegen/org_loader.py= lists scalars, a UUID, a
+timestamp and an address, and no =std::optional<>= form of any of them. The
+regeneration for the whole component stops with
+
+#+begin_example
+no shell token form for ['<message>.<field>']; map the type in
+org_loader._SHELL_TOKEN_TYPES, or set ':ores.cpp.shell-command.enabled: nil'
+#+end_example
+
+* Why
+
+Met on 2026-10-09 while declaring =iam.v1.ops.set_reporting_line=, whose
+=expected_version= started as =std::optional<int>=. The two escape hatches are
+both worse than the problem: adding the type to the map needs a token convention
+for "absent" (an empty argument? a sentinel?), and switching the shell facet off
+for that message takes the operation away from the shell, which the journey
+decisions require both clients to reach.
+
+The workaround chosen was to declare the field as text with empty meaning "not
+stated", which is what every other optional value on this wire already does. It
+works, but it is a wire that says a number in a string, chosen by the generator
+rather than by the protocol.
+
+The decision it forces: either the shell gets a stated convention for an absent
+argument and the map learns =std::optional<T>= for the types it already knows,
+or the message model is documented as unable to carry an optional scalar at all,
+so the next author reaches for text on purpose rather than by accident.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py=, =_SHELL_TOKEN_TYPES=.
+- =projects/ores.codegen/library/templates/ores.doc.shell-recipe.org=, the
+  facet that refuses it.
+- Found while building [[id:A14D41EC-1F1E-4B73-9BC0-838C4F9FB923][Give the
+  reporting line its own write]].
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the catalogue the task that found this belongs to.

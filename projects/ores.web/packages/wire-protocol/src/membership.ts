@@ -21,9 +21,10 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
+import type { Account } from './domain.js';
 import { OperationFailedError } from './errors.js';
 import { subjects as accountSubjects } from './generated/iam/protocol/account_operations_protocol.js';
-import { decidedResultSchema } from './operations.js';
+import { decidedResultSchema, mapAccount, wireAccountSchema } from './operations.js';
 
 /**
  * The membership read path: the parties the caller's own account works in.
@@ -134,4 +135,65 @@ export async function setMyDefaultParty(
             reply.message,
         );
     }
+}
+
+const setReportingLineReplySchema = z
+    .object({
+        result: decidedResultSchema,
+        account: wireAccountSchema.nullable().default(null),
+    })
+    .transform((row) => ({
+        result: row.result,
+        account: row.account === null ? null : mapAccount(row.account),
+    }));
+
+/** The reporting-line write, as the BFF takes it from the browser. */
+export const reportingLineRequestSchema = z.object({
+    /** The manager's account id, or empty to clear the line. */
+    reportsToAccountId: z.string(),
+    /** The account version the screen read, or empty for no precondition. */
+    expectedVersion: z.string().default(''),
+    reasonCode: z.string().default(''),
+    commentary: z.string().default(''),
+});
+
+export type ReportingLineWrite = z.infer<typeof reportingLineRequestSchema>;
+
+/**
+ * Sets or clears who one account reports to, and nothing else.
+ *
+ * The write names one field, so a field changed elsewhere is not overwritten,
+ * and it states the version the screen read: the server refuses the write as a
+ * conflict when the account has moved on. It needs iam::accounts:update, so a
+ * plain member cannot reach it.
+ */
+export async function setReportingLine(
+    caller: AuthenticatedCaller,
+    accountId: string,
+    write: ReportingLineWrite,
+): Promise<Account> {
+    const reply = await caller.callAuthenticated(
+        accountSubjects.set_reporting_line_request,
+        {
+            account_id: accountId,
+            reports_to_account_id: write.reportsToAccountId,
+            expected_version: write.expectedVersion,
+            change_reason_code: write.reasonCode,
+            change_commentary: write.commentary,
+        },
+        setReportingLineReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw new OperationFailedError(
+            accountSubjects.set_reporting_line_request,
+            reply.result.message,
+        );
+    }
+    if (reply.account === null) {
+        throw new OperationFailedError(
+            accountSubjects.set_reporting_line_request,
+            'The write answered without the account it wrote.',
+        );
+    }
+    return reply.account;
 }

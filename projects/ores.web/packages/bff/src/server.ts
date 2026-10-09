@@ -51,6 +51,9 @@ import {
     readImages,
     removeTenant,
     accountAccessSchema,
+    accountSchema,
+    reportingLineRequestSchema,
+    setReportingLine,
     deleteRole,
     giveRole,
     permissionEntrySchema,
@@ -1067,6 +1070,25 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         }
         await setMyDefaultParty(session.client, parsed.data.partyId);
         return { defaultPartyId: parsed.data.partyId };
+    });
+
+    /**
+     * Sets or clears who one account reports to, and nothing else. The server
+     * allows it to a holder of iam::accounts:update and refuses the write as a
+     * conflict when the account has moved on since the screen read it.
+     */
+    server.put('/api/accounts/:accountId/reporting-line', async (request) => {
+        const session = requireSession(request);
+        const { accountId } = request.params as { accountId: string };
+        const parsed = reportingLineRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest(
+                'A reportsToAccountId is required. Send an empty string to clear the line.',
+            );
+        }
+        return accountSchema.parse(
+            await setReportingLine(session.client, accountId, parsed.data),
+        );
     });
 
     /** The roles one account holds. The server allows it to a holder of iam::roles:read. */

@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 15826E92-4435-45F9-ADAA-EB001A69EC66
+:END:
+#+title: Story: Clear the stale block on the literate template task
+#+description: Split every codegen template org into commented literate blocks is BLOCKED behind Fix refdata entity model drift, which is DONE. The block is stale, so the task is returned to the backlog with the dependency recorded as cleared.
+#+type: story
+#+level: s2
+#+filetags: :agile:bookkeeping:codegen:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Return the literate-template task to the backlog, so a workstream that can
+proceed is not held by a dependency that finished three months ago.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The task is no longer BLOCKED.
+- Its =blocked_on= and =blocked_since= are cleared.
+- The story's task row and the task file agree.
+- What blocked it is recorded, so the reason it was paused is not lost.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D5546D69-1617-465D-B52A-723083D5FAA3][Scaffold story: Clear the stale block on the literate template task]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:62BF591E-A7D8-443A-A87D-47D84299B542][Implement Clear the stale block on the literate template task]] | DONE | | 2026-10-09 | Initial task for: Clear the stale block on the literate template task |
+
+* Decisions
+
+- *The task is unblocked, not closed.* Its blocker is DONE, but the work is
+  not: the acceptance asks for every template org to be split, and only the
+  =cpp_repository= pilot landed. Returning it to BACKLOG is what the block
+  clearing means; closing it would have been the false "done" this pass has
+  been careful to avoid.
+- *The audit will still list it.* Its rule is "open task whose pull requests
+  have all merged", and =#1743= merged the pilot. That is a true statement
+  about a partly-done task rather than a stale block, so the finding stays and
+  means something different now.
+
+* Out of scope
+
+- Doing the split. This story clears the block; the work belongs to the codegen
+  workstream.
+
+* Result
+
+Done. The task is BACKLOG, its =blocked_on= and =blocked_since= are empty, its
+story row agrees, and its =Next= names the dependency as the state it is in
+rather than the state it waits for.

@@ -254,6 +254,18 @@ export function FirstRunJourney({
     });
     const [creatingPassword, setCreatingPassword] = useState('');
     /*
+     * Whether the deployment already held its administrator when this journey
+     * began, fixed for as long as the journey runs.
+     *
+     * Creating the administrator clears the deployment's bootstrap flag, and the
+     * journey reads that flag again when the account is made, because signing in
+     * as it happens against the deployment rather than the copy this page holds.
+     * A rail that derived its shape from the live flag would turn the form the
+     * person has just filled in into a sign-in for the account they have just
+     * created: the second sign-in this journey exists to spare them.
+     */
+    const signInRequired = useRef(!inBootstrapMode).current;
+    /*
      * What the installation is left with. The ordinary ending is the default,
      * and the choice lives here rather than on the server because it is the
      * person's, made in front of them on the starting point.
@@ -407,7 +419,7 @@ export function FirstRunJourney({
                 }
             />
         ),
-        administratorExists: !inBootstrapMode,
+        administratorExists: signInRequired,
         administratorSignIn: (
             <AdministratorSignIn
                 draft={draft}
@@ -431,7 +443,7 @@ export function FirstRunJourney({
     return (
         <JourneyPage
             steps={steps}
-            at={at ?? indexOfStep(steps, inBootstrapMode ? 'welcome' : 'administrator')}
+            at={at ?? indexOfStep(steps, signInRequired ? 'administrator' : 'welcome')}
             onMove={setAt}
             header={<JourneyHeader tenant={describedTenant} />}
         />

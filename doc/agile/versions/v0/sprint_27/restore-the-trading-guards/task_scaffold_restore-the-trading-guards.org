@@ -20,17 +20,32 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Open the story the pgTAP repair found two missing guards for, so the
+guarantees are recorded rather than asserted away.
+
+* Result
+
+The story is in the sprint with two tasks, neither started. The guards came
+out of repairing the pgTAP suites on PR #2975: one case had proved that a
+trade is reported only in its own party's portfolios, and the check behind it
+is gone from the generated SQL, so the report is now accepted. The second is
+the unguarded version rewrite, where a raw update changes every version of a
+row in place. The story also carries two smaller consequences of the same
+refactor: the purge switch is inert for trading, and the structures
+self-parent check is unreachable behind the parent lookup.
+
+The finder is on the merged PR #2975, whose summary and task record name both
+guards. This scaffold PR carries the documents only.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BF504294-2A1D-413A-84C8-262575DEBC9D][Restore the trading guards the versioned model dropped]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

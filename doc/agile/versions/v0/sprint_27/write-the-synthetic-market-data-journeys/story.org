@@ -36,7 +36,7 @@ Every synthetic prototype answers to a journey document: the actor, the steps, t
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CB66592B-BD5C-449E-A329-D4C3C6B0B712][Write the four synthetic journeys]] | STARTED | 2026-10-09 | | Author the FX feed, IR curve feed, collection and model-catalogue journeys from their prototypes, with coverage tables checked against the synthetic subjects. |
+| [[id:CB66592B-BD5C-449E-A329-D4C3C6B0B712][Write the four synthetic journeys]] | DONE | 2026-10-09 | 2026-10-09 | Author the FX feed, IR curve feed, collection and model-catalogue journeys from their prototypes, with coverage tables checked against the synthetic subjects. |
 
 * Decisions
 

@@ -26,11 +26,11 @@ Four journey documents stand in the market data group beside the six synthetic p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C55256A3-C3B9-4F4D-AFDF-312374AD04BE][Write the synthetic market data journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -57,7 +57,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journeys written | 4 | =ls doc/knowledge/journeys/market_data/journey_*.org= | 7bf082bee2 |
+| Lines per journey | 220 to 251 | =wc -l= on the four | 7bf082bee2 |
+| Coverage rows | 22, 21, 15, 11 | the =* Operations and messages= tables | 7bf082bee2 |
+| Subjects marked missing | 1: no subject lists the vintages a price source offers | the FX journey's gap table | 7bf082bee2 |
+| Wireframes | 4 puml, 4 png rendered | =plantuml -tpng wireframe_*.puml= | 7bf082bee2 |
+| Prototypes covered | 6 of 6 | the four journeys' =* Prototype= sections | 7bf082bee2 |
+| org-links, site-page, structure-notes | 3/3 passed | =compass check --only org-links --only site-page --only structure-notes= | 7bf082bee2 |
 
 * Notes
 
@@ -85,3 +91,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Four journeys now stand beside the six synthetic prototypes, which had no
+journey at all before this:
+
+- [[id:AAF1D25C-566F-4899-8E88-521DC15EBCDB][Author an FX price feed]] — the pair, the
+  process, the mixture of Gaussians and the sample paths, with the
+  across-feeds component view the mixture is browsed from.
+- [[id:4B62FC8A-169A-4843-A8BF-D5E23FE34852][Author an IR curve feed]] — the currency,
+  index and role, the short-rate process and its parameter values, and the
+  tenor ladder the curve is bootstrapped from.
+- [[id:A829B804-23A5-493C-BDC6-A3B513EBDFEF][Run a synthetic collection]] — the feeds a
+  collection owns, what it covers and what is running, and the one
+  folder-scoped start.
+- [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] —
+  the models and their parameters kept as data, so a new model appears in
+  the curve editor with no change to it.
+
+Every subject in the four coverage tables was verified against the protocol
+headers rather than assumed, and the gaps are stated rather than smoothed
+over. The FX feed has no subject that lists the vintages a price source
+offers, so the step is marked missing; two IR reads and the process-type
+lists carry an =id_one_of= filter where the screen needs the parent or an
+order, so those are partial; and the collection's gaps — no coverage read,
+an unscoped global running set, skipped feeds returned as counts only — are
+named.
+
+The journeys link their prototypes' design notes by id, which is why the
+prototype sweep had to land first.

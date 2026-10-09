@@ -1530,7 +1530,9 @@ const fr: SourceCatalogue = {
 
     journey: {
         steps: 'Étapes',
-        actionFailed: "L'étape a échoué : {message}",
+        failedHeading: "La configuration s'est arrêtée sur une erreur",
+        reloadHint:
+            'Rechargez la page pour reprendre au dernier écran enregistré par le déploiement.',
         policyFailed:
             "Les règles de mot de passe n'ont pas pu être lues, aucun mot de passe ne peut donc être défini ici. {message}",
 

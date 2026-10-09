@@ -1523,7 +1523,9 @@ const pt: SourceCatalogue = {
 
     journey: {
         steps: 'Passos',
-        actionFailed: 'O passo falhou: {message}',
+        failedHeading: 'A configuração parou com um erro',
+        reloadHint:
+            'Recarregue a página para recomeçar a partir do último ecrã registado pelo deployment.',
         policyFailed:
             'Não foi possível ler as regras da palavra-passe, por isso não é possível definir aqui nenhuma. {message}',
 

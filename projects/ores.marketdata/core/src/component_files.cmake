@@ -96,6 +96,7 @@ set(files
     "service/observation_lineage_service.cpp"
     "service/ore_export_service.cpp"
     "service/series_classification_rule_service.cpp"
+    "service/series_shape_writer.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -181,4 +182,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/observation_lineage_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/ore_export_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_classification_rule_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/service/series_shape_writer.hpp"
 )

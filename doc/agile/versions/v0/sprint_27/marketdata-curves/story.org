@@ -43,7 +43,7 @@ Give ores.marketdata a first-class representation of a curve, so a bootstrapped 
 | [[id:86B41936-1186-4FEC-B001-C62F59DF0013][Resolve a composite object from its typed identity]] | DONE | 2026-10-08 | 2026-10-08 | A caller names an object by its typed identity and the server resolves it to a series, so no view builds an oresmd URI by hand and none matches on a string. |
 | [[id:3500444B-673D-49F4-BFD9-15AE96DA65AA][Give a composite object its shape tables]] | DONE | 2026-10-08 | 2026-10-08 | Record the axes a composite object varies over and their ordered values, written from the recipe's pillars by a build, and refuse a point whose coordinate is not a declared axis value. |
 | [[id:94DE4430-5770-4A6E-943A-C2FF7B5DC35C][Refuse a point its shape does not declare]] | DONE | 2026-10-08 | 2026-10-09 | Check a point's coordinate against the shape its series declares, at write time, so the shape and the points cannot drift; and write a shape from the declaration an import carries. |
-| [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]] | BACKLOG | | | Give an observed or imported structure a shape of its own, so the point check has something to enforce on it, and settle where the shape writer lives once the import can reach it. |
+| [[id:8055844A-9594-4133-A7A2-E62F59805DD0][Let an import declare the shape it carries]] | STARTED | 2026-10-09 | | Give an observed or imported structure a shape of its own, so the point check has something to enforce on it, and settle where the shape writer lives once the import can reach it. |
 
 * Decisions
 
@@ -73,6 +73,22 @@ term-kind axis is checked against =refdata_tenors= before any row is written, so
 refused shape leaves nothing behind. The rule that refuses a point whose coordinate the
 shape does not declare is its own task, because it needs a hook on the generated
 observation write path.
+
+** The build checks its terms against the reference data, the import records what the file says
+
+Chosen 2026-10-09, with the import task. The shape writer moved down into
+=ores.marketdata.core= so the import can call it, and =declare= now takes the
+check as an argument. A build passes =against_reference_tenors=, because its
+pillars come from the tenant's own curve configuration and a pillar the reference
+table does not hold is a mistake. An import passes =as_stated=, because the terms
+it records are the vendor's, and the ORE example corpus writes =13Y= and =1Y6M=
+where the seed holds 46 codes and neither of those. A single check enforced on
+both paths would refuse valid market data.
+
+The import declares for every series a file carries, not only the ones it
+creates. One series is named by several corpus files with different grids, so
+freezing its shape at the first file would refuse every later file. A later file
+appends the terms it states after the ones already stored.
 
 * Out of scope
 

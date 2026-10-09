@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: DA76A66C-93AA-4A4F-B3B4-6A5ABB7DF4E9
+:END:
+#+title: Task: Fix the two red codegen checks
+#+description: Task for: Bring the last components under the drift gate
+#+type: task
+#+level: s1
+#+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/fix-the-two-red-codegen-checks
+#+pr: 2924
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+codegen-tests fails seven cases and er-diagram is stale on trunk. Repair the stale fixtures and regenerate the diagram so both checks are green.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
+| Now          | Merged in PR #2924. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =codegen-tests= passes.
+- =er-diagram= passes.
+- No case loses what it proved: the fixtures gain the columns the flags
+  they set actually read, and the immutable-target case keeps its claim.
+- =handler-permissions= and =entity-writes= stay green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| codegen-tests | pass, 1288 cases, 53.4 s | =compass check --only codegen-tests= | 2d80324d0f |
+| er-diagram | pass, 2.6 s | =compass check --only er-diagram= | 2d80324d0f |
+| The four checks the report named | 4/4 | =compass check --only codegen-tests --only er-diagram --only handler-permissions --only entity-writes= | 2d80324d0f |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2924][#2924]] | [codegen,sql] Fix the two red codegen checks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Seven cases failed for three reasons, none of them a codegen defect.
+
+Five were fixtures that predate =d16b253c21=, which made
+=validate_rls_isolation= refuse tenant isolation without =has_tenant_id=
+and party isolation without a =party_id= column. The fixtures now declare
+both where their flags read them; no assertion changed. The same column
+went into the name-base fixture, whose party policy is the subject of the
+truncation case.
+
+The seventh named =ores_trading_trades_tbl= as immutable, and
+=a2dcf034fa= made every trading entity a regular versioned table, so the
+target is temporal and the check correctly emits the current-version
+filter. No soft FK left in the tree points at an immutable entity -- the
+one model that declares =:immutable:= has its only soft FK enforced, so
+it renders no trigger check -- so the case points the table-to-org lookup
+at that model and keeps its claim.
+
+=er-diagram= was stale by =output_storage_key : text=, added by
+=fd06ab945a= and never regenerated. The =.puml= now carries it. The PNG
+is left as committed: PlantUML cannot paint this diagram here, failing in
+=EmptyImageBuilder= with =NegativeArraySizeException= and writing
+different bytes on each run, and the check reads the =.puml= alone.
+
+Story's =* Decisions= is not touched: the task settles stale fixtures, not
+a design question.

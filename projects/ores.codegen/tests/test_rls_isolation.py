@@ -24,12 +24,19 @@ def test_no_sql_flags_is_valid():
 
 
 def test_tenant_isolation_alone_is_valid():
-    validate_rls_isolation({'sql': {'rls_tenant_isolation': True}})
+    validate_rls_isolation({
+        'has_tenant_id': True,
+        'sql': {'rls_tenant_isolation': True},
+    })
 
 
 def test_party_isolation_requires_tenant_isolation():
+    # The entity declares the party_id column so the case reaches the
+    # tenant-isolation requirement rather than the column requirement.
     domain_entity = {
         'entity_singular': 'market_series',
+        'has_tenant_id': True,
+        'columns': [{'name': 'party_id'}],
         'sql': {'rls_party_isolation': True},
     }
     with pytest.raises(
@@ -40,7 +47,10 @@ def test_party_isolation_requires_tenant_isolation():
 
 
 def test_party_isolation_with_tenant_isolation_is_valid():
-    validate_rls_isolation({'sql': {
-        'rls_tenant_isolation': True,
-        'rls_party_isolation': True,
-    }})
+    validate_rls_isolation({
+        'has_tenant_id': True,
+        'sql': {
+            'rls_tenant_isolation': True,
+            'rls_party_isolation': True,
+        },
+    })

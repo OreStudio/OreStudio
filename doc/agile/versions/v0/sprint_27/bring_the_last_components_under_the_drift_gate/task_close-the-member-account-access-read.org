@@ -26,11 +26,11 @@ Every person account holds Member. Member was granted iam::roles:read so a membe
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Member holds neither read code; both remaining nightly suites pass. |
-| Waiting on   | Review of PR #2920.                    |
-| Next         | Merge once the reviewer is satisfied.  |
+| Now          | Merged in PR #2920. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

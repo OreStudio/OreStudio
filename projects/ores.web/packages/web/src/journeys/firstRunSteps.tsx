@@ -95,15 +95,15 @@ export interface FirstRunStepsInput {
      */
     readonly onCompleteSystemOnboarding: () => Promise<void>;
     /**
-     * Ends the run: signs the browser out and hands it the sign-in screen.
+     * Hands the browser to the routes, which read the deployment again.
      *
-     * Bootstrap runs as the system party because the settings it writes are
-     * tenant-wide, which is a party nobody should be left sitting in. The
-     * tenant's administrator finishes the tenant's own setup when they first
-     * sign in, so the deployment's administrator is signed out rather than
-     * left inside the tenant it just made.
+     * The person is not signed out. They are the administrator this deployment
+     * was just given, the browser is already signed in as them, and the party
+     * the setup wrote from is the one their own sign-in lands in: asking them
+     * for the credentials they have just typed, or created, is a second sign-in
+     * for no second session.
      */
-    readonly onSignOutAfterBootstrap: () => Promise<void>;
+    readonly onFinished: () => void;
 }
 
 export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<ReactNode>[] {
@@ -182,7 +182,7 @@ export function firstRunSteps(input: FirstRunStepsInput): readonly JourneyStep<R
                     // The flag is what releases the gate, so it is written
                     // before the browser is handed over.
                     await input.onCompleteSystemOnboarding();
-                    await input.onSignOutAfterBootstrap();
+                    input.onFinished();
                 },
             },
         },

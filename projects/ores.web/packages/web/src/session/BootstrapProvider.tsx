@@ -97,6 +97,15 @@ interface BootstrapContextValue {
     readonly state: BootstrapState;
     /** Ask the server again, after the administrator has been created. */
     readonly recheck: () => Promise<void>;
+    /**
+     * Whether an answer is being read right now.
+     *
+     * The answer carries facts about a session, so a screen reconciling it with
+     * the session in hand has to tell an answer that has arrived from one that is
+     * on its way: judging the answer it already holds while a fresh one is in
+     * flight reads a stale fact as a verdict about the browser.
+     */
+    readonly reading: boolean;
 }
 
 const BootstrapContext = createContext<BootstrapContextValue | undefined>(undefined);
@@ -122,14 +131,14 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
         retry: false,
     });
 
-    const { data, isPending, isError, error, refetch } = query;
+    const { data, isPending, isError, isFetching, error, refetch } = query;
 
     const value = useMemo<BootstrapContextValue>(() => {
         const recheck = async (): Promise<void> => {
             await refetch();
         };
         if (isPending) {
-            return { state: { status: 'loading' }, recheck };
+            return { state: { status: 'loading' }, recheck, reading: isFetching };
         }
         if (isError) {
             const reason =
@@ -138,7 +147,7 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                     : error instanceof Error
                       ? error.message
                       : String(error);
-            return { state: { status: 'unreachable', reason }, recheck };
+            return { state: { status: 'unreachable', reason }, recheck, reading: isFetching };
         }
         return {
             state: {
@@ -153,8 +162,9 @@ export function BootstrapProvider({ children }: { readonly children: ReactNode }
                 version: data.version,
             },
             recheck,
+            reading: isFetching,
         };
-    }, [data, isPending, isError, error, refetch]);
+    }, [data, isPending, isError, isFetching, error, refetch]);
 
     return <BootstrapContext value={value}>{children}</BootstrapContext>;
 }

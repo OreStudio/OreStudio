@@ -2189,6 +2189,39 @@ const pt: SourceCatalogue = {
             footnote:
                 'A mudança emite um novo token de sessão, por isso todos os ecrãs leem a parte que escolheu. A predefinição é o que o início de sessão rápido escolhe da próxima vez.',
         },
+        reporting: {
+            title: 'Linhas de reporte',
+            lead: 'Quem reporta a quem, e a única linha que este ecrã altera.',
+            tree: 'Árvore de reporte',
+            people: '{count} pessoas',
+            reports: '{count} a reportar',
+            expandAll: 'Expandir tudo',
+            collapseAll: 'Fechar tudo',
+            expand: 'Expandir',
+            collapse: 'Fechar',
+            pickSomeone: 'Escolha uma pessoa na árvore para ler a sua linha.',
+            reportsTo: 'Reporta a',
+            noManager: 'Sem gestor (raiz)',
+            directReports: 'Reportes diretos',
+            depth: 'Profundidade',
+            reachesNoRoot: 'Não alcança nenhuma raiz',
+            manager: 'Gestor',
+            reason: 'Motivo',
+            commentary: 'Nota',
+            save: 'Guardar a linha',
+            clear: 'Limpar a linha',
+            noVersion:
+                'A conta não pôde ser lida, por isso a escrita não indica versão.',
+            unrooted:
+                '{count} pessoas não alcançam nenhuma raiz: o gestor desapareceu, ou a linha que as sustenta está quebrada. Ficam fora da árvore em vez de serem desenhadas como raízes.',
+            gaps: 'O que este ecrã não pode fazer',
+            gapOffice:
+                'O escritório de cada pessoa não é legível aqui: a leitura das partes da conta traz um identificador e nenhum nome.',
+            gapApproval:
+                'Um pedido de alteração da linha é uma proposta que o superior ou o administrador do locatário aprova, e nada na plataforma guarda essa aprovação, por isso a linha não muda.',
+            gapHistory:
+                'A linha não tem histórico neste ecrã. A conta é versionada, por isso uma linha passada é recuperável, e este ecrã não mostra nada disso.',
+        },
     },
 
     common: {

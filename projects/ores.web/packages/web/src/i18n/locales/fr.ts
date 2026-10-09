@@ -2205,6 +2205,39 @@ const fr: SourceCatalogue = {
             footnote:
                 'Le basculement émet un nouveau jeton de connexion : tous les écrans lisent la partie choisie. Le défaut est ce que la connexion rapide choisit la prochaine fois.',
         },
+        reporting: {
+            title: 'Lignes hiérarchiques',
+            lead: 'Qui rend compte à qui, et la seule ligne que cet écran modifie.',
+            tree: 'Arborescence hiérarchique',
+            people: '{count} personnes',
+            reports: '{count} rattachés',
+            expandAll: 'Tout déplier',
+            collapseAll: 'Tout replier',
+            expand: 'Déplier',
+            collapse: 'Replier',
+            pickSomeone: 'Choisissez une personne dans l’arborescence pour lire sa ligne.',
+            reportsTo: 'Rend compte à',
+            noManager: 'Aucun responsable (racine)',
+            directReports: 'Rattachements directs',
+            depth: 'Profondeur',
+            reachesNoRoot: 'N’atteint aucune racine',
+            manager: 'Responsable',
+            reason: 'Motif',
+            commentary: 'Note',
+            save: 'Enregistrer la ligne',
+            clear: 'Effacer la ligne',
+            noVersion:
+                'Le compte n’a pas pu être lu : l’écriture n’indique donc aucune version.',
+            unrooted:
+                '{count} personnes n’atteignent aucune racine : leur responsable a disparu, ou la ligne qui les porte est rompue. Elles sont laissées hors de l’arborescence plutôt que dessinées comme racines.',
+            gaps: 'Ce que cet écran ne peut pas faire',
+            gapOffice:
+                'Le bureau de chaque personne n’est pas lisible ici : la lecture des parties de compte porte un identifiant et aucun nom.',
+            gapApproval:
+                'Une demande de changement de ligne est une proposition que valide le supérieur ou l’administrateur du locataire, et rien dans la plateforme ne porte une telle approbation : la ligne ne bouge pas.',
+            gapHistory:
+                'La ligne n’a pas d’historique sur cet écran. Le compte est versionné, donc une ligne passée est récupérable, et cet écran n’en montre rien.',
+        },
     },
 
     common: {

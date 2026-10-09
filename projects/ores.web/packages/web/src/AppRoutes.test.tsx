@@ -322,6 +322,35 @@ describe('the route table once the flag is clear', () => {
         expect(html).toContain('href="/where-i-work"');
     });
 
+    it('offers the reporting tree from the people list, and opens it', () => {
+        const html = render('/people', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['records', 'people', '', 'page', 0], {
+                accounts: [],
+                totalCount: 0,
+            }),
+        );
+        expect(html).toContain('href="/reporting-lines"');
+
+        const tree = render('/reporting-lines', ready, authenticated, {}, [], (client) =>
+            client.setQueryData(['reporting-tree'], {
+                unrooted: 0,
+                nodes: [
+                    {
+                        accountId: '11111111-1111-1111-1111-111111111111',
+                        username: 'ada.lovelace',
+                        fullName: 'Ada Lovelace',
+                        jobTitle: 'Head of Desk',
+                        reportsToAccountId: null,
+                        depth: 0,
+                        directReports: 0,
+                    },
+                ],
+            }),
+        );
+        expect(tree).toContain('Reporting lines');
+        expect(tree).toContain('Ada Lovelace');
+    });
+
     it('opens Where I work at its own route, and names the parties there', () => {
         const html = render('/where-i-work', ready, authenticated, {}, [], (client) =>
             client.setQueryData(['my-parties'], {

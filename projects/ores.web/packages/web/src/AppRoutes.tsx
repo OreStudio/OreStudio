@@ -51,6 +51,7 @@ import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
 import { MyAccessPage } from './access/MyAccessPage.js';
 import { WhereIWorkPage } from './membership/WhereIWorkPage.js';
+import { ReportingLinesPage } from './membership/ReportingLinesPage.js';
 import { PeoplePage } from './access/PeoplePage.js';
 import { PersonPage } from './access/PersonPage.js';
 import { RolePage } from './access/RolePage.js';
@@ -533,6 +534,10 @@ export function AppRoutes({
                         onSwitchParty={shell.onSwitchParty}
                     />
                 ))}
+            />
+            <Route
+                path="/reporting-lines"
+                element={signedIn(gate.version, session, shell, () => <ReportingLinesPage />)}
             />
             <Route
                 path="/people"

@@ -39,6 +39,8 @@ row-level security needs the party on every row.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:parent_entity: trade
+:bump_parent_version: true
 :END:
 
 The trade this role belongs to.

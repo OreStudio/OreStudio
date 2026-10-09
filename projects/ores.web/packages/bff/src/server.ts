@@ -346,9 +346,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * finished stays where it is, which is what a deployment that never ran it
      * does today.
      */
-    async function onboardingComplete(request: FastifyRequest): Promise<boolean> {
-        const id = readSessionId(request);
-        const session = id === undefined ? undefined : sessions.get(id);
+    async function onboardingComplete(session: LiveSession | undefined): Promise<boolean> {
         if (session === undefined) {
             return false;
         }
@@ -368,9 +366,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * screen rather than let through. The read is refused for a session that is
      * not the tenant's, which the refusal already covers.
      */
-    async function onboardingTenantComplete(request: FastifyRequest): Promise<boolean> {
-        const id = readSessionId(request);
-        const session = id === undefined ? undefined : sessions.get(id);
+    async function onboardingTenantComplete(session: LiveSession | undefined): Promise<boolean> {
         if (session === undefined) {
             return false;
         }
@@ -379,6 +375,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         } catch {
             return false;
         }
+    }
+
+    /**
+     * The session the browser presents, or nothing when it presents none.
+     *
+     * Two of the bootstrap answer's fields are read through a session while the
+     * rest are read without one, because a deployment in bootstrap mode has
+     * nobody to sign in as. So the answer states which account it was read for,
+     * and a screen can tell an answer about the visitor from one about the
+     * account that has just signed in: the first is what the deployment says to
+     * somebody standing outside it, and only the second is a fact about the
+     * session in hand.
+     */
+    function liveSession(request: FastifyRequest): LiveSession | undefined {
+        const id = readSessionId(request);
+        return id === undefined ? undefined : sessions.get(id);
     }
 
     function sessionResponse(session: LiveSession): unknown {
@@ -486,17 +498,25 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
      * the system tenant, so the wizard's flag is the fact that lets it leave the
      * setup screen. One connection per request, closed in both paths. It
      * carries no session, so there is nothing to keep alive.
+     *
+     * The two settings answers and the account they were read for travel
+     * together: without the account a screen cannot tell an answer about the
+     * visitor from one about the account that has just signed in, and would act
+     * on a flag that was read from outside the deployment.
      */
     server.get('/api/bootstrap', async (request) => {
         const { client, connect } = createClient();
+        const session = liveSession(request);
         try {
             await connect();
             const status = await client.bootstrapStatus();
             return bootstrapStatusSchema.parse({
                 isInBootstrapMode: status.isInBootstrapMode,
                 hasTenant: status.hasTenant,
-                onboardingComplete: await onboardingComplete(request),
-                onboardingTenantComplete: await onboardingTenantComplete(request),
+                onboardingComplete: await onboardingComplete(session),
+                onboardingTenantComplete: await onboardingTenantComplete(session),
+                accountId: session?.accountId ?? '',
+                sessionPresent: readSessionId(request) !== undefined,
                 message: status.message,
                 version: status.version,
             });

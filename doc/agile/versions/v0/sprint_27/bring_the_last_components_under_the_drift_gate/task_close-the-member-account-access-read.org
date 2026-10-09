@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 791A90F5-BA11-476A-9B54-0FFBB06C152D
+:END:
+#+title: Task: Close the account access read every member held
+#+description: Task for: Bring the last components under the drift gate
+#+type: task
+#+level: s1
+#+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/close-the-member-account-access-read
+#+pr: 2920
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every person account holds Member. Member was granted iam::roles:read so a member could read the role catalogue, but that same code gates reading another account's roles, so any member could read any account's access. Read the catalogue through the open reads and leave the grant off Member.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
+| Now          | Member holds neither read code; both remaining nightly suites pass. |
+| Waiting on   | Review of PR #2920.                    |
+| Next         | Merge once the reviewer is satisfied.  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- A caller holding only Member is denied, with no roles, when it reads
+  another account's access.
+- Member holds neither =iam::roles:read= nor =iam::permissions:read=.
+- The member journey still reads both catalogues through their open reads.
+- =ores.iam.core.tests= and =ores.trading.core.tests= both pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Member grants of the two read codes | 0 | =compass sql -- -c "..."= | cde205b4c2 |
+| ores.iam.core.tests | pass, 144 s | =compass test run -- -R '^ores\.iam\.core\.tests$'= | cde205b4c2 |
+| ores.trading.core.tests | pass, 98 s | =compass test run -- -R '^ores\.trading\.core\.tests$'= | cde205b4c2 |
+| Targeted checks | 4/4 | =compass check --only sql-hygiene --only populate-refs --only open-reads --only handler-permissions= | cde205b4c2 |
+| ores.iam.core.tests | pass, 206 s | =compass test run -- -R "^(ores\.iam\.core\.tests\|ores\.trading\.core\.tests)$"= | 7610f257ec |
+| ores.trading.core.tests | pass, 79 s | same run | 7610f257ec |
+| Trunk's four named checks | handler-permissions pass, entity-writes pass, codegen-tests 7 failed, er-diagram stale | =compass check --only handler-permissions --only entity-writes --only codegen-tests --only er-diagram= | 7610f257ec |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2920][#2920]] | [iam] Keep the account access read off Member |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=read_account_access= gates on =iam::roles:read= and returns another
+account's roles, who assigned each one and when. Member was granted that same
+code so a member could read the role catalogue, and the accounts trigger gives
+Member to every person at version 1, so every member could read every
+account's access.
+
+The catalogue does not need the code: the role and permission models name
+their list and get subjects in =:open_reads:=, and the generated handlers for
+those subjects carry no permission check. The web asks for
+=iam.v1.roles.list= and =iam.v1.permissions.list=, never the gated =get_many=
+or the versions, and =get_role_permissions=, which the "Can I?" panel reads,
+is ungated too. Member now holds neither code.
+
+Failure 2, =write_trade_booking_publishes_an_event= aborting on an empty
+optional, was already repaired on main by =a08ce20beb= (the generated
+eventing tests seed a party). This branch is off current main, so no change
+was needed; the suite was run to confirm rather than assumed.
+
+* Collision with #2916
+
+Trunk landed =cfaa867ac1= (#2916, =eager_maxwell=) for the same failure, from
+the other side: it keeps the grant and takes Member back in the case before
+the call. That makes the case pass while a real member still reaches another
+account's access, so the guard no longer covers what it was written for.
+
+This branch keeps that case -- it still proves the gate refuses a caller with
+no role at all -- and restores the case that holds only Member as the guard
+for the grant. Both pass, which is only possible with the grant off Member.
+
+Verified before the merge that nothing a member reaches needs the code:
+=list_roles= and =get_role= carry no permission check, no client sends
+=iam.v1.roles.get_many= or the versions, and =get_role_permissions= is
+ungated.
+
+* Trunk's red checks
+
+Measured on the merged tree, whose only difference from trunk is this task:
+=handler-permissions= passes, =entity-writes= passes, =codegen-tests= fails 7
+cases (all in =test_rls_isolation.py=, =test_rls_own_or_system_tenant_rows.py=,
+=test_soft_fk_target.py=, =test_sql_name_base.py=), and =er-diagram= is stale
+by =output_storage_key : text=, added to the schema by =fd06ab945a= and never
+regenerated. Neither reads a path this task touches; both are pre-existing.

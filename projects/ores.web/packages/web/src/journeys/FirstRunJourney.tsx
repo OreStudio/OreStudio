@@ -418,10 +418,7 @@ export function FirstRunJourney({
         onCreateAdministrator: createAdministrator,
         onAdministratorEntered: () => enterAsAdministrator(draft.password),
         onCompleteSystemOnboarding: () => server.completeSystemOnboarding(),
-        onSignOutAfterBootstrap: async () => {
-            await server.signOut();
-            onFinished();
-        },
+        onFinished,
     });
 
     /*

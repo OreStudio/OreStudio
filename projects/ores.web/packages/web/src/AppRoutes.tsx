@@ -27,6 +27,7 @@ import { useTranslation } from './i18n/Provider.js';
 import { useBootstrap, type BootstrapState } from './session/BootstrapProvider.js';
 import { useSession, type SessionState } from './session/SessionProvider.js';
 import { useSite } from './session/SiteProvider.js';
+import { setupAnswerStep } from './session/setupAnswer.js';
 import { useJourneyServer } from './journeys/server.js';
 import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
@@ -196,6 +197,20 @@ export function AppRoutes({
     }
 
     /*
+     * The two setup flags are settings, and settings are read through a session,
+     * while the rest of the bootstrap answer is read without one. So an answer
+     * that names no account, or one the session has since left, says nothing
+     * about the account in hand: acting on it would read a deployment that has
+     * never been set up and put the wizard in front of somebody who has just
+     * finished it. The answer is on its way, and nothing is decided until it
+     * arrives.
+     */
+    const signedInAccountId = session.status === 'authenticated' ? session.session.accountId : '';
+    if (gate.accountId !== signedInAccountId) {
+        return <Centred>{t('common.loading')}</Centred>;
+    }
+
+    /*
      * A system administrator resuming a provisioner wizard that has not
      * recorded its finish stays on the rail. The mode is the session's own,
      * read from the login answer rather than derived from the tenant here.
@@ -216,13 +231,31 @@ export function AppRoutes({
         session.session.mode !== 'system-administration' &&
         !gate.onboardingTenantComplete;
 
+    /*
+     * A rail is the one public screen somebody can be signed in on, so it
+     * carries the way out a signed-in person owes. A setup that cannot be
+     * finished, or a session the deployment has forgotten, must not be a room
+     * with no door.
+     */
+    const railActions =
+        session.status === 'authenticated' ? (
+            <Button variant="secondary" onClick={() => void onSignOut()}>
+                {t('nav.signOut')}
+            </Button>
+        ) : undefined;
+
     if (gate.inBootstrapMode || resumingSystemSetup || journeyInProgress) {
         return (
             <Routes>
                 <Route
                     path="*"
                     element={
-                        <PublicShell wide serverVersion={gate.version} environment={environment}>
+                        <PublicShell
+                            wide
+                            serverVersion={gate.version}
+                            environment={environment}
+                            actions={railActions}
+                        >
                             {journey}
                         </PublicShell>
                     }
@@ -237,7 +270,12 @@ export function AppRoutes({
                 <Route
                     path="*"
                     element={
-                        <PublicShell wide serverVersion={gate.version} environment={environment}>
+                        <PublicShell
+                            wide
+                            serverVersion={gate.version}
+                            environment={environment}
+                            actions={railActions}
+                        >
                             {tenantSetupJourney}
                         </PublicShell>
                     }
@@ -721,7 +759,7 @@ export function AppRoutes({
 
 /** The wiring: the two states, and the actions the screens can take. */
 export function ConnectedApp(): ReactNode {
-    const { state: gate, recheck } = useBootstrap();
+    const { state: gate, recheck, reading } = useBootstrap();
     const { state: session, signIn, chooseParty, signOut } = useSession();
     const { environment } = useSite();
     const server = useJourneyServer();
@@ -729,23 +767,54 @@ export function ConnectedApp(): ReactNode {
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
     /*
-     * The gate's tenant answer is read through the session, and the session it
-     * was first read through was nobody's. Signing in changes what that answer
-     * means, because only the tenant's administrator can read its flag, so the
-     * deployment is asked again whenever the signed-in account changes. The
-     * action is held in a ref so a changed answer cannot ask again by changing
-     * the effect's own dependencies.
+     * The gate's setup flags are read through the session, and the session they
+     * were first read through was nobody's. Signing in changes what that answer
+     * means, so the deployment is asked again whenever the answer names an
+     * account other than the one in hand. The action is held in a ref so a
+     * changed answer cannot ask again by changing the effect's own dependencies,
+     * and the account the answer names is what ends the asking.
+     *
+     * A deployment that answers twice without naming the account this browser
+     * holds does not know the session it is being shown, and the browser belongs
+     * at the sign-in form: asking a third time would answer the same way, and a
+     * screen whose one action cannot succeed is worse than a fresh sign-in. That
+     * is what a browser left open across a restart sees, and what a rail nobody
+     * can leave turns into.
      */
     const recheckNow = useRef(recheck);
     useEffect(() => {
         recheckNow.current = recheck;
     }, [recheck]);
     const signedInAs = session.status === 'authenticated' ? session.session.accountId : '';
+    const askedFor = useRef<string | undefined>(undefined);
     useEffect(() => {
-        if (signedInAs !== '') {
+        const step = setupAnswerStep({
+            answerAccountId: gate.status === 'ready' ? gate.accountId : signedInAs,
+            signedInAs,
+            reading,
+            asked: askedFor.current === signedInAs,
+            authenticated: session.status === 'authenticated',
+        });
+        if (step === 'ask') {
+            askedFor.current = signedInAs;
             void recheckNow.current();
+            return;
         }
-    }, [signedInAs]);
+        if (step === 'sign-out') {
+            void signOut();
+        }
+    }, [gate, session, signedInAs, signOut, reading]);
+    /*
+     * The rail belongs to a setup that has not finished. Once the deployment
+     * records that it has, this browser is done with the wizard whatever the tab
+     * remembers, so a rail entered on an answer that was still being read cannot
+     * hold it on a finished setup.
+     */
+    useEffect(() => {
+        if (gate.status === 'ready' && gate.onboardingComplete) {
+            setJourneyInProgress(false);
+        }
+    }, [gate]);
     /*
      * The signed-in person's own account: the shell's menu shows their name
      * and picture from it, and the profile screen reads the same answer for

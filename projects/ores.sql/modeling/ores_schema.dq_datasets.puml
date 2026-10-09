@@ -1,0 +1,247 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — dq_datasets
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: dq_datasets
+Tables: 6
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== dq_datasets (Dataset Management) ====================
+'
+package "dq_datasets" #E3F2FD {
+    entity ores_dq_bundle_publications_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * bundle_code : text
+        * bundle_name : text
+        * mode : text
+        * atomic : boolean
+        * datasets_processed : integer
+        * datasets_succeeded : integer
+        * datasets_failed : integer
+        * datasets_skipped : integer
+        * total_records_inserted : bigint
+        * total_records_updated : bigint
+        * total_records_skipped : bigint
+        * total_records_deleted : bigint
+        * published_by : text
+        * published_at : timestamptz
+          completed_at : timestamptz
+    }
+
+    note right of ores_dq_bundle_publications_tbl
+    Bundle Publication Audit Table
+    end note
+
+    entity ores_dq_dataset_bundle_members_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * bundle_code : text <<PK>>
+        * dataset_code : text <<PK>>
+        --
+        * version : integer
+        * display_order : integer
+        * optional : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_dataset_bundle_members_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Dataset Bundle Member Table
+    Junction table linking bundles to their constituent datasets. Uses codes
+    for loose coupling - allows declaring membership for datasets that may not
+    yet exist in the system.
+    Examples:
+    - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
+    - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
+    end note
+
+    entity ores_dq_dataset_bundles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+        * name : text
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_dataset_bundles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Dataset Bundle Table
+    Installing a bundle gets the system into a ready state with a coherent set
+    of reference data. Bundles provide a way to group related datasets that
+    should be installed together.
+    Examples:
+    - "base": Industry-standard reference data (ISO + FpML) for production
+    - "crypto": Base system plus cryptocurrency reference data
+    - "risk_management": Sample organisational and risk-reporting data
+    end note
+
+    entity ores_dq_dataset_dependencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * dataset_code : text <<PK>>
+        * dependency_code : text <<PK>>
+        --
+        * role : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_dataset_dependencies_tbl
+    Declares dependencies between datasets using stable dataset codes.
+    When a dataset is injected into the system, all its dependencies must
+    be satisfied first. Dependencies are resolved by code at injection time.
+    Note: dependency_code is intentionally NOT a foreign key to allow:
+    - Declaring dependencies on datasets that may not exist yet
+    - Referencing datasets in external systems
+    - Loose coupling with validation at injection time
+    Examples:
+    - "iso.countries" depends on "assets.country_flags" for visual display
+    - "crypto.large" and "crypto.small" depend on "assets.crypto_icons" for icon display
+    end note
+
+    entity ores_dq_dataset_publications_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * dataset_id : uuid <<FK>>
+        * dataset_code : text
+        * mode : text
+        * target_table : text
+        * records_inserted : bigint
+        * records_updated : bigint
+        * records_skipped : bigint
+        * records_deleted : bigint
+        * published_by : text
+        * published_at : timestamptz
+    }
+
+    note right of ores_dq_dataset_publications_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Publication Table
+    An append-only log of datasets published to production tables: which dataset
+    went where, under which mode, and how many records each outcome touched. The
+    publish path writes one row per dataset it dispatches.
+    The table is called ores_dq_dataset_publications_tbl, so the model states its
+    table name rather than deriving it: the entity is a publication, and the table
+    names the thing published.
+    It is a run log, not an entity with a lifecycle. Nothing edits a row after it is
+    written, so the model declares :current_state:: no transaction-time pair, no
+    exclusion constraint, no version and no audit tail. Rows carry their own
+    published_at, which is the ordering the reads use. The surrogate id is the
+    primary key because a dataset may be published many times.
+    end note
+
+    entity ores_dq_datasets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+          catalog_name : text
+        * subject_area_name : text
+        * domain_name : text
+          coding_scheme_code : text <<FK>>
+        * origin_code : text <<FK>>
+        * nature_code : text <<FK>>
+        * treatment_code : text <<FK>>
+          methodology_id : uuid <<FK>>
+        * name : text
+        * description : text
+        * source_system_id : text <<FK>>
+        * business_context : text
+          upstream_derivation_id : uuid <<FK>>
+        * lineage_depth : integer
+        * as_of_date : timestamptz
+        * ingestion_timestamp : timestamptz
+          license_info : text
+        * artefact_type : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_dq_datasets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Dataset Table
+    Central dataset registry with full lineage. Tracks provenance through
+    upstream_derivation_id, and lineage_depth is calculated from the hierarchy.
+    A dataset is identified two ways: by its code, and by its name within a
+    subject area and domain. The table enforces both, so the model states code as
+    the natural key and declares the three-column key as an extra unique index.
+    The columns that point at other entities -- coding_scheme_code, origin_code,
+    nature_code, treatment_code, methodology_id and upstream_derivation_id --
+    are plain columns rather than declared references, because the table carries no
+    constraint and adding one would refuse rows the platform accepts today.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.dq_datasets.puml"
+' End:
+@enduml

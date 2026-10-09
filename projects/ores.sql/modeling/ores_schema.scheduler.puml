@@ -1,0 +1,127 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — scheduler
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: scheduler
+Tables: 2
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== scheduler (Job Scheduler) ====================
+'
+package "scheduler" #F1F8E9 {
+    entity ores_scheduler_job_definitions_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+          tenant_id : uuid <<FK>>
+        * version : integer
+        * job_name : text
+          party_id : uuid <<FK>>
+        * description : text
+        * command : text
+        * schedule_expression : text
+        * action_type : text
+        * action_payload : jsonb
+        * is_active : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_scheduler_job_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Job Definition Table
+    A job the scheduler fires on a cron expression. The row carries the schedule
+    (schedule_expression), what to run when it fires, and whether it is active.
+    action_type selects the behaviour: execute_sql runs the SQL in command,
+    and nats_publish publishes the subject and body carried in action_payload.
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it
+    carries version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the ordinary
+    audited shape and needs no shape flag.
+    tenant_id is nullable. A job may belong to no tenant, because the scheduler
+    fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
+    compute stale-result reaper are both such rows. The model binds
+    uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
+    standard presentation tier, and states nullable_tenant_id itself, which that
+    profile leaves to the model.
+    job_name is the natural key and is unique within its tenant; id is the
+    surrogate. Uniqueness is what the component's upsert path relies on: a job that
+    arrives under an existing name updates that row in place instead of adding a
+    second one.
+    The component's operational views — the global job-instance list and the live
+    scheduler status — are operations rather than entity verbs, and are modelled
+    in ores.scheduler.scheduling_operations.
+    end note
+
+    entity ores_scheduler_job_instances_tbl  #F7E5FF {
+        * id : bigserial <<PK>>
+        * triggered_at : timestamptz <<PK>>
+        --
+          tenant_id : uuid <<FK>>
+          party_id : uuid <<FK>>
+        * job_definition_id : uuid <<FK>>
+        * action_type : text
+        * status : text
+        * started_at : timestamptz
+          completed_at : timestamptz
+          duration_ms : bigint
+        * error_message : text
+    }
+
+    note right of ores_scheduler_job_instances_tbl
+    Scheduler Job Instances Table
+    Execution history for scheduler jobs.
+    Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
+    Partitioned by triggered_at.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.scheduler.puml"
+' End:
+@enduml

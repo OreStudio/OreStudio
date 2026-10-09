@@ -1,0 +1,768 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — reporting
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: reporting
+Tables: 20
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== reporting (Reporting & Analytics) ====================
+'
+package "reporting" #E0F7FA {
+    entity ores_reporting_analytic_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+          parameter_entity : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_analytic_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Analytic Type Table
+    Reference data naming the analytics ORE's run document can ask for: NPV,
+    cashflows, curves, simulation, XVA, initial margin, sensitivity, stress, SIMM
+    and the rest. The element's type attribute is a free string in ORE's schema;
+    this is the vocabulary the shipped run documents actually use, and it is what
+    makes the attribute a foreign key rather than free text.
+    Thirty-five types are in use across the corpus, and their parameter sets barely
+    overlap: xva takes around seventy parameters, simulation sixty, sensitivity
+    thirty, and several types one flag. That is why each type owns a table for its
+    parameters and this table names it, in parameter_entity, rather than every
+    type sharing one wide row.
+    end note
+
+    entity ores_reporting_concurrency_policies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_concurrency_policies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Concurrency Policy Table
+    Reference data table defining valid concurrency policies for report definitions.
+    Examples: 'skip', 'queue', 'fail'.
+    Concurrency policies control what happens when a scheduler trigger fires
+    for a report definition that already has a running instance.
+    end note
+
+    entity ores_reporting_configuration_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * configuration_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configuration_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Parameter Table
+    One value. The value is text because the definition says what it is: the
+    value domain on parameter_definition decides whether this is a currency, a
+    date, a boolean, a tenor or a reference, and the mapper writes it into the
+    document accordingly. Storing it as text is not the same as storing an
+    untyped blob, because the meaning comes from a foreign key rather than from
+    the shape of the row.
+    position keeps the order the document wrote the parameters in.
+    end note
+
+    entity ores_reporting_configuration_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * display_order : integer
+        * ore_root_element : text
+        * owning_component : text
+          run_parameter : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configuration_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Type Table
+    Reference data naming the kinds of configuration a report can bind: the ORE
+    run itself, a stress library, a sensitivity analysis, a simulation, a SIMM
+    calibration, a credit simulation, a historical return set, a Basel traffic
+    light set, and the curve and reference documents.
+    This is a seeded vocabulary, not free text. A discriminator stored as a bare
+    code cannot be constrained, counted or joined, which is why every
+    configuration carries one of these rows by foreign key. Adding a kind is a
+    row here plus a workflow, never a column on the report definition.
+    end note
+
+    entity ores_reporting_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * configuration_type_code : text <<FK>>
+        * owning_component : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Configuration Table
+    The name is ours; the detail lives with the component named by
+    owning_component. A report binds a configuration through
+    report_configuration, so several reports share one configuration without
+    copying it, and the kind of configuration it is comes from
+    configuration_type by foreign key rather than from a text code.
+    end note
+
+    entity ores_reporting_parameter_definitions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * scope : text
+        * subtype : text
+        * name : text
+        * position : integer
+        * parameter_value_domain_code : text <<FK>>
+        * is_required : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_parameter_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Parameter Definition Table
+    The vocabulary of the run document. ORE writes parameters as a name and a
+    value inside a block; scope names the block (Setup, Markets, an analytic)
+    and subtype narrows it, so a pair of them plus name says which parameter
+    this is. position keeps the order the document wrote, because a document
+    that is not reproducible in order is not reproducible.
+    165 of the 218 parameter names observed in the shipped corpus belong to
+    exactly one analytic kind, which is why the name alone is not the key.
+    end note
+
+    entity ores_reporting_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * storage_kind : text
+        * referenced_entity : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_parameter_value_domains_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Parameter Value Domain Table
+    Every configuration parameter holds one value, and this says what that value
+    is: a currency, a date, a boolean, an integer, a tenor, a document reference,
+    or a list. Where the value names something in the model, referenced_entity
+    names the entity it points at, so the mapper knows what to write into the
+    document and a reader knows what the value means.
+    A malformed org header makes this loader fail in a misleading way: a line
+    that does not start at column zero, or a stray character before a #+ keyword,
+    leaves the entity type unresolved and the generator writes files called
+    unknown_* rather than reporting the bad line. Check the header first when a
+    model generates unknown.
+    end note
+
+    entity ores_reporting_report_analytic_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_analytic_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytic_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Parameter Table
+    One Parameter element inside one Analytic of a run document: the value, and
+    the definition that says what it means. The corpus writes eighteen hundred and
+    seventy-four analytics whose parameters barely overlap -- xva takes around
+    seventy, simulation sixty, sensitivity thirty, and several types one flag -- so
+    the parameters cannot be columns on the analytic.
+    They are held the way the reporting registry already holds a configuration's
+    parameters: a row per value, keyed to a definition in parameter_definition
+    whose scope is the analytic and whose subtype is the analytic type code,
+    and whose value domain supplies the type. Adding a parameter is a lookup row,
+    never a column, and no analytic type needs a table of its own. That is the
+    decision this entity records, and it replaces the plan's table-per-type with the
+    registry's own pattern, which was built for this shape.
+    Each row belongs to exactly one analytic and has many parameters, in the order
+    the document wrote them.
+    end note
+
+    entity ores_reporting_report_analytics_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_definition_id : uuid <<FK>>
+        * analytic_type_code : text <<FK>>
+        * display_order : integer
+        * active : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_analytics_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Analytic Table
+    One row per Analytic element in a report's ORE run document: which analytic to
+    run, in what order, and whether it is on. The corpus runs eighteen hundred and
+    seventy-four analytics across its four hundred and sixteen run documents, in
+    thirty-five distinct types, and every one of them carries an active parameter.
+    This is the row that replaces the analytic switches on risk_report_config.
+    Those were twelve *_enabled booleans, which could say "run NPV" and nothing
+    else; a run can now name any of the thirty-five types, in order, and repeat one.
+    The type-specific parameters live in a table per type, named by the type's
+    parameter_entity, rather than in columns here.
+    Each row belongs to exactly one report_definition, which is this run's
+    document, and the definition has many analytics.
+    end note
+
+    entity ores_reporting_report_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_definition_id : uuid <<FK>>
+        * configuration_type_code : text <<FK>>
+        * configuration_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Configuration Table
+    This is how a report definition reaches its configuration: one row per
+    configuration it binds, where the configuration type is the slot and the
+    configuration fills it. Several reports may fill the same slot with the same
+    configuration, so a configuration is never copied to be shared, and adding a
+    slot is not a column on the report definition.
+    end note
+
+    entity ores_reporting_report_definitions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * party_id : uuid <<FK>>
+        * description : text
+        * report_type : text <<FK>>
+          fsm_state_id : uuid <<FK>>
+        * schedule_expression : text
+        * concurrency_policy : text
+          scheduler_job_id : uuid <<FK>>
+          run_grant_id : uuid <<FK>>
+        * pre_processing : text
+          prepared_input_key : text
+        * post_processing : text
+        * is_official : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Definition Table
+    The persistent template for a report. Describes what to run, when to run it,
+    how to handle concurrent executions, and how much of the processing pipeline a
+    run executes. Type-specific configuration (e.g. risk parameters) lives in a
+    separate table keyed by report_definition_id.
+    The run configuration is held here rather than in the environment so that a run
+    is reproducible from the database alone. pre_processing and post_processing
+    name, for each substitutable phase, whether the phase runs or is replaced by a
+    prepared substitute.
+    Lifecycle is managed through the report_definition_lifecycle FSM machine.
+    fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
+    scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set
+    by the scheduler service when the definition is activated (state: active).
+    It is cleared when the definition is suspended or archived.
+    end note
+
+    entity ores_reporting_report_input_bundles_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * report_instance_id : uuid <<FK>>
+        * definition_id : uuid <<FK>>
+        * trades_storage_key : text
+        * market_data_storage_key : text
+        * fixings_storage_key : text
+        * trade_count : integer
+        * series_count : integer
+        * created_at : timestamptz
+    }
+
+    note right of ores_reporting_report_input_bundles_tbl
+    An immutable artifact created by the assemble_bundle workflow step.
+    Records the object-storage keys where the MsgPack-serialised trades
+    and market data blobs produced during gather_trades and
+    gather_market_data are stored.
+    One bundle is created per report instance execution.  The bundle is
+    consumed downstream by prepare_ore_package to repackage the data as
+    a tarball for the compute grid.
+    end note
+
+    entity ores_reporting_report_instances_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * party_id : uuid <<FK>>
+        * definition_id : uuid <<FK>>
+          run_grant_id : uuid <<FK>>
+          fsm_state_id : uuid <<FK>>
+        * trigger_run_id : bigint <<FK>>
+        * output_message : text
+          output_storage_key : text
+          started_at : timestamptz
+          completed_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_instances_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Instance Table
+    A single execution of a report_definition. Created automatically when the
+    scheduler fires a trigger for an active definition.
+    Lifecycle is managed through the report_instance_lifecycle FSM machine.
+    fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
+    started_at is NULL when the instance is cancelled or skipped before execution
+    begins. completed_at is NULL while running or in a terminal-before-start state.
+    end note
+
+    entity ores_reporting_report_market_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_definition_id : uuid <<FK>>
+        * role : text
+        * configuration_name : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_market_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Market Binding Table
+    One Parameter of the Markets block in a run document: a market role, and the
+    configuration set the run binds to it. Three hundred and thirteen of the corpus's
+    four hundred and sixteen documents carry the block, and between them they bind
+    nineteen hundred and fifteen times, in eight roles: pricing,
+    simulation, sensitivity, lgmcalibration, fxcalibration,
+    eqcalibration, infcalibration and bondpricing.
+    The role is a free string in ORE's schema and the value names a configuration
+    set built in todaysmarket.xml, which ores.refdata owns: the story that
+    settled the ownership found that todaysmarket.xml names sets of curves the way
+    curveconfig.xml names curves, so the configuration is reference data and this
+    run document merely refers to it. This table holds the binding, not the
+    configuration it names: what the run asks the market for, by role, in the order
+    the document wrote it.
+    Each row belongs to exactly one report_definition and a definition has many
+    bindings.
+    end note
+
+    entity ores_reporting_report_run_setups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+          asof_date : text
+          accrual_date : text
+          input_path : text
+          input_path_market : text
+          input_path_portfolio : text
+          output_path : text
+          log_file : text
+          log_mask : integer
+          n_threads : integer
+          observation_model : text
+          base_currency : text
+          date_calendar : text
+          date_convention : text
+          fixing_cutoff : text
+          continue_on_error : text
+          build_failed_trades : text
+          imply_todays_fixings : text
+          ignore_fixing_lag : integer
+          include_todays_cash_flows : text
+          include_reference_date_events : text
+          lazy_market_building : text
+          enrich_index_fixings : text
+          use_analytics : text
+          csv_comment_report_header : text
+          default_mapping_to_identity : text
+          portfolio_recurse_into_sub_directories : text
+          curve_config_file : text
+          conventions_file : text
+          market_config_file : text
+          pricing_engines_file : text
+          pricing_engines_file_scenario : text
+          portfolio_file : text
+          market_data_file : text
+          market_data_mapping_file : text
+          fixing_data_file : text
+          fixing_data_mapping_file : text
+          calendar_adjustment : text
+          currency_configuration : text
+          reference_data_file : text
+          counterparty_file : text
+          script_library : text
+          ibor_fallback_config : text
+          additional_results : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_run_setups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Run Setup Table
+    The Setup block of the ORE run document, as typed columns: the dates the run
+    works to, the paths it reads and writes, the flags it runs under, and the
+    configuration files it names. The corpus uses forty of these parameters across
+    all four hundred and sixteen shipped run documents, and asofDate, inputPath,
+    outputPath and logFile appear in every one.
+    Each row is owned by exactly one report_definition (1:1, enforced by the
+    unique index on report_definition_id). It replaces the part of
+    risk_report_config that held a handful of these parameters as columns mixed in
+    with the analytic switches; the switches become rows in report_analytic, and
+    what is left of the run's configuration is here.
+    Values are held as ORE spells them rather than converted, because the run
+    document is written back to ORE and the flags are not all booleans: the
+    fixing and cashflow flags are Y or N, the model flags are true or
+    false, and accrualDate may be the literal ASOF. Converting them would
+    mean inventing a canonical form ORE does not have.
+    end note
+
+    entity ores_reporting_report_type_configuration_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * report_type_code : text <<PK, FK>>
+        * configuration_type_code : text <<PK, FK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_type_configuration_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Report Type Configuration Type Table
+    Many-to-many junction between report types and configuration types: one row
+    for each configuration type a run of the report type cannot start without. A
+    risk report needs pricing engines, today's market, curve configuration and
+    conventions whatever its analytics; a configuration type is needed by more than
+    one report type. Starting a report checks that its definition binds one
+    configuration of every type its report type requires.
+    end note
+
+    entity ores_reporting_report_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * workflow_type : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Type Table
+    Reference data table defining valid report type classifications.
+    Example: 'risk'.
+    Report types are managed by the system tenant. A report type names the
+    workflow its reports run and, through the report type configuration type
+    junction, the configuration types a run requires.
+    end note
+
+    entity ores_reporting_risk_report_config_books_tbl <<junction>> #ECECEC {
+        * risk_report_config_id : uuid <<PK, FK>>
+        * book_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_risk_report_config_books_tbl
+    Associates a risk report configuration with the books it should include.
+    An empty set (no rows for a given risk_report_config_id) means all books
+    within the selected portfolios are included.
+    This is a temporal junction table: entries are closed when removed, preserving
+    historical scope records alongside the config version history.
+    end note
+
+    entity ores_reporting_risk_report_config_portfolios_tbl <<junction>> #ECECEC {
+        * risk_report_config_id : uuid <<PK, FK>>
+        * portfolio_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_risk_report_config_portfolios_tbl
+    Associates a risk report configuration with the portfolios it should include.
+    An empty set (no rows for a given risk_report_config_id) means all portfolios
+    visible to the tenant are included.
+    This is a temporal junction table: entries are closed when removed, preserving
+    historical scope records alongside the config version history.
+    end note
+
+    entity ores_reporting_risk_report_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_definition_id : uuid <<FK>>
+        * base_currency : text
+        * observation_model : text
+        * n_threads : integer
+        * market_data_type : text
+          market_data_date : date
+        * npv_enabled : integer
+        * cashflow_enabled : integer
+        * curves_enabled : integer
+        * sensitivity_enabled : integer
+        * simulation_enabled : integer
+        * xva_enabled : integer
+        * stress_enabled : integer
+        * parametric_var_enabled : integer
+        * initial_margin_enabled : integer
+        * pfe_enabled : integer
+          xva_quantile : numeric(5,4)
+        * xva_cva_enabled : integer
+        * xva_dva_enabled : integer
+        * xva_fva_enabled : integer
+        * xva_colva_enabled : integer
+        * xva_dim_enabled : integer
+          xva_dim_quantile : numeric(5,4)
+          xva_dim_horizon_calendar_days : integer
+          xva_dim_regression_order : integer
+          var_quantiles : numeric(5,4)[]
+          var_method : text
+          simm_version : text
+          simm_calculation_currency : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_risk_report_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Risk Report Config Table
+    The ORE-level parameters for a risk report definition: base currency,
+    observation model, analytics flags, XVA/VaR/SIMM settings and threading.
+    Each row is owned by exactly one report_definition (1:1, enforced by the
+    unique index on report_definition_id). Portfolio and book scope live in
+    separate temporal junction tables; an empty set in either junction means
+    "all visible to the tenant".
+    Analytics flags use integer 0/1, not boolean, to match the project
+    convention. npv and cashflow default to enabled; all others default off.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_reporting_configurations_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
+ores_reporting_parameter_definitions_tbl ||--o{ ores_reporting_configuration_parameters_tbl : "has"
+ores_reporting_configuration_types_tbl ||--o{ ores_reporting_configurations_tbl : "has"
+ores_reporting_parameter_value_domains_tbl ||--o{ ores_reporting_parameter_definitions_tbl : "has"
+ores_reporting_report_analytics_tbl ||--o{ ores_reporting_report_analytic_parameters_tbl : "has"
+ores_reporting_parameter_definitions_tbl ||--o{ ores_reporting_report_analytic_parameters_tbl : "has"
+ores_reporting_analytic_types_tbl ||--o{ ores_reporting_report_analytics_tbl : "has"
+ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
+ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
+ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
+ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
+ores_reporting_report_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
+ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"
+ores_reporting_report_definitions_tbl ||--o{ ores_reporting_risk_report_configs_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.reporting.puml"
+' End:
+@enduml

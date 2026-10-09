@@ -1,0 +1,203 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — workflow
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: workflow
+Tables: 4
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== workflow (Workflow Orchestration (Saga)) ====================
+'
+package "workflow" #FFF8E1 {
+    entity ores_workflow_plan_dependencies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * consumer_step_index : integer
+        * producer_step_index : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_dependencies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Dependency Table
+    One edge of a run's chain. The producer names the step that writes a result and
+    the consumer the step that reads it, both by their position in the same run's
+    chain.
+    This is a relation and not a list on the step, because a step may read any
+    number of producers and a producer may feed any number of consumers. It is
+    what makes the chain a graph the engine can read: the questions "what is
+    waiting", "what may run now" and "what has to be rolled back, in what order"
+    are all queries over these rows and the steps' states, where they used to be a
+    parse of a document and a cursor.
+    end note
+
+    entity ores_workflow_plan_steps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * step_index : integer
+        * name : text
+        * label : text
+        * description : text
+        * command_subject : text
+        * compensation_subject : text
+        * timeout_seconds : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_plan_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Plan Step Table
+    One step of the chain a run was started with. workflow_step records a step
+    that ran and what came back; this records a step that *will* run, from the
+    moment the run starts, so the engine can answer what the chain is before it has
+    dispatched anything.
+    The chain is built per instance by the definition's build_steps, which is a
+    function of the start request and not of the definition alone — tenant
+    provisioning orders one step per kind its request names. A run therefore
+    carries its own chain rather than pointing at one, because the definition that
+    produced it may not produce the same chain twice and must never reshape a run
+    that is already in flight.
+    end note
+
+    entity ores_workflow_workflow_instances_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * type : text
+          target_kind : text
+          target_id : uuid <<FK>>
+        * state_id : uuid <<FK>>
+        * request_json : jsonb
+          result_json : jsonb
+          error : text
+          correlation_id : text <<FK>>
+        * created_by : text
+        * step_count : integer
+          completed_at : timestamptz
+          last_event_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_workflow_instances_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Instance Table
+    Tracks the lifecycle of a workflow execution, including its type, the entity it
+    acts on, its status, the serialised request that triggered it, and any result or
+    error produced. Instances are append-mostly; status transitions are the primary
+    mutation.
+    end note
+
+    entity ores_workflow_workflow_steps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workflow_id : uuid <<FK>>
+        * step_index : integer
+        * name : text
+        * state_id : uuid <<FK>>
+        * request_json : jsonb
+          response_json : jsonb
+          error : text
+          step_log_json : jsonb
+        * command_subject : text
+        * command_json : text
+          command_published_at : timestamptz
+        * idempotency_key : text
+        * compensation_subject : text
+        * compensation_json : text
+          started_at : timestamptz
+          completed_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_workflow_workflow_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Step Table
+    Records the execution of one step in a saga workflow, including the step
+    index, name, status, request/response payloads, and timing. Steps reference
+    their parent workflow instance via workflow_id.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_workflow_workflow_instances_tbl ||--o{ ores_workflow_plan_dependencies_tbl : "has"
+ores_workflow_workflow_instances_tbl ||--o{ ores_workflow_plan_steps_tbl : "has"
+ores_workflow_workflow_instances_tbl ||--o{ ores_workflow_workflow_steps_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.workflow.puml"
+' End:
+@enduml

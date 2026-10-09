@@ -1,0 +1,154 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — telemetry
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: telemetry
+Tables: 5
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== telemetry (Telemetry & Logging) ====================
+'
+package "telemetry" #FCE4EC {
+    entity ores_telemetry_expected_services_tbl  #F7E5FF {
+        * service_name : text <<PK>>
+        --
+        * replicas : integer
+        * display_name : text
+        * description : text
+          service_account : text
+    }
+
+    note right of ores_telemetry_expected_services_tbl
+    Expected Services
+    The services the installation runs and how many instances of each it
+    expects. The rows are generated from the service registry
+    (projects/modeling/service_registry.org) into
+    populate/telemetry/telemetry_expected_services_populate.sql, so the registry
+    stays the one source. The services roster joins these rows with the last
+    heartbeat of each instance, so an expected instance that never reports
+    still has a row.
+    The display name is the name a person reads, such as Analytics Service,
+    and the description says what the service does. The service account is the
+    IAM account the process signs in as, null for a process that signs in as
+    no account of its own.
+    Installation-level, like the heartbeat samples: no tenant owns a service.
+    end note
+
+    entity ores_telemetry_logs_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * timestamp : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * source : text
+        * source_name : text
+          session_id : uuid <<FK>>
+          account_id : uuid <<FK>>
+        * level : text
+        * component : text
+        * message : text
+        * tag : text
+        * recorded_at : timestamptz
+    }
+
+    note right of ores_telemetry_logs_tbl
+    Application log entries.
+    Designed for TimescaleDB hypertable.
+    Partitioned by timestamp.
+    end note
+
+    entity ores_telemetry_nats_server_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * tenant_id : uuid <<PK, FK>>
+        --
+        * in_msgs : bigint
+        * out_msgs : bigint
+        * in_bytes : bigint
+        * out_bytes : bigint
+        * connections : integer
+        * mem_bytes : bigint
+        * slow_consumers : integer
+    }
+
+    note right of ores_telemetry_nats_server_samples_tbl
+    NATS server-level metrics samples.
+    Populated by ores.telemetry.service polling /varz on the NATS monitoring API.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+    entity ores_telemetry_nats_stream_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * tenant_id : uuid <<PK, FK>>
+        * stream_name : text <<PK>>
+        --
+        * messages : bigint
+        * bytes : bigint
+        * consumer_count : integer
+    }
+
+    note right of ores_telemetry_nats_stream_samples_tbl
+    NATS JetStream per-stream metrics samples.
+    Populated by ores.telemetry.service polling /jsz on the NATS monitoring API.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+    entity ores_telemetry_service_samples_tbl  #F7E5FF {
+        * sampled_at : timestamptz <<PK>>
+        * service_name : text <<PK>>
+        * instance_id : text <<PK, FK>>
+        --
+        * host_id : text <<FK>>
+        * version : text
+    }
+
+    note right of ores_telemetry_service_samples_tbl
+    Service heartbeat samples.
+    Populated by the heartbeat_publisher embedded in every domain service.
+    Each service publishes a heartbeat every 15 seconds; the telemetry service
+    subscribes and writes one row here per heartbeat received.
+    Designed for TimescaleDB hypertable, partitioned by sampled_at.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.telemetry.puml"
+' End:
+@enduml

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :split-the-er-diagram-by-group:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/split-the-er-diagram-by-package
+#+pr: 2937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The generator writes one diagram per package plus an index, so a reader opens th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2EFCD807-B9CE-4D78-B67F-E9446A558C81][Split the ER diagram by group]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -57,7 +57,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Diagrams generated | 22: one per package and the index | =plantuml_er_generate.py --index-template= | 334f9acbfc |
+| Diagrams that render | 22 of 22, no exception | =plantuml -tpng= at =PLANTUML_LIMIT_SIZE=131072= over every file | 334f9acbfc |
+| Largest diagram | =dq_staging=, 20436 x 11090 (226.6M px) | same | 334f9acbfc |
+| Next largest | =refdata= 4432 x 27026, =trading= 2743 x 26303 | same | 334f9acbfc |
+| Index | 6709 x 2483 (16.7M px) | same | 334f9acbfc |
+| The old single diagram | failed at about 2.68e9 px | same | - |
+| codegen-tests | pass, 51.9 s | =compass check --only codegen-tests= | da901c61e8 |
+| er-diagram, tangle-templates, org-links | pass | =compass check --only er-diagram --only tangle-templates --only org-links= | da901c61e8 |
 
 * Notes
 
@@ -76,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2937][#2937]] | [codegen,sql] Split the ER diagram into one file per group |
 
 * Review
 
@@ -85,3 +92,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The diagram is drawn one file per package, from the grouping the model
+already carried, and =ores_schema.puml= is the index over them. Every one
+of the 22 renders; the largest, =dq_staging=, is 226.6M pixels, against
+the single 463-table diagram that overflowed a 32-bit pixel count at
+about 2.68e9.
+
+*The policy for a key that leaves its package.* A group draws its own
+tables and the keys with both ends inside it. A key that leaves is not
+drawn, because its other end is in another file; the group's note names
+those tables and the group each belongs to, so the reader knows where to
+go next. The note is emitted from both sides, so =alpha= names =c_tbl
+(beta)= and =beta= names =b_tbl (alpha)=.
+
+*The index.* It names every group, the file that group is drawn in and
+the tables it holds, and draws no columns and no keys, so it stays the
+starting point without being another picture to read.
+
+The generator writes the group files beside =--output= and the index to
+=--output= itself, so the shell script, the CMake target and the check
+needed only the new =--index-template=. =--check= now walks every file
+and reports each stale or missing one rather than the first.

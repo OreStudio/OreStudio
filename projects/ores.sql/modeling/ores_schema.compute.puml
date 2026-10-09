@@ -1,0 +1,431 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — compute
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: compute
+Tables: 12
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== compute (Distributed Compute Grid (BOINC)) ====================
+'
+package "compute" #EDE7F6 {
+    entity ores_compute_app_version_platforms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * app_version_id : uuid <<PK, FK>>
+        * platform_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * package_uri : text
+        * sha256 : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_app_version_platforms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    App Version Platform Table
+    Associates app versions with the platforms they support, and carries the URI
+    of the per-platform packaged bundle (a .tar.gz containing the wrapper+engine
+    binaries built for that target triplet). Each (app_version, platform) row
+    owns its own package_uri, so the orchestrator can dispatch per-triplet
+    assignments without the wrapper needing to negotiate package selection.
+    The junction uses the full generated stack: NATS protocol, handler
+    and registrar. The generated list_by_app_version op returns the
+    platform rows enriched with the platform code. Both it and the write
+    and remove ops are consumed by the ores.shell compute commands and by the
+    repository tests.
+    end note
+
+    entity ores_compute_app_versions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * app_id : uuid <<FK>>
+        * wrapper_version : text
+        * engine_version : text
+        * min_ram_mb : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_app_versions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    App Version Table
+    Combines a specific wrapper version with a specific engine version. The BOINC
+    equivalent of 'app_version'. Per-platform package artefacts are tracked in
+    ores_compute_app_version_platforms_tbl — each (app_version, platform) row owns
+    the URI of its own packaged bundle.
+    end note
+
+    entity ores_compute_apps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_apps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    App Table
+    Represents the high-level definition of an engine that can be executed on
+    grid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of 'app'.
+    end note
+
+    entity ores_compute_batch_dependencies_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
+        * parent_batch_id : uuid <<PK, FK>>
+        * child_batch_id : uuid <<PK, FK>>
+        --
+    }
+
+    note right of ores_compute_batch_dependencies_tbl
+    Records directed dependencies between batches forming a DAG.
+    A child batch should not start until its parent batch is complete.
+    end note
+
+    entity ores_compute_batches_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * external_ref : text
+        * status : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_batches_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Batch Table
+    Tracks the lifecycle of a collection of workunits that together constitute a
+    financial computation (e.g., a risk report run). The Assimilator monitors
+    batch completion to trigger downstream report generation.
+    end note
+
+    entity ores_compute_grid_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * sampled_at : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * total_hosts : integer
+        * online_hosts : integer
+        * idle_hosts : integer
+        * results_inactive : integer
+        * results_unsent : integer
+        * results_in_progress : integer
+        * results_done : integer
+        * total_workunits : integer
+        * total_batches : integer
+        * active_batches : integer
+        * outcomes_success : integer
+        * outcomes_client_error : integer
+        * outcomes_no_reply : integer
+    }
+
+    note right of ores_compute_grid_samples_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Grid Sample Table
+    One snapshot of the grid, written by the compute service's poller on its
+    own interval. The counters mirror what the database holds at that moment,
+    so a dashboard reads one stored row rather than aggregating on every
+    refresh.
+    The table is append-only and carries no validity window: a sample is a
+    fact about an instant, and nothing edits it. That is why the model states
+    :current_state:, which drops the transaction-time pair the bi-temporal
+    shape would add and lets the partition column sit in the primary key.
+    The reads the codegen cannot express live beside it. A per-node newest row
+    is a DISTINCT ON (host_id) and the live summary is a call to
+    ores_compute_grid_stats_fn, so both stay hand-written in
+    compute_telemetry_repository.
+    A sample describes the installation's own grid, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
+    end note
+
+    entity ores_compute_hosts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * external_id : text <<FK>>
+          location : text
+        * cpu_count : integer
+        * ram_mb : bigint
+          gpu_type : text
+          display_name : text
+        * credit_total : numeric
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_hosts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Host Table
+    Represents a physical or virtual machine that participates in the BOINC-inspired
+    compute grid. Tracks hardware capabilities, heartbeat, and accumulated credit.
+    end note
+
+    entity ores_compute_node_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * sampled_at : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * host_id : uuid <<FK>>
+        * tasks_completed : integer
+        * tasks_failed : integer
+        * tasks_since_last : integer
+        * avg_task_duration_ms : bigint
+        * max_task_duration_ms : bigint
+        * input_bytes_fetched : bigint
+        * output_bytes_uploaded : bigint
+        * seconds_since_hb : integer
+    }
+
+    note right of ores_compute_node_samples_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Node Sample Table
+    One wrapper node's report, published fire-and-forget on
+    compute.v1.ops.node_sample and written here by the service. The
+    rows are append-only, one per node per interval, and the dashboard shows
+    the newest row of each node.
+    The model states :current_state: for the same reason grid_sample does:
+    a sample is a fact about an instant, so the bi-temporal pair has no
+    meaning on it.
+    The per-node newest read stays hand-written. It is a
+    DISTINCT ON (host_id) over the installation's rows, which no generated read
+    expresses: a read by host_id returns one node's rows, and a read of the
+    newest returns the grid's newest and not one row per node.
+    A sample describes the installation's own fleet, not one tenant's slice of
+    it, so the table carries :rls_own_or_system_tenant_rows:: every session
+    reads the system tenant's rows, and writes stay the current tenant's. The
+    C++ read states :tenant_read_scope: shared, so it adds no tenant
+    predicate and the policy decides.
+    end note
+
+    entity ores_compute_platforms_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+        * display_name : text
+        * description : text
+        * os_family : text
+        * cpu_arch : text
+          abi : text
+        * is_active : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_platforms_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Platform Table
+    A target a wrapper and engine can be built for, named by its triplet code
+    (for example x64-linux). A package belongs to an app version and a
+    platform, so the orchestrator matches incoming workunits against the host's
+    triplet through this row.
+    The platform registry is a global one: the platform rows ship under the
+    system tenant and every tenant reads them, which
+    :system_tenant_visible: true states on the repository.
+    is_active retires a triplet without deleting it, so a package that names
+    it still resolves. It is a plain column and not a declared filter, because
+    the generated read refuses a filter, and a filter the service rejects is
+    worse than no filter at all.
+    end note
+
+    entity ores_compute_results_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * workunit_id : uuid <<FK>>
+          host_id : uuid <<FK>>
+        * server_state : integer
+          outcome : integer
+          output_uri : text
+          error_message : text
+          received_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_results_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Result Table
+    Bridges the workunit definition and the actual execution on a grid node.
+    Tracks the server-side lifecycle (Inactive/Unsent/InProgress/Done) and the
+    location of output data. The BOINC equivalent of 'result'.
+    The entity carries no change-reason cache: the grid machinery writes results
+    and there is no human edit flow.
+    Generator-signature exception: the generator takes only the generation
+    context; a caller that needs a specific workunit links it by member
+    assignment after generation. No parameterized overload or model knob is
+    needed.
+    result declares no key field, so callers address it by its storage key.
+    end note
+
+    entity ores_compute_workflow_batch_links_tbl  #F7E5FF {
+        * batch_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * workflow_step_id : text <<FK>>
+        * workflow_instance_id : text <<FK>>
+        * created_at : timestamptz
+    }
+
+    note right of ores_compute_workflow_batch_links_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workflow Batch Link Table
+    When a submit_compute workflow step runs, the service creates a batch and
+    records one row here that names the step and the step's instance. The
+    bridge polls this table, and when the batch reaches a terminal state it
+    publishes step_completed_event and deletes the row.
+    The table has no validity window and carries no audit tail: the row is a
+    note that a step is outstanding, and it is deleted rather than closed. The
+    model therefore states :current_state: and :no_audit_columns:.
+    The one decision the model records is the read scope. The bridge is a
+    service-level poller, not a caller acting for one tenant, so it reads
+    every tenant's links and deletes each under the tenant that owns it. That
+    is why the model states :tenant_read_scope: shared, which leaves the
+    tenant filter to row-level security rather than adding one on top, and
+    :rls_system_tenant_visible:, which is what lets the service's
+    system-tenant session see rows the tenant owns. Mutations stay
+    tenant-scoped, so the delete names the link's own tenant.
+    end note
+
+    entity ores_compute_workunits_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * batch_id : uuid <<FK>>
+        * app_version_id : uuid <<FK>>
+        * input_uri : text
+          config_uri : text
+        * priority : integer
+        * target_redundancy : integer
+          canonical_result_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_compute_workunits_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Workunit Table
+    Defines the problem to be solved: which app version to use, where the input
+    data lives, and how many times to run it for redundancy. The BOINC equivalent
+    of 'workunit'. Does not track execution state — that belongs to results.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_compute_apps_tbl ||--o{ ores_compute_app_versions_tbl : "has"
+ores_compute_workunits_tbl ||--o{ ores_compute_results_tbl : "has"
+ores_compute_hosts_tbl ||--o{ ores_compute_results_tbl : "has"
+ores_compute_batches_tbl ||--o{ ores_compute_workunits_tbl : "has"
+ores_compute_app_versions_tbl ||--o{ ores_compute_workunits_tbl : "has"
+ores_compute_results_tbl ||--o{ ores_compute_workunits_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.compute.puml"
+' End:
+@enduml

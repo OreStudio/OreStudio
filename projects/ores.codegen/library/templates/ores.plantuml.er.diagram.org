@@ -47,7 +47,7 @@ The full template source. Edit here and re-tangle with
 '
 @startuml
 
-title ORES Database Schema
+title ORES Database Schema — {{diagram_title}}
 hide circle
 skinparam linetype ortho
 
@@ -57,19 +57,20 @@ skinparam packageStyle rectangle
 skinparam nodesep 8
 skinparam ranksep 20
 
-note as SchemaNote
-ORES Database Schema
-
-Packages grouped by domain:
-- iam: Identity & Access Management
-- assets: Digital Assets
-- refdata: Reference Data
-- dq_*: Data Quality (staging, datasets, methodology, metadata)
-- variability, telemetry, geo: Supporting services
-
+note as GroupNote
+Group: {{diagram_title}}
+Tables: {{group_table_count}}
+Index and the other groups: {{index_file}}
 Table naming: <component>_<entity>_tbl
 end note
 
+{{#external_note}}
+note as OtherGroups
+Keys this group states reach into:
+{{external_note}}
+end note
+
+{{/external_note}}
 {{#packages}}
 '
 ' ==================== {{name}} ({{description}}) ====================
@@ -107,7 +108,67 @@ package "{{name}}" {{color}} {
 {{/relationships}}
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar {{source_file}}"
+' End:
+@enduml
+#+end_src
+
+* Index
+
+The schema outgrew one picture, so the generator writes one diagram per
+group and this page to name them. It holds every table, so it stays the
+starting point without drawing a single column or key.
+
+#+begin_src mustache :tangle plantuml_er_index.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: {{generated_at}}
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — index
+hide circle
+skinparam linetype ortho
+
+note as IndexNote
+{{total_tables}} tables in {{package_count}} groups.
+Each group is drawn in its own file, named under its heading.
+Table naming: <component>_<entity>_tbl
+end note
+
+{{#packages}}
+entity "{{name}}" as {{name}} {
+{{#tables}}
+  {{name}}
+{{/tables}}
+}
+note bottom of {{name}}
+{{description}}
+{{table_count}} tables — {{file}}
+end note
+
+{{/packages}}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar {{source_file}}"
 ' End:
 @enduml
 #+end_src

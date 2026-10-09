@@ -1,4 +1,3 @@
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/assets.org. Edit the org source. }}
 ' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
@@ -17,12 +16,12 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: {{generated_at}}
+' Generated: 2026-10-09T13:18:53.298820Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
 
-title ORES Database Schema — {{diagram_title}}
+title ORES Database Schema — geo
 hide circle
 skinparam linetype ortho
 
@@ -33,56 +32,36 @@ skinparam nodesep 8
 skinparam ranksep 20
 
 note as GroupNote
-Group: {{diagram_title}}
-Tables: {{group_table_count}}
-Index and the other groups: {{index_file}}
+Group: geo
+Tables: 1
+Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
-{{#external_note}}
-note as OtherGroups
-Keys this group states reach into:
-{{external_note}}
-end note
-
-{{/external_note}}
-{{#packages}}
 '
-' ==================== {{name}} ({{description}}) ====================
+' ==================== geo (Geolocation) ====================
 '
-package "{{name}}" {{color}} {
-{{#tables}}
-    entity {{name}} {{stereotype}} {{color}} {
-{{#primary_key.columns}}
-        * {{name}} : {{type}} {{#is_fk}}<<PK, FK>>{{/is_fk}}{{^is_fk}}<<PK>>{{/is_fk}}
-{{/primary_key.columns}}
+package "geo" #FFF9C4 {
+    entity ores_geo_ip2country_tbl  #F7E5FF {
         --
-{{#columns}}
-{{^is_pk}}
-        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}}{{#is_fk}} <<unique, FK>>{{/is_fk}}{{^is_fk}} <<unique>>{{/is_fk}}{{/is_unique}}{{^is_unique}}{{#is_fk}} <<FK>>{{/is_fk}}{{/is_unique}}
-{{/is_pk}}
-{{/columns}}
+        * ip_range : int8range
+        * tenant_id : uuid <<FK>>
+        * country_code : text <<FK>>
     }
 
-{{#description}}
-    note right of {{name}}
-    {{description}}
+    note right of ores_geo_ip2country_tbl
+    IP range to country code mapping.
+    Uses GiST index for fast lookups.
     end note
 
-{{/description}}
-{{/tables}}
 }
 
-{{/packages}}
 
 '
 ' ==================== Relationships ====================
 '
-{{#relationships}}
-{{from_table}} {{cardinality}} {{to_table}} : "{{label}}"
-{{/relationships}}
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar {{source_file}}"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.geo.puml"
 ' End:
 @enduml

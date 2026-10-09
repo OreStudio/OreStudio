@@ -1,0 +1,1044 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — dq_staging
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: dq_staging
+Tables: 57
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== dq_staging (Data Staging) ====================
+'
+package "dq_staging" #F3E5F5 {
+    entity ores_dq_account_contact_informations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * account_username : text
+          street_line_1 : text
+          street_line_2 : text
+          city : text
+          state : text
+          country_code : text <<FK>>
+          postal_code : text
+          phone : text
+          email : text
+          web_page : text
+    }
+
+    note right of ores_dq_account_contact_informations_artefact_tbl
+    An account's address/phone/email/web page fields. The account's real name lives on ores_iam_accounts_tbl itself (full_name), not here — this entity is purely "how to reach them", not "who they are". One contact record per account (unlike party contact information, which allows several by contact_type — a person doesn't need a Legal/ Operations/Settlement/Billing split). The record is personal data, so the generated reads are not open to every signed-in caller: iam.v1.account_contact_informations.list, get and list_by_account_id require iam::account_contact_informations:read, as every generated read requires its resource's read code. A person reads their own record through iam.v1.ops.get_my_account_contact_information, which takes no account id, and writes it through update-self; both are in [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. - Artefact Table
+    end note
+
+    entity ores_dq_account_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_account_types_artefact_tbl
+    Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table
+    end note
+
+    entity ores_dq_accounts_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * username : text
+          full_name : text
+        * email : text
+        * password_hash : text
+        * account_type : text
+          business_unit_code : text
+          role : text
+          job_title : text
+          reports_to_username : text
+          photo_key : text
+    }
+
+    note right of ores_dq_accounts_artefact_tbl
+    An account that can authenticate against the system: one row per user, service, algorithm or LLM identity, carrying the name it signs in with, the email address and the optional profile and reporting links. The table is bi-temporal and audited (see projects/ores.sql/create/iam/iam_accounts_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion, so the model takes the ordinary audited shape and needs no shape flag. The secret material lives apart, in [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]]. Held here, a profile write replaced the whole row, and the column the domain type could not carry came back empty. Every column this model declares reaches the domain type, so a whole-row write is lossless, and no write through this entity can touch a credential. The table is a composite parent: ores_iam_accounts_touch_version_fn lets a child entity (account contact information, party association) bump this account's own version when the child is written. The model declares :generate_touch_function: true, which renders that function under its existing name rather than leaving it hand-written. The model describes the table and nothing else. image_id and reports_to_account_id are nullable UUID soft references. The hand-written domain struct represented both as a plain boost::uuids::uuid with a nil sentinel, on the claim that a second std::optional<boost::uuids::uuid> member corrupts reflect-cpp aggregate serialisation for multi-element vectors. Re-verified under the generated estate: all three nullable UUIDs are modelled as std::optional<boost::uuids::uuid>, and the api suite's multi-element JSON and table tests plus the core repository's five-account round trip pass, so the workaround is not needed here. The generated read surface is live, and it does not collide with the hand-written one. The hand-written account_operations_protocol.hpp owns the writes, iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq}, and the generated account_protocol.hpp owns the reads, iam.v1.accounts.list and iam.v1.accounts.get, with the version reads alongside them. Both registrars are composed in ores.iam/core/src/messaging/registrar.cpp. This entity sets :read_only: true, so the generated half carries no write verb and the split falls out of the flag rather than out of a suppression. The row holds the account holder's own name and mail address, so the generated reads are not open to every signed-in caller: the generated iam.v1.accounts.list and iam.v1.accounts.get handlers require iam::accounts:read before they serve anything, as every generated read requires its resource's read code. See [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Two behavioural facets are switched off, each with a reason: - The entity's CRUD handler and sub-registrar, because the hand-written account_operations_handler already owns the write verbs. - The generated CRUD service, because the hand-written account_operations_service is the authentication surface (login, lock, unlock, password change and reset, party selection, service-credential check) and the generated service's get_account_history(id) collides in name and signature with the hand-written get_account_history(username) while meaning a different read. - Artefact Table
+    end note
+
+    entity ores_dq_asset_classes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_asset_classes_artefact_tbl
+    Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table
+    end note
+
+    entity ores_dq_asset_measures_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_asset_measures_artefact_tbl
+    The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table
+    end note
+
+    entity ores_dq_badge_definitions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * background_colour : text
+        * text_colour : text
+        * severity_code : text
+          css_class : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_badge_definitions_artefact_tbl
+    The badge catalogue. Each entry defines the complete visual presentation of a badge: display label, tooltip, background colour, text colour, severity level, and an optional Bootstrap CSS class hint for browser rendering. Badge definitions are the single source of truth for all badge visual metadata across UI clients. They are loaded at client startup as reference data and looked up at render time via BadgeCache. - Artefact Table
+    end note
+
+    entity ores_dq_badge_mappings_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code_domain_code : text
+        * entity_code : text
+        * badge_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_badge_mappings_artefact_tbl
+    Badge Mapping - Artefact Table
+    end note
+
+    entity ores_dq_badge_severities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_badge_severities_artefact_tbl
+    Reference data defining severity levels used to classify badges. Codes align with Bootstrap 5 contextual classes so browser rendering requires no translation layer. Values: secondary, info, success, warning, danger, primary. - Artefact Table
+    end note
+
+    entity ores_dq_benchmark_rates_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_benchmark_rates_artefact_tbl
+    FpML Benchmark rates - Artefact Table
+    end note
+
+    entity ores_dq_books_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+        * parent_portfolio_id : uuid <<FK>>
+        * functional_currency : text
+          gl_account_ref : text
+          cost_center : text
+        * book_status : text
+        * regulatory_book_type : text
+        * is_sweepable : boolean
+          rates_centre_code : text
+    }
+
+    note right of ores_dq_books_artefact_tbl
+    Operational ledger leaves. The only entity that holds trades. Serves as the basis for accounting, ownership, and regulatory capital treatment. Must belong to exactly one portfolio. - Artefact Table
+    end note
+
+    entity ores_dq_business_centres_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_business_centres_artefact_tbl
+    The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets. - Artefact Table
+    end note
+
+    entity ores_dq_business_processes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_business_processes_artefact_tbl
+    Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table
+    end note
+
+    entity ores_dq_business_units_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * unit_name : text
+          parent_business_unit_id : uuid <<FK>>
+          unit_code : text
+          business_centre_code : text
+          unit_type_code : text
+    }
+
+    note right of ores_dq_business_units_artefact_tbl
+    Represents internal organizational units (e.g., desks, departments, branches). Supports hierarchical structure via self-referencing parent_business_unit_id. Each unit belongs to a top-level legal entity (party). - Artefact Table
+    end note
+
+    entity ores_dq_calendar_events_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * calendar_code : text
+        * event_date : date
+        * diary_entry_type : text
+        * name : text
+          description : text
+          source : text
+    }
+
+    note right of ores_dq_calendar_events_artefact_tbl
+    One row per dated diary entry on a [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]: a central-bank meeting, a scheduled data release, or an open-ended other event. One table for all event kinds -- never a table per calendar or per type (settled 2026-08-09, story Decision D1; see [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]). The diary_entry_type column classifies the entry via the open-ended [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][diary_entry_type]] vocabulary (holiday, central_bank_meeting, data_release, other). Holidays themselves keep their existing machinery (calendar_rules, calendar_exceptions, calendar_date) -- the holiday type stays in the vocabulary so the whole classification lives in one place, even though its physical home is elsewhere. Template/Instance: an event row is an *instance*; its template is the (calendar, diary_entry_type, name) triple. A worked case: the FOMC's eight regularly scheduled meetings per year are entered as a short run of central_bank_meeting instances on the US.FOMC calendar, transcribed from the Fed's published calendar with source='federalreserve.gov'. Formulaic recurrence generation is deferred; calendar_rules's grammar can later feed a template link if a consumer needs it. - Artefact Table
+    end note
+
+    entity ores_dq_calendar_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_calendar_types_artefact_tbl
+    Reference data classifying what a calendar represents. Values include: public_holiday, central_bank_meeting, financial_centre, data_release, other. Lets a single calendar table hold heterogeneous entries (a national holiday calendar, a central bank's meeting schedule, a financial-centre business-day calendar) without collapsing their distinct provenance. - Artefact Table
+    end note
+
+    entity ores_dq_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * calendar_type : text
+        * country_code : text <<FK>>
+          image_id : uuid <<FK>>
+        * source : text
+        * is_editable : boolean
+          base_calendar_code : text
+    }
+
+    note right of ores_dq_calendars_artefact_tbl
+    Validated enumeration of named date collections consumed by ORE and QuantLib: business-day/holiday calendars (TARGET, UnitedStates, UnitedStates.GovernmentBond, ...), central-bank meeting calendars, and other calendar-shaped reference data. Each row is one concrete QuantLib/ORE calendar token — sub-market variants (e.g. UnitedStates.NYSE vs UnitedStates.GovernmentBond) are separate rows, not a joined variant field, so the code column always matches ORE's XML <Calendar> vocabulary verbatim. Classified by [[id:1A454661-81B5-4F8F-93A6-06547412DD84][calendar_type]] and associated with the [[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] whose calendar it is — supranational calendars (TARGET) use the ZZ sentinel (ISO 3166-1's own reserved user-assigned code) rather than a nullable country reference, since no single country owns them. - Artefact Table
+    end note
+
+    entity ores_dq_cashflow_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_cashflow_types_artefact_tbl
+    The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table
+    end note
+
+    entity ores_dq_code_domains_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_code_domains_artefact_tbl
+    A code domain is a classification registry that names the context in which a code value exists. It disambiguates identical codes used in different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE' in book_status. Code domains are reusable beyond badges: any future system needing to namespace code values (validation rules, audit customisation, etc.) can reference this table. - Artefact Table
+    end note
+
+    entity ores_dq_coding_schemes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * authority_type : text <<FK>>
+        * subject_area_name : text
+        * domain_name : text
+          uri : text
+        * description : text
+    }
+
+    note right of ores_dq_coding_schemes_artefact_tbl
+    A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
+    end note
+
+    entity ores_dq_counterparty_aliases_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id_value : text
+        * version : integer
+        * id_scheme : text
+        * lei : text
+          description : text
+    }
+
+    note right of ores_dq_counterparty_aliases_artefact_tbl
+    A name a source system uses for a counterparty, such as the CPTY_A an ORE document puts in its envelope, staged with the identifier scheme it belongs to and the LEI of the counterparty it names. A counterparty's id differs from tenant to tenant, so the alias names it by LEI; publishing resolves the LEI to the tenant's counterparty and writes the alias as a counterparty identifier. - Artefact Table
+    end note
+
+    entity ores_dq_countries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * alpha2_code : text
+        * version : integer
+        * alpha3_code : text
+        * numeric_code : text
+        * name : text
+        * official_name : text
+          image_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_countries_artefact_tbl
+    ISO 3166-1 country definitions used for reference data. Countries use alpha-2, alpha-3, and numeric codes per the ISO standard. - Artefact Table
+    end note
+
+    entity ores_dq_crm_topology_bundles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * crm_name : text
+        * pivot_currency_code : text
+        * base_currency_code : text
+        * quote_currency_code : text
+        * row_kind : text
+    }
+
+    entity ores_dq_csas_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * netting_set_code : text
+        * version : integer
+        * is_active : boolean
+          bilateral : text
+          csa_currency : text
+          index_name : text
+          threshold_pay : double
+          threshold_receive : double
+          minimum_transfer_amount_pay : double
+          minimum_transfer_amount_receive : double
+          independent_amount_held : double
+          independent_amount_type : text
+          call_frequency : text
+          post_frequency : text
+          margin_period_of_risk : text
+          collateral_compounding_spread_receive : double
+          collateral_compounding_spread_pay : double
+          apply_initial_margin : boolean
+          initial_margin_type : text
+          calculate_im_amount : boolean
+          calculate_vm_amount : boolean
+          non_exempt_im_regulations : text
+          eligible_currencies : text
+    }
+
+    note right of ores_dq_csas_artefact_tbl
+    The credit support annex of a netting set, with the terms ORE reads from a netting set definition. The set is named by code; publishing resolves it in the target tenant. The eligible collateral currencies are a comma separated list in posting order. - Artefact Table
+    end note
+
+    entity ores_dq_currencies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * iso_code : text
+        * version : integer
+        * name : text
+        * numeric_code : text
+        * symbol : text
+        * fraction_symbol : text
+        * fractions_per_unit : integer
+        * rounding_type : text
+        * rounding_precision : integer
+        * format : text
+        * monetary_nature : text
+        * market_tier : text
+          ore_currency_type : text
+          image_id : uuid <<FK>>
+        * spot_days : integer
+        * day_basis : text
+        * base_precedence : integer
+          holiday_calendar : text
+    }
+
+    note right of ores_dq_currencies_artefact_tbl
+    ISO 4217 currency definitions used for reference data. Currencies are managed per-tenant and drive financial calculations, rounding, and display formatting across the system. - Artefact Table
+    end note
+
+    entity ores_dq_currency_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_iso_code : text
+        * calendar_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_currency_calendars_artefact_tbl
+    Currency Calendar - Artefact Table
+    end note
+
+    entity ores_dq_currency_countries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_iso_code : text
+        * country_alpha2_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_currency_countries_artefact_tbl
+    Currency Country - Artefact Table
+    end note
+
+    entity ores_dq_currency_pair_convention_calendars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * calendar_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_currency_pair_convention_calendars_artefact_tbl
+    Currency Pair Convention Calendar - Artefact Table
+    end note
+
+    entity ores_dq_currency_pair_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * version : integer
+        * pip_factor : double
+        * tick_size : double
+        * decimal_places : integer
+          advance_calendar : text
+          business_day_convention : text
+          spot_relative : boolean
+          end_of_month : boolean
+    }
+
+    note right of ores_dq_currency_pair_conventions_artefact_tbl
+    Quoting and date-convention fields for a currency pair — pip factor, tick size, calendars, business day convention, spot-relative/end-of- month flags — folded in from the retired fx_convention entity (see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]). Keyed 1:1 by pair_code, the same value space as [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]]'s own primary key — every pair has at most one convention record, so a separate identifier scheme would be pure overhead. Like every other soft-FK relationship in this codebase, pair_code is validated via trigger, not a hard DB foreign key. - Artefact Table
+    end note
+
+    entity ores_dq_currency_pairs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * pair_code : text
+        * version : integer
+        * base_currency : text
+        * quote_currency : text
+        * classification : text
+    }
+
+    note right of ores_dq_currency_pairs_artefact_tbl
+    Currency pair identity: base/quote legs, deliverability, classification, and fixing source. Conventions (pip factor, tick size, calendars, business day convention) live 1:1 in [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]], matching the codebase's existing *_convention entity family. spot_days, calendars, and G11 membership are *derived* at read time from the two legs, not stored here — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the full design rationale. - Artefact Table
+    end note
+
+    entity ores_dq_entity_classifications_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_entity_classifications_artefact_tbl
+    Financial Entity Indicator as defined by the CFTC. - Artefact Table
+    end note
+
+    entity ores_dq_image_tags_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * image_id : uuid <<FK>>
+        * tag_id : uuid <<FK>>
+    }
+
+    note right of ores_dq_image_tags_artefact_tbl
+    Image Tag - Artefact Table
+    end note
+
+    entity ores_dq_images_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * image_id : uuid <<FK>>
+        * version : integer
+        * key : text
+        * description : text
+        * mime_type : text
+        * data : text
+    }
+
+    note right of ores_dq_images_artefact_tbl
+    An image is a named document the platform renders, such as a currency flag or a commodity icon. The bytes are format-agnostic: an SVG document, a JPEG, or any other media type mime_type names. The database stores them base64-encoded in a text column, and the domain type carries the raw bytes. Images carry tags through the image_tag junction, and an image arrives either by upload or from the data-quality publish path. - Artefact Table
+    end note
+
+    entity ores_dq_ip2country_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * range_start : bigint
+        * range_end : bigint
+        * country_code : text <<FK>>
+    }
+
+    note right of ores_dq_ip2country_artefact_tbl
+    Staging table for IPv4 to country mapping data from iptoasn.com.
+    Data is imported here first, then promoted to geo_ip2country_tbl.
+    end note
+
+    entity ores_dq_lei_bic_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * lei : text
+        * version : integer
+        * bic : text
+    }
+
+    note right of ores_dq_lei_bic_artefact_tbl
+    GLEIF LEI to BIC mapping data - Artefact Table
+    end note
+
+    entity ores_dq_lei_entities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * lei : text
+        * version : integer
+        * entity_legal_name : text
+        * entity_entity_category : text
+          entity_entity_sub_category : text
+        * entity_entity_status : text
+          entity_legal_form_entity_legal_form_code : text
+          entity_legal_form_other_legal_form : text
+          entity_legal_jurisdiction : text
+          entity_legal_address_first_address_line : text
+          entity_legal_address_city : text
+          entity_legal_address_region : text
+        * entity_legal_address_country : text
+          entity_legal_address_postal_code : text
+          entity_headquarters_address_first_address_line : text
+          entity_headquarters_address_city : text
+          entity_headquarters_address_region : text
+          entity_headquarters_address_country : text
+          entity_headquarters_address_postal_code : text
+          entity_entity_creation_date : timestamptz
+          registration_initial_registration_date : timestamptz
+          registration_last_update_date : timestamptz
+          registration_next_renewal_date : timestamptz
+          registration_registration_status : text
+          entity_transliterated_name_1 : text
+          entity_transliterated_name_1_type : text
+    }
+
+    note right of ores_dq_lei_entities_artefact_tbl
+    GLEIF LEI entity master data from LEI2 golden copy files - Artefact Table
+    end note
+
+    entity ores_dq_lei_relationships_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * relationship_start_node_node_id : text <<FK>>
+        * version : integer
+        * relationship_start_node_node_id_type : text
+        * relationship_end_node_node_id : text <<FK>>
+        * relationship_end_node_node_id_type : text
+        * relationship_relationship_type : text
+        * relationship_relationship_status : text
+          relationship_period_1_start_date : timestamptz
+          relationship_period_1_end_date : timestamptz
+          registration_initial_registration_date : timestamptz
+          registration_last_update_date : timestamptz
+          registration_registration_status : text
+          registration_validation_sources : text
+    }
+
+    note right of ores_dq_lei_relationships_artefact_tbl
+    GLEIF LEI corporate hierarchy relationships from RR golden copy files - Artefact Table
+    end note
+
+    entity ores_dq_local_jurisdictions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_local_jurisdictions_artefact_tbl
+    This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table
+    end note
+
+    entity ores_dq_market_data_observations_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * oresmd_uri : text
+        * key : text
+        * datum_uri : text
+        * observation_date : date
+        * value : numeric
+        * source : text
+          source_url : text
+          retrieved_at : timestamptz
+    }
+
+    entity ores_dq_netting_agreements_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * agreement_number : text
+        * version : integer
+        * counterparty_lei : text
+        * agreement_type : text
+          governing_law : text
+          description : text
+    }
+
+    note right of ores_dq_netting_agreements_artefact_tbl
+    A master netting agreement, such as an ISDA Master Agreement, between the party a publish targets and a counterparty. The counterparty is named by LEI, because its id differs from tenant to tenant, and the party is the one the publish names: a staged agreement belongs to no party until published. - Artefact Table
+    end note
+
+    entity ores_dq_netting_set_aliases_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id_value : text
+        * version : integer
+        * id_scheme : text
+        * netting_set_code : text
+          description : text
+    }
+
+    note right of ores_dq_netting_set_aliases_artefact_tbl
+    A name a source system uses for a netting set, such as the CPTY_A an ORE document puts in a trade's envelope, staged with the identifier scheme it belongs to and the code of the set it names. Publishing resolves the code in the target tenant and writes the alias as a netting set identifier. - Artefact Table
+    end note
+
+    entity ores_dq_netting_sets_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          agreement_number : text
+          counterparty_lei : text
+          call_type : text
+          initial_margin_type : text
+          risk_weight : double
+          description : text
+    }
+
+    note right of ores_dq_netting_sets_artefact_tbl
+    A netting set of the party a publish targets. It names its master agreement by number and its counterparty by LEI; publishing resolves both in the target tenant. A set with no agreement holds trades that do not net. - Artefact Table
+    end note
+
+    entity ores_dq_party_relationships_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_party_relationships_artefact_tbl
+    Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table
+    end note
+
+    entity ores_dq_party_roles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_party_roles_artefact_tbl
+    Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table
+    end note
+
+    entity ores_dq_payment_frequencies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * period_unit : text
+          period_multiplier : integer
+        * display_order : integer
+    }
+
+    note right of ores_dq_payment_frequencies_artefact_tbl
+    Reference data table for how often a leg's cashflows occur, sourced from ORE's authoritative frequencyType enumeration (external/ore/xsd/ore_types.xsd) -- Once, Annual, Semiannual, Quarterly, Bimonthly, Monthly, Lunarmonth, Weekly, Daily (the canonical long-form names; ORE also accepts single-letter aliases -- Z/A/S/Q/B/M/L/W/D -- not modelled here since this table's code is the long form other components store and display). Each row carries a period_unit/period_multiplier pair reusing [[id:01E76440-B9A5-4D0A-A32C-B0C4A7484B26][tenor_unit]]'s own vocabulary (DAY/WEEK/MONTH/YEAR, plus the NONE sentinel for Once, which has no periodic step at all -- a single payment at termination), so a caller building a payment schedule (e.g. the IR Curve Template's swap fixed leg) can reuse the exact same period-stepping arithmetic ores::refdata::domain::resolve_end_date() already implements for tenors, rather than re-deriving month/day counts from the code string. Not scoped to any single consumer -- this table exists as reusable reference data, the same category as day_count_fraction_type or business_day_convention_type. Managed by the system tenant. This table replaces ores.trading's older payment_frequency_type entity outright -- there is no case for two types modelling the same ORE enumeration ("payment frequency conventions" vs "payment frequencies" is a flimsy distinction); every ores.trading column that stored a payment-frequency code (swap_leg, credit_instrument, commodity_instrument, equity_swap_instrument) now validates against this table instead. See the parent story's * Decisions for the full reasoning. - Artefact Table
+    end note
+
+    entity ores_dq_person_roles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_person_roles_artefact_tbl
+    Indicates the role of a person in a transaction. - Artefact Table
+    end note
+
+    entity ores_dq_portfolios_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          parent_portfolio_id : uuid <<FK>>
+          owner_unit_id : uuid <<FK>>
+        * purpose_type : text
+          aggregation_ccy : text
+        * is_virtual : boolean
+    }
+
+    note right of ores_dq_portfolios_artefact_tbl
+    Represents organizational, risk, or reporting groupings. Never holds trades directly. Supports hierarchical structure via self-referencing parent_portfolio_id. - Artefact Table
+    end note
+
+    entity ores_dq_regulatory_corporate_sectors_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_regulatory_corporate_sectors_artefact_tbl
+    Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table
+    end note
+
+    entity ores_dq_report_definitions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * report_type : text
+        * schedule_expression : text
+        * concurrency_policy : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_report_definitions_artefact_tbl
+    Report Definition artefacts - default report templates for the ORE analytics bundle - Artefact Table
+    end note
+
+    entity ores_dq_reporting_regimes_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_reporting_regimes_artefact_tbl
+    Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table
+    end note
+
+    entity ores_dq_risk_report_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * report_name : text
+        * base_currency : text
+        * observation_model : text
+        * n_threads : integer
+        * market_data_type : text
+        * npv_enabled : integer
+        * cashflow_enabled : integer
+        * curves_enabled : integer
+        * sensitivity_enabled : integer
+        * simulation_enabled : integer
+        * xva_enabled : integer
+        * stress_enabled : integer
+        * parametric_var_enabled : integer
+        * initial_margin_enabled : integer
+        * pfe_enabled : integer
+        * xva_cva_enabled : integer
+        * xva_dva_enabled : integer
+        * xva_fva_enabled : integer
+        * display_order : integer
+    }
+
+    note right of ores_dq_risk_report_configs_artefact_tbl
+    Risk report configuration artefacts - the run settings a seeded report definition resolves. - Artefact Table
+    end note
+
+    entity ores_dq_supervisory_bodies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+          source : text
+          description : text
+    }
+
+    note right of ores_dq_supervisory_bodies_artefact_tbl
+    Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_fx_spot_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * auto_start : boolean
+        * base_currency_code : text
+        * quote_currency_code : text
+        * gmm_initial_price : double
+        * ticks_per_hour : integer
+        * process_type : text
+        * price_source : text
+          vintage_source : text
+          vintage_date : text
+    }
+
+    note right of ores_dq_synthetic_fx_spot_configs_artefact_tbl
+    Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle. Each row is a complete FX config combining the parent market_data_generation_config fields (name, description, enabled) with the FX spot sub-config fields (currency pair, initial price, tick cadence, process type). - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_gmm_components_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * component_index : integer
+          description : text
+        * mean : double
+        * stdev : double
+        * weight : double
+    }
+
+    note right of ores_dq_synthetic_gmm_components_artefact_tbl
+    Synthetic GMM Components artefacts - per-pair Gaussian mixture components
+    backing an fx_spot_configs artefact row, keyed by currency pair within the
+    same dataset - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_ir_curve_configs_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * name : text
+          description : text
+        * enabled : boolean
+        * auto_start : boolean
+        * currency_code : text <<FK>>
+        * index_family : text
+        * tenor : text
+        * process_type : text
+        * kappa : double
+        * theta : double
+        * sigma : double
+        * initial_rate : double
+        * ticks_per_hour : integer
+        * fixed_leg_payment_frequency_code : text
+        * price_source : text
+          vintage_source : text
+          vintage_date : text
+          vintage_series_uri : text
+    }
+
+    note right of ores_dq_synthetic_ir_curve_configs_artefact_tbl
+    Synthetic IR Curve Config artefacts - denormalized parent+child IR curve
+    generation config rows for the synthetic market data bundle - Artefact Table
+    end note
+
+    entity ores_dq_synthetic_ir_curve_template_entries_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * index_family : text
+        * tenor : text
+        * sequence_index : integer
+        * start_tenor_code : text
+        * end_tenor_code : text
+        * instrument_code : text
+    }
+
+    note right of ores_dq_synthetic_ir_curve_template_entries_artefact_tbl
+    Synthetic IR Curve Template Entry artefacts - per-currency Curve Template
+    rows backing an ir_curve_configs artefact row, keyed by currency+index
+    within the same dataset - Artefact Table
+    end note
+
+    entity ores_dq_tags_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * tag_id : uuid <<FK>>
+        * version : integer
+        * name : text
+        * description : text
+    }
+
+    note right of ores_dq_tags_artefact_tbl
+    A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
+    end note
+
+    entity ores_dq_tenor_schedules_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * schedule_source : text
+          calendar_code : text
+          diary_entry_type : text
+    }
+
+    note right of ores_dq_tenor_schedules_artefact_tbl
+    A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]] resolves along (story Decision D2: anchor + calendar offset + n steps). Two kinds today, distinguished by schedule_source: - CLOSED_FORM: the dates come from a closed-form rule evaluated code-side. ROLL_QUARTER is the only instance: the first business day after the 20th of March/June/September/December (the IMM quarterly rule). - EVENT_LOOKUP: the dates come from [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] rows on a named calendar, filtered by diary entry type. FOMC_MEETING is the only instance: central_bank_meeting events on US.FOMC. calendar_code and diary_entry_type are null for closed-form schedules (no event store involved) and required for event-lookup ones -- but the binding is documented, not enforced in the schema. - Artefact Table
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.dq_staging.puml"
+' End:
+@enduml

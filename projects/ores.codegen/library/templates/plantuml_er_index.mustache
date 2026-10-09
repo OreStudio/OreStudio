@@ -22,65 +22,28 @@
 '
 @startuml
 
-title ORES Database Schema — {{diagram_title}}
+title ORES Database Schema — index
 hide circle
 skinparam linetype ortho
 
-' Layout: left-to-right stacks packages vertically
-left to right direction
-skinparam packageStyle rectangle
-skinparam nodesep 8
-skinparam ranksep 20
-
-note as GroupNote
-Group: {{diagram_title}}
-Tables: {{group_table_count}}
-Index and the other groups: {{index_file}}
+note as IndexNote
+{{total_tables}} tables in {{package_count}} groups.
+Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
 
-{{#external_note}}
-note as OtherGroups
-Keys this group states reach into:
-{{external_note}}
-end note
-
-{{/external_note}}
 {{#packages}}
-'
-' ==================== {{name}} ({{description}}) ====================
-'
-package "{{name}}" {{color}} {
+entity "{{name}}" as {{name}} {
 {{#tables}}
-    entity {{name}} {{stereotype}} {{color}} {
-{{#primary_key.columns}}
-        * {{name}} : {{type}} {{#is_fk}}<<PK, FK>>{{/is_fk}}{{^is_fk}}<<PK>>{{/is_fk}}
-{{/primary_key.columns}}
-        --
-{{#columns}}
-{{^is_pk}}
-        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}}{{#is_fk}} <<unique, FK>>{{/is_fk}}{{^is_fk}} <<unique>>{{/is_fk}}{{/is_unique}}{{^is_unique}}{{#is_fk}} <<FK>>{{/is_fk}}{{/is_unique}}
-{{/is_pk}}
-{{/columns}}
-    }
-
-{{#description}}
-    note right of {{name}}
-    {{description}}
-    end note
-
-{{/description}}
+  {{name}}
 {{/tables}}
 }
+note bottom of {{name}}
+{{description}}
+{{table_count}} tables — {{file}}
+end note
 
 {{/packages}}
-
-'
-' ==================== Relationships ====================
-'
-{{#relationships}}
-{{from_table}} {{cardinality}} {{to_table}} : "{{label}}"
-{{/relationships}}
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar {{source_file}}"

@@ -1,0 +1,933 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — iam
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: iam
+Tables: 24
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+note as OtherGroups
+Keys this group states reach into:
+- ores_assets_images_tbl (assets)
+- ores_inbox_approval_decisions_tbl (inbox)
+- ores_inbox_approval_kinds_tbl (inbox)
+- ores_inbox_approval_requests_tbl (inbox)
+- ores_inbox_notification_deliveries_tbl (inbox)
+- ores_inbox_notification_preferences_tbl (inbox)
+- ores_inbox_notification_recipients_tbl (inbox)
+- ores_inbox_notifications_tbl (inbox)
+- ores_refdata_parties_tbl (refdata)
+- ores_refdata_portfolio_rights_tbl (refdata)
+- ores_refdata_sandbox_members_tbl (refdata)
+- ores_refdata_sandboxes_tbl (refdata)
+end note
+
+'
+' ==================== iam (Identity & Access Management) ====================
+'
+package "iam" #E8F4FD {
+    entity ores_iam_account_contact_informations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * account_id : uuid <<FK>>
+          street_line_1 : text
+          street_line_2 : text
+          city : text
+          state : text
+          country_code : text <<FK>>
+          postal_code : text
+          phone : text
+          email : text
+          web_page : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_contact_informations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Contact Information Table
+    An account's address/phone/email/web page fields. The account's real
+    name lives on ores_iam_accounts_tbl itself (full_name), not here —
+    this entity is purely "how to reach them", not "who they are". One
+    contact record per account (unlike party contact information, which
+    allows several by contact_type — a person doesn't need a Legal/
+    Operations/Settlement/Billing split).
+    The record is personal data, so the generated reads are not open to every
+    signed-in caller: iam.v1.account_contact_informations.list, get and
+    list_by_account_id require iam::account_contact_informations:read, as every
+    generated read requires its resource's read code. A person reads their own
+    record through iam.v1.ops.get_my_account_contact_information, which takes no
+    account id, and writes it through update-self; both are in
+    [[id:082C5D76-93C2-41E6-8193-9598B79DD07A][ores.iam.account_messages]]. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+    end note
+
+    entity ores_iam_account_credentials_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * account_id : uuid <<FK>>
+          password_hash : text
+          service_password_hash : text
+          totp_secret : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_credentials_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Credential Table
+    The secret an account proves when it authenticates, held apart from the
+    account's own profile. One row per account, keyed by account_id, and no
+    row for an account that holds no credential.
+    The split exists because the two are written by different access paths.
+    ores.iam.account is the profile: a screen writes it, and every column
+    travels on the wire. This entity is the credential: the IAM service alone
+    writes it, and no column travels anywhere. Held in one table, a profile
+    write replaced the whole row, and a column the domain type could not carry
+    came back empty.
+    Every secret column is :no_wire:, so the domain struct carries the value
+    the service needs while a serialisation of that struct omits it.
+    The table is bi-temporal and audited, like every other iam entity: it
+    carries version, the four audit columns and the valid_from/valid_to
+    pair with the GIST exclusion, so the model takes the ordinary audited
+    shape and needs no shape flag. A credential write therefore keeps its own
+    history, and the account's history never mentions it.
+    The entity is projected across the whole stack, exactly as the account is: SQL
+    schema and notify trigger, domain type, repository, generator, protocol, NATS
+    handler and sub-registrar, generated CRUD service, history provider,
+    presentation mapper, shell command, HTTP route, eventing, and the TypeScript
+    twins. The secrets stay off the wire because the columns are :no_wire:, not
+    because the entity has no wire surface. See [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]].
+    The generated half is reads-only, and that is the specification's answer
+    rather than ours. A write carries "the fields the user owns, and no others",
+    and a server-owned field never appears in one; a credential's only meaningful
+    field is server-derived, so the resource has no write record to carry, and "a
+    read-only resource simply declares no write verb". The credential's writes are
+    domain operations, iam.v1.ops.*.
+    end note
+
+    entity ores_iam_account_parties_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * account_id : uuid <<PK, FK>>
+        * party_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_parties_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Account Party Table
+    Junction table linking IAM accounts to parties. Each account can be
+    associated with one or more parties, controlling which parties a user
+    can act on behalf of.
+    end note
+
+    entity ores_iam_account_roles_tbl <<junction>> #ECECEC {
+        * account_id : uuid <<PK, FK>>
+        * role_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_roles_tbl
+    Many-to-many: accounts to roles.
+    Tracks who assigned the role.
+    end note
+
+    entity ores_iam_account_statuses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * status : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_statuses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Status Table
+    Reference data table defining valid account lifecycle statuses.
+    Examples: 'active', 'pending'.
+    An account is active when it has everything it needs to sign in. It is
+    pending when an administrator has not yet finished setting it up: the
+    account exists, but it holds no party association, so sign-in refuses it
+    with its own code rather than telling the person about a party they have
+    never heard of. The rule both the roster and the sign-in path read is that
+    pending means an administrator has not finished setting this account up.
+    Account statuses are managed by the system tenant and control account
+    access and capabilities.
+    end note
+
+    entity ores_iam_account_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * type : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_account_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Type Table
+    Reference data table defining valid account type classifications.
+    Examples: 'user', 'service', 'algorithm', 'llm'.
+    Account types are managed by the system tenant and are used to
+    categorise accounts for different purposes. User accounts can login
+    with passwords, while service accounts authenticate via sessions only.
+    end note
+
+    entity ores_iam_accounts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * username : text
+        * account_type : text
+        * account_status : text
+          full_name : text
+        * email : text
+          default_party_id : uuid <<FK>>
+          image_id : uuid <<FK>>
+          picture_code : text
+          job_title : text
+          reports_to_account_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_accounts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Account Table
+    An account that can authenticate against the system: one row per user,
+    service, algorithm or LLM identity, carrying the name it signs in with,
+    the email address and the optional profile and reporting links. The table
+    is bi-temporal and audited (see
+    projects/ores.sql/create/iam/iam_accounts_create.sql): it carries
+    version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion, so the model takes the ordinary audited shape
+    and needs no shape flag.
+    The secret material lives apart, in [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]].
+    Held here, a profile write replaced the whole row, and the column the
+    domain type could not carry came back empty. Every column this model
+    declares reaches the domain type, so a whole-row write is lossless, and
+    no write through this entity can touch a credential.
+    The table is a composite parent: ores_iam_accounts_touch_version_fn
+    lets a child entity (account contact information, party association)
+    bump this account's own version when the child is written. The model
+    declares :generate_touch_function: true, which renders that function
+    under its existing name rather than leaving it hand-written.
+    The model describes the table and nothing else. image_id and
+    reports_to_account_id are nullable UUID soft references. The hand-written
+    domain struct represented both as a plain boost::uuids::uuid with a nil
+    sentinel, on the claim that a second
+    std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+    aggregate serialisation for multi-element vectors. Re-verified under
+    the generated estate: all three nullable UUIDs are modelled as
+    std::optional<boost::uuids::uuid>, and the api suite's multi-element
+    JSON and table tests plus the core repository's five-account round trip
+    pass, so the workaround is not needed here.
+    The generated read surface is live, and it does not collide with the
+    hand-written one. The hand-written
+    account_operations_protocol.hpp owns the writes,
+    iam.v1.accounts.{save,delete,update,lock,unlock,change-password,reset-password,select-party,set-default-party,switch-party,update-email,publish-from-dq},
+    and the generated account_protocol.hpp owns the reads,
+    iam.v1.accounts.list and iam.v1.accounts.get, with the version reads
+    alongside them. Both registrars are composed in
+    ores.iam/core/src/messaging/registrar.cpp. This entity sets
+    :read_only: true, so the generated half carries no write verb and the split
+    falls out of the flag rather than out of a suppression.
+    The row holds the account holder's own name and mail address, so the
+    generated reads are not open to every signed-in caller: the generated
+    iam.v1.accounts.list and iam.v1.accounts.get
+    handlers require iam::accounts:read before they serve anything, as every
+    generated read requires its resource's read code. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+    Two behavioural facets are switched off, each with a reason:
+    - The entity's CRUD handler and sub-registrar, because the hand-written
+    account_operations_handler already owns the write verbs.
+    - The generated CRUD service, because the hand-written account_operations_service
+    is the authentication surface (login, lock, unlock, password change
+    and reset, party selection, service-credential check) and the
+    generated service's get_account_history(id) collides in name and
+    signature with the hand-written get_account_history(username) while
+    meaning a different read.
+    end note
+
+    entity ores_iam_auth_events_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * event_time : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * account_id : text <<FK>>
+        * event_type : text
+        * username : text
+        * session_id : text <<FK>>
+        * party_id : text <<FK>>
+        * error_detail : text
+    }
+
+    entity ores_iam_login_info_tbl  #F7E5FF {
+        * account_id : uuid <<PK, FK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * last_ip : inet
+        * last_attempt_ip : inet
+        * failed_logins : integer
+        * locked : boolean
+        * last_login : timestamptz
+        * online : boolean
+        * password_reset_required : boolean
+    }
+
+    note right of ores_iam_login_info_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Login Info Table
+    Login tracking and security state for one account: the last successful
+    login, the running failed-attempt count, the lock and online flags, the
+    forced password-reset flag, and the IP address of the last success and
+    the last attempt. One row per account, keyed by account_id.
+    The table is current-state (see
+    projects/ores.sql/create/iam/iam_login_info_create.sql): it carries no
+    valid_from/valid_to, no GIST exclusion, no version column and no
+    audit tail, unlike the bi-temporal tables every other domain_entity in
+    this component generates. The :current_state: flag in the * SQL **
+    Flags drawer selects that shape. Three suppressions keep the generated
+    DDL at exactly the constraints the hand-written table has:
+    :skip_uuid_check: on account_id drops the nil-UUID check,
+    :skip_check: on the account foreign key drops the account existence
+    check, and the * SQL ** Indexes drawer restates the three hand-written
+    indexes so none is lost.
+    The row states when and from where each account signed in, how many attempts
+    failed and whether the account is locked, so it is not open to every
+    signed-in caller: the generated iam.v1.login_info.list and
+    iam.v1.login_info.get handlers require iam::login_info:read before they
+    serve anything, as every generated read requires its resource's read code.
+    end note
+
+    entity ores_iam_permissions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * code : text
+        * description : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_permissions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Permission Table
+    An atomic permission that can be granted to roles. Permissions follow the
+    hierarchical naming convention component::resource:action (for example
+    iam::accounts:create; "*" grants everything and component::* grants
+    every action within one component).
+    The table is temporal (see
+    projects/ores.sql/create/iam/iam_permissions_create.sql): it carries
+    valid_from/valid_to, the GIST exclusion and the delete rule, but it has
+    no version column and no audit tail -- permissions are system-defined
+    constants seeded from bootstrap data, not user-editable records, so they
+    need no change tracking. The :no_audit_columns: flag in the * SQL **
+    Flags drawer selects exactly that shape: it drops the version column and
+    the four audit columns while keeping the transaction-time window. The
+    :skip_uuid_check: suppression on id drops the nil-UUID check the
+    hand-written table never had.
+    The list is open to every signed-in member: a member reads a role's codes in
+    words, and asks "Can I…?". The model opens it by subject with
+    :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists it. The other reads need iam::permissions:read.
+    end note
+
+    entity ores_iam_role_grant_request_roles_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * role_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+          applied_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_role_grant_request_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_junction_create.mustache
+    To modify, update the template and regenerate.
+    Role Grant Request Role Table
+    The roles an iam.role_grant approval request asks for, one row each. A row is
+    identified by the request and the role. When the request is approved, IAM
+    grants each role the account does not already hold, and records that it
+    applied it.
+    end note
+
+    entity ores_iam_role_grant_requests_tbl <<junction>> #ECECEC {
+        * tenant_id : uuid <<PK, FK>>
+        * request_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * version : integer
+        * account_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_role_grant_requests_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Role Grant Request Table
+    The IAM detail of an iam.role_grant approval request. The request itself, who
+    asked, when, why and where it stands, is the inbox's record; this row names
+    the account that would hold the roles, keyed by the request it details. The
+    roles asked for are rows of [[id:E07B21AB-F875-4549-BDFC-04EE98C246D0][ores.iam.role_grant_request_role]], one each, so a
+    request may ask for many.
+    The account is usually the person who asked, but a system may ask on a
+    person's behalf, so it is a column of its own rather than the request's
+    requested_by.
+    Who asked for which role is not every member's business, so the generated
+    reads require iam::role_grant_requests:read, as every generated read
+    requires its resource's read code. The person who asked reads their own requests
+    through the inbox's inbox.v1.ops.list_my_approval_requests. See
+    [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
+    end note
+
+    entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
+        * role_id : uuid <<PK, FK>>
+        * permission_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * assigned_by : text
+        * assigned_at : timestamptz
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_role_permissions_tbl
+    Many-to-many: roles to permissions.
+    Tracks who changed the bundle, when and why, the same as account_roles.
+    end note
+
+    entity ores_iam_roles_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * is_registration_default : boolean
+        * is_requestable : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_roles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Role Table
+    A named collection of permissions that can be assigned to accounts. Roles
+    group related permissions for easier management: a "Trading" role might
+    include permissions to read and execute trades, while a "Support" role
+    might have read-only access to most resources.
+    The table is bi-temporal and audited (see
+    projects/ores.sql/create/iam/iam_roles_create.sql): it carries
+    version, the four audit columns and the valid_from/valid_to pair
+    with the GIST exclusion and the delete rule, so the model takes the
+    ordinary audited shape and needs no shape flag.
+    The model describes the table alone. The hand-written domain struct also
+    carried a std::vector<std::string> permission_codes that no column
+    backs -- it is denormalised from ores_iam_role_permissions_tbl by an
+    RBAC join. A joined shape is a message or a query result, never an entity
+    member, so the member is not modelled and the generated role.hpp
+    replaces it; the join itself stays in the hand-written authorization
+    layer.
+    The entity's canonical CRUD subjects are generated: role_registrar owns
+    list/get/get-many/put/put-many/delete on iam.v1.roles.*. The
+    authorization operation model declares a different set under the same
+    prefix -- iam.v1.ops.assign_role, .revoke, .by-account,
+    .permissions and .suggest-commands -- so the two coexist rather than
+    compete, and no handler is suppressed here.
+    The list and the get are open to every signed-in member: a member reads the
+    tenant's roles to choose the one to ask for. The model opens them by subject
+    with :open_reads:, and [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised
+    reads]] allow-lists both. The other reads, such as the versions, need
+    iam::roles:read.
+    end note
+
+    entity ores_iam_run_grants_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * resource : text
+        * grantor_account_id : uuid <<FK>>
+        * role_id : uuid <<FK>>
+        * audience : text
+          max_runs : integer
+          not_after : timestamptz
+          revoked_at : timestamptz
+          revoked_by : text
+          revoke_reason : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_run_grants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Run Grant Table
+    A run grant records that a person allows the runs of one resource, such as a
+    scheduled report definition, to act in one tenant and one party with one role.
+    It holds no secret: using it needs a step service's own token and the token
+    exchange, and IAM re-checks the grant and its grantor at every use. It is IAM's
+    form of the Grant Management pattern, and
+    [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] states
+    its checks and its lifecycle.
+    The table is readable over the wire and written only by IAM's own create and
+    revoke operations, which check that the grantor holds the role in the party:
+    :client_read_only: removes the generic write verbs from the wire and keeps
+    the repository writable for those operations.
+    end note
+
+    entity ores_iam_run_token_issues_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * issued_at : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * run_id : text <<FK>>
+        * service : text
+        * grantor_account_id : text <<FK>>
+        * outcome : text
+        * reason : text
+    }
+
+    entity ores_iam_seed_profile_parameters_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * seed_profile_id : uuid <<FK>>
+        * name : text
+        * label : text
+        * data_type : text
+          choices_json : jsonb
+          default_value : text
+        * is_required : boolean
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profile_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Parameter Table
+    The schema of the form that a seed profile presents: one row per
+    parameter, stating the label the form shows, the key a shell command types,
+    the type, the default and whether a value is required. The web builds the
+    tenant form from these rows. The shell takes the same values as
+    =--param key=value=.
+    The declared shape is deliberately small. A profile decides how many
+    counterparties to create and which GLEIF root LEI to import; it does not
+    decide what a step kind does, because that is code.
+    A parameter whose type is choice names the values it accepts, in the order
+    the form offers them. A choice is declared rather than left to free text so
+    that a value the run cannot use is not typeable at all.
+    A profile with no parameters states that its form asks for nothing. The
+    demonstration profile is one: it carries every value it needs, so its
+    journey presents no input at all.
+    The pair (seed_profile_id, name) is the identity.
+    end note
+
+    entity ores_iam_seed_profile_steps_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * seed_profile_id : uuid <<FK>>
+        * step_kind : text
+        * arguments_json : jsonb
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profile_steps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Step Table
+    A seed profile's steps, in the order provisioning runs them. The row names
+    a step kind from the catalogue in code and supplies the arguments that
+    kind consumes, so a profile states the same step with different bundles
+    without a code change.
+    The catalogue is fixed: publish_bundle, import_lei_hierarchy,
+    provision_party, load_staff, attach_photos and
+    start_market_feeds. A step kind that is not in the catalogue is a code
+    change, because one new kind means one new step handler.
+    The pair (seed_profile_id, step_kind) is the identity: a profile runs a
+    kind once. Steps are idempotent, and a failed step stops the provisioned
+    instance at that step.
+    end note
+
+    entity ores_iam_seed_profiles_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * version : integer
+        * code : text
+        * name : text
+        * summary : text
+        * audience : text
+        * bullets_json : jsonb
+        * tenant_type : text
+        * tenant_name : text
+        * tenant_code : text
+          tenant_hostname : text
+        * admin_username : text
+        * admin_email : text
+        * inherits_admin_password : boolean
+        * force_password_change : boolean
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_seed_profiles_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Seed Profile Table
+    A seed profile is the data set that provisioning gives a new tenant. One
+    row orders step kinds from the catalogue in code, declares the parameters
+    its form takes, carries the tenant details it prefills, and carries the card
+    the person choosing a starting point reads.
+    A new profile is a row, so an operator adds one with no code change. A new
+    step kind is code. The accepted seed profile contract fixes both lists,
+    and the first two rows are:
+    - empty_operational: the production starting point. It publishes the
+    base bundle, takes a counterparty count and a GLEIF root LEI to
+    import, and creates no test data.
+    - acme_demo: the Acme Corporation holding group, with its staff, books
+    and market data. Every test datum lives here.
+    A profile is system-owned registered data. The system_scope flag states
+    that the table stores it under the system tenant and that the insert
+    trigger forces that tenant. Provisioning reads a profile before the tenant
+    it creates exists, so a profile cannot belong to the tenant being made.
+    The profile the model binds is uuid-identified-lookup, the one its
+    sibling ores.iam.tenant binds, because that profile leaves
+    system_scope to the model. uuid-surrogate-lookup fixes it to false,
+    which a row the platform owns cannot be.
+    The ordered steps are rows of ores.iam.seed_profile_step, and the form
+    schema is rows of ores.iam.seed_profile_parameter. Both are children of
+    this entity.
+    end note
+
+    entity ores_iam_session_samples_tbl  #F7E5FF {
+        * session_id : uuid <<PK, FK>>
+        * sample_time : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * bytes_sent : bigint
+        * bytes_received : bigint
+        * latency_ms : bigint
+    }
+
+    note right of ores_iam_session_samples_tbl
+    Session time-series samples: bytes captured at heartbeat frequency.
+    Designed for TimescaleDB hypertable.
+    Partitioned by sample_time.
+    end note
+
+    entity ores_iam_sessions_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * start_time : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * account_id : uuid <<FK>>
+        * end_time : text
+        * client_ip : text
+        * client_identifier : text
+        * client_version_major : smallint
+        * client_version_minor : smallint
+        * bytes_sent : bigint
+        * bytes_received : bigint
+        * country_code : text
+        * protocol : text
+    }
+
+    note right of ores_iam_sessions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Session Table
+    A user session: one login or service-account connection, recorded for
+    analytics, session listing and end-time tracking. The table is a
+    TimescaleDB hypertable partitioned by start_time with 7-day chunks (see
+    projects/ores.sql/create/iam/iam_sessions_create.sql).
+    The table has no valid_from/valid_to, no GIST exclusion, no version
+    column and no audit tail, and it keys on (id, start_time) rather than a
+    single surrogate key -- the partition column must sit in the primary key
+    of a hypertable. The :current_state: and :hypertable: flags in the
+    * SQL ** Flags drawer select exactly that shape. The compound key is
+    what makes this the first entity in the estate whose key carries a
+    timestamp; the mapper, entity and generator templates gained the
+    timestamp key-column branches they were missing.
+    end_time is text not null default '', not a nullable timestamp, and
+    client_ip is text, not inet. The model mirrors each column's real
+    type; the domain projection is the column's type too, so a session's
+    end_time is an empty string while the session is active and
+    client_ip is a string. The richer readings (an instant, an IP address)
+    belong to the consumer that needs them.
+    The hand-written domain struct also carried party_id,
+    visible_party_ids and username. No column backs any of them; they are
+    the denormalised, party-scoped shape of a session, and the rule that an
+    entity describes its table puts them on a message instead. They are
+    declared as message fields on session_view in
+    ores.iam.session_messages.
+    The entity's canonical CRUD subjects are generated: session_registrar
+    owns list/get/get-many/put/put-many/delete on iam.v1.sessions.*. The
+    operation models declare a different set under the same prefix --
+    iam.v1.ops.get_active_sessions and iam.v1.ops.get_session_samples -- so the two
+    coexist rather than compete, and no handler is suppressed here.
+    end note
+
+    entity ores_iam_tenant_statuses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * status : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+          badge_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_tenant_statuses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenant Status Table
+    Reference data table defining valid tenant lifecycle statuses.
+    Examples: 'active', 'suspended', 'terminated'.
+    Tenant statuses are managed by the system tenant and control
+    tenant access and capabilities.
+    end note
+
+    entity ores_iam_tenant_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * type : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+          badge_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_tenant_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenant Type Table
+    Reference data table defining valid tenant type classifications.
+    Examples: 'organisation', 'platform', 'sandbox'.
+    Tenant types are managed by the system tenant and are used to
+    categorise tenants for different purposes.
+    end note
+
+    entity ores_iam_tenants_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid
+        * version : integer
+        * code : text
+        * name : text
+        * type : text
+          description : text
+        * hostname : text
+        * status : text
+        * is_registration_default : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_tenants_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tenant Table
+    Core entity for multi-tenancy support. Each tenant represents an isolated
+    organisation with its own users, roles, and data. The system tenant is a
+    special tenant used for shared reference data and system administration;
+    its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
+    Tenants are identified by:
+    - id: UUID primary key, which is the row's own identity. The tenant_id column
+    is the system tenant's, because the registry belongs to it and its check
+    requires that of every row.
+    - code: Unique text code for stable referencing (e.g., 'system', 'acme')
+    - hostname: Unique hostname for tenant routing during login
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_iam_accounts_tbl ||--o{ ores_iam_account_contact_informations_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_account_credentials_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_account_parties_tbl : "has"
+ores_iam_role_grant_requests_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
+ores_iam_roles_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_role_grant_requests_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_run_grants_tbl : "has"
+ores_iam_roles_tbl ||--o{ ores_iam_run_grants_tbl : "has"
+ores_iam_seed_profiles_tbl ||--o{ ores_iam_seed_profile_parameters_tbl : "has"
+ores_iam_seed_profiles_tbl ||--o{ ores_iam_seed_profile_steps_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.iam.puml"
+' End:
+@enduml

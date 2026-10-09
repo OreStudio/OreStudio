@@ -1,0 +1,705 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — analytics
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: analytics
+Tables: 20
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== analytics (Analytics & Pricing Configuration) ====================
+'
+package "analytics" #E8F5E9 {
+    entity ores_analytics_credit_simulation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          configuration_id : uuid <<FK>>
+          market : text
+          credit : text
+          zero_market_pnl : boolean
+          evaluation : text
+          double_default : boolean
+          seed : integer
+          paths : integer
+          credit_mode : text
+          loan_exposure_mode : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Config Table
+    One CreditSimulation document. The root carries the Risk block as typed
+    columns and owns the entities that migrate; the matrices are shared by name,
+    so they are their own table and an entity points at one.
+    end note
+
+    entity ores_analytics_credit_simulation_entities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * credit_simulation_config_id : uuid <<FK>>
+        * name : text
+        * transition_matrix_id : uuid <<FK>>
+        * initial_state : integer
+          factor_loadings : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_entities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Entity Config Table
+    One entity in the credit portfolio model: its name, its factor loadings,
+    the matrix it migrates on and the state it starts in. ORE refers to the
+    matrix by name in a text attribute; here the reference is a foreign key, so
+    renaming a matrix cannot silently orphan an entity.
+    end note
+
+    entity ores_analytics_credit_simulation_matrices_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+        * t0 : double
+        * t1 : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_matrices_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Matrix Config Table
+    A matrix is a named, reusable definition. ORE declares the states it spans
+    through the t0 and t1 attributes of its Data element, and the
+    probabilities as a square grid of text; the states and the probabilities
+    are held as rows in credit_simulation_matrix_cell_config, so this table
+    carries the name an entity refers to and nothing that can be derived.
+    end note
+
+    entity ores_analytics_credit_simulation_matrix_rows_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * transition_matrix_id : uuid <<FK>>
+        * from_rating : text
+        * p_aaa : double
+        * p_aa : double
+        * p_a : double
+        * p_baa : double
+        * p_ba : double
+        * p_b : double
+        * p_c : double
+        * p_default : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_matrix_rows_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Matrix Row Config Table
+    ORE lays a transition matrix out on a fixed rating scale: every document in
+    the corpus is 8x8 and names the same eight ratings in the same order. Because
+    the scale is a property of the domain rather than data a user enters, it is
+    encoded in the type rather than seeded as rows: one row per source rating,
+    with one probability column per target rating. A matrix is therefore eight
+    rows, and a row reads the way the matrix is written in the document.
+    end note
+
+    entity ores_analytics_credit_simulation_netting_sets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * credit_simulation_config_id : uuid <<FK>>
+        * netting_set_id : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_credit_simulation_netting_sets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Simulation Netting Set Config Table
+    ORE writes the netting sets a credit simulation covers as a comma separated
+    list of codes inside one NettingSetIds element, which is a list stored as
+    text. A list is rows, so each code is a row here, keyed to the configuration
+    and carrying its position so the order is reproduced on export.
+    The codes name netting sets that the trading component owns; no netting set
+    entity exists yet, so the code is held as text until one does.
+    end note
+
+    entity ores_analytics_pricing_engine_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * instrument_type_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_pricing_engine_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Pricing Engine Type Table
+    Classification of products at the granularity needed by the pricing engine to select the correct model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).
+    end note
+
+    entity ores_analytics_pricing_model_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+          config_variant : text
+          configuration_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_pricing_model_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Pricing Model Configuration Table
+    Header entity for a pricing model configuration. Each config contains product mappings
+    (in pricing_model_products) and parameters (in pricing_model_product_parameters).
+    Corresponds to ORE's pricingengine.xml.
+    end note
+
+    entity ores_analytics_pricing_model_product_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pricing_model_config_id : uuid <<FK>>
+          pricing_model_product_id : uuid <<FK>>
+        * parameter_scope : text
+        * parameter_name : text
+        * parameter_value : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_pricing_model_product_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Pricing Model Product Parameter Table
+    Stores model parameters, engine parameters, and global parameters as normalised rows
+    for granular diffing. Product-scoped parameters have pricing_model_product_id set;
+    global parameters have it NULL with parameter_scope = 'global'.
+    end note
+
+    entity ores_analytics_pricing_model_products_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pricing_model_config_id : uuid <<FK>>
+        * pricing_engine_type_code : text
+        * model : text
+        * engine : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_pricing_model_products_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Pricing Model Product Table
+    Detail row within a pricing model configuration. Each row maps a pricing engine type
+    (e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and
+    numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in
+    pricing_model_product_parameters.
+    end note
+
+    entity ores_analytics_shift_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_shift_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Shift Type Table
+    ORE applies a shift to a market point in one of three ways, which its schema
+    fixes as the shiftType enumeration in ore_types.xsd: Relative,
+    Absolute and EqualTo. Stress and sensitivity scenarios both use it.
+    The shift type is a seeded lookup, seeded for the system tenant and read by
+    every tenant, so a shift that names a type ORE does not have is refused.
+    end note
+
+    entity ores_analytics_stress_shift_families_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_stress_shift_families_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Stress Shift Family Table
+    A stress scenario in stresstest.xml is a set of shifts, grouped by the
+    element that holds them: DiscountCurves, FxSpots, SwaptionVolatilities
+    and thirteen more. The schema fixes the set as the children of its stresstest
+    type, apart from Date. Sixteen families in all.
+    The family is a seeded lookup, seeded for the system tenant and read by every
+    tenant, so a shift that names a family ORE does not have is refused.
+    end note
+
+    entity ores_analytics_stress_test_libraries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          configuration_id : uuid <<FK>>
+          use_spreaded_term_structures : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_stress_test_libraries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Stress Test Library Table
+    The root of an ORE stress document: StressTesting in stresstest.xml, which
+    holds the scenarios a run may apply and the one setting that governs how they
+    are applied. Twenty documents ship, holding forty-six scenarios between them.
+    Each row is one document. The scenarios hang off it, because a scenario is only
+    meaningful inside the library that names it.
+    end note
+
+    entity ores_analytics_stress_test_scenarios_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * stress_test_library_id : uuid <<FK>>
+        * name : text
+          date : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_stress_test_scenarios_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Stress Test Scenario Table
+    One StressTest element of an ORE stress document. The id attribute is the
+    scenario's name, which is what a run's analytic refers to; the corpus holds
+    twenty-six distinct names across forty-six uses, so a name is shared between
+    documents.
+    What a scenario actually does lives in its shift blocks -- DiscountCurves,
+    FxSpots, SwaptionVolatilities and fifteen more -- and each is modelled as it
+    lands. This row holds the scenario itself: its name, the library it belongs to
+    and the date it is applied at.
+    end note
+
+    entity ores_analytics_stress_test_shifts_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * stress_test_scenario_id : uuid <<FK>>
+        * family : text <<FK>>
+        * object_key : text
+          shift_type : text <<FK>>
+          shifts : text
+          shift_tenors : text
+          shift_expiries : text
+          extras : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_stress_test_shifts_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Stress Test Shift Table
+    One entry of one shift block of a stress scenario: a market object, the kind of
+    shift applied to it, and the shift itself. The corpus uses fourteen of the
+    eighteen families the schema allows -- DiscountCurves, IndexCurves, FxSpots,
+    FxVolatilities, SwaptionVolatilities, CapFloorVolatilities and the rest -- in
+    three hundred and forty-eight entries.
+    The families look different and are the same shape: an object named by one
+    attribute -- ccy, IndexCurve, FxVolatility, SwaptionVolatility -- a
+    ShiftType, and the shift as parallel lists of values and of tenors or
+    expiries. Fourteen tables would be fourteen copies of those five columns with
+    different attribute names. One table holds them all, with the family as a
+    column and the object's name in object_key, which is what makes adding a
+    family a seeded value rather than a table.
+    The entries carry a few things besides the shift -- ShiftSize, IRCurves,
+    ShiftTerms -- and those are written into extras as a stated list of
+    name and value pairs, because they differ from family to family and none is
+    common to all.
+    Each row belongs to exactly one scenario, in the order the document wrote it.
+    end note
+
+    entity ores_analytics_todays_market_collection_kinds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * entry_element : text
+        * key_attribute : text
+          key_attribute_2 : text
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_collection_kinds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Collection Kind Table
+    A todaysmarket.xml document is a set of collections of twenty-four kinds --
+    YieldCurves, DiscountingCurves, FxSpots and the rest -- plus
+    configurations that pick one collection of each kind. The schema fixes the set
+    as the children of its TodaysMarket element, apart from Configuration, and
+    fixes for each kind the element its entries are written as and the attribute
+    or two attributes an entry identifies itself by.
+    The kind is a seeded lookup, seeded for the system tenant and read by every
+    tenant, so a collection or a binding that names a kind ORE does not have is
+    refused, and an entry no longer repeats its kind's key attribute.
+    end note
+
+    entity ores_analytics_todays_market_collections_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * collection : text <<FK>>
+          collection_id : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_collections_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Collection Table
+    One collection — DiscountingCurves, FxSpots, SwaptionVolatilities and the
+    rest. A document writes up to twenty-four of them, each optional, each holding
+    its own ordered list of entries.
+    A document may write the same kind more than once under different ids, for
+    example a DiscountingCurves with id default and another with id inccy. A
+    Configuration selects one of them by that id. So the collection is a thing
+    with an identity, an order and its own entries, and it has a table. Almost every
+    corpus file writes the id.
+    An entry points at its collection rather than repeating the collection's name.
+    end note
+
+    entity ores_analytics_todays_market_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * name : text
+          description : text
+          config_variant : text
+          configuration_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Config Table
+    One ORE todaysmarket.xml document, held as the thing the collections and the
+    configurations hang off. The document itself carries no market data: it is an
+    ordered set of collections, each entry naming a curve by reference, plus named
+    configurations that select one collection of each kind by the collection's id.
+    The entries live on todays_market_entry, the configurations on
+    todays_market_configuration, and the references a configuration makes on
+    todays_market_configuration_binding. This row is only the identity of the
+    document, so that a tenant may hold more than one and a report may choose
+    between them.
+    end note
+
+    entity ores_analytics_todays_market_configuration_bindings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_configuration_id : uuid <<FK>>
+        * collection : text <<FK>>
+        * reference : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configuration_bindings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Configuration Binding Table
+    One reference a configuration makes. A Configuration block writes up to
+    twenty-four of these. Each names a collection kind and the id of one collection
+    of that kind: DiscountingCurvesId inccy selects the DiscountingCurves
+    collection whose id is inccy.
+    The reference is text, not a foreign key to todays_market_collection. ORE
+    resolves it by name when it builds the market, and the export only has to write
+    it back. Whether it should become a real key is left to the work that first
+    resolves it, which is producing the engine input from the entities.
+    end note
+
+    entity ores_analytics_todays_market_configurations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * configuration_id : text <<FK>>
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_configurations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Configuration Table
+    One Configuration block. It is not a collection of entries: it is a bundle of
+    references, each naming one entry of one collection, so that a report can select
+    a coherent set of curves and volatilities by name instead of restating them.
+    It identifies itself by a required id attribute, which is unique within a
+    document. The references it makes live on
+    todays_market_configuration_binding.
+    end note
+
+    entity ores_analytics_todays_market_entries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * todays_market_config_id : uuid <<FK>>
+        * todays_market_collection_id : uuid <<FK>>
+          key_value : text
+          key_value_2 : text
+        * target : text
+          discounting : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_analytics_todays_market_entries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Todays Market Entry Table
+    One entry of one collection. Twenty-three of the document's twenty-four
+    collections are this shape: an entry identifying itself by one attribute and
+    carrying a reference as its text, in a position.
+    The attribute is not one name. It is name for nineteen collections,
+    currency for DiscountingCurves, pair for the two FX collections and the
+    literal string key for SwaptionVolatilities and CapFloorVolatilities.
+    Which one is a fact about the collection's kind, so it is held once on
+    todays_market_collection_kind rather than repeated on every entry.
+    SwaptionVolatilities and CapFloorVolatilities identify by two attributes at
+    once, so key_value_2 carries the second. SwapIndexCurves is the only
+    collection whose entry nests, and discounting carries its one child.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_analytics_credit_simulation_configs_tbl ||--o{ ores_analytics_credit_simulation_entities_tbl : "has"
+ores_analytics_credit_simulation_matrices_tbl ||--o{ ores_analytics_credit_simulation_entities_tbl : "has"
+ores_analytics_credit_simulation_matrices_tbl ||--o{ ores_analytics_credit_simulation_matrix_rows_tbl : "has"
+ores_analytics_credit_simulation_configs_tbl ||--o{ ores_analytics_credit_simulation_netting_sets_tbl : "has"
+ores_analytics_stress_shift_families_tbl ||--o{ ores_analytics_stress_test_shifts_tbl : "has"
+ores_analytics_shift_types_tbl ||--o{ ores_analytics_stress_test_shifts_tbl : "has"
+ores_analytics_todays_market_collection_kinds_tbl ||--o{ ores_analytics_todays_market_collections_tbl : "has"
+ores_analytics_todays_market_configs_tbl ||--o{ ores_analytics_todays_market_collections_tbl : "has"
+ores_analytics_todays_market_collection_kinds_tbl ||--o{ ores_analytics_todays_market_configuration_bindings_tbl : "has"
+ores_analytics_todays_market_configurations_tbl ||--o{ ores_analytics_todays_market_configuration_bindings_tbl : "has"
+ores_analytics_todays_market_configs_tbl ||--o{ ores_analytics_todays_market_configurations_tbl : "has"
+ores_analytics_todays_market_configs_tbl ||--o{ ores_analytics_todays_market_entries_tbl : "has"
+ores_analytics_todays_market_collections_tbl ||--o{ ores_analytics_todays_market_entries_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.analytics.puml"
+' End:
+@enduml

@@ -1,0 +1,443 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: 2026-10-09T13:18:53.298820Z
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema — synthetic
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: synthetic
+Tables: 9
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== synthetic (Synthetic Data Generation) ====================
+'
+package "synthetic" #F9FBE7 {
+    entity ores_synthetic_config_process_parameter_values_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * config_id : uuid <<FK>>
+        * parameter_definition_id : uuid <<FK>>
+        * parameter_value : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_config_process_parameter_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Generation Config Process Parameter Value Table
+    One named process-parameter value of an ir_curve_generation_config,
+    referencing its yield_curve_process_parameter_definition. This is the
+    "value" half of the row-based parameter architecture: an IR curve
+    generation config stores its process parameters as one row per
+    parameter (kappa=0.1, rho=-0.5, ...), the parameter
+    definition supplies the vocabulary (name, description, bounds), and
+    the mapping layer materialises these rows into the strongly-typed
+    process-parameter structs of ores.analytics.quant
+    (two_factor_gaussian_params, vasicek_params, ...).
+    The (config_id, parameter_definition_id) pair is unique: each
+    parameter appears at most once per config. A hand-written DB trigger
+    (not the codegen single-argument Validations mechanism, which cannot
+    express a two-column lookup) enforces that the definition's
+    process_type_code matches the config's process_type -- a config
+    driven by TWO_FACTOR_GAUSSIAN may only carry values whose definitions
+    belong to TWO_FACTOR_GAUSSIAN. Both soft FKs are additionally
+    validated at insert time by the generated validation functions. No
+    standalone UI: value rows are edited from inside the IR curve
+    generation config detail dialog, which reads definitions and value
+    rows via the normal codegen repositories.
+    end note
+
+    entity ores_synthetic_folders_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+          parent_id : uuid <<FK>>
+        * name : text
+        * kind : text
+          collection_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_folders_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Folder Table
+    A generic, self-referencing hierarchy node. The Market Simulator tree is
+    drawn directly from these rows rather than parsed out of a feed's
+    source_name string: one root folder per party ("Synthetic"), with
+    market_data_generation_config collections, asset-class folders (e.g.
+    "FX"), and instrument-type folders (e.g. "FX Rates") nested beneath it.
+    fx_spot_generation_config rows reference their immediate parent folder
+    via folder_id. kind distinguishes what a given row represents; =
+    collection_id= is populated only for kind  'collection'= rows, linking
+    back to the market_data_generation_config it represents (that entity
+    remains the source of truth for name/description/enabled/dataset_id;
+    this row's own name is kept in sync for uniform hierarchy display).
+    Having real, queryable folder rows (rather than string-parsing) lets any
+    caller -- the shell, or a future UI -- resolve "everything under
+    this folder" the same way, via the generated hierarchy function, instead
+    of each reimplementing the tree-walk itself.
+    end note
+
+    entity ores_synthetic_fx_spot_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * source_name : text
+        * ore_key : text
+        * price_source : text
+        * gmm_initial_price : double
+        * ticks_per_hour : integer
+        * process_type : text
+        * enabled : boolean
+        * auto_start : boolean
+        * vintage_source : text
+        * vintage_date : text
+          folder_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_spot_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Spot Generation Config Table
+    A typed sub-configuration owned by a market_data_generation_config. Describes
+    how to synthesise the tick stream for a single FX spot rate: which ORE market
+    key it produces, the starting price, the tick cadence, and the price process.
+    The price process is a Gaussian Mixture Model whose components are held
+    separately as gmm_component rows. Scoped to a tenant and a party.
+    end note
+
+    entity ores_synthetic_gmm_components_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * fx_spot_config_id : uuid <<FK>>
+        * component_index : integer
+        * description : text
+        * mean : double
+        * stdev : double
+        * weight : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_gmm_components_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    GMM Component Table
+    A single weighted Gaussian component (mean, standard deviation, weight) of the
+    Gaussian Mixture Model that drives an fx_spot_generation_config's price
+    process. Components belong to a parent FX spot config via fx_spot_config_id;
+    their weights are normalised at generation time. Party- and tenant-scoped.
+    end note
+
+    entity ores_synthetic_ir_curve_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * currency_code : text <<FK>>
+        * index_family : text
+        * tenor : text
+        * role : text
+        * process_type : text
+        * ticks_per_hour : integer
+        * enabled : boolean
+        * auto_start : boolean
+        * price_source : text
+        * vintage_source : text
+        * vintage_date : text
+        * vintage_series_uri : text
+          description : text
+        * fixed_leg_payment_frequency_code : text
+        * source_name : text
+          folder_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_ir_curve_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Generation Config Table
+    A typed sub-configuration owned by a market_data_generation_config. Describes
+    how to synthesise a single currency+index interest-rate curve: which
+    short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/
+    two_factor_gaussian, per ores.analytics.quant's IYieldCurveProcess
+    engines) and that process's parameters, stored row-based as
+    ir_curve_generation_config_process_parameter_value children joined onto the
+    yield_curve_process_parameter_definition catalogue -- so a new process
+    type or parameter is seed data, not a schema change. The actual instrument
+    grid (which tenors to publish at which role) is held separately as ordered
+    ir_curve_template_entry rows, the same one-config-many-children shape
+    fx_spot_generation_config uses for its gmm_component rows. Scoped to a
+    tenant and a party.
+    end note
+
+    entity ores_synthetic_ir_curve_template_entries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * ir_curve_config_id : uuid <<FK>>
+        * sequence_index : integer
+        * start_tenor_code : text
+        * end_tenor_code : text
+        * instrument_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_ir_curve_template_entries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    IR Curve Template Entry Table
+    One row of the raw instrument grid (the "Curve Template") an
+    ir_curve_generation_config publishes: which tenor period, priced as
+    which instrument type (deposit-equivalent, FRA-equivalent,
+    swap-equivalent -- see ores.refdata.instrument_code), in what order.
+    Every entry is modelled as a genuine [start, end) period rather than
+    a single maturity label: start_tenor_code/end_tenor_code are both
+    ordinary tenor references resolved through the same
+    ores::refdata::domain::resolve_end_date machinery
+    (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments
+    (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine
+    zero-duration PERIOD/DAY tenor already in the catalog, resolving
+    directly to the horizon's spot date -- not a null/sentinel hack);
+    interval instruments (FRAs) set it to the period's own front tenor
+    (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This
+    symmetric shape is what lets the tenor-collision validator
+    (validate_curve_template in ores.synthetic.api) detect genuine
+    period overlaps via plain windows_overlap(), without a special case
+    for point vs. interval instruments. Entries belong to a parent config
+    via ir_curve_config_id, the same one-config-many-children shape
+    fx_spot_generation_config's gmm_component rows use. Every entry's
+    published rate is derived from the parent config's short-rate
+    process's discount_factor() at the tenor's maturity -- never an
+    independently-noised value -- so the published tick batch is, by
+    construction, a slice of one internally consistent curve. Party- and
+    tenant-scoped.
+    end note
+
+    entity ores_synthetic_market_data_generation_configs_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+          tenant_id : uuid <<FK>>
+        * version : integer
+          party_id : uuid <<FK>>
+        * scope : text
+        * binding_mode : text
+        * name : text
+        * description : text
+        * enabled : boolean
+          dataset_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_market_data_generation_configs_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Market Data Generation Config Table
+    A top-level container that owns one or more typed sub-configurations (FX spot
+    now; vol surface, interest-rate curves later). It is the recipe for how
+    synthetic market data is produced. Carries two orthogonal axes: scope
+    (system/tenant/party) decides the sharing radius -- who consumes the same
+    generated data -- and binding_mode (bound/sandboxed) decides whether
+    that data is authoritative for real feed consumers or reachable only by
+    explicit selection. tenant_id and party_id are populated per scope
+    level: system leaves both null, tenant sets tenant_id only, party sets
+    both.
+    end note
+
+    entity ores_synthetic_process_parameter_definitions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * process_type_code : text
+        * parameter_name : text
+        * display_name : text
+          symbol : text
+        * short_label : text
+        * description : text
+        * data_type : text
+        * default_value : double
+          min_value : double
+          max_value : double
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_process_parameter_definitions_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Yield Curve Process Parameter Definition Table
+    Reference data table describing, per yield_curve_process_type, the
+    named parameters that process accepts and their validation bounds. This
+    is the "vocabulary" half of the row-based parameter architecture: an
+    ir_curve_generation_config stores its process parameters as
+    ir_curve_generation_config_process_parameter_value rows, one per
+    definition, and the mapping layer materialises those rows into the
+    strongly-typed process-parameter structs of ores.analytics.quant
+    (two_factor_gaussian_params, vasicek_params, ...). The
+    (process_type_code, parameter_name) pair uniquely identifies a
+    parameter; four fields drive the parameter table: display_name
+    (the English name), symbol (the Greek letter, where one is
+    conventional), short_label (the layperson name shown in Simple
+    mode) and description (the rich tooltip text). min_value/
+    max_value (NULL = unbounded) plus default_value drive the
+    dialog's spin-box ranges and pre-fill.
+    Why this exists as a table rather than hardcoded structs: it makes the
+    parameter vocabulary queryable and extensible -- adding a new model or
+    parameter is a seed-data change, not a schema or code change, and the
+    same vocabulary drives the DB (validation of value rows), the mapping
+    layer (expected parameter names), and the UI (rows to display). Managed
+    by the system tenant as read-only reference data; tenant users never
+    edit definitions, only the values of their own configs.
+    end note
+
+    entity ores_synthetic_yield_curve_process_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_yield_curve_process_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Yield Curve Process Type Table
+    Reference data table enumerating the IYieldCurveProcess engines
+    ores.analytics.quant's process_factory::make_yield_curve_process()
+    can construct: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE. Replaces an inline
+    CHECK ("process_type" in ('vasicek', 'cox_ingersoll_ross', 'hull_white')) constraint
+    on [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ir_curve_generation_config]] with a proper, FK-validated, describable
+    catalogue row per engine -- same reasoning as promoting
+    instrument_code from a hardcoded list to a real reference-data table.
+    Scoped to ores.synthetic (not ores.refdata) since
+    IYieldCurveProcess engine selection is specific to synthetic IR curve
+    generation, its only consumer today; not promoted to shared refdata
+    until it is genuinely shared by something else, per this story's own
+    payment_frequency precedent. Managed by the system tenant.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_folders_tbl : "has"
+ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
+ores_synthetic_folders_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
+ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_gmm_components_tbl : "has"
+ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"
+ores_synthetic_process_parameter_definitions_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"
+ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_ir_curve_generation_configs_tbl : "has"
+ores_synthetic_folders_tbl ||--o{ ores_synthetic_ir_curve_generation_configs_tbl : "has"
+ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_ir_curve_template_entries_tbl : "has"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.synthetic.puml"
+' End:
+@enduml

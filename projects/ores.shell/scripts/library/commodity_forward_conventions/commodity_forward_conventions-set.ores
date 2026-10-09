@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/commodity_forward_conventions/commodity_forward_convention.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-commodity_forward_conventions set __none__ - - - - - - - system.new_record generated_script
+commodity_forward_conventions set __none__ - - - - - - - - system.new_record generated_script

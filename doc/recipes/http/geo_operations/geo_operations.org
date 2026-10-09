@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 410249DE-A21C-5A11-A3D4-89ACB21A0DF7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the geo_operations endpoints over HTTP?
+#+description: Every endpoint the geo_operations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:geo_operations:
+
+This file documents the geo_operations resource over HTTP. Its one endpoint is =POST /api/v1/iam/ops/lookup_country=, and the section below exports it as a Hurl file into =projects/ores.http/scripts/library/=, which the harness runs.
+
+* Endpoints
+
+** =POST /api/v1/iam/ops/lookup_country=
+:PROPERTIES:
+:ID: 09D93AC2-7298-5774-A142-162B8B897BD2
+:END:
+
+Lookup country. It needs a session.
+
+It forwards to =iam.v1.ops.lookup_country=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/lookup_country
+#+end_example
+
+#+name: geo_operations-lookup-country
+#+begin_src hurl :tangle geo_operations-lookup-country.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/lookup_country
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

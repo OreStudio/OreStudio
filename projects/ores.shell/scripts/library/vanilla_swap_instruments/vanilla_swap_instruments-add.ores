@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/vanilla_swap_instruments/vanilla_swap_instrument.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-vanilla_swap_instruments add 00000000-0000-0000-0000-000000000000 __none__ 00000000-0000-0000-0000-000000000000 1970-01-01 1970-01-01 - __none__ __none__ system.new_record generated_script
+vanilla_swap_instruments add 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 - system.new_record generated_script

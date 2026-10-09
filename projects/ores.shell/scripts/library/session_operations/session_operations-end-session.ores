@@ -1,0 +1,6 @@
+# =end-session=
+#
+# GENERATED from doc/recipes/shell/session_operations/session_operations.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+session_operations end-session 00000000-0000-0000-0000-000000000000

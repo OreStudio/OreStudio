@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 410249DE-A21C-5A11-A3D4-89ACB21A0DF7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the geo_operations commands from the shell?
+#+description: Every command the geo_operations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:geo_operations:
+
+This file documents declared operations at the shell. Its one command is =ores-shell> geo_operations lookup-country=, and the section below exports it as a script into =projects/ores.shell/scripts/library/=, which the shell can load.
+
+* Commands
+
+** =lookup-country=
+:PROPERTIES:
+:ID: 09D93AC2-7298-5774-A142-162B8B897BD2
+:END:
+
+Sends =lookup_country_request= and prints =lookup_country_response=, so the shape is the protocol's and the meaning is the service's. It reads =address=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+geo_operations lookup-country <address>
+#+end_example
+
+It is addressed at =iam.v1.ops.lookup_country=.
+
+#+name: geo_operations-lookup-country
+#+begin_src ores-shell :tangle geo_operations-lookup-country.ores :exports none
+geo_operations lookup-country __none__
+#+end_src
+

@@ -96,10 +96,11 @@ regenerated from the tree scan, and the two superseded headers are deleted.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| TypeScript modules generated for synthetic | 9 domain + 12 protocol = 21 | =check_component_drift.py --component synthetic= | this branch |
-| Synthetic protocol headers | 12, all generated | =ls projects/ores.synthetic/api/include/ores.synthetic.api/messaging/*_protocol.hpp= | this branch |
-| Protocol twin coverage | 417 headers in 18 components, no model opts out | =check_protocol_twin_coverage.py= | this branch |
-| Drift at every synthetic address | no drift | =check_component_drift.py --component synthetic= | this branch |
+| TypeScript modules generated for synthetic | 9 domain + 12 protocol = 21 | =check_component_drift.py --component synthetic= | f9bb337f17 |
+| Synthetic protocol headers | 12, all generated | =ls projects/ores.synthetic/api/include/ores.synthetic.api/messaging/*_protocol.hpp= | f9bb337f17 |
+| Protocol twin coverage | 418 headers in 18 components, no model opts out | =check_protocol_twin_coverage.py= | f9bb337f17 |
+| Drift at every synthetic address | no drift | =check_component_drift.py --component synthetic= | f9bb337f17 |
+| Synthetic suites | 4 of 4 pass | =compass test run -- -R synthetic= | f9bb337f17 |
 | Twins the scaffold predicted | 9, protocol only | =check_component_drift.py --component synthetic --address ores.ts.protocol --dry-run= | 1df1a9af30 |
 
 * Notes
@@ -136,6 +137,19 @@ regenerated from the tree scan, and the two superseded headers are deleted.
   component with four items still open. That disagreement is a gate question in
   its own right -- the registry asserts every item passes while the record says
   four do not, and nothing cross-checks the two -- but it is out of scope here.
+- Three gate failures surfaced on the merged tree and none was synthetic's.
+  =format= was the one exception: the new line in =ir_curve_preview_handler.hpp=
+  needed clang-format. The other two came from =79e1123446= ("Serve the
+  sub-periods coupon type list"), which added a refdata entity but left the
+  hand-written composition points behind: the service event registrar and the
+  shell refdata composite each needed one include and one call. That left
+  =codegen-tests= red on two cases, and the same refdata work had left
+  =ores_schema.{refdata,trading}.puml= and the index stale. All three were fixed
+  on this branch, because the story cannot land through a red gate and each fix
+  is the one the check names. The diagrams were regenerated without the
+  timestamp-only churn the generator writes into all 22 files, and the SVG
+  redraws for diagrams whose source had not changed were left alone because the
+  render is not byte-stable.
 
 * Test Scenarios
 
@@ -165,3 +179,11 @@ operation surfaces share one model so =parameter_spec= is declared once. The
 drift gate regenerates every address and reports no drift, and the twin gate now
 covers the component. The M06 item on the clean standard is closed; P04 is
 superseded for synthetic.
+
+Verified on the merged tree: the whole tree builds, =compass test run --
+-R synthetic= passes 4 of 4 (=ores.synthetic.api=, =.core=, =.service= and
+=ores.shell.synthetic=), =check_protocol_twin_coverage.py= reports 418 headers
+in 18 components with no opt-out, and =check_component_drift.py --component
+synthetic= reports no drift. Three gate failures on the merged tree were fixed
+here; two were trunk's from =79e1123446=, and the third was a clang-format
+tweak.

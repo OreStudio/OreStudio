@@ -21,16 +21,22 @@ Every synthetic prototype answers to a journey document: the actor, the steps, t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-09                               |
 
 * Acceptance
 
--
+- Four journeys stand beside the six synthetic prototypes, each carrying
+  the sections the extraction standard asks for, a wireframe and a
+  coverage table checked against the synthetic subjects.
+- Every synthetic prototype answers to one of them, linked by its design
+  note.
+- The group hub lists the four, and org-links, site-page and
+  structure-notes pass.
 
 * Tasks
 

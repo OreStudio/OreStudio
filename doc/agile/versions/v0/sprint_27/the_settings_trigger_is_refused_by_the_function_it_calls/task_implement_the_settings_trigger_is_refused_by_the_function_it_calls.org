@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: B7FBA7F8-0FFF-4E8F-ABEE-898EA54D22FC
+:END:
+#+title: Task: Let the settings trigger resolve the party as its owner
+#+description: Initial task for: Hotfix: the settings trigger is refused by the function it calls
+#+type: task
+#+level: s1
+#+filetags: :the_settings_trigger_is_refused_by_the_function_it_calls:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/the-settings-trigger-is-refused-by-the-function-it-calls
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:900E72C0-6435-41E8-ACFB-31B6C704340E][Hotfix: the settings trigger is refused by the function it calls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let a service write a tenant-wide setting, so bootstrap's last step completes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:900E72C0-6435-41E8-ACFB-31B6C704340E][Hotfix: the settings trigger is refused by the function it calls]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- ores_variability_system_settings_default_party_fn runs as its owner, with search_path pinned.
+- A service insert with a nil party resolves to the tenant's system party instead of being refused.
+- ores_variability_resolve_system_party_fn stays off the production service roles.
+
+* Plan
+
+Make the trigger a definer function, as its two siblings already are. Nothing
+else moves: the revoke that keeps =resolve_system_party= off the service roles
+stays exactly as it is, and no writer gains a grant it should not have.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| the trigger runs as its owner, before | no | =select prosecdef from pg_proc where proname='ores_variability_system_settings_default_party_fn'= | 99e76774bc |
+| service roles that may execute resolve_system_party, before | 0 of 2 | =select has_function_privilege(role, 'ores_variability_resolve_system_party_fn(uuid)', 'execute')= | 99e76774bc |
+| the trigger runs as its owner, after | yes | =select prosecdef from pg_proc where proname='ores_variability_system_settings_default_party_fn'= | 99e76774bc |
+| a service insert with a nil party, with the old shape | refused | =set local role ...; insert into ores_variability_system_settings_tbl ...= | 99e76774bc |
+| the same insert, with the fix | resolves to the system party | =set local role ...; insert into ores_variability_system_settings_tbl ...= | 99e76774bc |
+| the trigger runs as its owner, on a recreated database | yes | =select prosecdef from pg_proc where proname in ('ores_variability_system_settings_default_party_fn','ores_variability_resolve_system_party_fn')= | 9b658ac326 |
+| the wizard's last step, over HTTP | ={"success":true}= | =curl -X POST /api/bootstrap/complete= with the administrator's session cookie | 9b658ac326 |
+| the setup flag, read with that session | true | =curl /api/bootstrap= with the session cookie | 9b658ac326 |
+| bootstrap mode, read without a session | false | =curl /api/bootstrap= | 9b658ac326 |
+
+* Notes
+
+The refusal is not a missing grant. =ores_variability_resolve_system_party_fn=
+is SECURITY DEFINER and its EXECUTE is revoked from PUBLIC on purpose: it takes
+a tenant as a parameter and reads across the tenant boundary, so only the
+reading roles may call it. The defect is on the other side of the call — the
+trigger that needs it was left as an invoker.
+
+=setup_schema.sql= recorded the assumption that made this look safe: "A service
+writes settings its tenant already holds, so the function stays off the
+production service roles." That holds for an update, and the trigger is BEFORE
+INSERT, so it never fires. It does not hold for a create, and the bootstrap is
+where a service first creates one.
+
+The reproduction is exact. With the trigger invoker, a service-role insert of a
+tenant-wide setting returns:
+
+#+begin_example
+ERROR:  permission denied for function ores_variability_resolve_system_party_fn
+CONTEXT:  PL/pgSQL function ores_variability_system_settings_default_party_fn() line 5 at assignment
+#+end_example
+
+which is the failure reported from bootstrap's last step. With the trigger
+definer the same statement lands and the row carries the tenant's system party.
+
+The insert needs the tenant context the service sets from the JWT
+(=app.current_tenant_id=) to satisfy the table's RLS policies; without it the
+refusal is a policy error instead, which is why a bare service insert does not
+reach the trigger at all.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done. The trigger is =SECURITY DEFINER= with =search_path = public, pg_temp=,
+and a service-role insert of a tenant-wide setting resolves to the tenant's
+system party instead of being refused.
+
+Verified against a recreated database by reproducing the reported error and its
+absence: the identical insert as =ores_brave_hopper_variability_service= raises
+=permission denied ... line 5 at assignment= with the old shape and lands with
+the fix. =resolve_system_party= remains ungranted to both service roles.
+
+A full wizard run is the acceptance test that exercised it, and it was run: the
+administrator was created and signed in as the system party, the last step
+answered ={"success":true}=, and the authenticated status read then reported
+=onboardingComplete: true=. The trigger fix alone was not enough for that run —
+the row met the party-isolation policy next, which is what the system-party
+sign-in is for, and the tasks that carry it are in the story's decisions.
+

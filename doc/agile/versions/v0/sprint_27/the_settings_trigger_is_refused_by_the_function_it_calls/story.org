@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 900E72C0-6435-41E8-ACFB-31B6C704340E
+:END:
+#+title: Story: Hotfix: the settings trigger is refused by the function it calls
+#+description: ores_variability_system_settings_default_party_fn is an invoker-rights BEFORE INSERT trigger that calls ores_variability_resolve_system_party_fn, whose EXECUTE is revoked from PUBLIC so that only the reading roles hold it. A trigger runs with the writing role's privileges, so the moment a service writes a tenant-wide setting -- a nil party, which is what such a caller sends -- the insert is refused by the function its own trigger calls. The bootstrap is the first caller to do it, and the last step fails with permission denied.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:sql:variability:iam:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let a service write a tenant-wide setting, so bootstrap's last step completes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- ores_variability_system_settings_default_party_fn runs as its owner, with search_path pinned.
+- A service insert with a nil party resolves to the tenant's system party instead of being refused.
+- ores_variability_resolve_system_party_fn stays off the production service roles.
+- The bootstrap signs the tenant administrator in as the system party, with no party to choose.
+- Bootstrap's last step is accepted and the browser is returned to the sign-in screen.
+- The setup rail is held on the session's persona, so a signed-out visitor is never held on it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:72E720D6-1F9A-473F-A329-EC0D9E831B78][Scaffold story: Hotfix: the settings trigger is refused by the function it calls]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B7FBA7F8-0FFF-4E8F-ABEE-898EA54D22FC][Let the settings trigger resolve the party as its owner]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the settings trigger is refused by the function it calls |
+
+* Decisions
+
+- *Fix the caller, not the grant.* =ores_variability_resolve_system_party_fn= is
+  definer and deliberately revoked from PUBLIC, because it takes a tenant as a
+  parameter and reads across the tenant boundary. The trigger that needs it was
+  the invoker. Making the trigger a definer function leaves the function's
+  reach exactly as it was and lets the write land.
+- *Do not widen the service roles.* Granting resolve to the services would also
+  have made the insert work, and would have handed every service the ability to
+  read any tenant's settings. That is the privilege the revoke exists to
+  withhold.
+- *The test-user grant stays.* It is now redundant for the trigger, which runs
+  as its owner, but the two invoker-rights seed functions still call resolve
+  directly. Removing it is a separate question about those functions.
+- *Sign the bootstrap in as the system party.* A tenant-wide setting carries no
+  party, and the table's party-isolation policy admits the row only when the
+  resolved party is one the session may see. The trigger fix gets the write as
+  far as the policy; it is the party the session is scoped to that lets it land.
+  The administrator is therefore signed in as the system party, and offered no
+  other: a wizard that let somebody pick a party would offer a choice whose
+  wrong answer blocks the step it is there to perform.
+- *End the bootstrap at the sign-in screen.* The settings being written are
+  tenant-wide, so the person should not be left sitting in the system party once
+  the deployment is set up. Both rails sign out as their last act and hand the
+  browser the sign-in screen, where the installation's own administrator signs
+  in as itself.
+- *Hold the rail on the persona, not on the absent tenant.* The old gate held
+  the rail whenever the deployment had no tenant of its own and had not recorded
+  a finish. That reads the setup flag through a session, and the sign-out the
+  rails now perform closes the session first, so the flag read back as unset and
+  the rail reopened forever. The gate now holds the rail for a system
+  administrator whose finish is not recorded, for a bootstrap still open, and
+  for a journey this browser began. A visitor with no session is never held.
+- *Leave the welcome screen alone, and offer "no tenant" among the tenants.*
+  Keeping the system tenant alone is a choice about which tenant to create, so
+  it is offered as the first card of the tenant choice, shaped like every other
+  card, and not as a separate control on the welcome screen.
+
+* Out of scope
+
+- Whether =ores_variability_system_settings_set_fn= and
+  =ores_variability_system_settings_upsert_fn= should be definer too. They are
+  invoker-rights and call resolve directly, and they work only because every
+  caller today is itself definer or the DDL owner.
+- Splitting the one wizard into two — a system setup run by the super
+  administrator and a tenant setup run by the tenant administrator — with the
+  authentication boundary as the seam. The bootstrap now completes end to end
+  with the steps it has, so the split is its own piece of work.
+
+* Result
+
+Done. Bootstrap's last step is accepted and the browser lands on the sign-in
+screen.
+
+Two defects sat under the one reported failure. The first was the refusal:
+=ores_variability_system_settings_default_party_fn= was an invoker-rights
+trigger calling a function whose EXECUTE is deliberately revoked from PUBLIC, so
+a service creating a tenant-wide setting was refused by the function its own
+trigger called. It is now =SECURITY DEFINER= with =search_path = public,
+pg_temp=, and =resolve_system_party= is still ungranted to both service roles.
+The second appeared once the first was fixed: the row then met the table's
+party-isolation policy, which admits a tenant-wide setting only when the
+resolved party is one the session may see. The bootstrap therefore signs in as
+the system party and offers no other, and both rails sign out at the end.
+
+Both were reproduced and then shown absent on a recreated database. The full
+run was then driven over HTTP against the running fleet: the administrator was
+created, the sign-in answered =mode: system-administration= scoped to =System
+Party=, =POST /api/bootstrap/complete= returned ={"success":true}=, the
+authenticated status read returned =onboardingComplete: true=, and the
+signed-out read returned =isInBootstrapMode: false= so the browser stops at the
+sign-in screen rather than the setup rail.

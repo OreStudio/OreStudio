@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: hotfix/close-the-member-account-access-read
-#+pr:
+#+pr: 2920
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -28,14 +28,18 @@ Every person account holds Member. Member was granted iam::roles:read so a membe
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Member holds neither read code; both remaining nightly suites pass. |
+| Waiting on   | Review of PR #2920.                    |
+| Next         | Merge once the reviewer is satisfied.  |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- A caller holding only Member is denied, with no roles, when it reads
+  another account's access.
+- Member holds neither =iam::roles:read= nor =iam::permissions:read=.
+- The member journey still reads both catalogues through their open reads.
+- =ores.iam.core.tests= and =ores.trading.core.tests= both pass.
 
 * Plan
 
@@ -55,7 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Member grants of the two read codes | 0 | =compass sql -- -c "..."= | cde205b4c2 |
+| ores.iam.core.tests | pass, 144 s | =compass test run -- -R '^ores\.iam\.core\.tests$'= | cde205b4c2 |
+| ores.trading.core.tests | pass, 98 s | =compass test run -- -R '^ores\.trading\.core\.tests$'= | cde205b4c2 |
+| Targeted checks | 4/4 | =compass check --only sql-hygiene --only populate-refs --only open-reads --only handler-permissions= | cde205b4c2 |
 
 * Notes
 
@@ -74,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2920][#2920]] | [iam] Keep the account access read off Member |
 
 * Review
 
@@ -83,3 +90,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=read_account_access= gates on =iam::roles:read= and returns another
+account's roles, who assigned each one and when. Member was granted that same
+code so a member could read the role catalogue, and the accounts trigger gives
+Member to every person at version 1, so every member could read every
+account's access.
+
+The catalogue does not need the code: the role and permission models name
+their list and get subjects in =:open_reads:=, and the generated handlers for
+those subjects carry no permission check. The web asks for
+=iam.v1.roles.list= and =iam.v1.permissions.list=, never the gated =get_many=
+or the versions, and =get_role_permissions=, which the "Can I?" panel reads,
+is ungated too. Member now holds neither code.
+
+Failure 2, =write_trade_booking_publishes_an_event= aborting on an empty
+optional, was already repaired on main by =a08ce20beb= (the generated
+eventing tests seed a party). This branch is off current main, so no change
+was needed; the suite was run to confirm rather than assumed.

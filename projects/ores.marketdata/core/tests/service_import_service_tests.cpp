@@ -78,20 +78,29 @@ std::string zero_series_uri(const std::string& curve_id) {
     return datum::oresmd_uri_codec::write(datum::series_of(*point)).value();
 }
 
-// The values of the 'term' axis, in the order the shape stores them.
-std::vector<std::string> term_values(const boost::uuids::uuid& series_id,
+// The values of one axis, in the order the shape stores them.
+std::vector<std::string> axis_values(const boost::uuids::uuid& series_id,
+                                     const std::string& axis_field,
                                      ores::database::context ctx) {
     using namespace ores::marketdata;
     const std::vector<std::string> ids{boost::uuids::to_string(series_id)};
     std::vector<std::pair<int, std::string>> ordered;
     for (const auto& v :
-         repository::series_axis_value_repository{}.read_latest_for_series(ctx, ids))
-        ordered.emplace_back(v.sequence, v.value);
+         repository::series_axis_value_repository{}.read_latest_for_series(ctx, ids)) {
+        if (v.axis_field == axis_field)
+            ordered.emplace_back(v.sequence, v.value);
+    }
     std::ranges::sort(ordered);
     std::vector<std::string> values;
     for (auto& [sequence, value] : ordered)
         values.push_back(std::move(value));
     return values;
+}
+
+// The values of the 'term' axis, in the order the shape stores them.
+std::vector<std::string> term_values(const boost::uuids::uuid& series_id,
+                                     ores::database::context ctx) {
+    return axis_values(series_id, "term", std::move(ctx));
 }
 
 }
@@ -562,6 +571,51 @@ TEST_CASE("import_declares_the_shape_of_a_series_it_creates", tags) {
     CHECK(axes.front().axis_field == "term");
     CHECK(axes.front().sequence == 0);
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
+}
+
+TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::series_axis_repository axis_repo;
+
+    // AUD/USD is a pair no other file in the suite imports, so the series is
+    // fresh and its shape is this file's alone.
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 FX_OPTION/RATE_LNVOL/AUD/USD/1Y/ATM 0.08\n"
+                              "20160205 FX_OPTION/RATE_LNVOL/AUD/USD/1Y/25rr 0.01\n"
+                              "20160205 FX_OPTION/RATE_LNVOL/AUD/USD/2Y/25RR 0.011\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    // The series may already exist from an earlier run, because the test tenant
+    // outlives the suite; the points and the shape are the same either way.
+    REQUIRE(resp.observation_count == 3);
+
+    const auto point =
+        ores::marketdata::datum::ore_key_codec::read("FX_OPTION/RATE_LNVOL/AUD/USD/1Y/ATM");
+    REQUIRE(point);
+    const auto uri =
+        ores::marketdata::datum::oresmd_uri_codec::write(ores::marketdata::datum::series_of(*point))
+            .value();
+    const auto series = series_with_uri(series_repo, h.context(), uri);
+    REQUIRE(series.size() == 1);
+
+    const std::vector<std::string> ids{boost::uuids::to_string(series.front().id)};
+    const auto axes = axis_repo.read_latest_for_series(h.context(), ids);
+    REQUIRE(axes.size() == 2);
+    CHECK(axes[0].axis_field == "expiry");
+    CHECK(axes[1].axis_field == "strike_label");
+
+    // The two spellings of the risk reversal are one component, so the surface
+    // lists two components from its shape and not three.
+    CHECK(axis_values(series.front().id, "strike_label", h.context()) ==
+          std::vector<std::string>{"ATM", "25RR"});
 }
 
 TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", tags) {

@@ -98,14 +98,14 @@ market_datum read_securities(instrument_type t, quote_type q, tokens rest) {
             return read_bond_future_option(q, rest);
         case it::correlation:
             // CORRELATION/RATE|PRICE/index1/index2/expiry/strike, the strike a
-            // label ORE keeps as text.
+            // label ORE keeps as a code.
             require_quote(q, {quote_type::rate, quote_type::price});
             require_size(rest, {4});
             return datum_builder(t, q)
                 .set(f::index1, text(rest[0]))
                 .set(f::index2, text(rest[1]))
                 .set(f::expiry, period_or_date(rest[2]))
-                .set(f::strike_label, text(rest[3]))
+                .set(f::strike_label, strike_label_of(rest[3]))
                 .build();
         case it::cpr:
             // CPR/RATE/securityID

@@ -32,9 +32,13 @@
  * @file value.hpp
  * @brief The values a market datum's fields hold.
  *
- * Every value keeps the text the key carried, so a datum writes back exactly
- * the key it was read from. Parsing checks the text's form; it never rewrites
- * it, and in particular it never changes its case.
+ * A value keeps the text the key carried, so a datum writes back exactly the
+ * key it was read from. Parsing checks the text's form; it never rewrites it,
+ * and in particular it never changes its case.
+ *
+ * A strike label is the one exception. It is a component of a composite
+ * object, and two spellings of one component must be one value, so the label is
+ * stored as a canonical code. See strike_label.
  */
 
 namespace ores::marketdata::datum {
@@ -197,12 +201,68 @@ private:
 };
 
 /**
+ * @brief An FX option strike quoted as a label: ATM, a delta wing, a delta call
+ * or a delta put, or a level.
+ *
+ * ORE's FX option quote keeps the strike as a label, and the label is the
+ * second axis of a volatility surface: ATM, 25RR and 25BF name one component
+ * each. The label is stored in its canonical spelling, so the case of its
+ * suffix is fixed, a leading + is dropped and a fraction of zeros is dropped:
+ * 25rr, 25RR, +25RR and 25.0RR are one value. The digits are otherwise kept as
+ * the key wrote them, because rewriting a number changes the value and not only
+ * its spelling.
+ *
+ * The forms are the ones ORE's FXOptionQuote admits. A form its strike grammar
+ * reads and its FX option quote refuses, such as ATMF or 25D, is refused here
+ * too.
+ */
+class ORES_MARKETDATA_API_EXPORT strike_label final {
+public:
+    enum class form : std::uint8_t {
+        /// ATM: at the money.
+        at_the_money,
+        /// 25C: a call at a delta.
+        delta_call,
+        /// 25P: a put at a delta.
+        delta_put,
+        /// 25RR: a risk reversal at a delta.
+        risk_reversal,
+        /// 25BF: a butterfly at a delta.
+        butterfly,
+        /// 0.05: a level the quote states outright.
+        level
+    };
+
+    [[nodiscard]] static std::expected<strike_label, std::string> parse(std::string_view text);
+
+    [[nodiscard]] form which() const noexcept {
+        return form_;
+    }
+
+    /// The delta or the level; empty for ATM.
+    [[nodiscard]] const std::string& number() const noexcept {
+        return number_;
+    }
+
+    /// The label in its canonical spelling.
+    [[nodiscard]] std::string text() const;
+
+    friend bool operator==(const strike_label&, const strike_label&) = default;
+
+private:
+    strike_label(form f, std::string number);
+
+    form form_;
+    std::string number_;
+};
+
+/**
  * @brief Whatever a market datum field holds.
  *
  * Free text, such as a name or a currency, is a string kept in the case it
  * arrived in. A field states which of these it holds; see schema.hpp.
  */
-using value = std::variant<none_t, std::string, term, decimal, strike, code>;
+using value = std::variant<none_t, std::string, term, decimal, strike, code, strike_label>;
 
 /// The value as the key writes it, or the empty string for none.
 ORES_MARKETDATA_API_EXPORT std::string text_of(const value& v);

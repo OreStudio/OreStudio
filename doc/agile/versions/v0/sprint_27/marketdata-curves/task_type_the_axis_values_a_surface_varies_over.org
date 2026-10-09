@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/type-the-axis-values-a-surface-varies-over
+#+pr: 2963
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A composite object's axis values carry a typed, validated code rather than free 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented, green, and open for review at PR #2963. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Merge, then close the task.            |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -44,9 +44,69 @@ A composite object's axis values carry a typed, validated code rather than free 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The axis value vocabulary becomes a typed value on the codec. It does not
+become a table.
+
+1. A new value type, =datum::strike_label=, joins =value.hpp=. It holds the
+   label's form (ATM, a delta call, a delta put, a risk reversal, a butterfly or
+   a level) and its number. =parse= reads the grammar, and it returns the
+   canonical spelling of the label.
+2. =value_kind::strike_label= joins the kind enum. =kind_of=, =kind_type=,
+   =holds_kind=, =parse_value= and =text_of= all handle it. The kind has no
+   closed token list, so =codes_of= stays empty for it and the existing
+   invariant holds unchanged.
+3. =field::strike_label= moves from =value_kind::text= to the new kind. The
+   schema then states that the codec checks the field.
+4. The two key readers that fill the field, =read_fx= and the correlation
+   reader, parse the token through the new type. They no longer store free
+   text.
+5. The tests cover the parse, the canonical spelling, a refused label, and the
+   components of an FX option surface read from the declared shape.
+6. No table, no refdata code list, and no shape change.
+
+The decision that this is a codec type and not a table is recorded below,
+because the journey that owns the surface framework proposes the other answer.
+
+** The grammar is ORE's allow-list for an FX option quote
+
+=parseStrike= in ORE accepts more forms than an FX option quote may hold.
+=FXOptionQuote= refuses any strike whose type is not =DeltaCall=, =DeltaPut=,
+=ATM=, =BF=, =RR= or =Absolute= (=marketdatum.hpp:1247-1257=). The new type
+accepts exactly that set, so the codec refuses what ORE refuses. =ATMF= and
+=25D= are therefore refused: ORE's strike grammar reads them, and its FX option
+quote then throws.
+
+** The canonical spelling, and what it does not rewrite
+
+The canonical label fixes the case of the suffix and drops a leading =+=. A
+fraction of zeros is dropped, so =25.0RR= and =25RR= are one component. The
+digits are otherwise kept as the key wrote them, because rewriting a number is
+a change of value and not a change of spelling.
+
+The stored =oresmd_uri= therefore carries the canonical label, and two files
+that spell one component differently declare one axis value. Every label in the
+seed and in the ORE example corpus is already canonical, so no stored value
+moves.
+
+** Why not a reference-data code list
+
+The surface journey proposes one: "No code list or table names =ATM=, =25RR=
+or =25BF= ... The candidate is a reference-data strike or delta label list"
+(=journey_author-a-surfaces-framework.org:157-160=). Three facts argue against
+it here.
+
+- The delta number is open. ORE accepts any number before =RR= and =BF=, so a
+  closed list refuses valid market data. That is the defect the import path
+  already met with tenors, which is why =series_shape_writer::declare= takes its
+  term check as an argument.
+- The vocabulary belongs to the grammar ORE's parser runs, which is what
+  =codes_of= already holds for every other checked field. A table would be a
+  second vocabulary that could disagree with the parser.
+- The journey that owns the surface framework, journey 2, is deferred to its
+  own story (story.org:912). A table here would pull that story forward.
+
+The quoting convention a label implies, the ATM type and the delta type, is
+stated once beside the parser. A per-surface convention is journey 2's work.
 
 * Measurements
 
@@ -60,9 +120,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| FX option strike labels the ORE example corpus carries | 5 distinct, and every one is accepted by the grammar | =zcat external/ore/catalogue/corpus.jsonl.gz \| grep '"instrumentType":"FX_OPTION"' \| grep -oE '"strike":"[^"]*"' \| sort -u= | =a4c4bd44f5= |
+| marketdata suites | 5 of 5 pass: api, client, core, core.corpus, service | =ctest --test-dir build/output/linux-clang-debug-make -R "^ores\.marketdata\." --output-on-failure= | =a4c4bd44f5= |
+| local checks, branch against =origin/main= | 16 of 16 pass, classes cpp and docs | =python3 build/scripts/local_checks.py --exclude-heavy --base origin/main --jobs 2= | =a4c4bd44f5= |
 
 * Notes
+
+- The field is shared. =fx_option= and =correlation= both carry
+  =strike_label=, and the schema states the kind per field, not per type, so a
+  correlation strike is checked by the same grammar. Every correlation point in
+  the ORE example corpus writes =ATM=.
+- The grammar is narrower than ORE's =parseStrike= and exactly as narrow as
+  =FXOptionQuote=. ORE's strike grammar reads =ATMF=, =25D= and =ATM+0.5=, and
+  its FX option quote then throws on each. The codec refuses them at the key.
+- The seed and the corpus already spell every label canonically, so the change
+  writes no stored value differently. The corpus carries five distinct labels:
+  =ATM=, =25RR=, =25BF=, =10RR= and =10BF=.
+- No table, no refdata code list and no migration. The shape tables and the
+  point check are unchanged.
 
 * Test Scenarios
 
@@ -79,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2963][#2963]] | [marketdata] Type the strike label a surface component is named by |
 
 * Review
 
@@ -88,3 +163,56 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A strike label is a typed code. The components of a surface are one value each,
+whatever spelling a file used, and no table was added.
+
+What landed:
+
+- =datum::strike_label= is a new value type in =ores.marketdata.api=. It holds
+  the label's form, ATM, a delta call, a delta put, a risk reversal, a butterfly
+  or a level, and its number. =parse= reads the grammar and returns the
+  canonical spelling.
+- =value_kind::strike_label= joins the kind enum. =kind_of=, =kind_type=,
+  =holds_kind=, =parse_value= and =text_of= all handle it.
+- =field::strike_label= moves off =value_kind::text= onto the new kind.
+- =read_fx= and the correlation reader parse the token through
+  =strike_label_of= instead of storing free text.
+- The value type's own doc states the canonical rule and names the exception to
+  the "the codec never rewrites the text" rule the rest of the file follows.
+
+Acceptance:
+
+- /An axis value that is a strike label is stored as a canonical code./ Met. The
+  shape writer stores =text_of= of the point's field, and =text_of= now writes
+  the canonical label, so the shape and the point identity carry the same code.
+- /Two spellings of one component resolve to one value./ Met. =25rr=, =+25RR=
+  and =25.0RR= read as one datum, and an import that states =ATM=, =25rr= and
+  =25RR= declares two components, =ATM= and =25RR=. The import test asserts
+  that against the shape.
+- /The components of a surface can be listed from the shape, without scanning
+  observations./ Met. The new import test lists them from
+  =series_axis_values= and reads no observation.
+- /The vocabulary and the quoting convention are stated where the codec reads
+  them, not repeated at each call site./ Met for the label's grammar and
+  vocabulary, which live in =strike_label::parse= and nowhere else. The
+  per-surface convention is the first limitation below.
+
+Limitations:
+
+- *The quoting convention a label implies is not stored.* The story acceptance
+  asks that it "is recorded". This task records the label grammar and the
+  vocabulary, and it refuses the labels ORE refuses. A per-surface convention,
+  the ATM type and the delta type, is journey 2's work, and the story defers
+  journey 2 to its own story (story.org:912). Nothing here stores it.
+- *=correlation= shares the field.* The schema states the kind per field and not
+  per type, so a correlation strike is now checked by the FX label grammar. Every
+  correlation point in the ORE example corpus writes =ATM=, so nothing stored
+  moves, but a correlation label outside the grammar is now refused at the key.
+- *The grammar is narrower than ORE's strike grammar.* =ATMF=, =25D= and
+  =ATM+0.5= are refused, although =parseStrike= reads them, because
+  =FXOptionQuote= throws on each. A file that writes one of them for an FX
+  option fails at the import key rather than in the engine.
+- *A number keeps its digits.* A fraction of zeros goes, so =25.0RR= and
+  =25.00RR= are =25RR=. No other spelling of a number is rewritten, because
+  that would change the value and not only its spelling.

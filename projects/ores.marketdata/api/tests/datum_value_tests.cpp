@@ -138,6 +138,56 @@ TEST_CASE("a_strike_refuses_what_ores_grammar_refuses", tags) {
     }
 }
 
+TEST_CASE("a_strike_label_reads_every_form_and_writes_it_canonically", tags) {
+    const struct {
+        const char* text;
+        strike_label::form form;
+        const char* canonical;
+    } cases[] = {{"ATM", strike_label::form::at_the_money, "ATM"},
+                 {"atm", strike_label::form::at_the_money, "ATM"},
+                 {"25RR", strike_label::form::risk_reversal, "25RR"},
+                 {"25rr", strike_label::form::risk_reversal, "25RR"},
+                 {"25BF", strike_label::form::butterfly, "25BF"},
+                 {"10BF", strike_label::form::butterfly, "10BF"},
+                 {"25C", strike_label::form::delta_call, "25C"},
+                 {"25P", strike_label::form::delta_put, "25P"},
+                 {"0.05", strike_label::form::level, "0.05"},
+                 {"-25", strike_label::form::level, "-25"}};
+    for (const auto& c : cases) {
+        INFO("label: " << c.text);
+        const auto l = strike_label::parse(c.text);
+        REQUIRE(l);
+        CHECK(l->which() == c.form);
+        CHECK(l->text() == c.canonical);
+    }
+}
+
+TEST_CASE("two_spellings_of_one_component_are_one_strike_label", tags) {
+    const auto canonical = strike_label::parse("25RR");
+    REQUIRE(canonical);
+    for (const auto* text : {"25rr", "25Rr", "+25RR", "25.0RR", "25.00RR"}) {
+        INFO("label: " << text);
+        const auto l = strike_label::parse(text);
+        REQUIRE(l);
+        CHECK(*l == *canonical);
+        CHECK(l->text() == "25RR");
+    }
+    const auto level = strike_label::parse("25.0");
+    REQUIRE(level);
+    CHECK(*level == *strike_label::parse("25"));
+    CHECK(level->number() == "25");
+}
+
+TEST_CASE("a_strike_label_ore_refuses_is_refused", tags) {
+    // ORE's strike grammar reads ATMF and 25D, and its FX option quote then
+    // refuses them; BF and FLY are not in the grammar at all.
+    for (const auto* text :
+         {"", "ATMF", "25D", "BF", "RR", "FLY", "WING", "ATM+0.5", "25ATMF", "C", "25RR "}) {
+        INFO("text: '" << text << "'");
+        CHECK_FALSE(strike_label::parse(text));
+    }
+}
+
 TEST_CASE("text_of_writes_each_value_as_the_key_does", tags) {
     CHECK(text_of(value{none}).empty());
     CHECK(text_of(value{std::string("Lufthansa")}) == "Lufthansa");
@@ -145,4 +195,5 @@ TEST_CASE("text_of_writes_each_value_as_the_key_does", tags) {
     CHECK(text_of(value{*decimal::parse("0.030")}) == "0.030");
     CHECK(text_of(value{*strike::parse("MNY/Spot/1.2")}) == "MNY/Spot/1.2");
     CHECK(text_of(value{*code::parse("F")}) == "F");
+    CHECK(text_of(value{*strike_label::parse("25rr")}) == "25RR");
 }

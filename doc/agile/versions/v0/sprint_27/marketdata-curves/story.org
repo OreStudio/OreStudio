@@ -97,6 +97,26 @@ creates. One series is named by several corpus files with different grids, so
 freezing its shape at the first file would refuse every later file. A later file
 appends the terms it states after the ones already stored.
 
+** A strike label is a typed code on the codec, not a reference-data list
+
+Chosen 2026-10-09, with the axis value task. A strike label is stored as a
+canonical code. =datum::strike_label= holds the label's form and its number,
+and its parser fixes the suffix case and drops a redundant sign or a fraction
+of zeros, so =25rr=, =+25RR= and =25.0RR= are one value and one component.
+
+The grammar sits beside the codec's other ORE vocabularies rather than in a
+reference-data list, for three reasons. The delta number is open, so a closed
+list refuses valid market data, which is the defect the import path already met
+with tenors. The vocabulary belongs to the grammar ORE's parser runs, which is
+what =codes_of= already holds for every other checked field. And the journey
+that would own such a list, journey 2, is deferred to its own story.
+
+The forms are exactly the ones ORE's =FXOptionQuote= admits, so the codec
+refuses =ATMF= and =25D=, which ORE's strike grammar reads and its FX option
+quote then throws on. =correlation= shares the field, so its strike is checked
+by the same grammar. A per-surface quoting convention, the ATM type and the
+delta type, stays with journey 2.
+
 * Out of scope
 
 -

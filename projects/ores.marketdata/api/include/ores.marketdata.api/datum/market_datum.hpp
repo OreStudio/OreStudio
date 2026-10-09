@@ -107,7 +107,9 @@ public:
      *
      * Values compare by the text the key carried, not by what it denotes: a
      * strike of 1.0 and one of 1.00 are different datums and different
-     * series, because they are different keys.
+     * series, because they are different keys. A strike label is the
+     * exception, because it is stored as a canonical code: two spellings of one
+     * surface component are one datum.
      */
     friend bool operator==(const market_datum&, const market_datum&) = default;
 

@@ -115,7 +115,7 @@ enum class field : std::uint8_t {
 inline constexpr std::size_t field_count = 61;
 
 /// Which of the value types a field holds.
-enum class value_kind : std::uint8_t { text, term, decimal, strike, code };
+enum class value_kind : std::uint8_t { text, term, decimal, strike, code, strike_label };
 
 /// Whether a field names the series or a point within it.
 enum class field_role : std::uint8_t { identity, coordinate };
@@ -144,7 +144,6 @@ constexpr value_kind kind_of(field f) {
         case field::cds_index_name:
         case field::unit_ccy:
         case field::quote_tag:
-        case field::strike_label:
         case field::index:
         case field::seasonality_type:
         case field::month:
@@ -194,6 +193,8 @@ constexpr value_kind kind_of(field f) {
         case field::time_unit:
         case field::dst:
             return value_kind::code;
+        case field::strike_label:
+            return value_kind::strike_label;
     }
     return value_kind::text;
 }
@@ -219,6 +220,10 @@ struct kind_type<value_kind::strike> {
 template <>
 struct kind_type<value_kind::code> {
     using type = code;
+};
+template <>
+struct kind_type<value_kind::strike_label> {
+    using type = strike_label;
 };
 
 /// The C++ type field @p F holds, so a typed read is checked at compile time.

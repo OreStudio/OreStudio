@@ -36,14 +36,14 @@
 namespace ores::trading::messaging {
 
 struct swap_leg_key {
-    boost::uuids::uuid id;
+    boost::uuids::uuid trade_id;
+    int leg_number;
 };
 
 struct swap_leg_write {
-    boost::uuids::uuid id;
     boost::uuids::uuid trade_id;
-    boost::uuids::uuid trade_activity_id;
     int leg_number;
+    boost::uuids::uuid trade_activity_id;
     std::optional<bool> payer;
     std::string leg_type_code;
     std::string day_count_fraction_code;
@@ -70,7 +70,6 @@ struct swap_leg_lookup {
 
 struct swap_legs_filter {
     std::optional<boost::uuids::uuid> trade_id;
-    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
 };
 

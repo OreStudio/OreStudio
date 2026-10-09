@@ -2166,7 +2166,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         return false;
                     for (const auto& leg : r.legs) {
                         put_swap_leg_request leg_req;
-                        leg_req.change.write.id = boost::uuids::random_generator()();
                         leg_req.change.write.trade_id = leg.identity.trade_id;
                         leg_req.change.write.leg_number = leg.identity.leg_number;
                         leg_req.change.write.trade_activity_id = leg.identity.trade_activity_id;

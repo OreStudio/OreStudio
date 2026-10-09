@@ -4674,6 +4674,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 return _key_as_text(ref, column)
 
             pk['v_args'] = ', '.join(_v_arg(c) for c in pk_columns)
+            # The same forms one at a time. The eventing test states its key
+            # arguments, and the key parts it matches a notification against,
+            # from the row it has just written, and every key parameter it
+            # passes takes text. A compound key whose ordinal is an int
+            # converts here or the generated test does not compile.
+            pk['value_text'] = _v_arg(pk_columns[0])
+            for column in pk_columns[1:]:
+                column['value_text'] = _v_arg(column)
             # The storage key of a row already in hand, which is what the
             # repository's own key parameters take. A service that resolved a
             # caller's declared key to a row states the row's storage key from

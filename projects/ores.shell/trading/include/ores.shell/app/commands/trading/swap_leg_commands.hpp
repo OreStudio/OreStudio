@@ -73,30 +73,30 @@ public:
                              const std::vector<std::string>& args);
 
     /**
-     * @brief get <id>
+     * @brief get <trade_id> <leg_number>
      */
     static void process_get(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief get-many <id>
+     * @brief get-many <trade_id> <leg_number>
      */
     static void process_get_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <id> <trade_id> <trade_activity_id> <leg_number> <payer> <leg_type_code>
-     * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
-     * <floating_index_code> <currency> <reason> <commentary>
+     * @brief add <leg_number> <trade_activity_id> <payer> <leg_type_code> <day_count_fraction_code>
+     * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <currency>
+     * <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <trade_id> <trade_activity_id> <leg_number> <payer> <leg_type_code>
+     * @brief set <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code>
      * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
      * <floating_index_code> <currency> <reason> <commentary> [--version <n>]
      */
@@ -105,7 +105,7 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <trade_id> <trade_activity_id> <leg_number> <payer>
+     * @brief put-many --count <n> <trade_id> <leg_number> <trade_activity_id> <payer>
      * <leg_type_code> <day_count_fraction_code> <business_day_convention_code>
      * <payment_frequency_code> <floating_index_code> <currency> <reason> <commentary>
      */
@@ -114,14 +114,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief delete <id> <reason> <commentary> [--version <n>]
+     * @brief delete <trade_id> <leg_number> <reason> <commentary> [--version <n>]
      */
     static void process_delete(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::vector<std::string>& args);
 
     /**
-     * @brief delete-many <id> <reason> <commentary>
+     * @brief delete-many <trade_id> <leg_number> <reason> <commentary>
      */
     static void process_delete_many(std::ostream& out,
                                     ores::nats::service::nats_client& session,
@@ -135,14 +135,15 @@ public:
                                     const std::vector<std::string>& args);
 
     /**
-     * @brief versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+     * @brief versions <trade_id> <leg_number> [--offset <n>] [--limit <n>] [--order <field>]
+     * [--desc]
      */
     static void process_versions(std::ostream& out,
                                  ores::nats::service::nats_client& session,
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief version <id> --version <n>
+     * @brief version <trade_id> <leg_number> --version <n>
      */
     static void process_version(std::ostream& out,
                                 ores::nats::service::nats_client& session,

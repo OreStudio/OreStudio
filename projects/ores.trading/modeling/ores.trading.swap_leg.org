@@ -32,9 +32,12 @@ because both are lists the document may state one entry at a time or one per
 step. A single column cannot hold a schedule, and the two arms of a stepping
 leg were flattened into one until these children landed.
 
-The row keeps its own =id= surrogate and names the parent through =trade_id=.
-The instrument is keyed by its trade, so all nine rates families name the one
-parent the trades table holds rather than a table per family.
+The row is keyed by the trade and the leg's ordinal, =(trade_id, leg_number)=,
+and names its parent through =trade_id=. Nothing mints a surrogate: the import
+reads the parent instrument it was given, and the trade plus the ordinal
+already identify the row. The instrument is keyed by its trade, so all nine
+rates families name the one parent the trades table holds rather than a table
+per family.
 
 It binds =:profile: trading-instrument=, like the nine instrument sub-types
 whose legs it holds. Two table features justify the bind: the table is
@@ -61,22 +64,6 @@ shape and needs no shape flag.
 
 * Columns
 
-** id
-:PROPERTIES:
-:group:        identity
-:primary_key:  true
-:type:         uuid
-:cpp_type:     boost::uuids::uuid
-:nullable:     false
-:supplied_by:  unset
-:END:
-
-UUID uniquely identifying this leg row.
-
-Surrogate key for the leg record. The import reads the parent instrument
-it was given rather than minting a new one, so nothing supplies this
-value from a positional argument.
-
 ** party_id
 :PROPERTIES:
 :group:       identity
@@ -92,7 +79,8 @@ Set from session variable app.current_party_id.
 
 ** trade_id
 :PROPERTIES:
-:group:    identity
+:group:        identity
+:primary_key:  true
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
@@ -102,7 +90,7 @@ The trade this leg belongs to.
 
 The leg is one row of an instrument, and the trade id identifies both the
 trade and its instrument, so this column names the trade the leg is written
-beside.
+beside. It is also the first half of the leg's key.
 
 ** trade_activity_id
 :PROPERTIES:
@@ -116,14 +104,17 @@ The activity that wrote this version.
 
 ** leg_number
 :PROPERTIES:
-:group:    identity
+:group:        identity
+:primary_key:  true
 :type:     integer
 :cpp_type: int
 :nullable: false
 :default:  1
 :END:
 
-1-based ordinal of this leg within the parent instrument.
+1-based ordinal of this leg within the parent instrument, and the second
+half of the leg's key: the trade and the ordinal identify the row, so no
+surrogate is needed.
 
 #+begin_src cpp :name generator
 faker::number::integer(1, 2)
@@ -324,8 +315,8 @@ columns marked =:group: identity= above fold into a
 ores.trading.swap_leg_identity field-group model), the implicit audit
 columns fold into an =ores::dq::domain::audit_record audit;= member (see
 the ores.dq.audit_record field-group model), and the remaining terms stay
-flat in between. The leg is not an instrument sub-type: it carries its own
-=id= key, so it cannot take the =instrument_identity= field group the
+flat in between. The leg is not an instrument sub-type: its key is the trade
+and the ordinal, so it cannot take the =instrument_identity= field group the
 instrument sub-types share. The SQL schema, DB entity and column lists are
 unaffected -- only the domain class and the mapper's domain-side accesses
 nest.
@@ -361,11 +352,10 @@ nest.
 
 ** Table display
 
-| column                  | header      |
-|-------------------------+-------------|
-| identity.id             | ID          |
-| identity.trade_id  | Instrument  |
-| identity.leg_number     | Leg         |
+| column                     | header      |
+|----------------------------+-------------|
+| identity.trade_id          | Instrument  |
+| identity.leg_number        | Leg         |
 | leg_type_code           | Type        |
 | currency                | Ccy         |
 | floating_index_code     | Index       |

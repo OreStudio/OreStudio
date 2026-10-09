@@ -37,12 +37,10 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.identity.id)});
-    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.identity.trade_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
-    fields.push_back({.name = "Leg Number", .value = std::to_string(v.identity.leg_number)});
     fields.push_back(
         {.name = "Payer", .value = v.payer ? (*v.payer ? "true" : "false") : std::string{}});
     fields.push_back({.name = "Leg Type Code", .value = v.leg_type_code});

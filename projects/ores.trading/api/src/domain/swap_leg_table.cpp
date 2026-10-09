@@ -33,13 +33,12 @@ std::string convert_to_table(const std::vector<swap_leg>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Instrument" << "Leg" << "Type" << "Ccy" << "Index"
-          << "Recorded At" << fort::endr;
+    table << fort::header << "Instrument" << "Leg" << "Type" << "Ccy" << "Index" << "Recorded At"
+          << fort::endr;
 
     for ([[maybe_unused]] const auto& sl : v) {
-        table << sl.identity.id << sl.identity.trade_id << sl.identity.leg_number
-              << sl.leg_type_code << sl.currency << sl.floating_index_code << sl.audit.recorded_at
-              << fort::endr;
+        table << sl.identity.trade_id << sl.identity.leg_number << sl.leg_type_code << sl.currency
+              << sl.floating_index_code << sl.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

@@ -43,11 +43,10 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.identity.version = 0;
     r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.identity.id = ctx.generate_uuid();
-    r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_id = ctx.generate_uuid();
-    r.identity.trade_activity_id = ctx.generate_uuid();
     r.identity.leg_number = faker::number::integer(1, 2);
+    r.identity.party_id = ctx.generate_uuid();
+    r.identity.trade_activity_id = ctx.generate_uuid();
     r.leg_type_code = std::string("Fixed");
     r.day_count_fraction_code = std::string("A365F");
     r.business_day_convention_code = std::string("ModifiedFollowing");

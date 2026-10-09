@@ -56,11 +56,11 @@ The re-key to =(trade_id, leg_number)= was attempted and set aside. It
 surfaces a codegen defect: the compound-key path cannot generate a compilable
 eventing integration test, because =cpp_nats_integration_test.cpp.mustache=
 inserts each extra key column's raw domain value where the generated service
-takes every key part as text. Fixing that template regenerates every component
-under test, so the re-key is recorded as capture
-[[id:A814259E-6E2C-4E37-B3E5-5D60FBF176C3][Re-key the swap legs to the trade,
-after the compound-key test template is fixed]] and the surrogate key stands
-here.
+takes every key part as text. Fixing that template belongs with the codegen
+work, so the re-key was recorded as a capture and the surrogate key stood here.
+The codegen defect is fixed and the re-key landed in
+[[id:1B193408-4156-4C34-A62D-B6717F010A39][Re-key the swap legs to the
+trade]].
 
 The amount and rate children that carry an amortising notional and a stepping
 rate are the next unit: =map_leg= reads only the first notional, rate and
@@ -132,10 +132,11 @@ which side pays.
   compound-key path inserts each extra key column's raw domain value where
   the generated service takes every key part as text, so an =int= ordinal
   lands in a =std::vector<std::string>=. The fix is a template change that
-  regenerates every component under test, so it belongs with the codegen
-  work; the re-key is recorded as capture
-  [[id:A814259E-6E2C-4E37-B3E5-5D60FBF176C3][Re-key the swap legs to the
-  trade]] and the surrogate key stands.
+  belongs with the codegen work, so the re-key was recorded as a capture and
+  the surrogate key stood here. The codegen defect is fixed and the re-key
+  landed in
+  [[id:1B193408-4156-4C34-A62D-B6717F010A39][Re-key the swap legs to the
+  trade]].
 
 Verification: the component regenerates with no drift; the codegen suite is
 1276 passed; the full preset build exits 0 with no errors and no warnings.

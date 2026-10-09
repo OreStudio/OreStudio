@@ -117,9 +117,12 @@ TEST_CASE("write_series_classification_rule_publishes_an_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_series_classification_rule(ctx);
     v.change_reason_code = "system.test";
+    // The row's storage key in text: every key parameter the repository and
+    // the service take is text, so each part states its own conversion here,
+    // a uuid through to_string and a number through std::to_string. The notify
+    // trigger emits one entity_id per key column, so a notification belongs to
+    // this row only when every key part is in it.
     const auto id_str = v.series_type;
-    // The notify trigger emits one entity_id per key column, so a
-    // notification belongs to this row only when every key part is in it.
     const std::vector<std::string> key_parts = {id_str, v.metric};
     BOOST_LOG_SEV(lg, debug) << "Series Classification Rule: " << v;
 

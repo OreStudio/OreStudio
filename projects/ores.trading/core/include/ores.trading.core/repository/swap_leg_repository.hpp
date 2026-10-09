@@ -101,15 +101,19 @@ public:
      */
     /**@{*/
     std::vector<domain::swap_leg> read_latest(context ctx);
-    std::vector<domain::swap_leg> read_latest(context ctx, const std::string& id);
-    std::vector<domain::swap_leg> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::swap_leg>
+    read_latest(context ctx, const std::string& trade_id, const std::string& leg_number);
+    std::vector<domain::swap_leg> read_latest(context ctx,
+                                              const std::vector<std::string>& trade_ids,
+                                              const std::vector<std::string>& leg_numbers);
     /**@}*/
 
 
     /**
      * @brief Reads all swap legs, possibly filtered by primary key.
      */
-    std::vector<domain::swap_leg> read_all(context ctx, const std::string& id);
+    std::vector<domain::swap_leg>
+    read_all(context ctx, const std::string& trade_id, const std::string& leg_number);
 
     /**
      * @brief Reads a single swap leg as it stood at a specific
@@ -120,8 +124,10 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::swap_leg>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    std::optional<domain::swap_leg> read_at_version(context ctx,
+                                                    const std::string& trade_id,
+                                                    const std::string& leg_number,
+                                                    std::uint32_t version);
 
     /**
      * @brief Reads latest swap legs filtered by trade_id, with pagination.
@@ -185,7 +191,7 @@ public:
     /**
      * @brief Deletes a swap leg by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(context ctx, const std::string& trade_id, const std::string& leg_number);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -207,12 +213,17 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status remove(context ctx,
+                         const std::string& trade_id,
+                         const std::string& leg_number,
+                         std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes swap legs by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(context ctx,
+                const std::vector<std::string>& trade_ids,
+                const std::vector<std::string>& leg_numbers);
 
     std::vector<domain::swap_leg>
     read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);

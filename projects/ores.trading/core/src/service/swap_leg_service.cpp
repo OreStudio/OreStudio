@@ -27,7 +27,6 @@
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -76,7 +75,8 @@ namespace {
 std::vector<domain::swap_leg> read_one(repository::swap_leg_repository& repo,
                                        const ores::database::context& ctx,
                                        const messaging::swap_leg_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+    return repo.read_latest(
+        ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.leg_number));
 }
 
 /**
@@ -87,7 +87,8 @@ std::vector<domain::swap_leg> read_one(repository::swap_leg_repository& repo,
  */
 messaging::swap_leg_key key_from(const domain::swap_leg& v) {
     messaging::swap_leg_key key;
-    key.id = v.identity.id;
+    key.trade_id = v.identity.trade_id;
+    key.leg_number = v.identity.leg_number;
     return key;
 }
 
@@ -100,10 +101,9 @@ messaging::swap_leg_key key_from(const domain::swap_leg& v) {
  */
 domain::swap_leg to_domain(const messaging::swap_leg_write& write) {
     domain::swap_leg v;
-    v.identity.id = write.id;
     v.identity.trade_id = write.trade_id;
-    v.identity.trade_activity_id = write.trade_activity_id;
     v.identity.leg_number = write.leg_number;
+    v.identity.trade_activity_id = write.trade_activity_id;
     v.payer = write.payer;
     v.leg_type_code = write.leg_type_code;
     v.day_count_fraction_code = write.day_count_fraction_code;
@@ -123,11 +123,6 @@ swap_leg_service::list_swap_legs(const messaging::list_swap_legs_request& reques
         !repository::swap_leg_repository::is_sortable(request.order.field)) {
         response.result = refuse(outcome_code::order_not_supported,
                                  {.entity = "swap legs", .field = request.order.field});
-        return response;
-    }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
@@ -160,11 +155,6 @@ messaging::list_by_trade_id_swap_legs_response swap_leg_service::list_by_trade_i
         !repository::swap_leg_repository::is_sortable(request.order.field)) {
         response.result = refuse(outcome_code::order_not_supported,
                                  {.entity = "swap legs", .field = request.order.field});
-        return response;
-    }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->trade_id_one_of &&
@@ -277,7 +267,10 @@ swap_leg_service::delete_swap_leg(const messaging::delete_swap_leg_request& requ
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.id), expected)) {
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(request.removal.key.trade_id),
+                         std::to_string(request.removal.key.leg_number),
+                         expected)) {
         case repository::swap_leg_repository::remove_status::removed:
             break;
         case repository::swap_leg_repository::remove_status::missing:
@@ -291,7 +284,7 @@ swap_leg_service::delete_swap_leg(const messaging::delete_swap_leg_request& requ
             response.result =
                 refuse(outcome_code::version_conflict,
                        {.entity = "swap_leg",
-                        .field = "id",
+                        .field = "trade_id",
                         .expected = expected ? std::to_string(*expected) : std::string{},
                         .current = live.empty() ? std::string{} :
                                                   std::to_string(live.front().identity.version)});
@@ -321,11 +314,15 @@ swap_leg_service::delete_many_swap_legs(const messaging::delete_many_swap_legs_r
     }
     if (request.removals.empty())
         return response;
-    std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
+    std::vector<std::string> trade_id_keys;
+    trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
-        id_keys.push_back(boost::uuids::to_string(removal.key.id));
-    repo_.remove(ctx_, id_keys);
+        trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
+    std::vector<std::string> leg_number_keys;
+    leg_number_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        leg_number_keys.push_back(std::to_string(removal.key.leg_number));
+    repo_.remove(ctx_, trade_id_keys, leg_number_keys);
     return response;
 }
 
@@ -341,7 +338,9 @@ swap_leg_service::list_swap_leg_versions(const messaging::list_swap_leg_versions
         response.result = refuse(outcome_code::filter_not_supported, {.entity = "swap legs"});
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.id));
+    auto all = repo_.read_all(ctx_,
+                              boost::uuids::to_string(request.key.trade_id),
+                              std::to_string(request.key.leg_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -356,8 +355,10 @@ swap_leg_service::list_swap_leg_versions(const messaging::list_swap_leg_versions
 messaging::get_swap_leg_version_response
 swap_leg_service::get_swap_leg_version(const messaging::get_swap_leg_version_request& request) {
     messaging::get_swap_leg_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.swap_leg.id), request.key.version);
+    auto found = repo_.read_at_version(ctx_,
+                                       boost::uuids::to_string(request.key.swap_leg.trade_id),
+                                       std::to_string(request.key.swap_leg.leg_number),
+                                       request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "swap_leg"});
         return response;
@@ -378,7 +379,8 @@ swap_leg_service::prepare_change(const messaging::swap_leg_change& change,
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
-                return refuse(outcome_code::already_exists, {.entity = "swap_leg", .field = "id"});
+                return refuse(outcome_code::already_exists,
+                              {.entity = "swap_leg", .field = "trade_id"});
             break;
         case precondition_kind::must_match_version:
             if (current.empty())
@@ -390,7 +392,7 @@ swap_leg_service::prepare_change(const messaging::swap_leg_change& change,
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "swap_leg",
-                               .field = "id",
+                               .field = "trade_id",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
@@ -448,39 +450,45 @@ std::uint32_t swap_leg_service::count_swap_legs_by_trade_id(const std::string& t
 }
 
 
-std::optional<domain::swap_leg>
-swap_leg_service::get_swap_leg_at_version(const boost::uuids::uuid& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg at version. " << "id: " << id
-                               << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
+std::optional<domain::swap_leg> swap_leg_service::get_swap_leg_at_version(
+    const std::string& trade_id, const std::string& leg_number, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg at version. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number << " version: " << version;
+    return repo_.read_at_version(ctx_, trade_id, leg_number, version);
 }
 
-std::optional<domain::swap_leg> swap_leg_service::get_swap_leg(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+std::optional<domain::swap_leg> swap_leg_service::get_swap_leg(const std::string& trade_id,
+                                                               const std::string& leg_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting swap leg. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
+    auto results = repo_.read_latest(ctx_, trade_id, leg_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-std::vector<domain::swap_leg> swap_leg_service::get_swap_legs(const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+std::vector<domain::swap_leg>
+swap_leg_service::get_swap_legs(const std::vector<std::string>& trade_ids,
+                                const std::vector<std::string>& leg_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, leg_numbers);
 }
 
 void swap_leg_service::save_swap_leg(const domain::swap_leg& v) {
-    if (v.identity.id.is_nil())
-        throw std::invalid_argument("Swap Leg id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swap leg. " << "id: " << v.identity.id;
+    if (v.identity.trade_id.is_nil())
+        throw std::invalid_argument("Swap Leg trade_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving swap leg. " << "trade_id: " << v.identity.trade_id
+                               << " leg_number: " << v.identity.leg_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved swap leg. " << "id: " << v.identity.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved swap leg. " << "trade_id: " << v.identity.trade_id
+                              << " leg_number: " << v.identity.leg_number;
 }
 
 void swap_leg_service::save_swap_legs(const std::vector<domain::swap_leg>& swap_legs) {
     for (const auto& e : swap_legs) {
-        if (e.identity.id.is_nil())
-            throw std::invalid_argument("Swap Leg id cannot be empty.");
+        if (e.identity.trade_id.is_nil())
+            throw std::invalid_argument("Swap Leg trade_id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_legs.size() << " swap legs";
     auto ts = swap_legs;
@@ -490,19 +498,24 @@ void swap_leg_service::save_swap_legs(const std::vector<domain::swap_leg>& swap_
     repo_.write(ctx_, ts);
 }
 
-void swap_leg_service::delete_swap_leg(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg. " << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    BOOST_LOG_SEV(lg(), info) << "Removed swap leg. " << "id: " << id;
+void swap_leg_service::delete_swap_leg(const std::string& trade_id, const std::string& leg_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
+    repo_.remove(ctx_, trade_id, leg_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed swap leg. " << "trade_id: " << trade_id
+                              << " leg_number: " << leg_number;
 }
 
-void swap_leg_service::delete_swap_legs(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+void swap_leg_service::delete_swap_legs(const std::vector<std::string>& trade_ids,
+                                        const std::vector<std::string>& leg_numbers) {
+    repo_.remove(ctx_, trade_ids, leg_numbers);
 }
 
-std::vector<domain::swap_leg> swap_leg_service::get_swap_leg_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap leg. " << "id: " << id;
-    return repo_.read_all(ctx_, id);
+std::vector<domain::swap_leg>
+swap_leg_service::get_swap_leg_history(const std::string& trade_id, const std::string& leg_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap leg. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
+    return repo_.read_all(ctx_, trade_id, leg_number);
 }
 
 }

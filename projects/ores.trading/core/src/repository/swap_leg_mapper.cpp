@@ -33,6 +33,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace ores::trading::repository {
@@ -46,11 +47,10 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     domain::swap_leg r;
     r.identity.version = v.version;
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.identity.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.identity.leg_number = boost::lexical_cast<int>(v.leg_number.value());
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
     r.identity.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
-    r.identity.leg_number = v.leg_number;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;
@@ -72,13 +72,12 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_entity r;
-    r.id = boost::uuids::to_string(v.identity.id);
+    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
+    r.leg_number = std::to_string(v.identity.leg_number);
     r.tenant_id = v.identity.tenant_id.to_string();
     r.version = v.identity.version;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = boost::uuids::to_string(v.identity.trade_id);
     r.trade_activity_id = boost::uuids::to_string(v.identity.trade_activity_id);
-    r.leg_number = v.identity.leg_number;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
     r.day_count_fraction_code = v.day_count_fraction_code;

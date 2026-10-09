@@ -42,6 +42,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
+#include <set>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
@@ -55,6 +56,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -85,11 +87,12 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"id"});
+        return make_order(
+            default_columns, default_descending != order.descending, {"trade_id", "leg_number"});
     if (!swap_leg_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of swap legs cannot be ordered by " + order.field +
                                     ".");
-    return make_order({order.field}, order.descending, {"id"});
+    return make_order({order.field}, order.descending, {"trade_id", "leg_number"});
 }
 
 /*
@@ -103,12 +106,6 @@ filter_condition(const std::optional<messaging::swap_legs_filter>& filter) {
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->trade_id)
         r.push_back(equals("trade_id", filter_value(*filter->trade_id)));
-    if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
-        for (const auto& v : *filter->id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("id", std::move(values)));
-    }
     if (filter->trade_id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->trade_id_one_of)
@@ -122,7 +119,8 @@ filter_condition(const std::optional<messaging::swap_legs_filter>& filter) {
 
 ores::utility::domain::precondition swap_leg_repository::replace_claim(context ctx,
                                                                        const domain::swap_leg& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+    const auto current = read_latest(
+        ctx, boost::uuids::to_string(v.identity.trade_id), std::to_string(v.identity.leg_number));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -147,7 +145,9 @@ domain::swap_leg swap_leg_repository::apply_claim(
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
+            const auto current = read_latest(ctx,
+                                             boost::uuids::to_string(v.identity.trade_id),
+                                             std::to_string(v.identity.leg_number));
             t.identity.version = current.empty() ? 0 : current.front().identity.version;
             break;
         }
@@ -170,7 +170,8 @@ void swap_leg_repository::write(context ctx, const std::vector<domain::swap_leg>
 void swap_leg_repository::write(context ctx,
                                 const domain::swap_leg& v,
                                 const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg. " << "id: " << v.identity.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg. " << "trade_id: " << v.identity.trade_id
+                               << " leg_number: " << v.identity.leg_number;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(ctx, swap_leg_mapper::map(t), lg(), "Writing swap leg to database.");
 }
@@ -191,7 +192,7 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest(context ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+                       order_by("trade_id"_c, "leg_number"_c);
 
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
@@ -201,44 +202,55 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest(context ctx) {
         "Reading latest swap legs");
 }
 
-std::vector<domain::swap_leg> swap_leg_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg. " << "id: " << id;
+std::vector<domain::swap_leg> swap_leg_repository::read_latest(context ctx,
+                                                               const std::string& trade_id,
+                                                               const std::string& leg_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest swap leg. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_number"_c == leg_number && "valid_to"_c == max.value());
 
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
-        "Reading latest swap leg by id.");
+        "Reading latest swap leg by trade_id.");
 }
 
 
-std::vector<domain::swap_leg> swap_leg_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all swap leg versions. " << "id: " << id;
+std::vector<domain::swap_leg> swap_leg_repository::read_all(context ctx,
+                                                            const std::string& trade_id,
+                                                            const std::string& leg_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all swap leg versions. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<swap_leg_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_number"_c == leg_number) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
-        "Reading all swap leg versions by id.");
+        "Reading all swap leg versions by trade_id.");
 }
 
-std::optional<domain::swap_leg>
-swap_leg_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading swap leg at version. " << "id: " << id
-                               << " version: " << version;
+std::optional<domain::swap_leg> swap_leg_repository::read_at_version(context ctx,
+                                                                     const std::string& trade_id,
+                                                                     const std::string& leg_number,
+                                                                     std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading swap leg at version. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
+                             "leg_number"_c == leg_number && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<swap_leg_entity, domain::swap_leg>(
@@ -272,7 +284,7 @@ std::vector<domain::swap_leg> swap_leg_repository::read_latest_by_trade_id(
     return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
+        list_order(order, {"trade_id", "leg_number"}, false),
         filter_condition(filter),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
@@ -296,10 +308,14 @@ std::uint32_t swap_leg_repository::get_total_swap_leg_count_by_trade_id(
 }
 
 
-swap_leg_repository::remove_status swap_leg_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg. " << "id: " << id;
-    const auto current = read_latest(ctx, id);
+swap_leg_repository::remove_status
+swap_leg_repository::remove(context ctx,
+                            const std::string& trade_id,
+                            const std::string& leg_number,
+                            std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing swap leg. " << "trade_id: " << trade_id
+                               << " leg_number: " << leg_number;
+    const auto current = read_latest(ctx, trade_id, leg_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -312,21 +328,24 @@ swap_leg_repository::remove_status swap_leg_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().identity.version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<swap_leg_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
-                             "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<swap_leg_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "leg_number"_c == leg_number &&
+              "valid_to"_c == max.value() && "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing swap leg from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, id).empty())
+    if (!read_latest(ctx, trade_id, leg_number).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void swap_leg_repository::remove(context ctx, const std::string& id) {
-    static_cast<void>(remove(ctx, id, std::nullopt));
+void swap_leg_repository::remove(context ctx,
+                                 const std::string& trade_id,
+                                 const std::string& leg_number) {
+    static_cast<void>(remove(ctx, trade_id, leg_number, std::nullopt));
 }
 
 std::vector<domain::swap_leg>
@@ -345,7 +364,7 @@ swap_leg_repository::read_latest(context ctx,
     return execute_ordered_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
+        list_order(order, {"trade_id", "leg_number"}, false),
         narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
@@ -369,36 +388,52 @@ std::uint32_t swap_leg_repository::get_total_swap_leg_count(
 }
 
 std::vector<domain::swap_leg>
-swap_leg_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty())
+swap_leg_repository::read_latest(context ctx,
+                                 const std::vector<std::string>& trade_ids,
+                                 const std::vector<std::string>& leg_numbers) {
+    if (trade_ids.empty() || leg_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<swap_leg_entity>> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "leg_number"_c.in(leg_numbers) && "valid_to"_c == max.value());
     auto result = execute_read_query<swap_leg_entity, domain::swap_leg>(
         ctx,
         query,
         [](const auto& entities) { return swap_leg_mapper::map(entities); },
         lg(),
         "Reading latest swap legs by ids.");
-    return result;
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (leg_numbers.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "swap_leg_repository::read_latest: key column vectors must be the same length");
+    std::set<std::tuple<std::string, std::string>> requested;
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], leg_numbers[i]);
+    std::vector<domain::swap_leg> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.identity.trade_id),
+                                               std::to_string(item.identity.leg_number))))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
-void swap_leg_repository::remove(context ctx, const std::vector<std::string>& ids) {
-    // A batch of nothing addresses no row, so there is nothing to delete. The
-    // query builder renders an empty key list as an empty IN (), which the
-    // server refuses as a syntax error; the read overloads answer the empty
-    // case the same way. The compound branch above is left alone: it loops, so
-    // it already removes nothing, and its length check still refuses an
-    // asymmetric pair.
-    if (ids.empty())
-        return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<swap_leg_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing swap legs.");
+void swap_leg_repository::remove(context ctx,
+                                 const std::vector<std::string>& trade_ids,
+                                 const std::vector<std::string>& leg_numbers) {
+    // Compound key: a per-column .in() DELETE would be a cross-product
+    // over-delete (rows outside the requested tuples), and a DELETE can't
+    // be filtered after the fact like a read -- remove one tuple at a time.
+    if (leg_numbers.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "swap_leg_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], leg_numbers[i]);
 }
 
 

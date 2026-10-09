@@ -112,7 +112,7 @@ TEST_CASE("swap_leg_commands_process_get_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_get(out, session, tokens(1));
+    swap_leg_commands::process_get(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -146,7 +146,7 @@ TEST_CASE("swap_leg_commands_process_get_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_get_many(out, session, tokens(1));
+    swap_leg_commands::process_get_many(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -160,7 +160,7 @@ TEST_CASE("swap_leg_commands_process_add_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_add(out, session, tokens(11));
+    swap_leg_commands::process_add(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -194,7 +194,7 @@ TEST_CASE("swap_leg_commands_process_set_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_set(out, session, tokens(11));
+    swap_leg_commands::process_set(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -228,7 +228,7 @@ TEST_CASE("swap_leg_commands_process_put_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_put_many(out, session, tokens(11));
+    swap_leg_commands::process_put_many(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -242,7 +242,7 @@ TEST_CASE("swap_leg_commands_process_delete_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_delete(out, session, tokens(1));
+    swap_leg_commands::process_delete(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -276,7 +276,7 @@ TEST_CASE("swap_leg_commands_process_delete_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_delete_many(out, session, tokens(1));
+    swap_leg_commands::process_delete_many(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -324,7 +324,7 @@ TEST_CASE("swap_leg_commands_process_versions_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_versions(out, session, tokens(1));
+    swap_leg_commands::process_versions(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -358,7 +358,7 @@ TEST_CASE("swap_leg_commands_process_version_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    swap_leg_commands::process_version(out, session, tokens(1));
+    swap_leg_commands::process_version(out, session, tokens(2));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

@@ -50,13 +50,6 @@ Version number for optimistic locking and change tracking.
 
 Tenant identifier for multi-tenancy isolation.
 
-** id
-:PROPERTIES:
-:cpp_type: boost::uuids::uuid
-:END:
-
-UUID uniquely identifying this leg row.
-
 ** party_id
 :PROPERTIES:
 :cpp_type: boost::uuids::uuid

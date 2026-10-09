@@ -205,7 +205,7 @@ begin
      and p.id = tp.portfolio_id
      and p.valid_to = ores_utility_infinity_timestamp_fn()
     where tp.tenant_id = ores_iam_current_tenant_id_fn()
-      and tp.party_id = any(ores_iam_visible_party_ids_fn())
+      and ores_trading_trade_party_fn(tp.tenant_id, tp.trade_id) = any(ores_iam_visible_party_ids_fn())
       and tp.valid_to = ores_utility_infinity_timestamp_fn()
       and tp.trade_id = any(p_trade_ids)
     order by tp.trade_id, tp.sequence_number;

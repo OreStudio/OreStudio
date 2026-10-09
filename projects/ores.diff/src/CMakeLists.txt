@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.diff")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -25,18 +28,27 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_DIFF_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-# Deliberately a leaf: no dependency beyond std and rfl, so every
-# domain service and frontend can link it without cycles.
 target_link_libraries(${lib_target_name}
     PUBLIC
-        reflectcpp::reflectcpp)
+        sqlgen::sqlgen
+        ores.logging.lib
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib)
+
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

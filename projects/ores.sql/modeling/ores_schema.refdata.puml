@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T19:34:22.173318Z
+' Generated: 2026-10-09T22:30:40.685791Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 153
+Tables: 154
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -4679,6 +4679,39 @@ package "refdata" #FFF3E0 {
     compiled list can be exhaustive over it. market_series
     FK-validates against this table. Managed by the system
     tenant, like other shared code tables.
+    end note
+
+    entity ores_refdata_sub_periods_coupon_types_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_sub_periods_coupon_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Sub-Periods Coupon Type Table
+    Reference data table defining how a floating leg's coupons accrue when the
+    leg is divided into sub-periods. Values: 'Compounding' (the sub-period rates
+    compound over the accrual) and 'Averaging' (they average).
+    Two values only, and they are the two the swap_convention and
+    tenor_basis_swap_convention models' own sub_periods_coupon_type column
+    descriptions name. The column was plain text, so a client offered free text
+    where its neighbours offer a pick; this entity is what makes it a pick, in
+    the shape the other convention term lists already have.
+    The values are mutually exclusive -- a leg accrues one way -- and managed by
+    the system tenant.
     end note
 
     entity ores_refdata_supervisory_bodies_tbl <<temporal>> #C6F0D8 {

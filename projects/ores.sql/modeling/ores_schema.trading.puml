@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T19:06:45.768312Z
+' Generated: 2026-10-09T22:30:40.685791Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3888,6 +3888,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_rpa_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_rpa_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"

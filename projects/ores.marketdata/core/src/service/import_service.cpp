@@ -32,6 +32,7 @@
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
+#include "ores.marketdata.core/service/series_shape_writer.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
@@ -129,6 +130,13 @@ struct named_key final {
     bool fx_pair_reversed = false;
 };
 
+// The shape a file declares for one series it carries: the series datum, and
+// the points the file names for it in the order it presents them.
+struct declared_shape final {
+    datum::market_datum series;
+    std::vector<datum::market_datum> points;
+};
+
 // The checker, read on first use: an import with no FX spot rate never reads
 // the reference data.
 using fx_checker_source = std::function<const ores::ore::market::fx_quote_convention_checker&()>;
@@ -197,6 +205,10 @@ import_service::import(const messaging::import_market_data_request& req) {
 
     // Cache: the series' oresmd identity → series id.
     std::map<std::string, boost::uuids::uuid> series_cache;
+
+    // The shape each series this file carries is given, keyed by series id. A
+    // series the file does not name keeps the shape it had.
+    std::map<boost::uuids::uuid, declared_shape> declared_shapes;
 
     // Read the classification rules once for the whole batch, on the first
     // series that needs them. Both the market data and the fixings paths
@@ -319,6 +331,18 @@ import_service::import(const messaging::import_market_data_request& req) {
                 const auto series = find_or_create_series(
                     ck.series_type, ck.metric, ck.qualifier, named->series_uri);
 
+                // The file declares the shape of every series it carries, from
+                // the keys it names. The series datum comes from the first key
+                // that names the series, and every key that names it contributes
+                // its point, so the shape is what the file states rather than the
+                // subset of rows it writes.
+                auto shape = declared_shapes.find(series);
+                if (shape == declared_shapes.end())
+                    shape = declared_shapes
+                                .emplace(series, declared_shape{datum::series_of(named->datum), {}})
+                                .first;
+                shape->second.points.push_back(named->datum);
+
                 domain::market_observation obs;
                 obs.id = gen();
                 obs.tenant_id = ctx_.tenant_id();
@@ -330,6 +354,19 @@ import_service::import(const messaging::import_market_data_request& req) {
                 obs.value = d.value;
                 observations.push_back(std::move(obs));
             }
+
+            // The shapes are declared before the points, because the write-time
+            // check refuses a point whose axis the series does not declare. The
+            // terms are recorded as the file states them: they are the vendor's
+            // vocabulary, not the tenant's, so they are not held to the reference
+            // tenor table the way a build's pillars are.
+            for (const auto& [id, shape] : declared_shapes)
+                series_shape_writer::declare(ctx_,
+                                             shape.series,
+                                             id,
+                                             ctx_.party_id().value_or(boost::uuids::uuid{}),
+                                             shape.points,
+                                             series_shape_writer::term_check::as_stated);
 
             obs_repo.insert(ctx_, observations);
             resp.observation_count = static_cast<int>(observations.size());

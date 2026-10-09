@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/let-an-import-declare-the-shape-it-carries
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A curve declares its shape when a build publishes it, so the point check has som
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented; build and suites running. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Confirm the build, then raise the PR.  |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -43,9 +43,38 @@ A curve declares its shape when a build publishes it, so the point check has som
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. /Settle the layering./ The writer moves from =ores.marketdata.service= down to
+   =ores.marketdata.core=, beside the import that now calls it, and the core
+   library links =ores.refdata.core= for the reference tenor read. The goal's
+   premise was that core cannot reach the reference data. It can: =ores.ore.core=
+   and =ores.synthetic.core= already link that library, and the import already
+   reaches =ores.refdata= over NATS for the currency pairs. One code path for the
+   check is better than a second source of the same reference data.
+2. /Make the check a policy of the call./ =declare= takes a =term_check=. A build
+   passes =against_reference_tenors=, because its pillars come from the tenant's
+   own curve configuration and a pillar the table does not hold is a mistake. An
+   import passes =as_stated=, because the terms it records are the file's. The ORE
+   example corpus writes =13Y= and =1Y6M=, which the 46-code reference table does
+   not hold, so checking an imported shape would refuse valid market data.
+3. /Declare before the points./ The import collects, for each series the file
+   carries, the datums the file names for that series, and declares every shape
+   before =market_observation_repository::insert=, because the write-time check
+   refuses a point whose axis the series does not declare.
+4. /Declare for every series the file carries, not only the ones it creates./ The
+   goal says each series the import carries, and acceptance two says a series the
+   import does not name keeps the shape it had. Declaring only for series the file
+   creates does not survive contact with the corpus: one series is named by
+   several files with different grids, so the first file's shape would refuse
+   every later file's points and =every_line_of_the_whole_corpus_reaches_the_database=
+   would fail. A later file therefore appends its terms to the stored shape.
+5. /Leave an optional coordinate out when nothing states it./ The swaption and
+   other types declare =strike_level= and =expiry= as coordinates a key may leave
+   out. A file of ATM-only quotes states no strike, so the axis constrains nothing
+   and is not written. A required coordinate that no point carries is still
+   refused.
+6. /Append rather than renumber./ A second file for one series writes only the
+   values the series does not already hold, and each new value takes the place
+   after the values already there, so the order the shape stores survives.
 
 * Measurements
 

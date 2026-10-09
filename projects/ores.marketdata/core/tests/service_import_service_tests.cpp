@@ -18,10 +18,13 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.core/datum/ore_key_codec.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/series_axis_repository.hpp"
+#include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -30,7 +33,11 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <utility>
 
 namespace {
 
@@ -53,6 +60,38 @@ series_with_uri(ores::marketdata::repository::market_series_repository& repo,
                 ores::database::context ctx,
                 const std::string& oresmd_uri) {
     return repo.read_latest_by_uri(ctx, oresmd_uri);
+}
+
+// A curve id no earlier run used. The test tenant is shared and nothing clears it
+// between runs, so a fixed id would leave the series already created on a second
+// run and the import would declare no shape for it.
+std::string fresh_curve_id() {
+    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
+    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
+    return tag;
+}
+
+// The series a ZERO key names, as the import files it.
+std::string zero_series_uri(const std::string& curve_id) {
+    using namespace ores::marketdata;
+    const auto point = datum::ore_key_codec::read("ZERO/RATE/EUR/" + curve_id + "/A365/1Y");
+    return datum::oresmd_uri_codec::write(datum::series_of(*point)).value();
+}
+
+// The values of the 'term' axis, in the order the shape stores them.
+std::vector<std::string> term_values(const boost::uuids::uuid& series_id,
+                                     ores::database::context ctx) {
+    using namespace ores::marketdata;
+    const std::vector<std::string> ids{boost::uuids::to_string(series_id)};
+    std::vector<std::pair<int, std::string>> ordered;
+    for (const auto& v :
+         repository::series_axis_value_repository{}.read_latest_for_series(ctx, ids))
+        ordered.emplace_back(v.sequence, v.value);
+    std::ranges::sort(ordered);
+    std::vector<std::string> values;
+    for (auto& [sequence, value] : ordered)
+        values.push_back(std::move(value));
+    return values;
 }
 
 }
@@ -487,4 +526,173 @@ TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
     // The warning is the unnameable name's whole record: a name no class can read
     // has no identity, so it files no series and reports itself instead.
+}
+
+TEST_CASE("import_declares_the_shape_of_a_series_it_creates", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::series_axis_repository axis_repo;
+
+    const auto curve = fresh_curve_id();
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 ZERO/RATE/EUR/" + curve +
+                              "/A365/1Y 0.01\n"
+                              "20160205 ZERO/RATE/EUR/" +
+                              curve + "/A365/2Y 0.02\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.series_count == 1);
+    REQUIRE(resp.observation_count == 2);
+
+    const auto series = series_with_uri(series_repo, h.context(), zero_series_uri(curve));
+    REQUIRE(series.size() == 1);
+
+    // The axis is the coordinate field the datum grammar declares for the type,
+    // and it holds the terms the file named, in the order the file named them.
+    const std::vector<std::string> ids{boost::uuids::to_string(series.front().id)};
+    const auto axes = axis_repo.read_latest_for_series(h.context(), ids);
+    REQUIRE(axes.size() == 1);
+    CHECK(axes.front().axis_field == "term");
+    CHECK(axes.front().sequence == 0);
+    CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
+}
+
+TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+    ores::marketdata::repository::series_axis_repository axis_repo;
+
+    const auto curve = fresh_curve_id();
+    const std::string content = "20160205 ZERO/RATE/EUR/" + curve +
+                                "/A365/1Y 0.01\n"
+                                "20160205 ZERO/RATE/EUR/" +
+                                curve + "/A365/2Y 0.02\n";
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = content;
+    req.source = "test.import_service";
+
+    const auto first = svc.import(req);
+    const auto second = svc.import(req);
+
+    REQUIRE(first.success);
+    REQUIRE(second.success);
+    // The second pass creates nothing, so the shape it leaves is the one the
+    // first pass declared.
+    CHECK(first.series_count == 1);
+    CHECK(second.series_count == 0);
+
+    const auto series = series_with_uri(series_repo, h.context(), zero_series_uri(curve));
+    REQUIRE(series.size() == 1);
+    const std::vector<std::string> ids{boost::uuids::to_string(series.front().id)};
+    CHECK(axis_repo.read_latest_for_series(h.context(), ids).size() == 1);
+    CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
+}
+
+TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    // 13Y is absent from the reference tenor table. A build would be refused,
+    // because its pillars come from the tenant's own configuration. An import is
+    // not: the term is the vendor's, and the ORE corpus carries tenors such as
+    // 13Y and 1Y6M that the table does not hold.
+    const auto curve = fresh_curve_id();
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 ZERO/RATE/EUR/" + curve + "/A365/13Y 0.03\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.series_count == 1);
+    CHECK(resp.observation_count == 1);
+
+    const auto series = series_with_uri(series_repo, h.context(), zero_series_uri(curve));
+    REQUIRE(series.size() == 1);
+    CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"13Y"});
+}
+
+TEST_CASE("import_keeps_the_shape_of_a_series_it_does_not_name", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    // Two curves in one file, each with its own terms. Each series is given the
+    // shape its own keys state, so neither borrows the other's.
+    const auto first = fresh_curve_id();
+    const auto second = fresh_curve_id();
+    ores::marketdata::messaging::import_market_data_request req;
+    req.market_data_content = "20160205 ZERO/RATE/EUR/" + first +
+                              "/A365/1Y 0.01\n"
+                              "20160205 ZERO/RATE/EUR/" +
+                              first +
+                              "/A365/2Y 0.02\n"
+                              "20160205 ZERO/RATE/EUR/" +
+                              second + "/A365/3Y 0.03\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    CHECK(resp.series_count == 2);
+
+    const auto aseries = series_with_uri(series_repo, h.context(), zero_series_uri(first));
+    const auto bseries = series_with_uri(series_repo, h.context(), zero_series_uri(second));
+    REQUIRE(aseries.size() == 1);
+    REQUIRE(bseries.size() == 1);
+    CHECK(term_values(aseries.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
+    CHECK(term_values(bseries.front().id, h.context()) == std::vector<std::string>{"3Y"});
+}
+
+TEST_CASE("import_appends_a_term_a_later_file_states", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    // A second file for the same series brings a term the first did not state.
+    // The shape accumulates, and the new term takes the place after the terms
+    // already there rather than renumbering them.
+    const auto curve = fresh_curve_id();
+    ores::marketdata::messaging::import_market_data_request first;
+    first.market_data_content = "20160205 ZERO/RATE/EUR/" + curve +
+                                "/A365/1Y 0.01\n"
+                                "20160205 ZERO/RATE/EUR/" +
+                                curve + "/A365/2Y 0.02\n";
+    first.source = "test.import_service";
+    REQUIRE(svc.import(first).success);
+
+    ores::marketdata::messaging::import_market_data_request second;
+    second.market_data_content = "20160206 ZERO/RATE/EUR/" + curve + "/A365/3Y 0.03\n";
+    second.source = "test.import_service";
+    const auto resp = svc.import(second);
+
+    REQUIRE(resp.success);
+    CHECK(resp.observation_count == 1);
+    CHECK(resp.series_count == 0);
+
+    const auto series = series_with_uri(series_repo, h.context(), zero_series_uri(curve));
+    REQUIRE(series.size() == 1);
+    CHECK(term_values(series.front().id, h.context()) ==
+          std::vector<std::string>{"1Y", "2Y", "3Y"});
 }

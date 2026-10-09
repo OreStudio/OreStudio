@@ -4237,9 +4237,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # that is not already parent-seeded as a party FK: the
         # party-isolation policies filter every read by the session's
         # visible-party set.
+        #
+        # An entity whose party is derived from a parent it does not model
+        # (a hand-authored table, so the parent's party isolation cannot be
+        # read) carries no party_id column and no such FK, yet its test
+        # still needs the session party: without it the row the test wrote
+        # is invisible to its own read, and the replace claim built from
+        # that read says "no row exists" for a row that does. The model
+        # says so with :party_scoped_writes: true in the * SQL ** Flags
+        # drawer.
         domain_entity['party_scoped_writes'] = (
             (domain_entity.get('sql', {}).get('party_id_from_session', False)
-             or domain_entity['has_party_column'])
+             or domain_entity['has_party_column']
+             or domain_entity.get('sql', {}).get('party_scoped_writes', False))
             and not any(fk.get('parent_is_party', False)
                         for fk in domain_entity.get('foreign_keys', []) or []))
         # Current-state entity: a table with one row per key and no temporal

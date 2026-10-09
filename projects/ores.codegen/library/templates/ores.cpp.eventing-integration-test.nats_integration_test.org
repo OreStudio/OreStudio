@@ -281,7 +281,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     auto v = generate_synthetic_{{entity_singular}}(ctx);
     v.{{{audit_prefix}}}change_reason_code = "system.test";
 {{#party_scoped_writes}}
+{{#has_party_column}}
     v.{{{scaffold_prefix}}}party_id = *party_ctx.party_id();
+{{/has_party_column}}
 {{/party_scoped_writes}}
 {{#foreign_keys}}
 {{^nullable}}

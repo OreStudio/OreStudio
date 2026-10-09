@@ -82,6 +82,7 @@ boost::uuids::uuid{}
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_trade_states_tbl
+:party_scoped_writes: true
 :END:
 
 ** Status transition

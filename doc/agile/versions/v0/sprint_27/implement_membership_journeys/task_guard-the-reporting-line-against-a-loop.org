@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/guard-the-reporting-line-against-a-loop
-#+pr:
+#+pr: 2985
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2985][#2985]] | [iam] Refuse a reporting line that closes a cycle |
 
 * Review
 

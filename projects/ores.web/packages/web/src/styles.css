@@ -12,55 +12,52 @@
 @import 'tailwindcss';
 
 /*
- * The scheme the landing-page review argued: a blue-black surface ramp on the
- * slate neutrals, with indigo for interaction and sky for what is not built
- * yet. It replaces the GitHub-dark palette the project site uses, so the
- * application and the site no longer read as one publication.
+ * The palette is the project site's, as it was before the landing-page review
+ * argued a different one. The review's scheme was tried and rejected: a blue-
+ * black surface ramp on the slate neutrals read as flatter than this one, and
+ * the accent lost more than the hue gained.
  *
- * The narrow-palette rule above still holds, and it is why the future hue is a
- * token rather than a second use of the accent: a card that is not built yet
- * must not look like a control that is.
+ * What the review did contribute is kept, because none of it is a colour: the
+ * accent tints, the tinted elevation, the radius scale, the micro-label type,
+ * and a hue of its own for content that is not built yet. The narrow-palette
+ * rule above is why that last one is a token rather than a second use of the
+ * accent — a card that is not built yet must not look like a control that is.
  */
 @theme {
-  --color-bg-primary: #090d16;
-  --color-bg-secondary: #0f172a;
-  --color-surface-base: #090d16;
-  --color-surface-raised: #0f172a;
-  --color-surface-overlay: #151c2c;
-  --color-surface-hover: #151c2c;
+  --color-bg-primary: #121214;
+  --color-bg-secondary: #1a1a1e;
+  --color-surface-base: #121214;
+  --color-surface-raised: #1a1a1e;
+  --color-surface-overlay: #26262b;
+  --color-surface-hover: #26262b;
 
-  --color-line-subtle: #1b2436;
-  --color-line: #1e293b;
-  --color-line-strong: #334155;
+  --color-line-subtle: #21262d;
+  --color-line: #30363d;
+  --color-line-strong: #4a5568;
 
-  --color-ink: #e2e8f0;
-  --color-ink-muted: #94a3b8;
-  --color-ink-faint: #64748b;
-  --color-ink-inverse: #090d16;
+  --color-ink: #e3e3e6;
+  --color-ink-muted: #a1a1aa;
+  --color-ink-faint: #71717a;
+  --color-ink-inverse: #0d1117;
 
-  /* The reviewed scheme's indigo, one step lighter than it drew it. Indigo at
-     500 fails AA on both sides it is used on — 4.00 as text on the raised
-     surface and 4.35 for the inverse ink on a filled button — where 400 gives
-     5.98 and 6.51. The hue is the review's; the lightness is the floor. */
-  --color-accent: #818cf8;
-  --color-accent-bright: #a5b4fc;
+  --color-accent: #58a6ff;
+  --color-accent-bright: #8ab4f8;
   /* The accent at ten percent over the raised surface: the fill a tile takes
      so its glyph reads as the same control the accent outlines elsewhere. */
-  --color-accent-dim: #1a233f;
+  --color-accent-dim: #202835;
   /* The accent at twenty percent, for the hairline around that fill. */
-  --color-accent-line: #262e53;
+  --color-accent-line: #26364b;
 
-  /* Content that is not built yet. Sky, so a future card is never mistaken for
-     a live control, which is the accent's job alone. */
-  --color-roadmap: #38bdf8;
-  --color-roadmap-dim: #13283f;
-  --color-roadmap-line: #173853;
+  /* Content that is not built yet. Violet, which the project site already uses
+     and which no accent or semantic role claims, so a future card is never
+     mistaken for a live control. */
+  --color-roadmap: #8957e5;
+  --color-roadmap-dim: #252032;
+  --color-roadmap-line: #302646;
 
-  --color-purple: #a78bfa;
-
-  --color-up: #34d399;
-  --color-down: #f87171;
-  --color-warn: #fbbf24;
+  --color-up: #3fb950;
+  --color-down: #f85149;
+  --color-warn: #d29922;
 
   /* Named first so a machine that has them uses them, and nothing is fetched
      to get them: the application still renders offline. */

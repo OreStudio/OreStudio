@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: D411C79B-184D-44AA-82CE-CF9379461A65
+:END:
+#+title: Task: Give the prototype design notes their links
+#+description: Task for: Group the prototypes and add the Gemini reviews
+#+type: task
+#+level: s1
+#+filetags: :group-the-prototypes:sprint_27:v0:
+#+owner: marco
+#+branch: hotfix/give-the-prototype-design-notes-their-links
+#+pr: 2946
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader who lands on a prototype's design note can open the prototype and its Gemini review from the note itself, without going back to the group page.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:855D0907-26E3-48B9-A59F-5FEBE54C328C][Group the prototypes and add the Gemini reviews]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- Every design note carries a table linking its prototype and its Gemini
+  review, or =none= where there is no review.
+- Nothing changes in a prototype page or a review page.
+- The links resolve and the site renders the table on the note's page.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Design notes carrying the table | 9 of 9 | =grep -c 'Gemini review' doc/prototypes/*/*.org= | ec90a07291 |
+| Design notes whose review row is a link | 3: access, profile, tenancy/navigation | =find doc/prototypes -type d -name review= | ec90a07291 |
+| Pages published by the site build | 38 files, 0 failures | =compass site page= | ec90a07291 |
+| org-links | pass, 2.7 s | =compass check --only org-links= | ec90a07291 |
+| site-page | pass, 27.6 s | =compass check --only site-page= | ec90a07291 |
+| Review screens added | 1 | =ls doc/prototypes/setup/first-run/review/= | 6721762871 |
+| Screen identical to its source | yes | =diff /home/marco/Downloads/gemini-code-1791556395038.html doc/prototypes/setup/first-run/review/create-the-administrator.html= | 6721762871 |
+| prototypes, site-page, org-links | 3/3 passed | =compass check --only prototypes --only site-page --only org-links= | 6721762871 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2946][#2946]] | [doc] Open a prototype and its review from its design note |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Nine design notes carry the table: three under access, and one each under
+books, classifications, entry, profile and tenancy. Each names the
+prototype, the Gemini review where one exists, and the group page the
+note answers to. Three notes link a review: =access=, =profile= and
+=tenancy/navigation=. The other six say =none=.
+
+It is an org table rather than the export block the earlier attempt used.
+The earlier version was raw HTML with inline styles, which no org buffer
+renders and no link check reads; this one is the same table in the org
+file and on the site, and its links are org links, so =org-links= covers
+them. The styling it gives up was the reason the block existed, and the
+group page already carries the register for anyone who wants the styled
+view.
+
+Nothing changed in a prototype page or a review page, which stay
+byte-identical to what their author wrote. Only the notes changed.
+
+* Also in this task: First run's administrator step
+
+Gemini's =Create the administrator= screen joined the tree at
+=doc/prototypes/setup/first-run/review/=, byte-identical to the file it
+came from, under an index that lists it. It is a review of =First run=
+and not a new prototype because it is the second step of the bootstrap
+wizard =First run= walks through: the rail in the file names the same
+seven steps its =prototype.js= does. The setup page's review cell for
+=First run= said =none=, and links the review now.
+
+=build/scripts/check_prototype_inventory.py= is what holds the two
+together: it fails on a row that says =none= for a prototype that has a
+review directory, and on a review directory with no =index.html=.

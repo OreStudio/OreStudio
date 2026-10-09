@@ -7,7 +7,13 @@
 #+level: cross
 #+filetags: :prototype:ui:security:identity:profile:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-10-09
+
+| Item          | Where                                  |
+|---------------+----------------------------------------|
+| Prototype     | [[file:profile/][the prototype]]       |
+| Gemini review | [[file:profile/review/][the review]]   |
+| Group         | [[file:index.org][Profile prototypes]] |
 
 * Summary
 

@@ -7,7 +7,13 @@
 #+level: cross
 #+filetags: :prototype:ui:security:identity:registration:
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-10-09
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:registration-door/][the prototype]] |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Entry prototypes]]       |
 
 * Summary
 

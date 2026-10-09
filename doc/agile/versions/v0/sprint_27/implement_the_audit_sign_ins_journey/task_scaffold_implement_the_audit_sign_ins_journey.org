@@ -8,7 +8,7 @@
 #+filetags: :implement_the_audit_sign_ins_journey:sprint_27:v0:
 #+owner: marco
 #+branch: feature/implement-the-audit-sign-ins-journey
-#+pr:
+#+pr: 2917
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6790C74D-F554-41FB-8896-EE277B2CEADE][Implement the audit sign-ins journey]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2917][#2917]] | [agile] Scaffold the audit sign-ins journey |
 
 * Review
 
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its five implementation tasks and the sprint wiring are in place,
+so each implementation task can start from
+=feature/implement-the-audit-sign-ins-journey=.

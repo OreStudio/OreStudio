@@ -31,9 +31,9 @@ implemented until these are stated.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:0B573887-5101-4D91-9288-38F0C0AE3E06][Isolate tenant data in object storage and the compute grid]] |
-| Now          | Closed. The policy is stated and its open questions recorded. |
+| Now          | Nothing.                                                      |
 | Waiting on   | Nothing.                               |
-| Next         | Break the story's implementation into tasks. |
+| Next         | Nothing.                                     |
 | Last touched | 2026-10-07                               |
 
 * Acceptance

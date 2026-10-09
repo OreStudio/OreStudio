@@ -28,7 +28,7 @@ The command every document gives for the drift check runs as written, and the ex
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Story: Codegen developer experience improvements]] |
-| Now          | The execute bit is set and the script re-execs under the codegen virtualenv. Both are verified. |
+| Now          | Nothing.                                                                                        |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-07                               |

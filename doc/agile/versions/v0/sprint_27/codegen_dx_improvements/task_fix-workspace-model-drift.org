@@ -42,7 +42,7 @@ default database actually seeds.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Nothing. Abandoned; see Result. |
+| Now          | Nothing.                        |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-05                               |

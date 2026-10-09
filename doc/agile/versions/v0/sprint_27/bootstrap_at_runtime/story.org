@@ -27,9 +27,9 @@ inserts or publishes it in its own setup.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Done. The build publishes nothing; a recreate leaves the refdata tables empty and the suite is green. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | PR.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance

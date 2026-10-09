@@ -28,7 +28,7 @@ codegen-tests fails seven cases and er-diagram is stale on trunk. Repair the sta
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
-| Now          | Merged in PR #2924. |
+| Now          | Nothing.            |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-09                               |

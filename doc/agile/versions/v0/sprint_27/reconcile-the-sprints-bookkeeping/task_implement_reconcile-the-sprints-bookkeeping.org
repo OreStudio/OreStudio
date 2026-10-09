@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 20C7AF56-E90D-45D4-BA9C-4B6B91EF700C
+:END:
+#+title: Task: Implement Reconcile the sprint's bookkeeping
+#+description: Take the sprint audit from 41 findings to the two that are real open work, without losing a record.
+#+type: task
+#+level: s1
+#+filetags: :reconcile-the-sprints-bookkeeping:sprint_27:v0:
+#+owner: marco
+#+branch: feature/reconcile-the-sprints-bookkeeping
+#+pr: 2931
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
++#+environment: eager_maxwell
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F1FA6A9D-A2FD-4A32-8D2D-EA68DAA60385][Reconcile the sprint's bookkeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Reconcile every finding the sprint audit reports except the two that are real
+open work.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F1FA6A9D-A2FD-4A32-8D2D-EA68DAA60385][Reconcile the sprint's bookkeeping]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The audit reports no finding that the pass could have resolved.
+- No outcome text is lost.
+
+* Plan
+
+Four groups, worked in the order that keeps them from cascading wrongly:
+
+1. The story ready to close and the six tasks whose pull requests have all
+   merged: closed with =compass task done= and =compass story done=. Two of the
+   eight were left open -- see the story's decisions.
+2. The seven table disagreements: two closed with =compass story done=, which
+   rewrites the row, and five rows edited directly because compass has no verb
+   that starts a story.
+3. The twenty-five closed documents whose =Now= was not =Nothing.=: for each, the
+   =Now= text was moved into its =Result= first, and only then blanked. Six had no
+   =Result= section at all, so writing one was the whole point.
+4. A second audit, which promoted five more stories to "ready to close" because
+   their last task had just closed. Those were closed and given Results too.
+
+The two left open are not oversights: one waits on five open items and a
+decision, the other on a blocked dependency.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| audit findings, before | 41 | =compass sprint audit= | 6233ea5e22 |
+| audit findings, after | 2, both deliberate | =compass sprint audit= | working tree after the pass |
+| stories closed | 6 | =compass story done= for each | working tree after the pass |
+| tasks closed | 6 | =compass task done= for each | working tree after the pass |
+| sprint rows reconciled | 5 | a scan of =sprint.org= against the story files | working tree after the pass |
+| closed documents whose =Now= was moved to their =Result= | 25 | a scan for a closed document whose =Now= is not =Nothing.= | working tree after the pass |
+
+* Notes
+
+The audit's "open tasks whose pull requests have all merged" rule is a
+heuristic, and two of its eight hits were wrong: a merged PR means work landed,
+not that the task ran out of work. Both are recorded in the story's decisions.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2931][#2931]] | [agile] Reconcile the sprint's bookkeeping |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+41 findings down to 2, both deliberately left open. Six stories and six tasks
+closed, five sprint rows reconciled, and twenty-five closed documents had their
+outcome moved into a Result before their Now was blanked.

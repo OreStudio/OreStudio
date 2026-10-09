@@ -21,11 +21,11 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | The =job_definition= entity is modelled, regenerated and wired; its hand-written stack and the retired custom operations are gone. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The remaining units on the task: the diagram manual pass, the shell part, and the =job_instance= entity. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-26                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:49B3C660-E587-4CFC-B703-63DC845F7610][Bring ores.scheduler to the clean standard]] | BACKLOG | | | Work ores.scheduler through the Component Clean Standard in order and record each item. |
+| [[id:49B3C660-E587-4CFC-B703-63DC845F7610][Bring ores.scheduler to the clean standard]] | DONE | | 2026-10-09 | Work ores.scheduler through the Component Clean Standard in order and record each item. |
 
 * Notes
 
@@ -70,3 +70,7 @@ ores.scheduler meets the [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Cl
 * Out of scope
 
 -
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: every task is DONE with its work merged, and the tasks carry the outcomes.

@@ -33,9 +33,9 @@ missing.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Fixed and regenerated; the static checks are being run. |
+| Now          | Nothing.                                                |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR and merge.                |
+| Next         | Nothing.                               |
 | Last touched | 2026-10-08                               |
 
 * Acceptance

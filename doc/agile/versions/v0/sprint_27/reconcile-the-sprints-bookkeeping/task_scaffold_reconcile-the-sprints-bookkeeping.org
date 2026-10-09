@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: 7300F857-3E69-4AA8-9B93-5DE7E259C803
+:ID: 4881A109-8508-4F70-ACFB-75D3D5D04183
 :END:
-#+title: Task: Fix what validation run 1 found
-#+description: The first hourly validation run, cut from dfd7880807, left two defects live that no other fix had reached: two tenant-scoped swap leg tables with no row level security, and a test locator that read the wrong translation group and reported sixteen phantom missing sentences.
+#+title: Task: Scaffold story: Reconcile the sprint's bookkeeping
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
+#+filetags: :reconcile-the-sprints-bookkeeping:sprint_27:v0:
 #+owner: marco
-#+branch:
-#+pr: 2913
+#+branch: feature/reconcile-the-sprints-bookkeeping
+#+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-08
-#+updated: 2026-10-08
+#+created: 2026-10-09
+#+updated: 2026-10-09
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F1FA6A9D-A2FD-4A32-8D2D-EA68DAA60385][Reconcile the sprint's bookkeeping]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:413AD807-D74A-499F-B7D8-1ABB7D37B81F][Bring the last components under the drift gate]] |
+| Parent story | [[id:F1FA6A9D-A2FD-4A32-8D2D-EA68DAA60385][Reconcile the sprint's bookkeeping]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-08                               |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
@@ -74,12 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2913][#2913]] | [marketdata,trading,ore] Fix the nightly build and three test failures |
-| [[https://github.com/OreStudio/OreStudio/pull/2883][#2883]] | [codegen,sql,shell] Clear what validation run 3 found |
-| [[https://github.com/OreStudio/OreStudio/pull/2871][#2871]] | [doc] Record how a validation run stays inside its hour |
-| [[https://github.com/OreStudio/OreStudio/pull/2869][#2869]] | [codegen,trading,web] Clear what validation run 2 found |
-| [[https://github.com/OreStudio/OreStudio/pull/2861][#2861]] | [sql] Drop the duplicate swap leg RLS policies |
-| [[https://github.com/OreStudio/OreStudio/pull/2854][#2854]] | [sql,codegen] Close the swap leg RLS gap and the locator bug |
+|    |       |
 
 * Review
 
@@ -89,5 +84,5 @@ via its "Verifies task" field.
 
 * Result
 
-All its pull requests are merged (PR #2854, #2861, #2869, #2871, #2883 and #2913). Closed in the sprint's bookkeeping pass; the task's plan and the merged changes carry the outcome.
-
+Story, tasks and the sprint row are scaffolded, and the branch carries them
+with the reconciliation.

@@ -28,9 +28,9 @@ marketdata passes every item of the component clean standard, or holds an except
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:6047683C-54F2-4FAC-A55E-AD0CFF371852][Return marketdata to the clean-standard registry]] |
-| Now          | The 49 items are re-measured and marketdata is back in =COMPONENTS_UNDER_TEST=. The PR is next. |
+| Now          | Nothing.                                                                                        |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                  |
+| Next         | Nothing.                       |
 | Last touched | 2026-10-06                               |
 
 * Acceptance

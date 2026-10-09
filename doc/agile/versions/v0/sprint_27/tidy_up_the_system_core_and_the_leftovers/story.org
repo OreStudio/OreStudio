@@ -23,11 +23,11 @@ exposed are closed.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-06                               |
 
 * Acceptance
@@ -59,3 +59,7 @@ exposed are closed.
 - Whatever the sweep turns up that needs a decision rather than a membership
   line. It is captured as its own story or task, not folded in here to keep the
   sweep moving.
+
+* Result
+
+Closed on the tasks' state, in the sprint's bookkeeping pass: all five tasks are DONE with their work merged, and the tasks carry the outcomes. The Status field said the story had not started, which the task table already contradicted.

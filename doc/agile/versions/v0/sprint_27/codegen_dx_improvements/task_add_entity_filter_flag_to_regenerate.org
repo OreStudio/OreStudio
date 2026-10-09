@@ -43,9 +43,9 @@ look like "nothing to generate."
 |--------------+----------------------------------------|
 | State        | DONE                                    |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Implemented, tested, and verified live; PR #1734 open. |
+| Now          | Nothing.                                               |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR #1734.                        |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-29                               |
 
 * Acceptance

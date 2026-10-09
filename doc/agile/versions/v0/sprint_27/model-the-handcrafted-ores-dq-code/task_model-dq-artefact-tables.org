@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-09-26
 #+updated: 2026-09-27
-#+environment: festive_dijkstra
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:82BC58F2-0CD2-453F-B69F-B27D7A6D840E][Model the handcrafted ores.dq code and generate the artefact tables]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ The design question is already answered: an artefact table *can* generate from t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:82BC58F2-0CD2-453F-B69F-B27D7A6D840E][Model the handcrafted ores.dq code and generate the artefact tables]] |
-| Now          | dq has no failing test case this task owns: =ores.dq.api.tests=, =ores.dq.core.tests=, =ores.dq.service.tests= and =ores.shell.dq.tests= pass. The two LEI cases part twenty-two left are closed: the LEI staging-entity [[id:4205D956-5738-43F5-8083-B06211726780][task]] is DONE and PR #2270 merged. All fifteen entities are canonical, all 31 dq =*_protocol.hpp= carry the generated marker, =ores.shell.dq= is wired, and dq is in =COMPONENTS_UNDER_TEST=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                              |
-| Next         | The task's single remaining item is the seven hand-written =*_artefact_create.sql= files under =projects/ores.sql/create/dq/= that declare a table no model owns. Each needs a model, or a recorded reason it has none. The seven are listed in the =* Result= section; they are also what Step 8 of the plan now records. |
+| Next         | Nothing. |
 | Last touched | 2026-09-27                               |
 
 * Acceptance

@@ -7,7 +7,13 @@
 #+level: cross
 #+filetags: :prototype:ui:access:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-10-09
+
+| Item          | Where                                        |
+|---------------+----------------------------------------------|
+| Prototype     | [[file:where-requests-live/][the prototype]] |
+| Gemini review | none                                         |
+| Group         | [[file:index.org][Access prototypes]]        |
 
 * Summary
 

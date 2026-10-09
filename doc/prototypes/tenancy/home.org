@@ -7,7 +7,13 @@
 #+level: cross
 #+filetags: :prototype:ui:navigation:tenancy:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-09
+
+| Item          | Where                                  |
+|---------------+----------------------------------------|
+| Prototype     | [[file:home/][the prototype]]          |
+| Gemini review | none                                   |
+| Group         | [[file:index.org][Tenancy prototypes]] |
 
 * Summary
 

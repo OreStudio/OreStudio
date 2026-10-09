@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 26C13950-9C56-4E27-B4CD-B5148EF2B968
+:END:
+#+title: Task: Move the rates family onto its header
+#+description: Author ores.trading.rate_instruments: the family's coverage check, the shared dates and description, the trade-activity key, and the delete cascade that owns the family's rows. Convert the eight product tables from instrument entities into fact tables keyed by the trade, route the family's codes to the header through the catalogue, and wire the import and the export to the header and the facts.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/author-the-rates-family-header
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The rates family has a header: =ores_trading_rate_instruments_tbl= carries the
+family's coverage check, the fields the products share, the trade-activity key
+and the delete cascade that owns the family's rows. The eight product tables
+become fact tables keyed by the same trade, and the import and the export read
+and write the header beside them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not started. The design is settled and recorded in this plan. |
+| Waiting on   | Nothing.                               |
+| Next         | Author the header model, then convert the products. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =rate_instruments= exists with the family's coverage check over its codes,
+  =start_date=, =maturity_date=, =description=, the trade-activity key, the
+  audit spine, tenant isolation and a =* Delete cascade= that names the
+  family's legs, leg children and fact tables.
+- The eight product tables are fact tables: =trade_id= as a flat primary key,
+  =trade_activity_id= flat, their own fields, no =instrument_identity=, no
+  =party_id=, no =trade_type_code=, no shared dates, tenant isolation.
+- The trade-type catalogue routes the family's codes to
+  =rate_instruments=, so the header's check lists exactly them.
+- The import writes the header row and the fact row, and the export reads both;
+  =ores.ore.core.tests= passes at the new shape, including a delete that closes
+  the family.
+
+* Plan
+
+The shape is the bond pilot's, so each step is a copy of something that already
+works rather than a new mechanism.
+
+1. *The header model.* =ores.trading.rate_instruments= mirrors
+   =ores.trading.bond_instrument=: =:profile: trading-instrument=, the identity
+   group =ores.trading.instrument_identity=, the audit group, =:routed_by:= the
+   trade-type catalogue with =:routed_column: trade_type_code=,
+   =:rls_tenant_isolation: true=, the party and trade-type indexes, and a
+   =* Delete cascade= section naming =swap_legs=, the two leg children,
+   =callable_swap_call_dates= and the eight fact tables, each with
+   =:table:= and =:column: trade_id=.
+2. *A fact table's shape.* =ores.trading.bond_option= is the template: flat
+   =trade_id= as the primary key, flat =trade_activity_id=, the product's own
+   fields, a =* Foreign keys= section for the two the facts keep, and
+   =:rls_tenant_isolation: true=. Each of the eight models drops its identity
+   group, its =party_id=, its =trade_type_code= and the shared dates, and keeps
+   its own fields.
+3. *The catalogue.* The nine rates codes move from their product tables to
+   =rate_instruments=. That is what turns the header's check into the family's
+   coverage check, and it is why the products must be converted in the same
+   change: =instrument_table_for= starts answering =rate_instruments= for every
+   rates code, so the export reads the header for the instrument and the fact
+   table for the fields.
+4. *The carrier and the mapper.* =swap_instrument_data= gains the header, so a
+   rates instrument in memory is the header plus its leaf plus its children.
+   The forward mappers fill the header's fields from the document, as they fill
+   the leaf's today, and the reverse mappers take it. The import writes the
+   header row before the fact row; the export service reads the header rows
+   into the batch's =rate_instruments= array and the facts into theirs, and
+   =rebuild_instrument= joins them by trade id, exactly as it joins the legs.
+5. *Order of work.* Author the header and the catalogue entry first, then
+   convert one product end to end - FRA, which has the fewest own fields - with
+   a build and the ORE round trip between each conversion. Each conversion is
+   verifiable on its own, and the family is never half-routed: a product's codes
+   move to the catalogue's header row in the same change that converts it.
+
+* Notes
+
+- The story's acceptance says "each product fact table checks its own" trade
+  type. The pilot this family follows does not do that: =bond_instruments=
+  carries the family's whole check and the bond fact tables carry none, and they
+  join the header by trade id. The catalogue can state one routing per trade
+  type, so a fact table cannot hold a check of its own while the header holds
+  the family's. This task follows the pilot and the design's entity table; the
+  acceptance line is reconciled when the story closes.
+- The staging unit also carries two clauses that are already done and are not
+  part of this task: the cross-currency swap's type (its own task) and, in
+  part, the seven unwritten columns. What remains here is the header, the field
+  move and the routing.
+- =description= and =trade_activity_id= are written by the handler and
+  =stamp_ids= rather than by the mapper, so the field move touches them in the
+  handler; =start_date= and =maturity_date= are the mapper's (19 and 14 uses,
+  the family's most-used fields) and are the bulk of the mechanical work.
+- The three unrouted codes (RateDigitalOption, SwaptionStraddle,
+  ForwardVolatilityAgreement) have no table and are out of scope, as the design
+  records.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

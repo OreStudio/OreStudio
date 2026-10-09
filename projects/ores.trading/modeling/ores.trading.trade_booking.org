@@ -45,6 +45,8 @@ that takes the trade live, in the same transaction.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:parent_entity: trade
+:bump_parent_version: true
 :END:
 
 The trade this booking belongs to.

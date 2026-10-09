@@ -26,11 +26,11 @@ A structure's internal version is computed from its legs and membership, never s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:08ACC414-983E-46ED-AF7E-6F96474DA696][Model trade structures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-05                               |
 
 * Acceptance
@@ -56,7 +56,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| static checks | 4 of 4 pass | =compass check --only sql-reachability --only handler-permissions --only model-drift --only sql-hygiene= | feature/read-a-structures-version-from-its-legs |
 
 * Notes
 
@@ -85,3 +85,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores_trading_structure_version_fn= returns a structure's internal version by
+folding its legs rather than storing a counter beside them. A leg's version
+moves when any of its components is written, because the component tables now
+bump the trade's version, and the membership carries its own version, so
+linking or unlinking a leg moves the deal too.
+
+The external version stays on the agreement, which the authorisation and
+agreement work owns.
+
+This needed =:parent_entity: trade= and =:bump_parent_version: true= on the
+seven children of the trade. Without it a component write did not move the
+trade's version, so the fold would have missed exactly the case the acceptance
+names. =trade_link= is left alone: it holds no facts, so its writes are not a
+change to a trade's terms.

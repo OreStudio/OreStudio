@@ -28,9 +28,9 @@ The cap/floor strikes and schedules and the swaption's option block sit on the s
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Stage 1 merged as PR #2986: the header's cascade names the seven children, the catalogue carries them as child arrays, and the schedule check accepts the rates owner role. The retyping, the fourth option child and the mapper, handler and export wiring are stage 2. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Retype the option block and add instrument_option_exercise_price, then wire the mapper, the import handler and the export. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -44,29 +44,39 @@ The cap/floor strikes and schedules and the swaption's option block sit on the s
 
 * Plan
 
+Stage 1, merged as PR #2986, is the family's ownership of the children: the
+header's cascade, the catalogue's child arrays, and the schedule owner role.
+
 1. *The shapes.* The bond pilot's =instrument_strike=, =instrument_schedule=,
-   =instrument_schedule_date=, =instrument_option= and its four keyed children
-   are the target. Read them first and reuse their column sets rather than
-   widening them; the family writes to them, it does not extend them. The one
-   exception is =instrument_schedules.owner_role=, whose check lists
-   =trs_funding=, =repo=, =ascot_swap=, =option= and =trs= today: the rates
-   owner roles join that list when the first rates schedule lands.
-2. *The models.* Give the cap/floor and the swaption the children they write,
-   and retype the option block's text columns: =premium_amount=,
-   =premium_currency=, =premium_pay_date=, =exercise_prices=,
-   =settlement_fixing_date= and =instrument_option_exercise_fees.start_date=.
-3. *The cascade and the children list.* Add the shared children to
-   =ores.trading.rate_instruments=' =* Delete cascade= and to the trade-type
-   catalogue's =* Batch / ** Children=, so a header delete closes them and the
-   export carries them.
-4. *The registration root.* Move the shared children's registration out of
-   =registrar_bond.cpp= into the root that owns them, so the bond family stops
-   being the reason a rates child is registered.
-5. *The mapper.* Write the children on import and read them on export, beside
-   the leg collections the family already carries.
-6. *Order.* Take one product end to end first — the cap/floor, which has the
-   fewest own fields once the dates moved — with a build and the round trip
-   between products.
+   =instrument_schedule_date=, =instrument_option= and its keyed children are
+   the target. The family writes to them; it does not widen them.
+2. *The retyping, finding R5, decided.* ORE states =PremiumAmount=,
+   =PremiumPayDate=, =ExercisePrices= and the option premiums'
+   =SettlementFixingDate= as =xs:string=, and the schema copied the string.
+   The storage is typed and the boundary converts, as the family's =end_date=
+   does: =premium_amount= becomes =numeric(28, 10)=, =premium_pay_date= and
+   both =settlement_fixing_date= columns become =date=.
+3. *=exercise_prices=, the fourth child.* The column holds a list in a string
+   and the option block has three keyed children where the design's entity
+   table names four. =instrument_option_exercise_price= is the fourth: the
+   trade, the ordinal, the exercise date and the price, as
+   =instrument_option_premium= is keyed. The text column is dropped.
+   =premium_currency= stays =text=, because a currency code is text in every
+   other table here and soft-FKs to =ores_refdata_currencies_tbl=.
+4. *The registration root, finding R11.* Move the shared children's
+   registration out of =registrar_bond.cpp= into the root that owns them.
+5. *The mapper.* =swap_instrument_data= gains one vector per child;
+   =forward_capfloor= fills the strikes and the schedules,
+   =forward_swaption= fills the option block, and the reverse mappers read
+   them back. The import handler calls the =save_strike=, =save_schedule= and
+   =save_option_block= helpers the bond path already has, with =owner_role=
+   =swap= for a leg's schedule and =option= for the exercise dates.
+6. *The export.* The export service reads the child tables for the rates
+   trade ids into the batch arrays and =as_swap= gathers them by trade id.
+7. *The proof.* A cap/floor round trip that keeps its strikes and schedules,
+   and a swaption round trip that keeps its option block.
+8. *Order.* The cap/floor first, end to end, with a build and the round trip
+   between it and the swaption.
 
 * Measurements
 

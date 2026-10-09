@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-counterparty-onboarding-screen
-#+pr:
+#+pr: 3020
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3020][#3020]] | [web] Build the counterparty onboarding screen |
 
 * Review
 

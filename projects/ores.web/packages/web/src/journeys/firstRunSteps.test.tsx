@@ -20,9 +20,13 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { ReactNode } from 'react';
 import { createTranslator } from '../i18n/translate.js';
+import { TranslationProvider } from '../i18n/Provider.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { firstRunSteps, type FirstRunChoice } from './firstRunSteps.js';
+import { newTenantSteps } from './newTenantSteps.js';
 import { canGoBack, indexOfStep } from './runtime.js';
 import { detailsFor, type NewTenant } from './state.js';
 import type { TenantEntry } from './FirstSignIn.js';
@@ -127,6 +131,8 @@ function steps(
         readonly administratorExists?: boolean;
         /** What the installation is left with. */
         readonly choice?: FirstRunChoice;
+        /** Records the starting point the person chose. */
+        readonly onChoose?: (choice: FirstRunChoice) => void;
         /** Whether the tenant administrator's sign-in has finished. */
         readonly tenantSignInComplete?: boolean;
         readonly entry?: TenantEntry;
@@ -134,7 +140,6 @@ function steps(
         readonly onAdministratorEntered?: () => Promise<void>;
         readonly onAdministratorSignIn?: () => Promise<void>;
         readonly onCompleteSystemOnboarding?: () => Promise<void>;
-        readonly onFinished?: () => void;
         readonly onSignOutAfterBootstrap?: () => Promise<void>;
         readonly goTo?: (id: string) => void;
     } = {},
@@ -163,6 +168,7 @@ function steps(
         administratorSignIn: 'Administrator sign-in body',
         administratorArrival: 'Administrator arrival body',
         choice: overrides.choice ?? 'first-tenant',
+        onChoose: overrides.onChoose ?? vi.fn(),
         goTo: overrides.goTo ?? vi.fn(),
         onCreateAdministrator: overrides.onCreateAdministrator ?? vi.fn(async () => undefined),
         onAdministratorEntered: overrides.onAdministratorEntered ?? vi.fn(async () => undefined),
@@ -170,7 +176,6 @@ function steps(
         onHandOff: vi.fn(async () => undefined),
         onCompleteSystemOnboarding:
             overrides.onCompleteSystemOnboarding ?? vi.fn(async () => undefined),
-        onFinished: overrides.onFinished ?? vi.fn(),
         onSignOutAfterBootstrap:
             overrides.onSignOutAfterBootstrap ?? vi.fn(async () => undefined),
     });
@@ -278,13 +283,56 @@ describe('a step with no state behind it', () => {
     });
 });
 
+describe('the starting point', () => {
+    const renderBody = (body: ReactNode): string =>
+        renderToStaticMarkup(<TranslationProvider>{body}</TranslationProvider>);
+
+    it('offers the profiles and the installation that keeps no tenant', () => {
+        const profileStep = steps().find((step) => step.id === 'profile');
+        const html = renderBody(profileStep?.body);
+
+        expect(html).toContain('Empty operational');
+        expect(html).toContain('Bare system');
+        expect(html).toContain('For advanced users');
+    });
+
+    it('lets a person continue with no tenant, without choosing a profile', () => {
+        const profileStep = steps({ choice: 'system-only' }).find((step) => step.id === 'profile');
+
+        expect(profileStep?.next?.enabled).toBe(true);
+    });
+
+    it('waits for a profile while a tenant is being created', () => {
+        const profileStep = steps({ choice: 'first-tenant' }).find((step) => step.id === 'profile');
+
+        expect(profileStep?.next?.enabled).toBe(false);
+    });
+
+    it('is not offered where a tenant is the whole point of the journey', () => {
+        const profileStep = newTenantSteps({
+            t,
+            server: fakeServer(),
+            policy,
+            profiles: [profile],
+            state: tenantState(),
+            creatingPassword: 'Issued-Password-1',
+            onHandOff: vi.fn(async () => undefined),
+        }).find((step) => step.id === 'profile');
+        const html = renderBody(profileStep?.body);
+
+        expect(html).toContain('Empty operational');
+        expect(html).not.toContain('Bare system');
+    });
+});
+
 describe('an installation that keeps the system tenant alone', () => {
     const systemOnly = () => steps({ choice: 'system-only' });
 
-    it('drops the tenant steps and the tenant sign-in from the rail', () => {
+    it('keeps the starting point and drops the four tenant stages', () => {
         expect(systemOnly().map((step) => step.id)).toEqual([
             'welcome',
             'administrator',
+            'profile',
             'signIn',
             'ready',
         ]);
@@ -296,7 +344,6 @@ describe('an installation that keeps the system tenant alone', () => {
 
         expect(tenant).toHaveLength(9);
         expect(tenant.filter((id) => !system.includes(id))).toEqual([
-            'profile',
             'details',
             'review',
             'provisioning',
@@ -304,12 +351,13 @@ describe('an installation that keeps the system tenant alone', () => {
         ]);
     });
 
-    it('leaves the welcome and the administrator where they were', () => {
+    it('leaves the welcome, the administrator and the starting point where they were', () => {
         const tenant = steps({ choice: 'first-tenant' });
         const system = systemOnly();
 
         expect(indexOfStep(system, 'welcome')).toBe(indexOfStep(tenant, 'welcome'));
         expect(indexOfStep(system, 'administrator')).toBe(indexOfStep(tenant, 'administrator'));
+        expect(indexOfStep(system, 'profile')).toBe(indexOfStep(tenant, 'profile'));
     });
 
     it('marks the administrator sign-in as the one-way door', () => {
@@ -341,13 +389,10 @@ describe('an installation that keeps the system tenant alone', () => {
         expect(ready?.lead).toBe('The installation is set up, and super_admin is signed in.');
     });
 
-    it('records the finished wizard before it hands the browser over', async () => {
+    it('records the finished wizard before it hands the browser over, on both rails', async () => {
         const order: string[] = [];
         const onCompleteSystemOnboarding = vi.fn(async () => {
             order.push('complete');
-        });
-        const onFinished = vi.fn(() => {
-            order.push('finished');
         });
         const onSignOutAfterBootstrap = vi.fn(async () => {
             order.push('signed-out');
@@ -356,35 +401,30 @@ describe('an installation that keeps the system tenant alone', () => {
         const tenantReady = steps({
             choice: 'first-tenant',
             onCompleteSystemOnboarding,
-            onFinished,
             onSignOutAfterBootstrap,
         }).find((step) => step.id === 'ready');
         await tenantReady?.next?.run?.();
         /*
          * The flag is what releases the gate, so it is written before the
-         * hand-over. The tenant rail hands the browser over signed in, as the
-         * administrator it just created.
+         * hand-over. Bootstrap runs as the tenant's system party, and that is
+         * no party to leave somebody sitting in, so both rails end at the
+         * sign-in screen.
          */
-        expect(order).toEqual(['complete', 'finished']);
+        expect(order).toEqual(['complete', 'signed-out']);
 
         order.length = 0;
         const systemReady = steps({
             choice: 'system-only',
             onCompleteSystemOnboarding,
-            onFinished,
             onSignOutAfterBootstrap,
         }).find((step) => step.id === 'ready');
         await systemReady?.next?.run?.();
-        /*
-         * Bootstrap runs as the tenant's system party, and that is no party to
-         * leave somebody sitting in, so the system-only rail ends at the
-         * sign-in screen rather than handing the browser over.
-         */
         expect(order).toEqual(['complete', 'signed-out']);
         expect(onCompleteSystemOnboarding).toHaveBeenCalledTimes(2);
+        expect(onSignOutAfterBootstrap).toHaveBeenCalledTimes(2);
     });
 
-    it('allows a step back from the administrator, the first step past the choice', () => {
+    it('allows a step back from the administrator', () => {
         const system = systemOnly();
 
         expect(canGoBack(system, indexOfStep(system, 'administrator'))).toBe(true);

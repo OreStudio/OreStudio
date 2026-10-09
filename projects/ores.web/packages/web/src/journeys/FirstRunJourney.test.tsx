@@ -23,9 +23,10 @@
  * The first run page's own parts.
  *
  * The page reaches the server for its password rules before it renders a rail,
- * and the web package has no browser to put it in, so the choice is tested on
- * the card that offers it and on the stages it states. The rail the choice
- * produces is asserted where it is built, in `firstRunSteps.test.tsx`.
+ * and the web package has no browser to put it in, so the welcome it shows is
+ * tested where it renders. The rail the starting point produces, and the
+ * starting point itself, are asserted where they are built, in
+ * `firstRunSteps.test.tsx`.
  */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -35,9 +36,8 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import {
     AdministratorArrival,
     FirstRunJourney,
-    WelcomeCard,
+    WelcomeIntro,
     systemPartyOf,
-    welcomeStages,
 } from './FirstRunJourney.js';
 import type { PartySummary } from '@ores/wire-protocol/browser';
 import type { JourneyServer } from './server.js';
@@ -110,50 +110,15 @@ function fakeServer(): JourneyServer {
     };
 }
 
-describe('the welcome card', () => {
-    it('offers both endings, and marks the chosen one', () => {
-        const html = render(<WelcomeCard choice="first-tenant" onChoice={() => undefined} />);
+describe('the welcome', () => {
+    it('introduces the setup, and asks nothing', () => {
+        const html = render(<WelcomeIntro />);
 
+        expect(html).toContain('Create the administrator');
         expect(html).toContain('Create the first tenant');
-        expect(html).toContain('Keep the system tenant alone');
-        expect(html.match(/aria-checked="true"/g)).toHaveLength(1);
-        expect(html).toContain('aria-checked="true"');
-    });
-
-    it('states the stages of the tenant journey, including the tenant', () => {
-        const html = render(<WelcomeCard choice="first-tenant" onChoice={() => undefined} />);
-
-        expect(html).toContain('The first tenant, built from a starting point on the server.');
-        expect(html).not.toContain('with the password the journey holds.');
-    });
-
-    it('states the system tenant alone, and no tenant stage, when that is chosen', () => {
-        const html = render(<WelcomeCard choice="system-only" onChoice={() => undefined} />);
-
-        expect(html).toContain('with the password the journey holds.');
-        expect(html).not.toContain('The first tenant, built from a starting point on the server.');
-    });
-
-    it('offers the choice itself, so a person cannot miss it', () => {
-        const html = render(<WelcomeCard choice="system-only" onChoice={() => undefined} />);
-
-        expect(html).toContain('aria-label="What the installation is left with"');
-        expect(html).toContain('role="radiogroup"');
-        expect(html).toContain('role="radio"');
-    });
-});
-
-describe('the stages the choice states', () => {
-    it('are the tenant rail stages, and the system-only ones without the tenant', () => {
-        expect(welcomeStages('first-tenant').map(([title]) => title)).toEqual([
-            'journey.welcome.stage.admin',
-            'journey.welcome.stage.tenant',
-            'journey.welcome.stage.signIn',
-        ]);
-        expect(welcomeStages('system-only').map(([title]) => title)).toEqual([
-            'journey.welcome.stage.admin',
-            'journey.welcome.stage.signIn',
-        ]);
+        expect(html).toContain('Sign in');
+        expect(html).not.toContain('Bare system');
+        expect(html).not.toContain('role="radiogroup"');
     });
 });
 

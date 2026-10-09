@@ -1424,17 +1424,6 @@ export const en: SourceCatalogue = {
             title: 'Welcome to ORE Studio',
             lead: 'Set up a new installation: create the administrator that owns it, then choose what the installation is left with.',
             start: 'Get started',
-            choiceLabel: 'What the installation is left with',
-            choice: {
-                'first-tenant': {
-                    title: 'Create the first tenant',
-                    body: 'Name a tenant and its administrator. The installation ends with a tenant of its own.',
-                },
-                'system-only': {
-                    title: 'Keep the system tenant alone',
-                    body: 'Create no tenant. The installation ends with only the system tenant, which is useful for testing.',
-                },
-            },
             stage: {
                 admin: 'Create the administrator',
                 adminBody: 'The account that owns this installation.',
@@ -1443,8 +1432,6 @@ export const en: SourceCatalogue = {
                 signIn: 'Sign in',
                 signInBody:
                     "The tenant administrator's first sign-in, with a password of their own.",
-                systemSignInBody:
-                    "The administrator's first sign-in, with the password the journey holds.",
             },
         },
 
@@ -1470,6 +1457,11 @@ export const en: SourceCatalogue = {
             lead: 'A starting point is a profile the server holds. It states the settings, the steps and the tenant it creates.',
             counts: '{settings} settings · {steps} steps',
             installed: 'Installed',
+            noTenant: {
+                title: 'Bare system',
+                audience: 'For advanced users',
+                summary: 'Keeps the system tenant alone and creates no tenant of its own.',
+            },
         },
 
         details: {

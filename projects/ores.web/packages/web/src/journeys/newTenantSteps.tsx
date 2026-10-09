@@ -26,7 +26,9 @@
  * both the first run and the new tenant journey do those five things. They are
  * written once here and placed on each rail, so a change to the way a tenant is
  * described reaches both journeys; the first run inlines them rather than
- * nesting a journey, so the person sees one rail.
+ * nesting a journey, so the person sees one rail. A first run that keeps the
+ * system tenant alone runs only the first of them, because it creates no
+ * tenant to describe.
  *
  * The steps are data, which is why this is a function and not a component: the
  * page joins this list with its own steps and hands the result to the runtime.
@@ -56,6 +58,30 @@ export interface NewTenantStepsInput {
      * so it passes nothing.
      */
     readonly takenCodes?: ReadonlySet<string>;
+    /**
+     * The starting point a first run may answer with no tenant at all.
+     *
+     * Only a first run passes this. The tenant journey is somebody adding a
+     * tenant to a deployment that has one, so a starting point that creates
+     * none is not a thing it can offer.
+     */
+    readonly startingPoint?: StartingPointChoice;
+}
+
+/**
+ * What a first run chooses at the starting point.
+ *
+ * The two answers are one choice: a profile means the installation gains a
+ * tenant, and no tenant means it keeps the system tenant alone. Each answer
+ * undoes the other, so the cards cannot both read as chosen.
+ */
+export interface StartingPointChoice {
+    /** Whether keeping the system tenant alone is what the person chose. */
+    readonly noTenant: boolean;
+    /** Records that a profile was chosen, which means a tenant will be created. */
+    readonly chooseTenant: () => void;
+    /** Records that no tenant was chosen. */
+    readonly chooseNoTenant: () => void;
 }
 
 /**
@@ -134,6 +160,8 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
     const takenCodes = input.takenCodes ?? new Set<string>();
     const profile = state.profile;
     const details = state.details;
+    const startingPoint = input.startingPoint;
+    const noTenant = startingPoint?.noTenant === true;
 
     const passwordReady =
         details === undefined
@@ -141,6 +169,100 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
             : details.useMyPassword
               ? creatingPassword !== ''
               : state.passwordAcceptable;
+
+    /*
+     * The four stages that build the tenant. A first run that keeps the system
+     * tenant alone stops at the starting point, because there is no tenant to
+     * describe, review, provision or hand over.
+     */
+    const tenantStages: readonly JourneyStep<ReactNode>[] = noTenant
+        ? []
+        : [
+              {
+                  id: 'details',
+                  title: t('journey.details.title'),
+                  lead: t('journey.details.lead'),
+                  body:
+                      profile !== undefined && details !== undefined ? (
+                          <TenantForm
+                              server={server}
+                              profile={profile}
+                              details={details}
+                              policy={policy}
+                              creatingPassword={creatingPassword}
+                              onChange={state.describe}
+                              onPasswordAcceptable={state.acceptPassword}
+                          />
+                      ) : null,
+                  next: { label: t('common.continue'), enabled: passwordReady },
+              },
+              {
+                  id: 'review',
+                  title: t('journey.review.title'),
+                  lead: t('journey.review.lead'),
+                  body:
+                      profile !== undefined && details !== undefined ? (
+                          <TenantSummary
+                              profile={profile}
+                              details={details}
+                              creatingPassword={creatingPassword}
+                          />
+                      ) : null,
+                  next: {
+                      label: t('journey.review.create'),
+                      enabled: profile !== undefined && details !== undefined,
+                      run: async () => {
+                          if (profile === undefined || details === undefined) {
+                              return;
+                          }
+                          const result = await server.provision(
+                              provisionRequest(profile, details, creatingPassword),
+                          );
+                          if (!result.success) {
+                              throw new Error(result.message);
+                          }
+                          if (result.instanceId === '') {
+                              throw new Error(t('journey.review.noRun'));
+                          }
+                          state.recordRun(result.instanceId);
+                      },
+                  },
+              },
+              {
+                  id: 'provisioning',
+                  title: t('journey.provisioning.title'),
+                  lead: t('journey.provisioning.lead'),
+                  final: true,
+                  body:
+                      state.instanceId !== undefined ? (
+                          <RunProgress
+                              server={server}
+                              instanceId={state.instanceId}
+                              onCompleted={state.recordRunComplete}
+                          />
+                      ) : null,
+                  next: {
+                      label: t('common.continue'),
+                      enabled: state.runComplete,
+                  },
+              },
+              {
+                  id: 'handOff',
+                  title: t('journey.handOff.title'),
+                  lead: t('journey.handOff.lead'),
+                  final: true,
+                  body:
+                      details !== undefined ? (
+                          <HandOff
+                              t={t}
+                              principal={tenantPrincipal(details)}
+                              mustChange={profile?.forcePasswordChange ?? false}
+                              onContinue={() => input.onHandOff(true)}
+                              onElsewhere={() => input.onHandOff(false)}
+                          />
+                      ) : null,
+              },
+          ];
 
     return [
         {
@@ -150,99 +272,26 @@ export function newTenantSteps(input: NewTenantStepsInput): readonly JourneyStep
             body: (
                 <ProfileCards
                     profiles={profiles}
-                    selected={profile?.code}
-                    onSelect={state.chooseProfile}
+                    selected={noTenant ? undefined : profile?.code}
+                    onSelect={(chosen) => {
+                        startingPoint?.chooseTenant();
+                        state.chooseProfile(chosen);
+                    }}
                     takenCodes={takenCodes}
+                    {...(startingPoint !== undefined && {
+                        noTenant: {
+                            selected: noTenant,
+                            onSelect: startingPoint.chooseNoTenant,
+                        },
+                    })}
                 />
             ),
             next: {
                 label: t('common.continue'),
-                enabled: profile !== undefined && !isProfileTaken(profile, takenCodes),
+                enabled:
+                    noTenant || (profile !== undefined && !isProfileTaken(profile, takenCodes)),
             },
         },
-        {
-            id: 'details',
-            title: t('journey.details.title'),
-            lead: t('journey.details.lead'),
-            body:
-                profile !== undefined && details !== undefined ? (
-                    <TenantForm
-                        server={server}
-                        profile={profile}
-                        details={details}
-                        policy={policy}
-                        creatingPassword={creatingPassword}
-                        onChange={state.describe}
-                        onPasswordAcceptable={state.acceptPassword}
-                    />
-                ) : null,
-            next: { label: t('common.continue'), enabled: passwordReady },
-        },
-        {
-            id: 'review',
-            title: t('journey.review.title'),
-            lead: t('journey.review.lead'),
-            body:
-                profile !== undefined && details !== undefined ? (
-                    <TenantSummary
-                        profile={profile}
-                        details={details}
-                        creatingPassword={creatingPassword}
-                    />
-                ) : null,
-            next: {
-                label: t('journey.review.create'),
-                enabled: profile !== undefined && details !== undefined,
-                run: async () => {
-                    if (profile === undefined || details === undefined) {
-                        return;
-                    }
-                    const result = await server.provision(
-                        provisionRequest(profile, details, creatingPassword),
-                    );
-                    if (!result.success) {
-                        throw new Error(result.message);
-                    }
-                    if (result.instanceId === '') {
-                        throw new Error(t('journey.review.noRun'));
-                    }
-                    state.recordRun(result.instanceId);
-                },
-            },
-        },
-        {
-            id: 'provisioning',
-            title: t('journey.provisioning.title'),
-            lead: t('journey.provisioning.lead'),
-            final: true,
-            body:
-                state.instanceId !== undefined ? (
-                    <RunProgress
-                        server={server}
-                        instanceId={state.instanceId}
-                        onCompleted={state.recordRunComplete}
-                    />
-                ) : null,
-            next: {
-                label: t('common.continue'),
-                enabled: state.runComplete,
-            },
-        },
-        {
-            id: 'handOff',
-            title: t('journey.handOff.title'),
-            lead: t('journey.handOff.lead'),
-            final: true,
-            body:
-                details !== undefined ? (
-                    <HandOff
-                        t={t}
-                        principal={tenantPrincipal(details)}
-                        mustChange={profile?.forcePasswordChange ?? false}
-                        onContinue={() => input.onHandOff(true)}
-                        onElsewhere={() => input.onHandOff(false)}
-                    />
-                ) : null,
-        },
+        ...tenantStages,
     ];
 }

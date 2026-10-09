@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/instrument_option_exercise_fee_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/instrument_option_exercise_fee_entity.hpp"
@@ -33,6 +34,8 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,7 +56,10 @@ instrument_option_exercise_fee_mapper::map(const instrument_option_exercise_fee_
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.amount = ores::utility::decimal::decimal::from_string(v.amount).value();
     r.type = v.type;
-    r.start_date = v.start_date;
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::from_iso8601_date(*v.start_date)) :
+            std::nullopt;
     r.currency = v.currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -77,7 +83,10 @@ instrument_option_exercise_fee_mapper::map(const domain::instrument_option_exerc
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.amount = v.amount.to_string();
     r.type = v.type;
-    r.start_date = v.start_date;
+    r.start_date =
+        v.start_date.has_value() ?
+            std::optional(ores::platform::time::datetime::to_iso8601_date(*v.start_date)) :
+            std::nullopt;
     r.currency = v.currency;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -277,6 +277,9 @@
 \ir ./trading_instrument_option_exercise_fees_create.sql
 \ir ./trading_instrument_option_exercise_fees_notify_trigger_create.sql
 
+\ir ./trading_instrument_option_exercise_prices_create.sql
+\ir ./trading_instrument_option_exercise_prices_notify_trigger_create.sql
+
 \ir ./trading_instrument_option_payment_dates_create.sql
 \ir ./trading_instrument_option_payment_dates_notify_trigger_create.sql
 

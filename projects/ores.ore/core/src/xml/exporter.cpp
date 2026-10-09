@@ -152,14 +152,24 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                             std::get<trading::domain::cap_floor_instrument>(r.facts),
                             r.legs,
                             r.leg_amounts,
-                            r.leg_rates);
+                            r.leg_rates,
+                            r.strikes,
+                            r.schedules,
+                            r.schedule_dates);
                     else if (tt == "Swaption")
                         xsd_t = swap_instrument_mapper::reverse_swaption(
                             r.header,
                             std::get<trading::domain::swaption_instrument>(r.facts),
                             r.legs,
                             r.leg_amounts,
-                            r.leg_rates);
+                            r.leg_rates,
+                            r.schedules,
+                            r.schedule_dates,
+                            r.options,
+                            r.option_premiums,
+                            r.option_exercise_fees,
+                            r.option_payment_dates,
+                            r.option_exercise_prices);
                     else if (tt == "CallableSwap")
                         xsd_t = swap_instrument_mapper::reverse_callable_swap(
                             r.header,

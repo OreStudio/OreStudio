@@ -52,6 +52,8 @@ generate_synthetic_instrument_option_premium(utility::generation::generation_con
     r.currency = std::string("USD");
     r.pay_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.has_settlement = true;
+    r.settlement_fixing_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

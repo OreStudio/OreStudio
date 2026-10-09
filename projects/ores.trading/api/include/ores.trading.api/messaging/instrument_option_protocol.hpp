@@ -54,10 +54,9 @@ struct instrument_option_write {
     std::optional<std::string> settlement;
     std::optional<std::string> settlement_method;
     std::optional<std::string> pay_off_at_expiry;
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> premium_currency;
-    std::optional<std::string> premium_pay_date;
-    std::optional<std::string> exercise_prices;
+    std::optional<std::chrono::year_month_day> premium_pay_date;
     std::optional<std::string> exercise_fee_settlement_period;
     std::optional<std::string> exercise_fee_settlement_calendar;
     std::optional<std::string> exercise_fee_settlement_convention;
@@ -73,7 +72,7 @@ struct instrument_option_write {
     bool has_settlement_data;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;
-    std::optional<std::string> settlement_fixing_date;
+    std::optional<std::chrono::year_month_day> settlement_fixing_date;
 };
 
 struct instrument_option_change {

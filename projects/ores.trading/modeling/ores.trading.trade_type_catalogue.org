@@ -214,6 +214,7 @@ shape whichever family states the rows.
 | inflation_swap_instrument         |
 | instrument_option                 |
 | instrument_option_exercise_fee    |
+| instrument_option_exercise_price  |
 | instrument_option_payment_date    |
 | instrument_option_premium         |
 | instrument_schedule               |

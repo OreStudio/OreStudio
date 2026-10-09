@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 9B02B021-D386-45D9-9C6A-C5BC96C2F5AF
+:END:
+#+title: ores.trading.instrument_option_exercise_price
+#+description: Codegen entity model for the trading =instrument_option_exercise_price= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One exercise price an option block states, keyed to the trade and the entry's ordinal.
+#+entity_singular: instrument_option_exercise_price
+#+entity_plural: instrument_option_exercise_prices
+#+entity_title: Instrument Option Exercise Price
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+One row per exercise price an option block states, keyed to the
+instrument and the entry's ordinal.
+
+The schema states the exercise price list as a string, and the option
+block's fourth keyed child holds the decoded pairs: the exercise date
+and the price stated for it. The ordinal preserves the document's order.
+
+Both members are required within an entry, so neither column here can be
+null.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The trade whose option block stated this exercise price.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this exercise price within the option block's list.
+
+** exercise_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+Date the exercise price applies on.
+
+The schema states the date as text and the boundary parses it, so the
+column is a date.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}/1/15}
+#+end_src
+
+** price
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+Price stated for the exercise date.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("100").value()
+#+end_src
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+fact or child row names the trade its document states and the insert
+trigger checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:constraint_name: ores_trading_instrument_option_exercise_prices_activity_fk
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_option_exercise_prices_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: exercise_price
+:entity_plural_short:   exercise_prices
+:entity_singular_words: instrument option exercise price
+:entity_plural_words:   instrument option exercise prices
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: price
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| exercise_date   | Exercise    |
+| price           | Price       |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:3BCB362D-83D2-4456-BE57-3B1716F5ED1F][ores.trading.instrument_option]] — the option block these prices belong to.

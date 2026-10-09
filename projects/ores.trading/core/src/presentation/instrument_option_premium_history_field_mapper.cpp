@@ -50,8 +50,11 @@ render_instrument_option_premium_fields(const domain::instrument_option_premium&
                       .value = v.settlement_pay_currency.value_or(std::string{})});
     fields.push_back(
         {.name = "Settlement FX Index", .value = v.settlement_fx_index.value_or(std::string{})});
-    fields.push_back({.name = "Settlement Fixing Date",
-                      .value = v.settlement_fixing_date.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Settlement Fixing Date",
+         .value = v.settlement_fixing_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.settlement_fixing_date) :
+                      std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -58,13 +58,14 @@ render_instrument_option_fields(const domain::instrument_option& v) {
         {.name = "Settlement Method", .value = v.settlement_method.value_or(std::string{})});
     fields.push_back(
         {.name = "Pay Off At Expiry", .value = v.pay_off_at_expiry.value_or(std::string{})});
-    fields.push_back({.name = "Premium Amount", .value = v.premium_amount.value_or(std::string{})});
+    fields.push_back({.name = "Premium Amount",
+                      .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
     fields.push_back(
         {.name = "Premium Currency", .value = v.premium_currency.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Premium Pay Date", .value = v.premium_pay_date.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Exercise Prices", .value = v.exercise_prices.value_or(std::string{})});
+    fields.push_back({.name = "Premium Pay Date",
+                      .value = v.premium_pay_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                        *v.premium_pay_date) :
+                                                    std::string{}});
     fields.push_back({.name = "Exercise Fee Settlement Period",
                       .value = v.exercise_fee_settlement_period.value_or(std::string{})});
     fields.push_back({.name = "Exercise Fee Settlement Calendar",
@@ -94,8 +95,11 @@ render_instrument_option_fields(const domain::instrument_option& v) {
                       .value = v.settlement_pay_currency.value_or(std::string{})});
     fields.push_back(
         {.name = "Settlement FX Index", .value = v.settlement_fx_index.value_or(std::string{})});
-    fields.push_back({.name = "Settlement Fixing Date",
-                      .value = v.settlement_fixing_date.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Settlement Fixing Date",
+         .value = v.settlement_fixing_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.settlement_fixing_date) :
+                      std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

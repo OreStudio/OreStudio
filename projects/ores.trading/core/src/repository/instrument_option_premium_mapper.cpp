@@ -35,6 +35,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -59,7 +60,10 @@ instrument_option_premium_mapper::map(const instrument_option_premium_entity& v)
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date;
+    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
+                                   std::optional(ores::platform::time::datetime::from_iso8601_date(
+                                       *v.settlement_fixing_date)) :
+                                   std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -86,7 +90,10 @@ instrument_option_premium_mapper::map(const domain::instrument_option_premium& v
     r.has_settlement = v.has_settlement;
     r.settlement_pay_currency = v.settlement_pay_currency;
     r.settlement_fx_index = v.settlement_fx_index;
-    r.settlement_fixing_date = v.settlement_fixing_date;
+    r.settlement_fixing_date = v.settlement_fixing_date.has_value() ?
+                                   std::optional(ores::platform::time::datetime::to_iso8601_date(
+                                       *v.settlement_fixing_date)) :
+                                   std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

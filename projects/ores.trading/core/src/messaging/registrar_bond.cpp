@@ -37,13 +37,6 @@
 #include "ores.trading.core/messaging/bond_option_registrar.hpp"
 #include "ores.trading.core/messaging/bond_repo_registrar.hpp"
 #include "ores.trading.core/messaging/bond_trs_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_option_exercise_fee_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_option_payment_date_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_option_premium_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_option_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_schedule_date_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_schedule_registrar.hpp"
-#include "ores.trading.core/messaging/instrument_strike_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -127,49 +120,10 @@ register_bond_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(bond_leg_amortization_subs.begin()),
                 std::make_move_iterator(bond_leg_amortization_subs.end()));
 
-    auto instrument_schedule_subs = register_instrument_schedule_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_schedule_subs.begin()),
-                std::make_move_iterator(instrument_schedule_subs.end()));
-
-    auto instrument_schedule_date_subs =
-        register_instrument_schedule_date_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_schedule_date_subs.begin()),
-                std::make_move_iterator(instrument_schedule_date_subs.end()));
-
     auto bond_option_subs = register_bond_option_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_option_subs.begin()),
                 std::make_move_iterator(bond_option_subs.end()));
-
-    auto instrument_option_subs = register_instrument_option_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_option_subs.begin()),
-                std::make_move_iterator(instrument_option_subs.end()));
-
-    auto instrument_option_premium_subs =
-        register_instrument_option_premium_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_option_premium_subs.begin()),
-                std::make_move_iterator(instrument_option_premium_subs.end()));
-
-    auto instrument_option_exercise_fee_subs =
-        register_instrument_option_exercise_fee_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_option_exercise_fee_subs.begin()),
-                std::make_move_iterator(instrument_option_exercise_fee_subs.end()));
-
-    auto instrument_option_payment_date_subs =
-        register_instrument_option_payment_date_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_option_payment_date_subs.begin()),
-                std::make_move_iterator(instrument_option_payment_date_subs.end()));
-
-    auto instrument_strike_subs = register_instrument_strike_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(instrument_strike_subs.begin()),
-                std::make_move_iterator(instrument_strike_subs.end()));
 
     auto bond_forward_subs = register_bond_forward_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),

@@ -8,7 +8,7 @@
 #+filetags: :bring_the_last_components_under_the_drift_gate:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-storage-history-and-diff-under-the-gate
-#+pr:
+#+pr: 2966
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2966][#2966]] | [codegen] Bring storage, history and diff under the drift gate |
 
 * Review
 

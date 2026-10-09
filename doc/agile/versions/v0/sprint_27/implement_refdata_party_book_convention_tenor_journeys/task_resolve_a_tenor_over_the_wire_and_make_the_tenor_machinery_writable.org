@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,72 @@ Journey 9 resolves a tenor to a date on a named calendar over the wire, and ever
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =tenor_convention= carries the roll rule the screen draws, referencing
+  =business_day_convention_types=, so the choice has a row behind it.
+- =tenor_convention_resolutions= takes writes, so the set membership, the anchor
+  override and a SCHEDULE_STEP row's schedule code and step count can change.
+- The tenor write is shown to carry its change reason, or it is made to.
+- Journey 9's table reflects what is built, and every item it leaves open names
+  what is missing and why.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Five units, and the reconnaissance found they are not the same size.
+
+1. The roll rule on =tenor_convention=. One column, mirroring =measured_from=
+   and =resolution_algorithm=: a non-nullable text column, a row in the insert
+   trigger's =* Validations= table, and rows in the detail form and the list.
+2. The writes on =tenor_convention_resolutions=. The junction's C++ flags carry
+   =read_only: true=, which is what suppresses the write surface; removing it
+   generates =put=, =put_many=, =delete= and =delete_many=, and the two
+   permissions they need.
+3. The change reason on the tenor write. Verify before building: every refdata
+   write takes a =change_intent= and the service copies it onto the row, so this
+   may already be carried.
+4. The resolve operation, which is a new hand-written handler with its own
+   protocol pair, registration and permission.
+5. A swap's rolls as a refdata row, which the journey's own text says is not a
+   write target.
+
+Units 1 and 2 are built here, unit 3 is verified as already carried, and unit 5 is
+recorded as answered. Unit 4 is filed as
+[[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with
+the refusal it carries]], together with the refusal unit it belongs with. The
+resolve operation cannot be written before the roll rule exists, because the roll
+rule is what its reply reports, so the two are sequenced rather than split for
+convenience.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Reads the resolution junction served before / after | 3 → 8 | =grep -rhoE '"refdata\\.v1\\.tenor_convention_resolutions[a-z_.]*"' projects/ores.refdata/api/include/ \| sort -u \| wc -l= | =cff0559411= |
+| Models in the tenor family that are read-only before / after | 1 → 0 | =for f in projects/ores.refdata/modeling/ores.refdata.*tenor*.org; do grep -c ':read_only: *true' $f; done= | =cff0559411= |
+| Journey 9 coverage rows that are =missing= or =partial= | 5 missing + 6 partial → 3 missing | =grep -cE '^\\| [^\\|]+ \\| [^\\|]+ \\| [^\\|]+ \\| (missing\|partial) \\|' doc/knowledge/journeys/tenors/journey_define_how_tenors_resolve.org= | =cff0559411= |
+| Roll-rule lookup codes the column may hold | 7 | =grep -c '^    (ores_utility' projects/ores.sql/populate/refdata/refdata_business_day_convention_types_populate.sql= | =cff0559411= |
 
 * Notes
+
+Two findings shaped the work. The roll rule is a real gap and is one column. The
+change reason on the tenor write is not a gap at all: =put_tenor_request= carries
+a =change_intent=, and =tenor_service.cpp= copies its =reason_code= and
+=commentary= onto the row, so the journey row that said otherwise was stale and
+is corrected rather than built. The cheap check that settled it was reading the
+service's =prepare_change=, which is where every refdata write's intent lands.
+
+The junction's =read_only= flag is the whole of unit 2. It is on the C++ flags
+and it suppresses the write surface for a junction whose model does not want one,
+which is the documented shape: "a model that states the surface has no writes
+should not emit messages for operations that cannot happen."
 
 * Test Scenarios
 
@@ -83,3 +117,70 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three of the five units are settled, and the two that are built are the two the
+resolve operation depends on.
+
+*What landed.*
+
+- *The convention carries its roll rule.* =tenor_convention= gained a
+  =business_day_convention_type= column, non-nullable and defaulting to
+  =ModifiedFollowing=, validated by
+  =ores_refdata_validate_business_day_convention_type_fn= in the insert trigger
+  and drawn on the detail form as a picker and in the list as a column. The
+  lookup holds seven rules; the four the journey draws -- =Following=,
+  =ModifiedFollowing=, =Preceding=, =ModifiedPreceding= -- are among them. The
+  roll rule was a choice on the screen with no row behind it, and now the write
+  can store it and the resolve reply can report it.
+- *The resolution junction takes writes.* =tenor_convention_resolutions= had
+  =read_only: true= on its C++ flags, which is what suppressed its write surface.
+  Removing it generates =put=, =put_many=, =delete= and =delete_many= beside the
+  three reads, five new shell scripts, and the =:write= and =:delete= permissions
+  they need. The set membership, the anchor override, the SPECIAL tenor's offset
+  and a SCHEDULE_STEP row's schedule code and step count all write now, with the
+  version check every other refdata write makes.
+
+*What was verified rather than built, and one thing withdrawn.*
+
+The tenor write was recorded as carrying no change reason and no commentary. It
+carries both. =put_tenor_request= takes a =change_intent=, and
+=tenor_service.cpp= copies its =reason_code= and =commentary= onto the row's
+=change_reason_code= and =change_commentary=. No code was needed, so the journey
+row that asserted otherwise is corrected instead.
+
+*A swap's rolls are recorded as answered, not open.* The journey's own text says
+the schedule step draws the axis expansion and is not a write target. The
+closed-form axis is evaluated code-side and an event-lookup axis reads
+=calendar_event= rows, so a repository of swap ladders would be a second source of
+truth for a date the schedule already derives. The gap is closed with that reason
+rather than left dangling.
+
+*What is filed.*
+
+The resolve operation and the refusal payload are one unit, filed as
+[[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire, with
+the refusal it carries]]. They are filed together because there is nothing to
+carry a refusal until the operation exists, and they are sequenced after this
+change rather than split from it for convenience: the reply reports the roll rule,
+so the roll rule had to exist first. The new task's Notes carry the
+=resolve_end_date= signature and the conditions its doc comment says throw, the
+model-declared message and custom-handler pattern to copy, with the party
+composite as the worked example, and the open question of whether the operation's
+subject sits under =refdata.v1.ops.= or the generated =refdata.v1.tenors.= space.
+
+*Verification.*
+
+Eleven checks pass: handler-permissions, subject-conformance, open-reads,
+protocol-twins, generated-column-refs, sql-hygiene, format, reachability,
+sql-reachability, populate-refs and shell-menus. The cmake component files are up
+to date, the shell recipe and physical space inventories are up to date, and the
+tangle left five new scripts, all staged.
+
+Journey 9's table lost every =partial= row and two of its five =missing= rows. The
+three that remain are the resolve operation twice over -- the resolution column
+and the resolved-dates step -- and the refusal that operation would carry.
+
+*What is not verified.* No database or C++ test exercises the new column or the
+new writes: the box shares one PostgreSQL across eleven worktrees, so =compass db
+recreate= would disrupt the others, and the local =.env= is at format version 27
+against a required 29. The build result is recorded when it lands.

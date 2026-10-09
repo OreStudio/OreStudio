@@ -162,7 +162,10 @@ TEST_CASE("trade_party_role_convert_empty_vector_to_table", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Empty table output:\n" << table;
 
-    CHECK(table.find("Counterparty ID") != std::string::npos);
+    // An empty vector still renders the table's header row. Trade ID is the
+    // anchor the role hangs off: Counterparty ID went with the party columns
+    // when the role was re-keyed by the trade.
+    CHECK(table.find("Trade ID") != std::string::npos);
 }
 
 TEST_CASE("trade_party_role_table_with_faker_data", tags) {

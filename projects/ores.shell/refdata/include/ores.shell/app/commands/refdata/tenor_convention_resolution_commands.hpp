@@ -87,6 +87,44 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
+     * @brief add <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier>
+     * <schedule_code> <schedule_step_count> <reason> <commentary>
+     */
+    static void process_add(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief set <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier>
+     * <schedule_code> <schedule_step_count> <reason> <commentary> [--version <n>]
+     */
+    static void process_set(std::ostream& out,
+                            ores::nats::service::nats_client& session,
+                            const std::vector<std::string>& args);
+
+    /**
+     * @brief put-many --count <n> <convention_code> <tenor_code> <anchor_override> <offset_unit>
+     * <offset_multiplier> <schedule_code> <schedule_step_count> <reason> <commentary>
+     */
+    static void process_put_many(std::ostream& out,
+                                 ores::nats::service::nats_client& session,
+                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief delete <convention_code> <tenor_code> <reason> <commentary> [--version <n>]
+     */
+    static void process_delete(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
+
+    /**
+     * @brief delete-many <convention_code> <tenor_code> <reason> <commentary>
+     */
+    static void process_delete_many(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
      * @brief by-convention-code <convention_code> [--offset <n>] [--limit <n>] [--order <field>]
      * [--desc]
      */

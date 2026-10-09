@@ -200,7 +200,6 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:read_only:       true
 :END:
 
 ** Domain includes

@@ -41,6 +41,8 @@ render_tenor_convention_fields(const domain::tenor_convention& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Measured From", .value = v.measured_from});
     fields.push_back({.name = "Resolution Algorithm", .value = v.resolution_algorithm});
+    fields.push_back(
+        {.name = "Business Day Convention Type", .value = v.business_day_convention_type});
     fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

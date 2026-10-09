@@ -52,6 +52,7 @@ create table if not exists "ores_refdata_tenor_conventions_tbl" (
     "description" text null,
     "measured_from" text not null,
     "resolution_algorithm" text not null,
+    "business_day_convention_type" text not null,
     "oresmd_uri" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -95,6 +96,9 @@ begin
 
     -- Validate resolution_algorithm
     NEW.resolution_algorithm := ores_refdata_validate_tenor_resolution_algorithm_fn(NEW.tenant_id, NEW.resolution_algorithm);
+
+    -- Validate business_day_convention_type
+    NEW.business_day_convention_type := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_type);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

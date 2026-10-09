@@ -138,6 +138,44 @@ void tenor_convention_resolution_commands::register_commands(cli::Menu& root_men
         "get-many <convention_code> <tenor_code>");
 
     menu->Insert(
+        "add",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_add(std::ref(out), std::ref(session), std::move(args));
+        },
+        "add <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier> "
+        "<schedule_code> <schedule_step_count> <reason> <commentary>");
+
+    menu->Insert(
+        "set",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_set(std::ref(out), std::ref(session), std::move(args));
+        },
+        "set <convention_code> <tenor_code> <anchor_override> <offset_unit> <offset_multiplier> "
+        "<schedule_code> <schedule_step_count> <reason> <commentary> [--version <n>]");
+
+    menu->Insert(
+        "put-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_put_many(std::ref(out), std::ref(session), std::move(args));
+        },
+        "put-many --count <n> <convention_code> <tenor_code> <anchor_override> <offset_unit> "
+        "<offset_multiplier> <schedule_code> <schedule_step_count> <reason> <commentary>");
+
+    menu->Insert(
+        "delete",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_delete(std::ref(out), std::ref(session), std::move(args));
+        },
+        "delete <convention_code> <tenor_code> <reason> <commentary> [--version <n>]");
+
+    menu->Insert(
+        "delete-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_delete_many(std::ref(out), std::ref(session), std::move(args));
+        },
+        "delete-many <convention_code> <tenor_code> <reason> <commentary>");
+
+    menu->Insert(
         "by-convention-code",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_by_convention_code(std::ref(out), std::ref(session), std::move(args));
@@ -281,6 +319,302 @@ void tenor_convention_resolution_commands::process_get_many(std::ostream& out,
     }
 
     auto result = do_auth_request<messaging::get_many_tenor_convention_resolutions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenor_convention_resolution_commands::process_add(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add request.";
+
+    using request_type = messaging::put_tenor_convention_resolution_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run add." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        read_token(
+            req.change.write.convention_code, parsed->positionals[next++], "convention_code");
+        read_token(req.change.write.tenor_code, parsed->positionals[next++], "tenor_code");
+        read_token(
+            req.change.write.anchor_override, parsed->positionals[next++], "anchor_override");
+        read_token(req.change.write.offset_unit, parsed->positionals[next++], "offset_unit");
+        read_token(
+            req.change.write.offset_multiplier, parsed->positionals[next++], "offset_multiplier");
+        read_token(req.change.write.schedule_code, parsed->positionals[next++], "schedule_code");
+        read_token(req.change.write.schedule_step_count,
+                   parsed->positionals[next++],
+                   "schedule_step_count");
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::put_tenor_convention_resolution_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenor_convention_resolution_commands::process_set(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating set request.";
+
+    using request_type = messaging::put_tenor_convention_resolution_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run set." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 7 + 2) {
+            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        read_token(
+            req.change.write.convention_code, parsed->positionals[next++], "convention_code");
+        read_token(req.change.write.tenor_code, parsed->positionals[next++], "tenor_code");
+        read_token(
+            req.change.write.anchor_override, parsed->positionals[next++], "anchor_override");
+        read_token(req.change.write.offset_unit, parsed->positionals[next++], "offset_unit");
+        read_token(
+            req.change.write.offset_multiplier, parsed->positionals[next++], "offset_multiplier");
+        read_token(req.change.write.schedule_code, parsed->positionals[next++], "schedule_code");
+        read_token(req.change.write.schedule_step_count,
+                   parsed->positionals[next++],
+                   "schedule_step_count");
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
+        if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+            req.change.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            req.change.precondition.version =
+                ores::shell::app::from_token<std::uint32_t>(raw, "version");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::put_tenor_convention_resolution_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenor_convention_resolution_commands::process_put_many(std::ostream& out,
+                                                            nats_client& session,
+                                                            const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating put-many request.";
+
+    using request_type = messaging::put_many_tenor_convention_resolutions_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run put-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "count", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        const auto count_raw = parsed->flag("count");
+        if (count_raw.empty()) {
+            fail(out) << "--count is required." << std::endl;
+            return;
+        }
+        const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
+        if (parsed->positionals.size() != change_count * 7 + 2) {
+            fail(out) << "Expected " << (change_count * 7 + 2) << " arguments, got "
+                      << parsed->positionals.size() << "." << std::endl;
+            return;
+        }
+        for (std::uint32_t i = 0; i < change_count; ++i) {
+            messaging::tenor_convention_resolution_change change;
+            read_token(
+                change.write.convention_code, parsed->positionals[next++], "convention_code");
+            read_token(change.write.tenor_code, parsed->positionals[next++], "tenor_code");
+            read_token(
+                change.write.anchor_override, parsed->positionals[next++], "anchor_override");
+            read_token(change.write.offset_unit, parsed->positionals[next++], "offset_unit");
+            read_token(
+                change.write.offset_multiplier, parsed->positionals[next++], "offset_multiplier");
+            read_token(change.write.schedule_code, parsed->positionals[next++], "schedule_code");
+            read_token(change.write.schedule_step_count,
+                       parsed->positionals[next++],
+                       "schedule_step_count");
+            change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
+            req.changes.push_back(std::move(change));
+        }
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::put_many_tenor_convention_resolutions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenor_convention_resolution_commands::process_delete(std::ostream& out,
+                                                          nats_client& session,
+                                                          const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete request.";
+
+    using request_type = messaging::delete_tenor_convention_resolution_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run delete." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 2 + 2) {
+            fail(out) << "Expected " << (2 + 2) << " arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        read_token(req.removal.key.convention_code, parsed->positionals[next++], "convention_code");
+        read_token(req.removal.key.tenor_code, parsed->positionals[next++], "tenor_code");
+        req.intent.reason_code = parsed->positionals[next++];
+        req.intent.commentary = parsed->positionals[next++];
+        if (const auto& raw = parsed->flag("version"); !raw.empty()) {
+            req.removal.precondition.kind =
+                ores::utility::domain::precondition_kind::must_match_version;
+            req.removal.precondition.version =
+                ores::shell::app::from_token<std::uint32_t>(raw, "version");
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::delete_tenor_convention_resolution_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void tenor_convention_resolution_commands::process_delete_many(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete-many request.";
+
+    using request_type = messaging::delete_many_tenor_convention_resolutions_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run delete-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() < 2 + 2 || (parsed->positionals.size() - 2) % 2 != 0) {
+            fail(out) << "Expected a whole number of key groups and an intent, got "
+                      << parsed->positionals.size() << "." << std::endl;
+            return;
+        }
+        const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
+        for (std::size_t i = 0; i < key_groups; ++i) {
+            messaging::tenor_convention_resolution_key key;
+            read_token(key.convention_code, parsed->positionals[i * 2 + 0], "convention_code");
+            read_token(key.tenor_code, parsed->positionals[i * 2 + 1], "tenor_code");
+            req.removals.push_back(
+                messaging::tenor_convention_resolution_removal{.key = std::move(key)});
+        }
+        req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
+        req.intent.commentary = parsed->positionals[parsed->positionals.size() - 1];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::delete_many_tenor_convention_resolutions_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

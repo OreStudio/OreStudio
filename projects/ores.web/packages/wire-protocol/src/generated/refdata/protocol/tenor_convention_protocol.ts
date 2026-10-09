@@ -37,6 +37,7 @@ export interface TenorConventionWrite {
     description: string;
     measured_from: string;
     resolution_algorithm: string;
+    business_day_convention_type: string;
     oresmd_uri: string | null;
 }
 

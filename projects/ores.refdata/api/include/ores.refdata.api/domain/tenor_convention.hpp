@@ -99,6 +99,18 @@ struct tenor_convention final {
     std::string resolution_algorithm;
 
     /**
+     * @brief The roll rule applied when a resolved date falls on a day the calendar does not count
+     * as a business day. References business_day_convention_types, the same lookup every other
+     * refdata term column of this name points at; the four rules the journey draws are Following,
+     * ModifiedFollowing, Preceding and ModifiedPreceding, and the lookup carries Unadjusted,
+     * HalfMonthModifiedFollowing and Nearest beside them.
+     *
+     * Defaults to ModifiedFollowing, which is the market convention where a schedule states nothing
+     * else.
+     */
+    std::string business_day_convention_type;
+
+    /**
      * @brief The oresmd URI of the market data this convention needs. The convention is a code list
      * for tenors and names no series. Classification: requirement — at most it states the curve and
      * the point a tenor is measured from, with everything left open. Uncertain: the convention

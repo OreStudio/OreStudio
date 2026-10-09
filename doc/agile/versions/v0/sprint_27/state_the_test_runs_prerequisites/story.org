@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 9E4CB272-C88B-4996-ABF2-8CB70D05A780
+:END:
+#+title: Story: State the test run's prerequisites
+#+description: A ctest failure is often a missing prerequisite rather than a regression: the broker is down, the build and the database come from different SQL, or PostgreSQL is out of connection slots. Each has its own signature and none is a code defect.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A test run that cannot pass says why before it starts, and the three prerequisites are recorded where the next person looks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- compass test run refuses when the broker is not listening and names the fix.
+- A memory records the three prerequisites, their signatures and their fixes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8B862CB3-4AB3-4560-9DC9-3E2C6AF1AFF0][Scaffold story: State the test run's prerequisites]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2341C2D0-0E49-4D5C-AF3D-FA05B6C5AAF5][Scaffold story: State the test run's prerequisites]] | DONE | | 2026-10-09 | Initial task for: State the test run's prerequisites |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+=compass test run= refuses to start when the broker is not listening, and
+names =compass services start= as the fix. The three prerequisites a green run
+has -- the broker, a build matching the database's schema fingerprint, and
+free connection slots -- are recorded in
+=doc/llm/memory/check_the_test_environment_before_believing_a_failure.org=.
+
+The full suite is green: 92 suites, 9707 of 9707 tests.
+

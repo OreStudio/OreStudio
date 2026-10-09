@@ -283,6 +283,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_my_parties_request::nats_subject, qg, [acth](ores::nats::message msg) {
             acth->get_my_parties(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        set_reporting_line_request::nats_subject, qg, [acth](ores::nats::message msg) {
+            acth->set_reporting_line(std::move(msg));
+        }));
 
     // --- Account parties ---
     // The associations are stored in a junction the codegen owns, but their

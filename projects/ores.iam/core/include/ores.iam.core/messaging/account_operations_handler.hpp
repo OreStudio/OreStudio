@@ -909,6 +909,46 @@ public:
         }
     }
 
+    /**
+     * @brief Serves iam.v1.ops.set_reporting_line.
+     *
+     * An administered write, so the caller needs =iam::accounts:update=. The
+     * service owns the decisions — which account, the version precondition and
+     * the refusal — and this adapter only carries them.
+     */
+    void set_reporting_line(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<set_reporting_line_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto ctx_expected = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:update")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
+            service::account_operations_service svc(ctx);
+            auto response = svc.set_reporting_line(*req);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            set_reporting_line_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = "The write failed.";
+            reply(nats_, msg, failure);
+        }
+    }
+
     void select_party(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);

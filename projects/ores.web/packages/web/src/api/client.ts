@@ -39,6 +39,7 @@ import {
     type ImageUploadPolicy,
     type ImageUploadView,
     type MyParties,
+    type ReportingLineWrite,
     type ProfileWrite,
     permissionEntrySchema,
     roleSummarySchema,
@@ -520,6 +521,21 @@ export const api = {
     /** The parties the signed-in person works in, each with its name. */
     async myParties(): Promise<MyParties> {
         return myPartiesSchema.parse(await request('/api/me/parties', { method: 'GET' }));
+    },
+
+    /**
+     * Sets or clears who one account reports to. The write names one field, so
+     * a field changed elsewhere is not overwritten, and it states the version
+     * the screen read. The server needs iam::accounts:update.
+     */
+    async setReportingLine(accountId: string, write: ReportingLineWrite): Promise<Account> {
+        return accountSchema.parse(
+            await request(`/api/accounts/${encodeURIComponent(accountId)}/reporting-line`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(write),
+            }),
+        );
     },
 
     /**

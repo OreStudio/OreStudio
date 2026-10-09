@@ -174,6 +174,14 @@ public:
                                        const std::vector<std::string>& args);
 
     /**
+     * @brief set-reporting-line <account_id> <reports_to_account_id> <expected_version>
+     * <change_reason_code> <change_commentary>
+     */
+    static void process_set_reporting_line(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
+
+    /**
      * @brief attach-account-pictures
      */
     static void process_attach_account_pictures(std::ostream& out,

@@ -426,7 +426,13 @@ export const listLoginInfoRequestSchema = z.object({
 }) satisfies z.ZodType<GeneratedListLoginInfoRequest>;
 export type ListAccountsRequest = z.infer<typeof listAccountsRequestSchema>;
 
-const wireAccountSchema = z.object({
+/**
+ * One account as the server writes it, snake_case as the protocol states it.
+ *
+ * Exported so a module outside this one can build a reply that carries an
+ * account without restating the sixteen fields, or the nil-to-null rule.
+ */
+export const wireAccountSchema = z.object({
     version: z.int().nonnegative().default(0),
     id: uuidSchema,
     tenant_id: uuidSchema,
@@ -452,7 +458,7 @@ const wireAccountSchema = z.object({
  * it becomes `null` here. The account carries no credential field at all: the
  * secrets live in `iam.account_credential`, which no protocol serves.
  */
-function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
+export function mapAccount(row: z.infer<typeof wireAccountSchema>): Account {
     return {
         version: row.version,
         id: row.id,

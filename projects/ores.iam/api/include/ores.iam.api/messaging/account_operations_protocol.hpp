@@ -552,6 +552,57 @@ struct get_my_parties_response {
 };
 
 /**
+ * @brief An administrator's write on who one account reports to.
+ *
+ * The write names one field and nothing else, so a screen that changes the
+ * reporting line does not send every other field back, and a field changed
+ * elsewhere between the screen's read and this write is not silently
+ * overwritten. It needs =iam::accounts:update=, as every administered account
+ * write does.
+ *
+ * An empty =reports_to_account_id= clears the line. =expected_version= is the
+ * account version the caller read: when it is stated and the account has moved
+ * on since, the write is refused with a conflict rather than applied to a row
+ * the caller has not seen. An absent version states no precondition.
+ */
+struct set_reporting_line_request {
+    using response_type = struct set_reporting_line_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.set_reporting_line";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string account_id;
+    /**
+     * @brief The manager's account id, or empty to clear the line.
+     */
+    std::string reports_to_account_id;
+    /**
+     * @brief The account version the caller read, in decimal, or empty for no
+     * precondition.
+     *
+     * Text rather than a number because empty has to be expressible on this wire,
+     * as it is for every other optional value here, and because a fresh account's
+     * version is 0: no integer is left over to mean "not stated".
+     */
+    std::string expected_version;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct set_reporting_line_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The account as written, so the screen can redraw with its new
+     * version. Stated only when the outcome is ok.
+     */
+    std::optional<ores::iam::domain::account> account;
+};
+
+/**
  * @brief Reconciles the accounts a tenant holds with the pictures they name.
  *
  * Every account that names a picture code and carries no picture gets one:

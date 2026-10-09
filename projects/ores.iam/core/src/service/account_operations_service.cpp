@@ -926,4 +926,90 @@ std::string account_operations_service::set_my_default_party(
     return "";
 }
 
+messaging::set_reporting_line_response account_operations_service::set_reporting_line(
+    const messaging::set_reporting_line_request& request) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting the reporting line for account: " << request.account_id;
+
+    messaging::set_reporting_line_response response;
+
+    boost::uuids::string_generator sg;
+    boost::uuids::uuid account_id;
+    try {
+        account_id = sg(request.account_id);
+    } catch (const std::exception&) {
+        response.result.outcome = ores::utility::domain::outcome::invalid;
+        response.result.code = "invalid_account_id";
+        response.result.message = "The account identifier is not a UUID.";
+        return response;
+    }
+
+    auto accounts = account_repo_.read_latest(ctx_, request.account_id);
+    if (accounts.empty()) {
+        response.result.outcome = ores::utility::domain::outcome::missing;
+        response.result.code = "not_found";
+        response.result.message = "No account has this identifier.";
+        return response;
+    }
+
+    auto account = accounts.front();
+    if (!request.expected_version.empty()) {
+        int expected = 0;
+        try {
+            std::size_t consumed = 0;
+            expected = std::stoi(request.expected_version, &consumed);
+            if (consumed != request.expected_version.size())
+                throw std::invalid_argument("trailing characters");
+        } catch (const std::exception&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "invalid_expected_version";
+            response.result.message = "The expected version is not a whole number.";
+            return response;
+        }
+        if (expected != account.version) {
+            response.result.outcome = ores::utility::domain::outcome::conflict;
+            response.result.code = "version_conflict";
+            response.result.message = "The account has changed since it was read.";
+            return response;
+        }
+    }
+
+    std::optional<boost::uuids::uuid> manager_id;
+    if (!request.reports_to_account_id.empty()) {
+        try {
+            manager_id = sg(request.reports_to_account_id);
+        } catch (const std::exception&) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "invalid_reports_to_account_id";
+            response.result.message = "The manager identifier is not a UUID.";
+            return response;
+        }
+        if (*manager_id == account_id) {
+            response.result.outcome = ores::utility::domain::outcome::invalid;
+            response.result.code = "self_reporting";
+            response.result.message = "An account cannot report to itself.";
+            return response;
+        }
+    }
+
+    // Only the line is written. Every other field keeps the value the account
+    // already had, which is the point of a write narrower than update_account.
+    account.reports_to_account_id = manager_id;
+    account.change_reason_code = request.change_reason_code.empty() ?
+                                     std::string{reason::codes::non_material_update} :
+                                     request.change_reason_code;
+    account.change_commentary = request.change_commentary;
+
+    account_repo_.write(ctx_, account);
+
+    // The store stamps the new version, so the answer states the row as it now
+    // is rather than the copy this method read.
+    const auto written = account_repo_.read_latest(ctx_, request.account_id);
+    response.account = written.empty() ? std::optional<domain::account>{account} :
+                                         std::optional<domain::account>{written.front()};
+    response.result.outcome = ores::utility::domain::outcome::ok;
+
+    BOOST_LOG_SEV(lg(), info) << "Set the reporting line for account: " << request.account_id;
+    return response;
+}
+
 }

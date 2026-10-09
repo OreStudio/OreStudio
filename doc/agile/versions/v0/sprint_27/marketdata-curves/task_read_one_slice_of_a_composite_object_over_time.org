@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-one-slice-of-a-composite-object-over-time
-#+pr:
+#+pr: 2980
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -148,7 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2980][#2980]] | [marketdata] Read one slice of a composite object over time |
 
 * Review
 

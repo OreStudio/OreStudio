@@ -26,9 +26,9 @@ shows what changed and why.
 
 * Actor and trigger
 
-The actor is the tenant administrator: an account with the =TenantAdmin= role,
-acting inside their own tenant. No narrower role holds these permissions today.
-The trigger is a new instrument the tenant wants to trade, a term that has
+The actor is the person who maintains the tenant's reference data: an account
+holding the =Operations= role, or a tenant administrator, acting inside their own
+tenant. The trigger is a new instrument the tenant wants to trade, a term that has
 moved (a fixing calendar, a day count, an index), or a curve whose bootstrap
 reads the wrong convention. The journey starts at *Conventions*, or at a link
 beside a convention picker on a curve or a trade, and ends when the person
@@ -265,8 +265,11 @@ to name the offending field itself. See /What is missing/.
    is the same existence check the other refdata writes make. Until then the
    refusal in /Steps/ describes a check the server does not make, and the screen
    offers only codes it has read from the lists.
-6. *Only a tenant administrator can run this journey.* No role below
-   =TenantAdmin= holds these permissions.
+
+The tenant-administrator item this section used to carry is closed. =Operations=
+now holds every convention family and the term lists their pickers read, so the
+screen is reachable by the people who run reference data and not only by a tenant
+administrator.
 
 The sub-periods coupon type list this section used to carry is built:
 =refdata.v1.sub_periods_coupon_types.list= exists, seeded with the two values

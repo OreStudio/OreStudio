@@ -28,8 +28,9 @@ sets and collateral terms read back.
 
 * Actor and trigger
 
-The actor is the tenant administrator: an account with the =TenantAdmin= role,
-acting inside their own tenant. The trigger is a new trading relationship, a
+The actor is the person who maintains the tenant's reference data: an account
+holding the =Operations= role, or a tenant administrator, acting inside their own
+tenant. The trigger is a new trading relationship, a
 legal name or group change, or an ORE document that names a counterparty the
 tenant does not hold. The journey starts at *Counterparties*, or at the
 *Onboard a counterparty* button there, and ends at *Outcome*, at *History*, or
@@ -213,9 +214,11 @@ call per child type per page rather than one per row.
    candidate is a composite read of the counterparty's agreements, sets and
    collateral terms. =refdata.v1.ops.get_counterparty_composite_as_of= carries
    the counterparty, its identifiers and its contacts, and not these.
-2. *Only a tenant administrator can run this journey.* No role below
-   =TenantAdmin= holds the counterparty permissions; =Operations= holds the
-   currency permissions and no counterparty permission.
+
+The tenant-administrator item this section used to carry is closed. =Operations=
+now holds the counterparty permissions the journey needs, so the screen is
+reachable by the people who run reference data and not only by a tenant
+administrator.
 
 * Related journeys
 

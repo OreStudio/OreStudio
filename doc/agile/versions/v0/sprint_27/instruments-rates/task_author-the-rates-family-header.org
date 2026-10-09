@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/author-the-rates-family-header
-#+pr:
+#+pr: 2962
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -188,7 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2962][#2962]] | [trading,ore,sql] Move the rates family onto its header |
 
 * Review
 

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: FDBC0E8D-E821-4D22-B0B1-B3AEE9EE680B
+:END:
+#+title: A role-grant test depends on which role comes back first
+#+description: an_approved_role_request_is_granted_once asserts that a fresh account does not hold the first role that roles.read_latest returns. Whether that holds depends on which role is first, so the test fails or passes with the order the suite happens to run in.
+#+type: capture
+#+level: cross
+#+filetags: :iam:test:flake:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=an_approved_role_request_is_granted_once=, in
+=projects/ores.iam/core/tests/role_grant_applier_tests.cpp=, reads the tenant's
+roles and takes =all.front()= as the role it grants. It then asserts that a
+freshly seeded account does not already hold that role. The assertion is about
+whichever role the read returns first, not about a role the test chose, so it
+holds or fails with that ordering.
+
+* Why
+
+Seen on 2026-10-09: the IAM core suite failed once on
+=REQUIRE_FALSE(holds(h, asker, role_id))= and passed on the next run over the
+same database, with Catch2 seeding a different order each time. A freshly seeded
+account carries a default role, so when =all.front()= is that role the test's own
+precondition is false before it has done anything.
+
+The suite is therefore not deterministic, and a real failure in this test would
+be hard to tell from the flake. The fix is to name the role the test grants, or
+to assert on the difference the grant makes rather than on the state before it.
+
+* References
+
+- =projects/ores.iam/core/tests/role_grant_applier_tests.cpp=, the test.
+- Found while running the suite for [[id:F94A08FD-E7EB-4793-9163-50E24AE2F94E][Refuse a reporting line that would make a loop]];
+  the change under test touches the account's reporting line and cannot affect
+  a role grant.
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the catalogue the task that found this belongs to.
+
+-

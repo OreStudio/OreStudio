@@ -513,6 +513,61 @@ TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
     CHECK(!err.empty());
 }
 
+TEST_CASE("a_reporting_line_may_not_close_a_cycle", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const std::string password = faker::internet::password();
+    const auto e1 = generate_synthetic_account(ctx);
+    const auto boss = sut.create_account(e1.username, e1.email, password, e1.modified_by);
+    const auto e2 = generate_synthetic_account(ctx);
+    const auto report = sut.create_account(e2.username, e2.email, password, e2.modified_by);
+
+    // The report answers to the boss.
+    CHECK(sut.update_account(report.id,
+                             report.email,
+                             "",
+                             std::nullopt,
+                             "",
+                             boss.id,
+                             boost::uuids::nil_uuid(),
+                             report.modified_by,
+                             "common.non_material_update",
+                             ""));
+
+    // The boss cannot then answer to the report: the pair is a cycle, and the
+    // store refuses the write rather than leaving a hierarchy with no root.
+    CHECK_THROWS(sut.update_account(boss.id,
+                                    boss.email,
+                                    "",
+                                    std::nullopt,
+                                    "",
+                                    report.id,
+                                    boost::uuids::nil_uuid(),
+                                    boss.modified_by,
+                                    "common.non_material_update",
+                                    ""));
+
+    const auto unchanged = sut.find_account_by_id(boss.id);
+    REQUIRE(unchanged.has_value());
+    CHECK_FALSE(unchanged->reports_to_account_id.has_value());
+
+    // A person cannot report to themselves either.
+    CHECK_THROWS(sut.update_account(report.id,
+                                    report.email,
+                                    "",
+                                    std::nullopt,
+                                    "",
+                                    report.id,
+                                    boost::uuids::nil_uuid(),
+                                    report.modified_by,
+                                    "common.non_material_update",
+                                    ""));
+}
+
 TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
     auto lg(make_logger(test_suite));
 

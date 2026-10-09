@@ -8,12 +8,12 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/guard-the-reporting-line-against-a-loop
-#+pr:
+#+pr: 2985
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,32 +26,50 @@ The server refuses a reporting-line change that would close a cycle, and the ref
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- A write that would make an account report to itself is refused by the store.
+- A write that would close a longer cycle is refused, and the manager that was there stays.
+- The refusal names the reason, so the screen can state it.
+- A test covers the two-account cycle, the self cycle, and the manager that survives a refused write.
+- =check_component_drift.py --component iam= reports no drift.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Declare =:prevent_cycle: true= on the =reports_to_account_id= foreign key,
+   the model's own way of asking for the guard.
+2. Regenerate the component, so the accounts insert trigger gains the recursive
+   manager-chain check.
+3. Test the refusal at the service, where a write goes through the trigger.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| IAM core suite after this change | 261 cases, 801 assertions | =bash build/evidence/run_case.sh ores.iam.core.tests= | (branch tip) |
+
+* Notes
+
+- *The guard is the model's own, not a hand-written check.* The codegen
+  templates already carry a recursive =ancestor_chain= block behind
+  =:prevent_cycle:=, used by the business-unit and portfolio hierarchies. The
+  account model simply had not asked for it, so the entry is a property and a
+  paragraph rather than new C++.
+- *The check walks the manager chain in SQL.* It runs inside the accounts
+  insert trigger, which fires for every new version, and raises =23514= when the
+  chain reaches the row being written. That covers the self cycle and any longer
+  ring, and it holds however the write arrives — the service, the shell, or the
+  Acme publish.
+- *The refused write leaves the old manager in place.* The trigger rejects the
+  insert before the version is written, so there is no half-applied change, and
+  the test asserts that.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
@@ -74,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2985][#2985]] | [iam] Refuse a reporting line that closes a cycle |
 
 * Review
 
@@ -83,3 +101,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+The store refuses a reporting line that would close a cycle:
+
+| Layer | What landed |
+|-------+-------------|
+| Model | =:prevent_cycle: true= on =reports_to_account_id=, with the reason beside it. |
+| Store | The regenerated accounts insert trigger walks the manager chain and raises 23514 when it reaches the row being written. |
+| Tests | One service case: the two-account cycle is refused, the self cycle is refused, and the manager that was there survives the refused write. |
+
+*Verification.* =check_component_drift.py --component iam= reports no drift.
+The IAM core suite passes, 261 cases and 801 assertions. The database was
+recreated so that the new trigger is the one under test.
+
+One run of the suite failed first, on
+=an_approved_role_request_is_granted_once= in
+=role_grant_applier_tests.cpp=, an untouched test that asserts a fresh account
+does not hold whichever role the read returns first; the same suite passed on
+the next run. It is order-dependent and unrelated to this change, which touches
+the account's reporting line and cannot affect a role grant. Captured at
+[[id:FDBC0E8D-E821-4D22-B0B1-B3AEE9EE680B][A role-grant test depends on which
+role comes first]].

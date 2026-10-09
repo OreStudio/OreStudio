@@ -176,6 +176,26 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
         );
     }, [data, isError, isPending, error]);
 
+    /**
+     * Opens the session on one of the account's parties.
+     *
+     * The login reply offers fewer fields than the session view, so the party
+     * list is carried forward from the sign-in response.
+     */
+    const openOn = useCallback(
+        async (partyId: string, parties: readonly PartySummary[]): Promise<SessionView> => {
+            const session = await api.selectParty(partyId);
+            const merged: SessionView = {
+                ...session,
+                availableParties: [...parties],
+            };
+            queryClient.setQueryData(SESSION_QUERY_KEY, merged);
+            setState({ status: 'authenticated', session: merged });
+            return merged;
+        },
+        [queryClient],
+    );
+
     const signIn = useCallback<SessionContextValue['signIn']>(
         async (credentials) => {
             const result = await api.login(credentials);
@@ -187,6 +207,21 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
                     passwordResetRequired: result.session.passwordResetRequired,
                 };
             }
+            /*
+             * One party is not a choice, so it is not put to the person as one.
+             * A tenant administrator is made with exactly one — their own
+             * tenant's — and asking them to pick it put a question with a single
+             * answer in front of the setup they had just been handed.
+             */
+            const only =
+                result.availableParties.length === 1 ? result.availableParties[0] : undefined;
+            if (only !== undefined) {
+                const opened = await openOn(only.id, result.availableParties);
+                return {
+                    outcome: 'active',
+                    passwordResetRequired: opened.passwordResetRequired,
+                };
+            }
             // A pending selection is not a session yet, so nothing is cached. The
             // sign-in screen renders the picker from this return value.
             return {
@@ -195,22 +230,14 @@ export function SessionProvider({ children }: { readonly children: ReactNode }):
                 passwordResetRequired: result.passwordResetRequired,
             };
         },
-        [queryClient],
+        [queryClient, openOn],
     );
 
     const chooseParty = useCallback<SessionContextValue['chooseParty']>(
         async (partyId, parties) => {
-            const session = await api.selectParty(partyId);
-            // The login reply offers fewer fields than the session view, so the
-            // party list is carried forward from the sign-in response.
-            const merged: SessionView = {
-                ...session,
-                availableParties: [...parties],
-            };
-            queryClient.setQueryData(SESSION_QUERY_KEY, merged);
-            setState({ status: 'authenticated', session: merged });
+            await openOn(partyId, parties);
         },
-        [queryClient],
+        [openOn],
     );
 
     const switchParty = useCallback<SessionContextValue['switchParty']>(

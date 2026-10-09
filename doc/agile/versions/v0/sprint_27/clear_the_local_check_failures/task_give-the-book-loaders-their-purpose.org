@@ -26,11 +26,11 @@ book_purpose_type and ledger_feed_type became non-nullable text columns on the b
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:239AABDC-4CB1-489A-8BFA-A38617929C3E][Clear the local-check failures on main]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -40,9 +40,14 @@ book_purpose_type and ledger_feed_type became non-nullable text columns on the b
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reproduce first, because the loader is the only thing that reads the shape:
+recreate the database and read the failure. It names one loader, and one loader
+is not the family.
+
+Find the family by holding every insert into the artefact table against the
+columns the generated DDL declares, the way the pgTAP repair did. Then choose
+each value from the lookups the schema already seeds rather than inventing one,
+and let a second recreate be the verdict.
 
 * Measurements
 
@@ -56,9 +61,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Loaders writing the books artefact | 5 | grep for the table across =projects/ores.sql/= | 3c7a3bd6d6 |
+| Rows those loaders insert | 53 | count of tuples across the five | 3c7a3bd6d6 |
+| Columns the loaders failed to name | 2, both non-nullable | the generated DDL, see Notes | 3c7a3bd6d6 |
+| =compass db recreate= | fails at the first loader, then completes | =compass db recreate -y -k= | 3c7a3bd6d6 |
 
 * Notes
+
+The two columns and where their values come from:
+
+| Column | Value | Why |
+|--------+-------+-----|
+| =book_purpose_type= | =SweepTarget= | The two sweep books. The lookup seeds it and =doc/knowledge/domain/sweep.org= argues it as a purpose in its own right, not a flag on one. |
+| =book_purpose_type= | =Trading= | Everything else, the value the lookup names for a book with no specialised role. |
+| =ledger_feed_type= | =None= | Every book, the value the lookup names for a book with no ledger connection. The fixture claims none. |
+
+Nothing caught this, and that is the finding behind the task: no check compares
+a loader's column list against the table it writes. The schema fingerprint
+catches a build built from different SQL, but not a loader that disagrees with
+the SQL it ships with.
 
 * Test Scenarios
 
@@ -84,3 +105,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass db recreate= completes against a clean database, and the fleet starts
+on the schema it builds: 24 units active, none failed.
+
+Five loaders write the books artefact and all five were wrong: the testdata one
+and the four Acme ones, fifty-three rows between them. Each now names both
+columns, and each value is one the lookups already seed.
+
+This is the second defect found by running something rather than by a check
+reporting it, after the pgTAP fixtures, and it is the same shape: a column
+became non-nullable and the SQL that writes it was not revisited. A loader
+census would catch the class.

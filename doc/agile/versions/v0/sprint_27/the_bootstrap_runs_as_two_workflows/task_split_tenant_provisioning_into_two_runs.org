@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 2908 | Split the bootstrap into a system wizard and a tenant wizard |
 
 * Review
 

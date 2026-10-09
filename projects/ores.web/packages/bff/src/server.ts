@@ -1089,9 +1089,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
                 'A reportsToAccountId is required. Send an empty string to clear the line.',
             );
         }
-        return accountSchema.parse(
-            await setReportingLine(session.client, accountId, parsed.data),
-        );
+        return accountSchema.parse(await setReportingLine(session.client, accountId, parsed.data));
     });
 
     /**

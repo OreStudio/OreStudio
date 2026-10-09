@@ -213,9 +213,7 @@ function Entry({
         <div className="grid grid-cols-[0.75rem_1fr] gap-3">
             <Dot tone={toneOf(event.kind)} />
             <article className="mb-2 rounded-[var(--radius-card)] border border-line bg-surface-raised px-3 py-2">
-                {head ?? (
-                    <DefaultHead event={event} language={language} />
-                )}
+                {head ?? <DefaultHead event={event} language={language} />}
                 {event.commentary !== '' && (
                     <p className="mt-1 text-sm text-ink-muted italic">{event.commentary}</p>
                 )}
@@ -226,9 +224,7 @@ function Entry({
                 )}
                 {actions}
                 {actions === undefined && isAnAct(event.kind) && (
-                    <p className="mt-2 text-[11px] text-ink-faint">
-                        {t('timeline.notRevertible')}
-                    </p>
+                    <p className="mt-2 text-[11px] text-ink-faint">{t('timeline.notRevertible')}</p>
                 )}
                 {actions === undefined && isAChange(event.kind) && (
                     <p className="mt-2 text-[11px] text-ink-faint">
@@ -404,7 +400,8 @@ function Gaps({ gaps }: { readonly gaps: readonly TimelineGap[] }): ReactNode {
             <ul className="mt-1 list-none space-y-0.5 p-0 text-xs text-ink-muted">
                 {gaps.map((gap) => (
                     <li key={`${gap.entity}:${gap.reason}`}>
-                        <span className="font-mono text-ink-faint">{gap.entity}</span> — {gap.reason}
+                        <span className="font-mono text-ink-faint">{gap.entity}</span> —{' '}
+                        {gap.reason}
                     </li>
                 ))}
             </ul>

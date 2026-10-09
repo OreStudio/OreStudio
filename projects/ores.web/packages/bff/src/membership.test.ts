@@ -370,7 +370,11 @@ describe('membership routes', () => {
             },
         });
 
-        const response = await server.inject({ method: 'GET', url: '/api/reporting-tree', cookies });
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/reporting-tree',
+            cookies,
+        });
         await server.close();
 
         expect(response.statusCode).toBe(200);

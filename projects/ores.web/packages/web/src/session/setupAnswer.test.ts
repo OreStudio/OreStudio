@@ -27,10 +27,10 @@ const ACCOUNT = '11111111-1111-1111-1111-111111111111';
 function state(overrides: Partial<SetupAnswerState> = {}): SetupAnswerState {
     return {
         answerAccountId: ACCOUNT,
+        answerSessionPresent: true,
         signedInAs: ACCOUNT,
         reading: false,
         asked: false,
-        authenticated: true,
         ...overrides,
     };
 }
@@ -51,27 +51,51 @@ describe('the answer a screen acts on', () => {
     });
 
     it('asks once for an answer about the session that has just signed in', () => {
-        expect(setupAnswerStep(state({ answerAccountId: '', signedInAs: ACCOUNT }))).toBe('ask');
-    });
-
-    it('signs out when a settled answer does not know the browser', () => {
+        // Signed in, and the answer on screen is the one read before the cookie
+        // existed: it names nobody and claims no cookie was presented.
         expect(
-            setupAnswerStep(state({ answerAccountId: '', signedInAs: ACCOUNT, asked: true })),
-        ).toBe('sign-out');
+            setupAnswerStep(
+                state({ answerAccountId: '', answerSessionPresent: false, signedInAs: ACCOUNT }),
+            ),
+        ).toBe('ask');
     });
 
-    it('leaves a visitor alone, because there is no session to reconcile', () => {
-        // Anonymous with an answer that names an account: the answer is being
-        // replaced, and there is nobody to sign out.
+    it('signs out when the deployment says it does not know the cookie', () => {
         expect(
             setupAnswerStep(
                 state({
-                    answerAccountId: ACCOUNT,
-                    signedInAs: '',
+                    answerAccountId: '',
+                    answerSessionPresent: true,
+                    signedInAs: ACCOUNT,
                     asked: true,
-                    authenticated: false,
                 }),
             ),
+        ).toBe('sign-out');
+    });
+
+    it('never signs out over an answer that claims no cookie was presented', () => {
+        // The regression this rule exists for. The journey reads the deployment
+        // again while creating its administrator, so the answer on screen was
+        // read before the sign-in that follows it existed. Signing out on that
+        // answer tore down the session the person had just been given, and the
+        // deployment then asked them to sign in to the account they had just
+        // made.
+        expect(
+            setupAnswerStep(
+                state({
+                    answerAccountId: '',
+                    answerSessionPresent: false,
+                    signedInAs: ACCOUNT,
+                    asked: true,
+                    reading: false,
+                }),
+            ),
+        ).toBe('current');
+    });
+
+    it('leaves a visitor alone, because there is no session to reconcile', () => {
+        expect(
+            setupAnswerStep(state({ answerAccountId: ACCOUNT, signedInAs: '', asked: true })),
         ).toBe('current');
     });
 });

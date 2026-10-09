@@ -44,14 +44,21 @@ export interface SetupAnswerState {
     readonly reading: boolean;
     /** Whether a fresh answer has already been asked for, for this session. */
     readonly asked: boolean;
-    /** Whether this browser believes it is signed in. */
-    readonly authenticated: boolean;
+    /**
+     * Whether the answer says the request carried a session cookie.
+     *
+     * This is what makes `sign-out` mean something. A cookie the deployment
+     * does not know is evidence that the browser's session is over; an answer
+     * that merely fails to name the account is evidence of nothing, because it
+     * may have been read before the cookie existed.
+     */
+    readonly answerSessionPresent: boolean;
 }
 
 /**
  * `current` when the answer is about the session in hand, `wait` while a fresh
  * one is on its way, `ask` when it has not been asked for yet, and `sign-out`
- * when the deployment has answered and does not know this browser.
+ * when the deployment says it does not know the cookie the browser presented.
  */
 export type SetupAnswerStep = 'current' | 'wait' | 'ask' | 'sign-out';
 
@@ -67,8 +74,22 @@ export function setupAnswerStep(state: SetupAnswerState): SetupAnswerStep {
     if (state.reading) {
         return 'wait';
     }
-    if (!state.asked) {
-        return 'ask';
+    /*
+     * Only the deployment saying it does not know the cookie the browser
+     * presented is a reason to sign out, and that is a fact it can only state
+     * about a session it was offered. An answer that names nobody while
+     * claiming no cookie was presented says nothing about the sign-in that has
+     * just happened: it was read before the cookie existed.
+     *
+     * Demanding that evidence matters because the asking is not synchronous.
+     * `reading` turns true on the render after the refetch is asked for, so a
+     * pass slips between the two with `asked` set and `reading` clear — and
+     * signing out on that pass tore down the session the person had just been
+     * given, which then read as the deployment asking them to sign in to the
+     * account they had just made.
+     */
+    if (state.answerSessionPresent && state.answerAccountId === '') {
+        return 'sign-out';
     }
-    return state.authenticated ? 'sign-out' : 'current';
+    return state.asked ? 'current' : 'ask';
 }

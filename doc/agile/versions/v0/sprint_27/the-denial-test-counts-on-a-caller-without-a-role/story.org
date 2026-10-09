@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 5996E81C-C075-46B2-AB83-9114A8187026
+:END:
+#+title: Story: Hotfix: the denial test counts on a caller without a role
+#+description: efe1543875 granted Member the iam::roles:read code, which the account-access read is gated on. Every person account holds Member from its first version, so the test's caller -- written as a person account with no roles -- now holds it and is admitted: the case fails with an outcome of ok and a non-empty roles list.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.iam:hotfix:testing:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let the denial case of the account-access read exercise the refusal it
+describes, so the suite tests the authorization boundary rather than a state
+no account is in.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The denial case calls the read with a caller that holds no role.
+- =ores.iam.core.tests= passes.
+- The production gate and its documented contract are unchanged.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FF2C8B35-EC50-4099-9A35-FC66CF8B9DD5][Scaffold story: Hotfix: the denial test counts on a caller without a role]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6272CAAF-48D4-4909-BBC2-5FDD82AF4637][Implement Hotfix: the denial test counts on a caller without a role]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the denial test counts on a caller without a role |
+
+* Decisions
+
+- *The production gate is not changed here.* =read_account_access= refuses a
+  caller without =iam::roles:read=, and its header states that contract
+  precisely. This fix makes the test's caller genuinely lack the code rather
+  than relaxing the contract.
+- *The boundary question is left open, deliberately.* =efe1543875= granted
+  =iam::roles:read= to Member so a member can read the role catalogue, and the
+  same code gates reading another account's access, so every member may now
+  read any account's roles, permissions and assignment tail. That grant is
+  argued for the catalogue and against account data in its own message, so the
+  two readings are in conflict. Resolving it means giving the account-access
+  read an entitlement members do not hold -- =iam::accounts:read= is one --
+  which changes production behaviour and the documented contract. It is a
+  decision about the boundary, not a test fix, and it is not taken here.
+
+* Out of scope
+
+- Whether a member should be able to read another account's access. See the
+  second decision.
+
+* Result
+
+Done. The case takes back the Member assignment the account trigger gave the
+caller before calling the read, which is the state an administrator can leave
+an account in. =ores.iam.core.tests= passes: 771 assertions in 252 test cases.

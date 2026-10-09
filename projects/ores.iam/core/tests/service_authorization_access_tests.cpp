@@ -167,6 +167,14 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", tags) {
     auto r = write_role_bundling(h, gen, std::string(permissions::accounts_read));
     assign(h, gen, other, r);
 
+    // Every person account holds Member from its first version, and Member
+    // bundles iam::roles:read -- the role catalogue is what a member reads to
+    // decide what to ask for. A caller that may not read another account's
+    // access therefore has to hold nothing, so the Member the trigger gave it
+    // is taken back before the call. This is the state an administrator leaves
+    // behind, not a fiction: the trigger gives Member once and never again.
+    account_role_repository(h.context()).remove_all_for_account(caller.id);
+
     authorization_service svc(h.context());
     const auto access = assigned(svc.read_account_access(caller.id, other.id));
 

@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 53DB8037-8551-4AEF-9756-98BB0C61FAF4
+:END:
+#+title: Story: Show who did it in audit
+#+description: The audit screen prints account UUIDs where a person needs to read who signed in, and its failed-attempts panel lists every account that has never signed in, each carrying the zero timestamp 1970-01-01 00:00:00Z as if it were an event.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every audit row names the account by its username, with the UUID beneath it, and a failed-attempts row means an attempt actually happened.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The active sessions, the session statistics and the failed attempts name the account by username, with the UUID shown beside it in small type.
+- The auth events panel keeps the username it already carries and shows the UUID beneath it.
+- An account that has never signed in is not listed as a failed attempt, and a zero timestamp never renders as 1970-01-01.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9E71F61B-72F9-4DD1-867F-4AA1D1A998CB][Scaffold story: Show who did it in audit]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:09C28824-7CB3-476E-B634-86A8B17679AB][Name the account in every audit row]] | DONE | | 2026-10-09 | Initial task for: Show who did it in audit |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The audit screen names the account in every row: the username first, the UUID
+beneath it in small type. The failed-attempts panel no longer presents an
+account that has never signed in as a 1970 event: the zero login_info
+sentinels read *Never signed in* and *Never*, and the rows order by what they
+have to say. The audit also has a card on =PartyHome=, which had none.
+
+The login_info rows themselves are correct and stay: they are per-account
+login state, created with the account because the login path refuses without
+them, not a log of events.
+

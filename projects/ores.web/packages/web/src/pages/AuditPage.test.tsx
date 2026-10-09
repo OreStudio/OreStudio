@@ -24,6 +24,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type {
+    Account,
     AuthEvent,
     LoginInfo,
     Session,
@@ -32,6 +33,7 @@ import type {
 import { uuid } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import {
+    AUDIT_ACCOUNTS_QUERY_KEY,
     AUDIT_EVENTS_QUERY_KEY,
     AUDIT_FAILURES_QUERY_KEY,
     AUDIT_SESSIONS_QUERY_KEY,
@@ -39,6 +41,9 @@ import {
     AuditPage,
     eventTone,
     formatReadAt,
+    isZeroAddress,
+    isZeroTimestamp,
+    orderLoginRecords,
     withinPeriod,
 } from './AuditPage.js';
 
@@ -55,6 +60,29 @@ import {
 const TENANT_ID = uuid('ffffffff-ffff-ffff-ffff-ffffffffffff');
 const ACCOUNT_ID = uuid('11111111-1111-1111-1111-111111111111');
 const SESSION_ID = uuid('33333333-3333-3333-3333-333333333333');
+const USERNAME = 'amara.okafor';
+
+function account(overrides: Partial<Account> = {}): Account {
+    return {
+        version: 1,
+        id: ACCOUNT_ID,
+        tenantId: TENANT_ID,
+        username: USERNAME,
+        fullName: 'Amara Okafor',
+        email: 'amara.okafor@example.com',
+        accountType: 'user',
+        jobTitle: '',
+        reportsToAccountId: null,
+        defaultPartyId: null,
+        imageId: null,
+        modifiedBy: 'system',
+        changeReasonCode: '',
+        changeCommentary: '',
+        performedBy: 'system',
+        recordedAt: '2026-10-01 22:14:00Z',
+        ...overrides,
+    };
+}
 
 function session(overrides: Partial<Session> = {}): Session {
     return {
@@ -119,15 +147,19 @@ function statisticsRow(overrides: Partial<SessionStatisticsRow> = {}): SessionSt
     };
 }
 
-function render(path = '/audit'): string {
+function render(path = '/audit', loginRecords: readonly LoginInfo[] = [loginInfo()]): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData([AUDIT_SESSIONS_QUERY_KEY], [session()]);
     client.setQueryData([AUDIT_FAILURES_QUERY_KEY], {
-        loginInfo: [loginInfo()],
+        loginInfo: loginRecords,
         totalCount: 25,
     });
     client.setQueryData([AUDIT_EVENTS_QUERY_KEY, 'day', ''], [authEvent()]);
     client.setQueryData([AUDIT_STATISTICS_QUERY_KEY, 'day'], [statisticsRow()]);
+    client.setQueryData([AUDIT_ACCOUNTS_QUERY_KEY], {
+        accounts: [account()],
+        totalCount: 1,
+    });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -186,6 +218,33 @@ describe('the audit sign-ins screen', () => {
         expect(html).toContain('7');
     });
 
+    it('names the account above its identifier in every panel', () => {
+        expect(render('/audit?tab=sessions')).toContain(USERNAME);
+        expect(render('/audit?tab=statistics')).toContain(USERNAME);
+        expect(render('/audit?tab=failures')).toContain(USERNAME);
+        expect(render('/audit?tab=sessions')).toContain(ACCOUNT_ID);
+        expect(render('/audit?tab=statistics')).toContain(ACCOUNT_ID);
+        expect(render('/audit?tab=failures')).toContain(ACCOUNT_ID);
+        expect(render('/audit?tab=events')).toContain(ACCOUNT_ID);
+    });
+
+    it('keeps a login record for an account that has never been tried, and calls it never', () => {
+        const never = loginInfo({
+            failedLogins: 0,
+            locked: false,
+            online: false,
+            lastLogin: '1970-01-01 00:00:00Z',
+            lastAttemptIp: '0.0.0.0',
+        });
+        const html = render('/audit?tab=failures', [never]);
+
+        expect(html).toContain(ACCOUNT_ID);
+        expect(html).toContain('>Never signed in<');
+        expect(html).toContain('>Never<');
+        expect(html).not.toContain('1970-01-01');
+        expect(html).not.toContain('0.0.0.0');
+    });
+
     it('reads the authentication event log, newest first', () => {
         const html = render('/audit?tab=events');
 
@@ -216,6 +275,36 @@ describe('the audit helpers', () => {
     it('states a read time in UTC, and nothing before any read', () => {
         expect(formatReadAt(0)).toBeUndefined();
         expect(formatReadAt(Date.UTC(2026, 9, 1, 22, 14, 0))).toBe('22:14:00 UTC');
+    });
+
+    it('states a zero or empty timestamp as no moment at all', () => {
+        expect(isZeroTimestamp('1970-01-01 00:00:00Z')).toBe(true);
+        expect(isZeroTimestamp('')).toBe(true);
+        expect(isZeroTimestamp('2026-09-29 21:03:00Z')).toBe(false);
+    });
+
+    it('states a zero or empty address as no address at all', () => {
+        expect(isZeroAddress('0.0.0.0')).toBe(true);
+        expect(isZeroAddress('')).toBe(true);
+        expect(isZeroAddress('198.51.100.7')).toBe(false);
+    });
+
+    it('orders the most failed first, then the accounts that have signed in', () => {
+        const accountA = loginInfo({ accountId: ACCOUNT_ID, failedLogins: 2, lastLogin: '' });
+        const accountB = loginInfo({
+            accountId: uuid('22222222-2222-2222-2222-222222222222'),
+            failedLogins: 5,
+            lastLogin: '1970-01-01 00:00:00Z',
+        });
+        const accountC = loginInfo({
+            accountId: uuid('33333333-3333-3333-3333-333333333333'),
+            failedLogins: 2,
+            lastLogin: '2026-09-29 21:03:00Z',
+        });
+
+        expect(
+            orderLoginRecords([accountA, accountB, accountC]).map((row) => row.accountId),
+        ).toEqual([accountB.accountId, accountC.accountId, accountA.accountId]);
     });
 
     it('paints the event types the log stores', () => {

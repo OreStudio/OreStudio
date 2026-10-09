@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 09C28824-7CB3-476E-B634-86A8B17679AB
+:END:
+#+title: Task: Name the account in every audit row
+#+description: Initial task for: Show who did it in audit
+#+type: task
+#+level: s1
+#+filetags: :show_who_did_it_in_audit:sprint_27:v0:
+#+owner: marco
+#+branch:
+#+pr: 2976
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:53DB8037-8551-4AEF-9756-98BB0C61FAF4][Show who did it in audit]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every audit row names the account by its username, with the UUID beneath it, and a failed-attempts row means an attempt actually happened.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:53DB8037-8551-4AEF-9756-98BB0C61FAF4][Show who did it in audit]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The active sessions, the session statistics and the failed attempts name the account by username, with the UUID shown beside it in small type.
+- The auth events panel keeps the username it already carries and shows the UUID beneath it.
+- An account that has never signed in is not listed as a failed attempt, and a zero timestamp never renders as 1970-01-01.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2976][#2976]] | [web] Name the account in every audit row |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every audit account cell now reads the username on its first line with the
+account UUID beneath it in small monospaced type: the active sessions, the
+session statistics, the failed attempts and the auth events. The page builds
+one id-to-username map from =api.accounts()=; an unknown id or a failed
+accounts read falls back to the UUID alone rather than an empty cell.
+
+The failed-attempts panel keeps every =ores_iam_login_info_tbl= row, because
+the row is per-account login state and not an event: both account-creation
+paths insert it, and =account_operations_service::login()= refuses without it.
+The zero sentinels now read as such instead of lying: =1970-01-01 00:00:00Z=
+renders as *Never signed in* and =0.0.0.0= as *Never*, in all three locales.
+Rows order most-failed first, then accounts that have signed in, then the
+never-used ones.
+
+=Audit= also gains a card on =PartyHome=, which offered none, so a
+party-scoped administrator reaches the screen the same way a tenant
+administrator does. =SystemHome= offers no cards at all, so it was left alone.
+
+Verified: =npm run typecheck=, =npx vitest run= (43 files, 463 tests) and
+=prettier --check= on the seven touched files, all green.
+

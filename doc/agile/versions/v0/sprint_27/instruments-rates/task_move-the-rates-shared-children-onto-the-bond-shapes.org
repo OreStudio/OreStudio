@@ -8,7 +8,7 @@
 #+filetags: :instruments-rates:sprint_27:v0:
 #+owner: marco
 #+branch: feature/move-the-rates-shared-children-onto-the-bond-shapes
-#+pr: 2986
+#+pr: 3021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -123,6 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3021][#3021]] | [trading,ore,sql] Move the rates family onto the shared children |
 | [[https://github.com/OreStudio/OreStudio/pull/2986][#2986]] | [trading,sql] Give the rates header its shared children |
 
 * Review

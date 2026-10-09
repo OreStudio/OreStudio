@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T14:39:37.739931Z
+' Generated: 2026-10-09T15:08:55.704719Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -3253,13 +3253,12 @@ package "trading" #E8F5E9 {
 
     entity ores_trading_swap_legs_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+        * trade_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
         --
         * version : integer
         * party_id : uuid <<FK>>
-        * trade_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * leg_number : integer
           payer : boolean
         * leg_type_code : text
         * day_count_fraction_code : text
@@ -3294,9 +3293,12 @@ package "trading" #E8F5E9 {
     because both are lists the document may state one entry at a time or one per
     step. A single column cannot hold a schedule, and the two arms of a stepping
     leg were flattened into one until these children landed.
-    The row keeps its own id surrogate and names the parent through trade_id.
-    The instrument is keyed by its trade, so all nine rates families name the one
-    parent the trades table holds rather than a table per family.
+    The row is keyed by the trade and the leg's ordinal, (trade_id, leg_number),
+    and names its parent through trade_id. Nothing mints a surrogate: the import
+    reads the parent instrument it was given, and the trade plus the ordinal
+    already identify the row. The instrument is keyed by its trade, so all nine
+    rates families name the one parent the trades table holds rather than a table
+    per family.
     It binds :profile: trading-instrument, like the nine instrument sub-types
     whose legs it holds. Two table features justify the bind: the table is
     tenant-scoped through tenant_id and the tenant isolation policy, its insert trigger stamps

@@ -63,6 +63,9 @@ task and name that file in the Command column.
 | Pages published by the site build | 38 files, 0 failures | =compass site page= | ec90a07291 |
 | org-links | pass, 2.7 s | =compass check --only org-links= | ec90a07291 |
 | site-page | pass, 27.6 s | =compass check --only site-page= | ec90a07291 |
+| Review screens added | 1 | =ls doc/prototypes/setup/first-run/review/= | 6721762871 |
+| Screen identical to its source | yes | =diff /home/marco/Downloads/gemini-code-1791556395038.html doc/prototypes/setup/first-run/review/create-the-administrator.html= | 6721762871 |
+| prototypes, site-page, org-links | 3/3 passed | =compass check --only prototypes --only site-page --only org-links= | 6721762871 |
 
 * Notes
 
@@ -107,3 +110,17 @@ view.
 
 Nothing changed in a prototype page or a review page, which stay
 byte-identical to what their author wrote. Only the notes changed.
+
+* Also in this task: First run's administrator step
+
+Gemini's =Create the administrator= screen joined the tree at
+=doc/prototypes/setup/first-run/review/=, byte-identical to the file it
+came from, under an index that lists it. It is a review of =First run=
+and not a new prototype because it is the second step of the bootstrap
+wizard =First run= walks through: the rail in the file names the same
+seven steps its =prototype.js= does. The setup page's review cell for
+=First run= said =none=, and links the review now.
+
+=build/scripts/check_prototype_inventory.py= is what holds the two
+together: it fails on a row that says =none= for a prototype that has a
+review directory, and on a review directory with no =index.html=.

@@ -2222,8 +2222,7 @@ const pt: SourceCatalogue = {
             commentary: 'Nota',
             save: 'Guardar a linha',
             clear: 'Limpar a linha',
-            noVersion:
-                'A conta não pôde ser lida, por isso a escrita não indica versão.',
+            noVersion: 'A conta não pôde ser lida, por isso a escrita não indica versão.',
             unrooted:
                 '{count} pessoas não alcançam nenhuma raiz: o gestor desapareceu, ou a linha que as sustenta está quebrada. Ficam fora da árvore em vez de serem desenhadas como raízes.',
             gaps: 'O que este ecrã não pode fazer',

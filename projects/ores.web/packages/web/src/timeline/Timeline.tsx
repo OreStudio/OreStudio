@@ -73,9 +73,7 @@ export function Timeline({
         <ol className="grid list-none gap-0 p-0">
             {timeline.events.map((event, index) => (
                 <Fragment key={entryKey(event, index)}>
-                    {startsADay(event, timeline.events[index - 1]) && (
-                        <DayDivider at={event.at} />
-                    )}
+                    {startsADay(event, timeline.events[index - 1]) && <DayDivider at={event.at} />}
                     <Entry
                         event={event}
                         before={previous.get(earlier(event))}
@@ -242,9 +240,7 @@ function Entry({
                 )}
                 {actions}
                 {actions === undefined && isAnAct(event.kind) && (
-                    <p className="text-[0.78rem] text-ink-faint">
-                        {t('timeline.notRevertible')}
-                    </p>
+                    <p className="text-[0.78rem] text-ink-faint">{t('timeline.notRevertible')}</p>
                 )}
                 {actions === undefined && isAChange(event.kind) && (
                     <p className="text-[0.78rem] text-ink-faint">

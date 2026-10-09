@@ -180,9 +180,7 @@ export function ProfileCards({
                     )}
                 >
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-semibold">
-                            {t('journey.profile.noTenant.title')}
-                        </span>
+                        <span className="font-semibold">{t('journey.profile.noTenant.title')}</span>
                         <span className="text-xs text-ink-faint">
                             {t('journey.profile.noTenant.audience')}
                         </span>

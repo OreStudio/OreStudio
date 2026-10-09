@@ -1511,11 +1511,16 @@ export const en: SourceCatalogue = {
         retry: 'Try again',
     },
 
+    error: {
+        heading: 'A request did not finish',
+        dismiss: 'Dismiss',
+        dismissAll: 'Dismiss all',
+    },
+
     journey: {
         steps: 'Steps',
         failedHeading: 'The setup stopped on an error',
-        reloadHint:
-            'Reload the page to start again from the last screen the deployment recorded.',
+        reloadHint: 'Reload the page to start again from the last screen the deployment recorded.',
         policyFailed:
             'The password rules could not be read, so no password can be set here. {message}',
 

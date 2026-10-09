@@ -20,6 +20,7 @@
  */
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { errorMessage } from '../api/errors.js';
 import { Notice } from '../ui/Primitives.js';
 
 /**
@@ -54,7 +55,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
-        return { message: error instanceof Error ? error.message : String(error) };
+        return { message: errorMessage(error) };
     }
 
     override componentDidCatch(error: Error, info: ErrorInfo): void {

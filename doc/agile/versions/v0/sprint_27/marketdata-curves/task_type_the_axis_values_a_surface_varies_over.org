@@ -26,11 +26,11 @@ A composite object's axis values carry a typed, validated code rather than free 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E44D54EF-14D9-4010-A626-12AF1EDC8F26][Add proper curve support to ores.marketdata]] |
-| Now          | Implemented, green, and open for review at PR #2963. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then close the task.            |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance

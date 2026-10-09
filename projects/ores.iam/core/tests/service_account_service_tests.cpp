@@ -43,6 +43,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <faker-cxx/internet.h>
+#include <optional>
 
 namespace {
 
@@ -471,6 +472,31 @@ TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", tags) {
     // fail — provisioning scripts and the shell command may legitimately
     // repeat this call against an already-provisioned system.
     CHECK(sut.set_my_default_party(a.id, party_id).empty());
+}
+
+TEST_CASE("set_my_default_party_clears_the_default_when_no_party_is_stated", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    service::account_operations_service sut(h.context());
+
+    const auto e = generate_synthetic_account(ctx);
+    const std::string password = faker::internet::password();
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
+
+    boost::uuids::random_generator gen;
+    const auto party_id = gen();
+
+    REQUIRE(sut.set_my_default_party(a.id, party_id).empty());
+    CHECK(sut.set_my_default_party(a.id, std::nullopt).empty());
+
+    const auto reloaded = sut.find_account_by_id(a.id);
+    REQUIRE(reloaded.has_value());
+    CHECK_FALSE(reloaded->default_party_id.has_value());
+
+    // Clearing a default that is not set is a no-op, not a failure.
+    CHECK(sut.set_my_default_party(a.id, std::nullopt).empty());
 }
 
 TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {

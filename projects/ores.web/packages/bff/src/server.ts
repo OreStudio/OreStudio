@@ -70,12 +70,14 @@ import {
     contactWriteViewSchema,
     imageUploadPolicyViewSchema,
     imageUploadViewSchema,
+    defaultPartyRequestSchema,
     myPartiesSchema,
     profileWriteSchema,
     putContactInformation,
     readContactInformation,
     readMyContactInformation,
     readMyParties,
+    setMyDefaultParty,
     readImageUploadPolicy,
     updateAccount,
     updateSelfAccount,
@@ -1004,6 +1006,22 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     server.get('/api/me/parties', async (request) => {
         const session = requireSession(request);
         return myPartiesSchema.parse(await readMyParties(session.client));
+    });
+
+    /**
+     * Sets or clears the party quick sign-in uses. An empty partyId clears it.
+     * The server refuses a party the account does not work in.
+     */
+    server.post('/api/me/default-party', async (request) => {
+        const session = requireSession(request);
+        const parsed = defaultPartyRequestSchema.safeParse(request.body);
+        if (!parsed.success) {
+            throw invalidRequest(
+                'A partyId is required. Send an empty string to clear the default.',
+            );
+        }
+        await setMyDefaultParty(session.client, parsed.data.partyId);
+        return { defaultPartyId: parsed.data.partyId };
     });
 
     /** The roles one account holds. The server allows it to a holder of iam::roles:read. */

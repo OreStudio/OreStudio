@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,39 +26,52 @@ A member can set the party quick sign-in uses, and can clear it, from the browse
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:774AD81D-E286-4A5D-BBDE-4188CAAE7023][Implement the membership journeys in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- =iam.v1.ops.set_my_default_party= still stores a party the member works in, and refuses one they do not.
+- An empty =party_id= clears the stored default, and clearing a default that is not set succeeds without writing.
+- The browser reaches the write over =POST /api/me/default-party=, parsed at the boundary.
+- The C++ tests cover storing, clearing and clearing twice; the BFF tests cover storing, clearing, the refusal and a caller with no session.
+- =check_component_drift.py --component iam= reports no drift, clang-format is clean, and the three TypeScript packages typecheck.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Make clearing expressible: an empty =party_id= is unambiguous, because a
+   party id is a UUID. Record the rule on the message.
+2. Take an optional party in the service, so "no default" is a value it can
+   store, and make it idempotent for a default that is already clear.
+3. Skip the membership check on a clear, because clearing names no party, and
+   leave the check in place for a set.
+4. Wire the browser path: the wire seam, the BFF route and the web client.
+5. Test the service at the database and the route end to end.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IAM core suite after this change | see * Result | =bash build/evidence/run_case.sh ores.iam.core.tests= | (branch tip) |
+| BFF membership cases | 6 | =npm test --workspace @ores/bff -- membership= | (branch tip) |
 
 * Notes
 
+- *Clearing needed no new subject.* The journey's candidate was a nullable
+  body or a =clear-default-party= subject. The request already carries a string
+  party id, and a party id is a UUID, so an empty string is unambiguous and the
+  smallest change that makes "no default" expressible. The prototype drew *Clear
+  default* as unavailable; after this it is a real control.
+- *The membership check stays where it is.* It is the guard that stops a member
+  storing a party they cannot act for, and it is the reason the screen may offer
+  only the account's own parties. A clear skips it because it names no party.
+- *Changing the service signature did not move its callers.* The parameter is
+  now =std::optional<boost::uuids::uuid>=; the existing tests and the handler
+  pass a plain uuid, which converts. 
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -83,3 +96,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done 2026-10-09.
+
+A member can set the party quick sign-in uses and clear it again, from the
+browser:
+
+| Layer | What landed |
+|-------+-------------|
+| Message | =set_my_default_party_request= states that an empty =party_id= clears the default. |
+| Service | =set_my_default_party= takes an optional party, so "no default" is a value it can store, and clearing an unset default succeeds without a write. |
+| Handler | A clear skips the membership check, because it names no party; a set keeps it, so a member cannot store a party they cannot act for. |
+| Browser | =setMyDefaultParty= in the wire seam, =POST /api/me/default-party=, and =api.setMyDefaultParty()=. |
+| Tests | One C++ case for the clear and its idempotence, three BFF cases for the write, the clear and the refusal. |
+
+*Verification.* The IAM core suite passes, 260 cases and 796 assertions. The
+BFF membership tests pass, 6 cases. =check_component_drift.py --component iam=
+reports no drift, clang-format over the changed C++ is clean, and the three
+TypeScript packages typecheck.
+
+The database was recreated for this build: main had moved with a SQL change
+(the pgtap hotfix), so the recorded schema fingerprint no longer matched. That
+is an environment condition and not this change.

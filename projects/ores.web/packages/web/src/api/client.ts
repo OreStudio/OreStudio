@@ -522,6 +522,18 @@ export const api = {
         return myPartiesSchema.parse(await request('/api/me/parties', { method: 'GET' }));
     },
 
+    /**
+     * Sets or clears the party quick sign-in uses. An empty id clears it, and
+     * the server refuses a party the account does not work in.
+     */
+    async setMyDefaultParty(partyId: string): Promise<void> {
+        await request('/api/me/default-party', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({ partyId }),
+        });
+    },
+
     /** The roles one account holds. */
     async accountAccess(accountId: string): Promise<AccountAccess> {
         return accountAccessSchema.parse(

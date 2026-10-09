@@ -377,17 +377,18 @@ public:
     std::string update_my_email(const boost::uuids::uuid& account_id, const std::string& new_email);
 
     /**
-     * @brief Sets the default party for a user's own account.
+     * @brief Sets or clears the default party for a user's own account.
      *
      * Self-service; the caller is responsible for verifying the party is
      * one the account is actually associated with before calling this.
      *
      * @param account_id The ID of the account to update
-     * @param party_id The party to set as the account's default
+     * @param party_id The party to set as the account's default, or nothing to
+     * clear the stored default
      * @return empty string on success, error message on failure
      */
     std::string set_my_default_party(const boost::uuids::uuid& account_id,
-                                     const boost::uuids::uuid& party_id);
+                                     const std::optional<boost::uuids::uuid>& party_id);
 
     /**
      * @brief Writes the fields a member owns on their own account.

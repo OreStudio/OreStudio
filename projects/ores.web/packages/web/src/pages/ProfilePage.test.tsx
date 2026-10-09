@@ -219,10 +219,16 @@ describe('ProfilePage', () => {
         });
 
         expect(html).not.toContain('Find the person');
-        expect(html).not.toContain('Grace Hopper</');
         expect(html).toContain('Editable');
         expect(html).not.toContain('iam::');
-        expect(html).toContain('Reports to Grace Hopper.');
+        /*
+         * A reporting line is an account identifier. It is drawn as the person
+         * it names — their picture and their name, opening their page — because
+         * an identifier tells a reader nothing.
+         */
+        expect(html).toContain('href="/people/grace"');
+        expect(html).toContain('/api/accounts/grace/picture');
+        expect(html).toContain('>Grace Hopper<');
     });
 
     it("marks the member's own panels editable, naming no permission", () => {

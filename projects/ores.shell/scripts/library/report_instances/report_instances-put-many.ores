@@ -3,4 +3,4 @@
 # GENERATED from doc/recipes/shell/report_instances/report_instance.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts
 #
-report_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - - 0 __none__ - - system.new_record generated_script
+report_instances put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 - - 0 __none__ __none__ - - system.new_record generated_script

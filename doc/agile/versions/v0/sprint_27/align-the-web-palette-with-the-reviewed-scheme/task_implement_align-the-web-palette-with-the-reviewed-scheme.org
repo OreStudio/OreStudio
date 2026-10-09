@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: AA8E7910-AD45-4397-B3FB-067F33373AFC
+:END:
+#+title: Task: Move the web theme onto the reviewed scheme
+#+description: Initial task for: Align the web palette with the reviewed scheme
+#+type: task
+#+level: s1
+#+filetags: :align-the-web-palette-with-the-reviewed-scheme:sprint_27:v0:
+#+owner: marco
+#+branch: feature/align-the-web-palette-with-the-reviewed-scheme
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The application's dark theme is the GitHub-dark palette the project site uses, and the landing-page review argued a different one: a blue-black surface ramp on slate neutrals, an indigo accent reserved for interaction, and a sky hue for content that is not built yet. The reviewed screens also lean on tokens the theme does not carry — accent tints, a tinted elevation glow, a radius scale, and a micro-label size — so every screen that wants them hard-codes a value instead. Move the theme onto the reviewed scheme and add the missing roles, from the one block every screen reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A194593B-B37F-4E75-A667-A63CC3E9C042][Align the web palette with the reviewed scheme]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- styles.css carries the reviewed scheme: the surface, line, ink and accent ramps.
+- Every token the application uses today is still declared, so no screen loses its colour.
+- The roles the reviewed screens need and the theme lacks are declared: accent tints, an elevation glow, a hue for future content, the radius scale, and the micro-label size.
+- The web check passes: typecheck, format and tests.
+
+* Plan
+
+The theme is one block, and every screen reads it through Tailwind utilities, so
+the palette is a single edit with an application-wide effect. That is also the
+risk: a token that vanishes takes a screen's colour with it, and nothing in the
+web check reads a colour.
+
+So measure before choosing. Take the reviewed screens' scheme, then hold every
+role it defines against the surface it will sit on and compute the contrast
+rather than trusting the eye. The review draws its accent where it looks right
+on a mock screen; the application has to pass AA with it.
+
+Then confirm the tokens survive the build. Tailwind prunes what nothing uses, so
+a token is only proved by looking for it in the emitted stylesheet.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Design tokens the theme declares | 14 before, 24 after | =grep -c -- '--color-\\\|--radius-\\\|--shadow-\\\|--text-\\\|--tracking-' styles.css= | 72c5dbb00c |
+| Colour roles whose contrast improves | ink, muted, up, down, warn | contrast script, see Notes | 72c5dbb00c |
+| Colour roles below AA at first pick | 2, the accent as text and the inverse ink on a filled accent | contrast script, see Notes | 72c5dbb00c |
+| Files the formatter was failing on | 6 on trunk, 0 after | =npm run format:check= | a39b94b17a |
+| Emitted accent in the built bundle | =#818cf8= | =grep -o -- '--color-accent:[^;]*;' dist/assets/index-*.css= | 72c5dbb00c |
+
+* Notes
+
+The contrast table, on the raised surface. WCAG AA wants 4.5 for body text and
+3.0 for large text.
+
+| Role | Before | After |
+|------+--------+-------|
+| ink | 13.55 | 14.48 |
+| muted | 6.77 | 6.96 |
+| faint | 3.59 | 3.75 |
+| accent as text | 7.07 | 5.98 |
+| accent-bright as text | 8.23 | 5.98 |
+| up | 6.83 | 9.29 |
+| down | 5.18 | 6.45 |
+| warn | 6.87 | 10.69 |
+| inverse ink on a filled accent | 7.49 | 6.51 |
+
+The accent is the one role that gets worse, and deliberately: the review's
+indigo at 500 measures 4.00 as text and 4.35 for the inverse ink on a fill, so
+it fails AA on both sides. At 400 it measures 5.98 and 6.51.
+
+=ink-faint= is below AA for body text before and after. It is used 175 times,
+almost always on a secondary line, so it is left where it is rather than
+changed under cover of a palette move.
+
+The prototypes are not touched. Each one copies the tokens from
+=styles.css= by hand, as the prototypes index requires, so all of them still
+carry the old scheme. That is a follow-up, and a candidate for a check that
+reads the copies against the source.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The theme carries the reviewed scheme from one block, and every screen moved
+with it: the surfaces, the lines, the ink and the three semantic colours all
+took the new ramp, and the accent is indigo at 400.
+
+The review's own indigo at 500 did not survive the measurement. It fails AA on
+both sides the application uses an accent on, so the hue is the review's and
+the lightness is a floor the review could not see from a mock screen. Of the
+roles that changed, five improved their contrast and only the accent and its
+bright step got worse, both still inside AA.
+
+The roles the theme lacked are declared beside the palette: the accent at ten
+and twenty percent for the tile fill and its hairline, a sky pair for content
+that is not built yet, the violet the reviewed screens use in a gradient, a
+three-step radius scale, a tinted elevation, and the micro-label size and
+tracking. =--color-accent-dim= was a grey that no screen used; it is now the
+tint its name claims.
+
+Two things are deliberately not done here. The 175 uses of =ink-faint= are
+left below AA, because a palette move is the wrong place to change a
+secondary line. And the prototypes still carry the old tokens, because each
+copies them by hand; refreshing thirty of them, or checking the copies against
+the source, is its own change.
+
+The web check was red on trunk when this started, on six files the formatter
+had never seen. They are formatted here, because the check cannot pass
+otherwise.

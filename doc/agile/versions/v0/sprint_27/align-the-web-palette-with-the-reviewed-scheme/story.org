@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: A194593B-B37F-4E75-A667-A63CC3E9C042
+:END:
+#+title: Story: Align the web palette with the reviewed scheme
+#+description: The landing-page review argued a deeper, bluer surface ramp and an indigo accent, with role tokens the application's theme lacks: accent tints, an elevation glow, a hue for future content, a radius scale, and micro-label type. Move styles.css onto that scheme, which restyles every screen from one block.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The application's dark theme is the GitHub-dark palette the project site uses, and the landing-page review argued a different one: a blue-black surface ramp on slate neutrals, an indigo accent reserved for interaction, and a sky hue for content that is not built yet. The reviewed screens also lean on tokens the theme does not carry — accent tints, a tinted elevation glow, a radius scale, and a micro-label size — so every screen that wants them hard-codes a value instead. Move the theme onto the reviewed scheme and add the missing roles, from the one block every screen reads.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- styles.css carries the reviewed scheme: the surface, line, ink and accent ramps.
+- Every token the application uses today is still declared, so no screen loses its colour.
+- The roles the reviewed screens need and the theme lacks are declared: accent tints, an elevation glow, a hue for future content, the radius scale, and the micro-label size.
+- The web check passes: typecheck, format and tests.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7FA31354-8182-444E-8C53-3A0232829BE8][Scaffold story: Align the web palette with the reviewed scheme]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:AA8E7910-AD45-4397-B3FB-067F33373AFC][Move the web theme onto the reviewed scheme]] | DONE | 2026-10-09 | 2026-10-09 | Initial task for: Align the web palette with the reviewed scheme |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+The application wears the scheme the landing-page review argued, from the one
+block every screen reads: a blue-black surface ramp on the slate neutrals,
+indigo for interaction, and sky for content that is not built yet.
+
+The review's accent did not survive being measured. Indigo at 500 fails AA as
+text on the raised surface and for the inverse ink on a filled button, where
+400 clears both, so the hue is the review's and the lightness is a floor a
+mock screen cannot show. Five of the roles that changed improved their
+contrast; only the accent and its bright step got worse, both still inside AA.
+
+The roles the reviewed screens reach for and the theme lacked are declared
+with the palette: accent tints, a tinted elevation, a radius scale, the
+micro-label size, and a hue for future content so a card that is not built
+yet is never mistaken for a live control.
+
+Two follow-ups are recorded rather than taken. =ink-faint= stays below AA on
+175 secondary lines, because a palette move is the wrong place to change one.
+And the prototypes still carry the old tokens by hand; refreshing them, or
+checking the copies against the source, is its own change.
+
+The palette no longer matches the project site, which the stylesheet header
+now says.

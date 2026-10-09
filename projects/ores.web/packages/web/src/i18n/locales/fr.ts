@@ -1517,6 +1517,7 @@ const fr: SourceCatalogue = {
         field: 'Champ',
         gapsTitle: 'Ce que ce flux ne porte pas',
         notRevertible: 'Cette entrée relate un fait, il n’y a donc rien à rétablir.',
+        changeNotOffered: 'Rétablir un champ modifié n’est pas proposé ici.',
     },
 
     validation: {

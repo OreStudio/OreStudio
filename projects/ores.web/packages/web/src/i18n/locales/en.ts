@@ -1500,6 +1500,7 @@ export const en: SourceCatalogue = {
         field: 'Field',
         gapsTitle: 'What this stream does not carry',
         notRevertible: 'This entry records something that happened, so there is nothing to revert.',
+        changeNotOffered: 'Putting a changed field back is not offered here.',
     },
 
     validation: {

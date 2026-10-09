@@ -185,6 +185,17 @@ function isAnAct(kind: string): boolean {
     return !['raised', 'changed', 'asked', 'decided', 'granted'].includes(kind);
 }
 
+/**
+ * Whether an entry is a field of a record that moved.
+ *
+ * A change is drawn with the difference against the version before it, and on a
+ * stream whose subject offers no write it is drawn with the reason there is no
+ * control, rather than silently.
+ */
+function isAChange(kind: string): boolean {
+    return kind === 'changed';
+}
+
 function Entry({
     event,
     before,
@@ -217,6 +228,11 @@ function Entry({
                 {actions === undefined && isAnAct(event.kind) && (
                     <p className="mt-2 text-[11px] text-ink-faint">
                         {t('timeline.notRevertible')}
+                    </p>
+                )}
+                {actions === undefined && isAChange(event.kind) && (
+                    <p className="mt-2 text-[11px] text-ink-faint">
+                        {t('timeline.changeNotOffered')}
                     </p>
                 )}
             </article>

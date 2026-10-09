@@ -1510,6 +1510,7 @@ const pt: SourceCatalogue = {
         field: 'Campo',
         gapsTitle: 'O que este fluxo não contém',
         notRevertible: 'Esta entrada regista um facto, por isso não há nada a reverter.',
+        changeNotOffered: 'Repor um campo alterado não é oferecido aqui.',
     },
 
     validation: {

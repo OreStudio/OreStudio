@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 17C335A5-1311-4FA4-B24F-04B1A7892AC5
+:END:
+#+title: Story: Hotfix: the seeded books have no purpose
+#+description: The book artefact seeds omit book_purpose_type and ledger_feed_type, so compass db recreate fails on the not-null constraint.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:refdata:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=compass db recreate= dies in populate on every checkout of =main=:
+
+#+begin_example
+psql:populate/testdata/testdata_books_artefact_populate.sql:225:
+ERROR: null value in column "book_purpose_type" of relation
+"ores_dq_books_artefact_tbl" violates not-null constraint
+#+end_example
+
+The book gained two not-null columns, =book_purpose_type= and
+=ledger_feed_type=, and the generated artefact DDL gives neither a
+default. All five book seeds -- the testdata set and the four ACME sets --
+insert the older column list, so the first row of the first one fails.
+Populate aborts, =ores_database_info_tbl= is never stamped, and every
+service then refuses to start with "the database schema does not match
+this build (none)". No database can be created from =main=.
+
+The fix belongs in the model, not in the five seeds. The model already
+states both defaults in the columns' own prose: a book that plays no
+specialised role trades, and a book with no ledger connection has no
+feed. The artefact column list simply failed to mirror them, the way
+=is_sweepable= on the same table already mirrors its own =false=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Fix verified: =compass db recreate -y -k= exits 0. |
+| Waiting on    | Nothing.                               |
+| Next          | PR, then merge and rebuild.            |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- =compass db recreate -y -k= completes and stamps =ores_database_info_tbl=.
+- The two defaults are stated once, in the model, and reach the generated DDL.
+- All five book seeds insert unchanged: none names either column.
+- The fix is two lines -- no seed is taught about a column it should not need.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:44299397-2445-4E9D-93C7-5E3CDAD658CC][Scaffold story: Hotfix: the seeded books have no purpose]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:C59EC6BD-7DAD-40B7-9649-756CFA5A1DC4][Implement Hotfix: the seeded books have no purpose]] | STARTED | 2026-10-09 | | Initial task for: Hotfix: the seeded books have no purpose |
+
+* Decisions
+
+* Out of scope
+
+-

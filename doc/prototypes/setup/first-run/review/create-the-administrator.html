@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORE Studio - Create the administrator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f1115; color: #f3f4f6; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen flex bg-[#0f1115]">
+    <!-- Left Sidebar Stepper -->
+    <aside class="w-72 bg-[#12141a] border-r border-[#222632] p-6 flex flex-col justify-between">
+        <div class="space-y-2">
+            <div class="flex items-center space-x-3 py-2 text-gray-500">
+                <div class="w-6 h-6 rounded-full bg-[#1f2430] border border-[#2e3648] flex items-center justify-center text-xs font-mono">✓</div>
+                <span class="text-sm">Welcome to ORE Studio</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-white font-medium bg-[#1f2430]/60 px-3 rounded-lg border border-[#2e3648]">
+                <div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-mono font-bold text-white">2</div>
+                <span class="text-sm">Create the administrator</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-gray-500 px-3">
+                <div class="w-6 h-6 rounded-full bg-[#161920] border border-[#222632] flex items-center justify-center text-xs font-mono">3</div>
+                <span class="text-sm">Choose a starting point</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-gray-500 px-3">
+                <div class="w-6 h-6 rounded-full bg-[#161920] border border-[#222632] flex items-center justify-center text-xs font-mono">4</div>
+                <span class="text-sm">Describe the tenant</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-gray-500 px-3">
+                <div class="w-6 h-6 rounded-full bg-[#161920] border border-[#222632] flex items-center justify-center text-xs font-mono">5</div>
+                <span class="text-sm">Review</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-gray-500 px-3">
+                <div class="w-6 h-6 rounded-full bg-[#161920] border border-[#222632] flex items-center justify-center text-xs font-mono">6</div>
+                <span class="text-sm">Provisioning</span>
+            </div>
+            <div class="flex items-center space-x-3 py-2 text-gray-500 px-3">
+                <div class="w-6 h-6 rounded-full bg-[#161920] border border-[#222632] flex items-center justify-center text-xs font-mono">7</div>
+                <span class="text-sm">Ready</span>
+            </div>
+        </div>
+        <div class="text-xs text-gray-600 font-mono">ORE Studio Setup v2.4</div>
+    </aside>
+
+    <!-- Main Wizard Content Area -->
+    <main class="flex-1 flex flex-col justify-between p-8 overflow-y-auto">
+        <div class="max-w-5xl mx-w-full w-full space-y-6">
+            <!-- Compact Header Banner -->
+            <div class="rounded-xl overflow-hidden border border-[#222632] bg-[#161920] shadow-xl relative h-28 flex items-center px-6">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-950/60 via-[#161920]/90 to-transparent z-10"></div>
+                <img src="https://raw.githubusercontent.com/OreStudio/OreStudio/main/external/banner.png" alt="ORE Studio" class="absolute right-0 top-0 h-full w-1/2 object-cover opacity-30" onerror="this.style.display='none'">
+                <div class="relative z-20">
+                    <span class="text-xs font-mono uppercase tracking-widest text-indigo-400 font-semibold">Bootstrap Installation</span>
+                    <h1 class="text-xl font-bold text-white tracking-tight mt-0.5">Create the administrator</h1>
+                    <p class="text-xs text-gray-400 mt-0.5">This installation has no administrator, and nobody can sign in yet. The administrator owns the installation.</p>
+                </div>
+            </div>
+
+            <!-- Optimized Two-Column Form Layout -->
+            <div class="bg-[#161920] border border-[#222632] rounded-xl p-6 shadow-xl">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Left Column: Identity & Credentials -->
+                    <div class="space-y-4">
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono mb-2">1. Account Credentials</h2>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Administrator username</label>
+                            <input type="text" value="super_admin" class="w-full bg-[#12141a] border border-[#2e3648] rounded-lg px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Administrator email</label>
+                            <input type="email" value="super_admin@system.ores" class="w-full bg-[#12141a] border border-[#2e3648] rounded-lg px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Administrator password</label>
+                                <button class="text-xs text-gray-400 hover:text-white font-medium">Hide</button>
+                            </div>
+                            <input type="password" value="Secure-Password-123" class="w-full bg-[#12141a] border border-[#2e3648] rounded-lg px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400">Confirm password</label>
+                                <button class="text-xs text-gray-400 hover:text-white font-medium">Show</button>
+                            </div>
+                            <input type="password" value="Secure-Password-123" class="w-full bg-[#12141a] border border-[#2e3648] rounded-lg px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Password Strength & Validation Rules -->
+                    <div class="bg-[#12141a] border border-[#2e3648] rounded-xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-gray-300">Password Security</span>
+                                <span class="text-xs font-mono text-emerald-400 font-medium bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">Strong</span>
+                            </div>
+                            
+                            <!-- Strength Bars -->
+                            <div class="grid grid-cols-4 gap-2 mb-4">
+                                <div class="h-1.5 bg-emerald-500 rounded-full"></div>
+                                <div class="h-1.5 bg-emerald-500 rounded-full"></div>
+                                <div class="h-1.5 bg-emerald-500 rounded-full"></div>
+                                <div class="h-1.5 bg-emerald-500 rounded-full"></div>
+                            </div>
+
+                            <!-- Rules Checklist -->
+                            <div class="space-y-2 text-xs font-mono text-emerald-400 pt-2 border-t border-[#222632]">
+                                <div class="flex items-center gap-2">✓ At least 12 characters</div>
+                                <div class="flex items-center gap-2">✓ An uppercase letter (A-Z)</div>
+                                <div class="flex items-center gap-2">✓ A lowercase letter (a-z)</div>
+                                <div class="flex items-center gap-2">✓ A digit (0-9)</div>
+                                <div class="flex items-center gap-2">✓ A special character (!@#$%^&*)</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-[#222632] text-xs text-gray-400">
+                            The deployment stops being in bootstrap mode immediately when this account is successfully created.
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="max-w-5xl mx-w-full w-full pt-4 border-t border-[#222632] flex items-center justify-between">
+            <button class="bg-[#1f2430] hover:bg-[#2e3648] text-gray-200 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors border border-[#2e3648]">Back</button>
+            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">Continue</button>
+        </div>
+    </main>
+</body>
+</html>

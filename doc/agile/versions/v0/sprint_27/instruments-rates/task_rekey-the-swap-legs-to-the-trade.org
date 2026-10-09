@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 1B193408-4156-4C34-A62D-B6717F010A39
+:END:
+#+title: Task: Re-key the swap legs to the trade
+#+description: swap_legs keeps a surrogate id that nothing supplies meaningfully: the trade and the leg ordinal already identify the row. Replace it with (trade_id, leg_number), as bond_legs is keyed, and fix the compound-key codegen defect that blocks it.
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/rekey-the-swap-legs-to-the-trade
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_trading_swap_legs_tbl= is keyed by the trade and the leg's ordinal,
+=(trade_id, leg_number)=, with no surrogate. A leg's identity is the trade it
+belongs to plus its position on that trade, and nothing ever supplied the
+surrogate meaningfully. The compound-key codegen defect that blocked the
+re-key is fixed, so a generated eventing test for a key with an integer
+column compiles.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Complete. The leg is keyed by the trade and the ordinal, and the codegen defect is fixed. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR and merge.                |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- =swap_leg= declares no surrogate =id=, and the generated primary key is
+  =(tenant_id, trade_id, leg_number, valid_from, valid_to)=.
+- A generated eventing integration test for a compound key with a non-uuid
+  column compiles: every key argument and every notification key part states
+  the column's text form.
+- The import no longer mints a leg id, and the shell surface addresses a leg
+  by =trade_id= and =leg_number=.
+- =ores.ore.core.tests= passes, including the swap round trip, and
+  =ores.trading.core.tests= passes.
+
+* Plan
+
+1. Fix the codegen defect first, because the re-key cannot generate a
+   compilable test without it. =core.py= already prepares the text form of
+   every key column through =_key_as_text=; it now also publishes the form
+   read from a domain value, one per key column, alongside the joined form it
+   already published. The eventing template uses it for the row's key, for the
+   key parts it matches a notification against, and for every key argument it
+   passes to the service — the last three were broken the same way and the
+   capture did not record them.
+2. Leave the single-column emission byte-identical. The row's key conversion
+   is stated in its own branch, as it was, and the new form is emitted only
+   under =is_compound=. There are 266 eventing integration tests in the tree
+   and all but the compound-key ones would otherwise be regenerated for a
+   comment, so the fix regenerates only the entities whose key is compound.
+3. Remove the surrogate =id= from the =swap_leg= model and from its identity
+   field group, and mark =trade_id= and =leg_number= as the primary key. The
+   columns stay in the identity group, as they were, so the domain class keeps
+   its nesting and the mapper is untouched.
+4. Drop the import's leg-id mint, which is the only hand-written use of the
+   surrogate.
+5. Regenerate, then build and run the suites.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Surrogate id removed from the leg | 1 column, 1 field-group member | model diff | worktree |
+| Generated test key sites converted to text | 7 | grep swap_leg_eventing_integration_tests.cpp | worktree |
+| Compound-key entities the template fix reaches | 4 | check_component_drift.py --all --dry-run | worktree |
+| Regenerated tracked files | 32 | git status --short | worktree |
+| Build | exit 0, 0 errors, 0 warnings | compass build --preset linux-clang-debug-make -j 2 | worktree |
+| Codegen drift, every component | no drift | check_component_drift.py --all --dry-run | worktree |
+| ores.trading.core.tests | 140 cases, 929 assertions, all pass | ./ores.trading.core.tests | worktree |
+| ores.trading.api.tests | 82 cases, 370 assertions, all pass | ./ores.trading.api.tests | worktree |
+| ores.shell.trading.tests | 1092 cases, 3084 assertions, all pass | ./ores.shell.trading.tests | worktree |
+| ores.ore.core.tests | 623 cases, 482182 assertions, all pass | ./ores.ore.core.tests | worktree |
+| ores.dq.core.tests, ores.inbox.core.tests, ores.marketdata.core.tests | all pass | the three binaries | worktree |
+| Codegen suite | 1281 passed, 7 failed | pytest projects/ores.codegen/tests -q | worktree |
+| cmake lists, physical inventories, clang-format | up to date, 50 up to date, clean | the three check commands | worktree |
+
+The ORE round trip is the check that the re-key did not change what a stored
+swap exports, and =ores.trading.core.tests= carries the compound-key eventing
+test the codegen fix exists for.
+
+The seven codegen failures are pre-existing and belong to other work: five in
+=test_rls_isolation= and =test_rls_own_or_system_tenant_rows=, from a flag
+validation that requires =has_tenant_id= beside =rls_tenant_isolation= and a
+=party_id= column beside =rls_party_isolation=, and one each in
+=test_soft_fk_target= and =test_sql_name_base=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The defect was wider than the capture recorded. It named the notification
+  key parts; the four key arguments the test passes to the service
+  (=delete=, =get= and two =get_*_history=) were broken the same way, and the
+  fix covers them because the text form is now the single source for all of
+  them.
+- The fix is confined to compound keys. All 266 eventing integration tests in
+  the tree would otherwise regenerate for a comment, so the single-column
+  emission keeps its own branch and its bytes. Four entities have a compound
+  key: =swap_leg=, =ores.dq.subject_area=, =ores.inbox.notification_preference=
+  and =ores.marketdata.series_classification_rule=. The other three are
+  text-keyed, so their generated code was already correct and their diff is
+  the comment alone.
+- The notify trigger, the shell surface, the protocol key record, the list
+  filter, the repository key parameters and the recipe all follow the re-key
+  from the model; only the import's leg-id mint was hand-written.
+- =ores.marketdata.core.tests= reported one failure on its first run, in
+  =read_as_of_records_carries_the_row_record_time=: a two-second tolerance
+  spanning the two inserts, which the load on the box exceeded. It passes on
+  re-run, alone and as a suite. It is a timing-sensitive assertion, not a
+  regression, and it does not touch any generated file.
+- =swap_leg= keeps its hand-written policy in =trading_rls_policies_create.sql=
+  and adds no =rls_tenant_isolation= flag, so the re-key does not duplicate it.
+- The branch needed =compass env configure= first: the working copy's =.env=
+  was format version 27 where the newer trunk requires 29, and every database
+  command refused until it was regenerated.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores_trading_swap_legs_tbl= is keyed by =(tenant_id, trade_id, leg_number,
+valid_from, valid_to)=. The surrogate =id= is gone from the model, its field
+group and the import. The compound-key codegen defect is fixed, and the
+generated eventing test for the leg passes a full CRUD round trip over the
+compound key, which is the proof the fix works rather than merely compiles.
+Nothing else in the tree changes but three comments.
+
+The capture that recorded the blocker is promoted and deleted, its two
+references now name this task, and the inbox index is regenerated.

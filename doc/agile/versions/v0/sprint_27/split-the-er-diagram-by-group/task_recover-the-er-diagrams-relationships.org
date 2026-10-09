@@ -8,7 +8,7 @@
 #+filetags: :split-the-er-diagram-by-group:sprint_27:v0:
 #+owner: marco
 #+branch: feature/recover-the-er-diagrams-relationships
-#+pr:
+#+pr: 2930
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2930][#2930]] | [codegen,sql] Recover the ER diagram's relationships |
 
 * Review
 

@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 62BF591E-A7D8-443A-A87D-47D84299B542
+:END:
+#+title: Task: Implement Clear the stale block on the literate template task
+#+description: Return the literate-template task to the backlog, clearing the block whose dependency is DONE.
+#+type: task
+#+level: s1
+#+filetags: :clear-the-stale-block-on-the-literate-template-task:sprint_27:v0:
+#+owner: marco
+#+branch: feature/clear-the-stale-block-on-the-literate-template-task
+#+pr: 2938
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-10-09
++#+updated: 2026-10-09
++#+environment: eager_maxwell
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:15826E92-4435-45F9-ADAA-EB001A69EC66][Clear the stale block on the literate template task]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take =Split every codegen template org into commented literate blocks= out of
+BLOCKED, because the task it waits on is DONE.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:15826E92-4435-45F9-ADAA-EB001A69EC66][Clear the stale block on the literate template task]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The task is BACKLOG.
+- =#+blocked_on:= and =#+blocked_since:= are empty.
+- Its story row reads BACKLOG.
+
+* Plan
+
+Hand-edit, because compass has no =task unblock= verb: the task's =State= moves
+to BACKLOG in both the task file and its story's task row, the two header fields
+are emptied, =Last touched= and =#+updated:= move to today, and =Next= is reworded
+to name the dependency as DONE rather than as the thing being waited for. =Now=
+stays as it was, because the pilot really was paused there.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| the blocking task's state | DONE, Waiting on Nothing. | =grep '^| State' .../task_fix-refdata-model-drift.org= | 621dc0a734 |
+| days the block outlived its dependency | blocked 2026-07-29, dependency DONE 2026-07-30 | the two tasks' Status tables | 621dc0a734 |
+
+* Notes
+
+The block was raised on 2026-07-29 and the refdata drift task closed the next
+day. Nothing has looked at the block since, because it was never flagged by
+anything except the merged-PR heuristic, and that heuristic cannot tell a stale
+block from a finished task. A block whose dependency is DONE is worth a check
+of its own; this is the only one in the sprint.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2938][#2938]] | [agile] Clear the stale block on the literate template task |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The task is BACKLOG with no dependency recorded, its story row agrees, and the
+audit lists it as an open task with a merged pilot PR rather than as a stale
+block.
+#+environment: eager_maxwell

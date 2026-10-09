@@ -123,17 +123,28 @@ h2 { font-size: 15px; margin: 0 0 12px; }
 }
 
 /* The step header: what stands above every step and does not change while the
-   steps do. JourneyPage wraps it in `mb-5 border-b border-line pb-4`. */
+   steps do. JourneyPage wraps it in `mb-5 border-b border-line pb-5`, and
+   JourneyHeader draws the splash and the tenant the step is about. */
 .stepheader {
     margin-bottom: 1.25rem;
     border-bottom: 1px solid var(--line);
     padding-bottom: 1rem;
+}
+.stepheader img.splash {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.stepheader .metaline {
+    margin-top: 0.75rem;
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    justify-content: space-between;
     gap: 0.75rem;
     font-size: 0.875rem;
 }
-.stepheader img { height: 2.25rem; width: auto; border-radius: 0.375rem; background: #fff; padding: 0.25rem; }
 .stepheader .nm { font-weight: 500; }
 .stepheader .sub { font-size: 0.75rem; color: var(--ink-faint); }
 
@@ -243,6 +254,32 @@ legend { font-size: 13px; font-weight: 600; margin-bottom: 10px; padding: 0; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* ------------------------------------------------------------------ */
+/* The failure the page states                                        */
+/* ------------------------------------------------------------------ */
+
+/* A failed step: the page-level red alert JourneyPage.tsx draws above the
+   rail. It is `Notice tone="error"` with a heading and the message. */
+.errhead { font-weight: 600; margin: 0; }
+.errmsg {
+    margin: 8px 0 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow-wrap: anywhere;
+}
+.block { display: block; }
+.right { display: flex; justify-content: flex-end; }
+
+/* A failed request: the red banner ErrorBanner.tsx draws above the screen. */
+.errorbanner { max-width: 680px; margin: 0 auto; padding: 78px 20px 0; }
+.bannerhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.bannerlist { list-style: none; margin: 8px 0 0; padding: 0; }
+
+/* The chosen legal entity, as LegalEntitySearch.tsx draws it. */
+.chosen { border: 1px solid var(--accent); background: var(--panel-2); border-radius: var(--radius); padding: 12px; }
+.chosen .nm { font-size: 13px; font-weight: 500; margin: 0; }
+.chosen .sub { margin: 2px 0 0; font-size: 12px; color: var(--ink-faint); }
+.chosen .count { margin: 8px 0 0; font-size: 12px; color: var(--ink-dim); }
+
+/* ------------------------------------------------------------------ */
 /* The password field, as PasswordField.tsx draws it                  */
 /* ------------------------------------------------------------------ */
 
@@ -341,28 +378,7 @@ legend { font-size: 13px; font-weight: 600; margin-bottom: 10px; padding: 0; }
 .reviewgrid dd { margin: 0; color: var(--ink); }
 
 /* ------------------------------------------------------------------ */
-/* Handoff, and the next-steps cards                                  */
-/* ------------------------------------------------------------------ */
-
-.handoffcards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.nextcards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-@media (max-width: 760px) { .handoffcards, .nextcards { grid-template-columns: 1fr; } }
-.handoffcard, .nextcard {
-    text-align: left;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 16px;
-    color: var(--ink);
-    font: inherit;
-    cursor: pointer;
-}
-.handoffcard:hover, .nextcard:hover { border-color: var(--accent); }
-.handoffcard .nm, .nextcard .nm { font-weight: 600; }
-.handoffcard p, .nextcard p { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
-
-/* ------------------------------------------------------------------ */
-/* The legal-entity results, as NewPartyJourneyPrototype.tsx draws    */
+/* The legal-entity results, as LegalEntitySearch.tsx draws them      */
 /* ------------------------------------------------------------------ */
 
 .entitylist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -392,35 +408,21 @@ legend { font-size: 13px; font-weight: 600; margin-bottom: 10px; padding: 0; }
 .accountgrid .checkline .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* ------------------------------------------------------------------ */
-/* The welcome screen, as FirstRunJourneyPrototype.tsx draws it       */
+/* The welcome, as WelcomeIntro draws it: three cards on one grid     */
 /* ------------------------------------------------------------------ */
 
-.welcome { max-width: 920px; margin: 0 auto; padding-bottom: 4rem; text-align: center; }
-.welcome img.splash {
-    display: block;
-    width: 100%;
-    height: auto;
-    margin: 16px auto 0;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-}
-.welcome h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.01em; margin: 40px 0 0; }
-.welcome .lead { margin: 16px auto 0; max-width: 60ch; font-size: 17px; color: var(--ink-dim); }
-.welcome ol {
+.welcomecards ol {
     list-style: none;
-    margin: 40px auto 0;
+    margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
-    max-width: 768px;
-    text-align: left;
 }
-@media (max-width: 760px) { .welcome ol { grid-template-columns: 1fr; } }
-.welcome ol li { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
-.welcome ol li .nm { font-weight: 500; }
-.welcome ol li p { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
-.welcome .btn { margin-top: 40px; padding: 12px 28px; font-size: 16px; }
+@media (max-width: 760px) { .welcomecards ol { grid-template-columns: 1fr; } }
+.welcomecards li { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.welcomecards li .nm { font-size: 14px; font-weight: 500; margin: 0; }
+.welcomecards li .text { margin: 4px 0 0; font-size: 13px; color: var(--ink-dim); }
 
 .signedin { margin: -16px 0 24px; font-size: 12px; color: var(--ink-faint); }
 .signedin .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }

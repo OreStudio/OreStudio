@@ -8,7 +8,7 @@
 #+filetags: :implement-the-synthetic-market-data-journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/bring-the-synthetic-models-onto-the-address-mechanism
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/2991
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -161,7 +161,7 @@ regenerated from the tree scan, and the two superseded headers are deleted.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| https://github.com/OreStudio/OreStudio/pull/2991 | [ores.synthetic] Close M06, the synthetic TypeScript twin |
 
 * Review
 

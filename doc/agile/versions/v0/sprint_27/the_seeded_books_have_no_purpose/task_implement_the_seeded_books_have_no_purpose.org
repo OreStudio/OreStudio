@@ -28,11 +28,11 @@ without naming them and =compass db recreate= completes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:17C335A5-1311-4FA4-B24F-04B1A7892AC5][Hotfix: the seeded books have no purpose]] |
-| Now          | Fix verified: =compass db recreate -y -k= exits 0. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR, then merge.                        |
+| Next         | Nothing. |
 | Last touched | 2026-10-09                               |
 
 * Acceptance
@@ -129,3 +129,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass db recreate -y -k= completes on this tree and stamps the schema
+fingerprint, which is the thing no checkout of =main= could do before. The
+change is two lines of model and the two DEFAULT clauses they render; the
+four ACME book seeds and the testdata seed are untouched and now insert as
+written.
+
+The diagnosis worth keeping is the two-key trap. =:default_value:= is the C++
+member initialiser and =:default:= is the SQL default, and the book stated
+the first while the generated table needed the second. The model read as
+though the default was already declared, so nothing looked missing -- the
+same silent shape that =test_quoted_scalar_default.py= guards from the other
+side.
+
+Two things fell out and are not fixed here. The seed census kept beside this
+task is not landed as a gate; a populate =INSERT= that omits a not-null,
+no-default column is exactly the break this task repairs, and CI cannot see
+it. And =populate/ip2country/ip2country_import.sql= cannot run as written: it
+inserts =(ip_range, country_code)= into a table whose =tenant_id= is
+not-null and has no default, and no gate reads it because =WIRE_001= lists it
+as a manual entry point. Both want their own story.

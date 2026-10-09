@@ -60,7 +60,7 @@ feed. The artefact column list simply failed to mirror them, the way
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:44299397-2445-4E9D-93C7-5E3CDAD658CC][Scaffold story: Hotfix: the seeded books have no purpose]] | STARTED | 2026-10-09 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:C59EC6BD-7DAD-40B7-9649-756CFA5A1DC4][Implement Hotfix: the seeded books have no purpose]] | STARTED | 2026-10-09 | | Initial task for: Hotfix: the seeded books have no purpose |
+| [[id:C59EC6BD-7DAD-40B7-9649-756CFA5A1DC4][Implement Hotfix: the seeded books have no purpose]] | DONE | 2026-10-09 | 2026-10-09 | Initial task for: Hotfix: the seeded books have no purpose |
 
 * Decisions
 

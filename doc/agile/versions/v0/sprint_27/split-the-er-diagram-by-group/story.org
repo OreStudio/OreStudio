@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 2EFCD807-B9CE-4D78-B67F-E9446A558C81
+:END:
+#+title: Story: Split the ER diagram by group
+#+description: The one ores_schema diagram is too large to render and carries no relationships. Decide how to group it and generate one diagram per group.
+#+type: story
+#+level: s2
+#+filetags: :sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A reader can open a diagram for the part of the schema they care about. Each diagram renders on this machine, shows the relationships inside its group, and is gated so it cannot go stale.
+
+* Problem
+
+=ores_schema.puml= is one diagram over 463 tables in 21 packages, and it
+is 622 KB of PlantUML. Two things are wrong with it, and the second is
+the reason splitting is worth doing rather than merely convenient.
+
+** The image cannot be painted
+
+=plantuml= fails on it with =java.lang.NegativeArraySizeException= in
+=EmptyImageBuilder=, computing a raster of about 2.68e9 pixels, past a
+32-bit pixel count. The script already asks for
+=PLANTUML_LIMIT_SIZE=131072=, which is the cap that lets the product
+overflow; a smaller cap scales the drawing, and the drawing is far past
+the point where scaling leaves anything readable. The committed
+=ores_schema.png= is therefore stale, and the gap widens with every
+merge. The =er-diagram= check compares the =.puml= alone, so nothing goes
+red.
+
+** The relationships are dead
+
+The model renders with =relationships: []=. =detect_relationships= looks
+each column name up in =FK_TARGET_TABLES=, whose values are unprefixed
+-- =iam_accounts_tbl=, =refdata_currencies_tbl= -- while every table in
+the model carries the =ores_= prefix. No lookup can ever match, so the
+diagram has no arrows at all: 463 boxes and a wall of columns.
+
+The SQL the parser already reads names the arrows for it. The generated
+create scripts carry 336 =-- Validate <column> (soft FK to <table>)=
+comments, naming 82 distinct target tables. Splitting the diagram without
+recovering them produces more diagrams that still say nothing.
+
+** What is tracked
+
+| Artefact                | Size   | State                       |
+|-------------------------+--------+-----------------------------|
+| =ores_schema.puml=      | 622 KB | current, gated by the check |
+| =ores_schema.png=       | 118 KB | stale since it could last render |
+| =ores_schema.cmapx=     | 13 KB  | from 2026-09-30             |
+
+The PNG and the cmapx carry layout coordinates from whatever PlantUML
+build is installed, so they differ between machines (see the memory note
+=plantuml_er_generate.sh also rewrites ores_schema.png and
+ores_schema.cmapx=). They are committed anyway.
+
+** Measured: a single package renders
+
+Rendering each package on its own against the current model succeeds. The
+whole-schema figure is the outlier, and the reason is the 21 packages
+side by side: both dimensions blow up at once.
+
+| Group        | Tables | Pixels           | Shape        |
+|--------------+--------+------------------+--------------|
+| =dq_staging= |     57 | 20481 x 11198    | 229.3M px    |
+| =trading=    |     99 | 1121 x 31744     | 35.6M px     |
+| =refdata=    |    153 | 1450 x 48528     | 70.4M px     |
+| whole schema |    463 | fails to paint   | about 2.68e9 px |
+
+Measured by filtering =packages= in the intermediate JSON and drawing each
+with =plantuml -tpng= at =PLANTUML_LIMIT_SIZE=131072=.
+
+The shape matters as much as the size: a package alone is a strip about
+320 px per table tall, so =refdata= at 153 tables is 48,528 px high and
+1,450 wide. It opens, and nobody will scroll it. A vector format per
+group is the answer to the shape, and the split is the answer to the
+overflow.
+
+* Options
+
+All six are compatible with the existing three-stage pipeline (parse to
+JSON, render a mustache template, draw). They differ in where the grouping
+comes from and in what gets drawn.
+
+| # | Option | Grouping comes from | Cost | Risk |
+|---+--------+---------------------+------+------|
+| A | One diagram per package (21 files) plus an index | the model's existing =packages= | low: the template already emits =package= blocks | none for overflow, measured; the biggest is a 48,528 px strip, so a raster PNG of it is unusable and only a vector format or a finer group fixes that |
+| B | One diagram per hand-grouped domain (about 6-8) | a config file listing groups | medium: someone decides and maintains the groups | each diagram is large; only helps if the groups are smaller than the whole, and they are not much smaller |
+| C | One diagram per cluster of the FK graph | community detection over the arrows | medium: needs the arrows first | the grouping changes whenever the schema does, so every diagram redraws on unrelated merges |
+| D | Group declared per entity in its model (=:diagram_group:=) | the models | high: a flag on every entity, defaulted to the component | the most stable and reviewable grouping, and the most work |
+| E | Keep one diagram but drop the columns, one inventory per package that shrinks boxes to table names | the model | low | the schema detail moves elsewhere, or nowhere |
+| F | Emit SVG per group and stop tracking the PNG and cmapx | any of A-D | low-medium: change the draw step and untrack two files | PlantUML still has to lay the graph out, so it is not by itself a fix for the biggest group |
+
+Two combinations look strongest:
+
+- *A + F*, with the arrows recovered: 21 small vector diagrams, no raster
+  budget, nothing environment-specific in the tree. The index names the
+  groups and the tables each holds. The two large packages lay out
+  already, so this needs no sub-splitting to work; whether =refdata= and
+  =trading= deserve a finer group is a readability question, not a
+  rendering one.
+- *D + F*: the grouping becomes model metadata, so a new table has to say
+  where it belongs, and the diagrams stay stable under unrelated merges.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Not yet started.                       |
+| Waiting on    | A decision between the options above.  |
+| Next          | Take the decision, then break the story into tasks. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- A decision is recorded in =* Decisions= naming the grouping and the
+  output format, with the reason the others were not taken.
+- One diagram exists per group, each drawing on this machine without the
+  raster overflow.
+- Relationships appear in the diagrams, recovered from the SQL rather
+  than from the stale =FK_TARGET_TABLES= map.
+- An index names the groups and what each holds, and the =er-diagram=
+  check covers every generated diagram, not only the old single file.
+- The tracked artefact set is deliberate: whatever is committed can be
+  regenerated identically on any machine.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+Open: which option, and whether the tracked PNG and cmapx stay. The
+capture [[id:D6BB976D-8B44-4D25-94E9-1BFD52D44461][The ER diagram PNG
+cannot be rendered at the current schema size]] raised the same candidates
+and is superseded by this story.
+
+* Out of scope
+
+- Writing hand-authored diagrams for individual domains; this is about
+  the generated schema diagram.
+- Changing the schema so it fits one picture.

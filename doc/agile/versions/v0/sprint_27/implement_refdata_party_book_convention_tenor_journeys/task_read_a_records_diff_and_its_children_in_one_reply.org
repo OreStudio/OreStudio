@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,38 +26,94 @@ Journeys 5 and 6 show a field diff per version and a list that carries identifie
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- Both capabilities the goal names are answered in the tree, or the
+  document that asked for them records the request as dropped with its
+  reason.
+- Journeys 5 and 6 show a field-level difference per version for the
+  record *and* for its child rows, without the client composing one.
+- A page of the landing list reads its child rows in one call per child
+  type, not one call per row.
+- Every subject the two documents name resolves in the tree. The
+  =missing= rows that are now built read =exists=, and the rows that
+  stay open are the ones still missing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Take an inventory of every NATS subject the =refdata=, =dq= and =iam=
+   protocols declare, and add the derived
+   =<component>.v1.history.get= from =ores.history=.
+2. Diff every subject named in each journey document against that
+   inventory. This is the lever: one pass finds every stale row, rather
+   than a row-by-row read of two documents.
+3. For each =missing= and =partial= row, find the capability in the tree
+   and read what it actually serves.
+4. Correct the coverage table and the /What is missing/ items. Record the
+   candidate that is declined as dropped, with the reason.
+5. Re-run the diff until no named subject is absent.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+The two commands below stand behind every row. The second writes
+=.audit/subject_inventory.txt=, which the third reads.
+
+#+begin_src sh
+# every subject the protocols declare, plus the derived history subject
+grep -rhoE '"(refdata|dq|iam)\.v1\.[a-zA-Z_.]+"' projects/*/api/include/ \
+  | tr -d '"' | sort -u > .audit/subject_inventory.txt
+printf '%s\n' refdata.v1.history.get dq.v1.history.get \
+  >> .audit/subject_inventory.txt
+
+# every distinct subject a journey names, and whether it resolves
+J=doc/knowledge/journeys/parties/journey_onboard_a_counterparty.org
+grep -oE '=[a-z_]+\.v1\.[a-zA-Z_.]+=' $J | tr -d '=' | sort -u \
+  | while read -r s; do
+      grep -qxF "$s" .audit/subject_inventory.txt || echo "ABSENT $s"
+    done
+
+# the open rows
+grep -cE '^\| [^|]+ \| [^|]+ \| [^|]+ \| (missing|partial) \|' $J
+#+end_src
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Subjects the =refdata=, =dq= and =iam= protocols declare, plus the derived history subject | 2386 | the first block above | =0baf17fb8d= |
+| Distinct subjects journey 5 names | 33 | the second block, with =wc -l= for the count | =0baf17fb8d= |
+| Distinct subjects journey 6 names | 29 | same, journey 6 substituted | =0baf17fb8d= |
+| Named subjects absent from the inventory, both documents | 0 | the second block, after the corrections | =0baf17fb8d= |
+| Open rows in journey 5 =missing= or =partial= | 7 → 1 | the third block | =0baf17fb8d= |
+| Open rows in journey 6 =missing= or =partial= | 5 → 2 | same, journey 6 substituted | =0baf17fb8d= |
+| =missing= rows in journey 5 | 4 → 0 | the third block | =0baf17fb8d= |
+| =missing= rows in journey 6 | 4 → 1 | same, journey 6 substituted | =0baf17fb8d= |
 
 * Notes
+
+The field diff is already served. =refdata.v1.history.get= takes
+=entity_type= and =entity_id=, and the reply's =entity_history_version=
+carries an =ores::diff::domain::diff_result changes= holding the fields
+that changed from the version before. The refdata service registers a
+history provider for the counterparty, the party and all four child
+types, each through
+=build_entity_history_versions(versions, render_<entity>_fields)=, so
+the child rows are served by the same request under
+=ores.refdata.counterparty_identifier=, =ores.refdata.party_identifier=
+and the two contact types. (=projects/ores.refdata/core/src/messaging/registrar.cpp=
+calls =register_history_handlers=.)
+
+The child read per page is already served.
+=counterparty_identifiers_filter=, =counterparty_contact_informations_filter=,
+=party_identifiers_filter= and =party_contact_informations_filter= each
+carry a =<parent>_id_one_of= list, and the plain =.list= request on each
+child type carries the filter, so one call returns the child rows for
+every parent on a page.
 
 * Test Scenarios
 
@@ -83,3 +139,73 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both capabilities the goal names were already in the tree, so the unit
+is a reconciliation and not a build. The two journey documents carried
+12 rows that said =missing= or =partial=, 9 of them false, and two
+=missing= rows for capabilities that had been built under a different
+subject name than the one the document predicted.
+
+What landed:
+
+- Journey 5's coverage table. The field-level difference row now names
+  =refdata.v1.history.get= with the entity types for the counterparty
+  and its two child types, status =exists=. The landing-list row now
+  reads the page's child rows through
+  =refdata.v1.counterparty_identifiers.list= and
+  =refdata.v1.counterparty_contact_informations.list= with
+  =counterparty_id_one_of=, status =exists=. Three rows that named a
+  capability the tree does not carry at that name were corrected:
+  =refdata.v1.counterparties.composite_as_of= →
+  =refdata.v1.ops.get_counterparty_composite_as_of=, the confirm's
+  composite write from a candidate to
+  =refdata.v1.ops.put_counterparty_composite=, and the counterparty-side
+  visibility read from a candidate to
+  =refdata.v1.party_counterparties.list_by_counterparty_id=. The
+  refusal row now names the typed =result.code= and the catalogue
+  =result.message=.
+- Journey 6's coverage table. Same corrections for the party: the
+  composite read →
+  =refdata.v1.ops.get_party_composite_as_of=, the confirm's composite
+  write → =refdata.v1.ops.put_party_composite=, the primary-contact
+  mark → =is_primary= on the contact write, and the child diff row →
+  =refdata.v1.history.get= with =ores.refdata.party_identifier= and
+  =ores.refdata.party_contact_information=.
+- Both /What is missing/ sections were rewritten so that each remaining
+  item matches exactly one open row, and every closed item was deleted.
+  The two tables now carry 1 and 2 open rows.
+
+What was dropped, with its reason:
+
+- *A list reply that carries the counterparty with its identifiers and
+  contacts.* Journey 5 offered this and a filtered child read per page
+  as alternatives. The filtered read is built and is one call per child
+  type per page and not one per row, so the inline variant buys a
+  constant factor on a paged list. It is dropped because it would give
+  one entity's list reply a shape no other entity's list reply has, and
+  the generated list response is uniform across the tree. The decision
+  is recorded in the journey, not only here.
+
+What is deliberately left open:
+
+- Journey 5 keeps the composite read of the agreements, sets and
+  collateral terms, and the =Operations= role.
+- Journey 6 keeps the party memberships' versions, the business-unit
+  party filter, and the business unit level rule that still refuses with
+  the trigger's own =raise exception= rather than a catalogue outcome.
+  That last one is worth stating plainly: the store outcomes on the same
+  row (=already_exists=, =version_conflict=) do go through
+  =ores_outcome_raise_fn=, so the level rule is the one refusal on that
+  row that does not.
+
+Observed and not corrected here, because they belong to the accepted
+prototypes rather than to the journeys:
+=doc/prototypes/parties/keep-a-partys-details-current/prototype.js= (two
+places) and =doc/prototypes/parties/onboard-a-counterparty/prototype.js=
+still name =refdata.v1.parties.composite_as_of= and
+=refdata.v1.counterparties.composite_as_of=, and
+=doc/knowledge/journeys/parties/wireframe_keep_a_partys_details_current.puml=
+names the first. The story's /Out of scope/ puts the prototype with the
+journey-document task, so they are left as the accepted record. The
+sibling journeys 7, 8 and 9 have not been swept; their tasks own their
+own gaps.

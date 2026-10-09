@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T15:08:55.704719Z
+' Generated: 2026-10-09T19:06:45.768312Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -33,7 +33,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 99
+Tables: 100
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -208,23 +208,18 @@ package "trading" #E8F5E9 {
     already deploy, and it is not derived from an ORE schema.
     end note
 
-    entity ores_trading_balance_guaranteed_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_balance_guaranteed_swap_instruments_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
           lockout_days : integer
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -235,6 +230,10 @@ package "trading" #E8F5E9 {
     Balance Guaranteed Swap Instrument Table
     Represents a Balance Guaranteed Swap instrument where the notional
     amortises in line with an underlying pool of assets (e.g., mortgages).
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_barrier_types_tbl <<temporal>> #C6F0D8 {
@@ -1198,22 +1197,17 @@ package "trading" #E8F5E9 {
     The trade row carries the party. The call date rows are family-owned and ride the trade's scope.
     end note
 
-    entity ores_trading_callable_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_callable_swap_instruments_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -1235,24 +1229,23 @@ package "trading" #E8F5E9 {
     external/ore/examples/. Nothing produced the trading column: the only
     writer was the import handler copying a domain member no producer ever
     set.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
-    entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_cap_floor_instruments_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -1263,6 +1256,10 @@ package "trading" #E8F5E9 {
     Cap/Floor Instrument Table
     Represents an interest rate cap or floor instrument.
     Legs are defined separately in the swap_legs table.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_commodity_basket_constituents_tbl <<temporal>> #C6F0D8 {
@@ -2003,17 +2000,12 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * end_date : date
         * currency : text
         * rate_index : text
         * long_short : text
         * strike : numeric(18, 10)
         * notional : numeric(28, 10)
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2029,6 +2021,10 @@ package "trading" #E8F5E9 {
     FRA Instrument Table
     Represents a Forward Rate Agreement instrument that fixes a future
     interest rate for a notional principal amount over a specified period.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_fx_accumulator_instruments_tbl <<temporal>> #C6F0D8 {
@@ -2293,15 +2289,10 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
         * inflation_index_code : text
           base_cpi : numeric(18, 10)
           lag_convention : text
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2317,6 +2308,10 @@ package "trading" #E8F5E9 {
     Inflation Swap Instrument Table
     Represents an inflation-linked swap where one leg pays a fixed or floating
     rate and the other is linked to an inflation index (e.g., CPI, RPI).
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_instrument_option_exercise_fees_tbl <<temporal>> #C6F0D8 {
@@ -2644,15 +2639,10 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
         * barrier_start_date : date
         * barrier_level : numeric(18, 10)
         * barrier_type : text
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2668,6 +2658,10 @@ package "trading" #E8F5E9 {
     Knock-Out Swap Instrument Table
     Represents a knock-out interest rate swap that terminates automatically
     if the floating rate breaches a specified barrier level.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_lifecycle_events_tbl <<temporal>> #C6F0D8 {
@@ -2884,6 +2878,59 @@ package "trading" #E8F5E9 {
     type under external/ore/xsd/ore_types.xsd.
     The values are the ORE XSD spellings, so a stored value round-trips through the
     ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_rate_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+          maturity_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_rate_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Rate Instrument Table
+    One row per interest-rates trade, the family's own header. It holds what
+    every product in the family states the same way: the trade it belongs to,
+    the trade type code, the party, the activity that wrote the version, the
+    instrument's start and maturity dates and its description. It holds no
+    product economics.
+    The header exists for two reasons. It is the family's *coverage*: the
+    trade_type_code check that the routed-instrument template generates from
+    ores.trading.trade_type_catalogue lists exactly the codes routed here, so
+    the family's codes sit in one table and no product table repeats the
+    identity columns. And it is the family's *owner*: the * Delete cascade
+    section below names every table the family writes, so the delete rule closes
+    the legs, leg children and facts with the header instead of leaving them
+    behind (finding R6 of the family's design).
+    The products' own fields stay in their fact tables, keyed by the same trade
+    and joined to this row by the trade id, exactly as bond_instruments joins
+    its facts. A fact table carries no party_id and no trade_type_code: the
+    header is the family's party boundary and its routing boundary, so a fact
+    row reaches its tenant and its code through the header (design decision D3).
+    The dates are the family's *common dates*. Each product used to state them
+    under its own name — start_date, maturity_date, expiry_date,
+    end_date — so nothing could read one date column across the family
+    (finding R9). The two columns here are the one set of names; a product that
+    means something else by a date keeps that date in its own fact table.
+    InflationSwap is a member until an inflation family is scaffolded. The
+    taxonomy already calls it an inflation product, and its columns move here
+    with the rest of the family's so that its rows are owned and routed like
+    every other rates row. It leaves with its own family's rework.
     end note
 
     entity ores_trading_return_types_tbl <<temporal>> #C6F0D8 {
@@ -3317,16 +3364,11 @@ package "trading" #E8F5E9 {
         * trade_id : uuid <<PK, FK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * expiry_date : date
         * exercise_type : text
         * settlement_type : text
         * long_short : text
-          start_date : date
-          maturity_date : date
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3343,6 +3385,10 @@ package "trading" #E8F5E9 {
     Represents a swaption — an option granting the right to enter into an
     interest rate swap at a future date. Exercise type may be European,
     Bermudan, or American.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
     entity ores_trading_trade_activities_tbl <<temporal>> #C6F0D8 {
@@ -3707,24 +3753,18 @@ package "trading" #E8F5E9 {
     no audit tail: the audit record of the act that booked it carries that.
     end note
 
-    entity ores_trading_vanilla_swap_instruments_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_vanilla_swap_instruments_tbl <<junction>> #ECECEC {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
         --
         * version : integer
-        * trade_type_code : text
-        * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * start_date : date
-        * maturity_date : date
           settlement_lag : integer
-          netting_set_id : text <<FK>>
-          description : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
-        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -3735,6 +3775,10 @@ package "trading" #E8F5E9 {
     Vanilla Swap Instrument Table
     Represents a plain vanilla interest rate swap or cross-currency swap
     instrument linking two legs via the swap_legs table.
+    This row is the family's fact table, not its identity. The header,
+    ores.trading.rate_instruments, holds the trade type code, the party, the
+    instrument's start and maturity dates and its description; this table holds
+    only the product's own fields, and joins the header by trade_id.
     end note
 
 }

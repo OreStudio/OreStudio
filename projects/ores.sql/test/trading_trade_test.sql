@@ -34,7 +34,7 @@
 
 begin;
 
-select plan(18);
+select plan(22);
 
 -- Row-level security applies to the test user too: state the tenant before
 -- writing anything. The tenant comes first because the fixture below writes
@@ -69,9 +69,11 @@ create or replace function pg_temp.anchor(p_id uuid, p_counterparty uuid, p_scop
     p_trade_type text default 'Swap', p_party uuid default null)
 returns void as $$
     insert into ores_trading_trades_tbl (id, tenant_id, party_id, counterparty_id,
-        trade_type, counterparty_scope, booking_nature, entry_channel)
+        trade_type, counterparty_scope, booking_nature, entry_channel,
+        modified_by, performed_by, change_reason_code, change_commentary)
     select p_id, ores_utility_system_tenant_id_fn(), coalesce(p_party, party_id),
-        p_counterparty, p_trade_type, p_scope, p_nature, p_channel
+        p_counterparty, p_trade_type, p_scope, p_nature, p_channel,
+        current_user, current_user, 'system.new_record', 'Trade pgTAP fixture'
     from t_ctx;
 $$ language sql;
 
@@ -149,47 +151,79 @@ select throws_ok(
     'an unknown counterparty is refused');
 
 -- =============================================================================
--- An anchor never changes
+-- An anchor is versioned, not frozen
 -- =============================================================================
 
-select throws_ok(
+select lives_ok(
     $$select pg_temp.anchor('00000000-0000-0000-0000-0000000ac001', null, 'intra_entity')$$,
-    '23505', null,
-    'a second write of the same trade id is refused');
+    'a second write of the same trade id is accepted as a new version');
 
-select throws_ok(
-    $$update ores_trading_trades_tbl set booking_nature = 'test'
-      where id = '00000000-0000-0000-0000-0000000ac001'$$,
-    '55000', null,
-    'an anchor refuses an update');
+select is(
+    (select count(*)::int from ores_trading_trades_tbl
+     where id = '00000000-0000-0000-0000-0000000ac001'),
+    2,
+    'the replaced version is kept beside the new one');
 
-select throws_ok(
+select is(
+    (select count(*)::int from ores_trading_trades_tbl
+     where id = '00000000-0000-0000-0000-0000000ac001'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    1,
+    'exactly one version of the trade is current');
+
+-- A delete closes the current version. The row stays as history, which is what
+-- the delete rule is for.
+select lives_ok(
     $$delete from ores_trading_trades_tbl
       where id = '00000000-0000-0000-0000-0000000ac001'$$,
-    '55000', null,
-    'an anchor refuses a delete');
+    'a delete of an anchor is accepted');
 
-select throws_ok(
-    $$delete from ores_trading_entry_channel_types_tbl where code = 'ecn'$$,
-    '55000', null,
-    'a classification lookup refuses a delete');
+select is(
+    (select count(*)::int from ores_trading_trades_tbl
+     where id = '00000000-0000-0000-0000-0000000ac001'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    0,
+    'the closed anchor is no longer current');
+
+select is(
+    (select count(*)::int from ores_trading_trades_tbl
+     where id = '00000000-0000-0000-0000-0000000ac001'),
+    2,
+    'the closed anchor is kept as history');
+
+-- The closed vocabularies keep their codes: the delete reaches the table and
+-- the row stays.
+select is(
+    (select count(*)::int from ores_trading_entry_channel_types_tbl
+     where code = 'ecn'),
+    1,
+    'a classification code survives a delete');
 
 -- =============================================================================
 -- The sanctioned purge. The switch stays on for the rest of the transaction,
--- so these cases come last.
+-- so these cases come last. No trading entity is immutable any more, so the
+-- switch has nothing to lift: the delete closes the version and keeps the row,
+-- exactly as a delete does without it.
 -- =============================================================================
 
 select lives_ok(
     $$select ores_utility_allow_immutable_purge_fn();
       delete from ores_trading_trades_tbl
-      where id = '00000000-0000-0000-0000-0000000ac001'$$,
+      where id = '00000000-0000-0000-0000-0000000ac002'$$,
     'a delete passes once the purge switch is on');
 
 select is(
     (select count(*)::int from ores_trading_trades_tbl
-     where id = '00000000-0000-0000-0000-0000000ac001'),
+     where id = '00000000-0000-0000-0000-0000000ac002'
+       and valid_to = ores_utility_infinity_timestamp_fn()),
     0,
-    'the purged anchor is gone');
+    'the anchor the switch closed is no longer current');
+
+select is(
+    (select count(*)::int from ores_trading_trades_tbl
+     where id = '00000000-0000-0000-0000-0000000ac002'),
+    1,
+    'the purge switch keeps the row as history, as a plain delete does');
 
 select * from finish();
 

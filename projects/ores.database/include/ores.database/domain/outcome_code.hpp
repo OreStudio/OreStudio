@@ -61,6 +61,8 @@ enum class outcome_code {
     version_conflict,
     missing_field,
     level_violation,
+    status_transition_not_allowed,
+    unit_outside_ancestry,
     not_found,
     order_not_supported,
     filter_not_supported,
@@ -87,6 +89,10 @@ enum class outcome_code {
             return "missing_field";
         case outcome_code::level_violation:
             return "level_violation";
+        case outcome_code::status_transition_not_allowed:
+            return "status_transition_not_allowed";
+        case outcome_code::unit_outside_ancestry:
+            return "unit_outside_ancestry";
         case outcome_code::not_found:
             return "not_found";
         case outcome_code::order_not_supported:
@@ -126,6 +132,10 @@ enum class outcome_code {
         case outcome_code::missing_field:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::level_violation:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::status_transition_not_allowed:
+            return ores::utility::domain::outcome::invalid;
+        case outcome_code::unit_outside_ancestry:
             return ores::utility::domain::outcome::invalid;
         case outcome_code::not_found:
             return ores::utility::domain::outcome::missing;
@@ -206,6 +216,13 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
                 "The {entity} states {field} at level {expected}, and its parent unit is at level "
                 "{current}. A child level must be greater than its parent's.",
                 a);
+        case outcome_code::status_transition_not_allowed:
+            return detail::fill("The {entity} cannot move {field} from {current} to {expected}.",
+                                a);
+        case outcome_code::unit_outside_ancestry:
+            return detail::fill("The {entity} names {field} {value}, and that unit is not in the "
+                                "ancestry chain above it.",
+                                a);
         case outcome_code::not_found:
             return detail::fill("The {entity} does not exist.", a);
         case outcome_code::order_not_supported:

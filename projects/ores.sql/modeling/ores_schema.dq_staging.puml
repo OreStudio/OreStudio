@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-10-09T13:18:53.298820Z
+' Generated: 2026-10-09T19:34:22.173318Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -203,6 +203,8 @@ package "dq_staging" #F3E5F5 {
           cost_center : text
         * book_status : text
         * regulatory_book_type : text
+        * book_purpose_type : text
+        * ledger_feed_type : text
         * is_sweepable : boolean
           rates_centre_code : text
     }

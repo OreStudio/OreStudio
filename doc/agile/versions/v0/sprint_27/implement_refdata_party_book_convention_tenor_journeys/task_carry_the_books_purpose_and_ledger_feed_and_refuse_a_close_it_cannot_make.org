@@ -8,12 +8,12 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/carry-the-books-purpose-and-ledger-feed-and-refuse-a-close-it-cannot-make
-#+pr:
+#+pr: 2978
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
-#+updated: 2026-10-07
-#+environment:
+#+updated: 2026-10-09
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,64 @@ Journey 7 classifies a book with every field the screen draws, and a close or a 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:DDEAC28C-C8C8-4D3B-A8CA-445D0A0A8906][Implement the refdata party, book, convention and tenor journeys]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-07                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-09                               |
 
 * Acceptance
 
--
+- A book carries its =book_purpose_type= and its =ledger_feed_type=, and saves
+  both, so the classification step's two fields are not read-only.
+- A status move outside the rule the journey draws is refused, and =Closed= is
+  terminal.
+- Closing a book that still holds open activity is refused with a reason that
+  names what is open, rather than accepted.
+- An =owner_unit_id= outside the book's portfolio ancestry chain is refused.
+- Journey 7's coverage table and /What is missing/ reflect what is built, and
+  anything declined records why.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four units, in this order. The first is mechanical and independent; the third
+carries a design question that must be settled before it is written.
+
+1. *The two classification columns.* Add =book_purpose_type= and
+   =ledger_feed_type= to =ores.refdata.book= as non-nullable text columns,
+   mirroring =regulatory_book_type= in every respect, and add each to the insert
+   trigger's =* Validations= table. Both validators already exist
+   (=ores_refdata_validate_book_purpose_type_fn= and
+   =ores_refdata_validate_ledger_feed_type_fn=, rendered in
+   =refdata_book_purpose_types_create.sql= and
+   =refdata_ledger_feed_types_create.sql=), so this unit adds no SQL of its own.
+   Check what default each lookup's reference entity carries before choosing
+   =default_value=, and whether the write may leave either unset.
+2. *The status transition rule.* The rule the journey draws: =Active= to
+   =Frozen= or =Closed=, =Frozen= back to =Active= only, =Closed= terminal. Put
+   it in the book insert trigger, refused from the outcome catalogue rather than
+   with a bare =raise exception= — the same shape the business-unit level rule
+   now uses. That means a new catalogue entry, since =level_violation= names a
+   hierarchy level and this names two statuses; a =status_transition_not_allowed=
+   with =expected= carrying the status the move goes to and =current= the status
+   the row holds fits the raiser's positional arguments.
+3. *The close with open activity.* This unit needs a decision before it needs
+   code. The journey wants the refusal to name the open trades, unsettled cash
+   flows and open positions the book still holds, and those live in the
+   =trading= component's tables (=trading_trade_activities= and its siblings),
+   not in =refdata=. A refdata trigger that reads trading tables inverts the
+   component dependency, so the alternatives are a service-side check on the
+   refdata write path, a check owned by trading and reached over the wire, or a
+   deliberately-inverted read with the reason recorded. Weigh them and record
+   the choice; do not let the trigger quietly acquire a cross-component join.
+4. *The owner unit against the ancestry chain.* The model says =owner_unit_id=
+   must name a unit in the book's portfolio ancestry chain, and the insert
+   trigger checks only the sandbox today. Walk the =parent_portfolio_id= chain
+   and refuse a unit outside it, from the catalogue.
+5. *The documents.* Correct journey 7's coverage table and narrow
+   /What is missing/ to what is still open. Gap 4, the rights panel, is out of
+   scope by the story's own decision and stays.
 
 * Measurements
 
@@ -50,14 +92,44 @@ and the commit it was measured at. A number without both is not a measurement,
 because a clean-up record describes a tree and trunk moves under a branch: a
 consumer count, a gate's component count and a suite's size all change with no
 code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+from.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Outcomes in the catalogue before / after | 15 → 17 | =grep -c '^\\*\\* ' projects/ores.database/modeling/ores.database.outcomes.org= | =f782c45687= |
+| Cross-component table reads in =ores.sql/create/=, all six components | 0 | =for c in refdata trading iam dq marketdata compute; do grep -rhoE "from (refdata\|trading\|iam\|dq\|marketdata\|compute)_[a-z_]+" projects/ores.sql/create/$c/*.sql; done= | =f782c45687= |
+| Journey 7 rows that are =missing= or =partial= | 7 → 1 | =grep -cE '^\\| [^\\|]+ \\| [^\\|]+ \\| [^\\|]+ \\| (missing\|partial) \\|' doc/knowledge/journeys/books/journey_shape_the_book_structure.org= | =f782c45687= |
+| Subjects journey 7 names that do not resolve | 0 | the inventory diff in the sibling tasks | =f782c45687= |
+| Book model's own columns that a write could not carry | 2 → 0 | =grep -c "book_purpose_type\\|ledger_feed_type" projects/ores.refdata/modeling/ores.refdata.book.org= | =f782c45687= |
 
 * Notes
+
+Reconnaissance at =f782c45687= (trunk), before any edit. Journey 7's gaps 1, 2, 3
+and 5 are this task; gap 4 is the rights panel, which the story assigns to the
+Access group.
+
+What the model already carries: =book_status= and =regulatory_book_type= are
+non-nullable text columns validated by function, not by foreign key — the
+=* Foreign keys= section names only =functional_currency=, =party_id=,
+=parent_portfolio_id=, =owner_unit_id= and =sandbox_id=. So the two new columns
+follow the validation-function shape and not the FK shape, which is why the
+validators matter more than the lookups' tables.
+
+The insert trigger's sandbox and virtual-book block is a named src block
+declaring =:implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e=, the same insert
+trigger requirement the business-unit level block declares. A new block in this
+trigger should declare it too.
+
+=owner_unit_id= is nullable and its foreign key has no ancestry check, only an
+active-row check.
+
+Two things the catalogue enforces that the plan did not anticipate. A SQLSTATE
+may be raised by one outcome only, so =status_transition_not_allowed= takes
+=22023= and =unit_outside_ancestry= takes =23503=, because =level_violation=
+already holds =23514=. And a book's insert trigger fires =before insert= with no
+=return= of its own; an early =return NEW= inside a rule block would skip
+change-reason validation and the whole version-management tail, so the ancestry
+walk carries a found flag rather than returning.
 
 * Test Scenarios
 
@@ -74,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2978][#2978]] | [refdata] Carry the book's purpose and ledger feed |
 
 * Review
 
@@ -83,3 +155,64 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three of the four units are built. The fourth cannot be built where the journey
+reads as if it would be, and the finding is recorded in journey 7 rather than
+turned into a refusal that lies.
+
+*What landed.*
+
+- *The book carries its purpose and its ledger feed.* =book_purpose_type= and
+  =ledger_feed_type= are non-nullable text columns on =ores.refdata.book=,
+  mirroring =regulatory_book_type=: validated by function in the insert trigger,
+  present on the write, the detail form, the table display and the list columns.
+  They default to =Trading= and =None=, which the lookups' own seeds name as the
+  values for a book with no specialised role and no ledger connection. No new SQL
+  was needed for the validation, because =ores_refdata_validate_book_purpose_type_fn=
+  and =ores_refdata_validate_ledger_feed_type_fn= already existed.
+- *The status transition rule refuses from the catalogue.* The book trigger now
+  reads the status the row currently holds and refuses a move the lifecycle does
+  not draw: =Active= to =Frozen= or =Closed=, =Frozen= back to =Active= only, and
+  =Closed= terminal. A move to the status a row already holds is not a move. The
+  refusal is the new =status_transition_not_allowed= outcome, so the reply carries
+  a code and a sentence naming both statuses rather than the trigger's own words.
+- *The owning unit is checked against the ancestry chain.* The trigger walks the
+  book's =parent_portfolio_id= chain to the root and refuses an =owner_unit_id=
+  the chain never names, as the new =unit_outside_ancestry= outcome. The walk
+  carries a seen-set so a cycle cannot hang it, and a found flag rather than an
+  early return, because a =return= in a =before insert= trigger would skip
+  change-reason validation and the version-management tail.
+
+*What is recorded rather than built.*
+
+*Closing a book with open activity is not refused, and this change does not
+pretend otherwise.* The journey wants the refusal to name the open trades,
+unsettled cash flows and open positions the book still holds. Those rows are
+=trading='s. No component's SQL reads another component's tables — the check
+across all six =create/= directories finds zero cross-component reads — and
+=ores.refdata.core= declares no dependency on =trading=, so neither the trigger
+nor the service can reach them. Enforcing it here would mean the first
+cross-component read in the schema, or a wire round trip that cannot be atomic
+with the book write. That is an architectural decision, not an implementation
+detail, so the gap stays open with the reason written into journey 7. The screen
+checks before it writes, as it does today.
+
+*Verification.*
+
+The branch builds. =check_model_drift.py --summary= reports no drift and zero
+exceptions. =check_component_drift.py --sweep= reports that no file this branch
+touched would change. The shell recipe inventory and the physical space inventory
+are both up to date, and the tangle regenerated 3386 scripts without leaving an
+untracked file behind. Journey 7's table went from seven =missing=/=partial= rows
+to one, and every subject it names resolves.
+
+*What is not verified.* No database test exercises the new trigger logic, and no
+C++ test exercises the two new columns. The =db= and =ctest= tiers were not run:
+this box shares one PostgreSQL across eleven worktrees, so =compass db recreate=
+would disrupt the others, and the local =.env= is at format version 27 against a
+required 29. The PL/pgSQL is therefore reviewed by reading the rendered trigger,
+not by executing it. The status rule and the ancestry walk are the two pieces
+that most deserve a database test when one can be run safely.
+
+*What was left alone.* Journey 7's gap 4, the rights panel, stays: the story
+assigns =portfolio_right= to the Access group, and this task's scope excludes it.

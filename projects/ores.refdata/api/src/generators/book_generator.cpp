@@ -63,6 +63,8 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.cost_center = std::string("CC-001");
     r.book_status = std::string("Active");
     r.regulatory_book_type = std::string("Trading");
+    r.book_purpose_type = std::string("Trading");
+    r.ledger_feed_type = std::string("None");
     r.is_sweepable = false;
     r.rates_centre_code = std::string("WRLD");
     r.sandbox_id = std::nullopt;

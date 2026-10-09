@@ -43,6 +43,8 @@ create table if not exists "ores_refdata_books_tbl" (
     "cost_center" text null,
     "book_status" text not null,
     "regulatory_book_type" text not null,
+    "book_purpose_type" text not null,
+    "ledger_feed_type" text not null,
     "is_sweepable" boolean not null,
     "rates_centre_code" text not null,
     "sandbox_id" uuid null,
@@ -146,6 +148,12 @@ begin
     -- Validate regulatory_book_type
     NEW.regulatory_book_type := ores_refdata_validate_regulatory_book_type_fn(NEW.tenant_id, NEW.regulatory_book_type);
 
+    -- Validate book_purpose_type
+    NEW.book_purpose_type := ores_refdata_validate_book_purpose_type_fn(NEW.tenant_id, NEW.book_purpose_type);
+
+    -- Validate ledger_feed_type
+    NEW.ledger_feed_type := ores_refdata_validate_ledger_feed_type_fn(NEW.tenant_id, NEW.ledger_feed_type);
+
     -- Validate rates_centre_code
     NEW.rates_centre_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.rates_centre_code);
 
@@ -175,6 +183,76 @@ begin
         raise exception 'Invalid sandbox_id: %. The sandbox is archived and read-only.',
             NEW.sandbox_id
             using errcode = '23514';
+    end if;
+
+    -- The lifecycle the journey draws: Active to Frozen or Closed, Frozen back
+    -- to Active only, and Closed terminal. A move to the status a row already
+    -- holds is not a move. A create has no current row, so it has no move to
+    -- refuse and every status the lookup accepts is a legal opening status.
+    declare
+        v_current_status text;
+    begin
+        select book_status into v_current_status
+        from ores_refdata_books_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        for update;
+
+        if found and v_current_status is distinct from NEW.book_status then
+            if not (
+                (v_current_status = 'Active' and NEW.book_status in ('Frozen', 'Closed'))
+                or (v_current_status = 'Frozen' and NEW.book_status = 'Active')
+            ) then
+                perform ores_outcome_raise_fn(
+                    'status_transition_not_allowed',
+                    'book',
+                    'book_status',
+                    NEW.book_status,
+                    v_current_status);
+            end if;
+        end if;
+    end;
+
+    -- The owning unit must be the owning unit of the book's own portfolio or of
+    -- one above it. A unit the chain never names cannot own the book, however
+    -- much the picker allows it. Walk the chain from the book's parent portfolio
+    -- to the root, stopping if a link would repeat so a cycle cannot hang it.
+    if NEW.owner_unit_id is not null then
+        declare
+            v_walk_id uuid := NEW.parent_portfolio_id;
+            v_seen uuid[] := array[]::uuid[];
+            v_found boolean := false;
+        begin
+            while v_walk_id is not null and not (v_walk_id = any(v_seen)) loop
+                v_seen := array_append(v_seen, v_walk_id);
+
+                if exists (
+                    select 1 from ores_refdata_portfolios_tbl
+                    where tenant_id = NEW.tenant_id
+                      and id = v_walk_id
+                      and valid_to = ores_utility_infinity_timestamp_fn()
+                      and owner_unit_id = NEW.owner_unit_id
+                ) then
+                    v_found := true;
+                    exit;
+                end if;
+
+                select parent_portfolio_id into v_walk_id
+                from ores_refdata_portfolios_tbl
+                where tenant_id = NEW.tenant_id
+                  and id = v_walk_id
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+            end loop;
+
+            if not v_found then
+                perform ores_outcome_raise_fn(
+                    'unit_outside_ancestry',
+                    'book',
+                    'owner_unit_id',
+                    NEW.owner_unit_id::text);
+            end if;
+        end;
     end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

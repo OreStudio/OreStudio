@@ -96,12 +96,38 @@ create or replace function ores_outcome_level_violation_fn(
         array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_expected, ''),coalesce(p_current, '')]::text[]);
 $$;
 
+-- status_transition_not_allowed: A write moves a row's status along an edge the lifecycle does not draw. The write states the status it moves to in expected and the store holds the status the row is at in current, the pair the version refusal already uses for what the write believes and what the store holds. The message names the field and both statuses, so a screen can say which move it refused rather than only that the write was wrong. A move to the status a row already holds is not a move and is not refused.
+create or replace function ores_outcome_status_transition_not_allowed_fn(
+    p_entity text,
+    p_field text,
+    p_expected text,
+    p_current text
+) returns text language sql immutable as $$
+    select ores_outcome_fill_fn(
+        'The {entity} cannot move {field} from {current} to {expected}.',
+        array['entity','field','expected','current']::text[],
+        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_expected, ''),coalesce(p_current, '')]::text[]);
+$$;
+
+-- unit_outside_ancestry: A write names an owning unit that the row's own ancestry chain never names. The chain is walked from the row upwards and the refused unit is reported in value; the chain itself is not a value one argument could carry, and the screen already draws it.
+create or replace function ores_outcome_unit_outside_ancestry_fn(
+    p_entity text,
+    p_field text,
+    p_value text
+) returns text language sql immutable as $$
+    select ores_outcome_fill_fn(
+        'The {entity} names {field} {value}, and that unit is not in the ancestry chain above it.',
+        array['entity','field','value']::text[],
+        array[coalesce(p_entity, ''),coalesce(p_field, ''),coalesce(p_value, '')]::text[]);
+$$;
+
 -- Raises the SQLSTATE the outcome catalogue binds to p_code, with the sentence
 -- that outcome's own function composes. A trigger calls this and nothing else.
 create or replace function ores_outcome_raise_fn(
     p_code text,
     p_entity text default null,
     p_field text default null,
+    p_value text default null,
     p_expected text default null,
     p_current text default null
 ) returns void language plpgsql as $$
@@ -119,6 +145,12 @@ begin
     when 'level_violation' then
         raise exception '%', ores_outcome_level_violation_fn(p_entity,p_field,p_expected,p_current)
             using errcode = '23514';
+    when 'status_transition_not_allowed' then
+        raise exception '%', ores_outcome_status_transition_not_allowed_fn(p_entity,p_field,p_expected,p_current)
+            using errcode = '22023';
+    when 'unit_outside_ancestry' then
+        raise exception '%', ores_outcome_unit_outside_ancestry_fn(p_entity,p_field,p_value)
+            using errcode = '23503';
     else
         raise exception 'Unknown outcome code: %', p_code using errcode = 'XX000';
     end case;

@@ -135,8 +135,9 @@ writes its portfolio's fields, and it copies none of them.
 
 * Operations and messages
 
-=partial= marks a subject that exists but cannot carry this journey yet, and the
-reason is in /What is missing/.
+=missing= marks an operation or a rule the journey needs and the tree does not
+carry; each is explained under /What is missing/. No row is =partial= any more:
+the book write carries every field the screen draws.
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
@@ -147,58 +148,55 @@ reason is in /What is missing/.
 | Choose the portfolio | Read the portfolio | =refdata.v1.portfolios.get= | exists |
 | Choose the portfolio | Create a portfolio | =refdata.v1.portfolios.put= | exists |
 | Choose the portfolio | Fill the owner-unit picker | =refdata.v1.business_units.list= | exists |
+| Choose the portfolio | Refuse an owner unit outside the ancestry chain | the typed =result.code= =unit_outside_ancestry= on =refdata.v1.books.put= | exists |
 | Create or open the book | Read the book | =refdata.v1.books.get= | exists |
 | Create or open the book | Fill the currency picker | =refdata.v1.currencies.list= | exists |
 | Create or open the book | Fill the rates-centre picker | =refdata.v1.business_centres.list= | exists |
-| Create or open the book | Write the book | =refdata.v1.books.put= | partial |
+| Create or open the book | Write the book | =refdata.v1.books.put= | exists |
 | Set its classification | Fill the five pickers | =refdata.v1.book_statuses.list=, =.regulatory_book_types.list=, =.book_purpose_types.list=, =.ledger_feed_types.list=, =.purpose_types.list= | exists |
 | Set its classification | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
-| Set its classification | Refuse a status change the transition rule forbids | no subject | missing |
+| Set its classification | Refuse a status change the transition rule forbids | the typed =result.code= =status_transition_not_allowed= on =refdata.v1.books.put= | exists |
 | Set its classification | Refuse a close while activity is open | no subject | missing |
 | Set the rights | List the rights at the node | =refdata.v1.portfolio_rights.list= | exists |
 | Set the rights | Fill the account list | =iam.v1.accounts.list= | exists |
 | Set the rights | Grant the rights | =refdata.v1.portfolio_rights.put_many= | exists |
 | Set the rights | Remove the rights | =refdata.v1.portfolio_rights.delete_many= | exists |
 | Review | Read the change reasons | =dq.v1.change_reasons.list= | exists |
-| Read the outcome | Write the book | =refdata.v1.books.put= | partial |
+| Read the outcome | Write the book | =refdata.v1.books.put= | exists |
 | Read the outcome | Write the rights | =refdata.v1.portfolio_rights.put_many= | exists |
-| Refused | Read the refused write | =refdata.v1.books.put= | partial |
+| Refused | Read the refused write | =refdata.v1.books.put= | exists |
 | History | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.book=) | exists |
-| History | Revert by writing the old values | =refdata.v1.books.put= | partial |
+| History | Revert by writing the old values | =refdata.v1.books.put= | exists |
 
 * What is missing
 
-1. *The book cannot carry its purpose or its ledger feed.* The book record
-   carries =book_status= and =regulatory_book_type=, but =book_purpose_type= and
-   =ledger_feed_type= are absent from the model and from =refdata.v1.books.put=.
-   Both lookup tables exist and both are drawn on the classification step,
-   because book classification says every book carries them. The candidate is
-   the two columns, each an FK to its lookup, and the two fields on =book_write=.
-   Until then the screen can show the value but cannot save it.
-2. *Nothing refuses closing a book with open activity.* No operation checks a
-   book's open activity. The candidate is a refusal on the close that names the
-   open trades, unsettled cash flows and open positions the book still holds. A
-   closed book keeps its trades and its history, accepts no new trades, and is
-   not deleted. Until the refusal exists, the screen must check before it
-   writes, and the refused state shows what the server would say.
-3. *No status transition rule exists beyond "the code is known".*
-   =ores_refdata_validate_book_status_fn= only checks that the status code
-   exists among the shared book statuses. Nothing refuses a move from one status
-   to another. The candidate is the transition rule the journey draws: from
-   =Active= to =Frozen= or =Closed=, from =Frozen= back to =Active= only, and
-   =Closed= terminal. The rule keeps a freeze reversible and a close deliberate.
-   Until it exists, the store accepts any status the person picks.
-4. *The rights panel is drawn here, although the catalogue assigned
+One item is the missing row of the coverage table above. One is a rule the
+journey draws that cannot be enforced where it reads as if it would be, and it is
+recorded rather than dropped. One is out of scope by the story's own decision.
+
+1. *Nothing refuses closing a book with open activity, and the store cannot.*
+   The journey wants a refusal on the close that names the open trades, unsettled
+   cash flows and open positions the book still holds. Those rows belong to the
+   =trading= component, and no component's SQL reads another's tables — refdata's
+   =create/= directory contains no reference to a =trading_= table, and neither
+   does any other component's. Refdata's service layer does not depend on
+   =trading= either, so it cannot ask. A refusal here would have to be the first
+   cross-component read in the schema, or a wire round trip that cannot be atomic
+   with the book write. Until that decision is made, the screen checks before it
+   writes and shows what the server would say; the refusal is not enforced, and
+   this document does not claim it is.
+2. *The rights panel is drawn here, although the catalogue assigned
    =portfolio_right= to the Access group.* The panel belongs to that group's
    journey, which owns the permissions and the change reason. This journey draws
    it because a book carries no rights of its own and inherits its visibility
    from the portfolio node. Until the rights journey exists, this screen carries
-   the panel and links to the Access group.
-5. *The owner unit is not checked against the ancestry chain.* The book model
-   says =owner_unit_id= should name a unit that is an =owner_unit_id= in the
-   book's portfolio ancestry chain. The insert trigger checks the sandbox only.
-   The picker marks a unit outside the chain but the server accepts it. The
-   candidate is the same ancestry check in the write.
+   the panel and links to the Access group. This is out of scope for the book
+   work by the story's own decision.
+
+The four items this section used to carry are built, and the coverage table says
+so: the book carries and saves its purpose and its ledger feed, the status
+transition rule refuses an edge the lifecycle does not draw, and the owning unit
+is checked against the portfolio ancestry chain.
 
 * Related journeys
 

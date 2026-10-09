@@ -199,6 +199,44 @@ to =Trading= for the same reason =book_status= defaults to =Active=.
 std::string("Trading")
 #+end_src
 
+** book_purpose_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "Trading"
+:END:
+
+The risk role this book plays.
+
+References book_purpose_types lookup (Trading, Reserve, Funding, Wash,
+WriteOff, Test, Sales, SweepTarget, RemittanceTarget). Defaults to =Trading=,
+which that lookup's own seed describes as the purpose for a book that plays
+none of the specialised roles, for the same reason =book_status= defaults to
+=Active=.
+
+#+begin_src cpp :name generator
+std::string("Trading")
+#+end_src
+
+** ledger_feed_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "None"
+:END:
+
+How this book's ledger balance is fed.
+
+References ledger_feed_types lookup (None, Automatic, Manual). Defaults to
+=None=, which that lookup's own seed describes as the value for a book with no
+ledger connection.
+
+#+begin_src cpp :name generator
+std::string("None")
+#+end_src
+
 ** is_sweepable
 :PROPERTIES:
 :type:          boolean
@@ -312,6 +350,16 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 :type: text
 :END:
 
+** book_purpose_type
+:PROPERTIES:
+:type: text
+:END:
+
+** ledger_feed_type
+:PROPERTIES:
+:type: text
+:END:
+
 ** is_sweepable
 :PROPERTIES:
 :type: boolean
@@ -418,6 +466,82 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 
 #+end_src
 
+#+begin_src sql :name status_transition_check :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- The lifecycle the journey draws: Active to Frozen or Closed, Frozen back
+    -- to Active only, and Closed terminal. A move to the status a row already
+    -- holds is not a move. A create has no current row, so it has no move to
+    -- refuse and every status the lookup accepts is a legal opening status.
+    declare
+        v_current_status text;
+    begin
+        select book_status into v_current_status
+        from ores_refdata_books_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        for update;
+
+        if found and v_current_status is distinct from NEW.book_status then
+            if not (
+                (v_current_status = 'Active' and NEW.book_status in ('Frozen', 'Closed'))
+                or (v_current_status = 'Frozen' and NEW.book_status = 'Active')
+            ) then
+                perform ores_outcome_raise_fn(
+                    'status_transition_not_allowed',
+                    'book',
+                    'book_status',
+                    NEW.book_status,
+                    v_current_status);
+            end if;
+        end if;
+    end;
+
+#+end_src
+
+#+begin_src sql :name owner_unit_ancestry_check :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- The owning unit must be the owning unit of the book's own portfolio or of
+    -- one above it. A unit the chain never names cannot own the book, however
+    -- much the picker allows it. Walk the chain from the book's parent portfolio
+    -- to the root, stopping if a link would repeat so a cycle cannot hang it.
+    if NEW.owner_unit_id is not null then
+        declare
+            v_walk_id uuid := NEW.parent_portfolio_id;
+            v_seen uuid[] := array[]::uuid[];
+            v_found boolean := false;
+        begin
+            while v_walk_id is not null and not (v_walk_id = any(v_seen)) loop
+                v_seen := array_append(v_seen, v_walk_id);
+
+                if exists (
+                    select 1 from ores_refdata_portfolios_tbl
+                    where tenant_id = NEW.tenant_id
+                      and id = v_walk_id
+                      and valid_to = ores_utility_infinity_timestamp_fn()
+                      and owner_unit_id = NEW.owner_unit_id
+                ) then
+                    v_found := true;
+                    exit;
+                end if;
+
+                select parent_portfolio_id into v_walk_id
+                from ores_refdata_portfolios_tbl
+                where tenant_id = NEW.tenant_id
+                  and id = v_walk_id
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+            end loop;
+
+            if not v_found then
+                perform ores_outcome_raise_fn(
+                    'unit_outside_ancestry',
+                    'book',
+                    'owner_unit_id',
+                    NEW.owner_unit_id::text);
+            end if;
+        end;
+    end if;
+
+#+end_src
+
 ** Validations
 
 | column               | validation_function                       |
@@ -425,6 +549,8 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 | functional_currency  | ores_refdata_validate_currency_fn         |
 | book_status          | ores_refdata_validate_book_status_fn      |
 | regulatory_book_type | ores_refdata_validate_regulatory_book_type_fn |
+| book_purpose_type    | ores_refdata_validate_book_purpose_type_fn |
+| ledger_feed_type     | ores_refdata_validate_ledger_feed_type_fn |
 | rates_centre_code    | ores_refdata_validate_business_centre_fn  |
 
 * C++
@@ -472,6 +598,8 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 | functional_currency  | Currency            |
 | book_status          | Status              |
 | regulatory_book_type | Regulatory Book Type |
+| book_purpose_type    | Book Purpose Type   |
+| ledger_feed_type     | Ledger Feed Type    |
 | is_sweepable          | Sweepable            |
 | rates_centre_code    | Rates Centre         |
 | modified_by          | Modified By         |
@@ -502,6 +630,8 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 | cost_center          | Cost Center           | costCenterEdit          | line_edit     |        |             | Enter cost center             |                   |                    |                              |                                        |                             |                               |                                      |                           |                   |                      |                   |                        |                           |                       |
 | book_status          | Status                | bookStatusCombo         | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::book_status           |   | fetch_book_statuses           | fetch_book_statuses_at_timepoint      | bookStatusWatcher         | code              | description          | display_order     | book statuses          | BookStatusCombo           | book_status           |
 | regulatory_book_type | Regulatory Book Type  | regulatoryBookTypeCombo | dynamic_combo |        |             |                               |                   |                    |                              | refdata::domain::regulatory_book_type  |   | fetch_regulatory_book_types   | fetch_regulatory_book_types_at_timepoint | regulatoryBookTypeWatcher | code              | description          | display_order     | regulatory book types  | RegulatoryBookTypeCombo   | regulatory_book_type  |
+| book_purpose_type | Book Purpose Type | bookPurposeTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::book_purpose_type |  | fetch_book_purpose_types | fetch_book_purpose_types_at_timepoint | bookPurposeTypeWatcher | code | description | display_order | book purpose types | BookPurposeTypeCombo | book_purpose_type |
+| ledger_feed_type | Ledger Feed Type | ledgerFeedTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::ledger_feed_type |  | fetch_ledger_feed_types | fetch_ledger_feed_types_at_timepoint | ledgerFeedTypeWatcher | code | description | display_order | ledger feed types | LedgerFeedTypeCombo | ledger_feed_type |
 | is_sweepable         | Sweepable             | isSweepableCheckBox     | check_box     |        |             |                               |                   |                    |                              |                                        |                             |                               |                                      |                           |                   |                      |                   |                        |                           |                       |
 | rates_centre_code    | Rates Centre          | ratesCentreCodeCombo    | flagged_combo |        |             |                               | business_centre   | false              | fetch_business_centre_codes | |   |                               |                                      |                           |                   |                      |                   |                        |                           |                       |
 
@@ -514,6 +644,8 @@ The import permits a null =rates_centre_code=, which the publish reads as "regio
 | BookStatus         | book_status          | Status               | string    | 100   | true     | book_status           |           |                    |
 | CostCenter         | cost_center          | Cost Center          | string    | 120   |          |                       |           |                    |
 | RegulatoryBookType | regulatory_book_type | Regulatory Book Type | string    | 130   | true     | regulatory_book_type |           |                    |
+| BookPurposeType | book_purpose_type | Book Purpose Type | string | 130 | true | book_purpose_type |  |  |
+| LedgerFeedType | ledger_feed_type | Ledger Feed Type | string | 130 | true | ledger_feed_type |  |  |
 | IsSweepable        | is_sweepable          | Sweepable            | bool      | 90    | true     | is_sweepable          |           |                    |
 | RatesCentreCode    | rates_centre_code    | Rates Centre         | string    | 110   |          |                       |           |                    |
 | Version            | version              | Version              | int       | 80    |          |                       |           |                    |

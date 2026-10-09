@@ -132,6 +132,24 @@ struct book final {
     std::string regulatory_book_type = "Trading";
 
     /**
+     * @brief The risk role this book plays.
+     *
+     * References book_purpose_types lookup (Trading, Reserve, Funding, Wash, WriteOff, Test, Sales,
+     * SweepTarget, RemittanceTarget). Defaults to Trading, which that lookup's own seed describes
+     * as the purpose for a book that plays none of the specialised roles, for the same reason
+     * book_status defaults to Active.
+     */
+    std::string book_purpose_type = "Trading";
+
+    /**
+     * @brief How this book's ledger balance is fed.
+     *
+     * References ledger_feed_types lookup (None, Automatic, Manual). Defaults to None, which that
+     * lookup's own seed describes as the value for a book with no ledger connection.
+     */
+    std::string ledger_feed_type = "None";
+
+    /**
      * @brief Whether this book is eligible for spot-sweep transfers to the designated Sweep target
      * book -- independent of ledger_feed_type and book_purpose_type; see
      * [[id:74AA46EB-64ED-4FD7-B212-AEC164648B84][Book classification]].

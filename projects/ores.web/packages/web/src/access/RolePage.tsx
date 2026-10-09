@@ -31,6 +31,7 @@ import { areasOf, parseCode } from './catalogue.js';
 import { PermissionAreas } from './PermissionAreas.js';
 import { displayName } from './names.js';
 import { roleLabel } from './words.js';
+import { useHolds } from './holds.js';
 
 /** How many added or removed permissions the save dialog lists before it counts the rest. */
 const LISTED = 8;
@@ -67,14 +68,24 @@ export function RolePage(): ReactNode {
 
 /** The people who hold a role, read through each person's access. */
 function useHolders(roleId: string): readonly Account[] {
+    const holds = useHolds();
+    const mayReadRoles = holds('iam::roles:read');
     const people = useQuery({ queryKey: ['accounts'], queryFn: api.accounts });
     const accounts = people.data?.accounts ?? [];
+    /*
+     * Who holds a role is the grants read, and a caller who may not read grants
+     * is told so once rather than once for every person the list names.
+     */
     const access = useQueries({
         queries: accounts.map((account) => ({
             queryKey: ['account-access', account.id],
             queryFn: () => api.accountAccess(account.id),
+            enabled: mayReadRoles,
         })),
     });
+    if (!mayReadRoles) {
+        return [];
+    }
     return accounts.filter((_, index) =>
         (access[index]?.data?.roles ?? []).some((held) => held.roleId === roleId),
     );

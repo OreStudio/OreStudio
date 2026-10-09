@@ -35,6 +35,7 @@ import { displayName } from './names.js';
 import { roleLabel } from './words.js';
 import { ContactTab, IdentityTab } from './PersonForms.js';
 import { Timeline } from '../timeline/Timeline.js';
+import { useHolds } from './holds.js';
 import { RecordHeader } from '../refdata/records.js';
 import { useTabs } from '../ui/Tabs.js';
 
@@ -78,9 +79,22 @@ function Person({
     const queries = useQueryClient();
     const [giving, setGiving] = useState(false);
     const [taking, setTaking] = useState<HeldRole | null>(null);
+    /*
+     * Each tab reads something of its own, and each of those reads is its own
+     * permission. A member may open a colleague's page to see who they are,
+     * which is the account read, and may not read their grants, their address
+     * or their sign-ins. A tab the caller cannot read is not offered: showing a
+     * tab and then answering it with a refusal teaches them only that something
+     * is broken.
+     */
+    const holds = useHolds();
+    const mayReadRoles = holds('iam::roles:read');
+    const mayReadContact = holds('iam::account_contact_informations:read');
+    const mayReadSignIns = holds('iam::sessions:read');
     const access = useQuery({
         queryKey: ['account-access', account.id],
         queryFn: () => api.accountAccess(account.id),
+        enabled: mayReadRoles,
     });
     const catalogue = useQuery({ queryKey: ['permissions'], queryFn: api.permissions });
     const story = useQuery({
@@ -100,7 +114,13 @@ function Person({
 
     const { tab, bar } = useTabs({
         label: name,
-        tabs: ['details', 'contact', 'roles', 'signIns', 'timeline'],
+        tabs: [
+            'details',
+            ...(mayReadContact ? ['contact'] : []),
+            ...(mayReadRoles ? ['roles'] : []),
+            ...(mayReadSignIns ? ['signIns'] : []),
+            'timeline',
+        ],
         titleOf: (part) => t(`access.person.tabs.${part}`),
     });
     const roles = access.data?.roles ?? [];

@@ -8,7 +8,7 @@
 #+filetags: :align-the-web-palette-with-the-reviewed-scheme:sprint_27:v0:
 #+owner: marco
 #+branch: feature/align-the-web-palette-with-the-reviewed-scheme
-#+pr:
+#+pr: 2996
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2996][#2996]] | [web] Move the theme onto the scheme the landing-page review argued |
 
 * Review
 

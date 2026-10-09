@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 1EFA46D4-8562-4C63-A1D3-4CF33551BEB2
+:END:
+#+title: Task: Prove the rates round trip over the corpus
+#+description: Run the ORE round trip over the family's corpus at the new shape, write the migration script that moves the rows of the legacy tables into the header and the facts, and add the repository, service and eventing coverage the family has none of. (Staging unit 8; findings R9, R14.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/prove-the-rates-round-trip-over-the-corpus
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The family is proved at its new shape: the corpus round-trips, a database holding rates rows migrates to the header and the facts, and the coverage the family lacked exists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The ORE round trip runs over the family's corpus at the new shape and every document comes back equivalent.
+- A migration script moves the rows of the legacy rates tables into the header and the fact tables, and a database holding rates rows survives the move.
+- The eventing integration test for the rates instruments is generated, and the family's repository and service coverage exists where it had none.
+- The migration's row counts and the round trip's documents are recorded as measurements with their commands.
+
+* Plan
+
+1. *The migration script.* One hand-written artefact: read each legacy table
+   and write the header row and the fact row, keyed by the trade, with the
+   header written first because the facts and children join it by that key.
+   The legacy tables are the nine the design's mapping table lists.
+2. *The corpus round trip.* Run the family's corpus at the new shape and
+   record the document count with the command that produced it.
+3. *The eventing test.* Generate the rates instruments' eventing integration
+   test as the other entities' are generated.
+4. *The coverage gap.* Add the repository and service cases the family has
+   none of, guided by what the round trip and the migration exercise.
+5. *Measurements.* The migration's row counts and the corpus size go in this
+   page's Measurements table with their commands, as the header task's did.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- This unit closes story acceptance clause 4 and carries the artefact a
+  database holding rates rows needs; unit 3 shipped the new shape without it,
+  because a fresh database is created at the new shape and the environments
+  are recreated rather than migrated.
+- It is last because it proves a shape the other units settle; running it
+  earlier would prove a tree that is about to change.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

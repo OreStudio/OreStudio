@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: EB32E142-7CA3-4A6F-842D-E301C685D3E0
+:END:
+#+title: Task: Move the rates family's shared children onto the bond shapes
+#+description: Move the cap/floor strikes and schedules and the swaption option block onto the shapes the bond pilot built, into the header's delete cascade, and move their registration to the root that owns them. Retype the option block's text dates and collections. (Staging unit 4; findings R5, R11.)
+#+type: task
+#+level: s1
+#+filetags: :instruments-rates:sprint_27:v0:
+#+owner: marco
+#+branch: feature/move-the-rates-shared-children-onto-the-bond-shapes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The cap/floor strikes and schedules and the swaption's option block sit on the shapes the bond pilot built, with their registration in the root that owns them and their text-typed dates and collections retyped.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-09                               |
+
+* Acceptance
+
+- The cap/floor strikes are rows of instrument_strikes and its schedules are rows of instrument_schedules and instrument_schedule_dates, written by the import and read by the export.
+- The swaption's option data is rows of instrument_options and its four children, with premium_amount, premium_currency, premium_pay_date, exercise_prices and settlement_fixing_date typed rather than text, and instrument_option_exercise_fees.start_date typed as a date.
+- The rates header's Delete cascade names the shared children, so a header delete closes them.
+- instrument_schedules.owner_role's check lists the rates family's owner roles beside trs_funding, repo, ascot_swap, option and trs.
+- The children's registration sits in the root that owns them, not in registrar_bond.cpp.
+- The ORE round trip keeps a cap/floor's strikes and schedules and a swaption's option block.
+
+* Plan
+
+1. *The shapes.* The bond pilot's =instrument_strike=, =instrument_schedule=,
+   =instrument_schedule_date=, =instrument_option= and its four keyed children
+   are the target. Read them first and reuse their column sets rather than
+   widening them; the family writes to them, it does not extend them. The one
+   exception is =instrument_schedules.owner_role=, whose check lists
+   =trs_funding=, =repo=, =ascot_swap=, =option= and =trs= today: the rates
+   owner roles join that list when the first rates schedule lands.
+2. *The models.* Give the cap/floor and the swaption the children they write,
+   and retype the option block's text columns: =premium_amount=,
+   =premium_currency=, =premium_pay_date=, =exercise_prices=,
+   =settlement_fixing_date= and =instrument_option_exercise_fees.start_date=.
+3. *The cascade and the children list.* Add the shared children to
+   =ores.trading.rate_instruments=' =* Delete cascade= and to the trade-type
+   catalogue's =* Batch / ** Children=, so a header delete closes them and the
+   export carries them.
+4. *The registration root.* Move the shared children's registration out of
+   =registrar_bond.cpp= into the root that owns them, so the bond family stops
+   being the reason a rates child is registered.
+5. *The mapper.* Write the children on import and read them on export, beside
+   the leg collections the family already carries.
+6. *Order.* Take one product end to end first — the cap/floor, which has the
+   fewest own fields once the dates moved — with a build and the round trip
+   between products.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Unit 4 must land before the corpus round trip of unit 8: a cap/floor's
+  strikes and schedules are not stored at all today, and the option block's
+  dates are text, so the trip cannot be lossless until they are.
+- It must also land before the composite key of unit 5, so the key is added
+  once, to tables that are final.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

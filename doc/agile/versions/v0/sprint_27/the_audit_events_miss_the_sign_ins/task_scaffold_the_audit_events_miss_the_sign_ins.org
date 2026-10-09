@@ -83,3 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint wiring exist, and both tasks close on
+the same PR that lands the fix.

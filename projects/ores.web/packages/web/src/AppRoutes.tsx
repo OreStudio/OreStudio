@@ -19,7 +19,7 @@
  *
  */
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
@@ -32,6 +32,7 @@ import { FirstRunJourney } from './journeys/FirstRunJourney.js';
 import { NewTenantJourney } from './journeys/NewTenantJourney.js';
 import { NewPartyJourney } from './journeys/NewPartyJourney.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
+import { TenantSetupJourney } from './journeys/TenantSetupJourney.js';
 import { AppShell } from './components/AppShell.js';
 import type { ShellWidth } from './shell/layout.js';
 import { PublicShell } from './components/PublicShell.js';
@@ -84,23 +85,32 @@ import type { EnvironmentView } from '@ores/contracts';
  * renders the first run journey rather than redirecting to a setup path: there
  * is nothing else to be at, and a redirect leaves a URL somebody can share that
  * leads nowhere. Creating the administrator closes that question but not the
- * job, so the gate carries two further reasons to stay. The first is that the
+ * job, so the gate carries further reasons to stay. The first is that the
  * journey has begun in this browser, which holds the rail until the person
  * finishes. The second is that a system administrator is signed in and the
  * system provisioner wizard has not recorded that it finished: a first-run
  * installation may keep only the system tenant, and the wizard signs the person
  * out at the end, so the flag is read through their session while they have
- * one. A visitor with no session is never held, and neither is a session in a
- * normal tenant: the deployment's lacking a tenant of its own is not a reason
- * to hold the rail, because an installation may keep the system tenant alone,
- * and a normal tenant's setup belongs to the tenant wizard. The deployment's
- * own state is what survives a reload; the tab's memory only outlives the run.
+ * one. The third is a tenant administrator whose own tenant has not finished
+ * the setup run the deployment started for it, which holds the browser on the
+ * tenant setup screen. A visitor with no session is never held, and neither is
+ * a session in a tenant that finished its run or whose deployment kept no
+ * tenant of its own: the deployment's lacking a tenant of its own is not a
+ * reason to hold the rail. The deployment's own state is what survives a
+ * reload; the tab's memory only outlives the run.
  */
 export interface AppRoutesProps {
     readonly gate: BootstrapState;
     readonly session: SessionState;
     /** The first run journey, which only the wiring can reach the server for. */
     readonly journey: ReactNode;
+    /**
+     * The tenant setup screen, which a signed-in tenant administrator runs.
+     *
+     * It follows the run the tenant owns, and the gate holds that administrator
+     * on it until the run records its finish.
+     */
+    readonly tenantSetupJourney: ReactNode;
     /**
      * The new tenant journey, which a signed-in administrator runs.
      *
@@ -151,6 +161,7 @@ export function AppRoutes({
     gate,
     session,
     journey,
+    tenantSetupJourney,
     newTenantJourney,
     newPartyJourney,
     signUpJourney,
@@ -194,6 +205,17 @@ export function AppRoutes({
         session.session.mode === 'system-administration' &&
         !gate.onboardingComplete;
 
+    /*
+     * A tenant administrator whose tenant has not finished its own setup run
+     * stays on the tenant setup screen. The mode is what separates the two
+     * rails: a super administrator acts on the deployment itself, and every
+     * other session acts on the tenant whose run this is.
+     */
+    const resumingTenantSetup =
+        session.status === 'authenticated' &&
+        session.session.mode !== 'system-administration' &&
+        !gate.onboardingTenantComplete;
+
     if (gate.inBootstrapMode || resumingSystemSetup || journeyInProgress) {
         return (
             <Routes>
@@ -202,6 +224,21 @@ export function AppRoutes({
                     element={
                         <PublicShell wide serverVersion={gate.version} environment={environment}>
                             {journey}
+                        </PublicShell>
+                    }
+                />
+            </Routes>
+        );
+    }
+
+    if (resumingTenantSetup) {
+        return (
+            <Routes>
+                <Route
+                    path="*"
+                    element={
+                        <PublicShell wide serverVersion={gate.version} environment={environment}>
+                            {tenantSetupJourney}
                         </PublicShell>
                     }
                 />
@@ -692,6 +729,24 @@ export function ConnectedApp(): ReactNode {
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
     /*
+     * The gate's tenant answer is read through the session, and the session it
+     * was first read through was nobody's. Signing in changes what that answer
+     * means, because only the tenant's administrator can read its flag, so the
+     * deployment is asked again whenever the signed-in account changes. The
+     * action is held in a ref so a changed answer cannot ask again by changing
+     * the effect's own dependencies.
+     */
+    const recheckNow = useRef(recheck);
+    useEffect(() => {
+        recheckNow.current = recheck;
+    }, [recheck]);
+    const signedInAs = session.status === 'authenticated' ? session.session.accountId : '';
+    useEffect(() => {
+        if (signedInAs !== '') {
+            void recheckNow.current();
+        }
+    }, [signedInAs]);
+    /*
      * The signed-in person's own account: the shell's menu shows their name
      * and picture from it, and the profile screen reads the same answer for
      * its panels. A member may not hold the account read the route asks for,
@@ -737,6 +792,19 @@ export function ConnectedApp(): ReactNode {
                      * the home page sends a signed-out visitor to sign in.
                      */
                     onFinished={() => navigate('/')}
+                />
+            }
+            tenantSetupJourney={
+                <TenantSetupJourney
+                    server={server}
+                    /*
+                     * The run is what clears the tenant's flag, so the gate is
+                     * asked again rather than trusted: its answer is what lets
+                     * this administrator into the application.
+                     */
+                    onFinished={() => {
+                        void recheck();
+                    }}
                 />
             }
             newPartyJourney={

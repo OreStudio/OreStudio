@@ -42,6 +42,7 @@ enum class provision_step_action {
     attach_photos,
     start_market_feeds,
     complete_provisioning,
+    start_tenant_setup,
     refuse
 };
 
@@ -50,14 +51,17 @@ enum class provision_step_action {
  *
  * The catalogue and the executed predicate both live in the workflow
  * definition, so this function only maps them onto the executor's actions: a
- * kind this build does not execute is refused, and the completing step the
- * definition appends is recognised even though no profile may order it.
+ * kind this build does not execute is refused, and the two steps the
+ * definitions append -- the one that hands the tenant over and the one that
+ * completes it -- are recognised even though no profile may order either.
  */
 [[nodiscard]] inline provision_step_action classify_step_kind(std::string_view kind) {
     using namespace ores::iam::workflow;
 
     if (kind == complete_provisioning_step_kind)
         return provision_step_action::complete_provisioning;
+    if (kind == start_tenant_setup_step_kind)
+        return provision_step_action::start_tenant_setup;
     if (!is_executed_step_kind(kind))
         return provision_step_action::refuse;
     if (kind == system_provision_step_kind)

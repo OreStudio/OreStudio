@@ -43,6 +43,7 @@ using ores::iam::workflow::complete_provisioning_step_kind;
 using ores::iam::workflow::detail::unique_step_name;
 using ores::iam::workflow::is_declared_step_kind;
 using ores::iam::workflow::is_executed_step_kind;
+using ores::iam::workflow::is_system_scoped_step_kind;
 using ores::iam::workflow::provision_executed_step_kinds;
 using ores::iam::workflow::provision_party_step_kind;
 using ores::iam::workflow::provision_party_workflow_type;
@@ -54,6 +55,10 @@ using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
 using ores::iam::workflow::register_provision_party_workflow;
 using ores::iam::workflow::register_provision_tenant_workflow;
+using ores::iam::workflow::register_tenant_setup_workflow;
+using ores::iam::workflow::start_tenant_setup_step_kind;
+using ores::iam::workflow::system_provision_step_kind;
+using ores::iam::workflow::tenant_setup_workflow_type;
 using ores::workflow::service::workflow_definition;
 using ores::workflow::service::workflow_registry;
 
@@ -87,13 +92,32 @@ workflow_definition definition() {
     return *found;
 }
 
+workflow_definition setup_definition() {
+    workflow_registry registry;
+    register_tenant_setup_workflow(registry);
+
+    const auto* found = registry.find(std::string(tenant_setup_workflow_type));
+    if (found == nullptr)
+        throw std::runtime_error("the setup definition did not register under its type name");
+    return *found;
 }
 
-TEST_CASE("the definition registers under its workflow type", tags) {
+}
+
+TEST_CASE("the system definition registers under its workflow type", tags) {
     workflow_registry registry;
     register_provision_tenant_workflow(registry);
 
     const auto* found = registry.find(std::string(provision_tenant_workflow_type));
+    REQUIRE(found != nullptr);
+    CHECK_FALSE(found->description.empty());
+}
+
+TEST_CASE("the setup definition registers under its workflow type", tags) {
+    workflow_registry registry;
+    register_tenant_setup_workflow(registry);
+
+    const auto* found = registry.find(std::string(tenant_setup_workflow_type));
     REQUIRE(found != nullptr);
     CHECK_FALSE(found->description.empty());
 }
@@ -103,9 +127,19 @@ TEST_CASE("the catalogue knows every declared kind", tags) {
         CHECK(is_declared_step_kind(kind));
 }
 
-TEST_CASE("the catalogue refuses the completing step and an unknown kind", tags) {
+TEST_CASE("the catalogue refuses the steps a run appends and an unknown kind", tags) {
     CHECK_FALSE(is_declared_step_kind(complete_provisioning_step_kind));
+    CHECK_FALSE(is_declared_step_kind(start_tenant_setup_step_kind));
     CHECK_FALSE(is_declared_step_kind("publish_everything"));
+}
+
+TEST_CASE("only the system step is system-scoped", tags) {
+    for (const auto kind : provision_step_kinds)
+        CHECK(is_system_scoped_step_kind(kind) == (kind == system_provision_step_kind));
+
+    CHECK(is_system_scoped_step_kind(system_provision_step_kind));
+    CHECK_FALSE(is_system_scoped_step_kind(start_tenant_setup_step_kind));
+    CHECK_FALSE(is_system_scoped_step_kind(complete_provisioning_step_kind));
 }
 
 TEST_CASE("a step name is made unique within its run", tags) {
@@ -117,8 +151,36 @@ TEST_CASE("a step name is made unique within its run", tags) {
     CHECK(unique_step_name("provision_party", seen) == "provision_party_3");
 }
 
-TEST_CASE("a profile's kinds become steps in order, with the completing step last", tags) {
+TEST_CASE("the system run takes the system-scoped kinds and the handing step", tags) {
     const auto def = definition();
+    const auto steps =
+        def.build_steps(request_json({declared("publish_bundle", R"({"bundles":["acme_group"]})"),
+                                      declared("system_provision"),
+                                      declared("provision_party")}),
+                        tenant_id,
+                        correlation_id);
+
+    // The run is the profile's system-scoped kinds alone, in the order the
+    // profile declares them, and then the step that hands the tenant over.
+    REQUIRE(steps.size() == 2);
+    CHECK(steps[0].name == "system_provision");
+    CHECK(steps[0].consumes.empty());
+    CHECK(steps[1].name == start_tenant_setup_step_kind);
+    CHECK(steps[1].consumes == std::vector<std::string>{"system_provision"});
+
+    for (const auto& step : steps) {
+        CHECK(step.command_subject == provision_tenant_step_subject);
+        CHECK(step.compensation_subject.empty());
+        // A screen shows the label and the description, and falls back to the
+        // step's identity only when a definition declares none: every kind
+        // this definition declares declares both.
+        CHECK_FALSE(step.label.empty());
+        CHECK_FALSE(step.description.empty());
+    }
+}
+
+TEST_CASE("the setup run's kinds become steps in order, with the completing step last", tags) {
+    const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("publish_bundle", R"({"bundles":["acme_group"]})"),
                                       declared("import_lei_hierarchy"),
@@ -143,8 +205,8 @@ TEST_CASE("a profile's kinds become steps in order, with the completing step las
     }
 }
 
-TEST_CASE("a profile's steps declare which steps must answer first", tags) {
-    const auto def = definition();
+TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
+    const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("system_provision"),
                                       declared("publish_bundle", R"({"bundles":["acme_group"]})"),
@@ -163,10 +225,9 @@ TEST_CASE("a profile's steps declare which steps must answer first", tags) {
         return std::vector<std::string>{};
     };
 
-    // A step reads nothing when nothing has to come first, and otherwise reads
-    // the step that produced what it works from.
-    CHECK(inputs_of("system_provision").empty());
-    CHECK(inputs_of("publish_bundle") == std::vector<std::string>{"system_provision"});
+    // The system step belongs to the other run, so the first step of this one
+    // reads nothing: what it works from was published before this run existed.
+    CHECK(inputs_of("publish_bundle").empty());
     CHECK(inputs_of("import_lei_hierarchy") == std::vector<std::string>{"publish_bundle"});
     CHECK(inputs_of("provision_party") == std::vector<std::string>{"import_lei_hierarchy"});
     CHECK(inputs_of("load_staff") == std::vector<std::string>{"provision_party"});
@@ -176,11 +237,11 @@ TEST_CASE("a profile's steps declare which steps must answer first", tags) {
     // them run beside the party chain rather than after it.
     CHECK(inputs_of("start_market_feeds") == std::vector<std::string>{"publish_bundle"});
     // Nothing is finished before everything is, so the last step reads them all.
-    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
+    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 6);
 }
 
 TEST_CASE("a need the run did not order is answered by the step that did", tags) {
-    const auto def = definition();
+    const auto def = setup_definition();
     // A run that orders no import step still waits for whatever published the
     // reference data before it provisions a party from it.
     const auto steps =
@@ -200,7 +261,7 @@ TEST_CASE("a need the run did not order is answered by the step that did", tags)
 }
 
 TEST_CASE("a step that needs two kinds reads one step when both resolve to it", tags) {
-    const auto def = definition();
+    const auto def = setup_definition();
     // With no staff step, both of the photograph step's needs are met by the
     // party step, and a step reads a step once however many needs found it.
     const auto steps = def.build_steps(request_json({declared("import_lei_hierarchy"),
@@ -219,16 +280,23 @@ TEST_CASE("a step that needs two kinds reads one step when both resolve to it", 
     CHECK(inputs_of("attach_photos") == std::vector<std::string>{"provision_party"});
 }
 
-TEST_CASE("a profile that orders nothing still runs the completing step", tags) {
-    const auto def = definition();
-    const auto steps = def.build_steps(request_json({}), tenant_id, correlation_id);
+TEST_CASE("a profile that orders nothing still runs the step that finishes each run", tags) {
+    const auto setup_steps =
+        setup_definition().build_steps(request_json({}), tenant_id, correlation_id);
+    REQUIRE(setup_steps.size() == 1);
+    CHECK(setup_steps.front().name == complete_provisioning_step_kind);
 
-    REQUIRE(steps.size() == 1);
-    CHECK(steps.front().name == complete_provisioning_step_kind);
+    // The system run has nothing to hand over before it hands over, so the
+    // handing step is its only step.
+    const auto system_steps =
+        definition().build_steps(request_json({}), tenant_id, correlation_id);
+    REQUIRE(system_steps.size() == 1);
+    CHECK(system_steps.front().name == start_tenant_setup_step_kind);
+    CHECK(system_steps.front().consumes.empty());
 }
 
 TEST_CASE("a repeated kind yields a distinct step name", tags) {
-    const auto def = definition();
+    const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("provision_party"), declared("provision_party")}),
                         tenant_id,
@@ -243,7 +311,7 @@ TEST_CASE("a repeated kind yields a distinct step name", tags) {
 TEST_CASE("a step command carries the tenant it provisions, its administrator and the run's "
           "parameters",
           tags) {
-    const auto def = definition();
+    const auto def = setup_definition();
     const auto steps = def.build_steps(
         request_json({declared("provision_party", R"({"party_bundle":"acme_group"})")}),
         tenant_id,
@@ -266,8 +334,25 @@ TEST_CASE("a step command carries the tenant it provisions, its administrator an
     CHECK(command->parameters[0].value == "529900T8BM49AURSDO55");
 }
 
-TEST_CASE("the step list is the same on every call", tags) {
+TEST_CASE("the handing step's command carries the whole run request", tags) {
     const auto def = definition();
+    const auto request = request_json({declared("system_provision"), declared("provision_party")});
+    const auto steps = def.build_steps(request, tenant_id, correlation_id);
+
+    REQUIRE(steps.size() == 2);
+    const auto command =
+        rfl::json::read<provision_tenant_step_command>(steps[1].build_command("", {}));
+    REQUIRE(command);
+    CHECK(command->kind == start_tenant_setup_step_kind);
+    CHECK(command->tenant_id == provisioned_tenant_id);
+    CHECK(command->admin_account_id == admin_account_id);
+    // The child works from the same request this run received, so the step's
+    // argument is that whole request and not the kind's own shape.
+    CHECK(command->arguments_json == request);
+}
+
+TEST_CASE("the step list is the same on every call", tags) {
+    const auto def = setup_definition();
     const auto request = request_json({declared("publish_bundle"), declared("provision_party")});
 
     const auto first = def.build_steps(request, tenant_id, correlation_id);
@@ -281,11 +366,14 @@ TEST_CASE("the step list is the same on every call", tags) {
     }
 }
 
-TEST_CASE("a kind the catalogue does not know is refused when the run starts", tags) {
-    const auto def = definition();
-
+TEST_CASE("a kind the catalogue does not know is refused by either run", tags) {
     CHECK_THROWS_AS(
-        def.build_steps(request_json({declared("publish_everything")}), tenant_id, correlation_id),
+        definition().build_steps(
+            request_json({declared("publish_everything")}), tenant_id, correlation_id),
+        std::runtime_error);
+    CHECK_THROWS_AS(
+        setup_definition().build_steps(
+            request_json({declared("publish_everything")}), tenant_id, correlation_id),
         std::runtime_error);
 }
 
@@ -301,11 +389,12 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", tags) 
     CHECK(is_executed_step_kind("start_market_feeds"));
 
     CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
+    CHECK_FALSE(is_executed_step_kind(start_tenant_setup_step_kind));
     CHECK_FALSE(is_executed_step_kind("publish_everything"));
 }
 
 TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
-    const auto def = definition();
+    const auto def = setup_definition();
     const auto steps = def.build_steps(
         request_json(
             {declared("load_staff",
@@ -324,7 +413,7 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
     CHECK(steps[3].name == complete_provisioning_step_kind);
 }
 
-TEST_CASE("a profile may not order the step every run appends", tags) {
+TEST_CASE("a profile may not order a step a run appends", tags) {
     const auto def = definition();
 
     try {
@@ -335,18 +424,25 @@ TEST_CASE("a profile may not order the step every run appends", tags) {
     } catch (const std::runtime_error& e) {
         CHECK(std::string(e.what()).find("appends itself") != std::string::npos);
     }
+
+    try {
+        def.build_steps(request_json({declared(std::string(start_tenant_setup_step_kind))}),
+                        tenant_id,
+                        correlation_id);
+        FAIL("the definition accepted the handing step as a declared kind");
+    } catch (const std::runtime_error& e) {
+        CHECK(std::string(e.what()).find("appends itself") != std::string::npos);
+    }
 }
 
-TEST_CASE("a request this deployment cannot read is refused", tags) {
-    const auto def = definition();
-
-    CHECK_THROWS_AS(def.build_steps("not a request", tenant_id, correlation_id),
+TEST_CASE("a request this deployment cannot read is refused by either run", tags) {
+    CHECK_THROWS_AS(definition().build_steps("not a request", tenant_id, correlation_id),
+                    std::runtime_error);
+    CHECK_THROWS_AS(setup_definition().build_steps("not a request", tenant_id, correlation_id),
                     std::runtime_error);
 }
 
-TEST_CASE("a request that names no tenant to provision is refused", tags) {
-    const auto def = definition();
-
+TEST_CASE("a request that names no tenant to provision is refused by either run", tags) {
     provision_tenant_workflow_request request;
     request.profile_code = "acme_demo";
     request.tenant_code = "acme";
@@ -354,11 +450,13 @@ TEST_CASE("a request that names no tenant to provision is refused", tags) {
     request.admin_account_id = admin_account_id;
     request.steps = {declared("publish_bundle")};
 
-    try {
-        def.build_steps(rfl::json::write(request), tenant_id, correlation_id);
-        FAIL("the definition accepted a request that names no tenant to provision");
-    } catch (const std::runtime_error& e) {
-        CHECK(std::string(e.what()).find("names no tenant to provision") != std::string::npos);
+    for (const auto& def : {definition(), setup_definition()}) {
+        try {
+            def.build_steps(rfl::json::write(request), tenant_id, correlation_id);
+            FAIL("the definition accepted a request that names no tenant to provision");
+        } catch (const std::runtime_error& e) {
+            CHECK(std::string(e.what()).find("names no tenant to provision") != std::string::npos);
+        }
     }
 }
 

@@ -21,6 +21,7 @@
 
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
+import type { TenantSetupRun } from './contracts.js';
 import {
     uuidSchema,
     wireTimestampSchema,
@@ -289,6 +290,16 @@ export const PROVISION_TENANT_WORKFLOW_TYPE = 'provision_tenant_workflow';
 export const PROVISION_TENANT_TARGET_KIND = 'tenant';
 
 /**
+ * The run type ores.iam names on a tenant's own setup run.
+ *
+ * It mirrors `tenant_setup_workflow_type` in C++, and a rename there must be
+ * mirrored here or the tenant's setup screen stops finding any run. The run
+ * belongs to the tenant, so the read that names this type is answered as that
+ * tenant's administrator and needs no target of its own.
+ */
+export const TENANT_SETUP_WORKFLOW_TYPE = 'tenant_setup_workflow';
+
+/**
  * One run, as the instances list answers it.
  *
  * The shape is the generated `WorkflowInstanceSummary`, and `satisfies` holds
@@ -450,4 +461,38 @@ export async function readProvisioningRuns(
             error: run.error,
             at: run.completed_at ?? run.created_at,
         }));
+}
+
+/**
+ * The tenant's own setup run, the one that changed last first.
+ *
+ * The read is answered as the tenant's administrator, so the engine returns
+ * the runs that tenant owns and nothing else; the type filter narrows those to
+ * the tenant setup run, and the first one the engine reports is the one that
+ * moved most recently. An empty instance id is the answer when the tenant has
+ * no run, which is not an error: it is the state before the deployment's first
+ * run starts one.
+ */
+export async function readTenantSetupRun(caller: AuthenticatedCaller): Promise<TenantSetupRun> {
+    const request: ListWorkflowInstanceSummariesRequest = {
+        limit: 1,
+        status_filter: '',
+        type_filter: TENANT_SETUP_WORKFLOW_TYPE,
+        target_kind_filter: '',
+        target_id_filter: '',
+        target_ids_filter: [],
+    };
+    const answer = await caller.callAuthenticated(
+        workflowSubjects.list_workflow_instance_summaries_request,
+        request,
+        wireWorkflowInstancesSchema,
+    );
+    if (!answer.success) {
+        throw new Error(answer.message === '' ? 'The setup run was not read.' : answer.message);
+    }
+    const run = answer.instances[0];
+    if (run === undefined) {
+        return { instanceId: '', status: '', error: '' };
+    }
+    return { instanceId: run.id, status: run.status, error: run.error };
 }

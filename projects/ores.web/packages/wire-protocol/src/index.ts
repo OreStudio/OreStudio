@@ -116,11 +116,13 @@ export {
 export {
     PROVISION_TENANT_TARGET_KIND,
     PROVISION_TENANT_WORKFLOW_TYPE,
+    TENANT_SETUP_WORKFLOW_TYPE,
     TENANT_SUBJECTS,
     TENANT_SETUP_READ_LIMIT,
     listTenantsPage,
     readTenant,
     readProvisioningRuns,
+    readTenantSetupRun,
     removeTenant,
     readTenantSetups,
     wireTenantPageSchema,
@@ -480,6 +482,7 @@ export {
     signupRequestSchema,
     signupResultSchema,
     sseEnvelopeSchema,
+    tenantSetupRunSchema,
 } from './contracts.js';
 export type {
     ApiError,
@@ -496,6 +499,7 @@ export type {
     SessionView,
     SignupRequest,
     SignupResult,
+    TenantSetupRun,
 } from './contracts.js';
 
 export { readImageMap } from './image-map.js';

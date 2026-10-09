@@ -23,10 +23,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { createTranslator } from '../i18n/translate.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { newTenantSteps } from './newTenantSteps.js';
-import { handOffToTenant } from './NewTenantJourney.js';
+import { finishTenantSetup } from './NewTenantJourney.js';
 import { detailsFor, type NewTenant } from './state.js';
 import type { JourneyServer } from './server.js';
-import type { PasswordPolicy, PartySummary, SeedProfileChoice } from '@ores/wire-protocol/browser';
+import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
 const t = createTranslator('en', enFlat, enFlat).t;
 
@@ -39,13 +39,6 @@ const policy: PasswordPolicy = {
     requireDigit: true,
     requireSpecial: true,
     specialChars: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-};
-
-const party: PartySummary = {
-    id: '3f1e2d4c-0000-4000-8000-000000000010',
-    name: 'Acme Corporation',
-    partyCategory: 'System',
-    businessCenterCode: 'GBLO',
 };
 
 /** A production starting point: it types its own administrator's password. */
@@ -92,6 +85,7 @@ function fakeServer(overrides: Partial<JourneyServer> = {}): JourneyServer {
         createAdministrator: vi.fn(async () => undefined),
         recheckBootstrap: vi.fn(async () => undefined),
         completeSystemOnboarding: vi.fn(async () => undefined),
+        tenantSetupRun: vi.fn(async () => ({ instanceId: '', status: '', error: '' })),
         signIn: vi.fn(async () => ({ outcome: 'active', passwordResetRequired: false }) as const),
         chooseParty: vi.fn(async () => undefined),
         switchParty: vi.fn(async () => undefined),
@@ -152,7 +146,11 @@ function tenantState(overrides: Partial<NewTenant> = {}): NewTenant {
 
 function steps(
     state: NewTenant,
-    options: { readonly server?: JourneyServer; readonly creatingPassword?: string } = {},
+    options: {
+        readonly server?: JourneyServer;
+        readonly creatingPassword?: string;
+        readonly onFinished?: () => Promise<void>;
+    } = {},
 ): ReturnType<typeof newTenantSteps> {
     return newTenantSteps({
         t,
@@ -161,18 +159,18 @@ function steps(
         profiles: [operational, demonstration],
         state,
         creatingPassword: options.creatingPassword ?? '',
-        onHandOff: async () => undefined,
+        onFinished: options.onFinished ?? (async () => undefined),
     });
 }
 
 describe('the tenant journey a signed-in administrator runs', () => {
-    it('is the five tenant steps on one rail', () => {
+    it('is the tenant steps and its own ending on one rail', () => {
         expect(steps(tenantState()).map((step) => step.id)).toEqual([
             'profile',
             'details',
             'review',
             'provisioning',
-            'handOff',
+            'finish',
         ]);
     });
 
@@ -234,54 +232,44 @@ describe('the tenant journey a signed-in administrator runs', () => {
         expect(state.recordRun).toHaveBeenCalledWith('9c1f0f5a-6bd2-4f2a-9a4a-6f1a3a2b4c5d');
     });
 
-    it('handing off to somebody else ends the session and stops there', async () => {
-        const server = fakeServer();
+    it('ends the journey when the last step runs', async () => {
+        const onFinished = vi.fn(async () => undefined);
+        const finish = steps(tenantState(), { onFinished }).find((step) => step.id === 'finish');
 
-        await handOffToTenant(server, detailsFor(operational, ''), false, 'choose one');
+        expect(finish?.title).toBe('Tenant created');
+        expect(finish?.lead).toBe(
+            "The tenant is created. Its administrator finishes the tenant's own setup when they first sign in.",
+        );
+        await finish?.next?.run?.();
+
+        expect(onFinished).toHaveBeenCalledTimes(1);
+    });
+
+    it('signs the creating administrator out as its last act', async () => {
+        const server = fakeServer();
+        const onFinished = vi.fn();
+
+        await finishTenantSetup(server, onFinished);
 
         expect(server.signOut).toHaveBeenCalled();
-        expect(server.signIn).not.toHaveBeenCalled();
+        expect(onFinished).toHaveBeenCalledTimes(1);
     });
 
-    it('continuing as the tenant admin signs in as the account it just made', async () => {
-        const server = fakeServer();
-
-        await handOffToTenant(server, detailsFor(operational, ''), true, 'choose one');
-
-        expect(server.signOut).toHaveBeenCalled();
-        expect(server.signIn).toHaveBeenCalledWith({
-            username: 'northwind_admin@northwind',
-            password: '',
-        });
-    });
-
-    it('chooses the only party the new administrator works in', async () => {
-        const server = fakeServer({
-            signIn: vi.fn(async () => ({
-                outcome: 'party-required',
-                parties: [party],
-                passwordResetRequired: false,
-            })),
+    it('omits the ending where the journey hands the browser to its own rail', () => {
+        const shared = newTenantSteps({
+            t,
+            server: fakeServer(),
+            policy,
+            profiles: [operational],
+            state: tenantState(),
+            creatingPassword: '',
         });
 
-        await handOffToTenant(server, detailsFor(operational, ''), true, 'choose one');
-
-        expect(server.chooseParty).toHaveBeenCalledWith(party.id, [party]);
-    });
-
-    it('refuses to guess when the new administrator works in several parties', async () => {
-        const other: PartySummary = { ...party, id: '3f1e2d4c-0000-4000-8000-000000000011' };
-        const server = fakeServer({
-            signIn: vi.fn(async () => ({
-                outcome: 'party-required',
-                parties: [party, other],
-                passwordResetRequired: false,
-            })),
-        });
-
-        await expect(
-            handOffToTenant(server, detailsFor(operational, ''), true, 'choose one'),
-        ).rejects.toThrow('choose one');
-        expect(server.chooseParty).not.toHaveBeenCalled();
+        expect(shared.map((step) => step.id)).toEqual([
+            'profile',
+            'details',
+            'review',
+            'provisioning',
+        ]);
     });
 });

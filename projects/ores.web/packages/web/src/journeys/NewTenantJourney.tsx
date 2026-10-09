@@ -23,18 +23,18 @@
  * The new tenant journey: the tenant steps on their own rail.
  *
  * The person is a signed-in administrator adding a tenant beside the ones the
- * deployment already has, so the rail is the five tenant steps and nothing
- * else: no welcome, no administrator to create, no first sign-in. The steps
- * themselves are the shared library the first run inlines, so the two journeys
- * cannot describe a tenant differently.
+ * deployment already has, so the rail is the tenant steps and nothing else: no
+ * welcome, no administrator to create. The steps themselves are the shared
+ * library the first run inlines, so the two journeys cannot describe a tenant
+ * differently.
  *
- * Two things differ from the first run, and both come from who the person is.
+ * One thing differs from the first run, and it comes from who the person is.
  * The browser does not hold the signed-in administrator's password -- they
  * typed it before this session began -- so a starting point that hands the
  * creating administrator's password to the tenant's administrator asks for one
- * instead, which the form states. And the hand-over is the journey's end: the
- * person either becomes the new tenant's administrator or passes the account
- * on, and either way this administrator's session ends.
+ * instead, which the form states. And the journey's end signs this
+ * administrator out: the tenant's own administrator finishes the tenant's setup
+ * when they first sign in, so this browser has nothing left to do in it.
  */
 
 import { useEffect, useState, type ReactNode } from 'react';
@@ -43,12 +43,7 @@ import { Button, Notice } from '../ui/Primitives.js';
 import { JourneyPage } from './JourneyPage.js';
 import { JourneyHeader } from './parts.js';
 import type { JourneyServer } from './server.js';
-import {
-    administratorPassword,
-    tenantPrincipal,
-    useNewTenant,
-    type TenantDetails,
-} from './state.js';
+import { useNewTenant } from './state.js';
 import { newTenantSteps } from './newTenantSteps.js';
 import type { PasswordPolicy, SeedProfileChoice } from '@ores/wire-protocol/browser';
 
@@ -63,46 +58,21 @@ function reasonOf(error: unknown): string {
 }
 
 /**
- * The end of the journey, and the two exits the design states.
+ * The journey's end: signs the creating administrator out and hands the browser
+ * back.
  *
- * *Continue as tenant admin* ends this administrator's session and opens the
- * new tenant's: the account the journey just created is signed in, and the
- * deployment's own sign-in path takes it from there. *Hand off to someone else*
- * ends the session and stops, because the person has just read the principal to
- * pass on and the next thing that happens is somebody else signing in.
- *
- * It is a function rather than a closure so the two exits can be walked without
- * a browser: what it does is sign out, and then sign in as somebody the journey
- * has just created.
+ * The tenant's own administrator finishes the tenant's setup when they first
+ * sign in, so this session has nothing left to do in the tenant it just made.
+ * It is a function rather than a closure so the ending can be walked without a
+ * browser: what it does is sign out, and then tell the screen that sent the
+ * person here that the journey is over.
  */
-export async function handOffToTenant(
-    server: Pick<JourneyServer, 'signOut' | 'signIn' | 'chooseParty'>,
-    details: TenantDetails,
-    continueAsAdmin: boolean,
-    partyChoiceMessage: string,
+export async function finishTenantSetup(
+    server: Pick<JourneyServer, 'signOut'>,
+    onFinished: () => void,
 ): Promise<void> {
     await server.signOut();
-    if (!continueAsAdmin) {
-        return;
-    }
-
-    const outcome = await server.signIn({
-        username: tenantPrincipal(details),
-        password: administratorPassword(details, ''),
-    });
-    if (outcome.outcome !== 'party-required') {
-        return;
-    }
-    /*
-     * A fresh tenant's administrator works in the party the run created for
-     * them, so the choice is not a choice; a session that offers several is one
-     * this journey cannot finish, and it says so rather than guessing.
-     */
-    const only = outcome.parties.length === 1 ? outcome.parties[0] : undefined;
-    if (only === undefined) {
-        throw new Error(partyChoiceMessage);
-    }
-    await server.chooseParty(only.id, outcome.parties);
+    onFinished();
 }
 
 export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps): ReactNode {
@@ -159,13 +129,13 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
         };
     }, [server, attempt]);
 
-    const handOff = async (continueAsAdmin: boolean): Promise<void> => {
-        const details = tenant.details;
-        if (details === undefined) {
-            return;
-        }
-        await handOffToTenant(server, details, continueAsAdmin, t('journey.handOff.partyChoice'));
-        onFinished();
+    /*
+     * The journey's end. The tenant's own administrator finishes the tenant's
+     * setup when they first sign in, so this session ends here and the next
+     * thing this browser does is offer the sign-in screen.
+     */
+    const finish = async (): Promise<void> => {
+        await finishTenantSetup(server, onFinished);
     };
 
     if (policy === undefined) {
@@ -207,7 +177,7 @@ export function NewTenantJourney({ server, onFinished }: NewTenantJourneyProps):
         profiles,
         state: tenant,
         creatingPassword,
-        onHandOff: handOff,
+        onFinished: finish,
         takenCodes,
     });
 

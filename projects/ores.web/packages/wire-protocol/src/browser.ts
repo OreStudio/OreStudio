@@ -116,6 +116,7 @@ export {
     signupRequestSchema,
     signupResultSchema,
     sseEnvelopeSchema,
+    tenantSetupRunSchema,
 } from './contracts.js';
 export type {
     ApiError,
@@ -132,6 +133,7 @@ export type {
     SessionView,
     SignupRequest,
     SignupResult,
+    TenantSetupRun,
 } from './contracts.js';
 
 // One expected service instance and its last report, which the operations

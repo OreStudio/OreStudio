@@ -20,26 +20,21 @@
  */
 
 /**
- * The first run page's own parts.
+ * The tenant setup screen, pinned to the states it can be in.
  *
- * The page reaches the server for its password rules before it renders a rail,
- * and the web package has no browser to put it in, so the welcome it shows is
- * tested where it renders. The rail the starting point produces, and the
- * starting point itself, are asserted where they are built, in
- * `firstRunSteps.test.tsx`.
+ * The screen follows a run rather than a rail, so what matters is what it shows
+ * for the run it was given: nothing while the read is in flight, the run itself
+ * while it goes, and a plain statement when the tenant has no run at all. The
+ * read that produces those states is the container's, and a render-to-string
+ * page cannot run it, so the panel is asserted where it is a function of its
+ * answer.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ReactNode } from 'react';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { FirstRunJourney, WelcomeIntro, systemPartyOf } from './FirstRunJourney.js';
-import type { PartySummary } from '@ores/wire-protocol/browser';
+import { TenantSetupPanel } from './TenantSetupJourney.js';
 import type { JourneyServer } from './server.js';
-
-function render(node: ReactNode): string {
-    return renderToStaticMarkup(<TranslationProvider>{node}</TranslationProvider>);
-}
 
 const NEVER = vi.fn(async () => undefined);
 
@@ -89,7 +84,7 @@ function fakeServer(): JourneyServer {
         progress: vi.fn(async () => ({
             success: true,
             message: '',
-            status: '',
+            status: 'in_progress',
             error: '',
             step_count: 0,
             current_step_index: 0,
@@ -106,53 +101,42 @@ function fakeServer(): JourneyServer {
     };
 }
 
-describe('the welcome', () => {
-    it('introduces the setup, and asks nothing', () => {
-        const html = render(<WelcomeIntro />);
+function render(run: { instanceId: string; status: string; error: string } | undefined): string {
+    return renderToStaticMarkup(
+        <TranslationProvider>
+            <TenantSetupPanel run={run} server={fakeServer()} onFinished={() => undefined} />
+        </TranslationProvider>,
+    );
+}
 
-        expect(html).toContain('Create the administrator');
-        expect(html).toContain('Create the first tenant');
-        expect(html).toContain('Sign in');
-        expect(html).not.toContain('Bare system');
-        expect(html).not.toContain('role="radiogroup"');
-    });
-});
-
-describe('the party bootstrap signs in to', () => {
-    const party = (id: string, partyCategory: string): PartySummary => ({
-        id,
-        name: `${partyCategory} party`,
-        partyCategory,
-        businessCenterCode: 'WRLD',
-    });
-
-    it('is the system party, whatever else the account works in', () => {
-        const operational = party('11111111-1111-1111-1111-111111111111', 'Operational');
-        const system = party('22222222-2222-2222-2222-222222222222', 'System');
-        const other = party('33333333-3333-3333-3333-333333333333', 'Operational');
-
-        expect(systemPartyOf([operational, system, other])).toBe(system);
-    });
-
-    it('is nothing when the account works in no system party', () => {
-        expect(
-            systemPartyOf([party('11111111-1111-1111-1111-111111111111', 'Operational')]),
-        ).toBeUndefined();
-    });
-});
-
-describe('the page before the deployment answers', () => {
-    it('waits for the password rules rather than rendering a rail without them', () => {
-        const html = render(
-            <FirstRunJourney
-                server={fakeServer()}
-                inBootstrapMode={true}
-                onStarted={() => undefined}
-                onFinished={() => undefined}
-            />,
-        );
+describe('the tenant setup screen', () => {
+    it('waits rather than stating a run that has not been read', () => {
+        const html = render(undefined);
 
         expect(html).toContain('Loading...');
-        expect(html).not.toContain('<nav');
+        expect(html).not.toContain('Finish setting up your tenant');
+    });
+
+    it('states that nobody started the tenant setup, and offers no way in', () => {
+        const html = render({ instanceId: '', status: '', error: '' });
+
+        expect(html).toContain('Finish setting up your tenant');
+        expect(html).toContain(
+            'setup has not been started. The deployment administrator has to start it.',
+        );
+        expect(html).not.toContain('Go to the application');
+    });
+
+    it('follows the tenant run, and opens the door only once it completes', () => {
+        const html = render({
+            instanceId: '55555555-5555-5555-5555-555555555555',
+            status: 'in_progress',
+            error: '',
+        });
+
+        expect(html).toContain('Finish setting up your tenant');
+        expect(html).toContain('Go to the application');
+        // The run is still going, so the way into the application is closed.
+        expect(html).toContain('disabled');
     });
 });

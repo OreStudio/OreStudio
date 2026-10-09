@@ -1546,18 +1546,18 @@ const pt: SourceCatalogue = {
                 'A execução anulou os passos que tinha concluído, por isso não deixa nada atrás.',
         },
 
-        handOff: {
-            title: 'Passagem',
-            lead: 'O inquilino está pronto. O seu administrador inicia sessão a seguir.',
-            administrator: 'O seu administrador é {principal}.',
-            continue: 'Continuar como administrador do inquilino',
-            continueHint: 'Inicie sessão como {principal} agora.',
-            elsewhere: 'Passar a vez a outra pessoa',
-            elsewhereHint: 'Termine a sessão e entregue o nome de utilizador e a palavra-passe.',
-            elsewhereHintForced:
-                'Termine a sessão e entregue o nome de utilizador. A pessoa define a sua própria palavra-passe no primeiro início de sessão.',
-            partyChoice:
-                'O administrador do inquilino trabalha em mais de uma parte, por isso a parte a abrir não pode ser escolhida aqui. Inicie sessão como ele e escolha uma.',
+        finish: {
+            title: 'Inquilino criado',
+            lead: 'O inquilino foi criado. O seu administrador conclui a configuração do próprio inquilino no primeiro início de sessão.',
+            signOut: 'Terminar sessão',
+        },
+
+        tenantSetup: {
+            title: 'Concluir a configuração do seu inquilino',
+            lead: 'A configuração do seu inquilino é executada no servidor. Pode sair desta página e voltar.',
+            readFailed: 'A execução da configuração não pôde ser lida. {message}',
+            noRun: 'A configuração deste inquilino ainda não foi iniciada. O administrador da instalação tem de a iniciar.',
+            enter: 'Ir para a aplicação',
         },
 
         signIn: {
@@ -1584,7 +1584,7 @@ const pt: SourceCatalogue = {
 
         ready: {
             title: 'Pronto',
-            lead: 'A instalação está configurada e {principal} tem a sessão iniciada.',
+            lead: 'A instalação está configurada. O administrador do inquilino conclui a configuração do próprio inquilino no primeiro início de sessão.',
             home: 'Ir para o início',
         },
 
@@ -1671,6 +1671,9 @@ const pt: SourceCatalogue = {
         'Start the market feeds': 'Iniciar os fluxos de mercado',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
+        "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
+            'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',
         Finish: 'Concluir',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marca o inquilino como pronto: sai do modo de arranque e fica ativo.',

@@ -586,8 +586,7 @@ public:
      * answer.
      */
     void provision_step(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_provisioning_handler_lg(), msg);
+        const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf)
@@ -618,7 +617,7 @@ public:
                 return;
             }
 
-            execute_step(*wf, *parsed);
+            execute_step(*wf, *parsed, correlation_id);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: " << e.what();
@@ -699,6 +698,9 @@ private:
         std::vector<std::string> images;
         std::vector<std::string> datasets;
         std::string tenant_id;
+        /// The instance id of the run this step started, when the kind hands
+        /// the tenant to another run. Empty for every other kind.
+        std::string child_instance_id;
     };
 
     /**
@@ -782,11 +784,17 @@ private:
 
     /// Dispatches a decoded step command to the action its kind names. Every
     /// kind this build does not execute is refused by name, never half-done.
+    /// The correlation id travels with the command so a step that starts
+    /// another run keeps the trace of the run that started it.
     void execute_step(const ores::service::messaging::workflow_step_context& wf,
-                      const ores::iam::workflow::provision_tenant_step_command& command) {
+                      const ores::iam::workflow::provision_tenant_step_command& command,
+                      const std::string& correlation_id) {
         switch (classify_step_kind(command.kind)) {
             case provision_step_action::complete_provisioning:
                 complete_provisioning_step(wf, command);
+                return;
+            case provision_step_action::start_tenant_setup:
+                start_tenant_setup_step(wf, command, correlation_id);
                 return;
             case provision_step_action::system_provision:
                 system_provision_step(wf, command);
@@ -1139,6 +1147,62 @@ private:
 
         wf.complete(rfl::json::write(provision_step_result{
             .kind = command.kind, .parties = bound, .datasets = {arguments.theme}}));
+    }
+
+    /**
+     * @brief Hands the tenant to its own administrator by starting the run that
+     * finishes it.
+     *
+     * This is how one run hands work to another. The system-side run is owned
+     * by the caller's tenant and its earlier steps act in the system tenant, so
+     * it cannot act inside the tenant it creates; the tenant's own run is owned
+     * by the new tenant and acts as the administrator the synchronous phase
+     * created, which is the identity the tenant's own steps need and the scope
+     * the tenant's own administrator can follow. The step therefore does no
+     * work itself: it starts that run with the same request this run received,
+     * and reports the child's instance id so the handover is visible in the
+     * parent's step result.
+     */
+    void
+    start_tenant_setup_step(const ores::service::messaging::workflow_step_context& wf,
+                            const ores::iam::workflow::provision_tenant_step_command& command,
+                            const std::string& correlation_id) {
+        // The step's argument is the whole run request, so the child works from
+        // exactly what this run received rather than from a request composed
+        // again here.
+        const auto run =
+            ores::iam::workflow::detail::read_workflow_request(command.arguments_json);
+        const auto actor = resolve_step_actor(command);
+
+        boost::uuids::random_generator generate;
+        const auto instance_id = boost::uuids::to_string(generate());
+
+        ores::workflow::messaging::start_workflow_message start;
+        start.type = std::string(ores::iam::workflow::tenant_setup_workflow_type);
+        // The child belongs to the new tenant, not to the run that starts it, so
+        // the tenant's own administrator can follow it and every step it
+        // dispatches is scoped to that tenant.
+        start.tenant_id = run.tenant_id;
+        start.target_kind = std::string(ores::iam::workflow::provision_tenant_target_kind);
+        start.target_id = run.tenant_id;
+        start.request_json = command.arguments_json;
+        start.correlation_id = correlation_id;
+        start.instance_id = instance_id;
+
+        // The start message requires a session, so it is published with a token
+        // minted for the new tenant's administrator, which is the identity the
+        // child's own steps then act as.
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        client.publish(ores::workflow::messaging::start_workflow_message::nats_subject, start);
+
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "Started " << start.type << " for tenant " << run.tenant_code
+            << " (instance: " << instance_id << ")";
+
+        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind,
+                                                           .tenant_id = run.tenant_id,
+                                                           .child_instance_id = instance_id}));
     }
 
     /// Marks the tenant active and clears bootstrap mode, the two operations

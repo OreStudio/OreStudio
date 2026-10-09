@@ -8,7 +8,7 @@
 #+filetags: :clear-the-stale-block-on-the-literate-template-task:sprint_27:v0:
 #+owner: marco
 #+branch: feature/clear-the-stale-block-on-the-literate-template-task
-#+pr:
+#+pr: 2938
 +#+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-09
@@ -73,7 +73,7 @@ of its own; this is the only one in the sprint.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2938][#2938]] | [agile] Clear the stale block on the literate template task |
 
 * Review
 

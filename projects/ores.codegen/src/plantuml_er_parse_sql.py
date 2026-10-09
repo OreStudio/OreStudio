@@ -84,36 +84,18 @@ FK_COLUMNS = {
     'currency_code',       # References refdata_currencies_tbl
 }
 
-# FK column to target table mapping for relationship inference
-FK_TARGET_TABLES = {
-    # IAM
-    'account_id': 'iam_accounts_tbl',
-    'role_id': 'iam_roles_tbl',
-    'permission_id': 'iam_permissions_tbl',
-    'session_id': 'iam_sessions_tbl',
-    # Assets
-    'image_id': 'assets_images_tbl',
-    'tag_id': 'assets_tags_tbl',
-    # Data Quality - Core
-    'dataset_id': 'dq_datasets_tbl',
-    'coding_scheme_code': 'dq_coding_schemes_tbl',
-    'change_reason_code': 'dq_change_reasons_tbl',
-    'category_code': 'dq_change_reason_categories_tbl',
-    'catalog_name': 'dq_catalogs_tbl',
-    'domain_name': 'dq_data_domains_tbl',
-    'subject_area_name': 'dq_subject_areas_tbl',
-    'methodology_id': 'dq_methodologies_tbl',
-    'authority_type': 'dq_coding_scheme_authority_types_tbl',
-    # Data Quality - Dimensions
-    'nature_code': 'dq_nature_dimensions_tbl',
-    'origin_code': 'dq_origin_dimensions_tbl',
-    'treatment_code': 'dq_treatment_dimensions_tbl',
-    # Dataset derivation (self-reference)
-    'upstream_derivation_id': 'dq_datasets_tbl',
-    # Reference data
-    'country_code': 'refdata_countries_tbl',
-    'currency_code': 'refdata_currencies_tbl',
-}
+# Where the schema states a foreign key's target. A key the database
+# enforces declares itself with REFERENCES; the one the insert trigger
+# checks is named by the comment the create template emits above it. A
+# column that merely looks like a key states nothing, so it draws no edge.
+SOFT_FK_PATTERN = re.compile(
+    r'--\s*Validate\s+(\w+)\s+\((?:optional\s+)?soft FK to\s+([a-z_0-9]+)\)')
+REFERENCE_PATTERN = re.compile(
+    r'^\s*"?(\w+)"?\s+[^,\n]*?\breferences\s+"?([a-z_0-9]+_tbl)"?',
+    re.IGNORECASE | re.MULTILINE)
+CONSTRAINT_FK_PATTERN = re.compile(
+    r'\bforeign\s+key\s*\(\s*"?(\w+)"?\s*\)\s*references\s+"?([a-z_0-9]+_tbl)"?',
+    re.IGNORECASE)
 
 # Table classification colors and stereotypes
 TABLE_STYLES = {
@@ -229,6 +211,7 @@ class SQLParser:
         self.unique_columns = {}  # table_name -> set of column names
         self.table_descriptions = {}  # table_name -> description text
         self.relationships = []  # List of Relationship objects
+        self.fk_targets = {}  # table_name -> {column: target table}
         self.ignore_rules = []  # List of (code_pattern, name_pattern) tuples
         if ignore_file:
             self._load_ignore_file(ignore_file)
@@ -284,7 +267,11 @@ class SQLParser:
         self._extract_table_descriptions(content)
 
         # Extract tables
+        already_parsed = set(self.tables)
         self._extract_tables(content, lines, relative_path)
+
+        # Record the foreign keys this file states
+        self._record_fk_targets(content, set(self.tables) - already_parsed)
 
         # Extract unique indexes
         self._extract_unique_indexes(content, relative_path)
@@ -294,6 +281,30 @@ class SQLParser:
 
         # Extract views (regular and materialized)
         self._extract_views(content, lines, relative_path)
+
+    def _record_fk_targets(self, content: str, parsed_here: set) -> None:
+        """Attach each foreign key the file states to the table that owns it.
+
+        A generated create script holds one entity's table and its insert
+        function, so the table is unambiguous. A hand-written script can
+        hold several, so the column decides: the table parsed from this
+        file that declares it owns the key. A key whose column belongs to
+        no table here, or to more than one, is left out rather than
+        guessed at, and shows up as a column with no edge.
+        """
+        stated = [(m.group(1), m.group(2))
+                  for m in SOFT_FK_PATTERN.finditer(content)]
+        stated += [(m.group(1), m.group(2))
+                   for m in REFERENCE_PATTERN.finditer(content)]
+        stated += [(m.group(1), m.group(2))
+                   for m in CONSTRAINT_FK_PATTERN.finditer(content)]
+
+        for column, target in stated:
+            owners = [name for name in parsed_here
+                      if any(col.name == column
+                             for col in self.tables[name].columns)]
+            if len(owners) == 1:
+                self.fk_targets.setdefault(owners[0], {})[column] = target
 
     def _parse_drop_file(self, file_path: Path) -> None:
         """Parse a single DROP SQL file to track what should be dropped."""
@@ -1103,50 +1114,56 @@ class SQLParser:
         print(str(warning), file=sys.stderr)
 
     def detect_relationships(self) -> None:
-        """Detect relationships between tables based on FK columns.
+        """Draw the foreign keys the create scripts state.
 
-        Infers relationships from column naming conventions:
-        - Columns in FK_TARGET_TABLES map to specific tables
-        - Junction tables have relationships to both parent tables
-        - Artefact tables have dataset_id -> dq_datasets_tbl relationships
+        The target comes from the schema, not from a list kept here: the
+        comment above a trigger check names it, and a database constraint
+        names it with REFERENCES. A column whose target no script states
+        keeps its marking and draws no edge, because nothing says where it
+        points.
+
+        A relationship runs from the parent to the child, so it reads as
+        "the trade has many instruments". Two shapes are stated rather
+        than inferred: a login's account is one-to-one, and an artefact
+        table's dataset holds it.
         """
-        for table_name, table in self.tables.items():
-            for col in table.columns:
-                # Check if column maps to a known target table
-                target_table = FK_TARGET_TABLES.get(col.name)
+        for table_name, targets in self.fk_targets.items():
+            table = self.tables[table_name]
 
-                if target_table and target_table in self.tables:
-                    # Skip self-references (except for specific FK columns like derivation)
-                    if target_table == table_name and col.name != 'upstream_derivation_id':
-                        continue
+            for column, target_table in targets.items():
+                if target_table not in self.tables:
+                    continue
 
-                    # Determine cardinality and label based on context
-                    cardinality = '||--o{'  # Default: one-to-many
+                # A row that references its own table is a hierarchy, not a
+                # relationship the diagram can draw as a loop; the one
+                # exception is a derivation naming the dataset it came from.
+                if target_table == table_name and column != 'upstream_derivation_id':
+                    continue
 
-                    if table.classification == 'junction':
-                        label = self._infer_relationship_label(target_table, table_name, col.name)
-                    elif col.name == 'account_id' and 'login_info' in table_name:
-                        # Special case: one-to-one for login_info
-                        cardinality = '||--o|'
-                        label = 'has'
-                    elif 'artefact' in table_name and col.name == 'dataset_id':
-                        # Artefact tables: dataset contains artefacts
-                        label = 'contains'
-                    else:
-                        label = self._infer_relationship_label(target_table, table_name, col.name)
+                for col in table.columns:
+                    if col.name == column:
+                        col.is_fk = True
 
-                    # Create relationship (from parent to child)
-                    rel = Relationship(
-                        from_table=target_table,
-                        to_table=table_name,
-                        cardinality=cardinality,
-                        label=label
-                    )
+                cardinality = '||--o{'
+                if column == 'account_id' and 'login_info' in table_name:
+                    cardinality = '||--o|'
+                    label = 'has'
+                elif 'artefact' in table_name and column == 'dataset_id':
+                    label = 'contains'
+                else:
+                    label = self._infer_relationship_label(
+                        target_table, table_name, column)
 
-                    # Avoid duplicates
-                    if not any(r.from_table == rel.from_table and r.to_table == rel.to_table
-                               for r in self.relationships):
-                        self.relationships.append(rel)
+                rel = Relationship(
+                    from_table=target_table,
+                    to_table=table_name,
+                    cardinality=cardinality,
+                    label=label
+                )
+
+                if not any(r.from_table == rel.from_table and r.to_table == rel.to_table
+                           for r in self.relationships):
+                    self.relationships.append(rel)
 
     def _infer_relationship_label(self, from_table: str, to_table: str, col_name: str = '') -> str:
         """Infer a meaningful label for the relationship."""

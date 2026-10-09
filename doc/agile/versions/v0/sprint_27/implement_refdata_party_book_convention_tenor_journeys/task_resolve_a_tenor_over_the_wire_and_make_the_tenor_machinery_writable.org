@@ -8,7 +8,7 @@
 #+filetags: :implement_refdata_party_book_convention_tenor_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/resolve-a-tenor-over-the-wire-and-make-the-tenor-machinery-writable
-#+pr:
+#+pr: 3002
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-07
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3002][#3002]] | [refdata] Give the convention its roll rule and the resolution junction its writes |
 
 * Review
 

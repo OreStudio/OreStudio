@@ -8,7 +8,7 @@
 #+filetags: :implement_membership_journeys:sprint_27:v0:
 #+owner: marco
 #+branch: feature/build-the-reporting-lines-screen
-#+pr:
+#+pr: 2998
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -92,7 +92,7 @@ A tenant administrator reads the reporting shape as a tree, selects a person, an
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2998][#2998]] | [web] Build the Reporting lines screen |
 
 * Review
 

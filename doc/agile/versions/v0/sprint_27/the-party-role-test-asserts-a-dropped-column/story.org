@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 27699F2B-FF9C-466B-9462-7C733B85F0CE
+:END:
+#+title: Story: Hotfix: the party role test asserts a dropped column
+#+description: c73c71ea re-keyed the trade party role by the trade anchor and dropped the counterparty columns, but the empty-vector case in domain_trade_party_role_tests.cpp still asserts the rendered header contains Counterparty ID, so ores.trading.api.tests fails.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.trading:sprint_27:v0:
+#+created: 2026-10-09
+#+updated: 2026-10-09
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Let ores.trading.api.tests pass, so the trade party role suite reports on the
+code rather than on a column the model no longer has.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-09                               |
+
+* Acceptance
+
+- The empty-vector case asserts a header the table still renders.
+- ores.trading.api.tests passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:241473A3-8072-41E7-916F-BFC5BC58E0F8][Scaffold story: Hotfix: the party role test asserts a dropped column]] | DONE | 2026-10-09 | 2026-10-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EBDEE0F7-9B45-44A5-A88B-CEDA4678264E][Implement Hotfix: the party role test asserts a dropped column]] | DONE | | 2026-10-09 | Initial task for: Hotfix: the party role test asserts a dropped column |
+
+* Decisions
+
+- *The case keeps its subject.* The test is about a table rendering its header
+  row when the vector is empty, which the generated converter does before it
+  looks at the vector. The column it names is incidental, so the assertion moves
+  to the anchor the table renders now rather than the case being deleted.
+
+* Out of scope
+
+- The re-keying itself. =c73c71ea= decided it and regenerated the table.
+
+* Result
+
+Done. The assertion reads =Trade ID=, with a comment naming why the old header
+went, and =ores.trading.api.tests= passes.

@@ -8,7 +8,7 @@
 #+filetags: :marketdata-curves:sprint_27:v0:
 #+owner: marco
 #+branch: feature/read-a-composite-objects-aligned-evolution
-#+pr:
+#+pr: 3018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -152,7 +152,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3018][#3018]] | [marketdata] Read a composite object's aligned evolution |
 
 * Review
 
